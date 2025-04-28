@@ -11,7 +11,7 @@
         "daveearley/daves-email-validation-tool": "^1.2",
         "darkghosthunter/preloader": "^2.2",
         "stymiee/email-validator": "^1.1",
-        "phpmailer/phpmailer": "^6.9",
+        "phpmailer/phpmailer": "^6.10",
         "nyholm/psr7": "^1.8",
         "setasign/fpdf": "^1.8",
         "ext-xml": "*",
