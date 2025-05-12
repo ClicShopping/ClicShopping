@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d8c4aacb550d20d24f8a840f6f71273b",
+    "content-hash": "0dfcd94e62c347095aad8ddce8c36bbf",
     "packages": [
         {
             "name": "darkghosthunter/preloader",
@@ -2026,19 +2026,20 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.31.0",
+            "version": "v1.32.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "85181ba99b2345b0ef10ce42ecac37612d9fd341"
+                "reference": "6d857f4d76bd4b343eac26d6b539585d2bc56493"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/85181ba99b2345b0ef10ce42ecac37612d9fd341",
-                "reference": "85181ba99b2345b0ef10ce42ecac37612d9fd341",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/6d857f4d76bd4b343eac26d6b539585d2bc56493",
+                "reference": "6d857f4d76bd4b343eac26d6b539585d2bc56493",
                 "shasum": ""
             },
             "require": {
+                "ext-iconv": "*",
                 "php": ">=7.2"
             },
             "provide": {
@@ -2086,7 +2087,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.31.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.32.0"
             },
             "funding": [
                 {
@@ -2102,7 +2103,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-09T11:45:10+00:00"
+            "time": "2024-12-23T08:48:59+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
@@ -2269,16 +2270,16 @@
         },
         {
             "name": "theodo-group/llphant",
-            "version": "0.9.11",
+            "version": "0.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LLPhant/LLPhant.git",
-                "reference": "f2e0dbbe394122f6432de044ffbdda81954ac331"
+                "reference": "79e32a81fc872934a8cff6389f98a354046dd1c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/f2e0dbbe394122f6432de044ffbdda81954ac331",
-                "reference": "f2e0dbbe394122f6432de044ffbdda81954ac331",
+                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/79e32a81fc872934a8cff6389f98a354046dd1c9",
+                "reference": "79e32a81fc872934a8cff6389f98a354046dd1c9",
                 "shasum": ""
             },
             "require": {
@@ -2348,9 +2349,9 @@
             ],
             "support": {
                 "issues": "https://github.com/LLPhant/LLPhant/issues",
-                "source": "https://github.com/LLPhant/LLPhant/tree/0.9.11"
+                "source": "https://github.com/LLPhant/LLPhant/tree/0.10.1"
             },
-            "time": "2025-04-26T11:22:36+00:00"
+            "time": "2025-05-06T13:32:56+00:00"
         }
     ],
     "packages-dev": [
@@ -3297,5 +3298,5 @@
         "ext-xml": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
