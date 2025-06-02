@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d8c4aacb550d20d24f8a840f6f71273b",
+    "content-hash": "a0a5a1d1d06f79df480094064f5b877d",
     "packages": [
         {
             "name": "darkghosthunter/preloader",
@@ -1666,34 +1666,35 @@
         },
         {
             "name": "stymiee/email-validator",
-            "version": "1.1.4",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stymiee/email-validator.git",
-                "reference": "e4493168d6805c66d6f5a2b357bbf29f488ea521"
+                "reference": "5795ed982bc6f8cb9506b0dab7a4708b85b8121c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stymiee/email-validator/zipball/e4493168d6805c66d6f5a2b357bbf29f488ea521",
-                "reference": "e4493168d6805c66d6f5a2b357bbf29f488ea521",
+                "url": "https://api.github.com/repos/stymiee/email-validator/zipball/5795ed982bc6f8cb9506b0dab7a4708b85b8121c",
+                "reference": "5795ed982bc6f8cb9506b0dab7a4708b85b8121c",
                 "shasum": ""
             },
             "require": {
+                "ext-intl": "*",
                 "ext-json": "*",
-                "php": ">=7.2.0"
+                "php": ">=7.4"
             },
             "require-dev": {
-                "nunomaduro/phpinsights": "@stable",
-                "phpmd/phpmd": "@stable",
-                "phpunit/phpunit": "^8",
-                "squizlabs/php_codesniffer": "3.*"
+                "nunomaduro/phpinsights": "^2.8",
+                "phpmd/phpmd": "^2.15",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^9.6",
+                "squizlabs/php_codesniffer": "^3.7",
+                "vimeo/psalm": "^5.15"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "EmailValidator\\": [
-                        "src/EmailValidator/"
-                    ]
+                    "EmailValidator\\": "src/EmailValidator/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1709,17 +1710,20 @@
                 }
             ],
             "description": "The Email Validator library builds upon PHP's built in filter_var($emailAddress, FILTER_VALIDATE_EMAIL); by adding a default MX record check. It also offers additional validation against disposable email addresses, free email address providers, and a custom banned domain list.",
-            "homepage": "https://github.com/stymiee/php-simple-encryption",
+            "homepage": "https://github.com/stymiee/email-validator",
             "keywords": [
+                "MX",
+                "disposable",
                 "email",
+                "free-email",
                 "php",
                 "validation"
             ],
             "support": {
                 "issues": "https://github.com/stymiee/email-validator/issues",
-                "source": "https://github.com/stymiee/email-validator/tree/1.1.4"
+                "source": "https://github.com/stymiee/email-validator/tree/2.0.0"
             },
-            "time": "2024-04-08T21:20:56+00:00"
+            "time": "2025-05-29T12:24:17+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -3297,5 +3301,5 @@
         "ext-xml": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
