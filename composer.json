@@ -20,7 +20,7 @@
         "robthree/twofactorauth": "^3.0",
         "symfony/http-client": "^7.2",
         "theodo-group/llphant": "^0.9.7",
-        "stripe/stripe-php": "^16.6",
+        "stripe/stripe-php": "^17.3",
         "mattketmo/email-checker": "^2.4"
     },
     "require-dev": {
