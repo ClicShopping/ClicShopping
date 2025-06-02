@@ -18,7 +18,7 @@
         "phpxmlrpc/phpxmlrpc": "^4.11",
         "guzzlehttp/guzzle": "^7.9",
         "robthree/twofactorauth": "^3.0",
-        "symfony/http-client": "^7.2",
+        "symfony/http-client": "^7.3",
         "theodo-group/llphant": "^0.9.7",
         "stripe/stripe-php": "^16.6",
         "mattketmo/email-checker": "^2.4"
