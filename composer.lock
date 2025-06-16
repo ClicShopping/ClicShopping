@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2008a5c7d6674f81188d6fc1cd76a88d",
+    "content-hash": "40e0cd0637166ffd66ccfec5535ceeb1",
     "packages": [
         {
             "name": "amnuts/opcache-gui",
@@ -2489,16 +2489,16 @@
         },
         {
             "name": "stymiee/email-validator",
-            "version": "2.0.0",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stymiee/email-validator.git",
-                "reference": "5795ed982bc6f8cb9506b0dab7a4708b85b8121c"
+                "reference": "8ee3be76b3d01081d3a91259c118e5dc2b4fb424"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stymiee/email-validator/zipball/5795ed982bc6f8cb9506b0dab7a4708b85b8121c",
-                "reference": "5795ed982bc6f8cb9506b0dab7a4708b85b8121c",
+                "url": "https://api.github.com/repos/stymiee/email-validator/zipball/8ee3be76b3d01081d3a91259c118e5dc2b4fb424",
+                "reference": "8ee3be76b3d01081d3a91259c118e5dc2b4fb424",
                 "shasum": ""
             },
             "require": {
@@ -2532,21 +2532,27 @@
                     "role": "Developer"
                 }
             ],
-            "description": "The Email Validator library builds upon PHP's built in filter_var($emailAddress, FILTER_VALIDATE_EMAIL); by adding a default MX record check. It also offers additional validation against disposable email addresses, free email address providers, and a custom banned domain list.",
+            "description": "A robust PHP 7.4+ email validation library that extends beyond basic validation with MX record checks, disposable email detection, and free email provider validation. Features include strict typing, custom validator support, internationalization (i18n), and an extensible architecture. Perfect for applications requiring thorough email verification with customizable validation rules.",
             "homepage": "https://github.com/stymiee/email-validator",
             "keywords": [
                 "MX",
+                "custom-validators",
                 "disposable",
                 "email",
+                "email-verification",
                 "free-email",
+                "i18n",
+                "internationalization",
                 "php",
+                "strict-typing",
+                "type-safe",
                 "validation"
             ],
             "support": {
                 "issues": "https://github.com/stymiee/email-validator/issues",
-                "source": "https://github.com/stymiee/email-validator/tree/2.0.0"
+                "source": "https://github.com/stymiee/email-validator/tree/2.1.0"
             },
-            "time": "2025-05-29T12:24:17+00:00"
+            "time": "2025-06-11T00:31:58+00:00"
         },
         {
             "name": "symfony/cache",
@@ -4808,5 +4814,5 @@
         "ext-xml": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
