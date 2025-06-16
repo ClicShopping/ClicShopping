@@ -16,7 +16,7 @@
         "phpxmlrpc/phpxmlrpc": "^4.11",
         "guzzlehttp/guzzle": "^7.9",
         "mattketmo/email-checker": "^2.4",
-        "doctrine/orm": "^3.3",
+        "doctrine/orm": "^3.4",
         "doctrine/migrations": "^3.9",
         "phpmailer/phpmailer": "^6.10",
         "amnuts/opcache-gui": "^3.5",
