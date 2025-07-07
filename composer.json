@@ -21,7 +21,7 @@
         "phpmailer/phpmailer": "^6.10",
         "amnuts/opcache-gui": "^3.5",
         "stymiee/email-validator": "^2.0",
-        "stripe/stripe-php": "^17.3",
+        "stripe/stripe-php": "^17.4",
         "theodo-group/llphant": "^0.10.1",
         "symfony/cache": "^7.3",
         "symfony/http-client": "^7.3"
