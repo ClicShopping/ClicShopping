@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7c94db0f40f6affd0393be07e85d01f1",
+    "content-hash": "3eebbe7258afe347f1bdf377ef23735d",
     "packages": [
         {
             "name": "amnuts/opcache-gui",
@@ -3769,16 +3769,16 @@
         },
         {
             "name": "theodo-group/llphant",
-            "version": "0.10.8",
+            "version": "0.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LLPhant/LLPhant.git",
-                "reference": "23163245d32b254a5e156e6514168225b0db3416"
+                "reference": "cf16117c68b26bf2cf528337ebed0574f28fd12b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/23163245d32b254a5e156e6514168225b0db3416",
-                "reference": "23163245d32b254a5e156e6514168225b0db3416",
+                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/cf16117c68b26bf2cf528337ebed0574f28fd12b",
+                "reference": "cf16117c68b26bf2cf528337ebed0574f28fd12b",
                 "shasum": ""
             },
             "require": {
@@ -3852,9 +3852,9 @@
             ],
             "support": {
                 "issues": "https://github.com/LLPhant/LLPhant/issues",
-                "source": "https://github.com/LLPhant/LLPhant/tree/0.10.8"
+                "source": "https://github.com/LLPhant/LLPhant/tree/0.11.0"
             },
-            "time": "2025-07-03T20:03:48+00:00"
+            "time": "2025-07-23T15:55:41+00:00"
         },
         {
             "name": "yethee/tiktoken",
@@ -4884,6 +4884,6 @@
         "ext-pdo": "*",
         "ext-xml": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
