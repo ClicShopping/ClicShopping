@@ -23,7 +23,7 @@
         "doctrine/orm": "^3.5",
         "guzzlehttp/guzzle": "^7.10",
         "phpmailer/phpmailer": "^7.0",
-        "stripe/stripe-php": "^18.1",
+        "stripe/stripe-php": "^19.0",
         "theodo-group/llphant": "^0.11.8",
         "amnuts/opcache-gui": "^3.6"
     },
