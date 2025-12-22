@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "57a0810823e6fe25f943dcb471af97db",
+    "content-hash": "7734d2c83154a1df5d82c8284af60abe",
     "packages": [
         {
             "name": "amnuts/opcache-gui",
@@ -2428,16 +2428,16 @@
         },
         {
             "name": "stripe/stripe-php",
-            "version": "v18.1.0",
+            "version": "v19.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stripe/stripe-php.git",
-                "reference": "1fd80dbcf1add025d66284c5be4e80255b8d51f0"
+                "reference": "4e3de7211645699b1f5b5f1f1b45bd9faf369426"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/1fd80dbcf1add025d66284c5be4e80255b8d51f0",
-                "reference": "1fd80dbcf1add025d66284c5be4e80255b8d51f0",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/4e3de7211645699b1f5b5f1f1b45bd9faf369426",
+                "reference": "4e3de7211645699b1f5b5f1f1b45bd9faf369426",
                 "shasum": ""
             },
             "require": {
@@ -2481,9 +2481,9 @@
             ],
             "support": {
                 "issues": "https://github.com/stripe/stripe-php/issues",
-                "source": "https://github.com/stripe/stripe-php/tree/v18.1.0"
+                "source": "https://github.com/stripe/stripe-php/tree/v19.1.0"
             },
-            "time": "2025-10-29T22:46:48+00:00"
+            "time": "2025-12-16T19:48:17+00:00"
         },
         {
             "name": "stymiee/email-validator",
