@@ -14,7 +14,7 @@
         "setasign/fpdf": "^1.8",
         "ext-xml": "*",
         "phpxmlrpc/phpxmlrpc": "^4.11",
-        "mattketmo/email-checker": "^2.4",
+        "mattketmo/email-checker": "^2.5",
         "doctrine/migrations": "^3.9",
         "symfony/cache": "^7.3",
         "symfony/http-client": "^7.3",
