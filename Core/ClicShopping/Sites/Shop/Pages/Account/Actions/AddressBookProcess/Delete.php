@@ -41,7 +41,7 @@ class Delete extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
     }
 
-    if (isset($_GET['action']) && ($_GET['action'] == 'deleteconfirm') && isset($_GET['delete']) && is_numeric($_GET['delete']) && isset($_GET['formid']) && ($_GET['formid'] == md5($_SESSION['sessiontoken']))) {
+    if (isset($_GET['action']) && ($_GET['action'] == 'deleteconfirm') && isset($_GET['delete']) && is_numeric($_GET['delete']) && isset($_GET['formid']) && hash_equals($_SESSION['sessiontoken'], $_GET['formid'])) {
       if ($_GET['delete'] == $CLICSHOPPING_Customer->get('default_address_id')) {
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('warning_primary_address_deletion'), 'error');
       } else {

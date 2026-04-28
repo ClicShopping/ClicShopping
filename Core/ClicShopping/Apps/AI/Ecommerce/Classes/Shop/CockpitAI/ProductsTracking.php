@@ -88,7 +88,7 @@
       }
 
       $session_id = session_id() ?: 'no-session';
-      $binary_hash = pack("H*", md5($session_id));
+       $binary_hash = pack("H*", hash('sha256', $session_id));
 
       $customer_id = $CLICSHOPPING_Customer->isLoggedOn() ? (int)$CLICSHOPPING_Customer->getID() : null;
 
@@ -138,7 +138,7 @@
     {
       $CLICSHOPPING_Db = Registry::get('Db');
       $session_id = session_id() ?: 'no-session';
-      $binary_hash = pack("H*", md5($session_id));
+      $binary_hash = pack("H*", hash('sha256', $session_id));
 
       $Qcheck = $CLICSHOPPING_Db->prepare('SELECT id 
                                            FROM :table_products_cockpit_ai_tracking_impressions 
@@ -258,7 +258,7 @@
       }
 
       $session_id = session_id() ?: 'no-session';
-      $binary_hash = pack("H*", md5($session_id));
+      $binary_hash = pack("H*", hash('sha256', $session_id));
 
       $customer_id = $CLICSHOPPING_Customer->isLoggedOn() ? (int)$CLICSHOPPING_Customer->getID() : null;
 

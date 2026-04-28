@@ -3,7 +3,7 @@ version4.28
 - php9 compatibility improvement
 - libraries updated
 - AI fix and improvement
-
+- Security fix
 
 ---------------
 version4.27

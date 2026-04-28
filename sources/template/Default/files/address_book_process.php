@@ -79,7 +79,7 @@ if (!isset($_GET['delete']) && isset($_GET['edit'])) {
                 for="buttonBack"><?php echo HTML::button(CLICSHOPPING::getDef('button_back'), null, CLICSHOPPING::link(null, 'Account&AddressBook'), 'primary'); ?></label>
             </div>
             <div class="col-md-6 float-end"><span class="buttonAction"><label
-                  for="buttonDelete"><?php echo HTML::button(CLICSHOPPING::getDef('button_delete'), null, CLICSHOPPING::link(null, 'Account&AddressBookProcess&Delete&delete=' . HTML::sanitize($_GET['delete']) . '&action=deleteconfirm&formid=' . md5($_SESSION['sessiontoken'])), 'danger'); ?></label></span>
+                  for="buttonDelete"><?php echo HTML::button(CLICSHOPPING::getDef('button_delete'), null, CLICSHOPPING::link(null, 'Account&AddressBookProcess&Delete&delete=' . HTML::sanitize($_GET['delete']) . '&action=deleteconfirm&formid=' . $_SESSION['sessiontoken']), 'danger'); ?></label></span>
             </div>
           </div>
         </div>
