@@ -152,6 +152,7 @@ class HTML
       }
     }
     
+    // Security: Parameters should be pre-validated by caller, but we sanitize the output
     $safe_parameters = !empty($parameters) ? ' ' . static::sanitizeHtmlAttributes($parameters) : '';
     
     return '<a href="' . $safe_url . '"' . $safe_parameters . '>' . $safe_element . '</a>';

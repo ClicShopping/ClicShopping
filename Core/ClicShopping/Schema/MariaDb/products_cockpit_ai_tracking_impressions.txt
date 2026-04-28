@@ -7,7 +7,7 @@ module_position varchar(10) not_null comment(Position of the module can be left,
 module_sort_order smallint(5) unsigned not_null default (0) comment(Sort order of the module inside the module (ordering index starting at 0 or 1))
 weight decimal(3,2) not_null default (0.10) comment(Module weight)
 displayed_at datetime not_null comment(Timestamp when the product was rendered/displayed to the user)
-session_hash binary(16) default null comment(Session identifier hashed in binary (MD5 or equivalent) for deduplication and session-level analysis)
+session_hash binary(16) default null comment(SHA-256 hash of session ID (32 bytes) for deduplication and session-level analysis)
 customer_id int(11) default null comment(FK to customers table - null if visitor is not authenticated)
 customer_group_id int(11) default null comment(FK to customer groups - pricing/segmentation context)
 metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null comment(Optional JSON payload (A/B test, device, source context, campaign, rendering details)' CHECK (json_valid(metadata))

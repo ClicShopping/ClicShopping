@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="version4.28">
-      <change beforePath="$PROJECT_DIR$/.idea/php.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="security improvement">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Sites/ClicShoppingAdmin/Pages/Home/templates/main.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Sites/ClicShoppingAdmin/Pages/Home/templates/main.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/OM/Db.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/OM/Db.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/install/rpc.php" beforeDir="false" afterPath="$PROJECT_DIR$/install/rpc.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/OM/HTML.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/OM/HTML.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/products_cockpit_ai_tracking_impressions.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/products_cockpit_ai_tracking_impressions.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,25 +116,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "version4.28",
-    "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "web.server",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;version4.28&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;web.server&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/sql_upgrade/history" />
@@ -163,6 +161,7 @@
       <workItem from="1777323724671" duration="16000" />
       <workItem from="1777368119564" duration="5333000" />
       <workItem from="1777379920741" duration="119000" />
+      <workItem from="1777385560554" duration="1983000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -204,7 +203,31 @@
       <option name="project" value="LOCAL" />
       <updated>1777361563610</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="security improvment">
+      <option name="closed" value="true" />
+      <created>1777385603937</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1777385603937</updated>
+    </task>
+    <task id="LOCAL-00007" summary="security improvement">
+      <option name="closed" value="true" />
+      <created>1777386468773</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1777386468773</updated>
+    </task>
+    <task id="LOCAL-00008" summary="security improvement">
+      <option name="closed" value="true" />
+      <created>1777386640496</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1777386640496</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -216,7 +239,9 @@
     <MESSAGE value="fix install" />
     <MESSAGE value="little update" />
     <MESSAGE value="version4.28" />
-    <option name="LAST_COMMIT_MESSAGE" value="version4.28" />
+    <MESSAGE value="security improvment" />
+    <MESSAGE value="security improvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="security improvement" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
