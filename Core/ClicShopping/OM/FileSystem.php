@@ -197,7 +197,7 @@ class FileSystem
    * @param string $mode The file's mode, typically provided as a result of the `fileperms()` function.
    * @return string A string representing the file type and its permissions in standard UNIX format.
    */
-  public function getFilePermissions(string $mode)
+  public static function getFilePermissions(string $mode)
   {
 // determine type
     if (($mode & 0xC000) == 0xC000) { // unix domain socket

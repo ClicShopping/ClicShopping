@@ -95,7 +95,11 @@ class Hash
     }
 
     if ($algo == 'salt') {
-  
+      // SECURITY WARNING: The 'salt' algorithm is DEPRECATED and INSECURE
+      // - Uses MD5 (cryptographically broken since 2004)
+      // - Uses only 2-character salt (256 possible values)
+      // - No key stretching or iteration
+      // - Vulnerable to rainbow table and brute force attacks
       trigger_error(
         'ClicShopping\\OM\\Hash::encrypt() Algorithm "salt" is DEPRECATED and INSECURE. ' .
         'Use "bcrypt" or "argon2id" instead. Creating new "salt" hashes is not allowed. ' .
@@ -345,6 +349,8 @@ class Hash
     try {
       $result = random_bytes($length);
     } catch (Exception $e) {
+      // If random_bytes() fails, the system's CSPRNG is broken and we should NOT
+      // provide an insecure fallback. This is a critical system failure.
       
       if ($secure === false) {
         trigger_error(
@@ -486,6 +492,8 @@ class Hash
    * @return string The decrypted or plain email address.
    */
   public static function displayDecryptedEmail(string $encryptedEmail): string {
+    // Check if email is actually encrypted (base64 encoded)
+    // If it contains @ and looks like a plain email, return as-is
     if (filter_var($encryptedEmail, FILTER_VALIDATE_EMAIL)) {
       return $encryptedEmail;
     }
