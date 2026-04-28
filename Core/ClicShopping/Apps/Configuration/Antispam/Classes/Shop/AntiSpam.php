@@ -17,7 +17,32 @@ use function defined;
 class AntiSpam
 {
   /**
+   * Secret key for HMAC generation
+   * This should be configured in the database or config file
+   * For now, we use a combination of session ID and a constant
+   */
+  private const HMAC_ALGO = 'sha256';
+  
+  /**
+   * Get the secret key for HMAC
+   * Uses session-specific secret to prevent pre-computation attacks
+   * 
+   * @return string The secret key
+   */
+  private static function getHmacSecret(): string
+  {
+    // Use a combination of session ID and configured secret
+    // This makes each session's HMAC unique
+    $baseSecret = CLICSHOPPING::getConfig('antispam_secret', 'clicshopping_antispam_default_secret_2026');
+    $sessionId = session_id() ?: 'no-session';
+    
+    return hash('sha256', $baseSecret . $sessionId);
+  }
+  /**
    * Generates an anti-spam numeric confirmation string and stores a hashed value in the session.
+   * 
+   * - Uses session-specific secret to prevent pre-computation
+   * - Resistant to rainbow table attacks
    *
    * @return string Returns the anti-spam numeric confirmation string for display or verification purposes.
    */
@@ -29,26 +54,28 @@ class AntiSpam
     $random_number = $a + $b;
 	
     $antispam = ' (' . $random_number . ' + ' . CLICSHOPPING::getDef('text_antispam') . ') x 1';
-
     $random_number = $random_number + 3;
-    $_SESSION['createResponseAntiSpam'] = md5($random_number);
+    $secret = self::getHmacSecret();
+    $_SESSION['createResponseAntiSpam'] = hash_hmac(self::HMAC_ALGO, (string)$random_number, $secret);
 
     return $antispam;
   }
 
   /**
    * Validates whether the provided numeric confirmation matches the anti-spam value stored in the session.
+   * 
    *
-   * @param mixed $antispan_confirmation The numeric confirmation to validate.
+   * @param string $antispan_confirmation The numeric confirmation to validate.
    * @return bool Returns true if the numeric confirmation is valid, otherwise false.
    */
-  private static function checkNumeric($antispan_confirmation): bool
+  private static function checkNumeric(string $antispan_confirmation): bool
   {
     if (isset($_SESSION['createResponseAntiSpam'])) {
-      if ($antispan_confirmation === $_SESSION['createResponseAntiSpam']) {
-        $valid_antispan_confirmation = false;
+      // SECURITY FIX: Use hash_equals() to prevent timing attacks
+      if (hash_equals($_SESSION['createResponseAntiSpam'], $antispan_confirmation)) {
+        $valid_antispan_confirmation = false; // Match found = invalid (logic seems inverted in original)
       } else {
-        $valid_antispan_confirmation = true;
+        $valid_antispan_confirmation = true; // No match = valid (logic seems inverted in original)
       }
     } else {
       $valid_antispan_confirmation = true;
@@ -64,6 +91,7 @@ class AntiSpam
    *
    * Checks if the 'antispam' field in the POST request contains the correct data
    * to prevent automated submissions.
+   * 
    *
    * @return bool Returns true if the anti-spam validation fails, otherwise false.
    */
@@ -72,7 +100,9 @@ class AntiSpam
     $error = false;
     if (isset($_POST['antispam'])) {
       $antispam = HTML::sanitize($_POST['antispam']);
-      $result = md5($antispam);
+      
+      $secret = self::getHmacSecret();
+      $result = hash_hmac(self::HMAC_ALGO, $antispam, $secret);
 
       if (self::checkNumeric($result) === true) {
         $error = true;

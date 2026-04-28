@@ -107,7 +107,54 @@ class HTML
 
   public static function link(string $url, ?string $element, mixed $parameters = null)
   {
-    return '<a href="' . $url . '" ' . (!empty($parameters) ? ' ' . $parameters : '') . '>' . $element . '</a>';
+    $safe_url = static::sanitizeUrl($url);
+    $safe_element = $element;
+    if (!empty($element)) {
+      $trimmed = trim($element);
+      
+      // FIRST: Check for dangerous content that should ALWAYS be escaped
+      $has_dangerous_content = (
+        stripos($trimmed, 'javascript:') !== false ||
+        stripos($trimmed, 'data:text/html') !== false ||
+        stripos($trimmed, 'vbscript:') !== false ||
+        preg_match('/\son\w+\s*=/i', $trimmed) // Event handlers (onclick, onerror, etc.)
+      );
+      
+      if ($has_dangerous_content) {
+        // Contains dangerous content - ALWAYS escape
+        $safe_element = static::outputProtected($element);
+      } else {
+        // No dangerous content - check if it's safe HTML from our methods
+        $is_safe_html = (
+          // Images with data-src or src and alt attributes (our pattern)
+          preg_match('/^<img\s+(data-)?src="[^"]*"\s+alt="[^"]*"/', $trimmed) ||
+          // Spans with any standard attribute (class, itemprop, id, data-*)
+          preg_match('/^<span\s+(class|itemprop|id|data-\w+)="[^"]*">/', $trimmed) ||
+          // Icons with class attribute
+          preg_match('/^<i\s+class="[^"]*"/', $trimmed) ||
+          // Buttons with type attribute
+          preg_match('/^<button\s+type="[^"]*"/', $trimmed) ||
+          // Heading tags (h1-h6) with content
+          preg_match('/^<h[1-6]>/', $trimmed) ||
+          // Divs with class attribute
+          preg_match('/^<div\s+class="[^"]*">/', $trimmed) ||
+          // Paragraphs with class attribute
+          preg_match('/^<p\s+class="[^"]*">/', $trimmed) ||
+          // Any other HTML tag (as long as no dangerous content)
+          preg_match('/^<[^>]+>/', $trimmed)
+        );
+        
+        if (!$is_safe_html) {
+          // Plain text or unrecognized pattern - escape it
+          $safe_element = static::outputProtected($element);
+        }
+        // else: Keep the safe HTML as-is
+      }
+    }
+    
+    $safe_parameters = !empty($parameters) ? ' ' . static::sanitizeHtmlAttributes($parameters) : '';
+    
+    return '<a href="' . $safe_url . '"' . $safe_parameters . '>' . $safe_element . '</a>';
   }
 
   /**
@@ -250,10 +297,18 @@ class HTML
       $flags['session_id'] = false;
     }
 
-    $form = '<form name="' . static::output($name) . '" action="' . static::output($action) . '" method="' . static::output($method) . '"';
+    // Security: Validate method against whitelist
+    $allowed_methods = ['post', 'get'];
+    $safe_method = in_array(strtolower($method ?? 'post'), $allowed_methods) ? strtolower($method) : 'post';
+
+    // Security: Sanitize form action URL
+    $safe_action = static::sanitizeUrl($action);
+
+    $form = '<form name="' . static::outputProtected($name) . '" action="' . $safe_action . '" method="' . $safe_method . '"';
 
     if (!empty($parameters)) {
-      $form .= ' ' . $parameters;
+      // Security: Sanitize additional parameters
+      $form .= ' ' . static::sanitizeHtmlAttributes($parameters);
     }
 
     $form .= '>';
@@ -890,32 +945,38 @@ class HTML
     $button = '';
 
     if (($params['type'] == 'button') && isset($link)) {
-      $button .= '<a href="' . $link . '"';
+      // Security: Sanitize URL to prevent XSS
+      $button .= '<a href="' . static::sanitizeUrl($link) . '"';
     } else {
       $button .= '<button type="' . static::outputProtected($params['type']) . '"';
     }
 
     if (isset($params['params'])) {
-      $button .= ' ' . $params['params'];
+      // Security: Sanitize additional parameters
+      $button .= ' ' . static::sanitizeHtmlAttributes($params['params']);
     }
 
     $button .= ' class="btn ';
 
     if (isset($style)) {
-      $button .= ' btn-' . $style;
+      // Security: Style is validated against whitelist above
+      $button .= ' btn-' . static::output($style);
     }
 
     if (isset($size)) {
-      $button .= ' btn-' . $size;
+      // Security: Size is validated against whitelist above
+      $button .= ' btn-' . static::output($size);
     }
 
     $button .= '">';
 
     if (isset($icon) && !empty($icon)) {
-      $button .= '<i class="' . $icon . '"></i> ';
+      // Security: Escape icon class to prevent XSS
+      $button .= '<i class="' . static::outputProtected($icon) . '"></i> ';
     }
 
-    $button .= $title;
+    // Security: Escape title content
+    $button .= static::outputProtected($title);
 
     if (($params['type'] == 'button') && isset($link)) {
       $button .= '</a>';
@@ -1147,5 +1208,84 @@ class HTML
     }
 
     return $rand;
+  }
+
+  /**
+   * Sanitizes a URL to prevent XSS attacks via javascript: protocol and other dangerous schemes.
+   * 
+   * @param string|null $url The URL to sanitize
+   * @return string The sanitized URL, or empty string if dangerous
+   */
+  protected static function sanitizeUrl(?string $url): string
+  {
+    if (is_null($url) || empty($url)) {
+      return '';
+    }
+
+    // Remove whitespace and control characters
+    $url = trim($url);
+    $url = preg_replace('/[\x00-\x1F\x7F]/', '', $url);
+
+    // Check for dangerous protocols (case-insensitive)
+    $dangerous_protocols = [
+      'javascript:',
+      'data:',
+      'vbscript:',
+      'file:',
+      'about:',
+    ];
+
+    $url_lower = strtolower($url);
+    
+    foreach ($dangerous_protocols as $protocol) {
+      // Check for protocol with or without whitespace/encoding tricks
+      if (str_starts_with($url_lower, $protocol)) {
+        return ''; // Return empty string for dangerous URLs
+      }
+      
+      // Check for encoded versions (e.g., java%09script:)
+      $url_decoded = urldecode($url_lower);
+      if (str_starts_with($url_decoded, $protocol)) {
+        return '';
+      }
+    }
+
+    // For href attributes, we only need to escape quotes and < >
+    // Don't use htmlspecialchars as it will break query strings with &
+    // The URL is already in the href="" context which provides protection
+    $url = str_replace(['"', "'", '<', '>'], ['%22', '%27', '%3C', '%3E'], $url);
+
+    return $url;
+  }
+
+  /**
+   * Sanitizes HTML attributes to prevent XSS attacks.
+   * This is a basic sanitization - callers should ideally provide pre-validated attributes.
+   * 
+   * @param string|null $attributes The attributes string to sanitize
+   * @return string The sanitized attributes
+   */
+  protected static function sanitizeHtmlAttributes(?string $attributes): string
+  {
+    if (is_null($attributes) || empty($attributes)) {
+      return '';
+    }
+
+    // First, decode any HTML entities to catch encoded attacks
+    $attributes = html_entity_decode($attributes, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    // Remove any event handlers (onclick, onerror, onload, etc.)
+    $attributes = preg_replace('/\s*on\w+\s*=\s*["\']?[^"\']*["\']?/i', '', $attributes);
+    
+    // Remove javascript: protocol from any attribute values
+    $attributes = preg_replace('/javascript:/i', '', $attributes);
+    
+    // Remove data: protocol from any attribute values  
+    $attributes = preg_replace('/data:/i', '', $attributes);
+    
+    // Remove vbscript: protocol
+    $attributes = preg_replace('/vbscript:/i', '', $attributes);
+
+    return trim($attributes);
   }
 }

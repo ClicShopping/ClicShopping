@@ -95,17 +95,16 @@ class Hash
     }
 
     if ($algo == 'salt') {
-      $password = '';
-
-      for ($i = 0; $i < 10; $i++) {
-        $password .= static::getRandomInt();
-      }
-
-      $salt = substr(md5($password), 0, 2);
-
-      $password = md5($salt . $plain) . ':' . $salt;
-
-      return $password;
+  
+      trigger_error(
+        'ClicShopping\\OM\\Hash::encrypt() Algorithm "salt" is DEPRECATED and INSECURE. ' .
+        'Use "bcrypt" or "argon2id" instead. Creating new "salt" hashes is not allowed. ' .
+        'This algorithm will be removed in a future version.',
+        E_USER_DEPRECATED
+      );
+      
+      // Refuse to create new insecure hashes - force upgrade to secure algorithm
+      return false;
     }
 
     trigger_error('ClicShopping\\OM\\Hash::encrypt() Algorithm "' . $algo . '" unknown.');
@@ -125,7 +124,18 @@ class Hash
     $result = false;
 
     if ((strlen($plain) > 0) && (strlen($hash) > 0)) {
-      switch (static::getType($hash)) {
+      $type = static::getType($hash);
+      
+      // Log security warning for deprecated algorithms
+      if (in_array($type, ['salt', 'phpass'], true)) {
+        trigger_error(
+          "ClicShopping\\OM\\Hash::verify() Verifying password with DEPRECATED algorithm '{$type}'. " .
+          "This algorithm is insecure and should be migrated. Consider forcing password reset for this user.",
+          E_USER_WARNING
+        );
+      }
+      
+      switch ($type) {
         case 'phpass':
           if (!class_exists('PasswordHash', false)) {
             include_once(BASE_DIR . 'external/PasswordHash.php');
@@ -138,6 +148,7 @@ class Hash
           break;
 
         case 'salt':
+          // SECURITY WARNING: Still verify for backward compatibility, but this is INSECURE
           // split apart the hash / salt
           $stack = explode(':', $hash, 2);
 
@@ -181,6 +192,38 @@ class Hash
     }
 
     return password_needs_rehash($hash, $algo);
+  }
+
+  /**
+   * Checks if a password hash uses a deprecated/insecure algorithm that requires migration.
+   * 
+   * @param string $hash The password hash to check
+   * @return bool Returns true if the hash uses 'salt' or 'phpass' (deprecated algorithms)
+   */
+  public static function needsMigration(string $hash): bool
+  {
+    $type = static::getType($hash);
+    return in_array($type, ['salt', 'phpass'], true);
+  }
+
+  /**
+   * Migrates a password from deprecated algorithm to secure algorithm.
+   * This method verifies the old password first, then creates a new secure hash.
+   * 
+   * @param string $plain The plaintext password
+   * @param string $oldHash The old hash to verify
+   * @param string $newAlgo The new algorithm to use (default: 'bcrypt')
+   * @return string|false The new hash or false if verification failed
+   */
+  public static function migratePassword(string $plain, string $oldHash, string $newAlgo = 'bcrypt')
+  {
+    // Verify the old password first
+    if (!static::verify($plain, $oldHash)) {
+      return false;
+    }
+    
+    // Create new secure hash
+    return static::encrypt($plain, $newAlgo);
   }
 
   /**
@@ -302,20 +345,23 @@ class Hash
     try {
       $result = random_bytes($length);
     } catch (Exception $e) {
-      if ($secure === true) {
-        throw $e;
+      
+      if ($secure === false) {
+        trigger_error(
+          'ClicShopping\\OM\\Hash::getRandomBytes() The $secure=false parameter is deprecated. ' .
+          'Insecure random byte generation is not allowed. ' .
+          'If random_bytes() fails, the system CSPRNG is broken and must be fixed.',
+          E_USER_DEPRECATED
+        );
       }
-
-      $result = '';
-      $random_state = 0;
-
-      for ($i = 0; $i < $length; $i += 16) {
-        $random_state = md5(microtime() . $random_state);
-
-        $result .= pack('H*', md5($random_state));
-      }
-
-      $result = substr($result, 0, $length);
+      
+      // Always throw exception - no insecure fallback allowed
+      throw new Exception(
+        'Cannot generate cryptographically secure random bytes. ' .
+        'random_bytes() failed and insecure fallback is not allowed. ' .
+        'This indicates a critical system issue that must be resolved. ' .
+        'Original error: ' . $e->getMessage()
+      );
     }
 
     return $result;
@@ -433,17 +479,33 @@ class Hash
   }
 
   /**
-   * Hashes an email address using a secure one-way hashing algorithm.
+   * Decrypts an email address if encrypted, or returns it as-is if already plain text.
+   * This function handles both encrypted (base64) and plain text email addresses.
    *
-   * @param string $encryptedEmail The email address to be hashed.
-   * @return string The hashed email address.
+   * @param string $encryptedEmail The email address (encrypted or plain text).
+   * @return string The decrypted or plain email address.
    */
   public static function displayDecryptedEmail(string $encryptedEmail): string {
-    $data = base64_decode($encryptedEmail);
+    if (filter_var($encryptedEmail, FILTER_VALIDATE_EMAIL)) {
+      return $encryptedEmail;
+    }
+    
+    // Try to decrypt
+    $data = base64_decode($encryptedEmail, true);
+    
+    // If base64_decode failed or returned empty, return the original
+    if ($data === false || empty($data)) {
+      return $encryptedEmail;
+    }
+    
     $ivLength = openssl_cipher_iv_length(self::$cipher);
     $iv = str_pad(substr($data, 0, $ivLength), $ivLength, "\0");
     $encrypted = substr($data, $ivLength);
-    return openssl_decrypt($encrypted, self::$cipher, self::$key, 0, $iv);
+    
+    $decrypted = openssl_decrypt($encrypted, self::$cipher, self::$key, 0, $iv);
+    
+    // If decryption failed, return the original value
+    return $decrypted !== false ? $decrypted : $encryptedEmail;
   }
 /*
 
