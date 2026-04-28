@@ -1172,7 +1172,7 @@ class Db extends PDO
    * @param string|array $string The input string or array to be sanitized.
    * @return string|array The sanitized string or array.
    */
-  public static function prepareInput(string $string): string
+  public static function prepareInput(string|array $string): string|array
   {
     if (is_string($string)) {
       return HTML::sanitize($string);
@@ -1278,7 +1278,7 @@ class Db extends PDO
     $size = 0;
 
     while ($Qresult->fetch()) {
-      $size .= $Qresult->value('Name') . ': ' . round(($Qresult->valueDecimal('Data_length') / 1024) / 1024, 4) . '<br />\n';
+      $size += $Qresult->valueDecimal('Data_length');
     }
 
     $size_db = round(($size / 1024) / 1024, 1);

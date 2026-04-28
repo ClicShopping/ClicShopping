@@ -57,7 +57,7 @@ class HTTP
    *
    * @param bool $use_sts Determines whether to send HSTS headers or redirect to HTTPS.
    *                       If true, the method sends the HSTS header. If false, it redirects to HTTPS and terminates further execution.
-   * @return void
+   * @return bool Returns true if HSTS header was sent successfully, false otherwise.
    */
   public static function getHSTS(bool $use_sts = true): bool
   {

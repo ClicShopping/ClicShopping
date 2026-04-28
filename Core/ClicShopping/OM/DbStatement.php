@@ -49,10 +49,12 @@ class DbStatement extends \PDOStatement
   }
 
   /**
-   * Binds an integer value to a parameter for use in a prepared statement.
+   * Binds a value to a parameter for use in a prepared statement.
    *
    * @param string|int $parameter The parameter identifier to bind the value to.
-   * @param string|int
+   * @param mixed $value The value to bind.
+   * @param int $data_type The PDO data type constant (default: PDO::PARAM_STR).
+   * @return bool True on success, false on failure.
    */
   public function bindValue(string|int $parameter, mixed $value, int $data_type = PDO::PARAM_STR): bool
   {
@@ -347,7 +349,8 @@ class DbStatement extends \PDOStatement
   /**
    * Retrieves the value of a specified column cast as a protected string.
    *
-   * @param string $column The name of the column from which to retrieve the
+   * @param string $column The name of the column from which to retrieve the value.
+   * @return string The protected string value of the specified column.
    */
   public function valueProtected(string $column): string
   {
@@ -357,7 +360,8 @@ class DbStatement extends \PDOStatement
   /**
    * Retrieves the value of the specified column cast as an integer.
    *
-   * @param string $column The name of the column from which to retrieve the
+   * @param string $column The name of the column from which to retrieve the value.
+   * @return int The integer value of the specified column.
    */
   public function valueInt(string $column): int
   {
@@ -367,7 +371,8 @@ class DbStatement extends \PDOStatement
   /**
    * Retrieves the value of the specified column cast as a decimal.
    *
-   * @param string $column The name of the column from which to retrieve the
+   * @param string $column The name of the column from which to retrieve the value.
+   * @return float The decimal value of the specified column.
    */
   public function valueDecimal(string $column): float
   {

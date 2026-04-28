@@ -608,11 +608,11 @@ class HTML
       $field .= '<option value="">' . CLICSHOPPING::getDef('text_select') . '</option>';
     }
 
-    if (empty($default) && ((isset($_GET[$name]) && is_string($_GET[$name]) && !is_null($_GET[$name])) || (isset($_POST[$name]) && is_string($_POST[$name]) && !is_null($_POST[$name])))) {
-      if (isset($_GET[$name]) && is_string($_GET[$name])) {
-        $default = static::output($_GET[$name]);
-      } elseif (isset($_POST[$name]) && is_string($_POST[$name])) {
+    if (empty($default) && ((isset($_POST[$name]) && is_string($_POST[$name]) && !is_null($_POST[$name])) || (isset($_GET[$name]) && is_string($_GET[$name]) && !is_null($_GET[$name])))) {
+      if (isset($_POST[$name]) && is_string($_POST[$name])) {
         $default = static::output($_POST[$name]);
+      } elseif (isset($_GET[$name]) && is_string($_GET[$name])) {
+        $default = static::output($_GET[$name]);
       }
     }
 

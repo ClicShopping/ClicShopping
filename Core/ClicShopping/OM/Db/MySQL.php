@@ -56,8 +56,8 @@ class MySQL extends \ClicShopping\OM\Db
       $this->initMemcached();
     }
 
-    if (!isset($this->driver_options[\Pdo\Mysql::ATTR_INIT_COMMAND])) {
-      $this->driver_options[\Pdo\Mysql::ATTR_INIT_COMMAND] = 'set session sql_mode="STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"';
+    if (!isset($this->driver_options[\PDO::MYSQL_ATTR_INIT_COMMAND])) {
+      $this->driver_options[\PDO::MYSQL_ATTR_INIT_COMMAND] = 'set session sql_mode="STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"';
     }
 
     $this->establishConnection();
