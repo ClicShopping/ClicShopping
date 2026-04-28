@@ -583,7 +583,7 @@ class DbStatement extends \PDOStatement
       if (($this->page_set < $number_of_pages) && ($number_of_pages != 1)) {
         $output .= '<li class="page-item active">' . HTML::link(CLICSHOPPING::link(null, $parameters . $this->page_set_keyword . '=' . ($this->page_set + 1)), null, 'title="' . CLICSHOPPING::getDef('prevnext_title_next_page') . '" class="text-center page-link bi bi-chevron-right"') . '</li>';
       } else {
-        $output .= '<li class="page-item disabled"><a class="text-m-center page-link bi bi-chevron-right"></a></li>';
+        $output .= '<li class="page-item disabled"><a class="text-center page-link bi bi-chevron-right"></a></li>';
       }
     } else {
       if ($number_of_pages > 1) {

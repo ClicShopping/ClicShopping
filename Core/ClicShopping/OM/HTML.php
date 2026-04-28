@@ -107,8 +107,13 @@ class HTML
 
   public static function link(string $url, ?string $element, mixed $parameters = null)
   {
+    // Security: Validate URL to prevent javascript: protocol attacks
     $safe_url = static::sanitizeUrl($url);
+    
+    // Security: Detect if element contains safe HTML (from our own methods)
+    // We check for specific patterns that our methods generate
     $safe_element = $element;
+    
     if (!empty($element)) {
       $trimmed = trim($element);
       
@@ -603,11 +608,11 @@ class HTML
       $field .= '<option value="">' . CLICSHOPPING::getDef('text_select') . '</option>';
     }
 
-    if (empty($default) && ((isset($_GET[$name]) && is_string($_GET[$name]) && !is_null($_GET[$name])) || (isset($_POST[$name]) && is_string($_POST[$name] && !is_null($_POST[$name]))))) {
+    if (empty($default) && ((isset($_GET[$name]) && is_string($_GET[$name]) && !is_null($_GET[$name])) || (isset($_POST[$name]) && is_string($_POST[$name]) && !is_null($_POST[$name])))) {
       if (isset($_GET[$name]) && is_string($_GET[$name])) {
         $default = static::output($_GET[$name]);
       } elseif (isset($_POST[$name]) && is_string($_POST[$name])) {
-        $default = static::output($_GET[$name]);
+        $default = static::output($_POST[$name]);
       }
     }
 
