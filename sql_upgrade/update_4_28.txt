@@ -1,0 +1,4 @@
+ALTER TABLE clic_products_cockpit_ai_tracking_impressions MODIFY COLUMN session_hash BINARY(32) NOT NULL COMMENT 'SHA-256 hash of session ID (32 bytes, upgraded from MD5 16 bytes on 2026-04-28)';
+TRUNCATE TABLE clic_products_cockpit_ai_tracking_impressions;
+
+call migrate_passwords_http.php for the migration and follow instructions

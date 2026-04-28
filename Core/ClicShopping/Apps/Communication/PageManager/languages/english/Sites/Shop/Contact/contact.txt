@@ -22,3 +22,4 @@ entry_customers_subject = Subject of your request :
 
 error_action_recorder = Error: An enquiry has already been sent. Please try again in {{module_action_recorder_contact_us_email_minutes}} minutes.
 entry_error_contact = Error : Please retry
+entry_antispam_error = Error: The anti-spam verification failed. Please check your answer and try again.

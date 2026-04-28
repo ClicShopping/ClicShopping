@@ -72,12 +72,11 @@ class PreAction implements \ClicShopping\OM\Modules\HooksInterface
       return false;
     }
 
-    if (!\defined('CLICSHOPPING_APP_ANTISPAM_IN_STATUS') || CLICSHOPPING_APP_ANTISPAM_IN_STATUS == 'False') {
+    if (!\defined('CLICSHOPPING_APP_ANTISPAM_AM_STATUS') || CLICSHOPPING_APP_ANTISPAM_AM_STATUS == 'False') {
       return false;
     }
 
     $error = AntiSpam::checkNumericAntiSpam();
-
 
     return $error;
   }

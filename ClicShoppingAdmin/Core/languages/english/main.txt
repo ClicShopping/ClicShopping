@@ -320,6 +320,10 @@ error_destination_does_not_exist = Error: Destination does not exist.
 error_destination_not_writeable = Error: Destination not writeable.
 error_file_not_saved = Error: File upload not saved.
 error_filetype_not_allowed = Error: File upload type not allowed.
+error_file_too_large = Error: File is too large.
+error_file_empty = Error: File is empty or has no content.
+error_file_mime_type_invalid = Error: File type validation failed - MIME type mismatch detected.
+error_file_signature_invalid = Error: File signature validation failed - file may be corrupted or disguised.
 success_file_saved_successfully = Success: File upload saved successfully.
 warning_no_file_uploaded = Information: No image or file uploaded.
 warning_edit_customers = Fields have errors that make it impossible to record your modifications.
@@ -492,8 +496,10 @@ llm_guardrails_prompt_completeness = Add details.
 llm_guardrails_prompt_clarity = Clarify the writing.
 
 llm_guardrails_prompt = As an expert in e-commerce BI analysis, evaluate the following answer according to these criteria:
+
 QUESTION: {{question}}
 ANSWER: {{result}}
+
 Evaluation criteria (rate from 1 to 5):
 1. ACCURACY: Are the data and metrics correct?
 2. RELEVANCE: Does the answer address the question asked?
@@ -513,6 +519,7 @@ Reply in JSON format:
     'recommendations': ['list of improvements'],
     'confidence_level': 'high/medium/low'
 }
+
 llm_guardrails_accuracy = Accuracy
 llm_guardrails_relevance = Relevance
 llm_guardrails_completeness = Completeness
