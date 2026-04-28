@@ -111,6 +111,30 @@ if (isset($_GET['action']) && !empty($_GET['action'])) {
 
     case 'dbImport':
       try {
+        // ✅ SECURITY FIX: Validate table prefix before use
+        $prefix = $_POST['prefix'] ?? '';
+        $prefix = trim($prefix);
+        
+        // Validate prefix format: only alphanumeric and underscore
+        if ($prefix !== '' && !preg_match('/^[a-zA-Z0-9_]+$/', $prefix)) {
+          throw new \Exception('Invalid table prefix format. Only alphanumeric characters and underscores are allowed.');
+        }
+        
+        // Limit length (MySQL identifier limit is 64 chars, leave room for table name)
+        if (strlen($prefix) > 20) {
+          throw new \Exception('Table prefix too long. Maximum 20 characters allowed.');
+        }
+        
+        // Ensure it doesn't start with a number (MySQL requirement)
+        if ($prefix !== '' && preg_match('/^[0-9]/', $prefix)) {
+          throw new \Exception('Table prefix cannot start with a number.');
+        }
+        
+        // Ensure it ends with underscore for clarity (if not empty)
+        if ($prefix !== '' && !str_ends_with($prefix, '_')) {
+          $prefix .= '_';
+        }
+        
         // Use safe init command during import as well
         $driverOptions = [\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4'];
         $CLICSHOPPING_Db = Db::initialize(
@@ -128,19 +152,22 @@ if (isset($_GET['action']) && !empty($_GET['action'])) {
         foreach (glob(CLICSHOPPING::BASE_DIR . 'Schema/MariaDb/*.txt') as $f) {
           $schema = $CLICSHOPPING_Db->getSchemaFromFile($f);
 
-          $sql = $CLICSHOPPING_Db->getSqlFromSchema($schema, $_POST['prefix']);
+          // ✅ Use validated prefix
+          $sql = $CLICSHOPPING_Db->getSqlFromSchema($schema, $prefix);
 
-          $CLICSHOPPING_Db->exec('DROP TABLE IF EXISTS ' . $_POST['prefix'] . basename($f, '.txt'));
+          // ✅ Use prepareIdentifier for table name
+          $tableName = Db::prepareIdentifier($prefix . basename($f, '.txt'));
+          $CLICSHOPPING_Db->exec('DROP TABLE IF EXISTS ' . $tableName);
 
           $CLICSHOPPING_Db->exec($sql);
         }
 
         if ($_POST['demo'] == 'demo') {
-          $CLICSHOPPING_Db->importSQL($dir_fs_www_root . '/Db/demo_clicshopping_en.sql', $_POST['prefix']);
+          $CLICSHOPPING_Db->importSQL($dir_fs_www_root . '/Db/demo_clicshopping_en.sql', $prefix);
         } elseif ($language == 'french') {
-          $CLICSHOPPING_Db->importSQL($dir_fs_www_root . '/Db/clicshopping.sql', $_POST['prefix']);
+          $CLICSHOPPING_Db->importSQL($dir_fs_www_root . '/Db/clicshopping.sql', $prefix);
         } else {
-          $CLICSHOPPING_Db->importSQL($dir_fs_www_root . '/Db/clicshopping_en.sql', $_POST['prefix']);
+          $CLICSHOPPING_Db->importSQL($dir_fs_www_root . '/Db/clicshopping_en.sql', $prefix);
         }
 
         $CLICSHOPPING_Db->exec('SET FOREIGN_KEY_CHECKS = 1');

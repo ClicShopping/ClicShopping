@@ -196,7 +196,7 @@ class CustomerShop
    */
   public function getEmailAddress(): string|bool
   {
-    if (isset($this->_data['email_address'])) {
+    if (isset($this->_data['email_address']) && !empty($this->_data['email_address'])) {
       return Hash::displayDecryptedEmail($this->_data['email_address']);
     }
 

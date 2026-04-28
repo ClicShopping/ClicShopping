@@ -747,6 +747,15 @@ class Db extends PDO
   public static function getSchemaFromFile(string $file): array
   {
     $table = substr(basename($file), 0, strrpos(basename($file), '.'));
+    
+    // ✅ SECURITY FIX: Trim whitespace from table name (handles filenames with spaces)
+    $table = trim($table);
+
+    // Validate table name to prevent SQL injection
+    // Only allow alphanumeric characters and underscores
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
+      throw new \InvalidArgumentException('Invalid table name in schema file: ' . $table . '. Only alphanumeric characters and underscores are allowed.');
+    }
 
     $schema = [
       'name' => $table
@@ -887,13 +896,18 @@ class Db extends PDO
            $schema['col'][$field_name]['type'] = $field_type;
         }
 
-        // Parse default() - look for default(value) pattern
+        // Parse default() - look for default(value) or default (value) pattern (with optional space)
         $details_string = implode(' ', $details);
-        if (preg_match('/default\(([^)]+)\)/', $details_string, $type_default)) {
-          $schema['col'][$field_name]['default'] = $type_default[1];
+        if (preg_match('/default\s*\(([^)]+)\)/i', $details_string, $type_default)) {
+          $default_value = trim($type_default[1]);
+          
+          // Remove quotes if present (they'll be added back in SQL generation if needed)
+          $default_value = trim($default_value, "'\"");
+          
+          $schema['col'][$field_name]['default'] = $default_value;
           
           // Remove default() from details string
-          $details_string = preg_replace('/default\([^)]+\)/', '', $details_string);
+          $details_string = preg_replace('/default\s*\([^)]+\)/i', '', $details_string);
           $details = array_filter(explode(' ', $details_string), fn($v) => $v !== null && $v !== '');
           $details = array_values($details);
         }
@@ -962,15 +976,27 @@ class Db extends PDO
    */
   public static function getSqlFromSchema(array $schema, ?string $prefix = null)
   {
-    $sql = 'CREATE TABLE ' . (isset($prefix) ? $prefix : '') . $schema['name'] . ' (' . "\n";
+    // ✅ SECURITY FIX: Escape table name identifier
+    $tableName = self::prepareIdentifier(($prefix ?? '') . $schema['name']);
+    $sql = 'CREATE TABLE ' . $tableName . ' (' . "\n";
 
     $rows = [];
 
     foreach ($schema['col'] as $name => $fields) {
-      $row = '  ' . $name . ' ' . $fields['type'];
+      // ✅ SECURITY FIX: Escape column name identifier
+      $row = '  ' . self::prepareIdentifier($name) . ' ' . $fields['type'];
 
       if (isset($fields['length'])) {
-        $row .= '(' . $fields['length'] . ')';
+        $type_lower = strtolower($fields['type']);
+        
+        // For ENUM and SET, length contains the full value list with quotes
+        // Don't cast to int, use as-is
+        if ($type_lower === 'enum' || $type_lower === 'set') {
+          $row .= '(' . $fields['length'] . ')';
+        } else {
+          // For numeric types, cast to int for safety
+          $row .= '(' . (int)$fields['length'] . ')';
+        }
       }
 
       if (isset($fields['binary']) && ($fields['binary'] === true)) {
@@ -982,7 +1008,34 @@ class Db extends PDO
       }
 
       if (isset($fields['default'])) {
-        $row .= ' DEFAULT ' . $fields['default'];
+        $default_value = $fields['default'];
+        
+        // Determine if default value needs quotes based on column type
+        $needs_quotes = false;
+        $type_lower = strtolower($fields['type']);
+        
+        // Types that need quotes for default values
+        if (str_contains($type_lower, 'char') || 
+            str_contains($type_lower, 'text') || 
+            str_contains($type_lower, 'enum') || 
+            str_contains($type_lower, 'set') ||
+            str_contains($type_lower, 'date') ||
+            str_contains($type_lower, 'time')) {
+          $needs_quotes = true;
+        }
+        
+        // Special keywords that don't need quotes
+        $keywords = ['CURRENT_TIMESTAMP', 'NULL', 'NOW()', 'CURRENT_DATE', 'CURRENT_TIME'];
+        if (in_array(strtoupper($default_value), $keywords)) {
+          $needs_quotes = false;
+        }
+        
+        // Add DEFAULT clause
+        if ($needs_quotes && !in_array(strtoupper($default_value), $keywords)) {
+          $row .= " DEFAULT '" . addslashes($default_value) . "'";
+        } else {
+          $row .= ' DEFAULT ' . $default_value;
+        }
       }
 
       if (isset($fields['not_null']) && ($fields['not_null'] === true)) {
@@ -1018,12 +1071,15 @@ class Db extends PDO
           $name = 'UNIQUE KEY';
         } elseif (str_starts_with($name_normalized, 'unique:')) {
           $index_name = substr($name, strlen('unique:'));
-          $name = 'UNIQUE KEY ' . $index_name;
+          // Escape index name for SQL injection protection
+          $name = 'UNIQUE KEY ' . self::prepareIdentifier($index_name);
         } elseif (str_starts_with($name_normalized, 'fulltext:')) {
           $index_name = substr($name, strlen('fulltext:'));
-          $name = 'FULLTEXT KEY ' . $index_name;
+          // Escape index name for SQL injection protection
+          $name = 'FULLTEXT KEY ' . self::prepareIdentifier($index_name);
         } else {
-          $name = 'KEY ' . $name;
+          // Escape index name for SQL injection protection
+          $name = 'KEY ' . self::prepareIdentifier($name);
         }
 
         // Support DESC/ASC tokens in index definitions (e.g., "created_at DESC")
@@ -1034,7 +1090,18 @@ class Db extends PDO
             $index_cols[count($index_cols) - 1] .= ' ' . $direction;
             continue;
           }
-          $index_cols[] = $field;
+          
+          // ✅ SECURITY FIX: Parse column name with optional prefix length
+          // Format: column_name or column_name(length)
+          if (preg_match('/^([a-zA-Z0-9_]+)\((\d+)\)$/', $field, $matches)) {
+            // Column with prefix length: query(255)
+            $col_name = $matches[1];
+            $prefix_length = $matches[2];
+            $index_cols[] = self::prepareIdentifier($col_name) . '(' . $prefix_length . ')';
+          } else {
+            // Regular column name: query
+            $index_cols[] = self::prepareIdentifier($field);
+          }
         }
 
         $row = '  ' . $name . ' (' . implode(', ', $index_cols) . ')';
@@ -1045,7 +1112,17 @@ class Db extends PDO
 
     if (isset($schema['foreign'])) {
       foreach ($schema['foreign'] as $name => $fields) {
-        $row = '  FOREIGN KEY ' . $name . ' (' . implode(', ', $fields['col']) . ') REFERENCES ' . (isset($prefix) && (!isset($fields['prefix']) || ($fields['prefix'] != 'false')) ? $prefix : '') . $fields['ref_table'] . '(' . implode(', ', $fields['ref_col']) . ')';
+        // Escape foreign key name for SQL injection protection
+        $escaped_fk_name = self::prepareIdentifier($name);
+        
+        // Escape column names in foreign key definition
+        $escaped_cols = array_map([self::class, 'prepareIdentifier'], $fields['col']);
+        $escaped_ref_cols = array_map([self::class, 'prepareIdentifier'], $fields['ref_col']);
+        
+        // Escape reference table name
+        $escaped_ref_table = self::prepareIdentifier($fields['ref_table']);
+        
+        $row = '  FOREIGN KEY ' . $escaped_fk_name . ' (' . implode(', ', $escaped_cols) . ') REFERENCES ' . (isset($prefix) && (!isset($fields['prefix']) || ($fields['prefix'] != 'false')) ? $prefix : '') . $escaped_ref_table . '(' . implode(', ', $escaped_ref_cols) . ')';
 
         if (isset($fields['on_update'])) {
           $row .= ' ON UPDATE ' . mb_strtoupper($fields['on_update']);

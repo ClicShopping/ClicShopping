@@ -14,6 +14,7 @@ use ClicShopping\OM\Registry;
 
 $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 $CLICSHOPPING_Antispam = Registry::get('Antispam');
+$CLICSHOPPING_Template = Registry::get('Template');
 
 if ($CLICSHOPPING_MessageStack->exists('Antispam')) {
   echo $CLICSHOPPING_MessageStack->get('Antispam');

@@ -26,6 +26,9 @@ class Upload
   protected array $_extensions = [];
   protected bool $_replace = false;
   protected array $_upload = [];
+  protected int $_maxFileSize = 10485760; // 10MB default
+  protected array $_dangerousExtensions = ['php', 'phtml', 'php3', 'php4', 'php5', 'php7', 'phps', 'pht', 'phar', 'exe', 'bat', 'cmd', 'com', 'sh', 'cgi', 'pl', 'jar', 'jsp', 'asp', 'aspx', 'htaccess', 'htpasswd'];
+  protected bool $_strictMimeValidation = true;
 
   /**
    * Constructor to initialize file handling with specified parameters.
@@ -62,9 +65,197 @@ class Upload
   }
 
   /**
+   * Validates file extension against allowed and dangerous extensions.
+   *
+   * @param string $filename The filename to validate
+   * @return bool Returns true if extension is valid, false otherwise
+   */
+  protected function validateExtension(string $filename): bool
+  {
+    $extension = mb_strtolower(substr($filename, strrpos($filename, '.') + 1));
+    
+    // Check against dangerous extensions
+    if (in_array($extension, $this->_dangerousExtensions)) {
+      return false;
+    }
+    
+    // If specific extensions are configured, check against them
+    if (!empty($this->_extensions)) {
+      return in_array($extension, $this->_extensions);
+    }
+    
+    return true;
+  }
+
+  /**
+   * Validates MIME type of uploaded file using finfo.
+   *
+   * @param string $filePath Path to the file to validate
+   * @return bool Returns true if MIME type is valid, false otherwise
+   */
+  protected function validateMimeType(string $filePath): bool
+  {
+    if (!$this->_strictMimeValidation) {
+      return true;
+    }
+
+    if (!function_exists('finfo_open')) {
+      // Fallback if finfo is not available
+      return true;
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $filePath);
+    finfo_close($finfo);
+
+    // Define allowed MIME types based on configured extensions
+    $allowedMimeTypes = [
+      // Images
+      'image/jpeg' => ['jpg', 'jpeg'],
+      'image/png' => ['png'],
+      'image/gif' => ['gif'],
+      'image/webp' => ['webp'],
+      'image/svg+xml' => ['svg'],
+      'image/bmp' => ['bmp'],
+      'image/tiff' => ['tif', 'tiff'],
+      
+      // Documents
+      'application/pdf' => ['pdf'],
+      'application/msword' => ['doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => ['docx'],
+      'application/vnd.ms-excel' => ['xls'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['xlsx'],
+      'application/vnd.ms-powerpoint' => ['ppt'],
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation' => ['pptx'],
+      
+      // Archives
+      'application/zip' => ['zip'],
+      'application/x-rar-compressed' => ['rar'],
+      'application/x-7z-compressed' => ['7z'],
+      'application/x-tar' => ['tar'],
+      'application/gzip' => ['gz'],
+      
+      // Text
+      'text/plain' => ['txt'],
+      'text/csv' => ['csv'],
+      'text/html' => ['html', 'htm'],
+      'text/css' => ['css'],
+      'application/json' => ['json'],
+      'application/xml' => ['xml'],
+      'text/xml' => ['xml'],
+      
+      // Video
+      'video/mp4' => ['mp4'],
+      'video/mpeg' => ['mpeg', 'mpg'],
+      'video/quicktime' => ['mov'],
+      'video/x-msvideo' => ['avi'],
+      'video/webm' => ['webm'],
+      
+      // Audio
+      'audio/mpeg' => ['mp3'],
+      'audio/wav' => ['wav'],
+      'audio/ogg' => ['ogg'],
+      'audio/webm' => ['webm'],
+    ];
+
+    // Check if detected MIME type matches expected extension
+    foreach ($allowedMimeTypes as $mime => $extensions) {
+      if ($mimeType === $mime) {
+        $fileExtension = $this->getExtension();
+        return in_array($fileExtension, $extensions);
+      }
+    }
+
+    // If MIME type not in whitelist, reject
+    return false;
+  }
+
+  /**
+   * Validates file magic bytes (file signature) for common file types.
+   *
+   * @param string $filePath Path to the file to validate
+   * @return bool Returns true if magic bytes are valid, false otherwise
+   */
+  protected function validateMagicBytes(string $filePath): bool
+  {
+    $handle = fopen($filePath, 'rb');
+    if (!$handle) {
+      return false;
+    }
+
+    $bytes = fread($handle, 16);
+    fclose($handle);
+
+    $extension = $this->getExtension();
+
+    // Define magic bytes for common file types
+    $magicBytes = [
+      'jpg' => ["\xFF\xD8\xFF"],
+      'jpeg' => ["\xFF\xD8\xFF"],
+      'png' => ["\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"],
+      'gif' => ["GIF87a", "GIF89a"],
+      'pdf' => ["%PDF"],
+      'zip' => ["PK\x03\x04", "PK\x05\x06", "PK\x07\x08"],
+      'webp' => ["RIFF"],
+      'bmp' => ["BM"],
+      'tif' => ["II\x2A\x00", "MM\x00\x2A"],
+      'tiff' => ["II\x2A\x00", "MM\x00\x2A"],
+    ];
+
+    // If extension has defined magic bytes, validate them
+    if (isset($magicBytes[$extension])) {
+      foreach ($magicBytes[$extension] as $magic) {
+        if (strpos($bytes, $magic) === 0) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // If no magic bytes defined for this extension, allow it
+    return true;
+  }
+
+  /**
+   * Sanitizes filename to prevent path traversal and other attacks.
+   *
+   * @param string $filename The filename to sanitize
+   * @return string Sanitized filename
+   */
+  protected function sanitizeFilename(string $filename): string
+  {
+    // Remove path components
+    $filename = basename($filename);
+    
+    // Remove null bytes
+    $filename = str_replace("\0", '', $filename);
+    
+    // Remove directory traversal attempts
+    $filename = str_replace(['../', '..\\', '../', '..\\'], '', $filename);
+    
+    // Remove special characters except alphanumeric, dots, dashes, underscores
+    $filename = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
+    
+    // Prevent double extensions (e.g., file.php.jpg)
+    $parts = explode('.', $filename);
+    if (count($parts) > 2) {
+      $extension = array_pop($parts);
+      $basename = implode('_', $parts);
+      $filename = $basename . '.' . $extension;
+    }
+    
+    // Ensure filename is not empty
+    if (empty($filename) || $filename === '.') {
+      $filename = 'file_' . bin2hex(random_bytes(8));
+    }
+    
+    return $filename;
+  }
+
+  /**
    * Validates and processes file upload requests using either PUT or POST methods.
    * Checks if the uploaded file meets configured requirements such as extensions,
-   * and ensures it is saved to a writable destination directory.
+   * MIME types, magic bytes, and ensures it is saved to a writable destination directory.
    *
    * @return bool Returns true if the file upload is successfully validated and processed;
    *              otherwise, false.
@@ -108,23 +299,56 @@ class Upload
     }
 
     if (!empty($this->_upload)) {
-      if (!empty($this->_extensions)) {
-        if (!in_array(mb_strtolower(substr($this->_upload['name'], strrpos($this->_upload['name'], '.') + 1)), $this->_extensions)) {
-          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_filetype_not_allowed') . implode(', ', $this->_extensions), 'warning');
-
-          return false;
-        }
+      // Sanitize filename
+      $this->_upload['name'] = $this->sanitizeFilename($this->_upload['name']);
+      
+      // Validate file size
+      if ($this->_upload['size'] > $this->_maxFileSize) {
+        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_file_too_large') . ' (Max: ' . ($this->_maxFileSize / 1048576) . 'MB)', 'warning');
+        return false;
+      }
+      
+      // Validate file size is not zero
+      if ($this->_upload['size'] <= 0) {
+        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_file_empty'), 'warning');
+        return false;
       }
 
+      // Validate extension
+      if (!$this->validateExtension($this->_upload['name'])) {
+        $message = CLICSHOPPING::getDef('error_filetype_not_allowed');
+        if (!empty($this->_extensions)) {
+          $message .= ' ' . implode(', ', $this->_extensions);
+        }
+        $CLICSHOPPING_MessageStack->add($message, 'warning');
+        return false;
+      }
+
+      // Get file path for content validation
+      $filePath = ($this->_upload['type'] == 'PUT') 
+        ? CLICSHOPPING::BASE_DIR . 'Work/Temp/' . $this->_upload['temp_filename']
+        : $this->_upload['tmp_name'];
+
+      // Validate MIME type
+      if (!$this->validateMimeType($filePath)) {
+        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_file_mime_type_invalid'), 'warning');
+        return false;
+      }
+
+      // Validate magic bytes for known file types
+      if (!$this->validateMagicBytes($filePath)) {
+        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_file_signature_invalid'), 'warning');
+        return false;
+      }
+
+      // Validate destination directory
       if (!is_dir($this->_destination)) {
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_catalog_image_directory_does_not_exist') . $this->_destination, 'warning');
-
         return false;
       }
 
       if (!FileSystem::isWritable($this->_destination)) {
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getConfig('error_catalog_image_directory_not_writeable') . $this->_destination, 'warning');
-
         return false;
       }
 
@@ -212,6 +436,40 @@ class Upload
   public function setReplace(bool $bool)
   {
     $this->_replace = ($bool === true);
+  }
+
+  /**
+   * Sets the maximum file size allowed for upload.
+   *
+   * @param int $bytes Maximum file size in bytes
+   * @return void
+   */
+  public function setMaxFileSize(int $bytes)
+  {
+    $this->_maxFileSize = $bytes;
+  }
+
+  /**
+   * Enables or disables strict MIME type validation.
+   *
+   * @param bool $strict Whether to enable strict MIME validation
+   * @return void
+   */
+  public function setStrictMimeValidation(bool $strict)
+  {
+    $this->_strictMimeValidation = $strict;
+  }
+
+  /**
+   * Adds dangerous extensions to the blacklist.
+   *
+   * @param array $extensions Array of extensions to add to blacklist
+   * @return void
+   */
+  public function addDangerousExtensions(array $extensions)
+  {
+    $extensions = array_map('mb_strtolower', $extensions);
+    $this->_dangerousExtensions = array_merge($this->_dangerousExtensions, $extensions);
   }
 
   /**
