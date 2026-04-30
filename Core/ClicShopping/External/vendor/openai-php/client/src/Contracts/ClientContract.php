@@ -7,6 +7,8 @@ use OpenAI\Contracts\Resources\AudioContract;
 use OpenAI\Contracts\Resources\BatchesContract;
 use OpenAI\Contracts\Resources\ChatContract;
 use OpenAI\Contracts\Resources\CompletionsContract;
+use OpenAI\Contracts\Resources\ContainersContract;
+use OpenAI\Contracts\Resources\ConversationsContract;
 use OpenAI\Contracts\Resources\EditsContract;
 use OpenAI\Contracts\Resources\EmbeddingsContract;
 use OpenAI\Contracts\Resources\FilesContract;
@@ -38,6 +40,13 @@ interface ClientContract
     public function responses(): ResponsesContract;
 
     /**
+     * Create and manage conversations to store and retrieve conversation state across Response API calls.
+     *
+     * @see https://platform.openai.com/docs/api-reference/conversations
+     */
+    public function conversations(): ConversationsContract;
+
+    /**
      * Communicate with a GPT-4o class model in real time using WebRTC or WebSockets. Supports text and audio inputs and outputs, along with audio transcriptions.
      *
      * @see https://platform.openai.com/docs/api-reference/realtime-sessions
@@ -50,6 +59,13 @@ interface ClientContract
      * @see https://platform.openai.com/docs/api-reference/chat
      */
     public function chat(): ChatContract;
+
+    /**
+     * Create and manage containers for use with the Code Interpreter tool.
+     *
+     * @see https://platform.openai.com/docs/api-reference/containers
+     */
+    public function containers(): ContainersContract;
 
     /**
      * Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
@@ -122,6 +138,8 @@ interface ClientContract
      * Build assistants that can call models and use tools to perform tasks.
      *
      * @see https://platform.openai.com/docs/api-reference/assistants
+     * @deprecated OpenAI has deprecated this endpoint and will stop working by August 26, 2026.
+     * https://platform.openai.com/docs/guides/migrate-to-responses#assistants-api
      */
     public function assistants(): AssistantsContract;
 
@@ -129,6 +147,8 @@ interface ClientContract
      * Create threads that assistants can interact with.
      *
      * @see https://platform.openai.com/docs/api-reference/threads
+     * @deprecated OpenAI has deprecated this endpoint and will stop working by August 26, 2026.
+     * https://platform.openai.com/docs/guides/migrate-to-responses#assistants-api
      */
     public function threads(): ThreadsContract;
 

@@ -20,6 +20,11 @@ final class ResponsesTestResource implements ResponsesContract
         return Responses::class;
     }
 
+    public function conversations(): ConversationsTestResource
+    {
+        return new ConversationsTestResource($this->fake);
+    }
+
     public function create(array $parameters): CreateResponse
     {
         return $this->record(__FUNCTION__, func_get_args());
@@ -31,6 +36,11 @@ final class ResponsesTestResource implements ResponsesContract
     }
 
     public function retrieve(string $id): RetrieveResponse
+    {
+        return $this->record(__FUNCTION__, func_get_args());
+    }
+
+    public function retrieveStreamed(string $id, array $parameters = []): StreamResponse
     {
         return $this->record(__FUNCTION__, func_get_args());
     }

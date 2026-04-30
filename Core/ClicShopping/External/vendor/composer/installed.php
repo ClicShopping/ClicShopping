@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'a262438a7bffda3a70b249cb8775949fd630df4f',
+        'reference' => 'f29ba0e1bbf692391a910130f10916cd14e69cea',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'a262438a7bffda3a70b249cb8775949fd630df4f',
+            'reference' => 'f29ba0e1bbf692391a910130f10916cd14e69cea',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -173,9 +173,9 @@
             'dev_requirement' => false,
         ),
         'openai-php/client' => array(
-            'pretty_version' => 'v0.16.1',
-            'version' => '0.16.1.0',
-            'reference' => '7a59e4d896d83f8c923e0b3a5ebae0a5cddad2d6',
+            'pretty_version' => 'v0.19.2',
+            'version' => '0.19.2.0',
+            'reference' => '12e3513527e22d5657f4f9809796f8fe254fd0a9',
             'type' => 'library',
             'install_path' => __DIR__ . '/../openai-php/client',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '08cd07f04fb07fb4d316e956801d57b700cf7096',
+            'reference' => '5f6b924eae73ca732e81045a64e3e9298639e172',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -550,9 +550,9 @@
             'dev_requirement' => false,
         ),
         'theodo-group/llphant' => array(
-            'pretty_version' => '0.11.18',
-            'version' => '0.11.18.0',
-            'reference' => '10d7d50d77ec4fdf070c4d752a27ca875b04ff2e',
+            'pretty_version' => '0.11.19',
+            'version' => '0.11.19.0',
+            'reference' => 'e737181a2e3ef7eac8a1ef561179f03f81539c29',
             'type' => 'library',
             'install_path' => __DIR__ . '/../theodo-group/llphant',
             'aliases' => array(),

@@ -11,6 +11,7 @@ use OpenAI\Contracts\TransporterContract;
 use OpenAI\Enums\Transporter\ContentType;
 use OpenAI\Exceptions\ErrorException;
 use OpenAI\Exceptions\RateLimitException;
+use OpenAI\Exceptions\ServerException;
 use OpenAI\Exceptions\TransporterException;
 use OpenAI\Exceptions\UnserializableResponse;
 use OpenAI\ValueObjects\Transporter\AdaptableResponse;
@@ -34,7 +35,7 @@ final class HttpTransporter implements TransporterContract
     public function __construct(
         private readonly ClientInterface $client,
         private readonly BaseUri $baseUri,
-        private readonly Headers $headers,
+        private Headers $headers,
         private readonly QueryParams $queryParams,
         private readonly Closure $streamHandler,
     ) {
@@ -44,15 +45,26 @@ final class HttpTransporter implements TransporterContract
     /**
      * {@inheritDoc}
      */
+    public function addHeader(string $name, string $value): self
+    {
+        $this->headers = $this->headers->withCustomHeader($name, $value);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function requestObject(Payload $payload): Response
     {
         $request = $payload->toRequest($this->baseUri, $this->headers, $this->queryParams);
 
-        $response = $this->sendRequest(fn (): \Psr\Http\Message\ResponseInterface => $this->client->sendRequest($request));
+        $response = $this->sendRequest(fn (): ResponseInterface => $this->client->sendRequest($request));
 
         $contents = (string) $response->getBody();
 
         $this->throwIfRateLimit($response);
+        $this->throwIfServerError($response);
         $this->throwIfJsonError($response, $contents);
 
         try {
@@ -72,16 +84,17 @@ final class HttpTransporter implements TransporterContract
     {
         $request = $payload->toRequest($this->baseUri, $this->headers, $this->queryParams);
 
-        $response = $this->sendRequest(fn (): \Psr\Http\Message\ResponseInterface => $this->client->sendRequest($request));
+        $response = $this->sendRequest(fn (): ResponseInterface => $this->client->sendRequest($request));
 
         $contents = (string) $response->getBody();
+
+        $this->throwIfRateLimit($response);
+        $this->throwIfServerError($response);
+        $this->throwIfJsonError($response, $contents);
 
         if (str_contains($response->getHeaderLine('Content-Type'), ContentType::TEXT_PLAIN->value)) {
             return AdaptableResponse::from($contents, $response->getHeaders());
         }
-
-        $this->throwIfRateLimit($response);
-        $this->throwIfJsonError($response, $contents);
 
         try {
             /** @var array{error?: array{message: string, type: string, code: string}} $data */
@@ -100,11 +113,12 @@ final class HttpTransporter implements TransporterContract
     {
         $request = $payload->toRequest($this->baseUri, $this->headers, $this->queryParams);
 
-        $response = $this->sendRequest(fn (): \Psr\Http\Message\ResponseInterface => $this->client->sendRequest($request));
+        $response = $this->sendRequest(fn (): ResponseInterface => $this->client->sendRequest($request));
 
         $contents = (string) $response->getBody();
 
         $this->throwIfRateLimit($response);
+        $this->throwIfServerError($response);
         $this->throwIfJsonError($response, $contents);
 
         return $contents;
@@ -120,6 +134,7 @@ final class HttpTransporter implements TransporterContract
         $response = $this->sendRequest(fn () => ($this->streamHandler)($request));
 
         $this->throwIfRateLimit($response);
+        $this->throwIfServerError($response);
         $this->throwIfJsonError($response, $response);
 
         return $response;
@@ -147,13 +162,18 @@ final class HttpTransporter implements TransporterContract
         throw new RateLimitException($response);
     }
 
-    private function throwIfJsonError(ResponseInterface $response, string|ResponseInterface $contents): void
+    private function throwIfServerError(ResponseInterface $response): void
     {
-        if ($response->getStatusCode() < 400) {
+        if ($response->getStatusCode() < 500) {
             return;
         }
 
-        if (! str_contains($response->getHeaderLine('Content-Type'), ContentType::JSON->value)) {
+        throw new ServerException($response);
+    }
+
+    private function throwIfJsonError(ResponseInterface $response, string|ResponseInterface $contents): void
+    {
+        if ($response->getStatusCode() < 400) {
             return;
         }
 
@@ -162,13 +182,22 @@ final class HttpTransporter implements TransporterContract
         }
 
         try {
-            /** @var array{error?: array{message: string|array<int, string>, type: string, code: string}} $data */
+            /** @var array{error?: string|array{message: string|array<int, string>, type: string, code: string}}|array<int, array{error?: string|array{message: string|array<int, string>, type: string, code: string}}> $data */
             $data = json_decode($contents, true, flags: JSON_THROW_ON_ERROR);
 
             if (isset($data['error'])) {
                 throw new ErrorException($data['error'], $response);
             }
+
+            if (isset($data[0]['error'])) {
+                throw new ErrorException($data[0]['error'], $response);
+            }
         } catch (JsonException $jsonException) {
+            // Due to some JSON coming back from OpenAI as text/plain, we need to avoid an early return from purely content-type checks.
+            if (! str_contains($response->getHeaderLine('Content-Type'), ContentType::JSON->value)) {
+                return;
+            }
+
             throw new UnserializableResponse($jsonException, $response);
         }
     }
