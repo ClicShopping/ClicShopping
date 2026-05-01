@@ -361,7 +361,7 @@ class MariaDb
       $CLICSHOPPING_Db->exec('CREATE VECTOR INDEX embedding_index ON :table_products_cockpit_ai_embedding  (embedding)');
     }
 
-    // Create products_seo_embedding table
+    // Create products_cockpit_ai_tracking_impressions_summary table view
     $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_products_cockpit_ai_tracking_impressions_summary"');
 
     if ($Qcheck->fetch() === false) {

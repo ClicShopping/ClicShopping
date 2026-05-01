@@ -784,7 +784,7 @@ input:checked + .slider:before {
 .list-group-item-slider {
   position: relative;
   display: block;
-  padding: .75rem 1.25rem;
+  padding: .75rem 0.9rem;
   margin-bottom: -1px;
   border: none;
 }

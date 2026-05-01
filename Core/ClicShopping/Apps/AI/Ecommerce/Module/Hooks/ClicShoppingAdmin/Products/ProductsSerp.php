@@ -484,7 +484,21 @@
     btn.disabled  = true;
     btn.innerHTML = \'<span class="spinner-border spinner-border-sm me-1" role="status"></span>\' + ' . json_encode($loadingText) . ';
 
+    // Progress indicator for long-running optimization
+    var progressInterval;
+    var dots = 0;
+    var startTime = Date.now();
+    
+    progressInterval = setInterval(function() {
+      dots = (dots + 1) % 4;
+      var dotStr = ".".repeat(dots);
+      var elapsed = Math.floor((Date.now() - startTime) / 1000);
+      btn.innerHTML = \'<span class="spinner-border spinner-border-sm me-1" role="status"></span>\' 
+                    + ' . json_encode($loadingText) . ' + dotStr + " (" + elapsed + "s)";
+    }, 1000);
+
     function showSeoError(msg) {
+      if (progressInterval) clearInterval(progressInterval);
       var modalEl = document.getElementById("seoErrorModal");
       document.getElementById("seoErrorModalBody").innerHTML = "<p>" + msg + "</p>";
       bootstrap.Modal.getOrCreateInstance(modalEl).show();
@@ -498,9 +512,11 @@
       url: formURL,
       type: "POST",
       data: postData,
-      dataType: "json"
+      dataType: "json",
+      timeout: 300000  // 5 minutes timeout for long-running SEO optimization
     }).done(function (payload) {
     
+      if (progressInterval) clearInterval(progressInterval);
       btn.disabled  = false;
       btn.innerHTML = originalHtml;
     
@@ -509,31 +525,49 @@
         return;
       }
     
-      if (payload && (payload.success === true || payload.success === 1 || payload.success === "true")) {
+      // Check success with multiple type checks
+      var isSuccess = (payload.success === true || payload.success === 1 || payload.success === "true" || payload.success === "1");
     
-        var base = window.location.href.replace(/#.*$/, "");
+      if (isSuccess) {
     
-        if (languageId && base.indexOf("language_id=") !== -1) {
-          base = base.replace(/language_id=\\d+/, "language_id=" + languageId);
-        } else if (languageId && base.indexOf("language_id=") === -1) {
-          base = base + (base.indexOf("?") !== -1 ? "&" : "?") + "language_id=" + languageId;
-        }
+        // Show success message
+        btn.innerHTML = \'<i class="bi bi-check-circle me-1"></i>Success! Reloading...\';
+        btn.classList.remove("btn-success");
+        btn.classList.add("btn-success", "opacity-75");
     
-        window.location.replace(base + "#section_SEOReportApp_content");
+        // Reload page after short delay to show success message
+        setTimeout(function() {
+          var base = window.location.href.replace(/#.*$/, "");
+    
+          if (languageId && base.indexOf("language_id=") !== -1) {
+            base = base.replace(/language_id=\\d+/, "language_id=" + languageId);
+          } else if (languageId && base.indexOf("language_id=") === -1) {
+            base = base + (base.indexOf("?") !== -1 ? "&" : "?") + "language_id=" + languageId;
+          }
+    
+          window.location.replace(base + "#section_SEOReportApp_content");
+        }, 800);
     
       } else {
     
-        var msg = payload.error || "Unknown error";
+        var msg = payload.error || payload.message || "Unknown error";
         showSeoError(msg);
     
       }
     
     }).fail(function (xhr) {
     
+      if (progressInterval) clearInterval(progressInterval);
       btn.disabled  = false;
       btn.innerHTML = originalHtml;
     
-      showSeoError("Request failed (HTTP " + xhr.status + ")");
+      var errorMsg = "Request failed (HTTP " + xhr.status + ")";
+      if (xhr.status === 0) {
+        errorMsg = "Request timeout or network error. The optimization may still be running on the server.";
+      } else if (xhr.status === 504 || xhr.status === 502) {
+        errorMsg = "Gateway timeout. The optimization is taking longer than expected. Please refresh the page in a moment to see if changes were applied.";
+      }
+      showSeoError(errorMsg);
     
     });
   });

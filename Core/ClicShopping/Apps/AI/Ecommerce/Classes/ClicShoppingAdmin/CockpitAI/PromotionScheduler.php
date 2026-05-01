@@ -108,7 +108,7 @@
         $coefficient = 1.0 - (($ratio - 1.0) * 0.25); // 1.0 → 0.75
       } elseif ($ratio >= 0.5) {
         // Trafic un peu faible → paliers légèrement accélérés
-        $coefficient = 1.0 + ((1.0 - $ratio) * 0.5); // 1.0 → 1.25
+        $coefficient = 1.0 + ((1.0 - $ratio) * 0.5); // 1.0 →0.9
       } else {
         // Trafic très faible → paliers fortement accélérés
         $coefficient = 2.0;

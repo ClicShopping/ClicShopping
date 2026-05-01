@@ -19,7 +19,6 @@
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\FeedbackCollector;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\RuleAdjuster;
   use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
-  use ClicShopping\AI\Agents\Orchestrator\OrchestratorAgent;
   
 /**
  * Process — CockpitAI Daily Analysis CronJob
@@ -71,7 +70,6 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
     public mixed $app;
     private mixed $db;
     private bool $debug;
-    private mixed $orchestrator;
 
     /**
      * Initializes the cron job process
@@ -83,8 +81,6 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
       }
       $this->app = Registry::get('Ecommerce');
       $this->db = Registry::get('Db');
-
-      $this->orchestrator = New OrchestratorAgent();
 
       $this->debug = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG') && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True';
     }
@@ -108,8 +104,6 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
     if (!Gpt::checkGptStatus()) {
       return false;
     }
-
-    $this->orchestrator->checkStatus();
 
     $this->cronJob();
   }

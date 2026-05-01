@@ -555,6 +555,32 @@ CRITICAL EXTRACTION RULE:
 - Do NOT rephrase, summarize, or add any information
 - If context does not contain answer, respond: "I don't have that information in my knowledge base."
 
+DOCUMENT STRUCTURE INFERENCE:
+When user asks for "article 3", "section 5", "paragraph 2", "chapter 4", etc. in a document:
+1. ANALYZE the document structure in the context (titles, headings, sections)
+2. INFER implicit numbering based on sequential order of sections/titles
+3. MAP the requested number to the corresponding section
+
+Examples:
+- Document with sections: OBJECT, PRODUCT, ORDER, PAYMENT, SHIPPING...
+  → "article 3" = 3rd section = ORDER
+  → "article 5" = 5th section = SHIPPING
+  
+- Document with chapters: Introduction, Background, Methods, Results, Conclusion...
+  → "chapter 3" = 3rd chapter = Methods
+  → "section 4" = 4th section = Results
+
+- Document with numbered titles: "1. Overview", "2. Features", "3. Installation"...
+  → "section 2" = Features (already numbered)
+  → "paragraph 3" = Installation
+
+RULES:
+- Count sections/titles in sequential order (top to bottom)
+- Skip preambles, headers, footers (focus on main content sections)
+- If document already has explicit numbering, use it directly
+- If no clear structure, explain that the document doesn't have numbered sections
+- Be flexible: "article", "section", "paragraph", "chapter" all refer to document parts
+
 Context (available sources):
 {{context}}
 

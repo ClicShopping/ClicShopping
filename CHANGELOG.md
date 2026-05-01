@@ -3,6 +3,8 @@ version4.28
 - php9 compatibility improvement
 - libraries updated
 - AI fix and improvement
+- AI SEO improvement analysis
+- AI Orchestrator refactored and include some improvment
 - Security fix
 
 ---------------

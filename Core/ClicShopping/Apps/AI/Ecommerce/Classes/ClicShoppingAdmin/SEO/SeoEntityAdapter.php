@@ -201,6 +201,38 @@ class SeoEntityAdapter
       $sqlData[$column] = $value;
     }
 
+    // Handle FAQ: append to description as structured HTML
+    if (isset($changes['faq']) && is_array($changes['faq']) && !empty($changes['faq'])) {
+      $faqHtml = $this->buildFaqHtml($changes['faq']);
+      
+      // If description is being updated, append FAQ to it
+      if (isset($sqlData[$fieldMap['description']])) {
+        $sqlData[$fieldMap['description']] .= "\n\n" . $faqHtml;
+      } else {
+        // Otherwise, load current description and append FAQ
+        $currentData = $this->getCurrentData($entityId, $languageId);
+        if ($currentData && isset($currentData['description'])) {
+          $sqlData[$fieldMap['description']] = $currentData['description'] . "\n\n" . $faqHtml;
+        }
+      }
+    }
+
+    // Handle H2 headings: append to description as structured HTML
+    if (isset($changes['h2']) && is_array($changes['h2']) && !empty($changes['h2'])) {
+      $h2Html = $this->buildH2Html($changes['h2']);
+      
+      // If description is being updated, append H2 structure to it
+      if (isset($sqlData[$fieldMap['description']])) {
+        $sqlData[$fieldMap['description']] .= "\n\n" . $h2Html;
+      } else {
+        // Otherwise, load current description and append H2
+        $currentData = $this->getCurrentData($entityId, $languageId);
+        if ($currentData && isset($currentData['description'])) {
+          $sqlData[$fieldMap['description']] = $currentData['description'] . "\n\n" . $h2Html;
+        }
+      }
+    }
+
     if (empty($sqlData)) {
       return false;
     }
@@ -488,5 +520,83 @@ class SeoEntityAdapter
     }
 
     return $context;
+  }
+
+  /**
+   * Build FAQ HTML from FAQ array
+   *
+   * Converts FAQ array structure to semantic HTML with Schema.org FAQPage markup
+   *
+   * @param array $faq FAQ array with 'q' and 'a' keys
+   * @return string HTML markup for FAQ section
+   */
+  private function buildFaqHtml(array $faq): string
+  {
+    if (empty($faq)) {
+      return '';
+    }
+
+    $html = '<div class="seo-faq" itemscope itemtype="https://schema.org/FAQPage">' . "\n";
+    $html .= '<h2>Questions Fréquentes (FAQ)</h2>' . "\n";
+
+    foreach ($faq as $item) {
+      if (!isset($item['q']) || !isset($item['a'])) {
+        continue;
+      }
+
+      $question = htmlspecialchars($item['q'], ENT_QUOTES, 'UTF-8');
+      $answer = htmlspecialchars($item['a'], ENT_QUOTES, 'UTF-8');
+
+      $html .= '<div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">' . "\n";
+      $html .= '  <h3 itemprop="name">' . $question . '</h3>' . "\n";
+      $html .= '  <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">' . "\n";
+      $html .= '    <p itemprop="text">' . $answer . '</p>' . "\n";
+      $html .= '  </div>' . "\n";
+      $html .= '</div>' . "\n";
+    }
+
+    $html .= '</div>';
+
+    return $html;
+  }
+
+  /**
+   * Build H2 structure HTML from H2 array
+   *
+   * Converts H2 heading array to semantic HTML with proper heading hierarchy
+   *
+   * @param array $h2 H2 array with 'level', 'text', and 'anchor' keys
+   * @return string HTML markup for heading structure
+   */
+  private function buildH2Html(array $h2): string
+  {
+    if (empty($h2)) {
+      return '';
+    }
+
+    $html = '<div class="seo-content-structure">' . "\n";
+
+    foreach ($h2 as $heading) {
+      if (!isset($heading['level']) || !isset($heading['text'])) {
+        continue;
+      }
+
+      $level = (int)$heading['level'];
+      $text = htmlspecialchars($heading['text'], ENT_QUOTES, 'UTF-8');
+      $anchor = isset($heading['anchor']) ? htmlspecialchars($heading['anchor'], ENT_QUOTES, 'UTF-8') : '';
+
+      // Ensure level is between 2 and 6
+      $level = max(2, min(6, $level));
+
+      if ($anchor) {
+        $html .= '<h' . $level . ' id="' . $anchor . '">' . $text . '</h' . $level . '>' . "\n";
+      } else {
+        $html .= '<h' . $level . '>' . $text . '</h' . $level . '>' . "\n";
+      }
+    }
+
+    $html .= '</div>';
+
+    return $html;
   }
 }

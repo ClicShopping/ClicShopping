@@ -305,10 +305,15 @@ class SeoCodeValidationAgent implements ActorAgentInterface
   private function validateQuality(array $changes, string $entityType, string $languageCode): array
   {
     $content = $this->buildValidationContent($changes, $languageCode);
+    $primaryKeyword = (string)($changes['primary_keyword'] ?? '');
+    $entityName = (string)($changes['summary'] ?? $changes['meta_title'] ?? '');
 
     $prompt = $this->prompts->getQualityPrompt([
       'entity_type' => $entityType,
+      'entity_name' => $entityName,
       'content' => $content,
+      'primary_keyword' => $primaryKeyword,
+      'topics' => '', // Could be enhanced later
     ]);
 
     return $this->llm->generateStructuredResponse($prompt, [
@@ -327,9 +332,7 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     if (!empty($changes['meta_title'])) {
       $parts[] = 'Meta Title: ' . $changes['meta_title'];
     }
-    if (!empty($changes['primary_keyword'])) {
-      $parts[] = 'Primary Keyword: ' . $changes['primary_keyword'];
-    }
+    // Note: primary_keyword is now passed as a separate variable to prompts, not in content
     if (!empty($changes['meta_description'])) {
       $parts[] = 'Meta Description: ' . $changes['meta_description'];
     }
@@ -383,10 +386,14 @@ class SeoCodeValidationAgent implements ActorAgentInterface
   private function detectSpam(array $changes, string $entityType, string $languageCode): array
   {
     $content = $this->buildValidationContent($changes, $languageCode);
+    $primaryKeyword = (string)($changes['primary_keyword'] ?? '');
+    $entityName = (string)($changes['summary'] ?? $changes['meta_title'] ?? '');
 
     $prompt = $this->prompts->getSpamPrompt([
       'entity_type' => $entityType,
+      'entity_name' => $entityName,
       'content' => $content,
+      'primary_keyword' => $primaryKeyword,
     ]);
 
     return $this->llm->generateStructuredResponse($prompt, [
@@ -401,10 +408,14 @@ class SeoCodeValidationAgent implements ActorAgentInterface
   private function checkCoherence(array $changes, string $entityType, string $languageCode): array
   {
     $content = $this->buildValidationContent($changes, $languageCode);
+    $entityName = (string)($changes['summary'] ?? $changes['meta_title'] ?? '');
+    $searchIntent = 'transactional'; // Default for products/categories
 
     $prompt = $this->prompts->getCoherencePrompt([
       'entity_type' => $entityType,
+      'entity_name' => $entityName,
       'content' => $content,
+      'search_intent' => $searchIntent,
     ]);
 
     return $this->llm->generateStructuredResponse($prompt, [

@@ -151,7 +151,9 @@ flush();
 while (true) {
   try {
     // Simulate random failure before computing data
-    if ($sim_fail_rate > 0 && mt_rand(0, mt_getrandmax()) / mt_getrandmax() < $sim_fail_rate) {
+    $threshold = (int) ($sim_fail_rate * 1000000);
+
+    if ($sim_fail_rate > 0 && random_int(1, 1000000) <= $threshold) {
       throw new \Exception('Simulated failure');
     }
 
@@ -174,11 +176,14 @@ while (true) {
     }
 
     // Optionally force a random connection drop to test auto-reconnect
-    if ($sim_drop && (mt_rand(1, 100) <= 5)) { // ~5% chance per tick
-      // Flush a final event then terminate the connection
+    if (!empty($sim_drop) && random_int(1, 100) <= 5) {
       echo "event: error\n";
       echo "data: {\"error\":\"Simulated connection drop\"}\n\n";
-      ob_flush();
+
+      if (ob_get_level() > 0) {
+        ob_flush();
+      }
+
       flush();
       exit();
     }

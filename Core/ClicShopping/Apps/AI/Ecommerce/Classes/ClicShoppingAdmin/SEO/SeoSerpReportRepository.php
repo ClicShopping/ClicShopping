@@ -59,6 +59,8 @@
      */
     public function insert(array $report): int
     {
+      $now = date('Y-m-d H:i:s');
+      
       $data = [
         'entity_type'      => $report['entity_type']      ?? '',
         'entity_id'        => (int)($report['entity_id']  ?? 0),
@@ -78,6 +80,9 @@
         'triggered_by'     => $report['triggered_by']      ?? '',
         // T6.4 — pipeline metrics (stored as JSON column)
         'pipeline_metrics' => $this->json($report['pipeline_metrics'] ?? []),
+        // Fix: Add required timestamp fields
+        'created_at'       => $now,
+        'updated_at'       => $now,
       ];
 
       $this->db->save('seo_serp_reports', $data);

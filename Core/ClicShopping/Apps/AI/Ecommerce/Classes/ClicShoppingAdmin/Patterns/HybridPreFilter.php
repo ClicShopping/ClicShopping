@@ -59,7 +59,9 @@ class HybridPreFilter
    * **E-COMMERCE SPECIFIC KEYWORDS**:
    * - Analytics: price, stock, revenue, sales, count, how many
    * - Semantic: policy, shipping, payment, delivery, warranty, guarantee, return
-   * - Web search: trends, news, latest, recent, competitors
+   * - Web search platforms: amazon, ebay, google, alibaba, aliexpress, etsy
+   * - Web search actions: compare with, search online, find on, check on, price on
+   * - Web search indicators: trends, news, latest, recent, competitors
    *
    * Checks for:
    * 1. Conjunctions (and, also, or)
@@ -132,6 +134,22 @@ class HybridPreFilter
     ];
     
     $webSearchKeywords = [
+      // E-commerce platforms (external marketplaces)
+      'amazon',       // E-commerce platform
+      'ebay',         // E-commerce platform
+      'google',       // Search engine / shopping
+      'alibaba',      // E-commerce platform
+      'aliexpress',   // E-commerce platform
+      'etsy',         // E-commerce platform
+      
+      // Web search actions (English)
+      'compare with',
+      'search online',
+      'find on',
+      'check on',
+      'price on',
+      
+      // General web search indicators
       'trends',
       'news',
       'latest',

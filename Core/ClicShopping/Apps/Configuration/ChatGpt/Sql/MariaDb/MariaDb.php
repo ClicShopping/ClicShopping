@@ -178,9 +178,9 @@ class MariaDb
         entity_id int(11) NULL DEFAULT 0 COMMENT 'Entity ID (0 = no specific entity, NULL = unknown)',
         entity_type VARCHAR(50) NULL COMMENT 'Type of entity (product, category, page, etc.)',
         language_id int(11) NOT NULL COMMENT 'Language identifier for the correction pattern',
-        VECTOR KEY (embedding),
         PRIMARY KEY (id),
         UNIQUE KEY id (id),
+        VECTOR INDEX embedding_index (embedding),
         KEY idx_entity_id (entity_id),
         KEY idx_language_id (language_id),
         KEY idx_user_id (metadata(100)),
@@ -216,10 +216,10 @@ class MariaDb
           user_id VARCHAR(255) DEFAULT NULL COMMENT 'User ID for fast filtering',
           interaction_id VARCHAR(255) DEFAULT NULL COMMENT 'Interaction ID to prevent duplicates',
           metadata JSON NOT NULL DEFAULT '{}' COMMENT 'Additional metadata in JSON format',
-          created_at DATETIME DEFAULT NULL COMMENT 'Creation timestamp',
-          VECTOR KEY (embedding),
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
           PRIMARY KEY (id),
           UNIQUE KEY id (id),
+          VECTOR INDEX embedding_index (embedding),
           KEY idx_user_id (user_id),
           KEY idx_interaction_id (interaction_id),
           KEY idx_language_id (language_id),
@@ -270,6 +270,8 @@ class MariaDb
         ADD KEY `idx_language_quality` (`language_id`, `quality_score`);
 
       ALTER TABLE :table_rag_web_cache_embedding MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+      
+      CREATE VECTOR INDEX embedding_index ON :table_rag_web_cache_embedding (embedding);
       EOD;
 
       $CLICSHOPPING_Db->exec($sql);

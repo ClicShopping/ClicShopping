@@ -8,7 +8,6 @@
  * @copyright 2008 - https://www.clicshopping.org
  * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
  * @Licence GPL 2 & MIT
- * @date 2025-12-02
  */
 
 use ClicShopping\OM\CLICSHOPPING;

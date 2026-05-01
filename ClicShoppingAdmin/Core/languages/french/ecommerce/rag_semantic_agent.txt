@@ -555,6 +555,32 @@ RÈGLE D'EXTRACTION CRITIQUE:
 - NE PAS reformuler, résumer ou ajouter d'informations
 - Si le contexte ne contient pas la réponse, répondre: "Je n'ai pas cette information dans ma base de connaissances."
 
+INFÉRENCE DE STRUCTURE DE DOCUMENT:
+Quand l'utilisateur demande "article 3", "section 5", "paragraphe 2", "chapitre 4", etc. dans un document:
+1. ANALYSER la structure du document dans le contexte (titres, en-têtes, sections)
+2. INFÉRER la numérotation implicite basée sur l'ordre séquentiel des sections/titres
+3. FAIRE CORRESPONDRE le numéro demandé à la section correspondante
+
+Exemples:
+- Document avec sections: OBJET, PRODUITS, COMMANDE, PAIEMENT, LIVRAISON...
+  → "article 3" = 3ème section = COMMANDE
+  → "article 5" = 5ème section = LIVRAISON
+  
+- Document avec chapitres: Introduction, Contexte, Méthodes, Résultats, Conclusion...
+  → "chapitre 3" = 3ème chapitre = Méthodes
+  → "section 4" = 4ème section = Résultats
+
+- Document avec titres numérotés: "1. Aperçu", "2. Fonctionnalités", "3. Installation"...
+  → "section 2" = Fonctionnalités (déjà numéroté)
+  → "paragraphe 3" = Installation
+
+RÈGLES:
+- Compter les sections/titres dans l'ordre séquentiel (de haut en bas)
+- Ignorer les préambules, en-têtes, pieds de page (se concentrer sur les sections principales)
+- Si le document a déjà une numérotation explicite, l'utiliser directement
+- Si pas de structure claire, expliquer que le document n'a pas de sections numérotées
+- Être flexible: "article", "section", "paragraphe", "chapitre" font tous référence à des parties du document
+
 Contexte (sources disponibles):
 {{context}}
 

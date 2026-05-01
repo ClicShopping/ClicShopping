@@ -15,6 +15,10 @@
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoAgenticPipeline;
 
+  // Increase PHP execution time for long-running SEO optimization
+  set_time_limit(300); // 5 minutes
+  ini_set('max_execution_time', '300');
+
   define('CLICSHOPPING_BASE_DIR', realpath(__DIR__ . '/../../../Core/ClicShopping/') . DIRECTORY_SEPARATOR);
 
   require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
