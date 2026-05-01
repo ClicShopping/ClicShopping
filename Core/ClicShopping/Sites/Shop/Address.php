@@ -54,6 +54,13 @@ class Address
 
     $Qformat = Registry::get('Db')->get('address_format', 'address_format', ['address_format_id' => (int)$address_format_id]);
 
+    // Check if format exists, otherwise use default format
+    if ($Qformat->fetch() === false) {
+      // Fallback to default format if not found
+      $Qformat = Registry::get('Db')->get('address_format', 'address_format', ['address_format_id' => 1]);
+      $Qformat->fetch();
+    }
+
     $company = Hash::displayDecryptedDataText($address['company']);
     $street_address = Hash::displayDecryptedDataText($address['street_address']);
     $suburb = Hash::displayDecryptedDataText($address['suburb']);

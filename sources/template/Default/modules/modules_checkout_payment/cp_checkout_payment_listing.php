@@ -63,7 +63,7 @@ class cp_checkout_payment_listing
         $data .= '<span class="col-md-4 text-end float-end moduleCheckoutPaymentListingSelect">' . CLICSHOPPING::getDef('module_checkout_payment_listing_title_please_select') . '</span>';
         $data .= '</div>';
 
-      } elseif ($_SESSION['free_shipping'] === false) {
+      } elseif (!isset($_SESSION['free_shipping']) || $_SESSION['free_shipping'] === false) {
         $data .= '<div class="moduleCheckoutPaymentListingInformation">' . CLICSHOPPING::getDef('module_checkout_payment_listing_text_enter_payment_information') . '</div>';
       }
 
