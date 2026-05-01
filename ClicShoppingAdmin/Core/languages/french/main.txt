@@ -694,8 +694,6 @@ text_chat_clarification_error_invalid_response = Réponse de clarification inval
 text_chat_clarification_response_prefix = Précision :
 text_chat_clarification_retry = Réessayer
 
-
-
 text_query_too_ambiguous = Votre requête est trop ambiguë. Veuillez être plus précis sur ce que vous voulez savoir.
 text_multiple_interpretations_review = Plusieurs interprétations fournies. Veuillez examiner tous les résultats.
 text_ambiguous_query_detected = Plusieurs interprétations détectées
@@ -706,7 +704,12 @@ text_query_too_ambiguous = Votre requête est trop ambiguë. Veuillez être plus
 text_rag_insufficient_information = Je n'ai pas suffisamment d'informations fiables pour répondre à cette question avec précision. Les informations disponibles dans ma base de connaissances sont insuffisantes ou pas directement pertinentes à votre requête.
 text_rag_source_insufficient_information = Informations Insuffisantes - Réponse rejetée en raison d'un score de fiabilité faible
 
-
-
-# Missing prompts added 2026-01-13
 text_analyze_sql_error = Analyser l'erreur SQL: {{error}} pour la requête: {{query}}
+
+text_orchestrator_no_business_operation = Je suis désolé(e), mais cette question n'est pas liée aux opérations commerciales.
+text_orchestrator_no_business_domain = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions concernant {{entity_list}}, les revenus, l'analyse et les opérations commerciales.
+text_orchestrator_no_business_domain_general = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions concernant les données commerciales, les revenus, l'analyse et les opérations.
+text_orchestrator_no_business_operation_no_relevance = Je suis désolé(e), mais cette question semble peu pertinente pour notre domaine d'activité. Je peux uniquement vous aider pour les questions concernant {{entity_list}}, les revenus, l'analyse et les opérations commerciales.
+text_orchestrator_no_business_operation_no_relevance_general = Je suis désolé(e), mais cette question semble peu pertinente pour notre domaine d'activité. Je peux uniquement vous aider pour les questions relatives aux données commerciales, au chiffre d'affaires, aux analyses et aux opérations.
+text_orchestrator_no_business_configured_domain = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions relatives à {{entity_list}}, au chiffre d'affaires, aux analyses et aux opérations commerciales.
+text_orchestrator_no_business_configured_domain_general = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions relatives aux données commerciales, au chiffre d'affaires, aux analyses et aux opérations.

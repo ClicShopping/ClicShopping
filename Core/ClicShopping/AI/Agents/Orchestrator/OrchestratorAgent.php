@@ -532,6 +532,29 @@ class OrchestratorAgent
         // Build dynamic error message based on active domain
         $activeDomain = DomainConfig::getActivities();
 
+        $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_operation');;
+
+        $entityConfigClass = DomainFields::resolveAppClass($activeDomain, 'EntityConfig');
+        if ($entityConfigClass !== null) {
+          // Use EntityConfig to get entity types dynamically
+          try {
+            $entityTypes = $entityConfigClass::getEntityTypes(); //correct
+            if (!empty($entityTypes)) {
+              $entityList = implode(', ', $entityTypes);
+
+              $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_domain', ['entity_list' => $entityList]);
+            } else {
+              $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_domain_general');
+            }
+          } catch (\Exception $e) {
+            // Fallback to generic message if EntityConfig fails
+            $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_domain_general');
+          }
+        } else {
+          // Generic message for other domains or no domain
+          $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_domain_general');
+        }
+
         return [
           'success' => false,
           'type' => 'error',
@@ -560,6 +583,31 @@ class OrchestratorAgent
           "Query rejected by THRESHOLD GATE (context_relevance={$contextCheck['context_relevance']} < " . self::CONTEXT_RELEVANCE_THRESHOLD . "): '{$query}'",
           'warning'
         );
+
+        // Build dynamic error message based on active domain
+        $activeDomain = DomainConfig::getActivities();
+        $errorMessage = "I'm sorry, but this question appears to have low relevance to our business domain.";
+
+        $entityConfigClass = DomainFields::resolveAppClass($activeDomain, 'EntityConfig');
+        if ($entityConfigClass !== null) {
+          // Use EntityConfig to get entity types dynamically
+          try {
+            $entityTypes = $entityConfigClass::getEntityTypes();
+            if (!empty($entityTypes)) {
+              $entityList = implode(', ', $entityTypes);
+              $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_operation_no_relevance', ['entity_list' => $entityList]);
+            } else {
+              $errorMessage = "I'm sorry, but this question appears to have low relevance to our business domain. I can only help with questions about business data, revenue, analytics, and operations.";
+            }
+          } catch (\Exception $e) {
+            // Fallback to generic message if EntityConfig fails
+            $errorMessage = "I'm sorry, but this question appears to have low relevance to our business domain. I can only help with questions about business data, revenue, analytics, and operations.";
+          }
+        } else {
+          // Generic message for other domains or no domain
+          $errorMessage = "I'm sorry, but this question appears to have low relevance to our business domain. I can only help with questions about business data, revenue, analytics, and operations.";
+        }
+
         return [
           'success' => false,
           'type' => 'error',
@@ -601,17 +649,17 @@ class OrchestratorAgent
             $entityTypes = $entityConfigClass::getEntityTypes();
             if (!empty($entityTypes)) {
               $entityList = implode(', ', $entityTypes);
-              $errorMessage = "I'm sorry, but this question is not related to the configured business domain. I can only help with questions about {$entityList}, revenue, analytics, and business operations.";
+              $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_configured_domain', ['entity_list' => $entityList]);
             } else {
-              $errorMessage = "I'm sorry, but this question is not related to the configured business domain. I can only help with questions about business data, revenue, analytics, and operations.";
+              $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_configured_domain_general');
             }
           } catch (\Exception $e) {
             // Fallback to generic message if EntityConfig fails
-            $errorMessage = "I'm sorry, but this question is not related to the configured business domain. I can only help with questions about business data, revenue, analytics, and operations.";
+            $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_configured_domain_general');
           }
         } else {
           // Generic message for other domains or no domain
-          $errorMessage = "I'm sorry, but this question is not related to the configured business domain. I can only help with questions about business data and operations.";
+          $errorMessage = CLICSHOPPING::getDef('text_orchestrator_no_business_configured_domain_general');
         }
 
         return [

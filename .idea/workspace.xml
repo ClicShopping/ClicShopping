@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="SEO improvement analysis">
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-    </list>
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="orchestrator refactoring" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,7 +22,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7435" />
+    <option name="cachedIndexableFilesCount" value="7446" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -166,6 +164,7 @@
       <workItem from="1777621980029" duration="55000" />
       <workItem from="1777622386401" duration="1024000" />
       <workItem from="1777645815795" duration="123000" />
+      <workItem from="1777647922795" duration="41000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -303,7 +302,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777645919885</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="orchestrator refactoring">
+      <option name="closed" value="true" />
+      <created>1777647949196</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1777647949196</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -322,7 +329,8 @@
     <MESSAGE value="fix check" />
     <MESSAGE value="fix http_response_code(): Cannot set response code" />
     <MESSAGE value="SEO improvement analysis" />
-    <option name="LAST_COMMIT_MESSAGE" value="SEO improvement analysis" />
+    <MESSAGE value="orchestrator refactoring" />
+    <option name="LAST_COMMIT_MESSAGE" value="orchestrator refactoring" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

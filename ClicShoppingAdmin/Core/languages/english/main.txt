@@ -622,7 +622,6 @@ text_chat_clarification_error_invalid_response = Invalid clarification response
 text_chat_clarification_response_prefix = Clarification:
 text_chat_clarification_retry = Retry
 
-
 text_query_too_ambiguous = Your query is too ambiguous. Please be more specific about what you want to know.
 text_multiple_interpretations_review = Multiple interpretations provided. Please review all results.
 text_ambiguous_query_detected = Multiple interpretations detected
@@ -634,3 +633,11 @@ text_rag_insufficient_information = I don't have enough reliable information to 
 text_rag_source_insufficient_information = Insufficient Information - Answer rejected due to low grounding score
 
 text_analyze_sql_error = Analyze SQL error: {{error}} for query: {{query}}
+
+text_orchestrator_no_business_operation = I'm sorry, but this question is not related to business operations.
+text_orchestrator_no_business_domain = I'm sorry, but this question is not related to the configured business domain. I can only help with questions about {{entity_list}}, revenue, analytics, and business operations.
+text_orchestrator_no_business_domain_general = I'm sorry, but this question is not related to the configured business domain. I can only help with questions about business data, revenue, analytics, and operations
+text_orchestrator_no_business_operation_no_relevance = I'm sorry, but this question appears to have low relevance to our business domain. I can only help with questions about {{entity_list}}, revenue, analytics, and business operations.
+text_orchestrator_no_business_operation_no_relevance_general = I'm sorry, but this question appears to have low relevance to our business domain. I can only help with questions about business data, revenue, analytics, and operations.
+text_orchestrator_no_business_configured_domain = I'm sorry, but this question is not related to the configured business domain. I can only help with questions about {{entity_list}}, revenue, analytics, and business operations.
+text_orchestrator_no_business_configured_domain_general = I'm sorry, but this question is not related to the configured business domain. I can only help with questions about business data, revenue, analytics, and operations.
