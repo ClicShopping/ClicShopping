@@ -17,13 +17,12 @@ $CLICSHOPPING_Template = Registry::get('Template');
 $CLICSHOPPING_ProductsCommon = Registry::get('ProductsCommon');
 
 // ----------------------------------------------------------------//
-//                      file not found                             //
+//                      Product Display                            //
 // ----------------------------------------------------------------//
+// Note: Product validation is now handled in Products controller
+// before headers are sent to prevent "headers already sent" errors
 
-if ($CLICSHOPPING_ProductsCommon->getProductsCount() < 1 || (\is_null($CLICSHOPPING_ProductsCommon->getID())) || $CLICSHOPPING_ProductsCommon->getID() === false) {
-  http_response_code(404);
-  HTTP::redirect(CLICSHOPPING::getConfig('http_server', 'Shop') . CLICSHOPPING::getConfig('http_path', 'Shop') . 'error_documents/404.php');
-} elseif ($CLICSHOPPING_ProductsCommon->getProductsGroupView() == 1 || $CLICSHOPPING_ProductsCommon->getProductsView() == 1) {
+if ($CLICSHOPPING_ProductsCommon->getProductsGroupView() == 1 || $CLICSHOPPING_ProductsCommon->getProductsView() == 1) {
 // ----------------------------------------------------------------
 // ---- Display products with autorization  ----
 // ------------------------------------------------------------

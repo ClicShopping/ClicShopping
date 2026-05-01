@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="libraries updated">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="fix check">
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -163,6 +164,7 @@
       <workItem from="1777379920741" duration="119000" />
       <workItem from="1777385560554" duration="3988000" />
       <workItem from="1777569225162" duration="704000" />
+      <workItem from="1777621980029" duration="55000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -276,7 +278,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777569267815</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="fix check">
+      <option name="closed" value="true" />
+      <created>1777622004778</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1777622004778</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -292,7 +302,8 @@
     <MESSAGE value="security improvement" />
     <MESSAGE value="fix" />
     <MESSAGE value="libraries updated" />
-    <option name="LAST_COMMIT_MESSAGE" value="libraries updated" />
+    <MESSAGE value="fix check" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix check" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
