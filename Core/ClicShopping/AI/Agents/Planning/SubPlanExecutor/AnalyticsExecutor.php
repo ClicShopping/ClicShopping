@@ -55,6 +55,7 @@ class AnalyticsExecutor
   private int $languageId;
 
   private bool $debugRAManager;
+  private mixed $conversationMemory = null; // 🆕 Store ConversationMemory for lazy initialization
 
   /**
    * Constructor
@@ -73,6 +74,33 @@ class AnalyticsExecutor
 
     if ($this->debug) {
       $this->logger->logSecurityEvent("AnalyticsExecutor initialized", 'info');
+    }
+  }
+  
+  /**
+   * Set the conversation memory instance
+   * Allows PlanExecutor to inject ConversationMemory
+   * This is needed to pass it to AnalyticsAgent for contextual query resolution.
+   *
+   * @param mixed $conversationMemory ConversationMemory instance
+   * @return void
+   */
+  public function setConversationMemory($conversationMemory): void
+  {
+    // If AnalyticsAgent is already instantiated, set it immediately
+    if ($this->analyticsAgent !== null) {
+      $this->analyticsAgent->setConversationMemory($conversationMemory);
+      
+      if ($this->debug) {
+        $this->logger->logSecurityEvent("ConversationMemory set on existing AnalyticsAgent", 'info');
+      }
+    }
+    
+    // Store it for later use when AnalyticsAgent is instantiated
+    $this->conversationMemory = $conversationMemory;
+    
+    if ($this->debug) {
+      $this->logger->logSecurityEvent("ConversationMemory stored in AnalyticsExecutor", 'info');
     }
   }
 
@@ -166,6 +194,16 @@ class AnalyticsExecutor
         }
 
         $this->analyticsAgent = new AnalyticsAgent($this->languageId, true, $this->userId);
+        
+        // Set ConversationMemory if available
+        // This enables contextual query resolution (e.g., "donne moi son sku")
+        if ($this->conversationMemory !== null) {
+          $this->analyticsAgent->setConversationMemory($this->conversationMemory);
+          
+          if ($this->debugRAManager) {
+            error_log("ConversationMemory set on AnalyticsAgent during initialization");
+          }
+        }
 
         if ($this->debugRAManager) {
           error_log("AnalyticsAgent initialized successfully");
@@ -814,9 +852,9 @@ class AnalyticsExecutor
       $db = Registry::get('Db');
       $prefix = CLICSHOPPING::getConfig('db_table_prefix');
       $fullTableName = $prefix . $tableName;
-      $stmt = $db->prepare('SHOW TABLES LIKE :table_name');
-      $stmt->bindValue(':table_name', $fullTableName);
-      $stmt->execute();
+      $sql = "SHOW TABLES LIKE ?";
+      $stmt = $db->prepare($sql);
+      $stmt->execute([$fullTableName]);
       return $stmt->rowCount() > 0;
     } catch (\Exception $e) {
       return false;

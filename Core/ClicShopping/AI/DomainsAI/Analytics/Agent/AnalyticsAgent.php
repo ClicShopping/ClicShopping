@@ -1217,14 +1217,65 @@ class AnalyticsAgent
   /**
    * Enriches the question with feedback context for learning
    * Adds examples from previous corrections to help the LLM generate better SQL
+   *  Also injects last_entity context from ConversationMemory
+   * This fixes the bug where contextual queries like "donne moi son sku" were failing
+   * because the LLM didn't know what "son" referred to during SQL generation.
    *
    * @param string $question Original question
    * @param array $feedbackContext Feedback items with corrections
-   * @return string Enriched question with learning examples
+   * @return string Enriched question with learning examples and entity context
    */
   private function enrichQuestionWithFeedback(string $question, array $feedbackContext): string
   {
-    return $this->promptBuilder->enrichWithFeedback($question, $feedbackContext);
+    // Start with feedback enrichment
+    $enrichedQuestion = $this->promptBuilder->enrichWithFeedback($question, $feedbackContext);
+    
+    // Inject last_entity context if available
+    // This provides the LLM with context about what entity was discussed previously
+    // so it can resolve pronouns like "son", "sa", "it", "its", etc.
+    if ($this->conversationMemory !== null) {
+      try {
+        $lastEntity = $this->conversationMemory->getLastEntity();
+        
+        if ($lastEntity !== null) {
+          // Check if 'name' key exists before accessing it
+          $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? 'unknown');
+          $entityType = $lastEntity['type'] ?? 'entity';
+          $entityId = $lastEntity['id'] ?? 'unknown';
+          // Inject context BEFORE the question so the LLM sees it first
+          $enrichedQuestion = $contextString . $enrichedQuestion;
+          
+          if ($this->debug) {
+            error_log("[AnalyticsAgent] Injected last_entity context into SQL prompt:");
+            error_log("  Entity: {$entityType} (ID: {$entityId}, Name: {$entityName})");
+          }
+        }
+      } catch (\Exception $e) {
+        // Don't fail on context injection errors - just log and continue
+        if ($this->debug) {
+          error_log("[AnalyticsAgent] Error injecting last_entity context: " . $e->getMessage());
+        }
+      }
+    }
+    
+    return $enrichedQuestion;
+  }
+  
+  /**
+   * Set the conversation memory instance
+   * Allows AnalyticsExecutor to inject ConversationMemory
+   * This is needed to access last_entity context for contextual query resolution.
+   *
+   * @param mixed $conversationMemory ConversationMemory instance
+   * @return void
+   */
+  public function setConversationMemory($conversationMemory): void
+  {
+    $this->conversationMemory = $conversationMemory;
+    
+    if ($this->debug) {
+      error_log("[AnalyticsAgent] ConversationMemory set successfully");
+    }
   }
 
   /**

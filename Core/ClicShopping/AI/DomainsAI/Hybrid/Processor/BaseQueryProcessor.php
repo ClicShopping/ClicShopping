@@ -12,7 +12,7 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Processor;
 
 
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\InterfacesAI\QueryProcessorInterface;
+use ClicShopping\AI\InterfacesAI\HybridQueryProcessorInterface;
 
 /**
  * BaseQueryProcessor - Abstract base class for HybridQueryProcessor components
@@ -22,11 +22,11 @@ use ClicShopping\AI\InterfacesAI\QueryProcessorInterface;
  *
  * Requirements: REQ-1.3 (Single Responsibility), REQ-8.1 (Validation and security)
  *
- * @package ClicShopping\AI\Agents\Orchestrator\SubHybridQueryProcessor
+ * @package ClicShopping\AI\DomainsAI\Hybrid\Processor
  * @since 2025-12-14
  */
 
-abstract class BaseQueryProcessor implements QueryProcessorInterface
+abstract class BaseQueryProcessor implements HybridQueryProcessorInterface
 {
   /**
    * @var SecurityLogger Logger instance for security events

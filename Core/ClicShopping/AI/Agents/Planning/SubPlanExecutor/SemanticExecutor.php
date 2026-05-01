@@ -106,13 +106,33 @@ class SemanticExecutor
         );
       }
 
+      // Enrich query with last_entity context if available
+      // This is passed via $context from PlanExecutor
+      $enrichedQuery = $query;
+      if (isset($context['last_entity']) && !empty($context['last_entity'])) {
+        $lastEntity = $context['last_entity'];
+        $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? null);
+        
+        if ($entityName !== null) {
+          // Detect if query needs context enrichment
+          $enrichedQuery = $this->enrichSemanticQuery($query, $entityName);
+          
+          if ($enrichedQuery !== $query && $this->debug) {
+            $this->logger->logSecurityEvent(
+              "Enriched semantic query with last_entity: '{$query}' → '{$enrichedQuery}'",
+              'info'
+            );
+          }
+        }
+      }
+
       $this->logger->logSecurityEvent(
-        " Delegating to SemanticSearchOrchestrator for query: {$query}",
+        " Delegating to SemanticSearchOrchestrator for query: {$enrichedQuery}",
         'info'
       );
 
-      // Delegate to orchestrator with fallback chain
-      $rawResult = $this->orchestrator->search($query, $context);
+      // Delegate to orchestrator with fallback chain (use enriched query)
+      $rawResult = $this->orchestrator->search($enrichedQuery, $context);
 
       $this->logger->logSecurityEvent(
         "✅ SemanticSearchOrchestrator returned result",
@@ -643,5 +663,63 @@ class SemanticExecutor
   public function setHallucinationDetection(bool $enabled): void
   {
     $this->enableHallucinationDetection = $enabled;
+  }
+  
+  /**
+   * Enrich semantic query with last_entity context
+   * 
+   * Enriches semantic queries with context from previous queries
+   * This allows follow-up queries like "give me its description" to include the product name
+   * 
+   * IMPORTANT: This method receives queries in ENGLISH (already translated)
+   * All processing is done in English in a multilingual environment
+   * 
+   * @param string $query Original semantic query (in English)
+   * @param string $entityName Name of the last entity discussed
+   * @return string Enriched query
+   */
+  private function enrichSemanticQuery(string $query, string $entityName): string
+  {
+    // Detect if query contains pronouns or possessive adjectives that need entity context
+    // IMPORTANT: Only English keywords - queries are translated to English before processing
+    $contextualKeywords = [
+      // English pronouns and possessives
+      'it', 'its', 'this', 'that', 'these', 'those', 'the',
+      'him', 'her', 'them', 'his', 'their',
+      // Generic contextual words (English only)
+      'description', 'details', 'info', 'information',
+      'features', 'specifications', 'characteristics',
+      'price', 'cost', 'value',
+    ];
+    
+    $lowerQuery = strtolower($query);
+    $needsContext = false;
+    
+    foreach ($contextualKeywords as $keyword) {
+      // Use word boundary to avoid false positives
+      if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/i', $lowerQuery)) {
+        $needsContext = true;
+        break;
+      }
+    }
+    
+    if (!$needsContext) {
+      // Query doesn't need context enrichment
+      return $query;
+    }
+    
+    // Enrich query by prepending entity name
+    // Example: "give me its description" → "iPhone 17 Pro description"
+    // Example: "what are the features" → "iPhone 17 Pro features"
+    $enrichedQuery = $entityName . ' ' . $query;
+    
+    if ($this->debug) {
+      $this->logger->logSecurityEvent(
+        "Enriched semantic query: '{$query}' → '{$enrichedQuery}'",
+        'info'
+      );
+    }
+    
+    return $enrichedQuery;
   }
 }

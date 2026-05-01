@@ -23,10 +23,10 @@ version4.26
 ---------------
 version4.25
 - librairies updated
-- Some fix and security impovement
+- Some fix and security improvement
 - Add papers company checking for customers B2b
 - Add electronic EU invoice regulation
-- AI Sentiment Analyis improved
+- AI Sentiment Analysis improved
 - AI Customer recommendation refactored
 
 ---------------

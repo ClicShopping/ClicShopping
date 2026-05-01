@@ -542,8 +542,9 @@ class FeedbackManager
     try {
       $prefix = CLICSHOPPING::getConfig('db_table_prefix');
       $fullTableName = $prefix . $tableName;
-      $stmt = $this->db->prepare("SHOW TABLES LIKE '" . $fullTableName . "'");
-      $stmt->execute();
+      $sql = "SHOW TABLES LIKE ?";
+      $stmt = $this->db->prepare($sql);
+      $stmt->execute([$fullTableName]);
       return $stmt->rowCount() > 0;
     } catch (\Throwable $e) {
       return false;

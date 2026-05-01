@@ -669,56 +669,6 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
     ];
   }
 
-  /**
-   * Check if query is a web search query
-   *
-   * Detects patterns indicating external web search, competitor research,
-   * or market information requests.
-   *
-   * @param string $query Query to check (should be in English)
-   * @return bool True if web search query detected
-   */
-  private static function isWebSearchQuery(string $query): bool
-  {
-    $queryLower = strtolower($query);
-    
-    // Web search patterns (English only - query is already translated)
-    $patterns = [
-      // Explicit web search requests (highest priority)
-      '/\b(web\s+search|search\s+(the\s+)?web|search\s+online)\b/i',
-      '/\b(search\s+(for|on)\s+(the\s+)?(internet|web))\b/i',
-      
-      // Competitor patterns
-      '/\b(compare|comparison)\b.*\b(with|to|against|competitors?)\b/i',
-      '/\b(competitors?|competition|rival)\b/i',
-      
-      // Online search patterns
-      '/\b(search|find|look\s+for)\b.*\b(online|web|internet)\b/i',
-      '/\b(search)\b.*\b(prices?)\b.*\b(online)\b/i',
-      
-      // Market research patterns
-      '/\b(market\s+(trends?|analysis|research))\b/i',
-      '/\b(price\s+comparison)\b/i',
-      
-      // External data patterns
-      '/\b(external|outside|public)\s+(data|information|source)\b/i',
-      
-      // Specific web search indicators
-      '/\b(amazon|ebay|alibaba|marketplace)\b/i',
-      '/\b(google|bing|search\s+engine)\b/i',
-    ];
-    
-    foreach ($patterns as $pattern) {
-      if (preg_match($pattern, $queryLower)) {
-        if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
-          error_log("Web search pattern matched: {$pattern}");
-        }
-        return true;
-      }
-    }
-    
-    return false;
-  }
 
   /**
    * Search for documents in the embedding database using semantic similarity

@@ -13,14 +13,31 @@ namespace ClicShopping\AI\Agents\Orchestrator;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
+use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\AI\Config\ActorCriticConfig;
+use ClicShopping\AI\Config\AgentSystemConfig;
+use ClicShopping\AI\Config\AgentTechnicalConfig;
+use ClicShopping\AI\Config\AgentActorsConfig;
+use ClicShopping\AI\Config\AgentCriticsConfig;
+use ClicShopping\AI\Config\AgentDomainsConfig;
+use ClicShopping\AI\Config\DomainFields;
+
+use ClicShopping\AI\DomainsAI\DomainRouter;
+use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Hybrid\Handler\HybridQueryHandler;
+
 use ClicShopping\AI\Infrastructure\Monitoring\AlertManager;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
 use ClicShopping\AI\Infrastructure\Monitoring\MonitoringAgent;
-
-use ClicShopping\AI\Rag\MultiDBRAGManager;
+use ClicShopping\AI\Infrastructure\Monitoring\PerformanceTracker;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\RateLimit;
+use ClicShopping\AI\Security\Validation\HallucinationDetector;
+
+use ClicShopping\AI\Rag\MultiDBRAGManager;
+
+use ClicShopping\AI\Helper\OrchestratorHelper;
 
 use ClicShopping\AI\Agents\Memory\ConversationMemory;
 use ClicShopping\AI\Agents\Planning\PlanExecutor;
@@ -31,28 +48,18 @@ use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\IntentAnalyzer;
 use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\EntityExtractor;
 use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\DiagnosticManager;
 use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\ContextManager;
-use ClicShopping\AI\Handler\Query\ComplexQueryHandler;
-use ClicShopping\AI\Security\Validation\HallucinationDetector;
-use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
-use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\ResponseProcessor as ResponseProcessorComponent;
 use ClicShopping\AI\Agents\Query\QueryAnalyzer;
-use ClicShopping\AI\Handler\Error\ErrorHandler as ErrorHandlerComponent;
-use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\MemoryManager as MemoryManagerComponent;
-use ClicShopping\AI\Helper\OrchestratorHelper;
-
-use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
-use ClicShopping\AI\InterfacesAI\QueryTypeDomainInterface;
-use ClicShopping\AI\Config\DomainConfig;
-use ClicShopping\AI\Config\ActorCriticConfig;
-use ClicShopping\AI\Config\AgentSystemConfig;
-use ClicShopping\AI\Config\AgentTechnicalConfig;
-use ClicShopping\AI\Config\AgentActorsConfig;
-use ClicShopping\AI\Config\AgentCriticsConfig;
-use ClicShopping\AI\Config\AgentDomainsConfig;
-use ClicShopping\AI\Config\AgentActivationConfig;
-use ClicShopping\AI\Config\DomainFields;
 use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\ActorCriticCoordinator;
+use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\MemoryManager as MemoryManagerComponent;
+use ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AutonomousConfig;
+
+use ClicShopping\AI\Services\ActorCritic\ActorCriticInitializer;
+use ClicShopping\AI\Services\Autonomous\ObjectiveManager;
+
+use ClicShopping\AI\Handler\Query\ComplexQueryHandler;
+use ClicShopping\AI\Handler\Query\QueryProcessor;
+use ClicShopping\AI\Handler\Error\ErrorHandler as ErrorHandlerComponent;
 
 /**
  * OrchestratorAgent Class
@@ -62,6 +69,8 @@ use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\ActorCriticCoordinator;
 
 class OrchestratorAgent
 {
+  private const CONTEXT_RELEVANCE_THRESHOLD = 0.3;
+  
   public TaskPlanner $taskPlanner;
   public PlanExecutor $planExecutor;
   private ?MetricsCollector $collector = null;
@@ -88,14 +97,21 @@ class OrchestratorAgent
 
   private IntentAnalyzer $intentAnalyzer;
   private EntityExtractor $entityExtractor;
-  private DiagnosticManager $diagnosticManager;
+  public DiagnosticManager $diagnosticManager;
   private ContextManager $contextManager;
- private ActorCriticCoordinator $actorCriticCoordinator;
+  private DomainRouter $domainRouter;
+  private QueryProcessor $queryProcessor;
+  private HybridQueryHandler $hybridQueryHandler;
+  private ActorCriticCoordinator $actorCriticCoordinator;
+  private ActorCriticInitializer $actorCriticInitializer;
+  private ObjectiveManager $objectiveManager;
   private ComplexQueryHandler $complexQueryHandler;
   private ?QueryAnalyzer $queryAnalyzer = null;
   private ?ErrorHandlerComponent $errorHandler = null;
   private ?MemoryManagerComponent $memoryManager = null;
-  private ?\ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AutonomousConfig $autonomousConfig = null;
+  private ?AutonomousConfig $autonomousConfig = null;
+  private HallucinationDetector $hallucinationDetector;
+  private PerformanceTracker $performanceTracker;
 
   // Diagnostics - delegated to DiagnosticManager
 
@@ -153,7 +169,7 @@ class OrchestratorAgent
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
     
-    $this->autonomousConfig = new \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AutonomousConfig($this->debug);
+    $this->autonomousConfig = new AutonomousConfig($this->debug);
 
     // Monitoring and metrics
     $this->monitoring = new MonitoringAgent();
@@ -181,6 +197,16 @@ class OrchestratorAgent
   {
     $this->taskPlanner = new TaskPlanner($this->languageId);
     $this->planExecutor = new PlanExecutor($this->taskPlanner, $this->userId, $this->languageId);
+
+    // This enables contextual query resolution in AnalyticsAgent (e.g., "give me this sku")
+    if ($this->conversationMemory !== null) {
+      $this->planExecutor->setConversationMemory($this->conversationMemory);
+      
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent("ConversationMemory set on PlanExecutor", 'info');
+      }
+    }
+    
     $this->correctionAgent = new CorrectionAgent($this->userId, $this->languageId);
     $this->validationAgent = new ValidationAgent($this->userId);
     $this->reasoningAgent = new ReasoningAgent();
@@ -202,9 +228,10 @@ class OrchestratorAgent
       'min_confidence_for_clear' => 0.7,
     ]);
 
-    $this->actorCriticCoordinator = new ActorCriticCoordinator();
-    $this->complexQueryHandler = new ComplexQueryHandler($this->debug);
+    // Phase 1: Domain Routing - Initialize DomainRouter
+    $this->domainRouter = new DomainRouter($this->debug);
 
+    // Initialize dependencies first (required by QueryProcessor)
     $this->responseProcessorComponent = new ResponseProcessorComponent($this->debug);
     $this->queryAnalyzer = new QueryAnalyzer($this->debug);
     $this->errorHandler = new ErrorHandlerComponent($this->debug, $this->responseProcessorComponent);
@@ -213,6 +240,39 @@ class OrchestratorAgent
       $this->workingMemory,
       $this->debug
     );
+
+    // Phase 2: Query Processing - Initialize QueryProcessor (after dependencies)
+    $this->queryProcessor = new QueryProcessor(
+      $this->contextManager,
+      $this->queryAnalyzer,
+      $this->errorHandler,
+      $this->conversationMemory,
+      $this->debug
+    );
+
+    // Phase 3: Hybrid Query Handling - Initialize HybridQueryHandler
+    $this->hybridQueryHandler = new HybridQueryHandler(
+      $this->taskPlanner,
+      $this->planExecutor,
+      $this->conversationMemory,
+      null, // DomainKeywordsLoader will be auto-created
+      $this->debug
+    );
+
+    // Phase 4: Validation and Hallucination Detection - Initialize HallucinationDetector
+    $this->hallucinationDetector = new HallucinationDetector($this->debug);
+
+    // Phase 5: Performance Tracking - Initialize PerformanceTracker
+    $this->performanceTracker = new PerformanceTracker($this->collector, $this->debug);
+
+    // Phase 6B: Actor-Critic Initialization - Initialize ActorCriticInitializer
+    $this->actorCriticInitializer = new ActorCriticInitializer($this->securityLogger);
+
+    // Phase 6B: Autonomous Agent Management - Initialize ObjectiveManager
+    $this->objectiveManager = new ObjectiveManager($this->db, $this->securityLogger, $this->debug);
+
+    $this->actorCriticCoordinator = new ActorCriticCoordinator();
+    $this->complexQueryHandler = new ComplexQueryHandler($this->debug);
 
     if ($this->debug) {
       error_log('---------------------------');
@@ -292,125 +352,14 @@ class OrchestratorAgent
   /**
    * Initialize Actor-Critic system by registering all actors and critics
    * 
-   * This method registers all available actors and critics in their respective registries.
+   * Delegates to ActorCriticInitializer for actor/critic registration.
    * Called during OrchestratorAgent initialization when Actor-Critic separation is enabled.
-   * Only registers actors/critics that are enabled in their respective configurations.
    * 
    * @return void
    */
   private function initializeActorCriticSystem(): void
   {
-    try {
-      // Create registries
-      $actorRegistry = new \ClicShopping\AI\RegistryAI\ActorRegistry();
-      $criticRegistry = new \ClicShopping\AI\RegistryAI\CriticRegistry();
-      
-      $actorsRegistered = 0;
-      $criticsRegistered = 0;
-      
-      // Register actors only if AgentActorsConfig is enabled
-      if (AgentActorsConfig::isEnabled()) {
-        // Register Analytics Actor if enabled
-        if (AgentActorsConfig::isAnalyticsEnabled() && AgentActivationConfig::isAgentEnabled('analytics_actor')) {
-          $actorRegistry->registerActor(new \ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Actors\AnalyticsActor($this->languageId, $this->debug));
-          $actorsRegistered++;
-          if ($this->debug) {
-            $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'actor_registered', [
-              'actor' => 'AnalyticsActor'
-            ]);
-          }
-        }
-        
-        // Register Reasoning Actor if enabled
-        if (AgentActorsConfig::isReasoningEnabled() && AgentActivationConfig::isAgentEnabled('reasoning_actor')) {
-          $actorRegistry->registerActor(new \ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Actors\ReasoningActor($this->languageId, $this->debug));
-          $actorsRegistered++;
-          if ($this->debug) {
-            $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'actor_registered', [
-              'actor' => 'ReasoningActor'
-            ]);
-          }
-        }
-        
-        // Register Validation Actor if enabled
-        if (AgentActorsConfig::isValidationEnabled() && AgentActivationConfig::isAgentEnabled('validation_actor')) {
-          $actorRegistry->registerActor(new \ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Actors\ValidationActor($this->languageId, $this->debug));
-          $actorsRegistered++;
-          if ($this->debug) {
-            $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'actor_registered', [
-              'actor' => 'ValidationActor'
-            ]);
-          }
-        }
-      } else {
-        if ($this->debug) {
-          $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'actors_disabled', [
-            'message' => 'AgentActorsConfig is disabled, no actors registered'
-          ]);
-        }
-      }
-      
-      // Register critics only if AgentCriticsConfig is enabled
-      if (AgentCriticsConfig::isEnabled()) {
-        // Register Analytics Expert Critic if enabled
-        if (AgentCriticsConfig::isAnalyticsExpertEnabled() && AgentActivationConfig::isAgentEnabled('analytics_critic')) {
-          $criticRegistry->registerCritic(new \ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Critics\AnalyticsCritic($this->languageId, $this->debug));
-          $criticsRegistered++;
-          if ($this->debug) {
-            $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'critic_registered', [
-              'critic' => 'AnalyticsCritic'
-            ]);
-          }
-        }
-        
-        // Register Reasoning Critic (maps to generalist) if enabled
-        if (AgentCriticsConfig::isGeneralistEnabled() && AgentActivationConfig::isAgentEnabled('reasoning_critic')) {
-          $criticRegistry->registerCritic(new \ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Critics\ReasoningCritic($this->languageId, $this->debug));
-          $criticsRegistered++;
-          if ($this->debug) {
-            $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'critic_registered', [
-              'critic' => 'ReasoningCritic'
-            ]);
-          }
-        }
-        
-        // Register Validation Critic (maps to specialist) if enabled
-        if (AgentCriticsConfig::isSpecialistEnabled() && AgentActivationConfig::isAgentEnabled('validation_critic')) {
-          $criticRegistry->registerCritic(new \ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Critics\ValidationCritic($this->languageId, $this->debug));
-          $criticsRegistered++;
-          if ($this->debug) {
-            $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'critic_registered', [
-              'critic' => 'ValidationCritic'
-            ]);
-          }
-        }
-      } else {
-        if ($this->debug) {
-          $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'critics_disabled', [
-            'message' => 'AgentCriticsConfig is disabled, no critics registered'
-          ]);
-        }
-      }
-      
-      if ($this->debug) {
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'actor_critic_system_initialized', [
-          'actors_registered' => $actorsRegistered,
-          'critics_registered' => $criticsRegistered,
-          'actors_config_enabled' => AgentActorsConfig::isEnabled(),
-          'critics_config_enabled' => AgentCriticsConfig::isEnabled(),
-          'message' => 'Actor-Critic system initialized successfully'
-        ]);
-      }
-      
-    } catch (\Exception $e) {
-      if ($this->debug) {
-        $this->securityLogger->logStructured('error', 'OrchestratorAgent', 'actor_critic_init_error', [
-          'error' => $e->getMessage(),
-          'trace' => $e->getTraceAsString()
-        ]);
-      }
-      throw $e;
-    }
+    $this->actorCriticInitializer->initialize($this->languageId, $this->debug);
   }
 
   /**
@@ -434,83 +383,23 @@ class OrchestratorAgent
   /**
    * Get latency metrics for dashboard
    *
+   * Delegates to PerformanceTracker for comprehensive latency metrics.
+   *
    * @return array Latency metrics with detailed statistics
    */
   public function getLatencyMetrics(): array
   {
-    $allStats = $this->collector->getHistogramStats('orchestrator_query_latency_ms');
-
-    return [
-      'overall' => $allStats ?? [
-        'count' => 0,
-        'mean' => 0,
-        'median' => 0,
-        'min' => 0,
-        'max' => 0,
-        'percentiles' => [
-          'p50' => 0,
-          'p75' => 0,
-          'p90' => 0,
-          'p95' => 0,
-          'p99' => 0,
-        ]
-      ]
-    ];
+    return $this->performanceTracker->getLatencyMetrics();
   }
-
-  /**
-   * Get comprehensive health report
-   *
-   * @return array Health report with metrics
-   */
-  public function getHealthReport(): array
-  {
-    return $this->diagnosticManager->getHealthReport();
-  }
-
-  /**
-   * Explain the last error in human-readable language
-   *
-   * @return string Human-readable explanation
-   */
-  public function explainLastError(): string
-  {
-    return $this->diagnosticManager->explainLastError();
-  }
-
-  /**
-   * Get recent errors with details
-   *
-   * @param int $limit Maximum number of errors to return
-   * @return array Array of error objects
-   */
-  public function getRecentErrors(int $limit = 10): array
-  {
-    return $this->diagnosticManager->getRecentErrors($limit);
-  }
-
 
   // ========================================
-  // 🆕 DIAGNOSTIC METHODS (Delegated to DiagnosticManager)
+  // AUTONOMOUS AGENT INTEGRATION
   // ========================================
-
-  /**
-   * Analyze error patterns and suggest improvements
-   *
-   * @return array Array of improvement suggestions
-   */
-  public function suggestImprovements(): array
-  {
-    return $this->diagnosticManager->suggestImprovements();
-  }
 
   /**
    * Approve or reject an agent's local objective
    *
-   * Called when an objective requires orchestrator approval due to:
-   * - Conflicts with other objectives
-   * - System-wide constraint violations
-   * - High-priority objectives
+   * Delegates to ObjectiveManager for objective approval/rejection.
    *
    * @param string $objectiveId The objective ID to approve/reject
    * @param bool $approve True to approve, false to reject
@@ -519,72 +408,13 @@ class OrchestratorAgent
    */
   public function approveObjective(string $objectiveId, bool $approve, string $reason = ''): array
   {
-    try {
-      $objectiveRegistry = new \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\ObjectiveRegistry($this->db, $this->debug);
-      $objective = $objectiveRegistry->getObjective($objectiveId);
-
-      if (!$objective) {
-        throw new \InvalidArgumentException("Objective {$objectiveId} not found");
-      }
-
-      if ($approve) {
-        $objectiveRegistry->updateObjectiveStatus($objectiveId, 'approved');
-
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Orchestrator approved objective {$objectiveId}: {$reason}",
-            'info'
-          );
-        }
-
-        return [
-          'success' => true,
-          'objective_id' => $objectiveId,
-          'status' => 'approved',
-          'message' => 'Objective approved for execution'
-        ];
-      } else {
-        $objectiveRegistry->cancelObjective($objectiveId, $reason);
-
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Orchestrator rejected objective {$objectiveId}: {$reason}",
-            'warning'
-          );
-        }
-
-        return [
-          'success' => true,
-          'objective_id' => $objectiveId,
-          'status' => 'cancelled',
-          'message' => 'Objective rejected',
-          'reason' => $reason
-        ];
-      }
-
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error approving objective {$objectiveId}: " . $e->getMessage(),
-        'error'
-      );
-
-      return [
-        'success' => false,
-        'objective_id' => $objectiveId,
-        'error' => $e->getMessage()
-      ];
-    }
+    return $this->objectiveManager->approveObjective($objectiveId, $approve, $reason);
   }
 
   /**
    * Resolve conflicts between agent objectives
    *
-   * Called when ConflictDetector identifies conflicting objectives.
-   * The orchestrator decides how to resolve the conflict:
-   * - Cancel one objective
-   * - Merge objectives
-   * - Sequence objectives
-   * - Allow both with constraints
+   * Delegates to ObjectiveManager for conflict resolution.
    *
    * @param array $conflictingObjectiveIds Array of conflicting objective IDs
    * @param string $resolutionStrategy Strategy: 'cancel_lower_priority', 'merge', 'sequence', 'allow_both'
@@ -592,350 +422,39 @@ class OrchestratorAgent
    */
   public function resolveObjectiveConflict(array $conflictingObjectiveIds, string $resolutionStrategy = 'cancel_lower_priority'): array
   {
-    try {
-      $objectiveRegistry = new \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\ObjectiveRegistry($this->db, $this->debug);
-      $objectives = [];
-
-      // Load all conflicting objectives
-      foreach ($conflictingObjectiveIds as $id) {
-        $obj = $objectiveRegistry->getObjective($id);
-        if ($obj) {
-          $objectives[] = $obj;
-        }
-      }
-
-      if (empty($objectives)) {
-        throw new \InvalidArgumentException("No valid objectives found");
-      }
-
-      $result = match ($resolutionStrategy) {
-        'cancel_lower_priority' => $this->cancelLowerPriorityObjectives($objectives, $objectiveRegistry),
-        'merge' => $this->mergeObjectives($objectives, $objectiveRegistry),
-        'sequence' => $this->sequenceObjectives($objectives, $objectiveRegistry),
-        'allow_both' => $this->allowBothObjectives($objectives, $objectiveRegistry),
-        default => throw new \InvalidArgumentException("Unknown resolution strategy: {$resolutionStrategy}")
-      };
-
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Orchestrator resolved conflict using strategy '{$resolutionStrategy}'",
-          'info'
-        );
-      }
-
-      return $result;
-
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error resolving objective conflict: " . $e->getMessage(),
-        'error'
-      );
-
-      return [
-        'success' => false,
-        'error' => $e->getMessage()
-      ];
-    }
+    return $this->objectiveManager->resolveObjectiveConflict($conflictingObjectiveIds, $resolutionStrategy);
   }
-
-  /**
-   * Cancel lower priority objectives in a conflict
-   *
-   * @param array $objectives Array of LocalObjective instances
-   * @param \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\ObjectiveRegistry $registry
-   * @return array Resolution result
-   */
-  private function cancelLowerPriorityObjectives(array $objectives, $registry): array
-  {
-    // Sort by priority (critical > high > medium > low)
-    $priorityOrder = ['critical' => 4, 'high' => 3, 'medium' => 2, 'low' => 1];
-    usort($objectives, function($a, $b) use ($priorityOrder) {
-      return ($priorityOrder[$b->getPriority()] ?? 0) <=> ($priorityOrder[$a->getPriority()] ?? 0);
-    });
-
-    // Keep highest priority, cancel others
-    $kept = $objectives[0];
-    $cancelled = [];
-
-    for ($i = 1, $iMax = count($objectives); $i < $iMax; $i++) {
-      $obj = $objectives[$i];
-      $registry->cancelObjective($obj->getId(), 'Cancelled due to conflict with higher priority objective');
-      $cancelled[] = $obj->getId();
-    }
-
-    return [
-      'success' => true,
-      'strategy' => 'cancel_lower_priority',
-      'kept_objective' => $kept->getId(),
-      'cancelled_objectives' => $cancelled
-    ];
-  }
-
-  // ========================================
-  // AUTONOMOUS AGENT INTEGRATION
-  // ========================================
-
-  /**
-   * Merge compatible objectives
-   *
-   * @param array $objectives Array of LocalObjective instances
-   * @param \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\ObjectiveRegistry $registry
-   * @return array Resolution result
-   */
-  private function mergeObjectives(array $objectives, $registry): array
-  {
-    // Placeholder for merge logic
-    // In a full implementation, this would create a new collaborative objective
-    return [
-      'success' => true,
-      'strategy' => 'merge',
-      'message' => 'Objective merging not yet fully implemented',
-      'objectives' => array_map(fn($obj) => $obj->getId(), $objectives)
-    ];
-  }
-
-  /**
-   * Sequence objectives to execute in order
-   *
-   * @param array $objectives Array of LocalObjective instances
-   * @param \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\ObjectiveRegistry $registry
-   * @return array Resolution result
-   */
-  private function sequenceObjectives(array $objectives, $registry): array
-  {
-    // Placeholder for sequencing logic
-    return [
-      'success' => true,
-      'strategy' => 'sequence',
-      'message' => 'Objective sequencing not yet fully implemented',
-      'objectives' => array_map(fn($obj) => $obj->getId(), $objectives)
-    ];
-  }
-
-  /**
-   * Allow both objectives with constraints
-   *
-   * @param array $objectives Array of LocalObjective instances
-   * @param \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\ObjectiveRegistry $registry
-   * @return array Resolution result
-   */
-  private function allowBothObjectives(array $objectives, $registry): array
-  {
-    return [
-      'success' => true,
-      'strategy' => 'allow_both',
-      'message' => 'Both objectives allowed to proceed',
-      'objectives' => array_map(fn($obj) => $obj->getId(), $objectives)
-    ];
-  }
-
-  /**
-   * Handle consensus escalation when agents cannot reach agreement
-   *
-   * Called when ConsensusBuilder fails to reach consensus within timeout.
-   * The orchestrator makes the final decision based on:
-   * - Evaluation scores
-   * - Agent expertise levels
-   * - Historical performance
-   * - Business rules
-   *
-   * @param string $outputId The output being evaluated
-   * @param array $evaluations Array of agent evaluations
-   * @return array Final decision
-   */
-  public function escalateConsensusDecision(string $outputId, array $evaluations): array
-  {
-    try {
-      if (empty($evaluations)) {
-        throw new \InvalidArgumentException("No evaluations provided for consensus escalation");
-      }
-
-      // Calculate weighted average based on agent expertise
-      $totalWeight = 0;
-      $weightedSum = 0;
-
-      foreach ($evaluations as $evaluation) {
-        $agentId = $evaluation['evaluator_agent_id'] ?? '';
-        $score = $evaluation['overall_score'] ?? 0;
-
-        // Get agent's expertise level for this output type
-        $weight = match ($agentId) {
-          'AnalyticsAgent' => 1.5,  // Expert in analytics
-          'ReasoningAgent' => 1.2,  // Competent in reasoning
-          'ValidationAgent' => 1.0, // Standard weight
-          default => 1.0
-        };
-
-        $weightedSum += $score * $weight;
-        $totalWeight += $weight;
-      }
-
-      $finalScore = $totalWeight > 0 ? $weightedSum / $totalWeight : 0;
-
-      $qualityThreshold = $this->autonomousConfig->getCorrectionTriggerThreshold();
-      $requiresCorrection = $finalScore < $qualityThreshold;
-
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Orchestrator escalated consensus decision: score={$finalScore}, threshold={$qualityThreshold}, correction=" . ($requiresCorrection ? 'yes' : 'no'),
-          'info'
-        );
-      }
-
-      return [
-        'success' => true,
-        'output_id' => $outputId,
-        'final_score' => $finalScore,
-        'requires_correction' => $requiresCorrection,
-        'decision_maker' => 'OrchestratorAgent',
-        'evaluation_count' => count($evaluations),
-        'message' => $requiresCorrection
-          ? 'Output requires correction based on orchestrator decision'
-          : 'Output approved by orchestrator'
-      ];
-
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error escalating consensus decision: " . $e->getMessage(),
-        'error'
-      );
-
-      return [
-        'success' => false,
-        'output_id' => $outputId,
-        'error' => $e->getMessage()
-      ];
-    }
-  }
-
-  /**
-   * Get pending objectives requiring approval
-   *
-   * @return array Array of pending objectives
-   */
-  public function getPendingObjectives(): array
-  {
-    try {
-      $objectiveRegistry = new \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\ObjectiveRegistry($this->db, $this->debug);
-      return $objectiveRegistry->getObjectivesByStatus('pending');
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error getting pending objectives: " . $e->getMessage(),
-        'error'
-      );
-      return [];
-    }
-  }
-
-  // ========================================
-  // PRIVATE HELPER METHODS FOR CONFLICT RESOLUTION
-  // ========================================
 
   /**
    * Get active objectives across all agents
+   *
+   * Delegates to ObjectiveManager for retrieving active objectives.
    *
    * @return array Array of active objectives
    */
   public function getActiveObjectives(): array
   {
-    try {
-      $objectiveRegistry = new \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\ObjectiveRegistry($this->db, $this->debug);
-      return $objectiveRegistry->getObjectivesByStatus('active');
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error getting active objectives: " . $e->getMessage(),
-        'error'
-      );
-      return [];
-    }
+    return $this->objectiveManager->getActiveObjectives();
   }
 
   /**
-   * Traite une requête avec retry automatique pour les erreurs temporaires
-   *
-   * @param string $query La requête utilisateur
-   * @param array $options Options de traitement
-   * @return array Réponse structurée avec métadonnées
+   * Process query with retry logic
+   * 
+   * Delegates to QueryProcessor for retry handling with temporary error detection.
+   * Automatically retries on temporary errors (timeouts, rate limits, etc.).
+   * 
+   * @param string $query User query
+   * @param array $options Processing options (max_retries, retry_delay, etc.)
+   * @return array Processing result with retry info
    */
   public function processWithRetry(string $query, array $options = []): array
   {
-    $maxRetries = $options['max_retries'] ?? 2;
-    $retryDelay = $options['retry_delay'] ?? 1; // secondes
-    $attempt = 0;
-    $lastError = null;
-
-    while ($attempt <= $maxRetries) {
-      try {
-        $result = $this->processWithValidation($query, $options);
-
-        // Si succès, retourner le résultat
-        if ($result['success'] ?? false) {
-          // Ajouter info sur les retries si nécessaire
-          if ($attempt > 0) {
-            $result['retry_info'] = [
-              'attempts' => $attempt + 1,
-              'succeeded_on_retry' => true
-            ];
-          }
-          return $result;
-        }
-
-        // Si échec mais pas une erreur temporaire, ne pas retry
-        if (!$this->errorHandler->isTemporaryError($result['error'] ?? '')) {
-          return $result;
-        }
-
-        $lastError = $result;
-
-      } catch (\Exception $e) {
-        $lastError = [
-          'success' => false,
-          'error' => $e->getMessage()
-        ];
-
-        // Si pas une erreur temporaire, ne pas retry
-        if (!$this->errorHandler->isTemporaryError($e->getMessage())) {
-          $errorContext = [
-            'query' => $query,
-            'intent' => []
-          ];
-          return $this->errorHandler->buildErrorResponse($e->getMessage(), $errorContext);
-        }
-      }
-
-      $attempt++;
-
-      // Si on a encore des retries, attendre et logger
-      if ($attempt <= $maxRetries) {
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Retry attempt {$attempt}/{$maxRetries} for query: {$query}",
-            'info'
-          );
-        }
-
-        sleep($retryDelay);
-      }
-    }
-
-    // Tous les retries ont échoué
-    if ($lastError) {
-      if (is_array($lastError) && isset($lastError['error'])) {
-        $errorContext = [
-          'query' => $query,
-          'intent' => []
-        ];
-        $response = $this->errorHandler->buildErrorResponse($lastError['error'], $errorContext);
-        $response['retry_info'] = [
-          'attempts' => $maxRetries + 1,
-          'all_failed' => true
-        ];
-        return $response;
-      }
-    }
-
-    // Fallback
-    return $this->errorHandler->buildErrorResponse('Échec après plusieurs tentatives', ['query' => $query]);
+    // Delegate to QueryProcessor with processWithValidation as callback
+    return $this->queryProcessor->processWithRetry(
+      $query,
+      $options,
+      fn($q, $opts) => $this->processWithValidation($q, $opts)
+    );
   }
 
   /**
@@ -948,7 +467,7 @@ class OrchestratorAgent
   public function processWithValidation(string $query, array $options = []): array
   {
     $startTime = microtime(true);
-    $perfMarkers = ['start' => $startTime]; // 🆕 Performance tracking
+    $this->performanceTracker->startTracking(); // Phase 5: Use PerformanceTracker
     $this->collector->startTimer('process_validation');
 
     $status = 'success';
@@ -957,7 +476,10 @@ class OrchestratorAgent
     $executionId = null;
 
     if ($this->debug) {
-      error_log("[INFO : TIME]️ [PERF] processWithValidation START at " . date('H:i:s'));
+      error_log("-------------------------------");
+      error_log("[INFO  START] processWithValidation - Query: " . substr($query, 0, 100));
+      error_log("[INFO TIME] Start time: " . date('Y-m-d H:i:s.u'));
+      error_log("-------------------------------");
     }
 
     try {
@@ -985,8 +507,7 @@ class OrchestratorAgent
         ];
       } else {
         // Only check out-of-context for longer queries (> 4 words)
-        $hallucinationDetector = new HallucinationDetector($this->debug);
-        $contextCheck = $hallucinationDetector->detectOutOfContext($query);
+        $contextCheck = $this->hallucinationDetector->detectOutOfContext($query);
 
         if ($this->debug) {
           $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'out_of_context_check', [
@@ -1001,10 +522,71 @@ class OrchestratorAgent
       }
 
       // Handle out-of-context queries based on suggested action
-      if ($contextCheck['suggested_action'] === 'reject') {
+      if (isset($contextCheck['is_out_of_context']) && $contextCheck['is_out_of_context'] === true) {
         // Reject query immediately - return error response
         $this->securityLogger->logSecurityEvent(
-          "Query rejected as out-of-context: '{$query}' (category: {$contextCheck['detected_category']})",
+          "Query rejected by PRIMARY GATE (is_out_of_context=true): '{$query}' (category: {$contextCheck['detected_category']})",
+          'warning'
+        );
+
+        // Build dynamic error message based on active domain
+        $activeDomain = DomainConfig::getActivities();
+
+        return [
+          'success' => false,
+          'type' => 'error',
+          'error' => 'out_of_context',
+          'text_response' => $errorMessage,
+          'response' => $errorMessage,
+          'out_of_context_detection' => [
+            'is_out_of_context' => true,
+            'context_relevance' => $contextCheck['context_relevance'] ?? 0.0,
+            'category' => $contextCheck['detected_category'],
+            'confidence' => $contextCheck['confidence'],
+            'explanation' => $contextCheck['explanation'],
+            'rejection_gate' => 'primary_boolean_gate'
+          ],
+          'sources' => [],
+          'data' => []
+        ];
+      }
+      
+      // THRESHOLD GATE: Check context_relevance (threshold gate)
+      // If relevance score is below threshold, reject or flag for review
+      if (isset($contextCheck['context_relevance']) && 
+          $contextCheck['context_relevance'] < self::CONTEXT_RELEVANCE_THRESHOLD) {
+        // Reject query due to low relevance score
+        $this->securityLogger->logSecurityEvent(
+          "Query rejected by THRESHOLD GATE (context_relevance={$contextCheck['context_relevance']} < " . self::CONTEXT_RELEVANCE_THRESHOLD . "): '{$query}'",
+          'warning'
+        );
+        return [
+          'success' => false,
+          'type' => 'error',
+          'error' => 'out_of_context',
+          'text_response' => $errorMessage,
+          'response' => $errorMessage,
+          'out_of_context_detection' => [
+            'is_out_of_context' => $contextCheck['is_out_of_context'] ?? false,
+            'context_relevance' => $contextCheck['context_relevance'],
+            'threshold' => self::CONTEXT_RELEVANCE_THRESHOLD,
+            'category' => $contextCheck['detected_category'],
+            'confidence' => $contextCheck['confidence'],
+            'explanation' => $contextCheck['explanation'],
+            'rejection_gate' => 'threshold_relevance_gate'
+          ],
+          'sources' => [],
+          'data' => []
+        ];
+      }
+      
+      // NUANCED HANDLING: Check suggested_action (action routing)
+      // Only reached if query passes both boolean and threshold gates
+      if ($contextCheck['suggested_action'] === 'reject') {
+        // Reject query based on LLM's suggested action
+        // This handles nuanced rejection cases beyond boolean/threshold violations
+        $this->securityLogger->logSecurityEvent(
+          "Query rejected by NUANCED HANDLING (suggested_action='reject'): '{$query}' (category: {$contextCheck['detected_category']})",
           'warning'
         );
 
@@ -1039,10 +621,12 @@ class OrchestratorAgent
           'text_response' => $errorMessage,
           'response' => $errorMessage,
           'out_of_context_detection' => [
-            'is_out_of_context' => true,
+            'is_out_of_context' => $contextCheck['is_out_of_context'] ?? false,
+            'context_relevance' => $contextCheck['context_relevance'] ?? 0.0,
             'category' => $contextCheck['detected_category'],
             'confidence' => $contextCheck['confidence'],
-            'explanation' => $contextCheck['explanation']
+            'explanation' => $contextCheck['explanation'],
+            'rejection_gate' => 'nuanced_action_routing'
           ],
           'sources' => [],
           'data' => []
@@ -1096,9 +680,7 @@ class OrchestratorAgent
             'info'
           );
         }
-        // Set option to force web_search intent
-        $options['force_intent'] = 'web_search';
-        $options['out_of_context_redirect'] = true;
+        // Note: Web search intent will be detected naturally by IntentAnalyzer
       }
       // If action is 'allow', continue normally
       $resolved = $this->memoryManager->resolveContextualReferences($query);
@@ -1136,7 +718,7 @@ class OrchestratorAgent
       }
 
       // Full orchestration path
-      return $this->handleFullOrchestration($query, $queryToProcess, $startTime, $perfMarkers);
+      return $this->handleFullOrchestration($query, $queryToProcess, $startTime);
     } catch (\Exception $e) {
       $status = 'error';
 
@@ -1145,7 +727,7 @@ class OrchestratorAgent
         'error'
       );
 
-      // 🆕 Store error in DiagnosticManager for analysis
+      // Store error in DiagnosticManager for analysis
       $this->diagnosticManager->storeError(
         $e->getMessage(),
         $query,
@@ -1189,9 +771,20 @@ class OrchestratorAgent
           "⏱️ TASK 4.4.2.3: Query latency recorded: {$latencyMs}ms (status: {$status})",
           'info'
         );
+
+        if ($this->debug) {        
+          error_log("-----------------------------------");
+          error_log("[INFO END] processWithValidation - Status: {$status}");
+          error_log("[INFO TIME] End time: " . date('Y-m-d H:i:s.u'));
+          error_log("⏱️ [INFO DURATION] Total time: " . round($latencyMs, 2) . "ms");
+          error_log("-----------------------------------");
+	}  
       }
 
       $this->collector->stopTimer('process_validation');
+      
+      // Phase 5: Stop performance tracking
+      $this->performanceTracker->stopTracking($status);
     }
   }
 
@@ -1202,102 +795,37 @@ class OrchestratorAgent
    * @param string $query Original user query
    * @param string $queryToProcess Resolved query to process
    * @param float $startTime Start time for performance tracking
-   * @param array $perfMarkers Performance markers array
    * @return array Full orchestration response
    */
-  private function handleFullOrchestration(string $query, string $queryToProcess, float $startTime, array $perfMarkers): array
+  private function handleFullOrchestration(string $query, string $queryToProcess, float $startTime): array
   {
+    if ($this->debug) {
+      error_log("-----------------------------------");
+      error_log(" [INFO START] handleFullOrchestration");
+      error_log(" [INFO QUERY] Original: " . substr($query, 0, 100));
+      error_log(" [INFO QUERY] To Process: " . substr($queryToProcess, 0, 100));
+      error_log("-----------------------------------");
+    }
+    
     $executionId = 'exec_' . uniqid('', true);
     $this->workingMemory->enterScope($executionId);
 
     $this->workingMemory->set('original_query', $query);
     $this->workingMemory->set('start_time', $startTime);
 
-    $perfMarkers['after_init'] = microtime(true); // 🆕
+    $this->performanceTracker->addMarker('after_init'); // Phase 5: Use PerformanceTracker
 
-    // These operations are independent and can run in parallel
-    $parallelStart = microtime(true);
+    // Phase 2: Query Processing - Delegate parallel execution to QueryProcessor
+    $parallelResult = $this->queryProcessor->executeParallelOperations($query);
+    $rawContext = $parallelResult['raw_context'];
+    $contextError = $parallelResult['context_error'];
 
-    // Initialize results
-    $rawContext = [];
-    $translatedQuery = $queryToProcess;
-    $translationError = null;
-    $contextError = null;
+    $this->performanceTracker->addMarker('after_parallel'); // Phase 5: Use PerformanceTracker
 
-    // Try parallel execution using PHP's built-in capabilities
-    // Note: PHP doesn't have native async/await, but we can simulate parallel execution
-    // by starting both operations and collecting results
-    try {
-      // Start both operations
-      $contextStart = microtime(true);
-      $translationStart = microtime(true);
-
-      // Operation 1: Context retrieval
-      try {
-        $rawContext = $this->conversationMemory ? $this->conversationMemory->getRelevantContext($query) : [];
-        $contextDuration = (microtime(true) - $contextStart) * 1000;
-      } catch (\Exception $e) {
-        $contextError = $e;
-        $contextDuration = (microtime(true) - $contextStart) * 1000;
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Context retrieval failed (using empty context): " . $e->getMessage(),
-            'warning'
-          );
-        }
-      }
-      $translationDuration = 0; // No longer measured here
-
-      $parallelDuration = (microtime(true) - $parallelStart) * 1000;
-
-      // Log parallel execution results
-      if ($this->debug) {
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'parallel_execution', [
-          'context_duration_ms' => round($contextDuration, 2),
-          'translation_duration_ms' => round($translationDuration, 2),
-          'parallel_total_ms' => round($parallelDuration, 2),
-          'sequential_would_be_ms' => round($contextDuration + $translationDuration, 2),
-          'time_saved_ms' => round(($contextDuration + $translationDuration) - $parallelDuration, 2),
-          'context_success' => $contextError === null,
-          'translation_success' => $translationError === null
-        ]);
-      }
-
-    } catch (\Exception $e) {
-      // Fallback to sequential execution if parallel fails
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Parallel execution failed, falling back to sequential: " . $e->getMessage(),
-          'warning'
-        );
-      }
-
-      // Sequential fallback
-      try {
-        $rawContext = $this->conversationMemory ? $this->conversationMemory->getRelevantContext($query) : [];
-      } catch (\Exception $e) {
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Context retrieval failed: " . $e->getMessage(),
-            'warning'
-          );
-        }
-      }
-
-    }
-
-    $perfMarkers['after_parallel'] = microtime(true); // 🆕
-
-    // 🆕 Gestion intelligente du contexte (éviter conflit feedback/contexte)
-    $contextDecision = $this->contextManager->decideContextUsage(
-      $query,
-      $rawContext,
-      $rawContext['feedback_context'] ?? []
-    );
-
-    // 3.2. Filtrer le contexte selon la décision
-    $context = $this->contextManager->filterConversationContext($rawContext, $contextDecision);
-    $context = $this->contextManager->enrichContextWithDecision($context, $contextDecision);
+    // Phase 2: Query Processing - Delegate context decision to QueryProcessor
+    $contextResult = $this->queryProcessor->processContextDecision($query, $rawContext);
+    $context = $contextResult['context'];
+    $contextDecision = $contextResult['context_decision'];
 
     $this->workingMemory->set('conversation_context', $context);
     $this->workingMemory->set('context_decision', $contextDecision);
@@ -1329,11 +857,14 @@ class OrchestratorAgent
       );
     }
 
-    $contextAnalysis = $this->queryAnalyzer->analyzeQueryContextRelation($query, $context);
+    // Phase 2: Query-context relation analysis - Delegate to QueryProcessor
+    $relationAnalysis = $this->queryProcessor->analyzeQueryContextRelation($queryToProcess, $context);
+    $contextAnalysis = $relationAnalysis['context_analysis'];
     $this->workingMemory->set('context_analysis', $contextAnalysis);
 
+    // Use enriched query if related to context
     if ($contextAnalysis['is_related_to_context']) {
-      $queryToProcess = $this->queryAnalyzer->enrichQueryWithContext($queryToProcess, $context, $contextAnalysis);
+      $queryToProcess = $relationAnalysis['enriched_query'];
     }
 
     $this->workingMemory->set('resolved_query', $queryToProcess);
@@ -1344,55 +875,30 @@ class OrchestratorAgent
 
     // Anti-hallucination verification (PRIORITY 1)
     // Check if translated_query contains keywords that are NOT present in original query
-    // Uses language-agnostic detection via TranslationService
+    // Uses HallucinationDetector for comprehensive validation
     $translatedQuery = $intent['translated_query'] ?? $queryToProcess;
-    $originalQueryLower = strtolower($query);
-    $translatedQueryLower = strtolower($translatedQuery);
+    
+    // Use HallucinationDetector for validation (extracted from inline code)
+    $validationResult = $this->hallucinationDetector->validateTranslation($query, $translatedQuery);
 
-    $hallucinationDetected = false;
-    $hallucinationKeywords = [];
-
-    // Check for revenue bias hallucination
-    // Note: All processing is in English per AGENTS.md architecture
-    if (str_contains($translatedQueryLower, 'revenue')
-        && !$this->containsKeywordInAnyLanguage($originalQueryLower, 'revenue')) {
-      $hallucinationDetected = true;
-      $hallucinationKeywords[] = 'revenue';
-    }
-
-    // Check for month/monthly hallucination
-    if ((str_contains($translatedQueryLower, 'month') || str_contains($translatedQueryLower, 'monthly'))
-        && !$this->containsKeywordInAnyLanguage($originalQueryLower, 'month')) {
-      $hallucinationDetected = true;
-      $hallucinationKeywords[] = 'month';
-    }
-
-    // Check for quarter/quarterly hallucination
-    if ((str_contains($translatedQueryLower, 'quarter') || str_contains($translatedQueryLower, 'quarterly'))
-        && !$this->containsKeywordInAnyLanguage($originalQueryLower, 'quarter')) {
-      $hallucinationDetected = true;
-      $hallucinationKeywords[] = 'quarter';
-    }
-
-    if ($hallucinationDetected) {
-      // 🚨 HALLUCINATION DETECTED!
-      $this->securityLogger->logSecurityEvent(
-        "🚨 HALLUCINATION DETECTED: Revenue bias in translation",
-        'warning',
-        [
-          'original_query' => $query,
-          'translated_query' => $translatedQuery,
-          'hallucination_keywords' => $hallucinationKeywords,
-          'action' => 'using_original_query_as_fallback'
-        ]
-      );
-
+    if ($validationResult['hallucination_detected']) {
       // Fallback: Use original query as translated query
       $intent['translated_query'] = $queryToProcess;
       $translatedQuery = $queryToProcess;
 
-      // Log for analysis
-      error_log("[warning] HALLUCINATION: '$query' → '$translatedQuery' (keywords: " . implode(', ', $hallucinationKeywords) . ")");
+      // Log the ACTION taken (fallback decision) - detection is already logged by HallucinationDetector
+      $this->securityLogger->logStructured(
+        'info',
+        'OrchestratorAgent',
+        'hallucination_fallback',
+        [
+          'action' => 'using_original_query_as_fallback',
+          'original_query' => $validationResult['original_query'],
+          'rejected_translation' => $validationResult['translated_query'],
+          'hallucination_keywords' => $validationResult['hallucination_keywords']
+        ]
+      );
+      
       error_log("   → Fallback to original: '$queryToProcess'");
     }
 
@@ -1407,12 +913,12 @@ class OrchestratorAgent
           'intent_type' => $intent['type'] ?? 'unknown',
           'is_hybrid_flag' => $intent['is_hybrid'] ?? false,
           'confidence' => $intent['confidence'] ?? 0,
-          'hallucination_detected' => $hallucinationDetected,
-          'hallucination_keywords' => $hallucinationDetected ? $hallucinationKeywords : null,
+          'hallucination_detected' => $validationResult['hallucination_detected'],
+          'hallucination_keywords' => $validationResult['hallucination_detected'] ? $validationResult['hallucination_keywords'] : null,
         ]
       );
     }
-    // 4.5. 🆕 Detect complex queries (Task 16.2)
+
     // Use translated query from intent for detection
     $translatedQuery = $intent['translated_query'] ?? $queryToProcess;
     $complexityDetection = $this->complexQueryHandler->detectComplexQuery($translatedQuery);
@@ -1480,47 +986,11 @@ class OrchestratorAgent
       }
 
       // Get enriched context for hybrid processing
-      $enrichedContext = array_merge($context, [
-        'context_analysis' => $contextAnalysis,
-        'is_related_to_previous' => $contextAnalysis['is_related_to_context'],
-        'relation_type' => $contextAnalysis['relation_type'],
-      ]);
-
-      // The LLM classifier sometimes misses web search keywords, so we add detection here
-      // This is a temporary fix until ClassificationEngine prompt is improved
-      if ($intent['type'] === 'hybrid' && isset($intent['sub_types'])) {
-        $webSearchKeywords = [
-          'amazon', 'ebay', 'google', 'alibaba', 'aliexpress',
-          'compare with', 'search online', 'find on', 'check on',
-          'prix sur', 'price on', 'chercher sur', 'rechercher sur'
-        ];
-
-        $hasWebSearchKeyword = false;
-        foreach ($webSearchKeywords as $keyword) {
-          if (stripos($queryToProcess, $keyword) !== false) {
-            $hasWebSearchKeyword = true;
-            break;
-          }
-        }
-
-        // If web search keyword found but not in sub_types, add it
-        if ($hasWebSearchKeyword && !in_array('web_search', $intent['sub_types'], true)) {
-          $intent['sub_types'][] = 'web_search';
-
-          if ($this->debug) {
-            $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'web_search_detection', [
-              'query' => substr($queryToProcess, 0, 100),
-              'original_sub_types' => $intent['sub_types'],
-              'corrected_sub_types' => $intent['sub_types'],
-              'note' => 'Added web_search to sub_types based on keyword detection'
-            ]);
-          }
-        }
-      }
+      $enrichedContext = $this->queryProcessor->buildEnrichedContext($context, $contextAnalysis);
 
       // Handle hybrid queries with Actor-Critic approach
       // directly in OrchestratorAgent using TaskPlanner and specialized executors
-      return $this->handleHybridQuery($queryToProcess, $translatedQuery, $intent, $enrichedContext, $startTime);
+      return $this->handleHybridQuery($queryToProcess, $intent, $enrichedContext, $startTime);
     }
 
     // 5. Vérifier si raisonnement complexe nécessaire
@@ -1572,11 +1042,7 @@ class OrchestratorAgent
       }
     }
 
-    $enrichedContext = array_merge($context, [
-      'context_analysis' => $contextAnalysis,
-      'is_related_to_previous' => $contextAnalysis['is_related_to_context'],
-      'relation_type' => $contextAnalysis['relation_type'],
-    ]);
+    $enrichedContext = $this->queryProcessor->buildEnrichedContext($context, $contextAnalysis);
 
     if ($this->debug) {
       $this->securityLogger->logStructured(
@@ -1678,37 +1144,10 @@ class OrchestratorAgent
         );
       }
 
-      // Apply same fix as earlier routing point
-      if (isset($intent['sub_types'])) {
-        $webSearchKeywords = [
-          'amazon', 'ebay', 'google', 'alibaba', 'aliexpress',
-          'compare with', 'search online', 'find on', 'check on',
-          'prix sur', 'price on', 'chercher sur', 'rechercher sur'
-        ];
-
-        $hasWebSearchKeyword = false;
-        foreach ($webSearchKeywords as $keyword) {
-          if (stripos($queryToProcess, $keyword) !== false) {
-            $hasWebSearchKeyword = true;
-            break;
-          }
-        }
-
-        if ($hasWebSearchKeyword && !in_array('web_search', $intent['sub_types'], true)) {
-          $intent['sub_types'][] = 'web_search';
-
-          if ($this->debug) {
-            $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'web_search_detection_fallback', [
-              'query' => substr($queryToProcess, 0, 100),
-              'note' => 'Added web_search to sub_types in fallback routing'
-            ]);
-          }
-        }
-      }
 
       // NEW (2026-02-09): Handle hybrid queries with Actor-Critic approach
       // This is a fallback - hybrid queries should normally be caught earlier
-      return $this->handleHybridQuery($queryToProcess, $translatedQuery, $intent, $enrichedContext, $startTime);
+      return $this->handleHybridQuery($queryToProcess, $intent, $enrichedContext, $startTime);
     }
 
     $planStart = microtime(true);
@@ -1827,7 +1266,7 @@ class OrchestratorAgent
 
     // 10. Store in conversation memory - delegate to MemoryManager
 
-    $perfMarkers['before_memory'] = microtime(true);
+    $this->performanceTracker->addMarker('before_memory'); // Phase 5: Use PerformanceTracker
 
     // Check if query is already in QueryCache (warm cache scenario)
     // Check both 'from_cache' and 'cached' flags (different agents use different naming)
@@ -1852,6 +1291,9 @@ class OrchestratorAgent
       // Entity tracking is lightweight (<1ms) and essential for follow-up queries
       // This ensures "What is its stock level" works after cached "What is the price of iPhone"
       if ($entityId !== null && $entityId !== 0) {
+        if ($this->debug) {        
+          error_log("[INFO ENTITY_TRACKING] Setting last entity: ID={$entityId}, Type={$entityType}, Query=" . substr($query, 0, 50));
+        }
         $this->memoryManager->setLastEntity($entityId, $entityType);
 
         if ($this->debug) {
@@ -1861,6 +1303,10 @@ class OrchestratorAgent
             'reason' => 'contextual_reference_resolution',
             'overhead_ms' => '<1'
           ]);
+        }
+      } else {
+        if ($this->debug) {	
+          error_log("[WARNING ENTITY_TRACKING] NOT setting last entity: ID={$entityId}, Type={$entityType}, Query=" . substr($query, 0, 50));
         }
       }
     }
@@ -1892,7 +1338,7 @@ class OrchestratorAgent
       }
     }
 
-    $perfMarkers['after_memory'] = microtime(true);
+    $this->performanceTracker->addMarker('after_memory'); // Phase 5: Use PerformanceTracker
 
     // 11. Cleanup
     $this->workingMemory->deleteScope($executionId);
@@ -1909,14 +1355,23 @@ class OrchestratorAgent
     $this->executionStats['total_requests']++;
     $this->executionStats['total_execution_time'] += (microtime(true) - $startTime);
 
-    // Log performance breakdown
-    if ($this->debug && isset($perfMarkers)) {
-      $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'performance_breakdown', [
-        'init_ms' => round(($perfMarkers['after_init'] - $perfMarkers['start']) * 1000, 2),
-        'parallel_ops_ms' => round(($perfMarkers['after_parallel'] - $perfMarkers['after_init']) * 1000, 2),
-        'memory_ms' => round(($perfMarkers['after_memory'] - $perfMarkers['before_memory']) * 1000, 2),
-        'total_ms' => round((microtime(true) - $startTime) * 1000, 2)
-      ]);
+    // Phase 5: Log performance breakdown using PerformanceTracker
+    if ($this->debug) {
+      $this->performanceTracker->logPerformanceBreakdown();
+      
+      // End logging for handleFullOrchestration
+      $orchestrationDuration = (microtime(true) - $startTime) * 1000;
+      
+      if ($this->debug) {      
+        error_log("-----------------------------------------");
+        error_log("🏁 [INFO END] handleFullOrchestration");
+        error_log("✅ [INFO STATUS] Success: " . ($executionResult['success'] ?? false ? 'YES' : 'NO'));
+        error_log("🎯 [INFO ENTITY] ID: {$entityId}, Type: {$entityType}");
+        error_log("📊 [INFO RESPONSE] Type: " . ($response['type'] ?? 'unknown'));
+        error_log("⏱️ [INFO DURATION] Total time: " . round($orchestrationDuration, 2) . "ms");
+        error_log("[INFO TIME] End time: " . date('Y-m-d H:i:s.u'));
+        error_log("------------------------------------------");
+      }
     }
 
     return $response;
@@ -1935,136 +1390,31 @@ class OrchestratorAgent
   }
 
   /**
-   * Handle hybrid queries using Actor-Critic approach
-   *
-   * NEW (2026-02-09): Replaces deprecated HybridQueryProcessor
-   *
-   * This method handles queries with multiple intents by:
-   * 1. Using TaskPlanner to decompose the query into sub-tasks
-   * 2. Executing each sub-task with appropriate executor
-   * 3. Synthesizing results from all sub-tasks
-   *
+   * Handle hybrid query processing
+   * 
+   * Delegates to HybridQueryHandler for hybrid query processing.
+   * This method maintains backward compatibility while delegating
+   * all hybrid query logic to the specialized handler.
+   * 
    * @param string $queryToProcess Original query
-   * @param string $translatedQuery Translated query
-   * @param array $intent Intent analysis
+   * @param array $intent Intent analysis result
    * @param array $context Query context
-   * @param float $startTime Query start time
-   * @return array Synthesized result
+   * @param float $startTime Query start timestamp
+   * @return array Hybrid query result
    */
   private function handleHybridQuery(
     string $queryToProcess,
-    string $translatedQuery,
     array $intent,
     array $context,
     float $startTime
   ): array {
-    if ($this->debug) {
-      $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'hybrid_query_start', [
-        'query' => substr($queryToProcess, 0, 100),
-        'intent_type' => $intent['type'] ?? 'unknown',
-        'confidence' => $intent['confidence'] ?? 0
-      ]);
-    }
-
-    try {
-      // Step 1: Create execution plan using TaskPlanner
-      $planStart = microtime(true);
-      $plan = $this->taskPlanner->createPlan($intent, $queryToProcess, $context);
-
-      if ($this->debug) {
-        $steps = $plan->getSteps();
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'hybrid_plan_created', [
-          'step_count' => count($steps),
-          'step_types' => array_map(fn($step) => $step->getType(), $steps),
-          'plan_time' => round((microtime(true) - $planStart) * 1000, 2) . 'ms'
-        ]);
-      }
-
-      // Step 2: Execute plan using PlanExecutor
-      $executeStart = microtime(true);
-      $executionResult = $this->planExecutor->execute($plan);
-
-      if ($this->debug) {
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'hybrid_plan_executed', [
-          'execution_time' => round((microtime(true) - $executeStart) * 1000, 2) . 'ms',
-          'total_time' => round((microtime(true) - $startTime) * 1000, 2) . 'ms',
-          'success' => $executionResult['success'] ?? false,
-          'result_type' => $executionResult['result']['type'] ?? 'unknown'
-        ]);
-      }
-
-      // Check if execution was successful
-      if (!$executionResult['success']) {
-        throw new \Exception($executionResult['error'] ?? 'Plan execution failed');
-      }
-
-      // Extract the actual result
-      $result = $executionResult['result'] ?? $executionResult;
-
-      // CRITICAL: Force type to 'hybrid' for hybrid queries
-      // The result may have type 'semantic_results' or 'analytics_response' from synthesis
-      // but for hybrid queries, the type MUST be 'hybrid'
-      $result['type'] = 'hybrid';
-
-      // Ensure result has success key for QueryProcessor
-      if (!isset($result['success'])) {
-        $result['success'] = true;
-      }
-
-      // Ensure result has required keys
-      if (!isset($result['intent'])) {
-        $result['intent'] = $intent;
-      }
-
-      if (!isset($result['agent_used'])) {
-        $result['agent_used'] = 'hybrid_orchestrator';
-      }
-
-      // Log the final type for debugging
-      error_log("🎯 handleHybridQuery: Forcing type to 'hybrid' (was: " . ($executionResult['result']['type'] ?? 'unknown') . ")");
-
-      // Step 3: Store interaction in memory
-      if ($this->conversationMemory !== null) {
-        try {
-          $this->conversationMemory->addInteraction(
-            $queryToProcess,
-            $result['response'] ?? $result['text_response'] ?? 'No response',
-            [
-              'intent_type' => 'hybrid',
-              'confidence' => $intent['confidence'] ?? 0,
-              'sub_query_count' => count($plan->getSteps()),
-              'execution_time' => microtime(true) - $startTime
-            ]
-          );
-        } catch (\Exception $e) {
-          if ($this->debug) {
-            $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'memory_storage_failed', [
-              'error' => $e->getMessage()
-            ]);
-          }
-        }
-      }
-
-      return $result;
-
-    } catch (\Exception $e) {
-      // Error handling with detailed logging
-      $this->securityLogger->logStructured('error', 'OrchestratorAgent', 'hybrid_query_failed', [
-        'query' => substr($queryToProcess, 0, 100),
-        'error' => $e->getMessage(),
-        'trace' => substr($e->getTraceAsString(), 0, 500)
-      ]);
-
-      // Return error response
-      return [
-        'type' => 'error',
-        'response' => 'Une erreur est survenue lors du traitement de votre requête hybride.',
-        'error' => $e->getMessage(),
-        'query' => $queryToProcess,
-        'intent_type' => 'hybrid',
-        'success' => false
-      ];
-    }
+    // Delegate to HybridQueryHandler
+    return $this->hybridQueryHandler->handleHybridQuery(
+      $queryToProcess,
+      $intent,
+      $context,
+      $startTime
+    );
   }
 
   /**
@@ -2097,47 +1447,8 @@ class OrchestratorAgent
    */
   private function getDomainForIntent(string $intentType): mixed
   {
-    // Map intent types to domain classes
-    // NOTE: This mapping will be enhanced in future specs to include business domains
-    $domainMap = [
-      'semantic' => SemanticAgent::class,
-      'analytics' => AnalyticsAgent::class,
-      'hybrid' => ActorCriticCoordinator::class,
-      'web_search' => WebSearchTool::class,
-    ];
-
-    // Get domain class for intent type
-    $domainClass = $domainMap[$intentType] ?? null;
-
-    if ($domainClass === null) {
-      if ($this->debug) {
-        $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'domain_not_found', [
-          'intent_type' => $intentType,
-          'available_domains' => array_keys($domainMap),
-          'fallback' => 'semantic'
-        ]);
-      }
-
-      // Fallback to semantic domain (safer than analytics)
-      $domainClass = $domainMap['semantic'];
-    }
-
-    // NOTE: Current implementation returns class name, not QueryTypeDomainInterface instance
-    // This is a transitional implementation. Full interface implementation will be added
-    // when domains are refactored to implement QueryTypeDomainInterface (future task).
-    // For now, we return the domain class name for backward compatibility.
-
-    if ($this->debug) {
-      $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'domain_routing', [
-        'intent_type' => $intentType,
-        'domain_class' => $domainClass,
-        'routing_method' => 'domain_based'
-      ]);
-    }
-
-    // Return domain class name (transitional implementation)
-    // TODO: Return QueryTypeDomainInterface instance when domains implement interface
-    return $domainClass;
+    // Delegate to DomainRouter for domain routing logic
+    return $this->domainRouter->getDomainForIntent($intentType, []);
   }
 
   /**
@@ -2432,34 +1743,5 @@ class OrchestratorAgent
     }
 
     return $stats;
-  }
-
-  /**
-   * Check if a keyword exists in text regardless of language
-   *
-   * This method provides language-agnostic keyword detection by checking
-   * if an English keyword or its translation exists in the original text.
-   * 
-   * Architecture compliance (AGENTS.md):
-   * - No hardcoded language patterns (agnostic layer principle)
-   * - Works for all languages automatically
-   * - Uses LLM-based translation for semantic matching
-   *
-   * @param string $text Text to search (any language, lowercase)
-   * @param string $englishKeyword English keyword to search for (lowercase)
-   * @return bool True if keyword or its translation exists in text
-   */
-  private function containsKeywordInAnyLanguage(string $text, string $englishKeyword): bool
-  {
-    // First check if English keyword exists directly
-    if (str_contains($text, $englishKeyword)) {
-      return true;
-    }
-
-    // Use IntentAnalyzer's TranslationService for language-agnostic detection
-    // This leverages existing LLM translation infrastructure
-    $translationService = new \ClicShopping\AI\Agents\Orchestrator\SubIntentAnalyzer\TranslationService($this->debug);
-    
-    return $translationService->containsKeywordInAnyLanguage($text, $englishKeyword);
   }
 }

@@ -10,69 +10,94 @@
 
 namespace ClicShopping\AI\InterfacesAI;
 
-
-
 /**
  * QueryProcessorInterface
  *
- * Base interface for all HybridQueryProcessor components.
- * Defines the common contract that all specialized processors must implement.
+ * Interface for orchestration-level query processing operations.
+ * Defines the contract for the QueryProcessor class that handles:
+ * - Query validation and retry logic
+ * - Parallel execution of operations
+ * - Context decision and enrichment
+ * - Query-context relation analysis
  *
- * This interface ensures consistency across all SubHybridQueryProcessor components
- * and provides a unified API for query processing operations.
+ * This interface is distinct from HybridQueryProcessorInterface which is used
+ * for hybrid query processing components (QueryClassifier, QuerySplitter, etc.).
  *
  * Requirements:
- * - REQ-1.4: Component organization with common interface
- * - REQ-10.1: Comprehensive architecture documentation
- *
- * @package ClicShopping\AI\InterfacesAI
- * @since 2025-12-14
+ * - REQ-8: Query Processing Extraction
+ * - REQ-17: Backward Compatibility Guarantee
+ * - REQ-25: Code Quality and Standards Compliance
+
  */
 interface QueryProcessorInterface
 {
   /**
-   * Process the input data and return the result
+   * Process query with retry logic for temporary errors
    *
-   * This is the main processing method that each component must implement.
-   * The exact behavior depends on the specific component:
-   * - QueryClassifier: Classifies query type and returns classification result
-   * - QuerySplitter: Splits complex queries into sub-queries
-   * - ResultSynthesizer: Synthesizes results from multiple sources
-   * - ResultAggregator: Aggregates results from different query types
-   * - PromptValidator: Validates and sanitizes prompts
+   * Executes the provided callback with automatic retry on temporary errors.
+   * Distinguishes between temporary errors (network issues, timeouts) and
+   * permanent errors (validation failures, logic errors).
    *
-   * @param mixed $input The input data to process (type varies by component)
-   * @param array $context Additional context for processing (optional)
-   * @return mixed The processed result (type varies by component)
-   * @throws \Exception If processing fails
+   * @param string $query User query to process
+   * @param array $options Processing options (max_retries, retry_delay, etc.)
+   * @param callable $processCallback Callback function to execute
+   * @return array Processing result with status and data
+   * @throws \Exception If max retries exceeded or permanent error occurs
    */
-  public function process($input, array $context = []);
+  public function processWithRetry(string $query, array $options, callable $processCallback): array;
 
   /**
-   * Validate the input data before processing
+   * Execute parallel operations for query processing
    *
-   * Performs validation checks on the input to ensure it meets the requirements
-   * for processing. This method should be called before process() to prevent
-   * invalid data from being processed.
+   * Runs multiple operations in parallel to improve performance:
+   * - Context retrieval from memory
+   * - Query translation to English
+   * - Entity extraction
    *
-   * @param mixed $input The input data to validate
-   * @return bool True if input is valid, false otherwise
+   * @param string $query User query to process
+   * @return array Results from parallel operations with timing metrics
    */
-  public function validate($input): bool;
+  public function executeParallelOperations(string $query): array;
 
   /**
-   * Get metadata about the processor
+   * Process context decision for query
    *
-   * Returns metadata information about the processor component, including:
-   * - Component name
-   * - Version
-   * - Supported operations
-   * - Configuration options
-   * - Performance metrics (if available)
+   * Determines whether to use context for the query based on:
+   * - Query-context relevance
+   * - Context freshness
+   * - Query complexity
    *
-   * This method is useful for debugging, monitoring, and documentation purposes.
-   *
-   * @return array Metadata information about the processor
+   * @param string $query User query
+   * @param array $rawContext Raw context from memory
+   * @return array Processed context decision with filtered context
    */
-  public function getMetadata(): array;
+  public function processContextDecision(string $query, array $rawContext): array;
+
+  /**
+   * Analyze query-context relation
+   *
+   * Analyzes the relationship between the query and available context:
+   * - Semantic similarity
+   * - Entity overlap
+   * - Temporal relevance
+   *
+   * @param string $query User query
+   * @param array $context Available context
+   * @return array Analysis result with relevance scores
+   */
+  public function analyzeQueryContextRelation(string $query, array $context): array;
+
+  /**
+   * Build enriched context from analysis
+   *
+   * Enriches context with additional information based on analysis:
+   * - Related entities
+   * - Historical patterns
+   * - Domain-specific metadata
+   *
+   * @param array $context Base context
+   * @param array $contextAnalysis Context analysis results
+   * @return array Enriched context with additional metadata
+   */
+  public function buildEnrichedContext(array $context, array $contextAnalysis): array;
 }

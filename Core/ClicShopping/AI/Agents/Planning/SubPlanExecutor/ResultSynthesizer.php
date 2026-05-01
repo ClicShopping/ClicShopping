@@ -163,6 +163,16 @@ class ResultSynthesizer
           $isValid = $this->validator->validateHybridResult($result);
           break;
 
+        case 'clarification_needed':
+          // Clarification requests are always valid - they're asking for more info
+          $isValid = true;
+          break;
+
+        case 'error':
+          // Error results are valid (they communicate an error state)
+          $isValid = true;
+          break;
+
         default:
           // Unknown type - allow it through but log warning
           $isValid = true;
@@ -397,6 +407,22 @@ class ResultSynthesizer
             $addTextResponse($result['text_response']);
           }
           break;
+
+        case 'clarification_needed':
+          // Clarification requests - add to a special array for type detection
+          if (!isset($aggregated['clarification_results'])) {
+            $aggregated['clarification_results'] = [];
+          }
+          $aggregated['clarification_results'][] = $result;
+          break;
+
+        case 'error':
+          // Error results - add to a special array for type detection
+          if (!isset($aggregated['error_results'])) {
+            $aggregated['error_results'] = [];
+          }
+          $aggregated['error_results'][] = $result;
+          break;
       }
     }
 
@@ -404,6 +430,9 @@ class ResultSynthesizer
       $this->logger->logSecurityEvent(
         "Aggregated results - analytics: " . count($aggregated['analytics_results']) .
         ", semantic: " . count($aggregated['semantic_results']) .
+        ", web: " . count($aggregated['web_results'] ?? []) .
+        ", clarification: " . count($aggregated['clarification_results'] ?? []) .
+        ", error: " . count($aggregated['error_results'] ?? []) .
         ", successful: " . count($successfulSteps) .
         ", failed: " . count($failedSteps),
         'info',
@@ -646,8 +675,56 @@ class ResultSynthesizer
     // Determine primary result type
     $primaryType = 'mixed';
 
-    // 🔧 FIX: Check for web_results first (highest priority for display)
-    if (!empty($aggregated['web_results'])) {
+    // Check for clarification_needed first (all steps need clarification)
+    $allClarification = true;
+    $clarificationCount = 0;
+    $totalResultCount = 0;
+    
+    // Check all result arrays including clarification_results
+    foreach ($aggregated as $key => $value) {
+      if (str_ends_with($key, '_results') && !empty($value)) {
+        foreach ($value as $result) {
+          $totalResultCount++;
+          $resultType = $result['type'] ?? 'unknown';
+          
+          if ($this->debug) {
+            error_log("[ResultSynthesizer] Checking result in {$key}: type={$resultType}");
+          }
+          
+          if ($resultType === 'clarification_needed') {
+            $clarificationCount++;
+          } else {
+            $allClarification = false;
+          }
+        }
+      }
+    }
+
+    if ($this->debug) {
+      error_log("[ResultSynthesizer] Type detection: allClarification={$allClarification}, clarificationCount={$clarificationCount}, totalResultCount={$totalResultCount}");
+    }
+
+    // If ALL results are clarification_needed, set type to clarification_needed
+    if ($allClarification && $totalResultCount > 0) {
+      $primaryType = 'clarification_needed';
+      
+      if ($this->debug) {
+        error_log("[ResultSynthesizer] ✅ Setting primaryType to 'clarification_needed' (all {$totalResultCount} results need clarification)");
+      }
+    }
+    // If we have ONLY clarification results (no other result types)
+    elseif (!empty($aggregated['clarification_results']) && 
+            empty($aggregated['analytics_results']) && 
+            empty($aggregated['semantic_results']) && 
+            empty($aggregated['web_results'])) {
+      $primaryType = 'clarification_needed';
+      
+      if ($this->debug) {
+        error_log("[ResultSynthesizer] ✅ Setting primaryType to 'clarification_needed' (only clarification results present)");
+      }
+    }
+    // Check for web_results first (highest priority for display)
+    elseif (!empty($aggregated['web_results'])) {
       $primaryType = 'web_search_response';
     } elseif (!empty($aggregated['analytics_results']) && empty($aggregated['semantic_results'])) {
       $primaryType = 'analytics_response';
@@ -1231,7 +1308,8 @@ class ResultSynthesizer
         break;
 
       case 'mixed':
-        // Mixed results should have data from multiple sources
+      case 'hybrid':
+        // Mixed/hybrid results should have data from multiple sources
 
         $hasData = !empty($finalResult['data']);
         $hasSources = !empty($finalResult['sources']);
@@ -1240,6 +1318,26 @@ class ResultSynthesizer
           $dataStatus = isset($finalResult['data']) ? 'empty' : 'not set';
           $sourcesStatus = isset($finalResult['sources']) ? 'empty' : 'not set';
           $errors[] = "Mixed result missing data and sources (data: {$dataStatus}, sources: {$sourcesStatus})";
+        }
+        break;
+
+      case 'clarification_needed':
+        // Clarification requests are always valid - they have text_response explaining what's needed
+        // No additional validation required beyond text_response check (already done above)
+        break;
+
+      case 'error':
+        // Error results are always valid - they communicate an error state
+        // No additional validation required beyond text_response check (already done above)
+        break;
+
+      case 'web_search_response':
+      case 'web':
+        // Web search results must have sources
+        if (empty($finalResult['sources']) && empty($finalResult['data'])) {
+          $sourcesStatus = isset($finalResult['sources']) ? 'empty' : 'not set';
+          $dataStatus = isset($finalResult['data']) ? 'empty' : 'not set';
+          $errors[] = "Web search result missing sources and data (sources: {$sourcesStatus}, data: {$dataStatus})";
         }
         break;
     }

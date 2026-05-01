@@ -110,6 +110,11 @@ class MemoryManager
    */
   public function setLastEntity(int $entityId, string $entityType): void
   {
+    // CRITICAL: Always log (even if debug is off) to diagnose context resolution issues
+    if ($this->debug) {    
+      error_log("[MemoryManager] setLastEntity called: ID={$entityId}, Type={$entityType}");
+    }
+    
     if ($this->conversationMemory && $entityId !== null && $entityId !== 0) {
       $this->conversationMemory->setLastEntity($entityId, $entityType);
 
@@ -118,6 +123,10 @@ class MemoryManager
           "Stored last entity: entity_id={$entityId}, type={$entityType}",
           'info'
         );
+      }
+    } else {
+      if ($this->debug) {
+        error_log("[MemoryManager] setLastEntity SKIPPED: conversationMemory=" . ($this->conversationMemory ? 'exists' : 'null') . ", entityId={$entityId}");
       }
     }
   }

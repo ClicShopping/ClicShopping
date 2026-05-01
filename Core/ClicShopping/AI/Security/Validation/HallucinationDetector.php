@@ -13,6 +13,7 @@ namespace ClicShopping\AI\Security\Validation;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\AI\Infrastructure\Cache\OutOfContextCache;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 /**
@@ -34,6 +35,8 @@ class HallucinationDetector
   private SecurityLogger $logger;
   private bool $debug;
   private mixed $language;
+  private ?OutOfContextCache $outOfContextCache = null;
+  
   /**
    * Constructor
    *
@@ -47,6 +50,9 @@ class HallucinationDetector
     // Load language definitions
     $this->language = Registry::get('Language');
     DomainConfig::loadLanguageFile('rag_out_of_context_detection');
+    
+    // Initialize out-of-context cache (30 days TTL)
+    $this->outOfContextCache = new OutOfContextCache(2592000, $this->debug);
   }
 
   /**
@@ -276,6 +282,21 @@ class HallucinationDetector
     }
 
     try {
+      // 🔧 CACHE OPTIMIZATION: Check cache first
+      $cachedResult = $this->outOfContextCache->getCachedDetection($query);
+      if ($cachedResult !== null) {
+        // Cache HIT - return cached result immediately
+        if ($this->debug) {
+          $this->logger->logSecurityEvent(
+            "Out-of-context detection from cache: " . json_encode($cachedResult, JSON_PRETTY_PRINT),
+            'info'
+          );
+        }
+        return $cachedResult;
+      }
+      
+      // Cache MISS - proceed with LLM detection
+      
       // Build LLM prompt for out-of-context detection
       $prompt = $this->buildOutOfContextDetectionPrompt($query);
 
@@ -302,6 +323,9 @@ class HallucinationDetector
 
       // Validate and sanitize result
       $result = $this->validateOutOfContextResult($result);
+
+      // 🔧 CACHE OPTIMIZATION: Store result in cache
+      $this->outOfContextCache->cacheDetection($query, $result);
 
       // Log detection result
       $this->logger->logStructured(
@@ -476,6 +500,67 @@ class HallucinationDetector
   }
 
   /**
+   * Validate translation for hallucinations
+   *
+   * Comprehensive validation method that checks for revenue bias and temporal bias
+   * in translated queries. This is the primary method that should be used by
+   * OrchestratorAgent for translation validation.
+   *
+   * This method wraps detectRevenueBias() which already handles both revenue
+   * and temporal bias detection (month, quarter, semester, year).
+   *
+   * @param string $originalQuery Original user query
+   * @param string $translatedQuery Translated query from UnifiedQueryAnalyzer
+   * @return array Validation result with:
+   *   - 'hallucination_detected' (bool): True if hallucination found
+   *   - 'hallucination_keywords' (array): List of hallucinated keywords
+   *   - 'original_query' (string): Original query
+   *   - 'translated_query' (string): Translated query
+   *   - 'suggested_action' (string): 'use_original_query' or 'allow'
+   *   - 'confidence' (float): 0.95 if detected, 0.0 otherwise
+   */
+  public function validateTranslation(string $originalQuery, string $translatedQuery): array
+  {
+    // Delegate to existing detectRevenueBias() which handles both revenue and temporal bias
+    return $this->detectRevenueBias($originalQuery, $translatedQuery);
+  }
+
+  /**
+   * Detect temporal bias hallucination
+   *
+   * Detects when translated query adds temporal keywords (month, quarter, semester, year)
+   * but original query does NOT contain them (hallucination pattern).
+   *
+   * This method provides a focused API for temporal bias detection, but internally
+   * uses the same logic as detectRevenueBias() since temporal bias is often combined
+   * with revenue bias.
+   *
+   * @param string $originalQuery Original user query
+   * @param string $translatedQuery Translated query from UnifiedQueryAnalyzer
+   * @return array Detection result with:
+   *   - 'hallucination_detected' (bool): True if temporal hallucination found
+   *   - 'hallucination_keywords' (array): List of temporal keywords added
+   *   - 'original_query' (string): Original query
+   *   - 'translated_query' (string): Translated query
+   *   - 'suggested_action' (string): 'use_original_query' or 'allow'
+   *   - 'confidence' (float): 0.95 if detected, 0.0 otherwise
+   */
+  public function detectTemporalBias(string $originalQuery, string $translatedQuery): array
+  {
+    // Use the same logic as detectRevenueBias() but filter for temporal keywords only
+    $result = $this->detectRevenueBias($originalQuery, $translatedQuery);
+    
+    // Filter to only temporal keywords (month, quarter, semester, year)
+    $temporalKeywords = ['month', 'quarter', 'semester', 'year'];
+    $result['hallucination_keywords'] = array_intersect($result['hallucination_keywords'], $temporalKeywords);
+    $result['hallucination_detected'] = !empty($result['hallucination_keywords']);
+    $result['confidence'] = $result['hallucination_detected'] ? 0.95 : 0.0;
+    $result['suggested_action'] = $result['hallucination_detected'] ? 'use_original_query' : 'allow';
+    
+    return $result;
+  }
+
+  /**
    * Detect revenue bias hallucination
    *
    * but original query does NOT (hallucination pattern)
@@ -538,11 +623,23 @@ class HallucinationDetector
       'confidence' => $hallucinationDetected ? 0.95 : 0.0,
     ];
     
-    if ($this->debug && $hallucinationDetected) {
+    // Always log hallucination detection (not just in debug mode)
+    // This is a security event that should always be recorded
+    if ($hallucinationDetected) {
       $this->logger->logSecurityEvent(
-        "Revenue bias hallucination detected: '$originalQuery' → '$translatedQuery' (keywords: " . implode(', ', $hallucinationKeywords) . ")",
-        'warning'
+        "🚨 HALLUCINATION DETECTED: Revenue bias in translation",
+        'warning',
+        [
+          'original_query' => $originalQuery,
+          'translated_query' => $translatedQuery,
+          'hallucination_keywords' => $hallucinationKeywords,
+          'confidence' => 0.95,
+          'detection_method' => 'keyword_analysis'
+        ]
       );
+      
+      // Also log to error_log for immediate visibility
+      error_log("[warning] HALLUCINATION: '$originalQuery' → '$translatedQuery' (keywords: " . implode(', ', $hallucinationKeywords) . ")");
     }
     
     return $result;

@@ -968,10 +968,9 @@ class ActorCriticCoordinator
         try {
             $prefix = CLICSHOPPING::getConfig('db_table_prefix');
             $fullTableName = $prefix . $tableName;
-            $sql = "SHOW TABLES LIKE :table_name";
+            $sql = "SHOW TABLES LIKE ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindValue(':table_name', $fullTableName);
-            $stmt->execute();
+            $stmt->execute([$fullTableName]);
             return $stmt->rowCount() > 0;
         } catch (Exception $e) {
             return false;

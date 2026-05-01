@@ -10,6 +10,7 @@
 
 namespace ClicShopping\AI\Agents\Orchestrator\SubActorCritic;
 
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use Exception;
 use InvalidArgumentException;
@@ -557,11 +558,11 @@ class ConsensusBuilder
     private function tableExists(string $tableName): bool
     {
         try {
-            $fullTableName = 'clic_' . $tableName;
-            $sql = "SHOW TABLES LIKE :table_name";
+            $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+            $fullTableName = $prefix . $tableName;
+            $sql = "SHOW TABLES LIKE ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindValue(':table_name', $fullTableName);
-            $stmt->execute();
+            $stmt->execute([$fullTableName]);
             return $stmt->rowCount() > 0;
         } catch (Exception $e) {
             return false;

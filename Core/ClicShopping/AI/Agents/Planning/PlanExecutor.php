@@ -26,8 +26,6 @@ use ClicShopping\AI\DomainsAI\WebSearch\Cache\SearchCacheManager;
 use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\WebSearchFormatter;
 
-// 🆕 Refactored SubPlanExecutor components
-
 /**
  * PlanExecutor Class
  * Executes plans with step-by-step execution, parallel processing, result transmission, error handling, and result synthesis
@@ -42,6 +40,7 @@ class PlanExecutor
   private bool $debug;
   private string $userId;
   private int $languageId;
+  private mixed $conversationMemory = null;
 
   // Configuration
   private int $maxRetries = 2;
@@ -155,6 +154,30 @@ class PlanExecutor
 
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent("PlanExecutor initialized with SubPlanExecutor components", 'info');
+    }
+  }
+  
+  /**
+   * Set the conversation memory instance
+   * Allows OrchestratorAgent to inject ConversationMemory
+   * This is needed to pass it down to AnalyticsExecutor and AnalyticsAgent for contextual query resolution.
+   *
+   * @param mixed $conversationMemory ConversationMemory instance
+   * @return void
+   */
+  public function setConversationMemory($conversationMemory): void
+  {
+    // Store locally for use in executeWebSearch() and executeSemanticSearch()
+    $this->conversationMemory = $conversationMemory;
+    
+    // Pass to AnalyticsExecutor which will pass it to AnalyticsAgent
+    $this->analyticsExecutor->setConversationMemory($conversationMemory);
+    
+    // Also pass to SemanticExecutor if needed in the future
+    // $this->semanticExecutor->setConversationMemory($conversationMemory);
+    
+    if ($this->debug) {
+      $this->securityLogger->logSecurityEvent("ConversationMemory set on PlanExecutor and propagated to executors", 'info');
     }
   }
 
@@ -488,7 +511,9 @@ class PlanExecutor
 	error_log("  2. step description is empty");
 	error_log("  3. Both are empty");
 	}
+    }
     
+    if ($this->debug) {
 	error_log("Calling AnalyticsExecutor.executeAnalyticsQuery()...");
 	error_log("-" . str_repeat("-", 99) . "\n");
     }
@@ -507,6 +532,32 @@ class PlanExecutor
   private function executeSemanticSearch(TaskStep $step, array $context): array
   {
     $query = $step->getMeta('sub_query', $step->getDescription());
+
+    // Add last_entity to context for semantic query enrichment
+    if ($this->conversationMemory !== null) {
+      try {
+        $lastEntity = $this->conversationMemory->getLastEntity();
+        if ($lastEntity !== null) {
+          $context['last_entity'] = $lastEntity;
+          
+          if ($this->debug) {
+            $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? 'unknown');
+            $this->securityLogger->logSecurityEvent(
+              "Added last_entity to semantic search context: {$entityName}",
+              'info'
+            );
+          }
+        }
+      } catch (\Exception $e) {
+        // Don't fail on context enrichment errors - just log and continue
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Error adding last_entity to semantic search context: " . $e->getMessage(),
+            'warning'
+          );
+        }
+      }
+    }
 
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(
@@ -624,6 +675,41 @@ class PlanExecutor
     }
 
     $query = $step->getMeta('search_query', $step->getDescription());
+    
+    //Enrich query with last_entity context for follow-up queries
+    // This allows web search to use context from previous analytics queries
+    if ($this->conversationMemory !== null) {
+      try {
+        $lastEntity = $this->conversationMemory->getLastEntity();
+        
+        if ($lastEntity !== null) {
+          // Extract entity information safely
+          $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? null);
+          $entityType = $lastEntity['type'] ?? 'entity';
+          
+          if ($entityName !== null) {
+            // Enrich query with entity context
+            // Example: "compare avec les concurrents" → "compare iPhone 17 Pro avec les concurrents"
+            $query = $this->enrichWebSearchQuery($query, $entityName, $entityType);
+            
+            if ($this->debug) {
+              $this->securityLogger->logSecurityEvent(
+                "Enriched web search query with last_entity: {$entityName} ({$entityType})",
+                'info'
+              );
+            }
+          }
+        }
+      } catch (\Exception $e) {
+        // Don't fail on context enrichment errors - just log and continue
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Error enriching web search query with last_entity: " . $e->getMessage(),
+            'warning'
+          );
+        }
+      }
+    }
     
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(

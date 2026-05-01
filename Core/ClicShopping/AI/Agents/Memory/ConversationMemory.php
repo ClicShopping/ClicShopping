@@ -406,92 +406,62 @@ class ConversationMemory
   {
     $startTime = microtime(true);
     
+    if ($this->debug) {
+      error_log("[ConversationMemory] resolveContextualReferences called for query: " . substr($query, 0, 50));
+    }
+    
     try {
-      $hasExplicitReferences = $this->contextResolver->detectContextualReferences($query);
-      $hasImplicitContext = $this->contextResolver->detectImplicitContextualQuery($query);
-      $hasReferences = $hasExplicitReferences || $hasImplicitContext;
 
-      if (!$hasReferences) {
-        $this->memoryStats->recordOperation('references_resolved', true, microtime(true) - $startTime);
-        return [
-          'resolved_query' => $query,
-          'has_references' => false,
-          'context_used' => null,
-          'last_entity' => null,
-        ];
-      }
-
-      if ($hasImplicitContext) {
-        $lastEntity = $this->entityTracker->getLastEntity();
-        
-        if ($lastEntity !== null) {
-          if ($this->debug) {
-            $this->securityLogger->logSecurityEvent(
-              "TASK 2.18: Using last entity for implicit contextual query: {$lastEntity['type']} (ID: {$lastEntity['id']})",
-              'info'
-            );
-          }
-          
-          $this->memoryStats->recordOperation('references_resolved', true, microtime(true) - $startTime);
-          
-          return [
-            'resolved_query' => $query,
-            'original_query' => $query,
-            'has_references' => true,
-            'is_implicit_context' => true,
-            'context_used' => null,
-            'last_entity' => $lastEntity,
-          ];
-        } else {
-          if ($this->debug) {
-            $this->securityLogger->logSecurityEvent(
-              "TASK 2.18: Implicit contextual query detected but no last entity available",
-              'warning'
-            );
-          }
-          
-          $this->memoryStats->recordOperation('references_resolved', true, microtime(true) - $startTime);
-          
-          return [
-            'resolved_query' => $query,
-            'has_references' => true,
-            'is_implicit_context' => true,
-            'context_used' => null,
-            'last_entity' => null,
-            'warning' => 'Implicit context detected but no previous entity available',
-          ];
+      $lastEntity = $this->entityTracker->getLastEntity();
+      
+      // CRITICAL: Always log last entity retrieval
+      if ($this->debug) {
+        error_log("[ConversationMemory] Last entity retrieved: " . json_encode($lastEntity));
+      }  
+      // If we have a last entity, provide it as context to the LLM
+      if ($lastEntity !== null) {
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Providing last entity context to LLM: {$lastEntity['type']} (ID: {$lastEntity['id']})",
+            'info'
+          );
         }
-      }
 
-      // Get recent context from ShortTermManager for explicit references
-      $recentMessages = $this->shortTermManager->getAllMessages();
-
-      if (empty($recentMessages)) {
+        if ($this->debug) {  
+          error_log("[ConversationMemory] Returning context with last entity: ID={$lastEntity['id']}, Type={$lastEntity['type']}");
+        }   
+	     
         $this->memoryStats->recordOperation('references_resolved', true, microtime(true) - $startTime);
+        
         return [
           'resolved_query' => $query,
-          'has_references' => true,
+          'original_query' => $query,
+          'has_references' => true, // Mark as having context available
+          'is_implicit_context' => true,
           'context_used' => null,
-          'last_entity' => null,
-          'warning' => 'References detected but no context available',
+          'last_entity' => $lastEntity, // Provide to LLM for intelligent context resolution
         ];
       }
-
-      // Extract entities from the recent context
-      $contextEntities = $this->contextResolver->extractEntitiesFromContext($recentMessages);
-
-      // Resolve references
-      $resolvedQuery = $this->contextResolver->replaceReferences($query, $contextEntities);
-
+      
+      // No last entity available - query has no context
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "No last entity available for context resolution",
+          'info'
+        );
+      }
+      
+      if ($this->debug) {  
+        error_log("[ConversationMemory] No last entity available - returning without context");
+      }
+      
       $this->memoryStats->recordOperation('references_resolved', true, microtime(true) - $startTime);
-
+      
       return [
-        'resolved_query' => $resolvedQuery,
-        'original_query' => $query,
-        'has_references' => true,
-        'is_implicit_context' => false,
-        'context_used' => $contextEntities,
-        'last_entity' => $this->entityTracker->getLastEntity(),
+        'resolved_query' => $query,
+        'has_references' => false,
+        'context_used' => null,
+        'last_entity' => null,
       ];
 
     } catch (\Exception $e) {
@@ -500,6 +470,10 @@ class ConversationMemory
         'error'
       );
 
+      if ($this->debug) {        
+        error_log("[ConversationMemory] ERROR in resolveContextualReferences: " . $e->getMessage());
+      }
+      
       $this->memoryStats->recordOperation('references_resolved', false, microtime(true) - $startTime);
 
       return [

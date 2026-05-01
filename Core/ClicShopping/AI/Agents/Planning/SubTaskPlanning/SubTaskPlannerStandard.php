@@ -69,6 +69,30 @@ class SubTaskPlannerStandard
                 // Get sub-query text
                 $subQueryText = $subQuery['text'] ?? $query;
                 
+                // Determine dependencies for correct execution order
+                // For hybrid queries: analytics MUST run before web_search
+                $dependsOn = [];
+                $canRunParallel = true;
+                
+                // If this is a web_search step and there's an analytics step before it,
+                // make it depend on the analytics step
+                if ($stepType === 'web_search') {
+                    // Check if there's an analytics step before this one
+                    foreach ($intent['sub_queries'] as $prevIndex => $prevSubQuery) {
+                        if ($prevIndex < $index) {
+                            $prevType = $prevSubQuery['type'] ?? 'analytics';
+                            if ($prevType === 'analytics') {
+                                $dependsOn[] = 'step_' . ($prevIndex + 1);
+                                $canRunParallel = false; // Cannot run in parallel if it depends on another step
+                                
+                                $this->logDebug(
+                                    "Step $stepId (web_search) depends on step_" . ($prevIndex + 1) . " (analytics)"
+                                );
+                            }
+                        }
+                    }
+                }
+                
                 // Create step with sub-query metadata
                 $step = new TaskStep(
                     $stepId,
@@ -85,8 +109,8 @@ class SubTaskPlannerStandard
                         'data_source' => 'internal_database',
                         'tables' => $this->getTablesFromDomain(),
                         'processing_mode' => 'direct_sql',
-                        'depends_on' => [],
-                        'can_run_parallel' => true, // Sub-queries can run in parallel
+                        'depends_on' => $dependsOn,
+                        'can_run_parallel' => $canRunParallel,
                         'is_final' => ($index === count($intent['sub_queries']) - 1),
                     ]
                 );
@@ -95,7 +119,9 @@ class SubTaskPlannerStandard
                 
                 $this->logDebug(
                     "Created step $stepId | Type: $stepType | Sub-query: " . 
-                    substr($subQueryText, 0, 100)
+                    substr($subQueryText, 0, 100) . 
+                    " | Depends on: " . json_encode($dependsOn) . 
+                    " | Can run parallel: " . ($canRunParallel ? 'YES' : 'NO')
                 );
                 
                 if ($this->securityLogger) {
@@ -108,7 +134,8 @@ class SubTaskPlannerStandard
                             'sub_query_type' => $subQueryType,
                             'sub_query_text' => $subQueryText,
                             'step_index' => $index,
-                            'can_run_parallel' => true,
+                            'depends_on' => $dependsOn,
+                            'can_run_parallel' => $canRunParallel,
                             'is_final' => ($index === count($intent['sub_queries']) - 1)
                         ]
                     );
