@@ -69,6 +69,12 @@ use ClicShopping\AI\Handler\Error\ErrorHandler as ErrorHandlerComponent;
 
 class OrchestratorAgent
 {
+  /**
+   * Context relevance threshold for out-of-context detection
+   * Queries with context_relevance < this threshold are rejected
+   * 
+   * @var float Default: 0.3 (queries with relevance < 0.3 are rejected)
+   */
   private const CONTEXT_RELEVANCE_THRESHOLD = 0.3;
   
   public TaskPlanner $taskPlanner;
@@ -497,6 +503,12 @@ class OrchestratorAgent
         // Set default context check (allow query to proceed)
         // Use DomainConfig to get active domain instead of hardcoding 'ecommerce'
         $activeDomain = DomainConfig::getActivities();
+        
+        // NOTE: Decision logic uses three-tier hierarchy:
+        // (1) is_out_of_context (boolean gate) - authoritative rejection
+        // (2) context_relevance (threshold gate) - configurable threshold-based decisions
+        // (3) suggested_action (nuanced handling) - fine-grained action routing
+        // All three fields are used in decision logic to ensure robust validation.
         $contextCheck = [
           'is_out_of_context' => false,
           'context_relevance' => 1.0,
@@ -521,7 +533,13 @@ class OrchestratorAgent
         }
       }
 
-      // Handle out-of-context queries based on suggested action
+      // Handle out-of-context queries using three-tier decision logic:
+      // 1. Primary Gate (Boolean): is_out_of_context check (authoritative rejection)
+      // 2. Threshold Gate: context_relevance check (configurable threshold-based decisions)
+      // 3. Nuanced Handling: suggested_action check (fine-grained action routing)
+      
+      // PRIMARY GATE: Check is_out_of_context (boolean gate)
+      // If LLM explicitly marks query as out-of-context, reject immediately
       if (isset($contextCheck['is_out_of_context']) && $contextCheck['is_out_of_context'] === true) {
         // Reject query immediately - return error response
         $this->securityLogger->logSecurityEvent(

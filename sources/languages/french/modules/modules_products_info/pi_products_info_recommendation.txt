@@ -1,6 +1,6 @@
-module_products_info_also_purchased_title = Souhaitez-vous afficher les Clients Ont aussi achetés ?
-module_products_info_also_purchased_description = Affiche les Clients Ont aussi achetés
-module_products_info_also_purchased_name = Recommandations clients
+module_products_info_recommendation_title = Souhaitez-vous afficher les recommandations de produits (embedding)?
+module_products_info_recommendation_description = Affiche les Clients les recommandations de produits
+module_products_info_recommendation_name = Recommendations clients
 
 text_stock =  Stock
 text_flash_discount = Remise flash

@@ -23,6 +23,9 @@
       "EcommerceDomain": "Module\\ClicShoppingAdmin\\Config\\EcommerceDomain"
     },
     "Hooks": {
+      "ClicShoppingAdmin/Langues": {
+        "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm"
+      },
       "ClicShoppingAdmin/Specials": {
         "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Specials\\Insert",
         "Update": "Module\\Hooks\\ClicShoppingAdmin\\Specials\\Update",
@@ -112,7 +115,8 @@
     "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
     "Shop": {
       "OpenAI&ACP":"Sites\\Shop\\Pages\\ACP",
-      "Google&UCP":"Sites\\Shop\\Pages\\UCP"
+      "Google&UCP":"Sites\\Shop\\Pages\\UCP",
+      "CronSeoFaq":"Sites\\Shop\\Pages\\CronSeoFaq"
     }
   }
 }

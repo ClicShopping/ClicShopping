@@ -1,0 +1,427 @@
+/*
+ *
+ *  @copyright 2008 - https://www.clicshopping.org
+ *  @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
+ *  @Licence GPL 2 & MIT
+ *  @Info : https://www.clicshopping.org/forum/trademark/
+ *
+ */
+
+/* ============================================
+   SEO FAQ Container - Frontend Product Page
+   Bootstrap 5.x handles accordion functionality
+   This file only contains SEO-specific customizations
+   ============================================ */
+
+/* CRITICAL FIX: Ensure accordion buttons are clickable */
+.seo-faq .accordion-button {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure the span inside button is also clickable */
+.seo-faq .accordion-button span {
+  pointer-events: none; /* Let clicks pass through to button */
+}
+
+/* Ensure accordion header doesn't block clicks */
+.seo-faq .accordion-header {
+  pointer-events: none; /* Let clicks pass through to button */
+}
+
+.seo-faq .accordion-header .accordion-button {
+  pointer-events: auto !important; /* But button itself is clickable */
+}
+
+/* Container with subtle branding */
+.seo-faq {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #0d6efd;
+}
+
+/* Section spacing */
+.seo-faq > .seo-content-structure {
+    margin-bottom: 2rem;
+}
+
+.seo-faq > .seo-content-structure:last-child {
+    margin-bottom: 0;
+}
+
+/* Section titles */
+.seo-faq h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 1rem;
+}
+
+/* ============================================
+   Bootstrap Accordion Customization
+   ============================================ */
+
+/* Ensure accordion items have proper spacing */
+.seo-faq .accordion-item {
+    margin-bottom: 0.5rem;
+}
+
+.seo-faq .accordion-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Customize accordion button for better readability */
+.seo-faq .accordion-button {
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+}
+
+/* Customize accordion body for better content display */
+.seo-faq .accordion-body {
+    padding: 1.25rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* ============================================
+   Schema.org FAQ Styling
+   ============================================ */
+
+/* Question styling within accordion */
+.seo-faq [itemprop="name"] {
+    color: inherit;
+}
+
+/* Answer styling within accordion body */
+.seo-faq [itemprop="text"] {
+    margin-bottom: 0;
+}
+
+/* ============================================
+   Card Styling (for single items)
+   ============================================ */
+
+/* Ensure cards have consistent styling with accordion */
+.seo-faq .card {
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    margin-bottom: 0.5rem;
+}
+
+.seo-faq .card:last-child {
+    margin-bottom: 0;
+}
+
+.seo-faq .card-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #212529;
+    margin-bottom: 0.75rem;
+}
+
+.seo-faq .card-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #495057;
+}
+
+/* ============================================
+   Table of Contents for Characteristics
+   ============================================ */
+
+.seo-toc {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #0d6efd;
+    padding: 1.5rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.seo-toc ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.seo-toc-item {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.seo-toc-item:last-child {
+    margin-bottom: 0;
+}
+
+.seo-toc-link {
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 1rem;
+}
+
+.seo-toc-link:hover {
+    color: #0d6efd;
+    padding-left: 0.5rem;
+    text-decoration: none;
+}
+
+.seo-toc-link i {
+    color: #0d6efd;
+    font-size: 0.875rem;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.seo-toc-link:hover i {
+    transform: translateX(0.25rem);
+}
+
+/* Indentation for nested headings */
+.seo-toc-item.ms-3 {
+    margin-left: 1rem !important;
+    font-size: 0.95rem;
+}
+
+.seo-toc-item.ms-6 {
+    margin-left: 2rem !important;
+    font-size: 0.9rem;
+}
+
+.seo-toc-item.ms-9 {
+    margin-left: 3rem !important;
+    font-size: 0.85rem;
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+@media print {
+    .seo-faq {
+        background: transparent;
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+
+    /* Hide accordion buttons in print */
+    .accordion-button::after {
+        display: none;
+    }
+    
+    /* Expand all accordion items for print */
+    .accordion-collapse {
+        display: block !important;
+    }
+    
+    /* Remove borders for cleaner print */
+    .seo-faq .accordion-item,
+    .seo-faq .card {
+        border: none;
+        box-shadow: none;
+    }
+}
+
+/* ============================================
+   Dark Mode Support
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    .seo-faq {
+        background: #1a1a1a;
+        border-left-color: #4dabf7;
+    }
+    
+    .seo-faq h2 {
+        color: #e9ecef;
+    }
+    
+    /* Bootstrap accordion in dark mode */
+    .seo-faq .accordion-item {
+        background-color: #2d2d2d;
+        border-color: #495057;
+    }
+    
+    .seo-faq .accordion-button {
+        background-color: #2d2d2d;
+        color: #e9ecef;
+    }
+    
+    .seo-faq .accordion-button:not(.collapsed) {
+        background-color: #212529;
+        color: #4dabf7;
+    }
+    
+    .seo-faq .accordion-body {
+        background-color: #2d2d2d;
+        color: #ced4da;
+    }
+    
+    /* Cards in dark mode */
+    .seo-faq .card {
+        background-color: #2d2d2d;
+        border-color: #495057;
+    }
+    
+    .seo-faq .card-title {
+        color: #e9ecef;
+    }
+    
+    .seo-faq .card-text {
+        color: #ced4da;
+    }
+    
+    /* TOC in dark mode */
+    .seo-toc {
+        background-color: #2d2d2d;
+        border-color: #495057;
+        border-left-color: #4dabf7;
+    }
+    
+    .seo-toc-link {
+        color: #ced4da;
+    }
+    
+    .seo-toc-link:hover {
+        color: #4dabf7;
+    }
+    
+    .seo-toc-link i {
+        color: #4dabf7;
+    }
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+/* Tablets and below */
+@media (max-width: 768px) {
+    .seo-faq {
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    
+    .seo-faq h2 {
+        font-size: 1.25rem;
+    }
+    
+    .seo-faq .accordion-button {
+        font-size: 1rem;
+        padding: 0.875rem 1rem;
+    }
+    
+    .seo-faq .accordion-body {
+        padding: 1rem;
+        font-size: 0.9375rem;
+    }
+    
+    /* TOC responsive */
+    .seo-toc {
+        padding: 1rem;
+    }
+    
+    .seo-toc-link {
+        font-size: 0.95rem;
+    }
+    
+    .seo-toc-item.ms-3,
+    .seo-toc-item.ms-6,
+    .seo-toc-item.ms-9 {
+        margin-left: 0.75rem !important;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 576px) {
+    .seo-faq {
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 6px;
+    }
+    
+    .seo-faq h2 {
+        font-size: 1.125rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .seo-faq .accordion-button {
+        font-size: 0.9375rem;
+        padding: 0.75rem 0.875rem;
+    }
+    
+    .seo-faq .accordion-body {
+        padding: 0.875rem;
+        font-size: 0.875rem;
+    }
+    
+    .seo-faq .card-body {
+        padding: 0.875rem;
+    }
+    
+    .seo-faq .card-title {
+        font-size: 1rem;
+    }
+    
+    .seo-faq .card-text {
+        font-size: 0.875rem;
+    }
+    
+    /* TOC mobile */
+    .seo-toc {
+        padding: 0.875rem;
+    }
+    
+    .seo-toc-link {
+        font-size: 0.875rem;
+    }
+    
+    .seo-toc-item.ms-3,
+    .seo-toc-item.ms-6,
+    .seo-toc-item.ms-9 {
+        margin-left: 0.5rem !important;
+    }
+}
+
+/* ============================================
+   Accessibility Enhancements
+   ============================================ */
+
+/* Ensure focus states are visible */
+.seo-faq .accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Improve touch targets for mobile */
+@media (max-width: 768px) {
+    .seo-faq .accordion-button {
+        min-height: 44px; /* WCAG 2.1 minimum touch target */
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .seo-faq {
+        border-left-width: 6px;
+    }
+    
+    .seo-faq .accordion-item {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .seo-faq .accordion-button::after {
+        transition: none;
+    }
+    
+    .seo-faq .accordion-collapse {
+        transition: none;
+    }
+}

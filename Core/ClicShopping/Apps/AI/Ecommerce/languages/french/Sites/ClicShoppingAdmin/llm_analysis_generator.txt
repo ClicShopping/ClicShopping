@@ -10,6 +10,11 @@ PRODUCT INFORMATION:
 SCORING ANALYSIS:
 - Score X (Product Quality): {{scoreX}}/100
   Valid Factors: {{validFactorsX}}
+  
+  IMPORTANT: The 'keywords' factor measures SEO meta tag QUALITY (completeness, length, keyword count), NOT presence.
+  A low keywords score means meta tags exist but need improvement (e.g., too few keywords, title too short/long).
+  Do NOT report meta tags as "absent" or "missing" if the keywords factor is present with a low score.
+  
 - Score Y (Commercial Performance): {{scoreY}}/100
   Valid Factors: {{factorsY}}
 
@@ -43,6 +48,7 @@ Write a strategic analysis in exactly 3 paragraphs in French, for a shop owner a
 Paragraph 1 — DIAGNOSTIC :
 Expliquer l'écart entre le Score X et le Score Y avec des chiffres précis.
 Identifier les 1-2 facteurs commerciaux les plus faibles (conversion, vélocité, vues, etc.) qui expliquent le Score Y bas.
+Si le facteur 'keywords' est présent mais faible, préciser que les meta tags EXISTENT mais nécessitent une AMÉLIORATION (plus de mots-clés, titre optimisé), PAS qu'ils sont absents.
 Énoncer clairement quel est le problème principal.
 
 Paragraph 2 — POSITION STRATÉGIQUE :

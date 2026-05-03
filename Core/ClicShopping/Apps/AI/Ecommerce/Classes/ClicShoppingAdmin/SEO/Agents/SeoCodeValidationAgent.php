@@ -79,8 +79,7 @@ class SeoCodeValidationAgent implements ActorAgentInterface
   public function __construct()
   {
     $this->actorId = 'seo_code_validator_' . uniqid();
-    $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG')
-      && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
+    $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
     $this->llm = new LLMServiceWrapper($this->debug);
     $this->translator = new TranslationServiceWrapper($this->debug);
   }
@@ -168,7 +167,21 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     try {
       $coherence = $this->checkCoherence($changes, $entityType, $languageCode);
       if (($coherence['passed'] ?? true) === false) {
-        $approved  = false;
+        // Coherence issues are warnings — they do not block approval on their own,
+        // but they are surfaced as suggestions so the retry loop can improve them.
+        // Only block if there are critical coherence issues (placeholder fields, wrong language)
+        $criticalCoherenceIssue = false;
+        foreach ($coherence['issues'] ?? [] as $issue) {
+          if (stripos($issue, 'placeholder') !== false || stripos($issue, 'language') !== false) {
+            $criticalCoherenceIssue = true;
+            break;
+          }
+        }
+        
+        if ($criticalCoherenceIssue) {
+          $approved = false;
+        }
+        
         $issues    = array_merge($issues, $coherence['issues']      ?? []);
         $suggestions = array_merge($suggestions, $coherence['suggestions'] ?? []);
       }
@@ -261,6 +274,13 @@ class SeoCodeValidationAgent implements ActorAgentInterface
 
   /**
    * Validates meta title, description, keywords lengths.
+   * 
+   * Meta title uses word count (8-20 words, ~15 ideal) for flexible validation.
+   * Meta description uses character count (120-165 chars).
+   * Meta keywords must be present.
+   *
+   * @param array $changes Proposed SEO changes containing meta_title, meta_description, meta_keywords
+   * @return array Validation result with passed status, issues, suggestions, and length metrics
    */
   private function checkLengths(array $changes): array
   {
@@ -271,10 +291,10 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     $metaDescription = (string)($changes['meta_description'] ?? '');
     $metaKeywords = (string)($changes['meta_keywords'] ?? '');
 
-    $titleLen = strlen($metaTitle);
-    if ($titleLen < 45 || $titleLen > 70) {
-      $issues[] = 'Meta title must be 45-70 characters';
-      $suggestions[] = 'Rewrite meta title to fit 45-70 characters while keeping the primary keyword';
+    $titleWordCount = str_word_count($metaTitle);
+    if ($titleWordCount < 8 || $titleWordCount > 20) {
+      $issues[] = 'Meta title should be around 15 words (current: ' . $titleWordCount . ' words)';
+      $suggestions[] = 'Rewrite meta title to approximately 15 words (8-20 words acceptable) while keeping the primary keyword';
     }
 
     $descLen = strlen($metaDescription);
@@ -293,14 +313,25 @@ class SeoCodeValidationAgent implements ActorAgentInterface
       'issues' => $issues,
       'suggestions' => $suggestions,
       'lengths' => [
-        'meta_title' => $titleLen,
+        'meta_title_words' => $titleWordCount,
+        'meta_title_chars' => strlen($metaTitle),
         'meta_description' => $descLen,
       ],
     ];
   }
 
   /**
-   * LLM-driven quality validation.
+   * Validates content quality using LLM-driven analysis.
+   * 
+   * Evaluates keyword density, semantic richness, topical authority,
+   * structural coherence, and uniqueness. Returns a quality score (0-100)
+   * with detailed issues and suggestions.
+   *
+   * @param array $changes Proposed SEO changes
+   * @param string $entityType Entity type (product, category, etc.)
+   * @param string $languageCode Language code for translation (e.g., 'fr', 'en')
+   * @return array Quality validation result with quality_score, issues, suggestions
+   * @throws \Throwable If LLM call fails
    */
   private function validateQuality(array $changes, string $entityType, string $languageCode): array
   {
@@ -324,7 +355,14 @@ class SeoCodeValidationAgent implements ActorAgentInterface
 
   /**
    * Builds a single string representation of all content fields for validation.
-   * Translates to English if required.
+   * 
+   * Concatenates meta_title, meta_description, meta_keywords, description,
+   * H2 headings, and FAQ content into a single string. Translates to English
+   * if the content is in another language for consistent LLM analysis.
+   *
+   * @param array $changes Proposed SEO changes
+   * @param string $languageCode Source language code (e.g., 'fr', 'en')
+   * @return string Concatenated content string (translated to English if needed)
    */
   private function buildValidationContent(array $changes, string $languageCode): string
   {
@@ -381,7 +419,16 @@ class SeoCodeValidationAgent implements ActorAgentInterface
   }
 
   /**
-   * LLM-driven spam/keyword stuffing detection.
+   * Detects spam and keyword stuffing using LLM-driven analysis.
+   * 
+   * Analyzes content for over-optimization, unnatural keyword repetition,
+   * and spam patterns. Returns spam indicators and a spam score.
+   *
+   * @param array $changes Proposed SEO changes
+   * @param string $entityType Entity type (product, category, etc.)
+   * @param string $languageCode Language code for translation
+   * @return array Spam detection result with is_spam, spam_score, spam_indicators
+   * @throws \Throwable If LLM call fails
    */
   private function detectSpam(array $changes, string $entityType, string $languageCode): array
   {
@@ -403,7 +450,16 @@ class SeoCodeValidationAgent implements ActorAgentInterface
   }
 
   /**
-   * LLM-driven coherence check for content.
+   * Checks content coherence using LLM-driven analysis.
+   * 
+   * Validates that content is coherent, consistent with search intent,
+   * and properly structured. Checks for placeholder fields and language consistency.
+   *
+   * @param array $changes Proposed SEO changes
+   * @param string $entityType Entity type (product, category, etc.)
+   * @param string $languageCode Language code for translation
+   * @return array Coherence check result with passed status, issues, suggestions
+   * @throws \Throwable If LLM call fails
    */
   private function checkCoherence(array $changes, string $entityType, string $languageCode): array
   {
@@ -424,11 +480,28 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     ]);
   }
 
+  /**
+   * Proposes a validation action for the given context.
+   * 
+   * Creates a default SEO code validation action with medium priority
+   * and 30-second timeout. Used by the Actor-Critic orchestrator.
+   *
+   * @param Context $context Execution context with language and metadata
+   * @return Action Proposed validation action
+   */
   public function proposeAction(Context $context): Action
   {
     return new Action('seo_code_validation', [], $context, 'medium', 30);
   }
 
+  /**
+   * Returns the agent's capabilities for Actor-Critic registration.
+   * 
+   * Declares the 'seo_code_validation' capability with confidence 0.6,
+   * validation role, competent proficiency, and required parameters.
+   *
+   * @return array Associative array of capability name => ActorCapability
+   */
   public function getCapabilities(): array
   {
     return [
@@ -436,16 +509,56 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     ];
   }
 
+  /**
+   * Evaluates confidence level for executing the given action.
+   * 
+   * Returns a fixed confidence of 0.6 for validation actions.
+   * Could be enhanced to vary based on action parameters.
+   *
+   * @param Action $action Action to evaluate
+   * @return float Confidence level (0.0 to 1.0)
+   */
   public function evaluateConfidence(Action $action): float
   {
     return 0.6;
   }
 
+  /**
+   * Receives feedback from critics after action execution.
+   * 
+   * Currently a no-op implementation. Could be enhanced to:
+   * - Store feedback for learning and improvement
+   * - Adjust validation thresholds based on feedback patterns
+   * - Log feedback for analysis and debugging
+   * - Update internal state for adaptive validation
+   *
+   * @param Feedback $feedback Feedback from critics containing score, issues, suggestions
+   * @return void
+   */
   public function receiveFeedback(Feedback $feedback): void
   {
-    // No-op
+    // Future enhancement: Store feedback for learning
+    // Example implementation:
+    // - Log feedback to database for pattern analysis
+    // - Adjust quality score thresholds based on feedback trends
+    // - Update validation rules dynamically
+    
+    if ($this->debug) {
+      error_log('[SeoCodeValidationAgent] Received feedback: ' . json_encode([
+        'feedback_id' => $feedback->getFeedbackId(),
+        'score' => $feedback->getScore(),
+        'category' => $feedback->getCategory(),
+      ], JSON_UNESCAPED_UNICODE));
+    }
   }
 
+  /**
+   * Returns the unique actor identifier.
+   * 
+   * Used by the Actor-Critic system for tracking and coordination.
+   *
+   * @return string Unique actor ID (e.g., 'seo_code_validator_abc123')
+   */
   public function getActorId(): string
   {
     return $this->actorId;
@@ -456,15 +569,31 @@ class SeoCodeValidationAgent implements ActorAgentInterface
   /**
    * Validates a JSON-LD schema.org block proposed by SeoOptimizationAgent.
    *
-   * Step 1: Structural check — is the JSON parseable and does it contain @type?
-   * Step 2: Required-fields check per entity type (deterministic, no LLM needed).
-   * Step 3: LLM semantic check — correctness, completeness, best-practice.
+   * Three-step validation process:
+   * 
+   * Step 1: Structural check
+   *   - Validates JSON syntax
+   *   - Checks for @type declaration
+   *   - Supports both single object and @graph array formats
+   * 
+   * Step 2: Required fields check (deterministic, no LLM)
+   *   - Product: name, offers (price, priceCurrency, availability)
+   *   - Category: BreadcrumbList
+   * 
+   * Step 3: LLM semantic validation
+   *   - Correctness and completeness
+   *   - Best practices compliance
+   *   - Only called when JSON is structurally sound (score >= 60)
    *
-   * Returns:
-   *   passed      (bool)   – true when no blocking issue found
-   *   issues      (array)  – blocking or notable problems
-   *   suggestions (array)  – non-blocking improvement suggestions
-   *   score       (int)    – 0-100 quality indicator
+   * @param string $schemaJson JSON-LD schema.org block to validate
+   * @param string $entityType Entity type (product, category, etc.)
+   * @param string $languageCode Language code for LLM prompts
+   * @return array Validation result with:
+   *   - passed (bool): true when no blocking issue found
+   *   - issues (array): blocking or notable problems
+   *   - suggestions (array): non-blocking improvement suggestions
+   *   - score (int): 0-100 quality indicator
+   * @throws \Throwable If LLM call fails (non-blocking, logged only)
    */
   private function validateSchemaOrg(
     string $schemaJson,

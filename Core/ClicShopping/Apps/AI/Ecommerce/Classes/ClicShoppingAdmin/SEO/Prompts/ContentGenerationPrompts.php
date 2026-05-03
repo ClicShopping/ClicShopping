@@ -37,47 +37,41 @@ class ContentGenerationPrompts
     }
 
     $this->app = Registry::get('Ecommerce');
+    $this->app->loadDefinitions('Sites/ClicShoppingAdmin/seo_prompts', $this->languageCode);
   }
 
   public function getMetaTitlePrompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_meta_title', $vars);
   }
 
   public function getMetaDescriptionPrompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_meta_description', $vars);
   }
 
   public function getMetaKeywordsPrompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_meta_keywords', $vars);
   }
 
   public function getFaqPrompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_faq', $vars);
   }
 
   public function getH2Prompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_h2', $vars);
   }
 
   public function getEnrichedDescriptionPrompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_enriched_description', $vars);
   }
 
   public function getSummaryPrompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_summary', $vars);
   }
 
@@ -95,7 +89,6 @@ class ContentGenerationPrompts
    */
   public function getCategoryBodyDescriptionPrompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_category_body_description', $vars);
   }
 
@@ -109,7 +102,6 @@ class ContentGenerationPrompts
    */
   public function getSchemaProductPrompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_schema_product', $vars);
   }
 
@@ -123,17 +115,6 @@ class ContentGenerationPrompts
    */
   public function getSchemaCategoryPrompt(array $vars = []): string
   {
-    $this->loadDefinitions();
     return $this->app->getDef('seo_prompt_schema_category', $vars);
-  }
-
-  private function loadDefinitions(): void
-  {
-    if ($this->loaded) {
-      return;
-    }
-
-    $this->app->loadDefinitions('Sites/ClicShoppingAdmin/seo_prompts', $this->languageCode);
-    $this->loaded = true;
   }
 }

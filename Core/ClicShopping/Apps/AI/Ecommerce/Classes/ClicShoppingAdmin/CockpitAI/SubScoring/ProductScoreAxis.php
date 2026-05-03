@@ -190,9 +190,15 @@
     }
 
     /**
-     * Compute keywords completeness ratio [0..1].
-     *   - products_head_keywords_tag (0.5)
-     *   - products_head_title_tag    (0.5)
+     * Compute keywords completeness ratio [0..1] with quality scoring.
+     *
+     * Scoring breakdown:
+     *   - products_head_keywords_tag: 0.5 total
+     *     • 0.25 for presence
+     *     • 0.25 for quality (5+ keywords, properly formatted)
+     *   - products_head_title_tag: 0.5 total
+     *     • 0.25 for presence
+     *     • 0.25 for quality (50-70 chars optimal length)
      *
      * Returns null if both fields are missing from the product array.
      */
@@ -204,8 +210,88 @@
       }
 
       $score = 0.0;
-      $score += !empty($product['products_head_keywords_tag']) ? 0.5 : 0.0;
-      $score += !empty($product['products_head_title_tag'])    ? 0.5 : 0.0;
+      $debug = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG') && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True';
+
+      // ── Keywords scoring (0.5 total) ──────────────────────────────────
+      $keywords = $product['products_head_keywords_tag'] ?? '';
+      if (!empty($keywords)) {
+        // Presence: 0.25
+        $score += 0.25;
+
+        // Quality: 0.25 based on keyword count and formatting
+        // Split by comma, filter empty values, count
+        $keywordArray = array_filter(
+          array_map('trim', explode(',', $keywords)),
+          fn($k) => !empty($k)
+        );
+        $keywordCount = count($keywordArray);
+
+        if ($keywordCount >= 5) {
+          // Optimal: 5+ keywords
+          $score += 0.25;
+        } elseif ($keywordCount > 0) {
+          // Partial: proportional to 5 keywords target
+          $score += ($keywordCount / 5.0) * 0.25;
+        }
+
+        if ($debug) {
+          error_log(sprintf(
+            '[CockpitAI] Keywords factor: "%s" → %d keywords → score %.3f',
+            mb_substr($keywords, 0, 50),
+            $keywordCount,
+            $score
+          ));
+        }
+      } else {
+        if ($debug) {
+          error_log('[CockpitAI] Keywords factor: EMPTY');
+        }
+      }
+
+      // ── Title tag scoring (0.5 total) ─────────────────────────────────
+      $title = $product['products_head_title_tag'] ?? '';
+      if (!empty($title)) {
+        // Presence: 0.25
+        $score += 0.25;
+
+        // Quality: 0.25 based on optimal length (50-70 chars for SEO)
+        $titleLength = mb_strlen($title);
+        $optimalMin = 50;
+        $optimalMax = 70;
+
+        if ($titleLength >= $optimalMin && $titleLength <= $optimalMax) {
+          // Optimal length
+          $score += 0.25;
+        } elseif ($titleLength > 0) {
+          // Penalize deviation from optimal range
+          if ($titleLength < $optimalMin) {
+            // Too short: proportional to optimal min
+            $score += ($titleLength / $optimalMin) * 0.25;
+          } else {
+            // Too long: penalize excess beyond optimal max
+            $excess = $titleLength - $optimalMax;
+            $penalty = min(1.0, $excess / 30.0); // Full penalty at +30 chars
+            $score += (1.0 - $penalty) * 0.25;
+          }
+        }
+
+        if ($debug) {
+          error_log(sprintf(
+            '[CockpitAI] Title tag factor: "%s" → %d chars → score %.3f',
+            mb_substr($title, 0, 50),
+            $titleLength,
+            $score
+          ));
+        }
+      } else {
+        if ($debug) {
+          error_log('[CockpitAI] Title tag factor: EMPTY');
+        }
+      }
+
+      if ($debug) {
+        error_log(sprintf('[CockpitAI] Total keywords ratio: %.3f', $score));
+      }
 
       return $score;
     }

@@ -34,6 +34,13 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns;
  */
 class WebSearchPatterns
 {
+  private static bool $debug;
+
+  public function __construct()
+  {
+    static::$debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
+  }
+
   /**
    * Compare product price with competitor prices from web search
    *
@@ -490,5 +497,64 @@ class WebSearchPatterns
   public static function isValidPrice(float $price): bool
   {
     return $price > 0 && $price < 1000000;
+  }
+
+  /**
+   * Enrich web search query with last_entity context
+   *
+   * Enriches web search queries with context from previous queries
+   * This allows follow-up queries like "compare with competitors" to include the product name
+   *
+   * IMPORTANT: This method receives queries in ENGLISH (already translated)
+   * All processing is done in English in a multilingual environment
+   *
+   * @param string $query Original web search query (in English)
+   * @param string $entityName Name of the last entity discussed
+   * @param string $entityType Type of the last entity (product, category, etc.)
+   * @return string Enriched query
+   */
+
+  public static function  enrichWebSearchQuery(string $query, string $entityName, string $entityType): string
+  {
+    // Detect if query contains contextual keywords that need entity context
+    // IMPORTANT: Only English keywords - queries are translated to English before processing
+    $contextualKeywords = [
+      // English comparison and alternative keywords
+      'compare', 'comparison', 'competitor', 'competitors',
+      'alternative', 'alternatives', 'similar', 'equivalent', 'equivalents',
+      'versus', 'vs',
+      // English contextual words
+      'price', 'cost', 'review', 'reviews', 'rating', 'ratings',
+      'features', 'specifications', 'specs',
+    ];
+
+    $lowerQuery = strtolower($query);
+    $needsContext = false;
+
+    foreach ($contextualKeywords as $keyword) {
+      if (strpos($lowerQuery, $keyword) !== false) {
+        $needsContext = true;
+        break;
+      }
+    }
+
+    if (!$needsContext) {
+      // Query doesn't need context enrichment
+      return $query;
+    }
+
+    // Enrich query by prepending entity name
+    // Example: "compare with competitors" → "iPhone 17 Pro compare with competitors"
+    $enrichedQuery = $entityName . ' ' . $query;
+
+    /*
+        if (static::$debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Enriched web search query: '{$query}' → '{$enrichedQuery}'",
+            'info'
+          );
+        }
+    */
+    return $enrichedQuery;
   }
 }

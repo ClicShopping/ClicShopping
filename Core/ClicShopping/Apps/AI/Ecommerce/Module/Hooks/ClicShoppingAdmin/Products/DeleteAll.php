@@ -16,7 +16,7 @@ use ClicShopping\OM\Registry;
 class DeleteAll implements \ClicShopping\OM\Modules\HooksInterface
 {
   public mixed $app;
-
+  private bool $debug;
   /**
    * Class constructor.
    *
@@ -32,13 +32,15 @@ class DeleteAll implements \ClicShopping\OM\Modules\HooksInterface
     }
 
     $this->app = Registry::get('Ecommerce');
+    $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
     $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Products/seo_chat_gpt');
   }
 
   /**
    * Processes the execution related to product data management and delete in the database.
-   * This includes generating products_embedding, based on product information.
+   * This includes deleting products_embedding and FAQ data (products_description_faq and 
+   * products_description_faq_embedding) based on product information.
    *
    * @return void
    */
@@ -47,7 +49,26 @@ class DeleteAll implements \ClicShopping\OM\Modules\HooksInterface
     if (isset($_POST['selected']) && is_array($_POST['selected']) && isset($_POST['DeleteAll'])) {
       foreach ($_POST['selected'] as $items) {
         if (isset($items)) {
+          // Delete product embeddings
           $this->app->delete('products_embedding', 'entity_id', $items);
+          
+          // Delete FAQ and FAQ embeddings for all languages
+          try {
+            // Delete FAQ content
+            $deletedFaq = $this->app->db->delete('products_description_faq', ['products_id' => (int)$items]);
+            
+            // Delete FAQ embeddings
+            $deletedFaqEmbeddings = $this->app->db->delete('products_description_faq_embedding', ['entity_id' => (int)$items]);
+            
+            if ($deletedFaq || $deletedFaqEmbeddings) {
+              if($this->debug) {
+                error_log("Products/DeleteAll: Deleted FAQ and embeddings for product {$items}");
+              }
+            }
+          } catch (\Exception $e) {
+            error_log("Products/DeleteAll: Error deleting FAQ for product {$items}: " . $e->getMessage());
+            // Do not block product deletion if FAQ deletion fails
+          }
         }
       }
     }

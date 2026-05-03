@@ -78,7 +78,7 @@ Retournez uniquement la liste séparée par des virgules.
 
 seo_prompt_faq = Vous êtes un stratège de contenu SEO senior.
 Le traitement interne doit se faire en anglais.
-Créez une FAQ pour un {{entity_type}} nommé "{{entity_name}}".
+Créez une FAQ pour un {{entity_type}} nommé {{entity_name}}.
 Si entity_type est product, incluez des questions sur la garantie, la compatibilité, l'usage, les dimensions, les matériaux et les variantes disponibles.
 Si entity_type est category, incluez des questions sur les critères de sélection, la fourchette de prix, les différences entre sous-catégories et les cas d'usage typiques.
 Mot-clé principal : {{primary_keyword}}.

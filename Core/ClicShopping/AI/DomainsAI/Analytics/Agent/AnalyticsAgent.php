@@ -10,8 +10,6 @@
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
-
-
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Cache as OMCache;
@@ -23,6 +21,8 @@ use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\DbSecurity;
+
+use ClicShopping\AI\Config\DomainConfig;
 
 use ClicShopping\AI\DomainsAI\Analytics\Agent\DatabaseSchemaManager;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\ResultInterpreter;
@@ -42,6 +42,7 @@ use ClicShopping\AI\Agents\Orchestrator\CorrectionAgent;
 use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\ModificationKeywordsPattern;
 use ClicShopping\AI\Utils\TypeSafetyGuard;
 use ClicShopping\AI\Agents\Orchestrator\SubAbstention\AgentAbstentionManager;
+use ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AgentEvaluation;
 
 /**
  * Class AnalyticsAgent
@@ -1242,6 +1243,17 @@ class AnalyticsAgent
           $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? 'unknown');
           $entityType = $lastEntity['type'] ?? 'entity';
           $entityId = $lastEntity['id'] ?? 'unknown';
+
+          DomainConfig::loadLanguageFile('rag_analytics_agent');
+
+          $array = [
+            'entityType' => $entityType,
+            'entityName' => $entityName,
+            'entityId' => $entityId
+          ];
+
+          $contextString = $this->language ->getDef('text_analytic_agent_context', $array);
+
           // Inject context BEFORE the question so the LLM sees it first
           $enrichedQuestion = $contextString . $enrichedQuestion;
           
@@ -1552,7 +1564,7 @@ class AnalyticsAgent
     string $outputType,
     mixed $output,
     array $criteria
-  ): \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AgentEvaluation {
+  ): AgentEvaluation {
 
     if (!$this->autonomousConfig->canAgentEvaluatePeers('AnalyticsAgent')) {
       throw new \RuntimeException('AnalyticsAgent is not authorized to evaluate peers (disabled in configuration)');

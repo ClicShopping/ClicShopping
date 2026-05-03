@@ -397,7 +397,6 @@ class ConversationMemory
 
   /**
    * Resolves contextual references ("it", "the previous one", etc.) in a query.
-   * 🆕 REFACTORED: Délègue à ContextResolver
    *
    * @param string $query Query with potential references
    * @return array Resolved query and context used
@@ -411,7 +410,6 @@ class ConversationMemory
     }
     
     try {
-
       $lastEntity = $this->entityTracker->getLastEntity();
       
       // CRITICAL: Always log last entity retrieval

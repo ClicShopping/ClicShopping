@@ -2,6 +2,8 @@ text_seo_page_title = SEO Page Title
 
 text_seo_action = Click to see Gpt reponse
 
+text_seo_modal_close = Close
+
 text_seo_expertise = You are an expert in e-commerce and SEO marketing.
 text_seo_page_title_question = Give me a SEO Title in less 50 characters about this category : {{category_name}}. Maximum 70 characters, no emojis, no quotes, no trailing period. Raw output only.
 text_seo_page_tag_question = Give me 7 keywords tag separated by a comma about this category : {{category_name}}. 1 to 3 words per tag, comma-separated, no # symbols. Raw output only.

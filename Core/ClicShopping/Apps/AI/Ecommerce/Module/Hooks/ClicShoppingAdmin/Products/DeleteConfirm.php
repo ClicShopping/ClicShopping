@@ -45,7 +45,7 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
   }
 
   /**
-   * Execute the deletion of product embeddings
+   * Execute the deletion of product embeddings, FAQ, and FAQ embeddings
    * Triggered when DeleteConfirm action is requested
    */
   public function execute()
@@ -53,6 +53,22 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (isset($_GET['DeleteConfirm']) && isset($this->Id)) {
       // Delete the product embedding from the database
       $this->app->db->delete('products_embedding', ['entity_id' => (int)$this->Id]);
+      
+      // Delete FAQ and FAQ embeddings for all languages
+      try {
+        // Delete FAQ content
+        $deletedFaq = $this->app->db->delete('products_description_faq', ['products_id' => (int)$this->Id]);
+        
+        // Delete FAQ embeddings
+        $deletedFaqEmbeddings = $this->app->db->delete('products_description_faq_embedding', ['entity_id' => (int)$this->Id]);
+        
+        if ($deletedFaq || $deletedFaqEmbeddings) {
+          error_log("Products/DeleteConfirm: Deleted FAQ and embeddings for product {$this->Id}");
+        }
+      } catch (\Exception $e) {
+        error_log("Products/DeleteConfirm: Error deleting FAQ for product {$this->Id}: " . $e->getMessage());
+        // Do not block product deletion if FAQ deletion fails
+      }
     } // end if
   }
 }

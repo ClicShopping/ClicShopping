@@ -1538,9 +1538,9 @@ ORDER BY year DESC, month DESC
 - 6-month MA: Medium-term trends (ROWS BETWEEN 5 PRECEDING AND CURRENT ROW)
 - 12-month MA: Long-term trends (ROWS BETWEEN 11 PRECEDING AND CURRENT ROW)
 
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 3. YEAR-OVER-YEAR COMPARISON (Comparaison Annuelle)
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 
 **Definition**: Compare same period across different years.
 **Use Case**: Identify growth trends, seasonal patterns across years.
@@ -1585,9 +1585,9 @@ ORDER BY year DESC, quarter DESC
 - LAG(revenue, 12) for monthly data (12 months = 1 year)
 - Use NULLIF to prevent division by zero
 
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 4. VARIANCE AND OUTLIER ANALYSIS (Analyse de Variance)
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 
 **Definition**: Measure of data dispersion around the mean.
 **Use Case**: Assess consistency, identify outliers, measure volatility.
@@ -1633,9 +1633,9 @@ ORDER BY ABS((revenue - AVG(revenue) OVER ()) / NULLIF(STDDEV(revenue) OVER (), 
 - |z| > 2: Outlier (unusual value) - Investigate
 - |z| > 3: Extreme outlier - Verify data quality
 
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 5. RANKING AND PERFORMANCE ANALYSIS (Classement et Performance)
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 
 **Definition**: Rank periods by performance, identify top/bottom performers.
 **Use Case**: Identify best/worst periods, set performance benchmarks.
@@ -1671,9 +1671,9 @@ FROM (
 ) AS quarterly_data
 ORDER BY revenue DESC
 
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 6. GENERAL BEST PRACTICES FOR STATISTICAL QUERIES
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 
 **1. Use Window Functions Instead of Subqueries**:
    ✅ GOOD: AVG(revenue) OVER ()
@@ -1710,9 +1710,9 @@ ORDER BY revenue DESC
    - Examples: 'Strong Growth', 'Outlier', 'Top 25%'
    - Makes interpretation easier for users
 
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 7. KEYWORD DETECTION FOR STATISTICAL ANALYSES
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 
 When user query contains these keywords, apply corresponding statistical pattern:
 
@@ -1750,9 +1750,9 @@ When user query contains these keywords, apply corresponding statistical pattern
 - "performance" / "performance"
 → Use Pattern 5 (Ranking and Performance)
 
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 8. DATA QUALITY CONSIDERATIONS
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 
 Before performing statistical analysis, consider:
 
@@ -1766,9 +1766,9 @@ Before performing statistical analysis, consider:
 - If one period has very low value (like 12 EUR) → "Q1 2025 appears to be an outlier or incomplete data"
 - If large variance → "High volatility in data, consider longer time periods"
 
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 9. INTERPRETATION TEMPLATES
-═══════════════════════════════════════════════════════════════════════════════
+----------------------------------------------------
 
 **For Seasonal Coefficients**:
 "The seasonal coefficient analysis shows:
@@ -1795,7 +1795,7 @@ This indicates [STRONG/MODERATE/WEAK] seasonal patterns, with [DESCRIPTION]."
 - Most volatile period: Q[X] [YEAR] (z-score: [Z])
 - Data consistency: [HIGH/MODERATE/LOW] based on coefficient of variation"
 
-═══════════════════════════════════════════════════════════════════════════════
+-------------------------------------
 
 **REMEMBER**: 
 - Always use window functions for efficiency (AVG() OVER (), LAG(), RANK(), etc.)
@@ -1805,3 +1805,13 @@ This indicates [STRONG/MODERATE/WEAK] seasonal patterns, with [DESCRIPTION]."
 - Include categorical indicators (CASE statements)
 - Mention data quality concerns when relevant
 - Base examples on real user queries for relevance
+
+
+text_analytic_agent_context = ---- CONTEXT FROM PREVIOUS CONVERSATION ----
+Last {{entityType}}} discussed: {{entityName}} (ID: {{entityId}})
+IMPORTANT: If the query contains pronouns or possessive adjectives  it, its, this, that, the, etc.)
+use this context to resolve them.
+Example: The/This sku means the SKU of {{entityName}}
+Example: its price means the price of {{entityName}}
+Example: the product means {{entityName}}
+----------------------------

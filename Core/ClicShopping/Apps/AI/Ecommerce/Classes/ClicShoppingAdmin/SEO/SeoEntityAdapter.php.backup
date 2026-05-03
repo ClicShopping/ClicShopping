@@ -10,11 +10,9 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO;
 
-use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ\FaqParser;
-use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ\FaqPrettyPrinter;
-use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ\FaqRepository;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
+use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\Apps\Marketing\SEO\Classes\ClicShoppingAdmin\SeoAdmin;
 
 /**
@@ -80,6 +78,23 @@ class SeoEntityAdapter
     return $this->entityType;
   }
 
+  public function getTable(): ?string
+  {
+    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+
+    return $prefix . $this->config['table'] ?? null;
+  }
+
+  public function getIdField(): ?string
+  {
+    return $this->config['id_field'] ?? null;
+  }
+
+  public function getLanguageField(): ?string
+  {
+    return $this->config['language_field'] ?? null;
+  }
+
   public function getCurrentData(int $entityId, int $languageId): ?array
   {
     if (!$this->isSupported()) {
@@ -132,22 +147,23 @@ class SeoEntityAdapter
       return [];
     }
 
-    $table = $this->config['table'] ?? '';
+    $table = $this->resolveTableName();
     $fields = $this->config['fields'] ?? [];
     $available = [];
 
     foreach ($fields as $key => $column) {
-      // Check if column exists using ClicShopping native approach with prepared statement
-      $Qcheck = $this->db->prepare('SHOW COLUMNS FROM :table_' . $table . ' LIKE :column');
-      $Qcheck->bindValue(':column', $column);
-      $Qcheck->execute();
-      
-      if ($Qcheck->fetch()) {
+      if (DoctrineOrm::columnExists($table, $column)) {
         $available[$key] = $column;
       }
     }
 
     return $available;
+  }
+
+  private function resolveTableName(): string
+  {
+    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+    return $prefix . $this->config['table'];
   }
 
   public function applySeoChanges(int $entityId, int $languageId, array $changes, bool $normalize = true): bool
@@ -195,6 +211,28 @@ class SeoEntityAdapter
       $sqlData[$column] = $value;
     }
 
+    // Handle FAQ and H2 headings: combine into single structured HTML section
+    $hasFaq = isset($changes['faq']) && is_array($changes['faq']) && !empty($changes['faq']);
+    $hasH2 = isset($changes['h2']) && is_array($changes['h2']) && !empty($changes['h2']);
+    
+    if ($hasFaq || $hasH2) {
+      $structuredHtml = $this->buildStructuredContentHtml(
+        $hasFaq ? $changes['faq'] : [],
+        $hasH2 ? $changes['h2'] : []
+      );
+      
+      // If description is being updated, append structured content to it
+      if (isset($sqlData[$fieldMap['description']])) {
+        $sqlData[$fieldMap['description']] .= "\n\n" . $structuredHtml;
+      } else {
+        // Otherwise, load current description and append structured content
+        $currentData = $this->getCurrentData($entityId, $languageId);
+        if ($currentData && isset($currentData['description'])) {
+          $sqlData[$fieldMap['description']] = $currentData['description'] . "\n\n" . $structuredHtml;
+        }
+      }
+    }
+
     if (empty($sqlData)) {
       return false;
     }
@@ -232,111 +270,7 @@ class SeoEntityAdapter
 
     $stmt->execute();
 
-    // Handle FAQ storage separately (if FAQ data is provided)
-    if (isset($changes['faq']) && is_array($changes['faq']) && !empty($changes['faq'])) {
-      $faqSuccess = $this->saveFaqContent($entityId, $languageId, $changes['faq']);
-      
-      if ($faqSuccess) {
-        error_log('[SeoEntityAdapter] FAQ stored successfully for entity ' . $entityId . ', language ' . $languageId);
-      } else {
-        error_log('[SeoEntityAdapter] FAQ storage failed for entity ' . $entityId . ', language ' . $languageId);
-        // Note: We don't fail the entire operation if FAQ storage fails
-        // SEO fields were already saved successfully
-      }
-    }
-
     return true;
-  }
-
-  /**
-   * Save FAQ content to products_description_faq table
-   *
-   * Validates FAQ structure, formats content, and stores it in the
-   * dedicated FAQ table. Uses FaqParser for validation, FaqPrettyPrinter
-   * for formatting, and FaqRepository for database operations.
-   *
-   * @param int $entityId Product ID
-   * @param int $languageId Language ID
-   * @param array $faqData FAQ array with 'q' and 'a' keys
-   * @return bool True on success, false on failure
-   *
-   * @example
-   * ```php
-   * $adapter = new SeoEntityAdapter('product');
-   * $faqData = [
-   *   ['q' => 'What is this product?', 'a' => 'This is a great product.'],
-   *   ['q' => 'How to use it?', 'a' => 'Follow the instructions.']
-   * ];
-   * $success = $adapter->saveFaqContent(123, 1, $faqData);
-   * ```
-   */
-  private function saveFaqContent(int $entityId, int $languageId, array $faqData): bool
-  {
-    try {
-      // Initialize FAQ classes
-      $parser = new FaqParser();
-      $printer = new FaqPrettyPrinter();
-      $repository = new FaqRepository();
-
-      // Validate FAQ structure
-      $parseResult = $parser->parse(json_encode($faqData));
-      if (!$parseResult['success']) {
-        error_log('[SeoEntityAdapter] FAQ validation failed for product ' . $entityId . ', language ' . $languageId . ': ' . $parseResult['error']);
-        return false;
-      }
-
-      // Format FAQ content as pretty-printed JSON
-      $faqContent = $printer->print($parseResult['data']);
-
-      // Generate plain text description from FAQ
-      $faqDescription = $this->generateFaqDescription($parseResult['data']);
-
-      // Save to database using FaqRepository
-      $success = $repository->saveFaq($entityId, $languageId, $faqContent, $faqDescription);
-
-      if ($success) {
-        error_log('[SeoEntityAdapter] FAQ saved successfully for product ' . $entityId . ', language ' . $languageId);
-      } else {
-        error_log('[SeoEntityAdapter] FAQ save failed for product ' . $entityId . ', language ' . $languageId);
-      }
-
-      return $success;
-
-    } catch (\Exception $e) {
-      error_log('[SeoEntityAdapter] Exception in saveFaqContent: ' . $e->getMessage());
-      error_log('[SeoEntityAdapter] Product ID: ' . $entityId . ', Language ID: ' . $languageId);
-      return false;
-    }
-  }
-
-  /**
-   * Generate plain text description from FAQ data
-   *
-   * Creates a searchable plain text summary by concatenating all
-   * questions and answers. Used for search indexing and quick previews.
-   *
-   * @param array $faqData FAQ array with 'q' and 'a' keys
-   * @return string Plain text description
-   *
-   * @example
-   * ```php
-   * $faqData = [
-   *   ['q' => 'What is this?', 'a' => 'A product.'],
-   *   ['q' => 'How to use?', 'a' => 'Read manual.']
-   * ];
-   * $description = $this->generateFaqDescription($faqData);
-   * // Returns: "What is this? A product. How to use? Read manual."
-   * ```
-   */
-  private function generateFaqDescription(array $faqData): string
-  {
-    $description = '';
-    foreach ($faqData as $item) {
-      if (isset($item['q']) && isset($item['a'])) {
-        $description .= $item['q'] . ' ' . $item['a'] . ' ';
-      }
-    }
-    return trim($description);
   }
 
   public function normalizeChanges(array $proposal): array
@@ -586,5 +520,115 @@ class SeoEntityAdapter
     }
 
     return $context;
+  }
+
+  /**
+   * Build structured content HTML combining FAQ and H2 headings
+   *
+   * Creates a unified section with accordion functionality for FAQ and main characteristics.
+   * Only displays accordion if there are multiple items (>1).
+   * Uses multilingual support via $this->apps->getDef() for section titles.
+   *
+   * @param array $faq FAQ array with 'q' and 'a' keys
+   * @param array $h2 H2 array with 'level', 'text', and 'anchor' keys
+   * @return string HTML markup for structured content section
+   */
+  private function buildStructuredContentHtml(array $faq, array $h2): string
+  {
+    $hasFaq = !empty($faq);
+    $hasH2 = !empty($h2);
+    
+    if (!$hasFaq && !$hasH2) {
+      return '';
+    }
+
+    // Count valid items
+    $faqCount = 0;
+    if ($hasFaq) {
+      foreach ($faq as $item) {
+        if (isset($item['q']) && isset($item['a'])) {
+          $faqCount++;
+        }
+      }
+    }
+
+    $h2Count = 0;
+    if ($hasH2) {
+      foreach ($h2 as $heading) {
+        if (isset($heading['level']) && isset($heading['text'])) {
+          $h2Count++;
+        }
+      }
+    }
+
+    // Don't display if only one item total
+    if (($faqCount + $h2Count) <= 1) {
+      return '';
+    }
+
+    // Get multilingual labels
+    $faqSectionTitle = $this->apps->getDef('seo_faq_section_title');
+    $characteristicsSectionTitle = $this->apps->getDef('seo_characteristics_section_title');
+
+    $html = '<div class="seo-content-structure.faq-accordion">' . "\n";
+
+    // FAQ Section (Accordion 1)
+    if ($faqCount > 0) {
+      $accordionClass = $faqCount > 1 ? 'faq-accordion' : '';
+      $html .= '<div class="seo-content-structure ' . $accordionClass . '" itemscope itemtype="https://schema.org/FAQPage">' . "\n";
+      $html .= '<h2>' . htmlspecialchars($faqSectionTitle, ENT_QUOTES, 'UTF-8') . '</h2>' . "\n";
+
+      foreach ($faq as $item) {
+        if (!isset($item['q']) || !isset($item['a'])) {
+          continue;
+        }
+
+        $question = htmlspecialchars($item['q'], ENT_QUOTES, 'UTF-8');
+        $answer = htmlspecialchars($item['a'], ENT_QUOTES, 'UTF-8');
+
+        $html .= '<div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">' . "\n";
+        $html .= '  <h3 itemprop="name">' . $question . '</h3>' . "\n";
+        $html .= '  <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">' . "\n";
+        $html .= '    <p itemprop="text">' . $answer . '</p>' . "\n";
+        $html .= '  </div>' . "\n";
+        $html .= '</div>' . "\n";
+      }
+
+      $html .= '</div>' . "\n";
+    }
+
+    // Main Characteristics Section (Accordion 2)
+    if ($h2Count > 0) {
+      $accordionClass = $h2Count > 1 ? 'faq-accordion' : '';
+      $html .= '<div class="seo-content-structure ' . $accordionClass . '">' . "\n";
+      $html .= '<h2>' . htmlspecialchars($characteristicsSectionTitle, ENT_QUOTES, 'UTF-8') . '</h2>' . "\n";
+
+      foreach ($h2 as $heading) {
+        if (!isset($heading['level']) || !isset($heading['text'])) {
+          continue;
+        }
+
+        $level = (int)$heading['level'];
+        $text = htmlspecialchars($heading['text'], ENT_QUOTES, 'UTF-8');
+        $anchor = isset($heading['anchor']) ? htmlspecialchars($heading['anchor'], ENT_QUOTES, 'UTF-8') : '';
+
+        // Ensure level is between 2 and 6
+        $level = max(2, min(6, $level));
+
+        $html .= '<div class="faq-item">' . "\n";
+        if ($anchor) {
+          $html .= '  <h' . $level . ' id="' . $anchor . '">' . $text . '</h' . $level . '>' . "\n";
+        } else {
+          $html .= '  <h' . $level . '>' . $text . '</h' . $level . '>' . "\n";
+        }
+        $html .= '</div>' . "\n";
+      }
+
+      $html .= '</div>' . "\n";
+    }
+
+    $html .= '</div>';
+
+    return $html;
   }
 }

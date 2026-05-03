@@ -2059,6 +2059,7 @@ INSERT INTO cron VALUES(5, 'embeddings', 'Update the embeddings table if it not 
 INSERT INTO cron VALUES(6, 'McpHealthCron', 'All 5 minutes', 'minute', 'McpHealthCron', 1, '2025-09-25 09:52:21', '2025-09-25 10:56:07');
 INSERT INTO cron VALUES(7, 'reputationUpdateProcessor', 'Reputation update queue processor - processes pending reputation update jobs every 5 minutes (batch size: 50, max attempts: 3)', 'minutes', 'ReputationUpdateProcessor', 0, '2026-02-08 09:59:22', '2026-02-22 19:52:40');
 INSERT INTO cron VALUES(8, 'productCockpitAi', 'Analyse and update the product cockpit AI)', 'day', 'productCockpitAi', 0, '2026-02-08 09:59:22', '2026-02-22 19:52:40');
+INSERT INTO cron VALUES(9, 'seoFaqBatchProcessor', 'Batch processes products without SEO/FAQ content - generates SEO metadata and FAQ for products that need them', 'day', 'seoFaqBatchProcessor', 0, NOW(), NOW());
 
 
 INSERT INTO currencies VALUES(1, 'Euro', 'EUR', '', 'EUR', '.', ',', '2', 1.00000000, '2008-09-13 18:02:35', 1, 0);
@@ -2375,6 +2376,8 @@ INSERT INTO sec_directory_whitelist VALUES(7, 'Core/Work');
 
 INSERT INTO seo VALUES(1, 1, 'ClicShopping AI B2B B2C Solution', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'ClicShopping AI B2B B2C Solution', '', '', '');
 INSERT INTO seo VALUES(1, 2, 'ClicShopping AI B2B B2C Solution', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'ClicShopping AI B2B B2C Solution', '', '', '');
+
+INSERT INTO seo_faq_batch_log VALUES (1, 0, 0, 0, 0, '{"message": "FAQ tables migration completed successfully via direct SQL"}');
 
 INSERT INTO specials VALUES(1, 3, 76.0000, '2023-04-30 15:17:35', NULL, NULL, NULL, 1, NULL, 0, 0);
 INSERT INTO specials VALUES(2, 6, 47.5000, '2023-04-30 15:17:51', NULL, NULL, NULL, 1, NULL, 0, 0);

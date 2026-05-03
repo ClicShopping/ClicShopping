@@ -1,6 +1,8 @@
 text_seo_page_title = SEO Page de Titre
 text_seo_action = Cliquez pour avoir une réponse de Gpt
 
+text_seo_modal_close = Fermer
+
 text_seo_expertise = Tu es un expert en e-commerce et en marketing SEO.
 text_seo_page_title_question = Donnes-moi en moins de 50 caractères le SEO Titre concernant cette catégorie : {{category_name}}. Maximum 70 caractères, sans emoji, sans guillemets, sans point final. Réponse brute uniquement.
 text_seo_page_tag_question = Donnes-moi juste en 5 mots clefs sèparès par une virgule concernant cette catégorie : {{category_name}}.  1 à 3 mots par tag, séparés par des virgules, sans #. Réponse brute uniquement.

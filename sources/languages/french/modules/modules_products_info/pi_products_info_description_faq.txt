@@ -1,0 +1,3 @@
+module_products_info_faq_title = Voulez-vous afficher la FAQ du produit ?
+module_products_info_faq_description = Afficher la FAQ du produit (Foire Aux Questions)
+module_products_info_faq_section_title = Foire Aux Questions

@@ -47,8 +47,7 @@ class SeoAgenticPipeline
   {
     $this->adapter = new SeoEntityAdapter($entityType);
     $this->reportRepo = new SeoSerpReportRepository();
-    $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG')
-      && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
+    $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
     $this->seoAgentOverride = $seoAgentOverride;
     $this->codeAgentOverride = $codeAgentOverride;
   }

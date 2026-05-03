@@ -238,7 +238,7 @@ class LlmAnalysisGenerator
   }
 
   /**
-   * Extract valid factors from scoring results
+   * Extract valid factors from scoring results with enhanced detail
    *
    * @param array $factors Factor array from ScoringEngine
    * @return string Formatted factor list
@@ -251,7 +251,14 @@ class LlmAnalysisGenerator
       if (isset($factor['status']) && $factor['status'] === 'valid') {
         // Support both key variants used across the codebase
         $value = $factor['normalized_value'] ?? ($factor['normalized'] ?? 0);
-        $validFactors[] = sprintf('%s(%.2f)', $factorName, $value);
+        $rawValue = $factor['value'] ?? null;
+
+        // Enhanced display for keywords factor to show actual content
+        if ($factorName === 'keywords' && $rawValue !== null) {
+          $validFactors[] = sprintf('%s(%.2f - quality score)', $factorName, $value);
+        } else {
+          $validFactors[] = sprintf('%s(%.2f)', $factorName, $value);
+        }
       }
     }
 

@@ -33,6 +33,7 @@ class Insert implements \ClicShopping\OM\Modules\HooksInterface
   public mixed $app;
   public mixed $lang;
   public mixed $semantics;
+  private bool $debug;
   
   /**
    * Class constructor.
@@ -56,6 +57,7 @@ class Insert implements \ClicShopping\OM\Modules\HooksInterface
 
     $this->semantics = Registry::get('Semantics');
     $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Products/rag');
+    $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
   }
 
   /**
@@ -400,6 +402,39 @@ class Insert implements \ClicShopping\OM\Modules\HooksInterface
                 error_log("Products/Insert: Failed to save embeddings for product {$item['products_id']} - " . $result['error']);
               } else {
                 error_log("Products/Insert: Successfully saved {$result['chunks_saved']} chunk(s) for product {$item['products_id']}");
+              }
+            }
+
+            //********************
+            // Add FAQ embeddings
+            //********************
+            if ($embedding_enabled) {
+              // Check if FAQ exists for this product and language
+              $QfaqCheck = $this->app->db->prepare('SELECT faq_content 
+                                                     FROM :table_products_description_faq 
+                                                     WHERE products_id = :products_id 
+                                                     AND language_id = :language_id');
+              $QfaqCheck->bindInt(':products_id', $products_id);
+              $QfaqCheck->bindInt(':language_id', $item['language_id']);
+              $QfaqCheck->execute();
+
+              if ($QfaqCheck->fetch() && !empty($QfaqCheck->value('faq_content'))) {
+                try {
+                  // Use FaqEmbeddingGenerator to generate FAQ embeddings
+                  $faqGenerator = new \ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ\FaqEmbeddingGenerator();
+                  $faqResult = $faqGenerator->generateEmbeddings($products_id, $item['language_id']);
+
+                  if ($faqResult['success']) {
+                    if($this->debug) {
+                      error_log("Products/Insert: Successfully generated {$faqResult['chunks_saved']} FAQ embedding chunk(s) for product {$products_id}, language {$item['language_id']}");
+                    }
+                  } else {
+                    error_log("Products/Insert: Failed to generate FAQ embeddings for product {$products_id}, language {$item['language_id']}: {$faqResult['error']}");
+                  }
+                } catch (\Exception $e) {
+                  error_log("Products/Insert: Exception generating FAQ embeddings for product {$products_id}, language {$item['language_id']}: " . $e->getMessage());
+                  // Do not block product insertion if FAQ embedding generation fails
+                }
               }
             }
           }

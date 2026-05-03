@@ -10,7 +10,6 @@
 
 namespace ClicShopping\AI\Agents\Planning;
 
-
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Security\SecurityLogger;
@@ -25,6 +24,7 @@ use ClicShopping\AI\Infrastructure\Metrics\CalculatorTool;
 use ClicShopping\AI\DomainsAI\WebSearch\Cache\SearchCacheManager;
 use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\WebSearchFormatter;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\WebSearchPatterns;
 
 /**
  * PlanExecutor Class
@@ -690,7 +690,7 @@ class PlanExecutor
           if ($entityName !== null) {
             // Enrich query with entity context
             // Example: "compare avec les concurrents" → "compare iPhone 17 Pro avec les concurrents"
-            $query = $this->enrichWebSearchQuery($query, $entityName, $entityType);
+            $query = WebSearchPatterns::enrichWebSearchQuery($query, $entityName, $entityType);
             
             if ($this->debug) {
               $this->securityLogger->logSecurityEvent(

@@ -2,3 +2,11 @@ ALTER TABLE clic_products_cockpit_ai_tracking_impressions MODIFY COLUMN session_
 TRUNCATE TABLE clic_products_cockpit_ai_tracking_impressions;
 
 call migrate_passwords_http.php for the migration and follow instructions
+
+
+
+INSERT INTO clic_seo_faq_batch_log (language_id, products_processed, products_success, products_failed, execution_time_seconds, error_messages)
+VALUES (1, 0, 0, 0, 0, '{"message": "FAQ tables migration completed successfully via direct SQL"}');
+
+INSERT INTO clic_cron VALUES(9, 'seoFaqBatchProcessor', 'Batch processes products without SEO/FAQ content - generates SEO metadata and FAQ for products that need them', 'day', 'seoFaqBatchProcessor', 0, NOW(), NOW());
+

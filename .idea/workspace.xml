@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="orchestrator refactoring" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="translation">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/Agents/Memory/ConversationMemory.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/Agents/Memory/ConversationMemory.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/Agents/Orchestrator/OrchestratorAgent.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/Agents/Orchestrator/OrchestratorAgent.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/Agents/Planning/PlanExecutor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/Agents/Planning/PlanExecutor.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/AnalyticsAgent.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/AnalyticsAgent.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Cache/SearchCacheManager.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Cache/SearchCacheManager.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -165,6 +173,8 @@
       <workItem from="1777622386401" duration="1024000" />
       <workItem from="1777645815795" duration="123000" />
       <workItem from="1777647922795" duration="41000" />
+      <workItem from="1777651486408" duration="204000" />
+      <workItem from="1777791104195" duration="1515000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -310,7 +320,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777647949196</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="translation">
+      <option name="closed" value="true" />
+      <created>1777651498831</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1777651498831</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -330,7 +348,8 @@
     <MESSAGE value="fix http_response_code(): Cannot set response code" />
     <MESSAGE value="SEO improvement analysis" />
     <MESSAGE value="orchestrator refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="orchestrator refactoring" />
+    <MESSAGE value="translation" />
+    <option name="LAST_COMMIT_MESSAGE" value="translation" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
