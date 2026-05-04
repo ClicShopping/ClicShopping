@@ -10,44 +10,34 @@
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
-use ClicShopping\OM\Registry;
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Cache as OMCache;
-
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
-
-use ClicShopping\AI\Security\InputValidator;
-use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\Security\RateLimit;
-use ClicShopping\AI\Security\DbSecurity;
-
+use ClicShopping\AI\Config\AutonomousConfig;
 use ClicShopping\AI\Config\DomainConfig;
-
-use ClicShopping\AI\DomainsAI\Analytics\Agent\DatabaseSchemaManager;
-use ClicShopping\AI\DomainsAI\Analytics\Agent\ResultInterpreter;
-use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
-use ClicShopping\AI\DomainsAI\Analytics\Agent\AmbiguityHandler;
-use ClicShopping\AI\DomainsAI\Analytics\Agent\CompoundQueryHandler;
-use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
-use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
-use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
-use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
-use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\ModificationKeywordsPattern;
-
-use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AutonomousConfig;
+use ClicShopping\AI\CoreAI\Orchestrator\CorrectionAgent;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveRegistry;
 use ClicShopping\AI\CoreAI\Query\QueryClassifier;
-use ClicShopping\AI\CoreAI\Orchestrator\CorrectionAgent;
-use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
-use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
-
-use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
+use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
+use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
+use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
+use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
+use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\ModificationKeywordsPattern;
+use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
+use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
+use ClicShopping\AI\Security\DbSecurity;
+use ClicShopping\AI\Security\InputValidator;
+use ClicShopping\AI\Security\RateLimit;
+use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Utils\TypeSafetyGuard;
+use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\OM\Cache as OMCache;
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 
 /**
  * Class AnalyticsAgent

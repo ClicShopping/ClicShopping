@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="some refactoring">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="orchestrator refactoring">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/AnalyticsAgent.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/AnalyticsAgent.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,7 +25,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7465" />
+    <option name="cachedIndexableFilesCount" value="7383" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -170,6 +171,7 @@
       <workItem from="1777651486408" duration="204000" />
       <workItem from="1777791104195" duration="1515000" />
       <workItem from="1777816524641" duration="988000" />
+      <workItem from="1777882789662" duration="1001000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -331,7 +333,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777816554370</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="orchestrator refactoring">
+      <option name="closed" value="true" />
+      <created>1777882840221</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1777882840222</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -350,10 +360,10 @@
     <MESSAGE value="fix check" />
     <MESSAGE value="fix http_response_code(): Cannot set response code" />
     <MESSAGE value="SEO improvement analysis" />
-    <MESSAGE value="orchestrator refactoring" />
     <MESSAGE value="translation" />
     <MESSAGE value="some refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="some refactoring" />
+    <MESSAGE value="orchestrator refactoring" />
+    <option name="LAST_COMMIT_MESSAGE" value="orchestrator refactoring" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
