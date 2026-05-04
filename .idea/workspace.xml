@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="orchestrator refactoring">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="fix accordeon" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,7 +22,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7383" />
+    <option name="cachedIndexableFilesCount" value="7449" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -171,6 +169,7 @@
       <workItem from="1777791104195" duration="1515000" />
       <workItem from="1777816524641" duration="988000" />
       <workItem from="1777882789662" duration="1736000" />
+      <workItem from="1777891781014" duration="391000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -348,7 +347,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777886745985</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="fix accordeon">
+      <option name="closed" value="true" />
+      <created>1777891795062</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1777891795062</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -370,7 +377,8 @@
     <MESSAGE value="translation" />
     <MESSAGE value="some refactoring" />
     <MESSAGE value="orchestrator refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="orchestrator refactoring" />
+    <MESSAGE value="fix accordeon" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix accordeon" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
