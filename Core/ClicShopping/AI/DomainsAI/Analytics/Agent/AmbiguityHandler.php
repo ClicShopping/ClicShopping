@@ -26,8 +26,6 @@ use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
  * - Execute each interpretation and collect results
  * - Request clarification from users when needed
  * - Build standardized ambiguous/clarification responses
- * 
- * @package ClicShopping\AI\Agents\Orchestrator\SubAnalyticsAgent
  */
 
 class AmbiguityHandler

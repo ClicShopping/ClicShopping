@@ -24,7 +24,7 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Processor;
  *
  * Requirements: REQ-8.1, REQ-8.2, REQ-8.3, REQ-8.4, REQ-8.5
  *
- * @package ClicShopping\AI\Agents\Orchestrator\SubHybridQueryProcessor
+ * @package ClicShopping\AI\CoreAI\Orchestrator\SubHybridQueryProcessor
  * @since 2025-12-14
  */
 

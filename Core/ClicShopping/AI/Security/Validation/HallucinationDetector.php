@@ -669,7 +669,7 @@ class HallucinationDetector
 
     // Use TranslationService for language-agnostic detection
     // This leverages existing LLM translation infrastructure
-    $translationService = new \ClicShopping\AI\Agents\Orchestrator\SubIntentAnalyzer\TranslationService($this->debug);
+    $translationService = new \ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer\TranslationService($this->debug);
     
     return $translationService->containsKeywordInAnyLanguage($text, $englishKeyword);
   }

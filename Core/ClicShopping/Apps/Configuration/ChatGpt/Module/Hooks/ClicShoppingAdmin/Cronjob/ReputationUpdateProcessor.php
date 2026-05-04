@@ -18,8 +18,8 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\Hooks\ClicShoppingAdmin
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
-use ClicShopping\AI\Agents\Orchestrator\SubReputation\EvaluationMonitor;
-use ClicShopping\AI\Agents\Orchestrator\SubReputation\ReputationTracker;
+use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\EvaluationMonitor;
+use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationTracker;
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
 
 /**

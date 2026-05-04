@@ -9,9 +9,6 @@
  * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
  * @Licence GPL 2 & MIT
  * @Info : https://www.clicshopping.org/forum/trademark/
- * 
- * @package ClicShopping\AI\Agents\Orchestrator\SubAnalyticsAgent
- * @date 2026-01-11
  */
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;

@@ -27,22 +27,27 @@ use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\DatabaseSchemaManager;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\ResultInterpreter;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
-use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AmbiguityHandler;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\CompoundQueryHandler;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
-use ClicShopping\AI\Agents\Query\QueryClassifier;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
-use ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AutonomousConfig;
-use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
-use ClicShopping\AI\Infrastructure\Cache\QueryCache;
-use ClicShopping\AI\Agents\Orchestrator\CorrectionAgent;
 use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\ModificationKeywordsPattern;
+
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AutonomousConfig;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveRegistry;
+use ClicShopping\AI\CoreAI\Query\QueryClassifier;
+use ClicShopping\AI\CoreAI\Orchestrator\CorrectionAgent;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
+
+use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
+use ClicShopping\AI\Infrastructure\Cache\Cache;
+use ClicShopping\AI\Infrastructure\Cache\QueryCache;
 use ClicShopping\AI\Utils\TypeSafetyGuard;
-use ClicShopping\AI\Agents\Orchestrator\SubAbstention\AgentAbstentionManager;
-use ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AgentEvaluation;
 
 /**
  * Class AnalyticsAgent
@@ -1416,13 +1421,13 @@ class AnalyticsAgent
    * @param string $goalStatement Clear description of the goal
    * @param array $successCriteria Measurable success criteria
    * @param string $priority Priority level
-   * @return \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\LocalObjective
+   * @return \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective
    */
   public function createLocalObjective(
     string $goalStatement,
     array $successCriteria,
     string $priority
-  ): \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\LocalObjective {
+  ): LocalObjective {
     
     if (!$this->autonomousConfig->canAgentCreateObjectives('AnalyticsAgent')) {
       throw new \RuntimeException('AnalyticsAgent is not authorized to create objectives (disabled in configuration)');
@@ -1437,7 +1442,7 @@ class AnalyticsAgent
       default => 1800
     };
 
-    $objective = new \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\LocalObjective(
+    $objective = new LocalObjective(
       'AnalyticsAgent',
       $goalStatement,
       $successCriteria,
@@ -1446,7 +1451,7 @@ class AnalyticsAgent
     );
 
     // Register with ObjectiveRegistry
-    $objectiveRegistry = new \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\ObjectiveRegistry($this->db, $this->debug);
+    $objectiveRegistry = new ObjectiveRegistry($this->db, $this->debug);
     $objectiveRegistry->registerObjective($objective);
 
     if ($this->debug) {
@@ -1462,10 +1467,10 @@ class AnalyticsAgent
   /**
    * Execute an analytics optimization objective
    *
-   * @param \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\LocalObjective $objective
+   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective
    * @return mixed Execution results
    */
-  public function executeObjective(\ClicShopping\AI\Agents\Orchestrator\SubAutonomous\LocalObjective $objective): mixed
+  public function executeObjective(LocalObjective $objective): mixed
   {
     $goalStatement = $objective->getGoalStatement();
 
@@ -1558,7 +1563,7 @@ class AnalyticsAgent
    * @param string $outputType Type of output
    * @param mixed $output The output to evaluate
    * @param array $criteria Evaluation criteria
-   * @return \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AgentEvaluation
+   * @return \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation
    */
   public function evaluatePeerOutput(
     string $outputType,
@@ -1585,7 +1590,7 @@ class AnalyticsAgent
       default => $this->getDefaultScores()
     };
 
-    return new \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AgentEvaluation(
+    return new AgentEvaluation(
       'AnalyticsAgent',
       $output['output_id'] ?? uniqid('output_'),
       $scores,
@@ -1718,7 +1723,7 @@ class AnalyticsAgent
     }
 
     // Acknowledge feedback
-    $feedbackManager = new \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\FeedbackManager($this->db, $this->debug);
+    $feedbackManager = new FeedbackManager($this->db, $this->debug);
     $feedbackManager->acknowledgeFeedback(
       $feedback['feedback_id'],
       'AnalyticsAgent',
@@ -1732,10 +1737,10 @@ class AnalyticsAgent
   /**
    * Check if AnalyticsAgent can collaborate on an objective
    *
-   * @param \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\LocalObjective $objective
+   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective
    * @return bool True if can collaborate
    */
-  public function canCollaborate(\ClicShopping\AI\Agents\Orchestrator\SubAutonomous\LocalObjective $objective): bool
+  public function canCollaborate(LocalObjective $objective): bool
   {
     $goalStatement = strtolower($objective->getGoalStatement());
 

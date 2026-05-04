@@ -10,11 +10,11 @@
 
 namespace ClicShopping\AI\InterfacesAI;
 
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Action;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\ActionResult;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Context;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\ActorCapability;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Feedback;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCapability;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
 
 /**
  * Interface for Actor agents (execution specialists)

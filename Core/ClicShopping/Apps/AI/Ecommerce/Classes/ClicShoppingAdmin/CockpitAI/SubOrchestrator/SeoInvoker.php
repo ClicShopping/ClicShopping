@@ -10,8 +10,8 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\SubOrchestrator;
 
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Action;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Context;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SeoAuditAgent;
 
 /**

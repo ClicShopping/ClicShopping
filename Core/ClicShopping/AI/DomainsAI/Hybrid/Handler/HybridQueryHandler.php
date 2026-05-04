@@ -11,9 +11,9 @@
 namespace ClicShopping\AI\DomainsAI\Hybrid\Handler;
 
 use ClicShopping\AI\InterfacesAI\HybridQueryHandlerInterface;
-use ClicShopping\AI\Agents\Planning\TaskPlanner;
-use ClicShopping\AI\Agents\Planning\PlanExecutor;
-use ClicShopping\AI\Agents\Memory\ConversationMemory;
+use ClicShopping\AI\CoreAI\Planning\TaskPlanner;
+use ClicShopping\AI\CoreAI\Planning\PlanExecutor;
+use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainKeywordsLoader;
 

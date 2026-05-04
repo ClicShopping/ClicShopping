@@ -34,7 +34,6 @@
    * CockpitAIOrchestrator
    *
    * Single entry point for the CockpitAI analysis pipeline.
-   * (Requirements 10.1-10.10, 22.1-22.5)
    *
    * This class is a pure sequencer: it wires the 8 pipeline steps in order and
    * delegates every responsibility to a dedicated SubOrchestrator component:
@@ -48,14 +47,6 @@
    *   ContextBuilder       — assembles the immutable Context for scoring
    *   PipelineRunner       — wraps each step with fallback + structured log
    *   ReportBuilder        — builds Analysis_Report + embedding metadata
-   *
-   * ── Actors / Agents integration note (v4.23) ────────────────────────────────
-   *
-   * No new Agent or Actor is needed for v4.23.
-   * - Step 4 (SEO)  → wire existing SEO Agent in task 7.5
-   *                   Apps/AI/Ecommerce/Classes/ClicShoppingAdmin/SEO/
-   * - Step 6 (LLM)  → wire existing Gpt::class actor in task 7.7
-   *                   Apps/Configuration/ChatGpt/Classes/ClicShoppingAdmin/Gpt.php
    *
    * Both are stubs in this class and delegated to invokeSEOAgent() /
    * generateLLMAnalysis() which will be fleshed out in later tasks.

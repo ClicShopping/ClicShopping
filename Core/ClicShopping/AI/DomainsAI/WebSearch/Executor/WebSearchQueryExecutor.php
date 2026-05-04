@@ -14,7 +14,7 @@ use ClicShopping\AI\DomainsAI\CoreAI\Helper\AgentResponseHelper;
 use ClicShopping\AI\InterfacesAI\EntityHelperInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\ResultFormatter;
-use ClicShopping\AI\Agents\Memory\ConversationMemory;
+use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 
 /**

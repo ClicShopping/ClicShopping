@@ -33,7 +33,7 @@ use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\ResultFormatter;
  * - REQ-5.4: Source deduplication
  * - REQ-5.5: Failed sub-query handling
  *
- * @package ClicShopping\AI\Agents\Orchestrator\SubHybridQueryProcessor
+ * @package ClicShopping\AI\CoreAI\Orchestrator\SubHybridQueryProcessor
  * @since 2025-12-14
  * @updated 2026-04-28 - Refactored to be domain-agnostic
  */

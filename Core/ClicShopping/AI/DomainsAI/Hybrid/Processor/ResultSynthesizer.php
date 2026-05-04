@@ -34,7 +34,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
  * - REQ-4.5: Hybrid synthesis (combine with LLM)
  * - REQ-4.6: Aggregate entity information from sub-queries
  *
- * @package ClicShopping\AI\Agents\Orchestrator\SubHybridQueryProcessor
+ * @package ClicShopping\AI\CoreAI\Orchestrator\SubHybridQueryProcessor
  * @since 2025-12-14
  */
 

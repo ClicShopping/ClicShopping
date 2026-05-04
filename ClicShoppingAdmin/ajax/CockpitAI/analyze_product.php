@@ -29,8 +29,8 @@ header('Content-Type: application/json; charset=utf-8');
 
 AdministratorAdmin::hasUserAccess();
 
-  // Initialize orchestrator
-  $orchestrator = new CockpitAIOrchestrator();
+// Initialize orchestrator
+$orchestrator = new CockpitAIOrchestrator();
 
 try {
   // Check if module is enabled

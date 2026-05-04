@@ -12,7 +12,7 @@ namespace ClicShopping\AI\Handler\Error;
 
 
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\ResponseProcessor;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ResponseProcessor;
 
 /**
  * ErrorHandler Class

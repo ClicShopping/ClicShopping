@@ -15,7 +15,7 @@ use ClicShopping\AI\InterfacesAI\QueryTypeDomainInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\ActorCriticCoordinator;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticCoordinator;
 use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 
 /**

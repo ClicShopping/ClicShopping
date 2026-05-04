@@ -2,6 +2,8 @@
 
 > PHP framework agnostic AI system.
 > Agent operational rules: `AGENTS.md` — Core architecture: `ARCHITECTURE.md`
+> **Migration Notice (May 2026)**: The `Agents/` directory has been renamed to `CoreAI/` to establish consistent naming convention with the `*AI` suffix pattern (InterfacesAI, DomainsAI, RegistryAI, CoreAI). References to "Agents/" in this document now refer to `CoreAI/`. The old `Agents/` namespace is deprecated and will be removed in version 5.0. See `MIGRATION_GUIDE_COREAI.md` for details.
+> **Validator Architecture (May 2026)**: Analytics validation logic extracted from Critics into `DomainsAI/Analytics/Validator/` to separate business logic from Actor-Critic infrastructure. Wrappers in `CoreAI/Orchestrator/SubActorCritic/Critics/` delegate to validators.
 
 ---
 
@@ -12,6 +14,32 @@ It is designed as an **agnostic** layer: its agents, interfaces and pipelines do
 do not depend on the underlying PHP framework and can evolve independently.
 
 Location: `Core/ClicShopping/AI/`, organized by business domain.
+
+
+### Directory organization
+```
+Core/ClicShopping/AI/
+├── CoreAI/              ✅ Infrastructure + Orchestration
+│   └── Orchestrator/
+│       └── SubActorCritic/
+│           └── Critics/  ✅ Minimal wrappers (delegate to validators)
+├── Config/              ✅ Configuration
+├── Dashboard/           ✅ Monitoring
+├── DomainsAI/           ✅ Business domain (Query Types)
+│   └── Analytics/
+│       └── Validator/    ✅ Business logic validators (NEW May 2026)
+├── Handler/             ✅ Handling (Error, Fallback, Query)
+├── Helper/              ✅ Utilities
+├── Infrastructure/      ✅ Technical Infrastructure
+├── InterfacesAI/        ✅ Contrats
+├── LoadBalancing/       ✅ Load balancing
+├── Rag/                 ✅ RAG Manager
+├── RegistryAI/          ✅ Registries (Actor, Critic)
+├── Security/            ✅ Sécurity
+├── Services/            ✅ Services (ActorCritic, Autonomous)
+├── Tools/               ✅ Tools
+└── Utils/               ✅ Utilities
+```
 
 ---
 
@@ -48,15 +76,68 @@ The mode is automatically selected by the `QueryClassifier` before execution.
 ### Registration rule
 
 Any new agent must register via the existing mechanism in `Core/ClicShopping/AI/`:
-- If it s core Agents For all system must be registered in `Core/ClicShopping/AI/`:
-- if the agent is not "important" it must be implemented in the Core/ClicShopping/Apps/{Vendor}/{AppName}/. in this case vendor is AI (example SEO agent)
+- If it's a core agent for all systems, it must be registered in `Core/ClicShopping/AI/CoreAI/` (formerly `Agents/`)
+- If the agent is not "important" it must be implemented in `Core/ClicShopping/Apps/{Vendor}/{AppName}/`. In this case vendor is AI (example: SEO agent)
 - Do not create an alternative agent register
 - Do not instantiate agents directly from PHP Apps
 - Go through the orchestrator for any inter-agent invocation
-- Each agent must use the Actor interface for agentic approach Core/ClicShopping/AI/InterfacesAI/ActorAgentInterface.php.
+- Each agent must use the Actor interface for agentic approach `Core/ClicShopping/AI/InterfacesAI/ActorAgentInterface.php`
+
 ---
 
-## 4. Reasoning (real state of the core)
+## 4. Validator Architecture (Analytics Domain)
+
+### Purpose
+
+Separates business validation logic from Actor-Critic infrastructure:
+- **Business logic**: `DomainsAI/Analytics/Validator/` (testable independently)
+- **Infrastructure**: `CoreAI/Orchestrator/SubActorCritic/Critics/` (minimal wrappers)
+
+### Validators
+
+| Validator | Responsibility | Location |
+|---|---|---|
+| **SqlQualityValidator** | SQL quality (SELECT *, LIMIT, WHERE) | `DomainsAI/Analytics/Validator/` |
+| **SqlSecurityValidator** | Security (dangerous patterns, injection) | `DomainsAI/Analytics/Validator/` |
+| **SqlPerformanceValidator** | Performance (indexes, joins) | `DomainsAI/Analytics/Validator/` |
+| **SchemaValidator** | Schema (tables, columns) | `DomainsAI/Analytics/Validator/` |
+| **AnalyticsQualityEvaluator** | Orchestrates all validators | `DomainsAI/Analytics/Validator/` |
+
+### Wrappers (CoreAI)
+
+| Wrapper | Delegates To | Location |
+|---|---|---|
+| **SqlQualityCriticWrapper** | SqlQualityValidator | `CoreAI/Orchestrator/SubActorCritic/Critics/` |
+| **AnalyticsCriticWrapper** | AnalyticsQualityEvaluator | `CoreAI/Orchestrator/SubActorCritic/Critics/` |
+
+### Rules
+
+```
+✓ Use validators directly for business logic validation
+✓ Use wrappers only within Actor-Critic pattern
+✓ Validators have no dependency on CriticAgentInterface
+✓ Wrappers contain no business logic (pure delegation)
+
+✗ Do not add business logic to wrappers
+✗ Do not couple validators to Actor-Critic infrastructure
+✗ Do not bypass validators in wrappers
+```
+
+### Example Usage
+
+```php
+// Direct validator usage (outside Actor-Critic)
+$validator = new SqlQualityValidator();
+$result = $validator->evaluateSqlQuality($sql);
+
+// Wrapper usage (within Actor-Critic)
+$wrapper = new SqlQualityCriticWrapper($validator);
+$evaluation = $wrapper->evaluateAction($actionResult);
+```
+
+---
+
+## 5. Reasoning (real state of the core)
 
 The current core does not expose a single `ReasoningInterface` interface.
 Reasoning is implemented in `ReasoningAgent` with configurable modes:
@@ -69,27 +150,78 @@ These modes are orchestrated by `OrchestratorAgent` and used depending on the re
 
 ---
 
-## 5. LLM Providers
+## 6. LLM Providers
 
 Abstraction via **LLPhant** — never call LLM APIs directly.
 
-### Example 
+### Supported Providers
 
-| Provider | Configuration constant | Main use |
+| Provider | Configuration constant | Models |
 |---|---|---|
-| OpenAI (GPT-4/5) | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY` | Generation, reasoning |
-| Anthropic (Claude) | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_ANTHROPIC` | Generation, reasoning |
-| Mistral | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL` | Generation |
-| VoyageAI | `CLICSHOPPING_APP_CHATGPT_RA_API_KEY_VOYAGE_AI` | Embeddings only |
-| Ollama / LmStudio | Local server configuration | Local/Private LLM |
+| **OpenAI** | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY` | GPT-5.x, GPT-4.1, GPT-4o |
+| **Anthropic** | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_ANTHROPIC` | Claude Sonnet 3.5, Opus, Haiku |
+| **Mistral** | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL` | Mistral Large Latest |
+| **Google Gemini** | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_GEMINI` | Gemini 2.5 Flash (planned) |
+| **VoyageAI** | `CLICSHOPPING_APP_CHATGPT_RA_API_KEY_VOYAGE_AI` | Voyage embeddings |
+| **LM Studio** | `CLICSHOPPING_APP_CHATGPT_LMSTUDIO_URL` | GPT-OSS, Qwen3, Phi-4 |
+| **Ollama** | Local server (port 11434) | Mistral, Llama, etc. |
 
-Rules:
-- API keys only via configuration constants — never hardcoded
-- The choice of provider is configured via the admin interface, not in the code
-- If adding a new provider, go through LLPhant — no direct HTTP client
+Note : The administrator select one provider and this provider is used in all system. But it's possible to use another provider is specific case. See the fuction Gpt::getGptResponse() for customization.
+
+### Facade Class
+
+**Location**: `Core/ClicShopping/Apps/Configuration/ChatGpt/Classes/ClicShoppingAdmin/Gpt.php`
+
+The `Gpt` class is the main facade that manages all LLM interactions. It delegates to specialized SubGpt classes:
+- `ConfigManager` - Configuration and status
+- `ModelManager` - Model information and selection
+- `ProviderManager` - Provider initialization (OpenAI, Anthropic, Mistral, LM Studio, Ollama)
+- `ResponseProcessor` - Response generation and processing
+- `DataManager` - Data persistence and analytics
+- `UIGenerator` - UI component generation
+
+### Usage
+
+```php
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+
+// Main method - handles all providers automatically
+$response = Gpt::getGptResponse(
+    $question,      // Prompt
+    $maxtoken,      // Max tokens (optional)
+    $temperature,   // Temperature (optional)
+    $engine,        // Model name (optional, uses default if null)
+    $max            // Max responses (optional, default: 1)
+);
+
+// Check GPT status
+if (Gpt::checkGptStatus()) {
+    // GPT is enabled and configured
+}
+
+// Get available models
+$models = Gpt::getGptModel();
+
+// Get model context length
+$contextLength = Gpt::getModelContextLength('gpt-4.1-mini'); // 64000
+```
+
+### Rules
+
+```
+✓ Always use Gpt::getGptResponse() for LLM calls
+✓ API keys via configuration constants only
+✓ Provider selection configured via admin interface
+✓ LLPhant abstraction handles all provider differences
+
+✗ Never call LLM APIs directly (OpenAI, Anthropic, etc.)
+✗ Never hardcode API keys in code
+✗ Never bypass LLPhant abstraction
+✗ Never use models below 16K context for RAG BI
+```
 
 ---
-## 6. Embedding pipeline
+## 7. Embedding pipeline
 
 ### Embedding tables (real state of the schema)
 
@@ -128,7 +260,7 @@ Additional memory/security tables:
 
 ---
 
-## 7. AI Security (Guardrails)
+## 8. AI Security (Guardrails)
 
 The system includes a security layer dedicated to LLM interactions.
 
@@ -150,7 +282,7 @@ CLICSHOPPING_APP_API_AI_ACCOUNT_LOCK_DURATION = 1800
 
 ---
 
-## 8. MCP — Model Context Protocol
+## 9. MCP — Model Context Protocol
 
 ClicShopping exposes an MCP server for agentic commerce (port 3001 by default, can be modified inside the administration).
 
@@ -164,7 +296,7 @@ Do not modify the MCP protocol without agreement from the human coder.
 
 ---
 
-## 9. AI development rules
+## 10. AI development rules
 
 ```
 ✓ Always go through LLPhant for LLM calls
@@ -172,6 +304,8 @@ Do not modify the MCP protocol without agreement from the human coder.
 ✓ Register new agents via Core/ClicShopping/AI/
 ✓ API keys via configuration constants only
 ✓ Respect existing guardrails
+✓ Use validators for business logic validation (DomainsAI/Analytics/Validator/)
+✓ Keep wrappers minimal (CoreAI/Orchestrator/SubActorCritic/Critics/)
 
 ✗ Direct calls to LLM APIs (OpenAI, Anthropic, etc.)
 ✗ Recreate the embeddings pipeline or associated crons
@@ -179,12 +313,14 @@ Do not modify the MCP protocol without agreement from the human coder.
 ✗ Edit existing vector dimensions without proprietary validation
 ✗ Bypass guardrails for testing
 ✗ Instantiate agents directly from PHP Apps
+✗ Add business logic to Actor-Critic wrappers
+✗ Couple validators to Actor-Critic infrastructure
 ✗ WARNING: Data transformation to Vector(3072) is strictly delegated to LLPhant. The Agent MUST NOT attempt to generate vector arrays manually in PHP
 ```
 
 ---
 
-## 10. References
+## 11. References
 
 - Architecture framework: `ARCHITECTURE.md`
 - Vector database: `DATABASE.md`

@@ -12,10 +12,10 @@ namespace ClicShopping\AI\Handler\Query;
 
 use ClicShopping\AI\InterfacesAI\QueryProcessorInterface;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\ContextManager;
-use ClicShopping\AI\Agents\Query\QueryAnalyzer;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ContextManager;
+use ClicShopping\AI\CoreAI\Query\QueryAnalyzer;
 use ClicShopping\AI\Handler\Error\ErrorHandler;
-use ClicShopping\AI\Agents\Memory\ConversationMemory;
+use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 
 /**
  * QueryProcessor Class
@@ -30,7 +30,7 @@ use ClicShopping\AI\Agents\Memory\ConversationMemory;
  *
  * ARCHITECTURAL LOCATION:
  * - Core/ClicShopping/AI/Handler/Query/ (correct location per AGENTS.md)
- * - NOT in Agents/Orchestrator/SubQueryProcessing/ (wrong location)
+ * - NOT in CoreAI/Orchestrator/SubQueryProcessing/ (wrong location)
  *
  * DISTINCTION FROM Apps QueryProcessor:
  * - This class: Core AI orchestration-level query processing (retry, parallel, context)

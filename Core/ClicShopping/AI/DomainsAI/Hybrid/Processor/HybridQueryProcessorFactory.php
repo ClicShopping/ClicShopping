@@ -16,7 +16,7 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Processor;
  * Initializes all SubHybridQueryProcessor components with dependency injection
  * and provides unified interface for query processing orchestration.
  *
- * @package ClicShopping\AI\Agents\Orchestrator\SubHybridQueryProcessor
+ * @package ClicShopping\AI\CoreAI\Orchestrator\SubHybridQueryProcessor
  * @since 2025-12-14
  */
 

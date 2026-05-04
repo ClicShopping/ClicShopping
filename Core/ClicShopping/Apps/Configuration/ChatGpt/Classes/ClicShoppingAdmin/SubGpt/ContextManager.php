@@ -10,7 +10,7 @@
 
 namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt;
 
-use ClicShopping\AI\Agents\Memory\MemoryRetentionService;
+use ClicShopping\AI\CoreAI\Memory\MemoryRetentionService;
 
 /**
  * ContextManager

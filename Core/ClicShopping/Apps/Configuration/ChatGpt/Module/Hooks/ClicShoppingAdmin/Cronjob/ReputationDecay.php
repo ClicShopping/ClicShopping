@@ -18,7 +18,7 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\Hooks\ClicShoppingAdmin
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
-use ClicShopping\AI\Agents\Orchestrator\SubReputation\ReputationDecayScheduler;
+use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationDecayScheduler;
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
 
 /**

@@ -36,7 +36,7 @@ use ClicShopping\AI\Config\DomainConfig;
  * - REQ-3.5: Handle analytics + analytics combinations
  * - REQ-3.6: Use LLM for intelligent splitting with fallback
  *
- * @package ClicShopping\AI\Agents\Orchestrator\SubHybridQueryProcessor
+ * @package ClicShopping\AI\CoreAI\Orchestrator\SubHybridQueryProcessor
  * @since 2025-12-14
  * @version 2.0 - Internationalized 2025-12-30
  */

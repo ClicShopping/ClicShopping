@@ -8,7 +8,7 @@
  *
  */
 
-use ClicShopping\AI\Agents\Memory\ConversationMemory;
+use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;

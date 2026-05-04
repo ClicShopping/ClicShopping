@@ -11,12 +11,12 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Critics;
 
 use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Action;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\ActionResult;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Evaluation;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Prediction;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Feedback;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\EvaluationCriteria;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Evaluation;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Prediction;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\EvaluationCriteria;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
 use ClicShopping\AI\Security\SecurityLogger;
 

@@ -387,8 +387,7 @@ class DashboardStatsCollector
     }
     
     /**
-     * Statistiques des Agents
-     * 🔧 MIGRATED TO DOCTRINEORM
+     * Statistiques des CoreAI
      */
     public function getAgentsStats(int $days = 7): array
     {

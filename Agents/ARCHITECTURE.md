@@ -13,7 +13,7 @@ sharing a common core. The AI ​​layer is agnostic and organized to use the b
 ```
 AGENTS.md ← operational rules for LLM agents
 ARCHITECTURE.md ← framework core, bootstrap, hooks, templates, namespaces
-AI_SYSTEM.md ← agents, RAG, LLM providers, embeddings
+AI_SYSTEM.md ← agents, RAG, LLM providers, embeddings, architecture directories
 DATABASE.md ← MariaDB, SQL schema, routing, migrations
 SECURITY.md ← 10 layers of security, guardrails, GDPR
 ```
@@ -254,12 +254,66 @@ Four backends with automatic fallback:
 
 ---
 
-## 11. Cross-references
+## 11. OrchestratorAgent Architecture (2026-04-30)
+
+### Component Extraction
+
+OrchestratorAgent delegates to specialized components following single-responsibility principle:
+
+| Component | Location | Responsibility |
+|-----------|----------|----------------|
+| **DomainRouter** | `DomainsAI/DomainRouter.php` | Routes queries to appropriate domains (semantic, analytics, hybrid, web) |
+| **QueryProcessor** | `Handler/Query/QueryProcessor.php` | Query processing with retry logic and parallel execution |
+| **HybridQueryHandler** | `DomainsAI/Hybrid/Handler/HybridQueryHandler.php` | Handles hybrid queries (analytics + semantic + web) |
+| **PerformanceTracker** | `Infrastructure/Monitoring/PerformanceTracker.php` | Query-level performance monitoring with markers |
+
+### Domain-Agnostic Architecture
+
+**CRITICAL**: Core AI (`Core/ClicShopping/AI/`) MUST NOT contain domain-specific keywords.
+
+```
+❌ PROHIBITED: Hardcoded keywords in Core AI
+$keywords = ['amazon', 'ebay', 'linkedin', 'bloomberg'];
+
+✅ REQUIRED: Dynamic loading from domain configuration
+$keywords = DomainKeywordsLoader::loadWebSearchKeywords('Ecommerce');
+```
+
+**Keyword Location**: `Apps/AI/{Domain}/Classes/.../Patterns/HybridPreFilter.php`
+
+**Supported Domains**: Ecommerce (active), HR (future), Finance (future), Trading (future)
+
+### Integration Pattern
+
+```php
+// OrchestratorAgent initialization
+$this->domainRouter = new DomainRouter($debug);
+$this->queryProcessor = new QueryProcessor($contextManager, $queryAnalyzer, ...);
+$this->hybridQueryHandler = new HybridQueryHandler($planner, $executor, ...);
+$this->performanceTracker = new PerformanceTracker($collector, $debug);
+
+// Usage - delegation pattern
+$domain = $this->domainRouter->getDomainForIntent($intentType, $context);
+$result = $this->queryProcessor->processWithRetry($query, $options, $callback);
+$hybridResult = $this->hybridQueryHandler->handleHybridQuery($query, ...);
+$this->performanceTracker->startTracking();
+```
+
+### Documentation
+
+- **Overview**: `Core/ClicShopping/AI/ORCHESTRATOR_REFACTORING_2026_04_30.md`
+- **Migration**: `Core/ClicShopping/AI/ORCHESTRATOR_MIGRATION_GUIDE.md`
+- **Class Index**: `Core/ClicShopping/AI/REFACTORING_CLASS_INDEX.md`
+- **Spec**: `.kiro/specs/orchestrator-agent-refactoring/`
+
+---
+
+## 12. Cross-references
 
 | Subject                                               | File |
 |-------------------------------------------------------|---|
 | Agent operational rules                               | `AGENTS.md` |
-| AI system, agents, RAG, LLM                           | `AI_SYSTEM.md` |
+| AI system, agents, RAG, LLM, architecture directories | `AI_SYSTEM.md` |
 | Database, SQL, embeddings                             | `DATABASE.md` |
 | Security, guardrails, GDPR                            | `SECURITY.md` |
 | Templates, rendering, SEO, i18n                       | `TEMPLATES.md` |

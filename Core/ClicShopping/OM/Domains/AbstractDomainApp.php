@@ -12,7 +12,7 @@ namespace ClicShopping\OM\Domains;
 
 use ClicShopping\OM\Domains\ConfigurableAppAbstract;
 use ClicShopping\OM\Interfaces\DomainAppInterface;
-use ClicShopping\AI\Agents\Orchestrator\SubAutonomous\BusinessDomainPermissionManager;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\BusinessDomainPermissionManager;
 
 /**
  * Abstract base class for Domain-specific ClicShopping AI applications
@@ -215,7 +215,7 @@ abstract class AbstractDomainApp extends ConfigurableAppAbstract implements Doma
   /**
    * Get the BusinessDomainPermissionManager instance
    * 
-   * @return \ClicShopping\AI\Agents\Orchestrator\SubAutonomous\BusinessDomainPermissionManager
+   * @return \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\BusinessDomainPermissionManager
    */
   protected function getBusinessDomainPermissionManager()
   {

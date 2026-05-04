@@ -10,8 +10,8 @@
 
 namespace ClicShopping\AI\InterfacesAI;
 
-use ClicShopping\AI\Agents\Orchestrator\SubAutonomous\LocalObjective;
-use ClicShopping\AI\Agents\Orchestrator\SubAutonomous\AgentEvaluation;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 
 /**
  * AutonomousAgentInterface

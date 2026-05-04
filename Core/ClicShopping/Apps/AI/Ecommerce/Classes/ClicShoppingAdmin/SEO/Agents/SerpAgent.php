@@ -11,11 +11,11 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents;
 
 use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Action;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\ActionResult;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Context;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\ActorCapability;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Feedback;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCapability;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
@@ -37,7 +37,7 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Prompts\SerpAna
  * - Translation to English before analysis
  * - No hardcoded keywords or pattern matching
  *
- * @package ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents
+ * @package ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\CoreAI
  * @since 2026-03-02
  */
 class SerpAgent implements ActorAgentInterface

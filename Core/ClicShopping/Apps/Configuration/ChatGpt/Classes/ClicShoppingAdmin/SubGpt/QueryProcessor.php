@@ -10,7 +10,7 @@
 
 namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt;
 
-use ClicShopping\AI\Agents\Orchestrator\OrchestratorAgent;
+use ClicShopping\AI\CoreAI\Orchestrator\OrchestratorAgent;
 use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 
 /**

@@ -18,7 +18,7 @@ use ClicShopping\AI\Config\DomainFields;
 use ClicShopping\AI\DomainsAI\CoreAI\Helper\AgentResponseHelper;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\Agents\Memory\ConversationMemory;
+use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\InterfacesAI\SemanticConfigInterface;
 
 /**

@@ -32,7 +32,7 @@ use ClicShopping\AI\DomainsAI\DomainRegistry;
  * - REQ-2.4: Detect hybrid queries when multiple intents are present
  * - REQ-2.5: Use centralized pattern classes
  *
- * @package ClicShopping\AI\Agents\Orchestrator\SubHybridQueryProcessor
+ * @package ClicShopping\AI\CoreAI\Orchestrator\SubHybridQueryProcessor
  * @since 2025-12-14
  */
 

@@ -10,12 +10,12 @@
 
 namespace ClicShopping\AI\InterfacesAI;
 
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Action;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\ActionResult;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Evaluation;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Prediction;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\Feedback;
-use ClicShopping\AI\Agents\Orchestrator\SubActorCritic\EvaluationCriteria;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Evaluation;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Prediction;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\EvaluationCriteria;
 
 /**
  * Interface for Critic agents (evaluation specialists)

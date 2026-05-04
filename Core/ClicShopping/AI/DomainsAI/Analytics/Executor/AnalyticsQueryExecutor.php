@@ -16,7 +16,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\DomainsAI\CoreAI\Helper\AgentResponseHelper;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
-use ClicShopping\AI\Agents\Memory\ConversationMemory;
+use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\ParallelLLMExecutor;
 use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
 

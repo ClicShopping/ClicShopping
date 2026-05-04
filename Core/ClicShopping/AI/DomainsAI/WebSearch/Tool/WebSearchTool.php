@@ -10,7 +10,7 @@
 
   use ClicShopping\OM\Registry;
   use ClicShopping\OM\HTTP;
-  use ClicShopping\AI\Agents\Orchestrator\SubOrchestrator\IntentAnalyzer;
+  use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\IntentAnalyzer;
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
   use ClicShopping\AI\Infrastructure\Cache\Cache;
   use ClicShopping\AI\DomainsAI\WebSearch\Cache\SearchCacheManager;

@@ -17,7 +17,7 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Dashboard\TokenChartDataProvider;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
-use ClicShopping\AI\Agents\Orchestrator\OrchestratorAgent;
+use ClicShopping\AI\CoreAI\Orchestrator\OrchestratorAgent;
 
 $CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
@@ -1339,8 +1339,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Get reasoning agent stats if available (from database for persistence)
             $reasoningStats = null;
             try {
-              if ($config['rag_enabled'] && class_exists('ClicShopping\AI\Agents\Orchestrator\ReasoningAgent')) {
-                $reasoningAgent = new \ClicShopping\AI\Agents\Orchestrator\ReasoningAgent();
+              if ($config['rag_enabled'] && class_exists('ClicShopping\AI\CoreAI\Orchestrator\ReasoningAgent')) {
+                $reasoningAgent = new \ClicShopping\AI\CoreAI\Orchestrator\ReasoningAgent();
                 // Use getPersistentStats() to retrieve database statistics (persists across sessions)
                 $reasoningStats = $reasoningAgent->getPersistentStats(30); // Last 30 days
               }
