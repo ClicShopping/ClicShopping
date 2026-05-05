@@ -281,11 +281,11 @@ class MariaDb
 // RAG Schema Embeddings
 //--------------------------------------
 
-    $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_rag_schema_embeddings"');
+    $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_rag_schema_embedding"');
 
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
-      CREATE TABLE IF NOT EXISTS :table_rag_schema_embeddings (
+      CREATE TABLE IF NOT EXISTS :table_rag_schema_embedding (
         id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each schema embedding',
         table_name VARCHAR(255) NOT NULL UNIQUE COMMENT 'Database table name - unique identifier for the schema',
         schema_text TEXT NOT NULL COMMENT 'Complete schema definition including columns, types, and comments',
@@ -297,7 +297,7 @@ class MariaDb
         KEY idx_updated_at (updated_at)
       ) COMMENT='Vector embeddings of database schemas for semantic schema discovery and natural language to SQL';
       
-      CREATE VECTOR INDEX embedding_index ON :table_rag_schema_embeddings (embedding_vector);
+      CREATE VECTOR INDEX embedding_index ON :table_rag_schema_embedding (embedding_vector);
     EOD;
       $CLICSHOPPING_Db->exec($sql);
     }

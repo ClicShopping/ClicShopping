@@ -122,7 +122,7 @@ class SchemaEmbedder
   {
     $Qembedding = $this->db->prepare('
       SELECT embedding_vector
-      FROM :table_rag_schema_embeddings
+      FROM :table_rag_schema_embedding
       WHERE table_name = :table_name
     ');
     
@@ -146,7 +146,7 @@ class SchemaEmbedder
   {
     $Qembeddings = $this->db->query('
       SELECT table_name, VEC_ToText(embedding_vector) as embedding_text
-      FROM :table_rag_schema_embeddings
+      FROM :table_rag_schema_embedding
       ORDER BY table_name
     ');
     
@@ -185,7 +185,7 @@ class SchemaEmbedder
     }
     
     // Delete all existing embeddings
-    $this->db->query('DELETE FROM :table_rag_schema_embeddings');
+    $this->db->query('DELETE FROM :table_rag_schema_embedding');
     
     // Regenerate
     return $this->embedAllTables($fullSchemaText);
@@ -276,7 +276,7 @@ class SchemaEmbedder
     // Check if embedding already exists
     $Qcheck = $this->db->prepare('
       SELECT id
-      FROM :table_rag_schema_embeddings
+      FROM :table_rag_schema_embedding
       WHERE table_name = :table_name
     ');
     
@@ -286,7 +286,7 @@ class SchemaEmbedder
     if ($Qcheck->fetch()) {
       // Update existing
       $Qupdate = $this->db->prepare('
-        UPDATE :table_rag_schema_embeddings
+        UPDATE :table_rag_schema_embedding
         SET schema_text = :schema_text,
             embedding_vector = :embedding_vector,
             token_count = :token_count,
@@ -303,7 +303,7 @@ class SchemaEmbedder
     } else {
       // Insert new
       $Qinsert = $this->db->prepare('
-        INSERT INTO :table_rag_schema_embeddings
+        INSERT INTO :table_rag_schema_embedding
         (table_name, schema_text, embedding_vector, token_count, created_at)
         VALUES
         (:table_name, :schema_text, :embedding_vector, :token_count, :created_at)

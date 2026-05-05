@@ -379,7 +379,7 @@ class ResponseProcessor
       // For hybrid results, use the structure as-is (already properly formatted)
       if ($this->debug) {
         $this->securityLogger->logSecurityEvent(
-          "✅ TASK 5.2.1.1: Using hybrid result structure directly",
+          "[INFO] Using hybrid result structure directly",
           'info'
         );
       }
@@ -398,6 +398,7 @@ class ResponseProcessor
       if ($entityId > 0) {
         $executionResult['entity_id'] = $entityId;
       }
+      
       if ($entityType !== 'hybrid') {
         $executionResult['entity_type'] = $entityType;
       }

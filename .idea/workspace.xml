@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="fix accordeon" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="libraries updated" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -170,6 +170,7 @@
       <workItem from="1777816524641" duration="988000" />
       <workItem from="1777882789662" duration="1736000" />
       <workItem from="1777891781014" duration="391000" />
+      <workItem from="1777897206930" duration="56000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -355,7 +356,23 @@
       <option name="project" value="LOCAL" />
       <updated>1777891795062</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="readme updated">
+      <option name="closed" value="true" />
+      <created>1777897225454</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1777897225454</updated>
+    </task>
+    <task id="LOCAL-00025" summary="libraries updated">
+      <option name="closed" value="true" />
+      <created>1777897259557</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1777897259557</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -370,7 +387,6 @@
     <MESSAGE value="security improvment" />
     <MESSAGE value="security improvement" />
     <MESSAGE value="fix" />
-    <MESSAGE value="libraries updated" />
     <MESSAGE value="fix check" />
     <MESSAGE value="fix http_response_code(): Cannot set response code" />
     <MESSAGE value="SEO improvement analysis" />
@@ -378,7 +394,9 @@
     <MESSAGE value="some refactoring" />
     <MESSAGE value="orchestrator refactoring" />
     <MESSAGE value="fix accordeon" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix accordeon" />
+    <MESSAGE value="readme updated" />
+    <MESSAGE value="libraries updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="libraries updated" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

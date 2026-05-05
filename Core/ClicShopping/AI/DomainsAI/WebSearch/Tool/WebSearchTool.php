@@ -257,12 +257,19 @@
           throw new \InvalidArgumentException('Query too long (max 500 characters)');
         }
 
+        // Extract engine from options (for logging)
+        $engine = $options['engine'] ?? $this->defaultEngine;
+        
         if ($this->debug) {
           $this->logger->logSecurityEvent(
-            "Web search request: {$query}",
+            "Web search request: {$query} | Engine: {$engine}",
             'info'
           );
         }
+        
+        // ALWAYS log engine usage for debugging
+        error_log("=== WebSearchTool::search() === Query: {$query} | Engine: {$engine}");
+        error_log("DEBUG: Called from: " . debug_backtrace()[1]['class'] . "::" . debug_backtrace()[1]['function'] . "() line " . debug_backtrace()[0]['line']);
 
         // STEP 1: Check short-term cache (24h)
         $cacheKey = $this->generateCacheKey($query, $options);
@@ -966,6 +973,9 @@
 
     /**
      * Find product in database before web search
+     * @param string query
+     * @param int|null languageId
+     * @retun array|null find product
      */
     public function findProductInDatabase(string $query, ?int $languageId = null): ?array
     {
@@ -1031,6 +1041,9 @@
 
     /**
      * Get product details by ID
+     * @param int productId
+     * @param int|null languageId
+     * @retun array|null  product_id
      */
     private function getProductById(int $productId, ?int $languageId = null): ?array
     {
@@ -1076,6 +1089,9 @@
 
     /**
      * Search product by name using SQL LIKE
+     * @param string query
+     * @param int languageId
+     * @retun array search product name
      */
     private function searchProductByName(string $query, ?int $languageId = null): ?array
     {
