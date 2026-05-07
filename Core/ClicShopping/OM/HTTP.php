@@ -413,4 +413,187 @@ class HTTP
 
     return $path;
   }
+
+  /**
+   * Executes multiple HTTP requests in parallel using Guzzle promises.
+   *
+   * This method is designed for scenarios where multiple independent HTTP requests
+   * need to be executed concurrently to improve performance (e.g., fetching data
+   * from multiple APIs simultaneously).
+   *
+   * @param array $requests An array of request configurations. Each element should be an associative array with:
+   *                        - 'url' (string): Required. The URL for the request.
+   *                        - 'method' (string): Optional. HTTP method ('get' or 'post'). Defaults to 'get'.
+   *                        - 'header' (array): Optional. Array of request headers.
+   *                        - 'parameters' (mixed): Optional. Parameters to send with the request.
+   *                        - 'timeout' (int): Optional. Request timeout in seconds. Defaults to 10.
+   *                        - 'format' (string): Optional. Expected response format (e.g., 'json').
+   * @param array|null $allowed_hosts Optional. Array of allowed hostnames for security validation.
+   *                                   If provided, only requests to these hosts will be executed.
+   * @return array An array of responses indexed by the same keys as the input $requests array.
+   *               Each response contains:
+   *               - 'success' (bool): Whether the request succeeded.
+   *               - 'data' (mixed): The response body (decoded if format='json'), or null on failure.
+   *               - 'error' (string|null): Error message if the request failed.
+   *               - 'status_code' (int|null): HTTP status code of the response.
+   *
+   * @example
+   * ```php
+   * $requests = [
+   *   'api1' => ['url' => 'https://api1.example.com/data', 'method' => 'get'],
+   *   'api2' => ['url' => 'https://api2.example.com/data', 'method' => 'get', 'timeout' => 5],
+   * ];
+   * $responses = HTTP::getParallelResponses($requests, ['api1.example.com', 'api2.example.com']);
+   * if ($responses['api1']['success']) {
+   *   $data = $responses['api1']['data'];
+   * }
+   * ```
+   */
+  public static function getParallelResponses(array $requests, array|null $allowed_hosts = null): array
+  {
+    if (empty($requests)) {
+      return [];
+    }
+
+    $client = new GuzzleClient();
+    $promises = [];
+    $results = [];
+
+    // Build promises for each request
+    foreach ($requests as $key => $data) {
+      // Validate URL
+      if (!isset($data['url']) || !filter_var($data['url'], FILTER_VALIDATE_URL)) {
+        $results[$key] = [
+          'success' => false,
+          'data' => null,
+          'error' => 'Invalid URL provided',
+          'status_code' => null,
+        ];
+        continue;
+      }
+
+      // Check if the URL is allowed
+      $host = parse_url($data['url'], PHP_URL_HOST);
+      if (\is_array($allowed_hosts) && !in_array($host, $allowed_hosts, true)) {
+        $results[$key] = [
+          'success' => false,
+          'data' => null,
+          'error' => 'URL host not allowed',
+          'status_code' => null,
+        ];
+        continue;
+      }
+
+      // Set defaults
+      if (!isset($data['method'])) {
+        $data['method'] = !empty($data['parameters']) ? 'post' : 'get';
+      }
+
+      if (!isset($data['timeout'])) {
+        $data['timeout'] = 10;
+      }
+
+      if (!isset($data['cafile'])) {
+        $data['cafile'] = CLICSHOPPING::BASE_DIR . 'External/cacert.pem';
+      }
+
+      // Build Guzzle options
+      $options = [
+        'timeout' => (int)$data['timeout'],
+        'connect_timeout' => (int)$data['timeout'],
+        'http_errors' => false, // Don't throw exceptions on HTTP errors
+      ];
+
+      // Add headers
+      if (!empty($data['header']) && \is_array($data['header'])) {
+        foreach ($data['header'] as $h) {
+          [$headerKey, $value] = explode(':', $h, 2);
+          $options['headers'][$headerKey] = trim($value);
+        }
+      }
+
+      // Add parameters
+      if (isset($data['format']) && ($data['format'] === 'json')) {
+        $options['json'] = $data['parameters'] ?? [];
+      } else {
+        if (($data['method'] === 'post') && !empty($data['parameters'])) {
+          if (!isset($options['headers']['Content-Type'])) {
+            $options['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
+          }
+          $options['body'] = $data['parameters'];
+        }
+      }
+
+      // Add SSL verification
+      if (isset($data['cafile']) && is_file($data['cafile'])) {
+        $options['verify'] = $data['cafile'];
+      }
+
+      if (isset($data['certificate']) && is_file($data['certificate'])) {
+        $options['cert'] = $data['certificate'];
+      }
+
+      // Create async promise
+      try {
+        $promises[$key] = $client->requestAsync($data['method'], $data['url'], $options);
+      } catch (Exception $e) {
+        $results[$key] = [
+          'success' => false,
+          'data' => null,
+          'error' => 'Failed to create request: ' . $e->getMessage(),
+          'status_code' => null,
+        ];
+      }
+    }
+
+    // Execute all promises in parallel
+    if (!empty($promises)) {
+      $responses = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
+
+      // Process responses
+      foreach ($responses as $key => $response) {
+        if ($response['state'] === 'fulfilled') {
+          try {
+            $httpResponse = $response['value'];
+            $statusCode = $httpResponse->getStatusCode();
+            $body = $httpResponse->getBody()->getContents();
+
+            // Decode JSON if requested
+            $data = $body;
+            if (isset($requests[$key]['format']) && $requests[$key]['format'] === 'json') {
+              $decoded = json_decode($body, true);
+              if (json_last_error() === JSON_ERROR_NONE) {
+                $data = $decoded;
+              }
+            }
+
+            $results[$key] = [
+              'success' => true,
+              'data' => $data,
+              'error' => null,
+              'status_code' => $statusCode,
+            ];
+          } catch (Exception $e) {
+            $results[$key] = [
+              'success' => false,
+              'data' => null,
+              'error' => 'Failed to process response: ' . $e->getMessage(),
+              'status_code' => null,
+            ];
+          }
+        } else {
+          // Promise rejected
+          $exception = $response['reason'];
+          $results[$key] = [
+            'success' => false,
+            'data' => null,
+            'error' => $exception->getMessage(),
+            'status_code' => null,
+          ];
+        }
+      }
+    }
+
+    return $results;
+  }
 }
