@@ -137,7 +137,7 @@ class ToolExecutor
         'text_response' => $this->formatWebSearchResults($result),
       ];
 
-      $this->cacheManager->set($query, $formattedResult); // not worl to check
+      $this->cacheManager->set($query, $formattedResult);
 
       return $formattedResult;
 

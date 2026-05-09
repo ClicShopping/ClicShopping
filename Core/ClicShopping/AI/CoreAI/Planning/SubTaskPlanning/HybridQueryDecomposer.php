@@ -16,12 +16,13 @@
 
 namespace ClicShopping\AI\CoreAI\Planning\SubTaskPlanning;
 
+use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\Infrastructure\Cache\DecompositionCache;
 use ClicShopping\AI\Infrastructure\Monitoring\DecompositionPerformanceMonitor;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ResponseProcessor;
-use ClicShopping\OM\Registry;
 
 /**
  * HybridQueryDecomposer
@@ -69,6 +70,10 @@ class HybridQueryDecomposer
         if ($this->debug) {
             $this->logDebug("HybridQueryDecomposer initialized with caching and performance monitoring");
         }
+
+        $this->language = Registry::get('Language');
+        // Load language definitions for SQL correction prompts using DomainConfig
+        DomainConfig::loadLanguageFile('rag_hybrid_query_decomposer');
     }
     
     /**
@@ -121,7 +126,7 @@ class HybridQueryDecomposer
         }
         
         try {
-            $this->chat = ResponseProcessor::getGptResponse('', null, null, $model);
+            $this->chat = Gpt::getChatForModel($model);
             
             if ($this->chat === false || $this->chat === null) {
                 $this->chat = null;
@@ -630,11 +635,8 @@ class HybridQueryDecomposer
         $cache = [];
 
         try {
-            if (!class_exists('ClicShopping\\AI\\Config\\DomainConfig')) {
-                return $cache;
-            }
+             $domain = DomainConfig::getActivities();
 
-            $domain = \ClicShopping\AI\Config\DomainConfig::getActivities();
             if (empty($domain)) {
                 return $cache;
             }
@@ -702,12 +704,6 @@ class HybridQueryDecomposer
      */
     private function buildDecompositionPrompt(string $query, array $subTypes, string $domain): string
     {
-        // Get language instance
-        $language = Registry::get('Language');
-
-        // Load language definitions for SQL correction prompts using DomainConfig
-        DomainConfig::loadLanguageFile('rag_hybrid_query_decomposer');
-
         $domainContext = $this->getDomainContext();
         $domainExamples = $this->getDomainExamples();
 
@@ -716,7 +712,7 @@ class HybridQueryDecomposer
             $subTypeLines[] = "- {$type}: " . $this->getTypeDescription($type);
         }
 
-        $template = $language->getDef('text_rag_hybrid_decomposer_prompt_template', [
+        $template = $this->language->getDef('text_rag_hybrid_decomposer_prompt_template', [
             'domain_name' => $domainContext['name'],
             'domain_terminology' => $domainContext['terminology'],
             'domain_data_types' => $domainContext['data_types'],

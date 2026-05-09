@@ -67,9 +67,9 @@ class PlanExecutor
    */
   public function __construct(TaskPlanner $planner, string $userId = 'system', int $languageId = 1)
   {
+    $this->languageId = $languageId;
     $this->planner = $planner;
     $this->userId = $userId;
-    $this->languageId = $languageId;
     $this->securityLogger = new SecurityLogger();
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
@@ -85,7 +85,9 @@ class PlanExecutor
 
 
     // Direct SerpApi verification (without Gpt dependency)
-    error_log("[info] PlanExecutor: Direct SerpApi verification...");
+    if ($this->debug) {
+      error_log("[info] PlanExecutor: Direct SerpApi verification...");
+    }
 
     $serpApiKey = "";
 
@@ -93,27 +95,37 @@ class PlanExecutor
     $envKey = getenv('SERP_API_KEY');
     if (!empty($envKey)) {
       $serpApiKey = $envKey;
-      error_log("[info] PlanExecutor: Key found in environment variable");
+      if ($this->debug) {
+        error_log("[info] PlanExecutor: Key found in environment variable");
+      }
     }
     // 2. ClicShopping constant
     elseif (defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI')) {
       $constKey = CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI;
       if (!empty($constKey)) {
         $serpApiKey = $constKey;
-        error_log("[info] PlanExecutor: Key found in constant");
+        if ($this->debug) {
+          error_log("[info] PlanExecutor: Key found in constant");
+        }
       }
     }
 
     if (!empty($serpApiKey)) {
-      error_log("[info] SERPAPI Key loaded: " . substr($serpApiKey, 0, 10) . "...");
-
+      if ($this->debug) {
+        error_log("[info] SERPAPI Key loaded: " . substr($serpApiKey, 0, 10) . "...");
+      }
       // Set environment variable for WebSearchTool
       putenv('SERP_API_KEY=' . $serpApiKey);
-      error_log("[info] PlanExecutor: putenv('SERP_API_KEY') set");
+      if ($this->debug) {
+        error_log("[info] PlanExecutor: putenv('SERP_API_KEY') set");
+      }
 
       $hasValidKey = true;
     } else {
-      error_log("[error] SERPAPI Key not loaded - no source found");
+      if ($this->debug) {
+        error_log("[error] SERPAPI Key not loaded - no source found");
+      }
+      
       $hasValidKey = false;
     }
 
@@ -134,7 +146,10 @@ class PlanExecutor
         }
       }
     } else {
-      error_log("ℹ[info] SerpApi not configured - Web search disabled");
+      if ($this->debug) {
+        error_log("[info] SerpApi not configured - Web search disabled");
+      }
+
       $this->webSearchTool = null;
 
       if ($this->debug) {
@@ -207,7 +222,10 @@ class PlanExecutor
       if ($this->debug) {
         $stepCount = count($plan->getSteps());
         $this->securityLogger->logSecurityEvent("Starting plan execution: {$stepCount} steps", 'info');
-        error_log("[INFO : TIME] [PERF] PlanExecutor: Starting execution of {$stepCount} steps");
+	
+        if ($this->debug) {
+          error_log("[INFO : TIME] [PERF] PlanExecutor: Starting execution of {$stepCount} steps");
+        }
       }
 
       // Exécuter les étapes
@@ -240,6 +258,7 @@ class PlanExecutor
           if (!empty($successfulResults) || $currentPlan->isComplete()) {
             $synthesizeStart = microtime(true);
             $finalResult = $this->synthesizeResults($currentPlan);
+
             if ($this->debug) {
               error_log("[INFO : TIME] [PERF] PlanExecutor: synthesizeResults took " . round((microtime(true) - $synthesizeStart), 2) . "s");
             }
@@ -301,10 +320,14 @@ class PlanExecutor
               }
               
               // 🆕 Debug: Check if source_attribution is in finalResult
-              error_log("[info] PlanExecutor: finalResult has source_attribution: " .
-                (isset($finalResult['source_attribution']) ? 'YES' : 'NO'));
+              if ($this->debug) {
+                error_log("[info] PlanExecutor: finalResult has source_attribution: " . (isset($finalResult['source_attribution']) ? 'YES' : 'NO'));
+              }
+
               if (isset($finalResult['source_attribution'])) {
-                error_log("   Source type: " . ($finalResult['source_attribution']['source_type'] ?? 'N/A'));
+                if ($this->debug) {
+                  error_log("   Source type: " . ($finalResult['source_attribution']['source_type'] ?? 'N/A'));
+                }
               }
             }
 
@@ -485,37 +508,38 @@ class PlanExecutor
   private function executeAnalyticsQuery(TaskStep $step, array $context): array
   {
     if ($this->debug) {
-	error_log(str_repeat("-", 100));
-	error_log("TASK 4.3.4.3: PlanExecutor.executeAnalyticsQuery() CALLED");
-	error_log("-" . str_repeat("-", 99));
-	error_log("Step ID: " . $step->getId());
-	error_log("Step Type: " . $step->getType());
-	error_log("Step Description: " . $step->getDescription());
+      error_log(str_repeat("-", 100));
+      error_log("TASK 4.3.4.3: PlanExecutor.executeAnalyticsQuery() CALLED");
+      error_log("-" . str_repeat("-", 99));
+      error_log("Step ID: " . $step->getId());
+      error_log("Step Type: " . $step->getType());
+      error_log("Step Description: " . $step->getDescription());
     }  
     // Try to get sub_query from metadata
     $subQuery = $step->getMeta('sub_query', null);
+
     if ($this->debug) {
       error_log("sub_query from metadata: " . ($subQuery ?? 'NULL'));
     }
     // Fallback to description
     $query = $step->getMeta('sub_query', $step->getDescription());
     if ($this->debug) {
-	error_log("Final query (after fallback): '{$query}'");
-	error_log("Query length: " . strlen($query));
-	error_log("Query is empty: " . (empty($query) ? 'YES' : 'NO'));
+      error_log("Final query (after fallback): '{$query}'");
+      error_log("Query length: " . strlen($query));
+      error_log("Query is empty: " . (empty($query) ? 'YES' : 'NO'));
     
-	if (empty($query)) {
-	error_log("[error] WARNING: Query is EMPTY in PlanExecutor!");
-	error_log("This means either:");
-	error_log("  1. sub_query metadata is not set");
-	error_log("  2. step description is empty");
-	error_log("  3. Both are empty");
-	}
+      if (empty($query)) {
+      error_log("[error] WARNING: Query is EMPTY in PlanExecutor!");
+      error_log("This means either:");
+      error_log("  1. sub_query metadata is not set");
+      error_log("  2. step description is empty");
+      error_log("  3. Both are empty");
+      }
     }
     
     if ($this->debug) {
-	error_log("Calling AnalyticsExecutor.executeAnalyticsQuery()...");
-	error_log("-" . str_repeat("-", 99) . "\n");
+      error_log("Calling AnalyticsExecutor.executeAnalyticsQuery()...");
+      error_log("-" . str_repeat("-", 99) . "\n");
     }
     
     return $this->analyticsExecutor->executeAnalyticsQuery($query, $context);

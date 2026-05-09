@@ -95,7 +95,7 @@ class WebSearchQueryExecutor
             if ($this->debug) {
               if ($isImplicitContext && $lastEntity !== null) {
                 $this->logger->logSecurityEvent(
-                  "TASK 2.18: Implicit contextual query detected with last entity: {$lastEntity['type']} (ID: {$lastEntity['id']})",
+                  "Implicit contextual query detected with last entity: {$lastEntity['type']} (ID: {$lastEntity['id']})",
                   'info'
                 );
               } else {

@@ -227,7 +227,7 @@ class ResultSynthesizer
       'web_results' => [],
       'analytics_results' => [],
       'semantic_results' => [],
-      'source_attributions' => [], // 🆕 Collect source attributions
+      'source_attributions' => [], // Collect source attributions
     ];
     
     $textResponseHashes = [];
@@ -278,8 +278,10 @@ class ResultSynthesizer
       }
 
       // 🆕 Always log step result keys for debugging
-      error_log("ResultSynthesizer: Step {$stepId} keys: " . implode(', ', array_keys($result)));
-      error_log("ResultSynthesizer: Step {$stepId} has source_attribution: " . (isset($result['source_attribution']) ? 'YES' : 'NO'));
+      if($this->debug) {
+        error_log("ResultSynthesizer: Step {$stepId} keys: " . implode(', ', array_keys($result)));
+        error_log("ResultSynthesizer: Step {$stepId} has source_attribution: " . (isset($result['source_attribution']) ? 'YES' : 'NO'));
+      }
 
       // Aggregate text responses (dedupe identical content)
       $addTextResponse = function (string $text) use (&$aggregated, &$textResponseHashes): void {
@@ -308,9 +310,10 @@ class ResultSynthesizer
       if (isset($result['source_attribution'])) {
         $aggregated['source_attributions'][] = $result['source_attribution'];
 
-        error_log("ResultSynthesizer: ✓ Collected source_attribution from step {$stepId}: " .
-          ($result['source_attribution']['source_type'] ?? 'unknown'));
-
+        if($this->debug) {
+          error_log("ResultSynthesizer: ✓ Collected source_attribution from step {$stepId}: " . ($result['source_attribution']['source_type'] ?? 'unknown'));
+        }
+	
         if ($this->debug) {
           $this->logger->logSecurityEvent(
             "ResultSynthesizer: Collected source_attribution from step {$stepId}: " .
@@ -319,7 +322,9 @@ class ResultSynthesizer
           );
         }
       } else {
-        error_log("ResultSynthesizer: ✗ No source_attribution in step {$stepId} (type: {$type})");
+        if($this->debug) {
+          error_log("ResultSynthesizer: ✗ No source_attribution in step {$stepId} (type: {$type})");
+        }
 
         if ($this->debug) {
           $this->logger->logSecurityEvent(
@@ -544,15 +549,19 @@ class ResultSynthesizer
     $hasWeb = !empty($aggregated['web_results']);
 
     // ALWAYS log this (not conditional on debug) to diagnose the issue
-    error_log("[INFO : ANALYSE] formatFinalResult: hasAnalytics=" . ($hasAnalytics ? 'YES' : 'NO') .
-      ", hasSemantic=" . ($hasSemantic ? 'YES' : 'NO') .
-      ", hasWeb=" . ($hasWeb ? 'YES' : 'NO') .
-      ", analytics_count=" . count($aggregated['analytics_results'] ?? []) .
-      ", semantic_count=" . count($aggregated['semantic_results'] ?? []));
+    if($this->debug) {
+      error_log("[INFO : ANALYSE] formatFinalResult: hasAnalytics=" . ($hasAnalytics ? 'YES' : 'NO') .
+        ", hasSemantic=" . ($hasSemantic ? 'YES' : 'NO') .
+        ", hasWeb=" . ($hasWeb ? 'YES' : 'NO') .
+        ", analytics_count=" . count($aggregated['analytics_results'] ?? []) .
+        ", semantic_count=" . count($aggregated['semantic_results'] ?? []));
+    }
 
     // If we have both analytics and semantic results, use intelligent combination
     if ($hasAnalytics && $hasSemantic && !$hasWeb) {
-      error_log("✅ CALLING combineAnalyticsAndSemantic()");
+      if($this->debug) {
+        error_log("✅ CALLING combineAnalyticsAndSemantic()");
+      }
 
       if ($this->debug) {
         $this->logger->logSecurityEvent(

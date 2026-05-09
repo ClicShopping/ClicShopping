@@ -16,7 +16,7 @@
 
 namespace ClicShopping\AI\CoreAI\Planning;
 
-
+use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
@@ -29,10 +29,7 @@ use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerWebSearch;
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerStandard;
 use ClicShopping\AI\CoreAI\Planning\TaskPlannerPrompts;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ResponseProcessor;
-use ClicShopping\OM\Registry;
 
-// Import SubTaskPlanners
 
 /**
  * Refactored TaskPlanner - Modular architecture with SubTaskPlanners
@@ -120,8 +117,8 @@ class TaskPlanner
     {
         $model = defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : 'gpt-5-mini';
 
-        // Use getChat which automatically handles all model types
-        $this->chat = ResponseProcessor::getGptResponse('', null, null, $model);
+        // Use Gpt::getChatForModel which automatically handles all model types
+        $this->chat = Gpt::getChatForModel($model);
 
         // Verify chat was initialized correctly
         if ($this->chat === false || $this->chat === null) {
