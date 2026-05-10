@@ -18,7 +18,6 @@
   <component name="PhpIncludePathManager">
     <include_path>
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/daveearley/daves-email-validation-tool" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/smalot/pdfparser" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/collections" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/dbal" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/deprecations" />
@@ -62,14 +61,15 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stripe/stripe-php" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/yethee/tiktoken" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/openai-php/client" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/theodo-group/llphant" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/php-http/multipart-stream-builder" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/amnuts/opcache-gui" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/yethee/tiktoken" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/theodo-group/llphant" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/smalot/pdfparser" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/php-http/multipart-stream-builder" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpoffice/math" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpoffice/phpword" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/openai-php/client" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.5">
@@ -82,6 +82,11 @@
   </component>
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
+  </component>
+  <component name="PhpUnit">
+    <phpunit_settings>
+      <PhpUnitSettings custom_loader_path="$PROJECT_DIR$/Core/ClicShopping/External/vendor/autoload.php" />
+    </phpunit_settings>
   </component>
   <component name="Psalm">
     <Psalm_settings>
