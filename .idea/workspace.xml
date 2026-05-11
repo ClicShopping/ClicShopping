@@ -22,7 +22,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7450" />
+    <option name="cachedIndexableFilesCount" value="7448" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -52,7 +52,6 @@
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
     <include_path>
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/daveearley/daves-email-validation-tool" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/smalot/pdfparser" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/collections" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/dbal" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/deprecations" />
@@ -96,14 +95,15 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stripe/stripe-php" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/yethee/tiktoken" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/openai-php/client" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/theodo-group/llphant" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/php-http/multipart-stream-builder" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/amnuts/opcache-gui" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/yethee/tiktoken" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/theodo-group/llphant" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/smalot/pdfparser" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/php-http/multipart-stream-builder" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpoffice/math" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpoffice/phpword" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/openai-php/client" />
     </include_path>
   </component>
   <component name="ProjectColorInfo">{
@@ -175,6 +175,7 @@
       <workItem from="1777998603544" duration="940000" />
       <workItem from="1778173219125" duration="106000" />
       <workItem from="1778352187414" duration="55000" />
+      <workItem from="1778427765443" duration="79000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -408,7 +409,23 @@
       <option name="project" value="LOCAL" />
       <updated>1778352226797</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="libraries updated">
+      <option name="closed" value="true" />
+      <created>1778427819983</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1778427819983</updated>
+    </task>
+    <task id="LOCAL-00031" summary="libraries updated">
+      <option name="closed" value="true" />
+      <created>1778427832762</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1778427832762</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

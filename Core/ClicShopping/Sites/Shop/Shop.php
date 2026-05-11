@@ -269,8 +269,8 @@ class Shop extends \ClicShopping\OM\Domains\SitesAbstract
         if (is_string($key) && preg_match('/^[a-zA-Z0-9_-]+$/', $key)) {
           $req = basename($key);
         } else {
-          // fallback sécurisé ou erreur
-          $req = $this->default_page;
+          http_response_code(404);
+          HTTP::redirect(CLICSHOPPING::getConfig('http_server', 'Shop') . CLICSHOPPING::getConfig('http_path', 'Shop') . 'error_documents/404.php');
         }
 
         if (class_exists('ClicShopping\Custom\Sites\\' . $this->code . '\Pages\\' . $req . '\\' . $req)) {
@@ -281,6 +281,9 @@ class Shop extends \ClicShopping\OM\Domains\SitesAbstract
           $page_code = $req;
 
           $class = 'ClicShopping\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code;
+        } else {
+          http_response_code(404);
+          HTTP::redirect(CLICSHOPPING::getConfig('http_server', 'Shop') . CLICSHOPPING::getConfig('http_path', 'Shop') . 'error_documents/404.php');
         }
       }
     }
