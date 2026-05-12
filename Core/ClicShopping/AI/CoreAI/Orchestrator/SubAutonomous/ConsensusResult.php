@@ -45,6 +45,7 @@ class ConsensusResult
    * @param float $agreementLevel The level of agreement (0.0 - 1.0, based on std deviation)
    * @param array $outliers Array of outlier evaluations
    * @param string|null $discussionLog Log of discussion if one occurred
+   * @throws \InvalidArgumentException If final_score is not between 0.00 and 1.00
    */
   public function __construct(
     string $outputId,
@@ -56,6 +57,15 @@ class ConsensusResult
     array $outliers = [],
     ?string $discussionLog = null
   ) {
+    if ($finalScore !== null && ($finalScore < 0.00 || $finalScore > 1.00)) {
+      throw new \InvalidArgumentException(
+        sprintf(
+          'Final score must be between 0.00 and 1.00, got %.2f',
+          $finalScore
+        )
+      );
+    }
+
     $this->sessionId = $this->generateSessionId();
     $this->outputId = $outputId;
     $this->participatingAgents = $participatingAgents;

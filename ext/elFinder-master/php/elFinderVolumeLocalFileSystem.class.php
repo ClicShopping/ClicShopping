@@ -328,23 +328,8 @@ class elFinderVolumeLocalFileSystem extends elFinderVolumeDriver
     /*********************************************************************/
     /*                               FS API                              */
     /*********************************************************************/
-//fix
-  /**
-   * Check if the file name is in the upload deny list.
-   *
-   * @param string $name The file name.
-   * @param string $ext  The file extension.
-   * @return bool
-   */
-  protected function isUploadDeny($name, $ext)
-  {
-    if ($this->options['uploadDeny'] && (in_array('all', $this->options['uploadDeny']) || in_array(strtolower($ext), $this->options['uploadDeny']))) {
-      return true;
-    }
-    return false;
-  }
 
-  /*********************** paths/urls *************************/
+    /*********************** paths/urls *************************/
 
     /**
      * Return parent directory path
@@ -1231,15 +1216,6 @@ class elFinderVolumeLocalFileSystem extends elFinderVolumeDriver
                     $this->addError(elFinder::ERROR_SAVE, $name);
                 }
             }
-//fix
-          $ext = '';
-          if (strpos($name, '.') !== false) {
-            $ext = substr($name, strrpos($name, '.') + 1);
-          }
-
-          if ($this->isUploadDeny($name, $ext)) {
-            return $this->error(elFinder::ERROR_UPLOAD_FILE, $name, $this->getDebug());
-          }
 
             // check max files size
             if ($this->options['maxArcFilesSize'] > 0 && $this->options['maxArcFilesSize'] < $this->archiveSize) {

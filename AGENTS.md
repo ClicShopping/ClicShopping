@@ -39,6 +39,7 @@ PROHIBITED: Generating code without reading existing files in the target scope.
 PROHIBITED: assuming a structure without verification in the actual repository.
 PROHIBITED: Change the core system OM directory without human permission.
 IMPORTANT: Self-Correction Protocol: Before delivering any code, the Agent MUST verify its output against the Absolute Prohibitions list of ALL six .md files. If a conflict is found, the Agent MUST prioritize AGENTS.md and SECURITY.md
+IMPORTANT : All the process in AI directory are in english. 
 ```
 
 Before any code: read existing files → check hooks → minimal modification.
@@ -305,6 +306,10 @@ See `AI_SYSTEM.md` §6 and `DATABASE.md` §6 for complete list.
 ✗ MySQL 9.x (incompatible with VECTOR type)
 ✗ MariaDB < 11.7 (missing native VECTOR support)
 ✗ Create alternative autoload, DI container, or cache mechanism
+✗ Use pattern-based detection as PRIMARY method (Pure LLM Mode required)
+✗ Place domain-specific patterns in agnostic layer (DomainsAI/)
+✗ Place agnostic patterns in domain-specific layer (Apps/AI/{Domain}/)
+✗ Mix multilingual keywords in agnostic pattern internal processing (English-only)
 ```
 
 ---

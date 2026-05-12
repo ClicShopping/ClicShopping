@@ -117,12 +117,14 @@ class SemanticSearchOrchestrator
       $cacheStatus = 'disabled';
       if ($this->shouldUseCache($query, $context)) {
         $cacheStatus = 'checking';
+
         if ($this->debug) {
           $this->logger->logSecurityEvent("Step 1: Checking cache for query", 'info');
         }
 
         // Try to get cached response
         $cachedResponse = $this->cache->getCachedResponse($query);
+
         if ($cachedResponse !== null) {
           $executionTime = microtime(true) - $startTime;
           $cacheStatus = 'hit';
@@ -178,7 +180,6 @@ class SemanticSearchOrchestrator
       }
 
       $conversationResult = $this->searchConversationMemory($query, $options);
-
 
       // Check if the documents have meaningful content (not just empty "Response: \n")
       $hasContent = false;

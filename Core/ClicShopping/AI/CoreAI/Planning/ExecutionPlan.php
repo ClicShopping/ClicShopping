@@ -10,7 +10,6 @@
 
 namespace ClicShopping\AI\CoreAI\Planning;
 
-
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Infrastructure\Metrics\CalculatorTool;

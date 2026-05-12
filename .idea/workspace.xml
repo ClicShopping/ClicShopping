@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="libraries updated" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="improve 404 detection" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,7 +22,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7448" />
+    <option name="cachedIndexableFilesCount" value="7449" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -176,6 +176,7 @@
       <workItem from="1778173219125" duration="106000" />
       <workItem from="1778352187414" duration="55000" />
       <workItem from="1778427765443" duration="79000" />
+      <workItem from="1778483153635" duration="44000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -425,7 +426,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778427832762</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="improve 404 detection">
+      <option name="closed" value="true" />
+      <created>1778483194110</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1778483194110</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -451,7 +460,8 @@
     <MESSAGE value="litlle fix" />
     <MESSAGE value="litlle improvment" />
     <MESSAGE value="libraries updated" />
-    <option name="LAST_COMMIT_MESSAGE" value="libraries updated" />
+    <MESSAGE value="improve 404 detection" />
+    <option name="LAST_COMMIT_MESSAGE" value="improve 404 detection" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

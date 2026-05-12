@@ -1,10 +1,10 @@
-
 version4.28
 - php9 compatibility improvement
 - libraries updated
 - AI fix and improvement
-- AI SEO refactoring, faq introduced and improvement analysis
+- AI SEO refactoring, faq introduced and improvement analysis for the front office via different analysis
 - AI Orchestrator refactored and include some improvement
+- AI WebsSearch refactored with new improvement (competitive intelligence introduced using SERPAI : Analysis trend and market, google shopping and Amazon)
 - Security fix
 
 ---------------

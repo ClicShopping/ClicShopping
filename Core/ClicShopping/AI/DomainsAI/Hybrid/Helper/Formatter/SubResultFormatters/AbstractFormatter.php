@@ -187,6 +187,7 @@ abstract class AbstractFormatter
         'customers_id',
         'categories_id',
         'manufacturers_id',
+        'suppliers_id',
         'id'
       ]);
     }
