@@ -7,6 +7,11 @@ snippet TEXT null comment(Snippet of descriptive text)
 source_domain VARCHAR(255) null comment(Source domain (google.com, wikipedia.org, etc.))
 relevance_score FLOAT default (0.0) comment(Calculated relevance score (0-1))
 date_added DATETIME default(current_timestamp)
+result_type VARCHAR(50) DEFAULT(organic) comment(Result type: organic, shopping, ai_overview)
+price DECIMAL(10,2) DEFAULT NULL comment(Product price (shopping results only))
+old_price DECIMAL(10,2) DEFAULT NULL comme(Old/sale price (shopping results only))
+thumbnail text DEFAULT NULL comment(Product thumbnail URL (shopping results only))
+product_link text DEFAULT NULL comment(Direct product link (shopping results only))
 
 --
 primary id
@@ -15,7 +20,7 @@ idx_relevance_score relevance_score
 idx_source_domain source_domain
 idx_request_relevance search_request_id relevance_score
 idx_domain_relevance source_domain relevance_score
-
+idx_result_type result_type
 
 ##
 engine innodb

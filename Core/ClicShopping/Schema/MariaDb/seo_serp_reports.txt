@@ -16,7 +16,7 @@ seo_score_after INT(11) default 0 comment(Global SEO score after optimization (0
 status VARCHAR(50) default null comment(Processing status: pending, processing, completed, failed, skipped)
 triggered_by VARCHAR(50) default null comment(Who triggered the analysis: auto=system scheduler, or admin user identifier)
 created_at DATETIME not_null default now() comment(Timestamp when the SEO analysis entry was created)
-updated_at DATETIME not_null default now() ON update now() comment(Timestamp of the last update - auto-refreshed on every modification)
+updated_at DATETIME default null comment(Timestamp of the last update)
 pipeline_metrics JSON NULL default null comment(JSON metrics of the AI pipeline execution: duration, tokens used, steps completed, errors encountered)
 
 --

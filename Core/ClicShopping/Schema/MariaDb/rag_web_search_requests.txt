@@ -16,7 +16,8 @@ session_id VARCHAR(255) comment(Session ID)
 ip_address VARCHAR(45) comment(IP address (IPv4 or IPv6))
 audit_data JSON comment(Complete audit data (JSON))
 date_added DATETIME default(current_timestamp) comment(Creation date)
-
+mode_type VARCHAR(50) DEFAULT NULL  comment(Search mode: mode_a_ai_overview, mode_b_google_shopping, mode_c_rag_websearch, hybrid)
+mode_metadata JSON DEFAULT NULL comment(Mode-specific metadata: engines_used, hybrid_combination, routing_method)
 --
 primary id
 idx_query query(255)
@@ -28,6 +29,7 @@ idx_quality_score quality_score
 idx_intent_confidence intent intent_confidence
 idx_cached_quality cached_in_rag quality_score
 idx_date_user date_added user_admin
+idx_mode_type mode_type
 fulltext ft_query query
 
 ##

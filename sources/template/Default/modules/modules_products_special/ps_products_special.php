@@ -8,10 +8,11 @@
  *
  */
 
-use ClicShopping\Apps\Marketing\Specials\Classes\Shop\SpecialsClass;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Marketing\Specials\Classes\Shop\SpecialsClass;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\CockpitAI\ProductsTracking;
 
 class ps_products_special
 {
@@ -43,6 +44,10 @@ class ps_products_special
     $CLICSHOPPING_ProductsFunctionTemplate = Registry::get('ProductsFunctionTemplate');
     $CLICSHOPPING_ProductsAttributes = Registry::get('ProductsAttributes');
     $CLICSHOPPING_Reviews = Registry::get('Reviews');
+    $CLICSHOPPING_Language = Registry::get('Language');
+
+    // normalisation position module (left/right)
+    $module_position = ($this->group === 'boxes_column_left') ? 'left' : 'right';
 
     if (isset($_GET['Products'], $_GET['Specials'])) {
       if (\defined('MODULE_PRODUCTS_SPECIAL_MAX_DISPLAY') && (int)MODULE_PRODUCTS_SPECIAL_MAX_DISPLAY != 0) {
@@ -161,7 +166,8 @@ class ps_products_special
 
           while ($Qlisting->fetch()) {
             $products_id = $Qlisting->valueInt('products_id');
-            $_POST['products_id'] = $products_id;
+            //trackingProduct
+            ProductsTracking::insertProductTracking($products_id,  $this->code, $module_position, $this->sort_order, $CLICSHOPPING_Language->getId(), null, 0.60);
 
             $products_name_url = $CLICSHOPPING_ProductsFunctionTemplate->getProductsUrlRewrited()->getProductNameUrl($products_id);
 //product name

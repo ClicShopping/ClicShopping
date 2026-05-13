@@ -16,7 +16,7 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Handler;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
+use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
 /**
@@ -27,12 +27,14 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
  * 2. Search product in internal database
  * 3. If found, use exact name for web search
  * 4. Compare prices and format results
+ * 
+ * Updated to use WebSearchFacade (unified engine) instead of legacy WebSearchTool.
  */
 
 class WebSearchHandler
 {
   private SecurityLogger $logger;
-  private ?WebSearchTool $webSearchTool;
+  private ?WebSearchFacade $webSearchFacade;
   private mixed $db;
   private bool $debug;
 
@@ -50,13 +52,13 @@ class WebSearchHandler
     $this->db = Registry::get('Db');
 
     try {
-      $this->webSearchTool = new WebSearchTool();
+      $this->webSearchFacade = new WebSearchFacade();
     } catch (\Exception $e) {
       $this->logger->logSecurityEvent(
-        "⚠️ WebSearchTool initialization failed: " . $e->getMessage(),
+        "⚠️ WebSearchFacade initialization failed: " . $e->getMessage(),
         'warning'
       );
-      $this->webSearchTool = null;
+      $this->webSearchFacade = null;
     }
 
     if ($this->debug) {
@@ -89,8 +91,8 @@ class WebSearchHandler
         );
       }
 
-      // Check if web search tool is available
-      if ($this->webSearchTool === null) {
+      // Check if web search facade is available
+      if ($this->webSearchFacade === null) {
         return [
           'success' => false,
           'error' => 'Web search not configured',
@@ -98,10 +100,10 @@ class WebSearchHandler
         ];
       }
 
-      // Perform web search
-      $webResults = $this->webSearchTool->search($query, [
+      // Perform web search via WebSearchFacade
+      $webResults = $this->webSearchFacade->search($query, [
         'max_results' => 10,
-        'language' => 'en'
+        'language_id' => 1 // English
       ]);
 
       if (!$webResults['success']) {

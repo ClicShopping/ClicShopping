@@ -11,8 +11,8 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\Hybrid;
 
 use ClicShopping\AI\DomainsAI\Hybrid\Processor\ResultAggregator;
-use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\ResultFormatter;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\EcommerceWebSearchFacade;
 
 /**
  * EcommerceResultAggregator - E-commerce specific result aggregation
@@ -75,110 +75,56 @@ class EcommerceResultAggregator extends ResultAggregator
    */
   protected function aggregatePriceComparison(array $successfulResults, array $failedResults): array
   {
-    list($productData, $webSearchResults, $sources) = $this->extractPriceComparisonData($successfulResults, $failedResults);
-
-    // If we have both product data and web results, use comparePrice()
-    if ($productData !== null && $webSearchResults !== null) {
-      $comparison = $this->performPriceComparison($productData, $webSearchResults);
-      if ($comparison !== null) {
-        $aggregatedText = ResultFormatter::formatPriceComparisonAsText($comparison);
-        if ($this->debug) {
-          $this->logInfo("Price comparison successful", ['product' => $productData['name']]);
-        }
-        return $this->formatAggregatedResult(
-          'price_comparison',
-          $aggregatedText,
-          ['comparison_data' => $comparison, 'product' => $productData],
-          $sources,
-          $successfulResults,
-          $failedResults
-        );
-      }
-    }
-
-    // Fallback: Basic aggregation
-    return $this->buildBasicPriceComparison($productData, $webSearchResults, $sources, $successfulResults, $failedResults);
-  }
-
-  /**
-   * Extract product data and web search results for price comparison
-   *
-   * @param array $successfulResults Successful results
-   * @param array $failedResults Failed results
-   * @return array [productData, webSearchResults, sources]
-   */
-  private function extractPriceComparisonData(array $successfulResults, array $failedResults): array
-  {
+    // Step 1: Extract product data from Analytics result
     $productData = null;
-    $webSearchResults = null;
-    $sources = [];
-
+    $query = '';
+    
     foreach ($successfulResults as $subResult) {
       $type = $subResult['type'] ?? '';
-      $result = $subResult['result'] ?? [];
-
+      
       if ($type === 'analytics') {
-        $data = $result['result']['data'] ?? [];
+        $data = $subResult['result']['result']['data'] ?? [];
         if (!empty($data)) {
-          $firstRow = $data[0];
-
-          // Extract product data using EntityDataExtractor
-          $productData = $this->entityExtractor->extractFromRow($firstRow);
+          $productData = $this->entityExtractor->extractFromRow($data[0]);
         }
       } elseif ($type === 'web_search') {
-        // Check if already formatted
-        if (isset($result['is_price_comparison']) && $result['is_price_comparison']) {
-          return [null, null, []]; // Signal to return early
-        }
-        $webSearchResults = $result;
-        $sources = $this->collectSources($result, $sources);
+        $query = $subResult['query'] ?? '';
       }
     }
-
-    return [$productData, $webSearchResults, $sources];
-  }
-
-  /**
-   * Perform price comparison using WebSearchTool
-   *
-   * @param array $productData Product data
-   * @param array $webSearchResults Web search results
-   * @return array|null Comparison result or null on failure
-   */
-  private function performPriceComparison(array $productData, array $webSearchResults): ?array
-  {
+    
+    // Step 2: Validate we have required data
+    if ($productData === null || empty($query)) {
+      return $this->buildBasicPriceComparison($productData, null, [], $successfulResults, $failedResults);
+    }
+    
+    // Step 3: Call EcommerceWebSearchFacade.comparePrice() (SINGLE SOURCE OF TRUTH)
     try {
-      $webSearchTool = new WebSearchTool();
+      $facade = new EcommerceWebSearchFacade();
       
-      // Extract items array with defensive checks
-      $items = [];
-      if (isset($webSearchResults['result'])) {
-        // Handle nested result structure
-        if (is_array($webSearchResults['result'])) {
-          $items = $webSearchResults['result'];
-        }
-      } elseif (isset($webSearchResults['items'])) {
-        $items = $webSearchResults['items'];
-      }
-      
-      // Ensure items is an array of arrays, not strings
-      if (!is_array($items)) {
-        $items = [];
-      } else {
-        // Filter out non-array items
-        $items = array_filter($items, 'is_array');
-      }
-      
-      $formattedWebResults = [
-        'success' => true,
-        'items' => $items
+      // Convert product data to expected format
+      $product = [
+        'products_id' => $productData['id'] ?? null,
+        'products_name' => $productData['name'] ?? 'Unknown Product',
+        'products_price' => $productData['price'] ?? 0.0,
+        'products_model' => $productData['model'] ?? ''
       ];
       
-      $comparison = $webSearchTool->comparePrice($productData, $formattedWebResults);
-      return $comparison['success'] ? $comparison : null;
+      $comparison = $facade->comparePrice($product, $query);
+      
+      // Step 4: Format result
+      $aggregatedText = ResultFormatter::formatPriceComparisonAsText($comparison);
+      
+      return $this->formatAggregatedResult(
+        'price_comparison',
+        $aggregatedText,
+        ['comparison_data' => $comparison, 'product' => $productData],
+        $this->collectSources($comparison),
+        $successfulResults,
+        $failedResults
+      );
     } catch (\Exception $e) {
       $this->logWarning("Error in price comparison", ['error' => $e->getMessage()]);
-      return null;
+      return $this->buildBasicPriceComparison($productData, null, [], $successfulResults, $failedResults);
     }
   }
 

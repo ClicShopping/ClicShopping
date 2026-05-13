@@ -281,9 +281,6 @@ class Shop extends \ClicShopping\OM\Domains\SitesAbstract
           $page_code = $req;
 
           $class = 'ClicShopping\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code;
-        } else {
-          http_response_code(404);
-          HTTP::redirect(CLICSHOPPING::getConfig('http_server', 'Shop') . CLICSHOPPING::getConfig('http_path', 'Shop') . 'error_documents/404.php');
         }
       }
     }

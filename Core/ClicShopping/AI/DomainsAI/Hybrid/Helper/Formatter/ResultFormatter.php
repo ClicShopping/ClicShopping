@@ -97,6 +97,17 @@ class ResultFormatter
       ];
     }
 
+    // Check if user input is required (price comparison mode selection)
+    // If so, return it directly without formatting - the chat interface will handle the prompt display
+    if (isset($results['type']) && $results['type'] === 'user_input_required') {
+      if ($this->debug) {
+        error_log('[DEBUG] ResultFormatter: User input required, returning without formatting');
+      }
+      
+      // Return the response as-is for the chat interface to handle
+      return $results;
+    }
+
     // If it's an error, return it as is
     if (isset($results['type']) && $results['type'] === 'error') {
       return $results;

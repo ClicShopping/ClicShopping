@@ -22,7 +22,7 @@ use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\StepExecutor;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\ToolExecutor;
 use ClicShopping\AI\Infrastructure\Metrics\CalculatorTool;
 use ClicShopping\AI\DomainsAI\WebSearch\Cache\SearchCacheManager;
-use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
+use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\WebSearchFormatter;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\WebSearchPatterns;
 
@@ -40,6 +40,7 @@ class PlanExecutor
   private bool $debug;
   private string $userId;
   private int $languageId;
+  private mixed $language;
   private mixed $conversationMemory = null;
 
   // Configuration
@@ -47,7 +48,7 @@ class PlanExecutor
   private bool $enableParallelExecution = false; // For future implementation
 
   private ?CalculatorTool $calculatorTool = null;
-  private mixed $webSearchTool;
+  private mixed $webSearchFacade;
   private mixed $cacheManager;
   private mixed $collector;
 
@@ -67,13 +68,14 @@ class PlanExecutor
    */
   public function __construct(TaskPlanner $planner, string $userId = 'system', int $languageId = 1)
   {
+    $this->language = Registry::get('Language');
     $this->languageId = $languageId;
     $this->planner = $planner;
     $this->userId = $userId;
     $this->securityLogger = new SecurityLogger();
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
-    // 🆕 NEW: Initialize CalculatorTool if enabled
+    // Initialize CalculatorTool if enabled
     if (defined('CLICSHOPPING_APP_CHATGPT_CALCULATOR_ENABLED') && CLICSHOPPING_APP_CHATGPT_CALCULATOR_ENABLED === 'True') {
       Registry::set('CalculatorTool', new CalculatorTool());
       $this->calculatorTool = Registry::get('CalculatorTool');
@@ -131,18 +133,18 @@ class PlanExecutor
 
     if ($hasValidKey) {
       try {
-        Registry::set('webSearchTool', new webSearchTool());
-        $this->webSearchTool = Registry::get('webSearchTool');
+        Registry::set('webSearchFacade', new WebSearchFacade());
+        $this->webSearchFacade = Registry::get('webSearchFacade');
 
         if ($this->debug) {
-          $this->securityLogger->logSecurityEvent("WebSearchTool initialized successfully", 'info');
+          $this->securityLogger->logSecurityEvent("WebSearchFacade initialized successfully", 'info');
         }
       } catch (Exception $e) {
-        error_log("[warning]️ WebSearchTool initialization failed: " . $e->getMessage());
-        $this->webSearchTool = null;
+        error_log("[warning] WebSearchFacade initialization failed: " . $e->getMessage());
+        $this->webSearchFacade = null;
 
         if ($this->debug) {
-          $this->securityLogger->logSecurityEvent("WebSearchTool initialization failed: " . $e->getMessage(), 'warning');
+          $this->securityLogger->logSecurityEvent("WebSearchFacade initialization failed: " . $e->getMessage(), 'warning');
         }
       }
     } else {
@@ -150,7 +152,7 @@ class PlanExecutor
         error_log("[info] SerpApi not configured - Web search disabled");
       }
 
-      $this->webSearchTool = null;
+      $this->webSearchFacade = null;
 
       if ($this->debug) {
         $this->securityLogger->logSecurityEvent("SerpApi not configured - Web search disabled", 'info');
@@ -257,6 +259,22 @@ class PlanExecutor
           // If we have at least some successful results, synthesize them
           if (!empty($successfulResults) || $currentPlan->isComplete()) {
             $synthesizeStart = microtime(true);
+            
+            // Log step results before synthesis
+            $allStepResults = $currentPlan->getAllStepResults();
+	    
+            if ($this->debug) {
+              error_log("[PlanExecutor::execute] Step results count BEFORE synthesizeResults: " . count($allStepResults));
+            }
+
+            foreach ($allStepResults as $stepId => $stepResult) {
+              if (is_array($stepResult)) {
+                if ($this->debug) {
+                  error_log("[PlanExecutor::execute] Step {$stepId}: type=" . ($stepResult['type'] ?? 'NO TYPE') . ", has text_response=" . (isset($stepResult['text_response']) ? 'YES' : 'NO'));
+                }
+              }
+            }
+            
             $finalResult = $this->synthesizeResults($currentPlan);
 
             if ($this->debug) {
@@ -426,6 +444,11 @@ class PlanExecutor
         'previous_results' => $plan->getAllStepResults(),
         'query' => $plan->getQuery(),
       ];
+      
+      //  Log plan intent to understand what's being passed
+      if ($this->debug) {
+        error_log("[INFO PlanExecutor::executeStepByType] plan_intent: " . json_encode($plan->getIntent()));
+      }
 
       // Exécuter selon le type
       $result = null;
@@ -504,12 +527,13 @@ class PlanExecutor
   /**
    * Exécute une requête analytique
    * 🆕 REFACTORED: Délègue à AnalyticsExecutor
+   * 🆕 NEW (2026-05-07): Make Analytics optional when target_site specified
    */
   private function executeAnalyticsQuery(TaskStep $step, array $context): array
   {
     if ($this->debug) {
       error_log(str_repeat("-", 100));
-      error_log("TASK 4.3.4.3: PlanExecutor.executeAnalyticsQuery() CALLED");
+      error_log("[INFO] PlanExecutor.executeAnalyticsQuery() CALLED");
       error_log("-" . str_repeat("-", 99));
       error_log("Step ID: " . $step->getId());
       error_log("Step Type: " . $step->getType());
@@ -519,14 +543,14 @@ class PlanExecutor
     $subQuery = $step->getMeta('sub_query', null);
 
     if ($this->debug) {
-      error_log("sub_query from metadata: " . ($subQuery ?? 'NULL'));
+      error_log("[INFO] sub_query from metadata: " . ($subQuery ?? 'NULL'));
     }
     // Fallback to description
     $query = $step->getMeta('sub_query', $step->getDescription());
     if ($this->debug) {
-      error_log("Final query (after fallback): '{$query}'");
-      error_log("Query length: " . strlen($query));
-      error_log("Query is empty: " . (empty($query) ? 'YES' : 'NO'));
+      error_log("[INFO] Final query (after fallback): '{$query}'");
+      error_log("[INFO] Query length: " . strlen($query));
+      error_log("[INFO] Query is empty: " . (empty($query) ? 'YES' : 'NO'));
     
       if (empty($query)) {
       error_log("[error] WARNING: Query is EMPTY in PlanExecutor!");
@@ -542,7 +566,40 @@ class PlanExecutor
       error_log("-" . str_repeat("-", 99) . "\n");
     }
     
-    return $this->analyticsExecutor->executeAnalyticsQuery($query, $context);
+    $result = $this->analyticsExecutor->executeAnalyticsQuery($query, $context);
+
+    // Check if Analytics returned empty results
+    $analyticsEmpty = empty($result['data']) || 
+                      empty($result['results']) ||
+                      (isset($result['success']) && !$result['success']);
+    
+    // Check if target_site is specified in context
+    $hasTargetSite = !empty($context['plan_intent']['target_site'] ?? null);
+    
+    // Check feature flag
+    $featureEnabled = defined('CLICSHOPPING_APP_CHATGPT_RA_ANALYTICS_OPTIONAL_WITH_TARGET_SITE') && CLICSHOPPING_APP_CHATGPT_RA_ANALYTICS_OPTIONAL_WITH_TARGET_SITE === 'True';
+    
+    // If feature enabled AND target_site specified AND Analytics empty
+    if ($featureEnabled && $hasTargetSite && $analyticsEmpty) {
+      // Mark Analytics as optional failure (don't block execution)
+      $result['optional'] = true;
+      $result['reason'] = 'product_not_found_but_target_site_specified';
+      $result['continue_execution'] = true;
+      
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "Analytics returned no results, but target_site specified - marking as optional failure",
+          'info',
+          [
+            'target_site' => $context['plan_intent']['target_site'],
+            'query' => $context['query'] ?? 'unknown',
+            'feature_flag' => 'ANALYTICS_OPTIONAL_WITH_TARGET_SITE'
+          ]
+        );
+      }
+    }
+    
+    return $result;
   }
 
   /**
@@ -680,10 +737,10 @@ class PlanExecutor
    */
   private function executeWebSearch(TaskStep $step, array $context): array
   {
-    if (!$this->webSearchTool) {
+    if (!$this->webSearchFacade) {
       if ($this->debug) {
         $this->securityLogger->logSecurityEvent(
-          "Web search tool not available - returning empty result",
+          "Web search facade not available - returning empty result",
           'warning'
         );
       }
@@ -691,7 +748,7 @@ class PlanExecutor
       return [
         'type' => 'web_search_response',
         'success' => false,
-        'error' => 'Web search tool not configured',
+        'error' => 'Web search facade not configured',
         'query' => $step->getDescription(),
         'results' => [],
         'text_response' => 'Web search is not available. Please configure SERAPI key.',
@@ -700,18 +757,43 @@ class PlanExecutor
 
     $query = $step->getMeta('search_query', $step->getDescription());
     
+    // Skip query enrichment for price_comparison queries
+    // For price_comparison, SubTaskPlannerWebSearch already extracts the clean product name
+    // from intent, so we should NOT enrich it again with entity context to avoid duplication
+    // Example: query="iPhone 17 Pro" should stay as-is, not become "iPhone 17 Pro iPhone 17 Pro"
+    $skipEnrichment = false;
+    
+    // Check both 'intent' and 'intent_type' fields (different decomposers use different field names)
+    $intentType = $context['plan_intent']['intent'] ?? $context['plan_intent']['intent_type'] ?? null;
+    
+    if ($intentType === 'price_comparison') {
+      $skipEnrichment = true;
+      
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "Skipping query enrichment for price_comparison (query already contains clean product name)",
+          'info'
+        );
+      }
+    }
+    
     //Enrich query with last_entity context for follow-up queries
     // This allows web search to use context from previous analytics queries
-    if ($this->conversationMemory !== null) {
+    // SKIP enrichment for price_comparison queries (they already have clean product names)
+    
+    if (!$skipEnrichment && $this->conversationMemory !== null) {
       try {
         $lastEntity = $this->conversationMemory->getLastEntity();
         
         if ($lastEntity !== null) {
-          // Extract entity information safely
-          $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? null);
+          // Only use entity name, NOT entity ID
+          // Using entity ID (e.g., "103") in web search queries causes Google to return no results
+          // We MUST have the entity name (e.g., "iPhone 17 Pro") for meaningful web searches
+          $entityName = $lastEntity['name'] ?? null;
           $entityType = $lastEntity['type'] ?? 'entity';
           
-          if ($entityName !== null) {
+          // Only enrich if we have a valid entity NAME (not just ID)
+          if ($entityName !== null && !empty(trim($entityName))) {
             // Enrich query with entity context
             // Example: "compare avec les concurrents" → "compare iPhone 17 Pro avec les concurrents"
             $query = WebSearchPatterns::enrichWebSearchQuery($query, $entityName, $entityType);
@@ -719,6 +801,15 @@ class PlanExecutor
             if ($this->debug) {
               $this->securityLogger->logSecurityEvent(
                 "Enriched web search query with last_entity: {$entityName} ({$entityType})",
+                'info'
+              );
+            }
+          } else {
+            // Log when enrichment is skipped due to missing entity name
+            if ($this->debug) {
+              $entityId = $lastEntity['id'] ?? 'unknown';
+              $this->securityLogger->logSecurityEvent(
+                "Skipped query enrichment: entity name not available (ID: {$entityId}, Type: {$entityType})",
                 'info'
               );
             }
@@ -742,19 +833,34 @@ class PlanExecutor
       );
     }
 
-    //https://serpapi.com/ask-ai-mode
     try {
-      // Call WebSearchTool which handles caching, rate limiting, and SERAPI
-      $searchResult = $this->webSearchTool->search($query, [
+      // Prepare options for WebSearchFacade
+      $options = [
         'max_results' => $step->getMeta('max_results', 10),
-        'engine' => $step->getMeta('search_engine', 'google'),
-        'language' => $this->languageId == 1 ? 'en' : 'fr',
-      ]);
+        'language_id' => $this->languageId,
+        'user_id' => $this->userId,
+      ];
+      
+      // Call WebSearchFacade (unified engine)
+      $searchResult = $this->webSearchFacade->search($query, $options);
+      
+      // CRITICAL LOGGING: Log what WebSearchFacade returned
+      if ($this->debug) {
+        error_log("[PlanExecutor::executeWebSearch] searchResult keys: " . implode(', ', array_keys($searchResult)));
+      }
+
+      if ($this->debug) {
+        if (isset($searchResult['metadata']['mode'])) {
+          error_log("[PlanExecutor::executeWebSearch] Mode returned by WebSearchFacade: " . $searchResult['metadata']['mode']);
+        } else {
+          error_log("[PlanExecutor::executeWebSearch] NO MODE in searchResult metadata");
+        }
+      }
 
       // Check if search was successful
       if (!isset($searchResult['success']) || $searchResult['success'] === false) {
-        $errorMsg = $searchResult['error'] ?? 'Unknown error';
-        
+        $errorMsg = $searchResult['metadata']['error'] ?? $searchResult['error'] ?? 'Unknown error';
+
         if ($this->debug) {
           $this->securityLogger->logSecurityEvent(
             "Web search failed: {$errorMsg}",
@@ -762,20 +868,58 @@ class PlanExecutor
           );
         }
 
+        // Return success: true so ResultValidator accepts the step and the user sees the error message
         return [
           'type' => 'web_search_response',
-          'success' => false,
+          'success' => true,
           'error' => $errorMsg,
           'query' => $query,
           'results' => [],
-          'text_response' => "Web search failed: {$errorMsg}",
+          'text_response' => "<div class='alert alert-warning'>⚠️ " . htmlspecialchars($errorMsg) . "</div>",
+          'source_attribution' => [
+            'source_type' => 'web_search',
+            'primary_source' => 'Web Search',
+            'source_icon' => '🌐',
+          ],
         ];
       }
 
-      // Format results for display
-      $items = $searchResult['items'] ?? [];
-      $formattedResults = [];
+      // WebSearchFacade returns shopping_results and organic_results, not items
+      // Merge both into a single items array for backward compatibility
+      $items = [];
       
+      // Add shopping results first (higher priority)
+      if (!empty($searchResult['shopping_results'])) {
+        foreach ($searchResult['shopping_results'] as $result) {
+          $items[] = [
+            'title' => $result['title'] ?? '',
+            'snippet' => $result['snippet'] ?? '',
+            'link' => $result['product_link'] ?? $result['link'] ?? '',
+            'source' => $result['source'] ?? '',
+            'price' => $result['price'] ?? $result['extracted_price'] ?? null,
+            'thumbnail' => $result['thumbnail'] ?? null,
+            'type' => 'shopping'
+          ];
+        }
+      }
+      
+      // Add organic results
+      if (!empty($searchResult['organic_results'])) {
+        foreach ($searchResult['organic_results'] as $result) {
+          $items[] = [
+            'title' => $result['title'] ?? '',
+            'snippet' => $result['snippet'] ?? '',
+            'link' => $result['link'] ?? '',
+            'source' => $result['source'] ?? '',
+            'price' => null,
+            'type' => 'organic'
+          ];
+        }
+      }
+      
+      // Format results for display
+      $formattedResults = [];
+
       foreach ($items as $item) {
         $formattedResults[] = [
           'title' => $item['title'] ?? '',
@@ -789,17 +933,89 @@ class PlanExecutor
       // Extract AI Overview data from search result
       $aiOverview = $searchResult['ai_overview'] ?? null;
       $hasAiOverview = $searchResult['metadata']['has_ai_overview'] ?? false;
+      
+      // Determine mode from metadata
+      // Use 'mode_type' instead of 'mode' (WebSearchExecutor uses 'mode_type')
+      $mode = $searchResult['metadata']['mode_type'] ?? 'A';
+      
+      //Log mode detection**
+      if ($this->debug) {
+        error_log("[[INFO] PlanExecutor::executeWebSearch] Detected mode: " . $mode);
+        error_log("[INFO PlanExecutor::executeWebSearch] searchResult keys: " . implode(', ', array_keys($searchResult)));
+       
+        if (isset($searchResult['metadata'])) {
+          error_log("[INFO PlanExecutor::executeWebSearch] metadata keys: " . implode(', ', array_keys($searchResult['metadata'])));
+        }
+      }
+      
+      // Use original user query for display (not the enriched/translated internal query)
+      $displayQuery = $context['plan_intent']['original_query'] ?? $query;
+
+      // Prepare formatter data
+      $formatterData = [
+        'type' => 'web_search_response',
+        'query' => $displayQuery,
+        'ai_overview' => $aiOverview,
+        'metadata' => $searchResult['metadata'] ?? [],
+      ];
+      
+      // Add shopping_results for Mode B and Mode D (use original shopping_results from WebSearchFacade)
+      // Check for 'mode_b_google_shopping' instead of 'B'
+      // Also pass shopping_results for Hybrid mode
+      // Also pass shopping_results for Mode D (Amazon Shopping)
+      
+      if (($mode === 'B' || $mode === 'mode_b_google_shopping' || $mode === 'mode_d_amazon_shopping' || $mode === 'D' || $mode === 'hybrid') && !empty($searchResult['shopping_results'])) {
+        $formatterData['shopping_results'] = $searchResult['shopping_results'];
+
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Mode " . $mode . " detected - passing " . count($searchResult['shopping_results']) . " shopping_results to formatter",
+            'info'
+          );
+        }
+      } elseif ($mode === 'mode_e_google_trends' && !empty($searchResult['trends_data'])) {
+        $formatterData['trends_data'] = $searchResult['trends_data'];
+
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Mode E (Google Trends) detected - passing trends_data (" . ($searchResult['trends_data']['point_count'] ?? 0) . " points) to formatter",
+            'info'
+          );
+        }
+      } else {
+        // For non-shopping modes (Mode A, Mode C without shopping), include web results
+        $formatterData['results'] = $formattedResults;
+      }
 
       // Create text response using WebSearchFormatter
       $formatter = new WebSearchFormatter($this->debug);
-      $formatted = $formatter->format([
-        'type' => 'web_search_response',
-        'query' => $query,
-        'ai_overview' => $aiOverview,  // Pass AI Overview to formatter
-        'results' => $formattedResults,
-      ]);
-      $textResponse = $formatted['content'] ?? '';
+      
+      // Log formatterData keys before calling format()
+      if ($this->debug) {
+        error_log("[INFO PlanExecutor::executeWebSearch] formatterData keys BEFORE format(): " . implode(', ', array_keys($formatterData)));
 
+        if (isset($formatterData['shopping_results'])) {
+          error_log("[INFO PlanExecutor::executeWebSearch] shopping_results count: " . count($formatterData['shopping_results']));
+        }
+      }
+      $formatted = $formatter->format($formatterData);
+      
+      // Log formatted result keys
+      if ($this->debug) {
+        error_log("[INFO PlanExecutor::executeWebSearch] formatted result keys: " . implode(', ', array_keys($formatted)));
+      }
+
+      $textResponse = $formatted['content'] ?? '';
+      
+      // Log textResponse status
+      if ($this->debug) {
+        error_log("[INFO PlanExecutor::executeWebSearch] textResponse is empty: " . (empty($textResponse) ? 'YES' : 'NO'));
+
+        if (!empty($textResponse)) {
+          error_log("[INFO PlanExecutor::executeWebSearch] textResponse length: " . strlen($textResponse));
+          error_log("[INFO PlanExecutor::executeWebSearch] textResponse first 100 chars: " . substr($textResponse, 0, 100));
+        }
+      }
       if ($this->debug) {
         $this->securityLogger->logSecurityEvent(
           "Web search completed: " . count($formattedResults) . " results found" . 

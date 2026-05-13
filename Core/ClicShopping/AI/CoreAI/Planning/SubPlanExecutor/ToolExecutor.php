@@ -14,7 +14,7 @@ namespace ClicShopping\AI\CoreAI\Planning\SubPlanExecutor;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Metrics\CalculatorTool;
 use ClicShopping\AI\DomainsAI\WebSearch\Cache\SearchCacheManager;
-use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
+use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 
 /**
  * ToolExecutor Class
@@ -24,7 +24,7 @@ use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
  *
  * Responsibilities:
  * - Execute calculator operations
- * - Execute web searches
+ * - Execute web searches via WebSearchFacade (unified engine)
  * - Check tool availability
  * - Handle tool errors
  * - Manage search cache
@@ -35,7 +35,7 @@ class ToolExecutor
   private SecurityLogger $logger;
   private bool $debug;
   private ?CalculatorTool $calculatorTool = null;
-  private ?WebSearchTool $webSearchTool = null;
+  private ?WebSearchFacade $webSearchFacade = null;
   private ?SearchCacheManager $cacheManager = null;
 
   /**
@@ -107,7 +107,7 @@ class ToolExecutor
   {
     try {
       if (!$this->isToolAvailable('web_search')) {
-        throw new \Exception("Web search tool not available");
+        throw new \Exception("Web search facade not available");
       }
 
       if ($this->debug) {
@@ -118,7 +118,7 @@ class ToolExecutor
       }
 
       // Check cache first
-      $cachedResult = $this->cacheManager->get($query); // not worl to check
+      $cachedResult = $this->cacheManager->get($query);
       if ($cachedResult !== null) {
         if ($this->debug) {
           $this->logger->logSecurityEvent("Web search result from cache", 'info');
@@ -126,8 +126,8 @@ class ToolExecutor
         return $cachedResult;
       }
 
-      // Execute search
-      $result = $this->webSearchTool->search($query);
+      // Execute search via WebSearchFacade
+      $result = $this->webSearchFacade->search($query, []);
 
       // Cache result
       $formattedResult = [
@@ -158,7 +158,7 @@ class ToolExecutor
       case 'calculator':
         return $this->calculatorTool !== null;
       case 'web_search':
-        return $this->webSearchTool !== null;
+        return $this->webSearchFacade !== null;
       default:
         return false;
     }
@@ -187,7 +187,7 @@ class ToolExecutor
   }
 
   /**
-   * Initialize web search tool
+   * Initialize web search facade
    *
    * @return void
    */
@@ -203,17 +203,17 @@ class ToolExecutor
     if (!empty($serpApiKey)) {
       try {
         putenv('SERP_API_KEY=' . $serpApiKey);
-        $this->webSearchTool = new WebSearchTool();
+        $this->webSearchFacade = new WebSearchFacade();
         
         if ($this->debug) {
-          $this->logger->logSecurityEvent("WebSearchTool initialized", 'info');
+          $this->logger->logSecurityEvent("WebSearchFacade initialized", 'info');
         }
       } catch (\Exception $e) {
-        $this->webSearchTool = null;
+        $this->webSearchFacade = null;
         
         if ($this->debug) {
           $this->logger->logSecurityEvent(
-            "WebSearchTool initialization failed: " . $e->getMessage(),
+            "WebSearchFacade initialization failed: " . $e->getMessage(),
             'warning'
           );
         }

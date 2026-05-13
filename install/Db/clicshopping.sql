@@ -384,7 +384,7 @@ INSERT INTO administrator_menu_description VALUES(145, 'Succès de commande', 2)
 INSERT INTO administrator_menu_description VALUES(146, 'Contact us', 1);
 INSERT INTO administrator_menu_description VALUES(146, 'Nous contacter', 2);
 INSERT INTO administrator_menu_description VALUES(150, 'Tell a friend', 1);
-INSERT INTO administrator_menu_description VALUES(150, 'Envoyer à  un ami', 2);
+INSERT INTO administrator_menu_description VALUES(150, 'Envoyer à un ami', 2);
 INSERT INTO administrator_menu_description VALUES(152, 'Reviews modules', 1);
 INSERT INTO administrator_menu_description VALUES(152, 'Commentaires', 2);
 INSERT INTO administrator_menu_description VALUES(154, 'Advanced search', 1);

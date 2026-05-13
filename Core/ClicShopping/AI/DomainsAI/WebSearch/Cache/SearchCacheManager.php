@@ -99,7 +99,13 @@ class SearchCacheManager
         return false;
       }
 
-      $content = $this->formatContentForStorage($query, $results);
+      // Deduplicate shopping results before caching
+      if (isset($results['shopping_results']) && is_array($results['shopping_results'])) {
+        $results['shopping_results'] = $this->deduplicateShoppingResults($results['shopping_results']);
+      }
+
+      // Format content using JSON v2.0 format
+      $content = $this->formatContentForStorageV2($query, $results, $qualityScore);
 
       if (empty(trim($content))) {
         if ($this->debug) {
@@ -126,6 +132,8 @@ class SearchCacheManager
         'total_results' => $results['total_results'] ?? 0,
         'date_cached' => date('Y-m-d H:i:s'),
         'has_ai_overview' => $results['metadata']['has_ai_overview'] ?? false,
+        'cache_format' => 'json_v2.0',
+        'engine_type' => $results['metadata']['mode_type'] ?? ($results['metadata']['search_engine'] ?? 'serpapi'),
       ];
 
       // Preserve AI Overview data in metadata
@@ -136,6 +144,14 @@ class SearchCacheManager
 
       if (!empty($metadata)) {
         $document->metadata = array_merge($document->metadata, $metadata);
+      }
+
+      // Log cache format used
+      if ($this->debug) {
+        $this->logger->logSecurityEvent(
+          "Storing cache in JSON v2.0 format (engine_type: {$document->metadata['engine_type']})",
+          'info'
+        );
       }
 
       $estimatedTokens = $this->estimateTokenCount($content);
@@ -220,13 +236,30 @@ class SearchCacheManager
       $formatted = [];
 
       foreach ($results as $doc) {
+        // Detect cache format
+        $cacheFormat = $doc->metadata['cache_format'] ?? 'legacy_text';
+        
+        // Parse content based on format
+        if ($cacheFormat === 'json_v2.0') {
+          $parsedContent = $this->parseJsonV2Content($doc->content);
+        } else {
+          $parsedContent = $this->parseLegacyTextContent($doc->content);
+        }
+
         $result = [
           'content' => $doc->content,
           'original_query' => $doc->metadata['original_query'] ?? '',
           'quality_score' => $doc->metadata['quality_score'] ?? 0,
           'similarity_score' => $doc->metadata['score'] ?? 0,
           'usage_count' => $doc->metadata['usage_count'] ?? 0,
+          'cache_format' => $cacheFormat,
+          'engine_type' => $doc->metadata['engine_type'] ?? 'unknown',
         ];
+
+        // Merge parsed content
+        if ($parsedContent) {
+          $result = array_merge($result, $parsedContent);
+        }
 
         // Include AI Overview data if present
         if (isset($doc->metadata['has_ai_overview']) && $doc->metadata['has_ai_overview'] === true) {
@@ -246,6 +279,12 @@ class SearchCacheManager
 
       if ($this->debug) {
         $this->logger->logSecurityEvent("Cache hit: Found " . count($formatted) . " results for query", 'info');
+        
+        // Log cache format distribution
+        $formatCounts = array_count_values(array_column($formatted, 'cache_format'));
+        foreach ($formatCounts as $format => $count) {
+          $this->logger->logSecurityEvent("Cache format used: {$format} ({$count} results)", 'info');
+        }
       }
 
       return $formatted;
@@ -257,7 +296,172 @@ class SearchCacheManager
   }
 
   /**
-   * Formats content for storage
+   * Formats content for storage using JSON v2.0 format
+   *
+   * @param string $query Original query
+   * @param array $results Search results
+   * @param float $qualityScore Calculated quality score
+   * @return string JSON formatted content
+   */
+  private function formatContentForStorageV2(string $query, array $results, float $qualityScore): string
+  {
+    $jsonData = [
+      'version' => '2.0',
+      'query' => $query,
+      'ai_overview' => $results['ai_overview'] ?? null,
+      'organic_results' => $results['items'] ?? [],
+      'shopping_results' => $results['shopping_results'] ?? [],
+      'metadata' => [
+        'mode_type' => $results['metadata']['mode_type'] ?? 'unknown',
+        'engines_used' => $results['metadata']['engines_used'] ?? [],
+        'routing_method' => $results['metadata']['routing_method'] ?? 'unknown',
+        'search_engine' => $results['metadata']['search_engine'] ?? 'serpapi',
+        'has_ai_overview' => $results['metadata']['has_ai_overview'] ?? false,
+        'total_results' => $results['total_results'] ?? 0,
+      ],
+      'quality_score' => $qualityScore,
+      'cached_at' => date('c'), // ISO 8601 format
+    ];
+
+    return json_encode($jsonData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+  }
+
+  /**
+   * Parses JSON v2.0 format content
+   *
+   * @param string $content JSON content
+   * @return array|null Parsed data or null on failure
+   */
+  private function parseJsonV2Content(string $content): ?array
+  {
+    try {
+      $data = json_decode($content, true);
+      
+      if (!$data || !isset($data['version']) || $data['version'] !== '2.0') {
+        return null;
+      }
+
+      return [
+        'query' => $data['query'] ?? '',
+        'ai_overview' => $data['ai_overview'] ?? null,
+        'organic_results' => $data['organic_results'] ?? [],
+        'shopping_results' => $data['shopping_results'] ?? [],
+        'metadata' => $data['metadata'] ?? [],
+        'cached_quality_score' => $data['quality_score'] ?? 0,
+        'cached_at' => $data['cached_at'] ?? null,
+      ];
+
+    } catch (\Exception $e) {
+      if ($this->debug) {
+        $this->logger->logSecurityEvent(
+          "Error parsing JSON v2.0 content: " . $e->getMessage(),
+          'warning'
+        );
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Parses legacy text format content
+   *
+   * @param string $content Text content
+   * @return array|null Parsed data or null on failure
+   */
+  private function parseLegacyTextContent(string $content): ?array
+  {
+    try {
+      // Extract query
+      $query = '';
+      if (preg_match('/^Query:\s*(.+?)$/m', $content, $matches)) {
+        $query = trim($matches[1]);
+      }
+
+      // Extract AI Overview
+      $aiOverview = null;
+      if (preg_match('/AI Overview:\s*\n(.+?)(?=\n\n|$)/s', $content, $matches)) {
+        $aiOverview = [
+          'full_summary' => trim($matches[1]),
+        ];
+      }
+
+      // Extract organic results (simplified)
+      $organicResults = [];
+      if (preg_match_all('/\d+\.\s+(.+?)\n\s+(.+?)\n\s+Source:\s+(.+?)(?=\n\n|\n\d+\.|\z)/s', $content, $matches, PREG_SET_ORDER)) {
+        foreach ($matches as $match) {
+          $organicResults[] = [
+            'title' => trim($match[1]),
+            'snippet' => trim($match[2]),
+            'source' => trim($match[3]),
+          ];
+        }
+      }
+
+      return [
+        'query' => $query,
+        'ai_overview' => $aiOverview,
+        'organic_results' => $organicResults,
+        'shopping_results' => [], // Legacy format doesn't have shopping results
+        'metadata' => [
+          'mode_type' => 'legacy',
+          'engines_used' => ['legacy'],
+        ],
+      ];
+
+    } catch (\Exception $e) {
+      if ($this->debug) {
+        $this->logger->logSecurityEvent(
+          "Error parsing legacy text content: " . $e->getMessage(),
+          'warning'
+        );
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Deduplicates shopping results using normalized title + price hashing
+   *
+   * @param array $shoppingResults Shopping results array
+   * @return array Deduplicated results
+   */
+  private function deduplicateShoppingResults(array $shoppingResults): array
+  {
+    $seen = [];
+    $deduplicated = [];
+
+    foreach ($shoppingResults as $result) {
+      $title = $result['title'] ?? '';
+      $price = $result['extracted_price'] ?? $result['price'] ?? '';
+
+      // Normalize title: lowercase, remove punctuation, remove extra spaces
+      $normalizedTitle = strtolower($title);
+      $normalizedTitle = preg_replace('/[^\w\s]/', '', $normalizedTitle);
+      $normalizedTitle = preg_replace('/\s+/', ' ', $normalizedTitle);
+      $normalizedTitle = trim($normalizedTitle);
+
+      // Generate hash
+      $hash = md5($normalizedTitle . '|' . $price);
+
+      if (!isset($seen[$hash])) {
+        $seen[$hash] = true;
+        $deduplicated[] = $result;
+      }
+    }
+
+    if ($this->debug && count($shoppingResults) > count($deduplicated)) {
+      $removed = count($shoppingResults) - count($deduplicated);
+      $this->logger->logSecurityEvent(
+        "Deduplicated shopping results: removed {$removed} duplicates",
+        'info'
+      );
+    }
+
+    return $deduplicated;
+  }
+
+  /**
+   * Formats content for storage (legacy method - kept for backward compatibility)
    *
    * @param string $query Original query
    * @param array $results Search results
@@ -327,9 +531,15 @@ class SearchCacheManager
   {
     $score = 0.5;
 
-    // AI Overview bonus
+    // AI Overview bonus (30%)
     if (isset($results['metadata']['has_ai_overview']) && $results['metadata']['has_ai_overview'] === true) {
       $score += 0.3;
+    }
+
+    // Shopping results bonus (40% - scaled by count)
+    if (isset($results['shopping_results']) && is_array($results['shopping_results'])) {
+      $shoppingCount = count($results['shopping_results']);
+      $score += min($shoppingCount / 10, 1.0) * 0.4;
     }
 
     if (isset($results['featured_snippet']) && !empty($results['featured_snippet']['answer'])) {
@@ -342,9 +552,14 @@ class SearchCacheManager
         $relevantCount++;
       }
     }
+    $score += min($relevantCount / 10, 1.0) * 0.3;
 
-    $score += min($relevantCount * 0.1, 0.3);
+    // Hybrid mode bonus (10%)
+    if (isset($results['metadata']['engines_used']) && is_array($results['metadata']['engines_used']) && count($results['metadata']['engines_used']) > 1) {
+      $score += 0.1;
+    }
 
+    // High result count bonus
     if (($results['total_results'] ?? 0) > 100) {
       $score += 0.1;
     }

@@ -85,7 +85,7 @@ class ComplexQueryFormatter extends AbstractFormatter
     $question = $results['question'] ?? $results['query'] ?? 'Unknown request';
 
     $output = "<div class='complex-query-results'>";
-    $output .= "<h4>" . $this->language->getDef('text_rag_complex_query_results_for') . " " . htmlspecialchars($question) . "</h4>";
+    $output .= '<h4>' . $this->language->getDef('text_rag_complex_query_results_for', ['query' => $question]) .'</h4>';
 
     // Display mixed source attribution (🔀 Mixed)
     if (isset($results['source_attribution'])) {

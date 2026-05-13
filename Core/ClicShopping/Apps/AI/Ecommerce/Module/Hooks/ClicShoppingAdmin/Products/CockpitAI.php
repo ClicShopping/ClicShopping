@@ -99,7 +99,8 @@
         try {
           $db = Registry::get('Db');
 
-          $query = $db->prepare('SELECT metadata, date_modified 
+          $query = $db->prepare('SELECT metadata, 
+                                        date_modified 
                                  FROM :table_products_cockpit_ai_embedding  
                                  WHERE entity_id = :entity_id 
                                  AND language_id = :language_id 

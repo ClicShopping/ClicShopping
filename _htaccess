@@ -45,7 +45,6 @@
 #RewriteCond %{REQUEST_FILENAME} !-d
 #RewriteRule ^(.*)$ index.php/$1 [L]
 
-TraceEnable off
 #log
 #RewriteLog /path/to/rewrite.log
 #RewriteLogLevel 3

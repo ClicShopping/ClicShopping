@@ -257,7 +257,9 @@
 
         $this->saveAdjustmentLog($ruleKey, $oldValue, $newValue, $stats['sample_size'], $stats['avg_delta_y']);
 
-        if ($this->debug) error_log("[RuleAdjuster] $ruleKey: $oldValue → $newValue");
+        if ($this->debug) {
+          error_log("[RuleAdjuster] $ruleKey: $oldValue → $newValue");
+        }
 
       } catch (\Throwable $e) {
         error_log("[RuleAdjuster] writeThreshold error $ruleKey: " . $e->getMessage());

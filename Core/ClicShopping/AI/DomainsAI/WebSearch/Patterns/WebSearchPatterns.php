@@ -144,4 +144,15 @@ class WebSearchPatterns
     '/\bcan\s+i\s+(find|buy|get)/i',
     '/\bwhere\s+(?:can|to)\s+(find|buy|get)/i'
   ];
+
+  /**
+   *
+   * @var array|string[]
+   * Initialize stopwords for title normalization
+   */
+  public static array $stopWordTitle = [
+    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+    'new', 'official', 'original'
+  ];
+
 }

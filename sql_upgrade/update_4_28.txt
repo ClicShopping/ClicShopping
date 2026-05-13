@@ -10,3 +10,4 @@ VALUES (1, 0, 0, 0, 0, '{"message": "FAQ tables migration completed successfully
 
 INSERT INTO clic_cron VALUES(9, 'seoFaqBatchProcessor', 'Batch processes products without SEO/FAQ content - generates SEO metadata and FAQ for products that need them', 'day', 'seoFaqBatchProcessor', 0, NOW(), NOW());
 
+ALTER TABLE `clic_seo_serp_reports` CHANGE `updated_at` `updated_at` DATETIME NULL DEFAULT NULL COMMENT 'Timestamp of the last update - auto-refreshed on every modification';

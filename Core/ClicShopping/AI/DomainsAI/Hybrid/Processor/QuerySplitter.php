@@ -14,7 +14,7 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Processor;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\AI\DomainsAI\Analytics\Patterns\QuerySplitterPatterns;
+use ClicShopping\AI\DomainsAI\Hybrid\Patterns\QuerySplitterPatterns;
 use ClicShopping\AI\Config\DomainConfig;
 
 /**
@@ -110,6 +110,14 @@ class QuerySplitter extends BaseQueryProcessor
     } else {
       $query = $input;
       $intent = $context['intent'] ?? [];
+    }
+
+    // Check if query is price comparison - handle first (Requirements 1, 5)
+    if ($this->isPriceComparisonQuery($query, $intent)) {
+      if ($this->debug) {
+        $this->logInfo("Detected price comparison query, using price comparison splitting");
+      }
+      return $this->decomposePriceComparisonQuery($query, $intent);
     }
 
     // If the intent contains temporal metadata, use temporal splitting
@@ -704,4 +712,142 @@ class QuerySplitter extends BaseQueryProcessor
       return $prompt;
     }
   }
+  
+
+  /**
+   * Check if query is a price comparison query (Requirements 1, 5)
+   *
+   * Detects price comparison patterns in query and checks intent_type for 'price_comparison'.
+   * Uses both pattern matching and intent analysis for robust detection.
+   *
+   * @param string $query Query to analyze
+   * @param array $intent Intent analysis (optional)
+   * @return bool True if price comparison query detected
+   */
+  private function isPriceComparisonQuery(string $query, array $intent = []): bool
+  {
+    try {
+      // Check intent type first (most reliable)
+      if (isset($intent['intent_type']) && $intent['intent_type'] === 'price_comparison') {
+        if ($this->debug) {
+          $this->logInfo("Price comparison detected via intent_type");
+        }
+        return true;
+      }
+
+      // Delegate pattern matching to QuerySplitterPatterns
+      $isMatch = QuerySplitterPatterns::isPriceComparisonQuery($query);
+      
+      if ($isMatch && $this->debug) {
+        $this->logInfo("Price comparison detected via pattern");
+      }
+
+      return $isMatch;
+    } catch (\Exception $e) {
+      $this->logError("Error in isPriceComparisonQuery", $e, ['query' => $query]);
+      return false;
+    }
+  }
+
+  /**
+   * Decompose price comparison query into Analytics + WebSearch sub-queries (Requirements 1, 5)
+   *
+   * Creates two sub-queries:
+   * 1. Analytics: "Get price for {product}" - retrieves internal product price from database
+   * 2. WebSearch: "{product} price competitors" - retrieves competitor prices from web
+   *
+   * @param string $query Original query
+   * @param array $intent Intent analysis
+   * @return array Array of sub-queries with type and priority
+   */
+  private function decomposePriceComparisonQuery(string $query, array $intent): array
+  {
+    try {
+      // Extract product name from query
+      $productName = $this->extractProductName($query);
+
+      if (empty($productName)) {
+        if ($this->debug) {
+          $this->logWarning("Could not extract product name, falling back to hybrid split");
+        }
+        return $this->splitHybridQuery($query, $intent);
+      }
+
+      if ($this->debug) {
+        $this->logInfo("Decomposing price comparison query", [
+          'original_query' => $query,
+          'product_name' => $productName,
+        ]);
+      }
+
+      // Create sub-queries
+      $subQueries = [
+        [
+          'query' => "Get price for {$productName}",
+          'type' => 'analytics',
+          'confidence' => 0.95,
+          'priority' => 1,
+          'intent' => 'product_price_lookup',
+          'original_query' => $query,
+          'product_name' => $productName,
+        ],
+        [
+          'query' => "{$productName} price competitors",
+          'type' => 'web_search',
+          'confidence' => 0.95,
+          'priority' => 1, // Same priority for parallel execution
+          'intent' => 'competitor_price_search',
+          'original_query' => $query,
+          'product_name' => $productName,
+        ],
+      ];
+
+      if ($this->debug) {
+        $this->logInfo("Price comparison query decomposed", [
+          'sub_query_count' => count($subQueries),
+          'analytics_query' => $subQueries[0]['query'],
+          'websearch_query' => $subQueries[1]['query'],
+        ]);
+      }
+
+      return $subQueries;
+
+    } catch (\Exception $e) {
+      $this->logError("Error in decomposePriceComparisonQuery", $e, ['query' => $query]);
+      // Fallback to hybrid split
+      return $this->splitHybridQuery($query, $intent);
+    }
+  }
+
+  /**
+   * Extract product name from price comparison query (Requirement 5)
+   *
+   * Removes common phrases like "give", "show", "price", "compare", etc.
+   * and returns the cleaned product name.
+   * 
+   * Delegates to QuerySplitterPatterns for pattern-based extraction.
+   *
+   * @param string $query Query to extract product name from
+   * @return string Cleaned product name
+   */
+  private function extractProductName(string $query): string
+  {
+    try {
+      // Delegate to QuerySplitterPatterns for pattern-based extraction
+      $productName = QuerySplitterPatterns::extractProductName($query);
+
+      if ($this->debug) {
+        $this->logInfo("Extracted product name", [
+          'original_query' => $query,
+          'product_name' => $productName,
+        ]);
+      }
+
+      return $productName;
+    } catch (\Exception $e) {
+      $this->logError("Error in extractProductName", $e, ['query' => $query]);
+      return $query; // Fallback to original query
+    }
+  }
+  
 }

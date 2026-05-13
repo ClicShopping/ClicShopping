@@ -129,6 +129,10 @@ class ResultSynthesizer
    */
   private function validateStepResults(array $stepResults): array
   {
+    if($this->debug) {
+      error_log("[ResultSynthesizer::validateStepResults] CALLED with " . count($stepResults) . " step results");
+    }
+
     $validatedResults = [];
     $validationFailures = 0;
 
@@ -139,6 +143,10 @@ class ResultSynthesizer
 
       $type = $result['type'] ?? 'unknown';
       $isValid = false;
+
+      if($this->debug) {
+        error_log("[ResultSynthesizer::validateStepResults] Validating step {$stepId}: type={$type}");
+      }
 
       // Validate based on type
       switch ($type) {
@@ -156,6 +164,10 @@ class ResultSynthesizer
         case 'web_search_response':
         case 'web':
           $isValid = $this->validator->validateWebResult($result);
+
+          if($this->debug) {
+            error_log("[ResultSynthesizer::validateStepResults] validateWebResult returned: " . ($isValid ? 'TRUE' : 'FALSE'));
+          }
           break;
 
         case 'hybrid':
@@ -186,14 +198,26 @@ class ResultSynthesizer
 
       if ($isValid) {
         $validatedResults[$stepId] = $result;
+        if($this->debug) {
+          error_log("[ResultSynthesizer::validateStepResults] Step {$stepId} PASSED validation");
+        }
       } else {
         $validationFailures++;
+	
+        if($this->debug) {
+          error_log("[ResultSynthesizer::validateStepResults] Step {$stepId} FAILED validation");
+        }
+
         $this->logger->logSecurityEvent(
           "Step {$stepId} validation failed for type '{$type}'",
           'warning',
           ['step_id' => $stepId, 'type' => $type]
         );
       }
+    }
+
+    if($this->debug) {
+      error_log("[ResultSynthesizer::validateStepResults] Returning " . count($validatedResults) . " validated results (failures: {$validationFailures})");
     }
 
     // Log validation summary
@@ -213,12 +237,24 @@ class ResultSynthesizer
    * - Filters out failed steps
    * - Logs failed steps for debugging
    * - Continues aggregation with successful results only
+   *  -Handle optional Analytics failures
    *
    * @param array $stepResults Array of step results
    * @return array Aggregated result
    */
   public function aggregateStepResults(array $stepResults): array
   {
+    // CRITICAL DEBUG: Log entry and step count
+    if($this->debug) {
+      error_log("[ResultSynthesizer::aggregateStepResults] CALLED with " . count($stepResults) . " step results");
+    }
+
+    foreach ($stepResults as $stepId => $result) {
+      if (is_array($result)) {
+        error_log("[ResultSynthesizer::aggregateStepResults] Step {$stepId}: type=" . ($result['type'] ?? 'NO TYPE'));
+      }
+    }
+    
     $aggregated = [
       'text_responses' => [],
       'data' => [],
@@ -227,7 +263,8 @@ class ResultSynthesizer
       'web_results' => [],
       'analytics_results' => [],
       'semantic_results' => [],
-      'source_attributions' => [], // Collect source attributions
+      'source_attributions' => [],
+      'optional_failures' => [],
     ];
     
     $textResponseHashes = [];
@@ -239,7 +276,35 @@ class ResultSynthesizer
       if (!is_array($result)) {
         continue;
       }
+      
+      // Check if this is an optional failure
+      $isOptionalFailure = isset($result['optional']) && $result['optional'] === true;
+      
       if (isset($result['failed']) && $result['failed'] === true) {
+        // If it's an optional failure, track it but don't skip
+        if ($isOptionalFailure) {
+          $aggregated['optional_failures'][] = [
+            'step_id' => $stepId,
+            'reason' => $result['reason'] ?? 'unknown',
+            'step_type' => $result['step_type'] ?? 'unknown',
+          ];
+          
+          if ($this->debug) {
+            $this->logger->logSecurityEvent(
+              "Analytics optional failure in step {$stepId} - continuing with other steps",
+              'info',
+              [
+                'reason' => $result['reason'] ?? 'unknown',
+                'step_type' => $result['step_type'] ?? 'unknown',
+              ]
+            );
+          }
+          
+          // Continue to next step without adding to failedSteps
+          continue;
+        }
+        
+        // Regular failure - skip this step
         $failedSteps[] = [
           'step_id' => $stepId,
           'error' => $result['error'] ?? 'Unknown error',
@@ -386,6 +451,12 @@ class ResultSynthesizer
         case 'web_search':
         case 'web_search_response':
         case 'web':
+          if($this->debug) {
+            error_log("[ResultSynthesizer] web_search result keys: " . implode(', ', array_keys($result)));
+            error_log("[ResultSynthesizer] Has 'result' key: " . (isset($result['result']) ? 'YES' : 'NO'));
+            error_log("[ResultSynthesizer] Has 'results' key: " . (isset($result['results']) ? 'YES' : 'NO'));
+            error_log("[ResultSynthesizer] Has 'text_response' key: " . (isset($result['text_response']) ? 'YES' : 'NO'));
+          }
           // Web search results have 'result' (singular) not 'results' (plural)
           if (isset($result['result'])) {
             $aggregated['web_results'][] = $result;
@@ -410,6 +481,10 @@ class ResultSynthesizer
           // Extract text_response if available
           if (isset($result['text_response']) && !empty($result['text_response'])) {
             $addTextResponse($result['text_response']);
+          }
+          
+          if($this->debug) {
+            error_log("[ResultSynthesizer] web_results count after processing: " . count($aggregated['web_results']));
           }
           break;
 
@@ -538,6 +613,10 @@ class ResultSynthesizer
    * 3. Type Determination: Determines the primary result type based on the mix of
    *    sub-query types (analytics_response, semantic_results, mixed, web_search_response).
    *
+   * Handle optional Analytics failures
+   * 4. Optional Failure Handling: When Analytics fails optionally (target_site specified),
+   *    uses WebSearch results as primary response instead of showing error.
+   *
    * @param array $aggregated Aggregated results
    * @param array $entityMetadata Entity metadata
    * @return array Final result
@@ -547,14 +626,62 @@ class ResultSynthesizer
     $hasAnalytics = !empty($aggregated['analytics_results']);
     $hasSemantic = !empty($aggregated['semantic_results']);
     $hasWeb = !empty($aggregated['web_results']);
+    $hasOptionalFailures = !empty($aggregated['optional_failures']);
 
     // ALWAYS log this (not conditional on debug) to diagnose the issue
     if($this->debug) {
       error_log("[INFO : ANALYSE] formatFinalResult: hasAnalytics=" . ($hasAnalytics ? 'YES' : 'NO') .
         ", hasSemantic=" . ($hasSemantic ? 'YES' : 'NO') .
         ", hasWeb=" . ($hasWeb ? 'YES' : 'NO') .
+        ", hasOptionalFailures=" . ($hasOptionalFailures ? 'YES' : 'NO') .
         ", analytics_count=" . count($aggregated['analytics_results'] ?? []) .
         ", semantic_count=" . count($aggregated['semantic_results'] ?? []));
+    }
+    
+    // Handle optional Analytics failure with WebSearch results
+    // If Analytics failed optionally AND we have WebSearch results, use WebSearch as primary
+    if ($hasOptionalFailures && $hasWeb && !$hasAnalytics) {
+      if ($this->debug) {
+        $this->logger->logSecurityEvent(
+          "Analytics optional failure - using WebSearch result only",
+          'info',
+          [
+            'optional_failures' => $aggregated['optional_failures'],
+            'web_results_count' => count($aggregated['web_results']),
+          ]
+        );
+      }
+      
+      // Extract WebSearch result
+      $firstWebResult = $aggregated['web_results'][0];
+      
+      // Build result with WebSearch data
+      $finalResult = [
+        'type' => 'web_search_only',
+        'text_response' => $firstWebResult['text_response'] ?? '',
+        'data' => $firstWebResult['results'] ?? [],
+        'sources' => [],
+        'analytics_status' => 'optional_failure',
+        'analytics_reason' => $aggregated['optional_failures'][0]['reason'] ?? 'unknown',
+        'optional_failures' => $aggregated['optional_failures'],
+      ];
+      
+      // Add source attribution from WebSearch
+      if (isset($firstWebResult['source_attribution'])) {
+        $finalResult['source_attribution'] = $firstWebResult['source_attribution'];
+      }
+      
+      // Add response field for compatibility
+      if (!empty($finalResult['text_response'])) {
+        $finalResult['response'] = $finalResult['text_response'];
+      }
+      
+      // Add web results metadata
+      if (isset($firstWebResult['metadata'])) {
+        $finalResult['metadata'] = $firstWebResult['metadata'];
+      }
+      
+      return $finalResult;
     }
 
     // If we have both analytics and semantic results, use intelligent combination
@@ -1341,9 +1468,12 @@ class ResultSynthesizer
         break;
 
       case 'web_search_response':
+      case 'web_search_only':
       case 'web':
-        // Web search results must have sources
-        if (empty($finalResult['sources']) && empty($finalResult['data'])) {
+        // Web search results must have sources, data, OR a pre-formatted text_response
+        // (e.g., Google Trends returns a Chart.js HTML block — no separate sources/data rows)
+        $hasTextContent = !empty($finalResult['text_response']) || !empty($finalResult['response']);
+        if (!$hasTextContent && empty($finalResult['sources']) && empty($finalResult['data'])) {
           $sourcesStatus = isset($finalResult['sources']) ? 'empty' : 'not set';
           $dataStatus = isset($finalResult['data']) ? 'empty' : 'not set';
           $errors[] = "Web search result missing sources and data (sources: {$sourcesStatus}, data: {$dataStatus})";

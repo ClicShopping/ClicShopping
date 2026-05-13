@@ -130,6 +130,7 @@
       // -- Live SEO Report (crawl current page) --
       $seoReport = new SeoReport($linkUrl, $baseUrl);
       $seoData   = $seoReport->getSeoData(false, 'product');
+
       if ($seoData['isAlive']) {
         if (method_exists($seoReport, 'getHTMLReport')) {
           $reportHtml = $seoReport->getHTMLReport($seoData);
@@ -730,6 +731,7 @@
     private function renderHistory(array $history, int $languageId = 0): string
     {
       $langName = (string)$languageId;
+
       try {
         foreach ($this->lang->getAll() as $l) {
           if ((int)($l['id'] ?? 0) === $languageId) {

@@ -57,6 +57,20 @@ class SubTaskPlannerWebSearch
   /**
    * Creates le plan de recherche web (1 étape simple)
    * 
+   * 🔧 FIX (2026-05-10): Extract product name from intent for price_comparison queries
+   * 
+   * Problem: For queries like "prix amazon iphone 17 pro", the system was sending
+   * "iphone 17 pro price" to Amazon, causing suboptimal results. Amazon search works
+   * better with just the product name.
+   * 
+   * Solution: For price_comparison intent, use the extracted product name from intent
+   * instead of the full query. This ensures clean queries to shopping engines.
+   * 
+   * Examples:
+   * - "prix amazon iphone 17 pro" → search_query: "iPhone 17 Pro"
+   * - "donne moi le prix de l'iPhone 17 Pro sur amazon" → search_query: "iPhone 17 Pro"
+   * - "compare iPhone 17 Pro prices on amazon" → search_query: "iPhone 17 Pro"
+   * 
    * @param array $intent Intent analysis result
    * @param string $query Original query
    * @return array Array of TaskStep objects
@@ -69,11 +83,32 @@ class SubTaskPlannerWebSearch
 
     $steps = [];
 
+    // 🔧 FIX (2026-05-10): Extract clean search query for price_comparison
+    // For price_comparison queries, use the extracted product name from intent
+    // instead of the full query to avoid sending "price" keywords to shopping engines
+    $searchQuery = $query; // Default: use full query
+    
+    if (isset($intent['intent']) && $intent['intent'] === 'price_comparison') {
+      // Check if intent has extracted product name
+      if (!empty($intent['product'])) {
+        $searchQuery = $intent['product'];
+        
+        if ($this->debug) {
+          $this->logDebug("Price comparison detected - using extracted product name: '{$searchQuery}' (original query: '{$query}')");
+        }
+      } else {
+        // Fallback: use full query if product extraction failed
+        if ($this->debug) {
+          $this->logDebug("Price comparison detected but no product extracted - using full query: '{$query}'");
+        }
+      }
+    }
+
     // Step unique: Recherche web via SERAPI
     $step1 = new TaskStep(
       'step_1',
       'web_search',
-      $query,
+      $searchQuery, // Use extracted product name for price_comparison, full query otherwise
       [
         'intent' => $intent,
         'search_type' => 'web_search',
@@ -85,12 +120,14 @@ class SubTaskPlannerWebSearch
         'depends_on' => [],
         'can_run_parallel' => false,
         'is_final' => true,
+        'search_query' => $searchQuery, // 🔧 FIX: Add explicit search_query metadata
+        'original_query' => $query, // Keep original query for reference
       ]
     );
     $steps[] = $step1;
 
     if ($this->debug) {
-      $this->logDebug("Created web search plan with " . count($steps) . " step");
+      $this->logDebug("Created web search plan with " . count($steps) . " step (search_query: '{$searchQuery}')");
     }
 
     return $steps;

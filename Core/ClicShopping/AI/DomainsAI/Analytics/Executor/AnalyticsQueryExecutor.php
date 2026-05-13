@@ -720,11 +720,27 @@ class AnalyticsQueryExecutor
       // Store entity in memory if found in results
       if ($entityId !== null && $entityType !== null && $this->conversationMemory !== null) {
         try {
-          $this->conversationMemory->setLastEntity((int)$entityId, $entityType);
+          //Extract entity name from results for context enrichment
+          $entityName = null;
+	  
+          if (!empty($results) && is_array($results[0])) {
+            // Try to find entity name in first result row
+            $firstRow = $results[0];
+            $nameFields = ['products_name', 'name', 'manufacturers_name', 'categories_name', 'title'];
+            foreach ($nameFields as $field) {
+              if (isset($firstRow[$field]) && !empty($firstRow[$field])) {
+                $entityName = $firstRow[$field];
+                break;
+              }
+            }
+          }
+          
+          $this->conversationMemory->setLastEntity((int)$entityId, $entityType, $entityName);
           
           if ($this->debug) {
+            $nameInfo = $entityName ? " (name: {$entityName})" : "";
             $this->logger->logSecurityEvent(
-              "Stored entity in memory from analytics: {$entityType} (ID: {$entityId})",
+              "Stored entity in memory from analytics: {$entityType} (ID: {$entityId}){$nameInfo}",
               'info'
             );
           }

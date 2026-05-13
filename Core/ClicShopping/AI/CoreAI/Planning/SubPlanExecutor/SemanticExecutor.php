@@ -10,8 +10,6 @@
 
 namespace ClicShopping\AI\CoreAI\Planning\SubPlanExecutor;
 
-
-use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\SubSemanticExecutor\SemanticSearchOrchestrator;

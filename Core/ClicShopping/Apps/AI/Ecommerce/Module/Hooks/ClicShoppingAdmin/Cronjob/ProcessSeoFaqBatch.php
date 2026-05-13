@@ -249,7 +249,9 @@ class ProcessSeoFaqBatch implements \ClicShopping\OM\Modules\HooksInterface
    */
   private function loadProgress(): array
   {
-    $Qprogress = $this->db->prepare('SELECT language_id, processed_count, updated_at 
+    $Qprogress = $this->db->prepare('SELECT language_id, 
+                                            processed_count, 
+                                            updated_at 
                                       FROM :table_seo_faq_batch_progress 
                                       WHERE status = :status
                                       ORDER BY id DESC
@@ -281,13 +283,14 @@ class ProcessSeoFaqBatch implements \ClicShopping\OM\Modules\HooksInterface
       'language_id' => $currentLanguage,
       'processed_count' => $processedCount,
       'status' => 'in_progress',
-      'updated_at' => date('Y-m-d H:i:s')
+      'updated_at' => 'now()'
     ];
 
     // Check if record exists for this language
     $Qcheck = $this->db->prepare('SELECT id FROM :table_seo_faq_batch_progress 
                                    WHERE language_id = :language_id 
-                                   AND status = :status');
+                                   AND status = :status
+                                   ');
     $Qcheck->bindInt(':language_id', $currentLanguage);
     $Qcheck->bindValue(':status', 'in_progress');
     $Qcheck->execute();

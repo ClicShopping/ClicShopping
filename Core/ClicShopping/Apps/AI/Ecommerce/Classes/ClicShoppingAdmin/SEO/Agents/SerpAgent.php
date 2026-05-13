@@ -17,11 +17,11 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCapability;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
-use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\TranslationServiceWrapper;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\LLMServiceWrapper;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Prompts\SerpAnalysisPrompts;
+use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 
 /**
  * SerpAgent
@@ -61,7 +61,7 @@ class SerpAgent implements ActorAgentInterface
     
     $this->translator = new TranslationServiceWrapper($this->debug);
     $this->llm = new LLMServiceWrapper($this->debug);
-    $this->cache = new Cache(true);   // T6.1: same instantiation as WebSearchTool
+    $this->cache = new Cache(true);
   }
 
   public function executeAction(Action $action): ActionResult
@@ -116,8 +116,8 @@ class SerpAgent implements ActorAgentInterface
       $queryEn = $this->translateToEnglish($query, $language);
 
       if ($this->debug) {
-        error_log("[SerpAgent] Original query: {$query}");
-        error_log("[SerpAgent] Translated query: {$queryEn}");
+        error_log("[INFO SerpAgent] Original query: {$query}");
+        error_log("[INFO SerpAgent] Translated query: {$queryEn}");
       }
 
       // Fetch SERP data
@@ -173,8 +173,8 @@ class SerpAgent implements ActorAgentInterface
       $output['error'] = $e->getMessage();
       
       if ($this->debug) {
-        error_log("[SerpAgent] Error: " . $e->getMessage());
-        error_log("[SerpAgent] Trace: " . $e->getTraceAsString());
+        error_log("[ERROR SerpAgent] Error: " . $e->getMessage());
+        error_log("[INFO SerpAgent] Trace: " . $e->getTraceAsString());
       }
     }
 
@@ -212,11 +212,18 @@ class SerpAgent implements ActorAgentInterface
       return $this->translator->translate($query, $fromLang, 'en');
     } catch (\Exception $e) {
       if ($this->debug) {
-        error_log("[SerpAgent] Translation failed: " . $e->getMessage());
+        error_log("[ERROR SerpAgent] Translation failed: " . $e->getMessage());
       }
       return $query; // Fallback to original
     }
   }
+
+
+
+
+
+
+
 
   /**
    * Fetch SERP data using WebSearchTool
@@ -227,22 +234,21 @@ class SerpAgent implements ActorAgentInterface
   private function fetchSerpData(string $query): array
   {
     try {
-      $webSearch = new WebSearchTool();
+      $webSearch = new WebSearchFacade();
 
       $searchOptions = [
-        'engine' => 'google',
         'max_results' => 10,
       ];
 
       if ($this->debug) {
-        error_log('[SerpAgent] Fetching SERP data for: ' . $query);
+        error_log('[INFO SerpAgent] Fetching SERP data for: ' . $query);
       }
 
       return $webSearch->search($query, $searchOptions);
 
     } catch (\Exception $e) {
       if ($this->debug) {
-        error_log("[SerpAgent] SERP fetch failed: " . $e->getMessage());
+        error_log("[ERROR SerpAgent] SERP fetch failed: " . $e->getMessage());
       }
 
       return [
@@ -264,7 +270,7 @@ class SerpAgent implements ActorAgentInterface
     // Check if AI Overview is present
     if (!isset($serpData['ai_overview']) || empty($serpData['ai_overview'])) {
       if ($this->debug) {
-        error_log("[SerpAgent] No AI Overview found in SERP data");
+        error_log("[INFO SerpAgent] No AI Overview found in SERP data");
       }
       return null;
     }
@@ -274,7 +280,7 @@ class SerpAgent implements ActorAgentInterface
     // Validate structure
     if (!is_array($aiOverview)) {
       if ($this->debug) {
-        error_log("[SerpAgent] AI Overview is not an array");
+        error_log("[ERROR SerpAgent] AI Overview is not an array");
       }
       return null;
     }
@@ -290,13 +296,13 @@ class SerpAgent implements ActorAgentInterface
     // Validate that we have content
     if (empty($extracted['full_summary']) && empty($extracted['text_blocks'])) {
       if ($this->debug) {
-        error_log("[SerpAgent] AI Overview has no content");
+        error_log("[INFO SerpAgent] AI Overview has no content");
       }
       return null;
     }
 
     if ($this->debug) {
-      error_log("[SerpAgent] AI Overview extracted successfully");
+      error_log("[INFO SerpAgent] AI Overview extracted successfully");
     }
 
     return $extracted;
@@ -386,7 +392,7 @@ class SerpAgent implements ActorAgentInterface
     float  $temperature,
     string $cacheKey = ''
   ): array {
-    // ── Cache read ────────────────────────────────────────────────────────────
+    // cache read
     if ($cacheKey !== '') {
       try {
         $cached = $this->cache->getCachedResponse($cacheKey);
@@ -394,14 +400,14 @@ class SerpAgent implements ActorAgentInterface
           $decoded = json_decode($cached, true);
           if (is_array($decoded)) {
             if ($this->debug) {
-              error_log("[SerpAgent] LLM cache HIT: {$cacheKey}");
+              error_log("[INFO SerpAgent] LLM cache HIT: {$cacheKey}");
             }
             return $decoded;
           }
         }
       } catch (\Throwable $e) {
         if ($this->debug) {
-          error_log("[SerpAgent] Cache read error ({$cacheKey}): " . $e->getMessage());
+          error_log("[ERROR SerpAgent] Cache read error ({$cacheKey}): " . $e->getMessage());
         }
       }
     }
@@ -422,11 +428,11 @@ class SerpAgent implements ActorAgentInterface
           self::SERP_CACHE_TTL
         );
         if ($this->debug) {
-          error_log("[SerpAgent] LLM cache WRITE: {$cacheKey}");
+          error_log("[INFO SerpAgent] LLM cache WRITE: {$cacheKey}");
         }
       } catch (\Throwable $e) {
         if ($this->debug) {
-          error_log("[SerpAgent] Cache write error ({$cacheKey}): " . $e->getMessage());
+          error_log("[ERROR SerpAgent] Cache write error ({$cacheKey}): " . $e->getMessage());
         }
       }
     }

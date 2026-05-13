@@ -13,7 +13,6 @@ namespace ClicShopping\AI\CoreAI\Planning;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Infrastructure\Metrics\CalculatorTool;
-use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 
 /**
  * ExecutionPlan Class
@@ -50,7 +49,6 @@ class ExecutionPlan
   private int $languageId;
 
   private ?CalculatorTool $calculatorTool = null;
-  private ?WebSearchTool $webSearchTool = null; // 🆕 Outil de recherche web
 
 
   /**

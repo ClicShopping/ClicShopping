@@ -22,7 +22,8 @@ use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\Infrastructure\Cache\DecompositionCache;
 use ClicShopping\AI\Infrastructure\Monitoring\DecompositionPerformanceMonitor;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ResponseProcessor;
+use ClicShopping\AI\DomainsAI\Hybrid\Patterns\QuerySplitterPatterns;
+use ClicShopping\AI\CoreAI\Planning\Patterns\PriceComparisonDetectionPatterns;
 
 /**
  * HybridQueryDecomposer
@@ -39,6 +40,7 @@ class HybridQueryDecomposer
     private DecompositionPerformanceMonitor $performanceMonitor;
     private bool $decompositionEnabled;
     private ?string $llmProvider;
+    private mixed $language;
     
     /**
      * Constructor
@@ -190,6 +192,7 @@ class HybridQueryDecomposer
 
         // Check cache before calling LLM (Requirement 7.3)
         $cachedResult = $this->cache->getCachedDecomposition($query, $intent);
+
         if ($cachedResult !== null) {
             if ($this->debug) {
                 $this->logDebug("Using cached decomposition result");
@@ -204,6 +207,32 @@ class HybridQueryDecomposer
             );
 
             return $cachedResult;
+        }
+
+        // Check for price comparison queries BEFORE LLM decomposition
+        // Price comparison queries need special handling: 1 analytics + 1 web_search
+        // This prevents LLM from incorrectly classifying both as analytics
+        // NOTE: This check is AFTER cache to benefit from cached results
+	
+        if ($this->isPriceComparisonQuery($queryForDecomposition, $intent)) {
+            if ($this->debug) {
+                $this->logDebug("Price comparison detected - using specialized decomposition");
+            }
+            
+            $result = $this->decomposePriceComparisonQuery($queryForDecomposition, $intent);
+            
+            // Store in cache for future use
+            $this->cache->cacheDecomposition($query, $intent, $result);
+            
+            // End performance tracking
+            $this->performanceMonitor->endDecomposition(
+                $operationId,
+                $result,
+                false, // cache miss
+                true   // success
+            );
+            
+            return $result;
         }
 
         // Retrieve active domain from DomainConfig (Requirement 11.1, 11.6)
@@ -946,5 +975,284 @@ class HybridQueryDecomposer
     public function isDebugEnabled(): bool
     {
         return $this->debug;
+    }
+    
+    /**
+     * Check if query is a price comparison query
+     * 
+     * Detect price comparison queries to prevent incorrect LLM decomposition
+     * 
+     * Problem: LLM was classifying both sub-queries as 'analytics' instead of 'analytics' + 'web_search'
+     * Solution: Detect price comparison patterns and use specialized decomposition
+     * 
+     * Architecture: Pure LLM Mode with pattern fallback (AGENTS.md compliant)
+     * - PRIMARY: Check intent_type === 'price_comparison'
+     * - FALLBACK: Pattern matching via PriceComparisonDetectionPatterns
+     * 
+     * @param string $query Query to analyze
+     * @param array $intent Intent analysis
+     * @return bool True if price comparison detected
+     */
+    private function isPriceComparisonQuery(string $query, array $intent): bool
+    {
+        try {
+            // PRIMARY: Check intent type (LLM detection)
+            if (isset($intent['intent_type']) && $intent['intent_type'] === 'price_comparison') {
+                if ($this->debug) {
+                    $this->logDebug("Price comparison detected via intent_type");
+                }
+                return true;
+            }
+            
+            // FALLBACK: Pattern matching (when LLM fails)
+            $isMatch = PriceComparisonDetectionPatterns::isPriceComparisonQuery($query);
+            
+            if ($isMatch && $this->debug) {
+                $this->logDebug("Price comparison detected via pattern fallback");
+            }
+            
+            return $isMatch;
+            
+        } catch (\Exception $e) {
+            if ($this->debug) {
+                $this->logDebug("Error in isPriceComparisonQuery: " . $e->getMessage());
+            }
+            return false;
+        }
+    }
+    
+    /**
+     * Decompose price comparison query into Analytics + WebSearch
+     * 
+     * 🔧 FIX (2026-05-07): Specialized decomposition for price comparison queries
+     * 
+     * Creates two sub-queries:
+     * 1. Analytics: "Get price for {product}" - retrieves internal product price
+     * 2. WebSearch: "{product} price competitors" - retrieves competitor prices
+     * 
+     * This prevents LLM from incorrectly classifying both as analytics.
+     * 
+     * @param string $query Original query
+     * @param array $intent Intent analysis
+     * @return array Array of sub-queries [analytics, web_search]
+     */
+    private function decomposePriceComparisonQuery(string $query, array $intent): array
+    {
+        try {
+            // Extract product name from query
+            $productName = $this->extractProductName($query);
+            
+            if (empty($productName)) {
+                if ($this->debug) {
+                  error_log('[WARNING DecomposerPriceComparisonQuery]  Could not extract product name - falling back to LLM decomposition');
+                }
+                // Fallback to LLM decomposition
+                return $this->decomposePriceComparisonViaLLM($query, $intent);
+            }
+            
+            if ($this->debug) {
+              error_log('[INFO DecomposerPriceComparisonQuery] Decomposing price comparison query for product: ' . $productName);
+            }
+
+            // find the target site inside a query
+            $targetSite = $this->extractTargetSite($query);
+
+            if ($this->debug) {
+              error_log('[INFO DecomposerPriceComparisonQuery] display target site (CAN BE EMPTY)  : ' .  $targetSite);
+            }
+            
+            // Create sub-queries
+            $subQueries = [
+              [
+                'type' => 'analytics',
+                'text' => "Get price for {$productName}",
+              ],
+              [
+                'type' => 'web_search',
+                'text' => $targetSite
+                    ? "{$productName} price compare with {$targetSite}"  // ✅ Preserve target site
+                    : "{$productName} price competitors",                 // Fallback to generic
+              ],
+            ];
+            
+            if ($this->debug) {
+              $this->logDebug('[INFO DecomposerPriceComparisonQuery] Price comparison decomposed: ' . json_encode($subQueries));
+
+              if ($targetSite) {
+                  $this->logDebug('[INFO DecomposerPriceComparisonQuery] Target site preserved:' . $targetSite);
+              }
+            }
+            
+            return $subQueries;
+        } catch (\Exception $e) {
+            if ($this->debug) {
+                $this->logDebug("[ERROR DecomposerPriceComparisonQuery]  Error in decomposePriceComparisonQuery: " . $e->getMessage());
+            }
+
+            return $this->decomposePriceComparisonViaLLM($query, $intent);
+        }
+    }
+    
+    /**
+     * Extract product name from price comparison query
+     * 
+     * Removes common phrases like "compare", "price", "competitors", etc.
+     * and returns the cleaned product name.
+     * 
+     * @param string $query Query to extract product name from
+     * @return string Cleaned product name
+     */
+    private function extractProductName(string $query): string
+    {
+        try {
+            // Delegate to QuerySplitterPatterns for pattern-based extraction
+            return QuerySplitterPatterns::extractProductName($query);
+            
+        } catch (\Exception $e) {
+            if ($this->debug) {
+                $this->logDebug("Error extracting product name: " . $e->getMessage());
+            }
+            return $query; // Fallback to original query
+        }
+    }
+    
+    /**
+     * Extract target site from query
+     * 
+     * @param string $query Original query
+     * @return string|null Target site or null if not found
+     */
+    private function extractTargetSite(string $query): ?string
+    {
+      try {
+        // Fast-path deterministic
+        if (preg_match('/site:([a-z0-9.-]+)/i', $query, $m)) {
+          return strtolower($m[1]);
+        }
+
+        return $this->extractTargetSiteWithLLM($query);
+      } catch (\Exception $e) {
+        if ($this->debug) {
+          $this->logDebug("Error extracting target site: " . $e->getMessage());
+        }
+        return null;
+      }
+    }
+
+    /**
+     * Extract the name of the target site.
+     * @param string $query
+     * @return string|null
+     */
+    private function extractTargetSiteWithLLM(string $query): ?string
+    {
+
+      DomainConfig::loadLanguageFile('rag_hybrid_query_decomposer');
+      $prompt = $this->language->getDef('text_rag_hybrid_decomposer_extract_target_site_with_llm', ['query' => $query]);
+
+      $response = GPT::getGptResponse($prompt);
+
+      if ($response === 'NULL') {
+        return null;
+      }
+
+      return strtolower($response);
+    }
+
+
+    /**
+     * Decompose price comparison query via LLM (fallback)
+     * 
+     * Used when product name extraction fails.
+     * Continues with normal LLM decomposition but with explicit instructions
+     * to create analytics + web_search sub-queries.
+     * 
+     * 🔧 FIX (2026-05-08): Extract and preserve target site (e.g., "amazon")
+     * 
+     * @param string $query Original query
+     * @param array $intent Intent analysis
+     * @return array Array of sub-queries
+     */
+    private function decomposePriceComparisonViaLLM(string $query, array $intent): array
+    {
+        // 🔧 FIX: Extract target site before LLM decomposition
+        $targetSite = $this->extractTargetSite($query);
+        
+        if ($this->debug) {
+            $this->logDebug("LLM decomposition - Target site: " . ($targetSite ?: 'none'));
+        }
+        
+        // Force sub_types to be analytics + web_search
+        $intent['sub_types'] = ['analytics', 'web_search'];
+        
+        if ($this->debug) {
+            $this->logDebug("Using LLM decomposition with forced sub_types: analytics, web_search");
+        }
+        
+        // Get domain
+        $domain = DomainConfig::getActivities();
+        
+        // Build prompt
+        $prompt = $this->buildDecompositionPrompt($query, ['analytics', 'web_search'], $domain);
+        
+        // Call LLM
+        try {
+            if ($this->chat === null) {
+                // Fallback to simple split with target site preservation
+                return [
+                    ['type' => 'analytics', 'text' => $query, 'is_fallback' => true],
+                    [
+                        'type' => 'web_search',
+                        'text' => $targetSite ? "{$query} with {$targetSite}" : $query,
+                        'is_fallback' => true
+                    ],
+                ];
+            }
+            
+            $response = $this->chat->generateText($prompt);
+            $subQueries = $this->parseJsonResponse($response);
+            
+            if ($subQueries !== null && $this->validateSubQueries($subQueries, ['analytics', 'web_search'])) {
+                // 🔧 FIX: Inject target site into web_search sub-query if present
+                if ($targetSite) {
+                    foreach ($subQueries as &$subQuery) {
+                        if ($subQuery['type'] === 'web_search') {
+                            // Append target site if not already present
+                            if (stripos($subQuery['text'], $targetSite) === false) {
+                                $subQuery['text'] .= " with {$targetSite}";
+                            }
+                        }
+                    }
+                    unset($subQuery); // Break reference
+                }
+                
+                return $subQueries;
+            }
+            
+            // Fallback with target site preservation
+            return [
+                ['type' => 'analytics', 'text' => $query, 'is_fallback' => true],
+                [
+                    'type' => 'web_search',
+                    'text' => $targetSite ? "{$query} with {$targetSite}" : $query,
+                    'is_fallback' => true
+                ],
+            ];
+            
+        } catch (\Exception $e) {
+            if ($this->debug) {
+                $this->logDebug("LLM decomposition failed: " . $e->getMessage());
+            }
+            
+            // Fallback with target site preservation
+            return [
+                ['type' => 'analytics', 'text' => $query, 'is_fallback' => true],
+                [
+                    'type' => 'web_search',
+                    'text' => $targetSite ? "{$query} with {$targetSite}" : $query,
+                    'is_fallback' => true
+                ],
+            ];
+        }
     }
 }

@@ -202,7 +202,7 @@ class SubTaskPlannerPatternAnalysis
         }
         
         if ($this->debug) {
-            error_log("[SubTaskPlannerPatternAnalysis] $message");
+            error_log("[INFO SubTaskPlannerPatternAnalysis] $message");
         }
     }
 }

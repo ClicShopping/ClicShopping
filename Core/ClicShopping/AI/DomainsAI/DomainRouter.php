@@ -15,8 +15,8 @@ use ClicShopping\AI\InterfacesAI\QueryTypeDomainInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
+use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticCoordinator;
-use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 
 /**
  * DomainRouter Class
@@ -70,7 +70,7 @@ class DomainRouter implements DomainRouterInterface
       'semantic' => SemanticAgent::class,
       'analytics' => AnalyticsAgent::class,
       'hybrid' => ActorCriticCoordinator::class,
-      'web_search' => WebSearchTool::class,
+      'web_search' => WebSearchFacade::class,
     ];
 
     if ($this->debug) {
