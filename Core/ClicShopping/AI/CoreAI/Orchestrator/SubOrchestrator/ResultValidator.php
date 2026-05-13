@@ -187,7 +187,11 @@ class ResultValidator
   public function validateWebResult(array $result): bool
   {
     return $this->validateResult($result, 'web_search', function($result, &$validationErrors) {
-      // 🔧 FIX: Support both structures:
+      if($this->debug) {
+        error_log("[ResultValidator::validateWebResult] Result keys: " . implode(', ', array_keys($result)));
+      }
+      
+      // Support both structures:
       // 1. PlanExecutor: results at root level
       // 2. WebSearchQueryExecutor: results nested in 'result' field
       
@@ -196,6 +200,12 @@ class ResultValidator
       // If 'result' field exists, use it (WebSearchQueryExecutor structure)
       if (isset($result['result']) && is_array($result['result'])) {
         $resultData = $result['result'];
+	
+        if($this->debug) {
+          error_log("[ResultValidator::validateWebResult] Using nested 'result' field");
+        }
+      } else {
+        error_log("[ResultValidator::validateWebResult] Using root level data");
       }
 
       // Check for web search results (support both 'results' and 'items')
@@ -205,9 +215,20 @@ class ResultValidator
       $hasUrls = isset($resultData['urls']) && is_array($resultData['urls']) && !empty($resultData['urls']);
       $hasTextResponse = isset($result['text_response']) && !empty($result['text_response']);
       
+
+      if($this->debug) {
+        error_log("[ResultValidator::validateWebResult] hasResults: " . ($hasResults ? 'YES' : 'NO'));
+        error_log("[ResultValidator::validateWebResult] hasSources: " . ($hasSources ? 'YES' : 'NO'));
+        error_log("[ResultValidator::validateWebResult] hasUrls: " . ($hasUrls ? 'YES' : 'NO'));
+        error_log("[ResultValidator::validateWebResult] hasTextResponse: " . ($hasTextResponse ? 'YES' : 'NO'));
+      }
       // Web search is valid if it has results, sources, URLs, or text_response
       if (!$hasResults && !$hasSources && !$hasUrls && !$hasTextResponse) {
         $validationErrors[] = "Missing web search results, sources, URLs, or text_response";
+
+        if($this->debug) {
+          error_log("[ResultValidator::validateWebResult] FAILED: Missing all required fields");
+        }
         return false;
       }
 
@@ -216,23 +237,56 @@ class ResultValidator
         // Extract and validate URLs
         $urls = $this->extractUrls($resultData, $hasResults, $hasUrls);
         
+        // Filter out empty URLs
+        $urls = array_filter($urls, function($url) {
+          return !empty($url) && is_string($url);
+        });
+
+        if($this->debug) {
+          error_log("[ResultValidator::validateWebResult] Extracted " . count($urls) . " non-empty URLs");
+        }
+
         if (empty($urls)) {
           // No URLs is acceptable if we have text_response
           if (!$hasTextResponse) {
             $validationErrors[] = "No URLs found in web search results";
+
+            if($this->debug) {
+              error_log("[ResultValidator::validateWebResult] FAILED: No URLs and no text_response");
+            }
+
             return false;
+          } else {
+            error_log("[ResultValidator::validateWebResult] No URLs but has text_response - ACCEPTABLE");
           }
         } else {
           if (!$this->hasValidUrl($urls)) {
             $validationErrors[] = "No valid URLs found";
+
+            if($this->debug) {
+              error_log("[ResultValidator::validateWebResult] FAILED: No valid URLs");
+            }
+
             return false;
           }
         }
       }
 
       // Validate source attribution
+      if($this->debug) {
+        error_log("[ResultValidator::validateWebResult] Checking source attribution...");
+      }
+
       if (!$this->validateSourceAttribution($result, ['web', 'web_search', 'serapi', 'external'], $validationErrors)) {
+        if($this->debug) {
+          error_log("[ResultValidator::validateWebResult] FAILED: Source attribution validation failed");
+        }
+
         return false;
+      }
+      
+      if($this->debug) {
+        error_log("[ResultValidator::validateWebResult] PASSED all validations");
       }
 
       return true;
@@ -560,11 +614,26 @@ class ResultValidator
    */
   private function hasValidUrl(array $urls): bool
   {
-    foreach ($urls as $url) {
-      if (filter_var($url, FILTER_VALIDATE_URL)) {
+    if($this->debug) {
+      error_log("[ResultValidator::hasValidUrl] Validating " . count($urls) . " URLs");
+    }
+
+    foreach ($urls as $i => $url) {
+      $isValid = filter_var($url, FILTER_VALIDATE_URL);
+      
+      if($this->debug) {
+        error_log("[ResultValidator::hasValidUrl] URL {$i}: " . (is_string($url) ? substr($url, 0, 100) : gettype($url)) . " - Valid: " . ($isValid ? 'YES' : 'NO'));
+      }
+
+      if ($isValid) {
         return true;
       }
     }
+
+    if($this->debug) {
+      error_log("[INFO ResultValidator::hasValidUrl] NO valid URLs found");
+    }
+
     return false;
   }
 

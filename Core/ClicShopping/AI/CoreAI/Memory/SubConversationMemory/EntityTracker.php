@@ -34,6 +34,7 @@ class EntityTracker
   private bool $debug;
   private ?int $lastEntityId = null;
   private ?string $lastEntityType = null;
+  private ?string $lastEntityName = null;
   private array $entityHistory = []; // Stack of recent entities
   private int $maxHistorySize = 10; // Max entities to keep in history
 
@@ -60,19 +61,22 @@ class EntityTracker
    *
    * @param int $entityId Entity ID
    * @param string $entityType Entity type (product, category, order, etc.)
+   * @param string|null $entityName Entity name (optional, for context enrichment)
    * @return void
    */
-  public function setLastEntity(int $entityId, string $entityType): void
+  public function setLastEntity(int $entityId, string $entityType, ?string $entityName = null): void
   {
     $this->lastEntityId = $entityId;
     $this->lastEntityType = $entityType;
+    $this->lastEntityName = $entityName;
 
     // Add to history
-    $this->addToHistory($entityId, $entityType);
+    $this->addToHistory($entityId, $entityType, $entityName);
 
     if ($this->debug) {
+      $nameInfo = $entityName ? " (name: {$entityName})" : "";
       $this->logger->logSecurityEvent(
-        "Last entity set: {$entityType} #{$entityId}",
+        "Last entity set: {$entityType} #{$entityId}{$nameInfo}",
         'info'
       );
     }
@@ -83,7 +87,7 @@ class EntityTracker
    * 
    * First checks in-memory (fast path), then queries database if needed.
    *
-   * @return array|null Array with 'id' and 'type', or null if no entity
+   * @return array|null Array with 'id', 'type', and 'name' keys, or null if no entity
    */
   public function getLastEntity(): ?array
   {
@@ -97,6 +101,7 @@ class EntityTracker
       return [
         'id' => $this->lastEntityId,
         'type' => $this->lastEntityType,
+        'name' => $this->lastEntityName,
       ];
     }
 
@@ -126,22 +131,29 @@ class EntityTracker
         $entityId = (int)$result['entity_id'];
         $metadataJson = $result['metadata'];
         
-        // Extract entity_type from metadata JSON
+        // Extract entity_type and entity_name from metadata JSON
         $entityType = 'unknown';
+        $entityName = null;
         if (!empty($metadataJson)) {
           $metadata = json_decode($metadataJson, true);
           if (isset($metadata['entity_type'])) {
             $entityType = $metadata['entity_type'];
+          }
+          // Extract entity_name from metadata
+          if (isset($metadata['entity_name'])) {
+            $entityName = $metadata['entity_name'];
           }
         }
         
         // Cache in memory for subsequent calls in this request
         $this->lastEntityId = $entityId;
         $this->lastEntityType = $entityType;
-        
+        $this->lastEntityName = $entityName;
+
         if ($this->debug) {
+          $nameInfo = $entityName ? " (name: {$entityName})" : "";
           $this->logger->logSecurityEvent(
-            "Last entity retrieved from database: {$entityType} #{$entityId}",
+            "Last entity retrieved from database: {$entityType} #{$entityId}{$nameInfo}",
             'info'
           );
         }
@@ -149,6 +161,7 @@ class EntityTracker
         return [
           'id' => $entityId,
           'type' => $entityType,
+          'name' => $entityName,
         ];
       }
     } catch (\Exception $e) {
@@ -198,14 +211,16 @@ class EntityTracker
    *
    * @param int $entityId Entity ID
    * @param string $entityType Entity type
+   * @param string|null $entityName Entity name (optional)
    * @return void
    */
-  private function addToHistory(int $entityId, string $entityType): void
+  private function addToHistory(int $entityId, string $entityType, ?string $entityName = null): void
   {
     // Add to beginning of array (most recent first)
     array_unshift($this->entityHistory, [
       'id' => $entityId,
       'type' => $entityType,
+      'name' => $entityName,
       'timestamp' => time(),
     ]);
 
@@ -215,8 +230,9 @@ class EntityTracker
     }
 
     if ($this->debug) {
+      $nameInfo = $entityName ? " (name: {$entityName})" : "";
       $this->logger->logSecurityEvent(
-        "Entity added to history: {$entityType} #{$entityId} (history size: " . count($this->entityHistory) . ")",
+        "Entity added to history: {$entityType} #{$entityId}{$nameInfo} (history size: " . count($this->entityHistory) . ")",
         'info'
       );
     }
@@ -234,6 +250,7 @@ class EntityTracker
     // This prevents getLastEntity() from falling back to database
     $this->lastEntityId = -1; // Use -1 as sentinel value for "explicitly cleared"
     $this->lastEntityType = null;
+    $this->lastEntityName = null;
 
     if ($this->debug) {
       $this->logger->logSecurityEvent(

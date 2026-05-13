@@ -370,10 +370,10 @@ class ResponseProcessor
     string $entityType,
     $responseProcessor
   ): array {
-    // Hybrid results have 'text_response' at top level and 'type' === 'hybrid'
-    $isHybridResult = isset($executionResult['text_response']) && 
-                      isset($executionResult['type']) && 
-                      $executionResult['type'] === 'hybrid';
+    // Hybrid and web_search results have 'text_response' at top level — pass through directly
+    $isHybridResult = isset($executionResult['text_response']) &&
+                      isset($executionResult['type']) &&
+                      in_array($executionResult['type'], ['hybrid', 'web_search_response', 'web_search_only'], true);
     
     if ($isHybridResult) {
       // For hybrid results, use the structure as-is (already properly formatted)

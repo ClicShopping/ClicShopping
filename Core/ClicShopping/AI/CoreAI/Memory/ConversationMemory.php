@@ -709,11 +709,12 @@ class ConversationMemory
    *
    * @param int $entityId Entity ID
    * @param string $entityType Entity type (product, category, order, etc.)
+   * @param string|null $entityName Entity name (optional, for context enrichment)
    * @return void
    */
-  public function setLastEntity(int $entityId, string $entityType): void
+  public function setLastEntity(int $entityId, string $entityType, ?string $entityName = null): void
   {
-    $this->entityTracker->setLastEntity($entityId, $entityType);
+    $this->entityTracker->setLastEntity($entityId, $entityType, $entityName);
     
     // Update local properties for backward compatibility
     $this->lastEntityId = $entityId;

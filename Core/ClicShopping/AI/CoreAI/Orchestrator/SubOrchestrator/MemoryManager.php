@@ -107,20 +107,24 @@ class MemoryManager
    *
    * @param int $entityId Entity ID
    * @param string $entityType Entity type (product, category, customer, etc.)
+   * @param string|null $entityName Entity name (optional, for context enrichment)
    */
-  public function setLastEntity(int $entityId, string $entityType): void
+  public function setLastEntity(int $entityId, string $entityType, ?string $entityName = null): void
   {
     // CRITICAL: Always log (even if debug is off) to diagnose context resolution issues
-    if ($this->debug) {    
-      error_log("[MemoryManager] setLastEntity called: ID={$entityId}, Type={$entityType}");
+    if ($this->debug) {
+      $nameInfo = $entityName ? ", Name={$entityName}" : "";
+      error_log("[MemoryManager] setLastEntity called: ID={$entityId}, Type={$entityType}{$nameInfo}");
     }
     
     if ($this->conversationMemory && $entityId !== null && $entityId !== 0) {
-      $this->conversationMemory->setLastEntity($entityId, $entityType);
+      $this->conversationMemory->setLastEntity($entityId, $entityType, $entityName);
 
       if ($this->debug) {
+        $nameInfo = $entityName ? ", name={$entityName}" : "";
+	
         $this->securityLogger->logSecurityEvent(
-          "Stored last entity: entity_id={$entityId}, type={$entityType}",
+          "Stored last entity: entity_id={$entityId}, type={$entityType}{$nameInfo}",
           'info'
         );
       }

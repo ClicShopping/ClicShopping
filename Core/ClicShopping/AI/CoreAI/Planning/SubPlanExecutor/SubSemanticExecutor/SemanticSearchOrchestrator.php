@@ -9,8 +9,6 @@
  * 4. LLM Fallback (for general knowledge queries)
  * 5. Web Search Fallback (if enabled)
  *
- * FIXED: Task 4.4 - Search RAG Knowledge Base FIRST, not conversation memory
- *
  * @copyright 2008 - https://www.clicshopping.org
  * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
  * @Licence GPL 2 & MIT
@@ -26,11 +24,9 @@ use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\RagWarmupManager;
 use ClicShopping\AI\Helper\InsufficientInformationDetector;
 use ClicShopping\AI\Handler\Fallback\LLMFallbackHandler;
-use ClicShopping\AI\DomainsAI\WebSearch\Tool\WebSearchTool;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Config\DomainConfig;
-use ClicShopping\AI\Config\AgentSystemConfig;
 
 /**
  * SemanticSearchOrchestrator Class
@@ -45,7 +41,6 @@ class SemanticSearchOrchestrator
   private bool $debug;
   private ?MultiDBRAGManager $ragManager = null;
   private ?LLMFallbackHandler $llmHandler = null;
-  private ?WebSearchTool $webSearchHandler = null;
   private ?Cache $cache = null;
   private ?RagWarmupManager $warmupManager = null;
   private string $userId;
@@ -328,27 +323,6 @@ class SemanticSearchOrchestrator
         }
       }
 
-      // Step 5: Web Search Fallback (if enabled)
-      if ($this->isWebSearchEnabled()) {
-        $fallbackChain[] = 'web_search';
-        if ($this->debug) {
-          $this->logger->logSecurityEvent("Step 5: Falling back to Web Search", 'info');
-        }
-
-        $webResult = $this->fallbackToWebSearch($query);
-        if ($webResult !== null) {
-          $executionTime = microtime(true) - $startTime;
-          if ($this->debug) {
-            $this->logger->logSecurityEvent(
-              "Search completed - Source: web_search, Time: {$executionTime}s",
-              'info'
-            );
-          }
-
-          return $this->formatResult($webResult, 'web_search', $fallbackChain, $cacheStatus, $executionTime, $query);
-        }
-      }
-
       // All fallbacks failed
       $executionTime = microtime(true) - $startTime;
       $this->logger->logSecurityEvent(
@@ -585,37 +559,6 @@ class SemanticSearchOrchestrator
     }
   }
 
-  /**
-   * Fallback to web search
-   *
-   * @param string $query Search query
-   * @return array|null Web search results or null if not available
-   */
-  private function fallbackToWebSearch(string $query): ?array
-  {
-    try {
-      // Initialize web search handler if needed
-      if ($this->webSearchHandler === null) {
-        $this->webSearchHandler = new WebSearchTool($this->userId, $this->languageId, $this->debug);
-      }
-
-      // Perform web search with product database integration
-      $result = $this->webSearchHandler->search($query, []);
-
-      if ($result['success'] ?? false) {
-        return $result;
-      }
-
-      return null;
-
-    } catch (\Exception $e) {
-      $this->logger->logSecurityEvent(
-        "Web search fallback error: " . $e->getMessage(),
-        'error'
-      );
-      return null;
-    }
-  }
 
   /**
    * Determine if cache should be initialized
@@ -677,40 +620,6 @@ class SemanticSearchOrchestrator
     return CLICSHOPPING_APP_CHATGPT_RA_ENABLE_LLM_FALLBACK;
   }
 
-  /**
-   * Check if web search is enabled
-   *
-   * Checks both global WebSearch status (AgentSystemConfig) and local configuration.
-   * WebSearch is only enabled if BOTH are true.
-   *
-   * @return bool True if enabled
-   */
-  private function isWebSearchEnabled(): bool
-  {
-    // Check global WebSearch status first (module configuration)
-    if (!AgentSystemConfig::isWebSearchGloballyEnabled()) {
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "WebSearch globally disabled via AgentSystemConfig",
-          'info'
-        );
-      }
-      return false;
-    }
-    
-    // Then check local configuration
-    $localEnabled = defined('CLICSHOPPING_APP_CHATGPT_RA_ENABLE_WEB_FALLBACK') 
-                    && CLICSHOPPING_APP_CHATGPT_RA_ENABLE_WEB_FALLBACK === 'True';
-    
-    if ($this->debug && !$localEnabled) {
-      $this->logger->logSecurityEvent(
-        "WebSearch disabled via local configuration (CLICSHOPPING_APP_CHATGPT_RA_ENABLE_WEB_FALLBACK)",
-        'info'
-      );
-    }
-    
-    return $localEnabled;
-  }
 
   /**
    * Format successful result
