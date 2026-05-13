@@ -1,4 +1,4 @@
-text_rag_complex_query_results_for = Results for:
+text_rag_complex_query_results_for = Results for: {{query}}
 text_rag_complex_query_global_summary = Global Summary:
 text_rag_complex_query_detailed_results = Detailed Results by Section
 text_rag_complex_query_aggregated_data = Aggregated Data:

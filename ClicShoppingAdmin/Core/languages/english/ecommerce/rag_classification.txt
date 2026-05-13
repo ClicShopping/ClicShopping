@@ -100,14 +100,30 @@ If the query requests MULTIPLE DISTINCT ENTITIES (even of the same type), classi
 
 * NO → Step 2
 
-STEP 2: WEB_SEARCH?
+STEP 2: PRICE COMPARISON WITH TARGET SITE?
+
+🚨 CRITICAL RULE - TARGET SITE DETECTION:
+If the query contains a price request WITH a target site indicator, classify as HYBRID (analytics + web_search):
+- Patterns: "price on [site]", "prix sur [site]", "price at [site]", "prix chez [site]"
+- Target sites: amazon, cdiscount, fnac, darty, ebay, alibaba, walmart, bestbuy, etc.
+- Examples:
+  * "samsung galaxy 26 price on amazon" → HYBRID (analytics + web_search)
+  * "nokia phone price at walmart" → HYBRID (analytics + web_search)
+  * "laptop price on ebay" → HYBRID (analytics + web_search)
+- Detection keywords: "on", "at", "from", "sur", "chez", "à"
+- If detected → {"type":"hybrid","sub_types":["analytics","web_search"],"reasoning":"Price comparison with target site"}
+
+* YES → {"type":"hybrid","sub_types":["analytics","web_search"]}
+* NO → Step 3
+
+STEP 3: WEB_SEARCH?
 
 * Requests EXTERNAL or CURRENT information?
 * Keywords: "latest", "recent", "trends", "news", "competitors"
 * YES → {"type":"web_search"}
-* NO → Step 3
+* NO → Step 4
 
-STEP 3: ANALYTICS or SEMANTIC?
+STEP 4: ANALYTICS or SEMANTIC?
 
 ANALYTICS (database data):
 

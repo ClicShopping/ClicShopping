@@ -45,3 +45,22 @@ Sub-queries: [{"type": "analytics", "text": "number of categories"}, {"type": "s
 Example 3 (E-commerce):
 Query: "total orders this month and shipping policy"
 Sub-queries: [{"type": "analytics", "text": "total orders this month"}, {"type": "semantic", "text": "shipping policy"}]
+
+text_rag_hybrid_decomposer_extract_target_site_with_llm = TÂCHE : Extraire le site e-commerce mentionné dans la requête.
+Règles :
+  - Retourner UNIQUEMENT le nom du site/domaine
+  - Aucune explication
+  - Aucun JSON
+  - Aucun texte supplémentaire
+  - Si aucun site n’existe, retourner NULL
+
+Exemples :
+  "compare with amazon" => amazon
+  "price on fnac" => fnac
+  "vs cdiscount" => cdiscount
+  "site:amazon.fr" => amazon.fr
+  "cheaper than darty" => darty
+  "compare iphone prices" => NULL
+
+Requête :
+{{query}}

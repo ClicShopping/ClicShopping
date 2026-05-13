@@ -1,16 +1,11 @@
 <?php
 /**
- * AJAX Chat Handler - Refactored Version
  *
  * @copyright 2008 - https://www.clicshopping.org
  * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
  * @Licence GPL 2 & MIT
  * @Info : https://www.clicshopping.org/forum/trademark/
  *
- * REFACTORED: 2026-02-08 (Task 12)
- * - Reduced from 910 lines to ~150 lines (83% reduction)
- * - Business logic moved to SubGpt classes
- * - Maintains 100% backward compatibility
  */
 
 use ClicShopping\OM\CLICSHOPPING;

@@ -1,0 +1,153 @@
+text_intent_detection_prompt = Vous êtes un système de détection d'intention pour un moteur de recherche web e-commerce.
+Analysez la requête utilisateur suivante et extrayez les informations d'intention structurées.
+
+Requête : "{{query}}"
+
+Retournez UNIQUEMENT un objet JSON valide avec la structure suivante :
+{
+  "product": "nom du produit ou catégorie (string)",
+  "intent": "price_comparison|product_discovery|market_research|trend_analysis",
+  "location": "localisation géographique (string ou null)",
+  "target_site": "domaine du site spécifique (string ou null, ex: 'amazon.fr')",
+  "mode_hint": "mode_a|mode_b|mode_c|hybrid|null",
+  "confidence": 0.0-1.0
+}
+
+Types d'intention :
+- price_comparison : L'utilisateur veut COMPARER les prix avec des concurrents ou trouver les meilleures offres
+  CRITÈRE OBLIGATOIRE : La requête DOIT remplir UNE de ces conditions :
+  * Contient à la fois un mot-clé de prix (prix, coût, combien, tarif) ET un mot-clé de comparaison (comparer, concurrent, concurrence, vs, versus, par rapport, meilleur prix, meilleure offre)
+  * OU contient un mot-clé de prix ET mentionne un site concurrent spécifique (amazon, fnac, cdiscount, etc.)
+  
+  Exemples VALIDES (price_comparison) :
+  * "compare le prix de l'iphone 17 pro avec les concurrents"
+  * "donne-moi le prix de l'iphone 17 pro et compare avec les concurrents"
+  * "quel est le prix de l'iphone 17 pro par rapport aux concurrents"
+  * "compare les prix de l'iphone 17 pro"
+  * "comparaison de prix iphone 17 pro"
+  * "meilleur prix pour iphone 17 pro"
+  * "prix amazon iphone 17 pro" → requête de prix avec site spécifique (amazon)
+  * "prix sur amazon pour iphone 17 pro" → requête de prix avec site spécifique
+  * "fnac iphone 17 pro prix" → requête de prix avec site spécifique
+  
+  Exemples INVALIDES (PAS price_comparison, mais product_discovery) :
+  * "quel est le prix de l'iphone 17 pro" → simple requête de prix, pas de comparaison, pas de site
+  * "combien coûte l'iphone 17 pro" → simple requête de prix, pas de comparaison, pas de site
+  * "prix de l'iphone 17 pro" → simple requête de prix, pas de comparaison, pas de site
+  
+  Note : Les requêtes de comparaison de prix nécessitent à la fois une recherche de prix interne ET une recherche de prix concurrents
+  
+- product_discovery : L'utilisateur veut en savoir plus sur un produit, une catégorie, ou obtenir un prix simple (sans comparaison)
+  Exemples :
+  * "qu'est-ce que l'iphone 17 pro"
+  * "parle-moi des fonctionnalités de l'iphone 17 pro"
+  * "montre-moi des ordinateurs portables"
+  * "quel est le prix de l'iphone 17 pro" → requête de prix simple (pas de comparaison)
+  * "combien coûte l'iphone 17 pro" → requête de prix simple (pas de comparaison)
+  * "prix de l'iphone 17 pro" → requête de prix simple (pas de comparaison)
+  
+- market_research : L'utilisateur veut une analyse de marché, des insights ou une synthèse sur les tendances (utilise Google Overview AI)
+  CRITÈRE OBLIGATOIRE : La requête demande une analyse, des insights, une synthèse, ou "quelles sont les tendances"
+  Exemples :
+  * "analyse des prochaines tendances dans le domaine des smartphones"
+  * "fais-moi une analyse des prochaines tendances des ordinateurs portables"
+  * "quelles sont les dernières tendances smartphones"
+  * "analyse de marché pour les smartphones"
+  * "prochaines tendances dans les modèles d'ordinateurs portables"
+  * "tendances émergentes en 2027 pour les smartphones"
+  * "parle-moi des tendances du marché des smartphones"
+  * "dernières tendances e-commerce"
+  * "perspectives du marché smartphones"
+  
+- trend_analysis : L'utilisateur veut l'évolution temporelle / graphique d'intérêt au fil du temps (utilise Google Trends)
+  CRITÈRE OBLIGATOIRE : La requête demande explicitement un GRAPHIQUE, COURBE, ÉVOLUTION ou POPULARITÉ dans le temps
+  Exemples :
+  * "montre-moi la tendance de l'iPhone 17 Pro" → graphique temporel
+  * "Google Trends pour les smartphones 2025" → demande explicite Google Trends
+  * "évolution de la tendance de l'iPhone 17 Pro" → évolution temporelle
+  * "comment évolue l'intérêt pour l'iPhone 17 Pro" → intérêt au fil du temps
+  * "tendance iPhone 17 Pro sur 12 mois" → graphique sur 12 mois
+  * "graphique de tendance pour les smartphones" → graphique de tendance
+  * "courbe de popularité pour l'iPhone 17 Pro" → popularité au fil du temps
+  * "intérêt de recherche pour les smartphones" → volume de recherche au fil du temps
+  PAS trend_analysis (utiliser market_research) :
+  * "analyse des prochaines tendances smartphones" → demande d'analyse, pas de graphique
+  * "quelles sont les dernières tendances smartphones" → analyse générale, pas de graphique temporel
+  * "donne-moi les prochaines tendances pour les smartphones" → demande d'analyse, pas de graphique
+  * "prochaines tendances dans les modèles d'ordinateurs portables" → demande d'analyse, pas de graphique
+
+Indices de mode :
+- mode_a : Vue d'ensemble IA pour une synthèse générale
+- mode_b : Google Shopping pour la comparaison de prix
+- mode_c : Recherche Web RAG pour le scraping de sites spécifiques
+- hybrid : Plusieurs modes combinés
+- null : Laisser le système décider automatiquement
+
+RÈGLES CRITIQUES :
+1. Pour l'intent price_comparison : TOUJOURS définir mode_hint à null (l'utilisateur sera invité à choisir)
+2. Pour l'intent product_discovery : TOUJOURS définir mode_hint à null (le système utilisera mode_a)
+3. Pour l'intent market_research : TOUJOURS définir mode_hint à null (le système décidera en fonction de target_site)
+4. Pour l'intent trend_analysis : TOUJOURS définir mode_hint à null (le système utilisera mode_e_google_trends)
+5. NE JAMAIS définir mode_hint à une valeur spécifique sauf si explicitement demandé par l'utilisateur
+
+IMPORTANT : 
+1. Pour les requêtes contenant UNIQUEMENT des mots-clés de prix (prix, coût, combien) SANS mots-clés de comparaison → classez comme product_discovery
+2. Pour les requêtes contenant des mots-clés de prix (prix, coût, combien) + des mots-clés de comparaison (comparer, concurrent, vs, versus, par rapport, meilleur) → classez comme price_comparison
+3. La simple mention du prix n'implique PAS automatiquement une comparaison
+
+Extraction de localisation :
+- Extraire la ville, la région ou le pays si mentionné
+- Exemples : "Paris", "France", "Fréjus"
+
+Extraction du site cible :
+- Extraire le domaine si l'utilisateur spécifie un site
+- Exemples : "amazon.fr", "fnac.com", "amazon", "fnac", "cdiscount"
+- Rechercher des motifs comme "sur Amazon", "chez Fnac", "site:amazon.fr", "prix amazon", "amazon prix"
+- IMPORTANT : Si la requête contient un nom de site (amazon, fnac, cdiscount, etc.) + mot-clé de prix → définir target_site à ce site
+- Normaliser les noms de sites : "amazon" → "amazon", "fnac" → "fnac", etc. (minuscules, sans extension de domaine sauf si spécifié)
+
+Retournez UNIQUEMENT l'objet JSON, sans texte supplémentaire.
+
+text_compound_query_detection_prompt = Vous êtes un analyseur de requêtes pour un moteur de recherche web e-commerce.
+Déterminez si la requête utilisateur suivante contient PLUSIEURS DEMANDES INDÉPENDANTES nécessitant des stratégies de recherche différentes.
+
+Requête : "{{query}}"
+
+Une requête COMPOSÉE regroupe deux questions indépendantes avec des intentions différentes, par exemple :
+- "Donne-moi les tendances smartphones ET compare le prix de l'iPhone 17 Pro" → composée (market_research + price_comparison)
+- "Quelles sont les dernières tendances e-commerce ? Et aussi montre-moi le prix de l'iPhone 17 Pro sur Amazon" → composée (market_research + price_comparison)
+- "Donne-moi les prochaines tendances des modèles de smartphones et compare le prix de l'iPhone 17 Pro avec les concurrents" → composée (market_research + price_comparison)
+
+Une requête SIMPLE est une seule demande (même si elle couvre plusieurs aspects du même sujet) :
+- "Compare le prix de l'iPhone 17 Pro sur Amazon" → simple
+- "Quelles sont les dernières tendances smartphones" → simple
+- "Montre-moi les specs et le prix de l'iPhone 17 Pro" → simple (un seul product_discovery)
+- "Compare le prix de l'iPhone 17 Pro avec Samsung Galaxy" → simple (un seul price_comparison)
+
+Si COMPOSÉE, extrayez chaque tâche indépendante. Pour chaque tâche :
+- query : sous-requête ciblée qui capture uniquement cette intention
+- intent : price_comparison | product_discovery | market_research
+- product : nom du produit ou catégorie (string ou null)
+- target_site : domaine du site concurrent spécifique si mentionné, sinon null
+
+Retournez UNIQUEMENT un objet JSON valide :
+{
+  "is_compound": true,
+  "tasks": [
+    {
+      "query": "texte de la sous-requête ciblée",
+      "intent": "market_research",
+      "product": "smartphones",
+      "target_site": null
+    },
+    {
+      "query": "texte de la sous-requête ciblée",
+      "intent": "price_comparison",
+      "product": "iPhone 17 Pro",
+      "target_site": null
+    }
+  ]
+}
+
+Si SIMPLE, retournez : {"is_compound": false, "tasks": []}
+Retournez UNIQUEMENT l'objet JSON, sans texte supplémentaire.

@@ -1,0 +1,74 @@
+/* ============================================
+   SEO FAQ & Characteristics - Bootstrap 5.x Native
+   ============================================ */
+
+/* FAQ Section - Bootstrap Accordion */
+.seo-faq {
+  margin: 2rem 0;
+}
+
+.seo-content-structure {
+  margin-bottom: 2rem;
+}
+
+.seo-content-structure h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+/* FAQ Accordion Customization */
+.seo-content-structure .accordion-button {
+  font-weight: 500;
+  color: #495057;
+  background-color: #f8f9fa;
+}
+
+.seo-content-structure .accordion-button:not(.collapsed) {
+  color: #0056b3;
+  background-color: #e7f1ff;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
+}
+
+.seo-content-structure .accordion-button:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.seo-content-structure .accordion-body {
+  padding: 1.25rem;
+  background-color: #ffffff;
+}
+
+/* Table of Contents for Characteristics */
+.seo-toc {
+  background-color: #f8f9fa;
+  border-left: 4px solid #0056b3;
+  padding: 1.5rem;
+  border-radius: 0.25rem;
+}
+
+.seo-toc-item {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.seo-toc-link {
+  color: #495057;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.seo-toc-link:hover {
+  color: #0056b3;
+  padding-left: 0.5rem;
+}
+
+.seo-toc-link i {
+  color: #0056b3;
+  font-size: 0.875rem;
+}

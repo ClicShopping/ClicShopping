@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="improve 404 detection" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="librairies updated" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,7 +22,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7449" />
+    <option name="cachedIndexableFilesCount" value="7374" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -177,6 +177,7 @@
       <workItem from="1778352187414" duration="55000" />
       <workItem from="1778427765443" duration="79000" />
       <workItem from="1778483153635" duration="44000" />
+      <workItem from="1778602344169" duration="86000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -434,7 +435,23 @@
       <option name="project" value="LOCAL" />
       <updated>1778483194110</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="librairies updated">
+      <option name="closed" value="true" />
+      <created>1778602389306</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1778602389306</updated>
+    </task>
+    <task id="LOCAL-00034" summary="librairies updated">
+      <option name="closed" value="true" />
+      <created>1778602420779</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1778602420779</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -461,7 +478,8 @@
     <MESSAGE value="litlle improvment" />
     <MESSAGE value="libraries updated" />
     <MESSAGE value="improve 404 detection" />
-    <option name="LAST_COMMIT_MESSAGE" value="improve 404 detection" />
+    <MESSAGE value="librairies updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="librairies updated" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

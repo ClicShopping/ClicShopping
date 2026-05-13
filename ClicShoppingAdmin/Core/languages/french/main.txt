@@ -29,7 +29,7 @@ text_chat_reset_context = Nouveau contexte
 text_chat_save = Sauver la requête
 text_chat_message = Ecrire un message (Veuillez être patient pour la réponse)
 text_chat_close = Fermer
-text_chat_open = ouvrir le chat
+text_chat_open = Ouvrir le chat
 text_chat_title = Que souhaitez-vous résoudre ?
 text_copy_html = Copie html
 text_copy = Copie texte
@@ -217,7 +217,7 @@ image_new_zone = Nouvelle zone
 image_orders = Commandes
 image_orders_erp = Commande enregistrée dans ERP
 image_orders_invoice_erp = Facture comptabilisée dans ERP
-image_orders_invoice_manual_erp = Facture enrgistrée dans ERP
+image_orders_invoice_manual_erp = Facture enregistrée dans ERP
 image_orders_invoice_cancel_erp = Facture annulée dans ERP
 image_orders_history = Historique
 image_orders_invoice = Facture
@@ -713,3 +713,6 @@ text_orchestrator_no_business_operation_no_relevance = Je suis désolé(e), mais
 text_orchestrator_no_business_operation_no_relevance_general = Je suis désolé(e), mais cette question semble peu pertinente pour notre domaine d'activité. Je peux uniquement vous aider pour les questions relatives aux données commerciales, au chiffre d'affaires, aux analyses et aux opérations.
 text_orchestrator_no_business_configured_domain = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions relatives à {{entity_list}}, au chiffre d'affaires, aux analyses et aux opérations commerciales.
 text_orchestrator_no_business_configured_domain_general = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions relatives aux données commerciales, au chiffre d'affaires, aux analyses et aux opérations.
+
+text_notify_user_site_unavailable = Le site [{{targetSite}}] n'est pas encore disponible dans la base de données compétiteur, veuillez compléter votre base de sites compétiteurs.\n\nSites disponibles actuellement : {{availableSites}}.
+Nous effectuons une recherche Google Shopping à la place.

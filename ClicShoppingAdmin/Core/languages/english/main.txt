@@ -641,3 +641,6 @@ text_orchestrator_no_business_operation_no_relevance = I'm sorry, but this quest
 text_orchestrator_no_business_operation_no_relevance_general = I'm sorry, but this question appears to have low relevance to our business domain. I can only help with questions about business data, revenue, analytics, and operations.
 text_orchestrator_no_business_configured_domain = I'm sorry, but this question is not related to the configured business domain. I can only help with questions about {{entity_list}}, revenue, analytics, and business operations.
 text_orchestrator_no_business_configured_domain_general = I'm sorry, but this question is not related to the configured business domain. I can only help with questions about business data, revenue, analytics, and operations.
+
+text_notify_user_site_unavailable = The site [{{targetSite}}] is not yet available in the competitor database. Please complete your competitor site database.\n\nCurrently available sites: {{availableSites}}.
+We are performing a Google Shopping search instead.

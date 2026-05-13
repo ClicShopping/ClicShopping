@@ -237,13 +237,29 @@ ARBRE DE DÉCISION:
 * OUI → {"type":"hybrid","sub_types":["type1","type2"]} et ARRÊTEZ ICI
 * NON → Continuez à l'Étape 2
 
-ÉTAPE 2: WEB_SEARCH?
+ÉTAPE 2: COMPARAISON DE PRIX AVEC SITE CIBLE?
+
+🚨 RÈGLE CRITIQUE - DÉTECTION DE SITE CIBLE:
+Si la requête contient une demande de prix AVEC un indicateur de site cible, classifiez comme HYBRID (analytics + web_search):
+- Patterns: "prix sur [site]", "price on [site]", "prix chez [site]", "price at [site]"
+- Sites cibles: amazon, cdiscount, fnac, darty, ebay, alibaba, walmart, bestbuy, etc.
+- Exemples:
+  * "samsung galaxy 26 prix sur amazon" → HYBRID (analytics + web_search)
+  * "nokia phone price on amazon" → HYBRID (analytics + web_search)
+  * "laptop prix chez cdiscount" → HYBRID (analytics + web_search)
+- Mots-clés de détection: "sur", "chez", "à", "on", "at", "from"
+- Si détecté → {"type":"hybrid","sub_types":["analytics","web_search"],"reasoning":"Comparaison de prix avec site cible"}
+
+* OUI → {"type":"hybrid","sub_types":["analytics","web_search"]}
+* NON → Étape 3
+
+ÉTAPE 3: WEB_SEARCH?
 - Demande infos EXTERNES/ACTUELLES?
 - Mots-clés: "dernières", "récentes", "tendances", "actualités", "concurrents"
 - OUI → {"type":"web_search"}
-- NON → Étape 3
+- NON → Étape 4
 
-ÉTAPE 3: ANALYTICS ou SEMANTIC?
+ÉTAPE 4: ANALYTICS ou SEMANTIC?
 
 ANALYTICS (données base de données):
 - Nombres, calculs (chiffre d'affaires, total, moyenne)
