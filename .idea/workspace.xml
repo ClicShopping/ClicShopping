@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="websearch refactoring">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="update prompt">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_analytics_agent.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_analytics_agent.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_classification.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_classification.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,7 +180,7 @@
       <workItem from="1778427765443" duration="79000" />
       <workItem from="1778483153635" duration="44000" />
       <workItem from="1778602344169" duration="86000" />
-      <workItem from="1778679284767" duration="2922000" />
+      <workItem from="1778679284767" duration="4670000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -480,7 +478,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778681542451</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="update prompt">
+      <option name="closed" value="true" />
+      <created>1778682646420</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1778682646420</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -511,7 +517,8 @@
     <MESSAGE value="language improvement" />
     <MESSAGE value=" context enrichment" />
     <MESSAGE value="websearch refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="websearch refactoring" />
+    <MESSAGE value="update prompt" />
+    <option name="LAST_COMMIT_MESSAGE" value="update prompt" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

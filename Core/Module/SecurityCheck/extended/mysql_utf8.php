@@ -18,8 +18,9 @@ use ClicShopping\OM\Registry;
  */
 class securityCheckExtended_mysql_utf8
 {
-  public $type = 'warning';
+  public string $type = 'warning';
   public $has_doc = true;
+  public string $title;
 
   /**
    *

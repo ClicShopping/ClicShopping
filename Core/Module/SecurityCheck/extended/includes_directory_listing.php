@@ -1,90 +1,94 @@
 <?php
-/**
- *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
- */
-
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Registry;
-
-/**
- * This class performs an extended security check for the presence of directory
- * listing in the 'includes/' directory. It validates file listing visibility
- * and ensures the server does not expose unnecessary details.
- */
-class securityCheckExtended_includes_directory_listing
-{
-  public $type = 'warning';
-  public $has_doc = true;
-
   /**
    *
-   * @return void
-   */
-  public function _construct()
-  {
-    $CLICSHOPPING_Language = Registry::get('Language');
-
-    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/extended/Core_directory_listing', null, null, 'Shop');
-
-    $this->title = CLICSHOPPING::getDef('module_security_check_extended_includes_directory_listing_title');
-  }
-
-  /**
-   * Validates the HTTP response code of a request to a specific URL.
+   * @copyright 2008 - https://www.clicshopping.org
+   * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
+   * @Licence GPL 2 & MIT
+   * @Info : https://www.clicshopping.org/forum/trademark/
    *
-   * @return bool Returns true if the HTTP response code is not 200, otherwise false.
    */
-  public function pass()
+
+  use ClicShopping\OM\CLICSHOPPING;
+  use ClicShopping\OM\HTTP;
+  use ClicShopping\OM\Registry;
+
+  class securityCheckExtended_includes_directory_listing
   {
-    $request = $this->getHttpRequest(CLICSHOPPING::link('Shop/Core/'));
+    public string $type = 'warning';
+    public bool $has_doc = true;
+    public string $title;
 
-    return $request['http_code'] != 200;
-  }
+    public function __construct()
+    {
+      $CLICSHOPPING_Language = Registry::get('Language');
 
-  /**
-   * Retrieves a predefined message string from the CLICSHOPPING definitions.
-   *
-   * @return string The corresponding message string defined in the system.
-   */
-  public function getMessage()
-  {
-    return CLICSHOPPING::getDef('module_security_check_extended_includes_directory_listing_http_200');
-  }
+      $CLICSHOPPING_Language->loadDefinitions('modules/security_check/extended/Core_directory_listing', null, null, 'Shop');
 
-  /**
-   * Sends an HTTP HEAD request to the given URL and returns information about the request.
-   *
-   * @param string $url The URL to which the HTTP HEAD request should be sent.
-   * @return mixed Information about the HTTP request, or 'error' if the request fails.
-   */
-  public function getHttpRequest($url)
-  {
-    $server = parse_url($url);
-
-    if (isset($server['port']) === false) {
-      $server['port'] = ($server['scheme'] == 'https') ? 443 : 80;
+      $this->title = CLICSHOPPING::getDef('module_security_check_extended_includes_directory_listing_title');
     }
 
-    if (isset($server['path']) === false) {
-      $server['path'] = '/';
+    /**
+     * Returns true if the Core/ directory is NOT publicly browsable (403, 404, error).
+     * Returns false only when a real HTTP 200 is received (directory listing exposed).
+     */
+    public function pass(): bool
+    {
+      return $this->getHttpRequest(CLICSHOPPING::link('Shop/Core/')) !== 200;
     }
 
-    $url = $server['scheme'] . '://' . $server['host'] . $server['path'] . (isset($server['query']) ? '?' . $server['query'] : '');
-    $options = [
-      'url' => $url,
-      'method' => 'HEAD',
-      'port' => $server['port'],
-      'timeout' => 10,
-      'headers' => [],
-    ];
-    $responseData = HTTP::getResponse($options);
-    $info = $responseData['info'] ?? 'error';
+    public function getMessage(): string
+    {
+      return CLICSHOPPING::getDef('module_security_check_extended_includes_directory_listing_http_200');
+    }
 
-    return $info;
+    /**
+     * Sends an HTTP HEAD request and returns the HTTP status code as int,
+     * or null on any failure / non-2xx response.
+     */
+    public function getHttpRequest(string $url): ?int
+    {
+      $server = parse_url($url);
+
+      if (empty($server['scheme']) || empty($server['host'])) {
+        return null;
+      }
+
+      $server['port'] ??= ($server['scheme'] === 'https') ? 443 : 80;
+      $server['path'] ??= '/';
+
+      $cleanUrl = $server['scheme'] . '://' . $server['host'] . $server['path']
+        . (isset($server['query']) ? '?' . $server['query'] : '');
+
+      $options = [
+        'url'     => $cleanUrl,
+        'method'  => 'HEAD',
+        'port'    => $server['port'],
+        'timeout' => 10,
+        'headers' => [],
+      ];
+
+      // Suppress the trigger_error fired by HTTP::getResponse() on non-2xx responses.
+      // 403 is the expected secure response here — not an application error.
+      set_error_handler(static function () { return true; });
+
+      try {
+        $responseData = HTTP::getResponse($options);
+      } catch (\Throwable $e) {
+        $responseData = false;
+      } finally {
+        restore_error_handler();
+      }
+
+      if ($responseData === false || !is_array($responseData)) {
+        return null;
+      }
+
+      $info = $responseData['info'] ?? null;
+
+      if (!is_array($info)) {
+        return null;
+      }
+
+      return (int)($info['http_code'] ?? 0) ?: null;
+    }
   }
-}

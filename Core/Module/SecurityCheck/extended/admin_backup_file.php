@@ -1,149 +1,156 @@
 <?php
-/**
- *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
- */
+  /**
+   *
+   * @copyright 2008 - https://www.clicshopping.org
+   * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
+   * @Licence GPL 2 & MIT
+   * @Info : https://www.clicshopping.org/forum/trademark/
+   *
+   */
 
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Registry;
-
-/**
- * This class performs a security check to ensure that no backup files are publicly accessible in the administrator backup directory.
- */
-class securityCheckExtended_admin_backup_file
-{
-  public $type = 'danger';
-  public $has_doc = true;
+  use ClicShopping\OM\CLICSHOPPING;
+  use ClicShopping\OM\HTTP;
+  use ClicShopping\OM\Registry;
 
   /**
-   * Constructor method initializes the class by loading language definitions
-   * and setting the title property.
-   *
-   * @return void
+   * This class performs a security check to ensure that no backup files
+   * are publicly accessible in the administrator backup directory.
    */
-  public function __construct()
+  class securityCheckExtended_admin_backup_file
   {
-    $CLICSHOPPING_Language = Registry::get('Language');
+    public string $type = 'danger';
+    public bool $has_doc = true;
+    public string $title;
 
-    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/extended/admin_backup_file', null, null, 'Shop');
+    public function __construct()
+    {
+      $CLICSHOPPING_Language = Registry::get('Language');
+
+      $CLICSHOPPING_Language->loadDefinitions('modules/security_check/extended/admin_backup_file', null, null, 'Shop');
+
+      $this->title = CLICSHOPPING::getDef('module_security_check_extended_admin_backup_file_title');
+    }
 
     /**
+     * Checks whether any backup file in the backup directory is publicly accessible.
      *
+     * @return bool True if no backup file is accessible (safe), false if one is reachable via HTTP 200.
      */
-      $this->title = CLICSHOPPING::getDef('module_security_check_extended_admin_backup_file_title');
-  }
+    public function pass(): bool
+    {
+      $backup_directory = CLICSHOPPING::BASE_DIR . 'Work/Backups/';
+      $backup_file = null;
 
-  /**
-   * Checks the presence and accessibility of backup files in a specific directory.
-   *
-   * The method inspects the backup directory for specific backup file types
-   * (zip, sql, gz) and prioritizes binary formats (zip and gz) over plain
-   * text files (sql). If a suitable file is found, it validates its accessibility
-   * by sending an HTTP request and checking the response.
-   *
-   * @return bool Returns true if the backup directory is empty, or no suitable
-   *              backup files are found, or the backup file is inaccessible;
-   *              otherwise, returns false.
-   */
-  public function pass()
-  {
-    $backup_directory = CLICSHOPPING::BASE_DIR . 'Work/Backups/';
+      if (is_dir($backup_directory)) {
+        $dir = dir($backup_directory);
+        $contents = [];
 
-    $backup_file = null;
+        while ($file = $dir->read()) {
+          if (!is_dir($backup_directory . $file)) {
+            $ext = substr($file, strrpos($file, '.') + 1);
 
-    if (is_dir($backup_directory)) {
-      $dir = dir($backup_directory);
-      $contents = [];
+            if (in_array($ext, ['zip', 'sql', 'gz']) && !isset($contents[$ext])) {
+              $contents[$ext] = $file;
 
-      while ($file = $dir->read()) {
-        if (!is_dir($backup_directory . $file)) {
-          $ext = substr($file, strrpos($file, '.') + 1);
-
-          if (in_array($ext, array('zip', 'sql', 'gz')) && !isset($contents[$ext])) {
-            $contents[$ext] = $file;
-
-            if ($ext != 'sql') { // zip and gz (binaries) are prioritized over sql (plain text)
-              break;
+              if ($ext !== 'sql') { // zip and gz (binaries) prioritised over sql (plain text)
+                break;
+              }
             }
           }
         }
+
+        $dir->close();
+
+        if (isset($contents['zip'])) {
+          $backup_file = $contents['zip'];
+        } elseif (isset($contents['gz'])) {
+          $backup_file = $contents['gz'];
+        } elseif (isset($contents['sql'])) {
+          $backup_file = $contents['sql'];
+        }
       }
 
-      if (isset($contents['zip'])) {
-        $backup_file = $contents['zip'];
-      } elseif (isset($contents['gz'])) {
-        $backup_file = $contents['gz'];
-      } elseif (isset($contents['sql'])) {
-        $backup_file = $contents['sql'];
+      if (!isset($backup_file)) {
+        return true; // No backup files found — nothing to expose
       }
-    }
 
-    $result = true;
-
-    if (isset($backup_file)) {
-      if (is_file(CLICSHOPPING::BASE_DIR . 'Work/Backups/' . $backup_file)) {
-        $request = $this->getHttpRequest(HTTP::getShopUrlDomain() . 'Core/Work/Backups/' . $backup_file);
-
-        $result = ($request['http_code'] !== 200);
+      if (!is_file($backup_directory . $backup_file)) {
+        return true;
       }
+
+      $httpCode = $this->getHttpRequest(HTTP::getShopUrlDomain() . 'Core/Work/Backups/' . $backup_file);
+
+      // Only fail if we got a real 200 OK — anything else (403, 404, error) means protected
+      return $httpCode !== 200;
     }
 
-    return $result;
-  }
-
-  /**
-   * Retrieves a predefined message based on the security check for admin backup file with context-specific data.
-   *
-   * @return string The formatted message with the appropriate backups path.
-   */
-  public function getMessage(): string
-  {
-    return CLICSHOPPING::getDef('module_security_check_extended_admin_backup_file_http_200', [
-      'backups_path' => CLICSHOPPING::getConfig('http_path', 'Shop') . 'Core/ClicShopping/Work/Backups/'
-    ]);
-  }
-
-  /**
-   * Sends an HTTP request to a given URL using the HEAD method and returns connection or response information.
-   *
-   * @param string|null $url The URL to send the HTTP request to. It can be null, in which case no request will be made.
-   * @return array|string Returns an array containing connection or response information if successful, or 'error' if the request fails.
-   */
-  public function getHttpRequest(?string $url)
-  {
-    $server = parse_url($url);
-
-    if (isset($server['port']) === false) {
-      $server['port'] = ($server['scheme'] == 'https') ? 443 : 80;
+    public function getMessage(): string
+    {
+      return CLICSHOPPING::getDef('module_security_check_extended_admin_backup_file_http_200', [
+        'backups_path' => CLICSHOPPING::getConfig('http_path', 'Shop') . 'Core/ClicShopping/Work/Backups/'
+      ]);
     }
 
-    if (isset($server['path']) === false) {
-      $server['path'] = '/';
-    }
+    /**
+     * Sends a HEAD request to $url and returns the HTTP status code,
+     * or null if the request fails (connection error, 403, 404, etc.).
+     *
+     * @param string|null $url
+     * @return int|null HTTP status code on success, null on any error/non-2xx response.
+     */
+    public function getHttpRequest(?string $url): ?int
+    {
+      if (empty($url)) {
+        return null;
+      }
 
-    if (!empty($server['scheme'])) {
-      $url = $server['scheme'] . '://' . $server['host'] . $server['path'] . (isset($server['query']) ? '?' . $server['query'] : '');
+      $server = parse_url($url);
+
+      if (empty($server['scheme']) || empty($server['host'])) {
+        return null;
+      }
+
+      $server['port'] ??= ($server['scheme'] === 'https') ? 443 : 80;
+      $server['path'] ??= '/';
+
+      $cleanUrl = $server['scheme'] . '://' . $server['host'] . $server['path']
+        . (isset($server['query']) ? '?' . $server['query'] : '');
+
       $options = [
-        'url' => $url,
-        'method' => 'HEAD',
-        'port' => $server['port'],
+        'url'     => $cleanUrl,
+        'method'  => 'HEAD',
+        'port'    => $server['port'],
         'timeout' => 10,
         'headers' => [],
       ];
-      
-      if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
+
+      if (isset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
         $options['auth'] = $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW'];
         $this->type = 'warning';
       }
-      
-      $responseData = HTTP::getResponse($options);
-      $info = $responseData['info'] ?? 'error';
-      return $info;
+
+      // Suppress trigger_error fired by HTTP::getResponse() on non-2xx responses.
+      // 403/404 are expected and mean the file is protected — not an application error.
+      set_error_handler(static function () { return true; });
+
+      try {
+        $responseData = HTTP::getResponse($options);
+      } catch (\Throwable $e) {
+        $responseData = false;
+      } finally {
+        restore_error_handler();
+      }
+
+      if ($responseData === false || !is_array($responseData)) {
+        return null; // Request failed or directory is protected — treat as safe
+      }
+
+      $info = $responseData['info'] ?? null;
+
+      if (!is_array($info)) {
+        return null;
+      }
+
+      return (int)($info['http_code'] ?? 0) ?: null;
     }
   }
-}

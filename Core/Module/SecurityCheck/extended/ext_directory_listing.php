@@ -18,8 +18,9 @@ use ClicShopping\OM\Registry;
  */
 class securityCheckExtended_ext_directory_listing
 {
-  public $type = 'warning';
+  public string $type = 'warning';
   public $has_doc = true;
+  public string $title;
 
   /**
    * Constructor method for initializing the module.

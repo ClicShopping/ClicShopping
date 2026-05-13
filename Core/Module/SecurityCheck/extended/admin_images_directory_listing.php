@@ -1,76 +1,74 @@
 <?php
-/**
- *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
- */
-
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Registry;
-
-/**
- * This class performs a security check to ensure that the admin images directory
- * does not allow directory listing or returns an HTTP 200 status code. It conducts
- * an HTTP request to the specified directory and verifies the response code.
- */
-class securityCheckExtended_admin_images_directory_listing
-{
-  public $type = 'warning';
-  public $has_doc = true;
-
   /**
-   * Constructor method for initializing the module's language definitions
-   * and setting the title of the security check module.
    *
-   * @return void
+   * @copyright 2008 - https://www.clicshopping.org
+   * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
+   * @Licence GPL 2 & MIT
+   * @Info : https://www.clicshopping.org/forum/trademark/
+   *
    */
-  public function __construct()
-  {
-    $CLICSHOPPING_Language = Registry::get('Language');
 
-    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/extended/admin_images_directory_listing', null, null, 'Shop');
-    /**
-     *
-     */
+  use ClicShopping\OM\CLICSHOPPING;
+  use ClicShopping\OM\HTTP;
+  use ClicShopping\OM\Registry;
+
+  class securityCheckExtended_admin_images_directory_listing
+  {
+    public string $type = 'warning';
+    public bool $has_doc = true;
+    public string $title;
+
+    public function __construct()
+    {
+      $CLICSHOPPING_Language = Registry::get('Language');
+
+      $CLICSHOPPING_Language->loadDefinitions('modules/security_check/extended/admin_images_directory_listing', null, null, 'Shop');
+
       $this->title = CLICSHOPPING::getDef('module_security_check_extended_admin_images_directory_listing_title');
+    }
+
+    /**
+     * Returns true if the images/ directory is NOT publicly browsable (403, 404, error).
+     * Returns false only when a real HTTP 200 is received (directory listing exposed).
+     */
+    public function pass(): bool
+    {
+      return $this->getHttpRequest(CLICSHOPPING::link('images/')) !== 200;
+    }
+
+    public function getMessage(): string
+    {
+      return CLICSHOPPING::getDef('module_security_check_extended_admin_images_directory_listing_http_200');
+    }
+
+    /**
+     * Sends an HTTP HEAD request and returns the HTTP status code as int,
+     * or null on any failure / non-2xx response.
+     */
+    public function getHttpRequest(string $url): ?int
+    {
+      // Suppress the trigger_error fired by HTTP::getResponse() on non-2xx responses.
+      // 403/404 are expected secure responses here — not application errors.
+      set_error_handler(static function () { return true; });
+
+      try {
+        $responseData = HTTP::getResponse(['url' => $url, 'method' => 'head']);
+      } catch (\Throwable $e) {
+        $responseData = false;
+      } finally {
+        restore_error_handler();
+      }
+
+      if ($responseData === false || !is_array($responseData)) {
+        return null;
+      }
+
+      $info = $responseData['info'] ?? null;
+
+      if (!is_array($info)) {
+        return null;
+      }
+
+      return (int)($info['http_code'] ?? 0) ?: null;
+    }
   }
-
-  /**
-   * Checks if the HTTP request to the specified 'images/' link does not return a 200 HTTP status code.
-   *
-   * @return bool True if the HTTP status code is not 200, false otherwise.
-   */
-  public function pass()
-  {
-    $request = $this->getHttpRequest(CLICSHOPPING::link('images/'));
-
-    return $request['http_code'] != 200;
-  }
-
-  /**
-   * Retrieves the message definition for the HTTP 200 status related to the admin images directory listing.
-   *
-   * @return string The localized message for the HTTP 200 status.
-   */
-  public function getMessage()
-  {
-    return CLICSHOPPING::getDef('module_security_check_extended_admin_images_directory_listing_http_200');
-  }
-
-  /**
-   * Sends an HTTP HEAD request to the provided URL and retrieves server information.
-   *
-   * @param string $url The URL to send the HTTP request to.
-   * @return array|string Returns an array containing server information if the request is successful, or a string 'error' in case of failure.
-   */
-  public function getHttpRequest(string $url): array
-  {
-    $result = HTTP::getResponse(['url' => $url, 'method' => 'head']);
-
-    return ['http_code' => $result !== false ? 200 : 0];
-  }
-}

@@ -1,74 +1,74 @@
 <?php
-/**
- *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
- */
-
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Registry;
-
-/**
- * Class that performs a security check to verify if the "admin/Core" directory is correctly secured.
- * It verifies that the directory does not provide a directory listing by checking the HTTP response code.
- */
-class securityCheckExtended_admin_includes_directory_listing
-{
-  public $type = 'warning';
-  public $has_doc = true;
-
   /**
-   * Constructor method to initialize the security check module.
-   * Loads necessary language definitions and sets the title property.
    *
-   * @return void
+   * @copyright 2008 - https://www.clicshopping.org
+   * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
+   * @Licence GPL 2 & MIT
+   * @Info : https://www.clicshopping.org/forum/trademark/
+   *
    */
-  public function __construct()
-  {
-    $CLICSHOPPING_Language = Registry::get('Language');
 
-    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/extended/admin_includes_directory_listing', null, null, 'Shop');
-    /**
-     *
-     */
+  use ClicShopping\OM\CLICSHOPPING;
+  use ClicShopping\OM\HTTP;
+  use ClicShopping\OM\Registry;
+
+  class securityCheckExtended_admin_includes_directory_listing
+  {
+    public string $type = 'warning';
+    public bool $has_doc = true;
+    public string $title;
+
+    public function __construct()
+    {
+      $CLICSHOPPING_Language = Registry::get('Language');
+
+      $CLICSHOPPING_Language->loadDefinitions('modules/security_check/extended/admin_includes_directory_listing', null, null, 'Shop');
+
       $this->title = CLICSHOPPING::getDef('module_security_check_extended_admin_includes_directory_listing_http_200');
+    }
+
+    /**
+     * Returns true if the Core/ directory is NOT publicly browsable (403, 404, error).
+     * Returns false only when a real HTTP 200 is received (directory listing exposed).
+     */
+    public function pass(): bool
+    {
+      return $this->getHttpRequest(CLICSHOPPING::link('Core/')) !== 200;
+    }
+
+    public function getMessage(): string
+    {
+      return CLICSHOPPING::getDef('module_security_check_extended_admin_includes_directory_listing_http_200');
+    }
+
+    /**
+     * Sends an HTTP HEAD request and returns the HTTP status code as int,
+     * or null on any failure / non-2xx response.
+     */
+    public function getHttpRequest(string $url): ?int
+    {
+      // Suppress trigger_error fired by HTTP::getResponse() on non-2xx responses.
+      // 403 is the expected secure response — not an application error.
+      set_error_handler(static function () { return true; });
+
+      try {
+        $responseData = HTTP::getResponse(['url' => $url, 'method' => 'head']);
+      } catch (\Throwable $e) {
+        $responseData = false;
+      } finally {
+        restore_error_handler();
+      }
+
+      if ($responseData === false || !is_array($responseData)) {
+        return null;
+      }
+
+      $info = $responseData['info'] ?? null;
+
+      if (!is_array($info)) {
+        return null;
+      }
+
+      return (int)($info['http_code'] ?? 0) ?: null;
+    }
   }
-
-  /**
-   *
-   * @return bool Returns true if the HTTP response code is not 200, otherwise returns false.
-   */
-  public function pass()
-  {
-    $request = $this->getHttpRequest(CLICSHOPPING::link('Core/'));
-
-    return $request['http_code'] != 200;
-  }
-
-  /**
-   * Retrieves the message associated with the security check.
-   *
-   * @return string The message defined in the context of the module's security check.
-   */
-  public function getMessage()
-  {
-    return CLICSHOPPING::getDef('module_security_check_extended_admin_includes_directory_listing_http_200');
-  }
-
-  /**
-   * Sends an HTTP HEAD request to a given URL and returns information about the request.
-   *
-   * @param string $url The target URL for the HTTP request.
-   * @return mixed An array of information about the HTTP request on success, or the string 'error' if the request fails.
-   */
-  public function getHttpRequest(string $url): array
-  {
-    $result = HTTP::getResponse(['url' => $url, 'method' => 'head']);
-
-    return ['http_code' => $result !== false ? 200 : 0];
-  }
-}

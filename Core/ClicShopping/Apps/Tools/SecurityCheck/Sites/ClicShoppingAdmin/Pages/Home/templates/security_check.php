@@ -1,81 +1,83 @@
 <?php
-/**
- *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
- */
+  /**
+   *
+   * @copyright 2008 - https://www.clicshopping.org
+   * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
+   * @Licence GPL 2 & MIT
+   * @Info : https://www.clicshopping.org/forum/trademark/
+   *
+   */
 
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTML;
-use ClicShopping\OM\Registry;
+  use ClicShopping\OM\CLICSHOPPING;
+  use ClicShopping\OM\HTML;
+  use ClicShopping\OM\Registry;
 
-$CLICSHOPPING_SecurityCheck = Registry::get('SecurityCheck');
-$CLICSHOPPING_Template = Registry::get('TemplateAdmin');
-$CLICSHOPPING_MessageStack = Registry::get('MessageStack');
-$CLICSHOPPING_Language = Registry::get('Language');
+  $CLICSHOPPING_SecurityCheck = Registry::get('SecurityCheck');
+  $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
+  $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
+  $CLICSHOPPING_Language = Registry::get('Language');
 
-$CLICSHOPPING_Language->loadDefinitions('security_check', null, null, 'Shop');
+  $CLICSHOPPING_Language->loadDefinitions('security_check', null, null, 'Shop');
 
-$info = CLICSHOPPING::getSystemInformation();
-$server = parse_url(CLICSHOPPING::getConfig('http_server'));
+  $info = CLICSHOPPING::getSystemInformation();
+  $server = parse_url(CLICSHOPPING::getConfig('http_server'));
 
-function sortSecmModules($a, $b)
-{
-  return strcasecmp($a['title'], $b['title']);
-}
-
-$types = ['info', 'warning', 'error', 'danger'];
-
-$modules = [];
-
-if ($secdir = @dir(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/')) {
-  while ($file = $secdir->read()) {
-    if (!is_dir(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/' . $file)) {
-      if (substr($file, strrpos($file, '.')) == '.php') {
-        $class = 'securityCheck_' . substr($file, 0, strrpos($file, '.'));
-
-        include(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/' . $file);
-        $instance = new $class();
-
-        $modules[] = [
-          'title' => isset($instance->title) ? $instance->title : substr($file, 0, strrpos($file, '.')),
-          'class' => $class,
-          'code' => substr($file, 0, strrpos($file, '.'))
-        ];
-      }
-}
+  function sortSecmModules($a, $b)
+  {
+    return strcasecmp($a['title'], $b['title']);
   }
 
-  $secdir->close();
-}
+  $types = ['info', 'warning', 'error', 'danger'];
 
-if ($extdir = @dir(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/extended/')) {
-  while ($file = $extdir->read()) {
-    if (!is_dir(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/extended/' . $file)) {
+  $modules = [];
 
-      if (substr($file, strrpos($file, '.')) == '.php') {
-        $class = 'securityCheckExtended_' . substr($file, 0, strrpos($file, '.'));
+  if ($secdir = @dir(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/')) {
+    while ($file = $secdir->read()) {
+      if (!is_dir(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/' . $file)) {
+        if (substr($file, strrpos($file, '.')) == '.php') {
+          $class = 'securityCheck_' . substr($file, 0, strrpos($file, '.'));
 
-        include(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/extended/' . $file);
+          include(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/' . $file);
+          $instance = new $class();
 
-        $instance = new $class();
-
-        $modules[] = [
-          'title' => isset($instance->title) ? $instance->title : substr($file, 0, strrpos($file, '.')),
-          'class' => $class,
-          'code' => substr($file, 0, strrpos($file, '.'))
-        ];
+          $modules[] = [
+            'title'    => isset($instance->title) ? $instance->title : substr($file, 0, strrpos($file, '.')),
+            'class'    => $class,
+            'code'     => substr($file, 0, strrpos($file, '.')),
+            'instance' => $instance,
+          ];
+        }
       }
-}
+    }
+
+    $secdir->close();
   }
 
-  $extdir->close();
-}
+  if ($extdir = @dir(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/extended/')) {
+    while ($file = $extdir->read()) {
+      if (!is_dir(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/extended/' . $file)) {
 
-usort($modules, 'sortSecmModules');
+        if (substr($file, strrpos($file, '.')) == '.php') {
+          $class = 'securityCheckExtended_' . substr($file, 0, strrpos($file, '.'));
+
+          include(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/SecurityCheck/extended/' . $file);
+
+          $instance = new $class();
+
+          $modules[] = [
+            'title'    => isset($instance->title) ? $instance->title : substr($file, 0, strrpos($file, '.')),
+            'class'    => $class,
+            'code'     => substr($file, 0, strrpos($file, '.')),
+            'instance' => $instance,
+          ];
+        }
+      }
+    }
+
+    $extdir->close();
+  }
+
+  usort($modules, 'sortSecmModules');
 ?>
 <div class="contentBody">
   <div class="row">
@@ -92,46 +94,42 @@ usort($modules, 'sortSecmModules');
     </div>
   </div>
   <div class="mt-1"></div>
-  <table border="0" width="100%" cellspacing="0" cellpadding="2">
-    <td>
-      <table class="table table-sm table-hover">
-        <thead>
-        <tr class="dataTableHeadingRow">
-          <th width="20">&nbsp;</th>
-          <th>
-      <?php echo $CLICSHOPPING_SecurityCheck->getDef('table_heading_title'); ?></td>
-    <th><?php echo $CLICSHOPPING_SecurityCheck->getDef('table_heading_module'); ?></th>
-    <th><?php echo $CLICSHOPPING_SecurityCheck->getDef('table_heading_info'); ?></th>
-    </tr>
+  <table class="table table-sm table-hover">
     <thead>
+    <tr class="dataTableHeadingRow">
+      <th width="20">&nbsp</th>
+      <th><?php echo $CLICSHOPPING_SecurityCheck->getDef('table_heading_title'); ?></th>
+      <th><?php echo $CLICSHOPPING_SecurityCheck->getDef('table_heading_module'); ?></th>
+      <th><?php echo $CLICSHOPPING_SecurityCheck->getDef('table_heading_info'); ?></th>
+    </tr>
+    </thead>
     <tbody>
 
     <?php
-    foreach ($modules as $module) {
-      $secCheck = $GLOBALS[$module['class']];
+      foreach ($modules as $module) {
+        $secCheck = $module['instance'];
 
-      if (!\in_array($secCheck->type, $types)) {
-        $secCheck->type = 'info';
+        if (!\in_array($secCheck->type, $types)) {
+          $secCheck->type = 'info';
+        }
+
+        $output = '';
+
+        if ($secCheck->pass()) {
+          $secCheck->type = 'success';
+        } else {
+          $output = $secCheck->getMessage();
+        }
+
+        echo '  <tr class="text-' . $secCheck->type . '">' . "\n" .
+          '    <td class="text-center text-' . $secCheck->type .'">' . $secCheck->type . '</td>' . "\n" .
+          '    <td vertical-align="top" style="white-space: nowrap;">' . HTML::outputProtected($module['title']) . '</td>' . "\n" .
+          '    <td>' . HTML::outputProtected($module['code']) . '</td>' . "\n" .
+          '    <td>' . $output . '</td>' . "\n" .
+          '  </tr>' . "\n";
       }
-
-      $output = '';
-
-      if ($secCheck->pass()) {
-        $secCheck->type = 'success';
-      } else {
-        $output = $secCheck->getMessage();
-      }
-
-      echo '  <tr class="text-' . $secCheck->type . '">' . "\n" .
-        '    <td class="text-center">' . $secCheck->type . '</td>' . "\n" .
-        '    <td valign="top" style="white-space: nowrap;">' . HTML::outputProtected($module['title']) . '</td>' . "\n" .
-        '    <td>' . HTML::outputProtected($module['code']) . '</td>' . "\n" .
-        '    <td>' . $output . '</td>' . "\n" .
-        '  </tr>' . "\n";
-    }
     ?>
     <tbody>
   </table>
-  </td>
-  </table>
 </div>
+<div class="py-2"></div>

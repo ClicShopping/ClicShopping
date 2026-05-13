@@ -21,11 +21,9 @@ class securityCheckExtended_admin_http_authentication
    * Represents a type of message or notification, typically used to categorize
    * or indicate the severity or context, such as 'warning'.
    */
-  public $type = 'warning';
-  /**
-   *
-   */
-  public $itle;
+  public string $type = 'warning';
+  public string $title;
+
 
   /**
    * Initializes the module by loading language definitions and setting the module title.

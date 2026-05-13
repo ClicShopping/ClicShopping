@@ -22,8 +22,9 @@ use ClicShopping\OM\Registry;
  */
 class securityCheckExtended_images_directory_listing
 {
-  public $type = 'warning';
+  public string $type = 'warning';
   public $has_doc = true;
+  public string $title;
 
   /**
    * Constructor method.

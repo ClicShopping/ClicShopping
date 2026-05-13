@@ -14,7 +14,7 @@ use ClicShopping\OM\Registry;
 class securityCheck_check_github_directory
 {
   public string $type = 'warning';
-
+  public string $title;
   /**
    * Constructor for the class.
    * It initializes the necessary language definitions and sets the title property.

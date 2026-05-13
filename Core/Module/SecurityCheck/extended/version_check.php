@@ -20,8 +20,9 @@ use ClicShopping\OM\Registry;
  */
 class securityCheckExtended_version_check
 {
-  public $type = 'warning';
+  public string $type = 'warning';
   public $has_doc = true;
+  public string $title;
 
   /**
    * Initializes the module by loading the required language definitions and setting the module title.
