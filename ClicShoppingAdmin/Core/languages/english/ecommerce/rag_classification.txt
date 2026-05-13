@@ -15,7 +15,7 @@ PRINCIPLE: What is the user looking for?
 
 1. DATABASE DATA (numbers, lists, calculations) → analytics
 2. DOCUMENT CONTENT (explanations, policies, articles) → semantic
-3. EXTERNAL WEB INFORMATION (trends, news, competitors) → web_search
+3. EXTERNAL WEB INFORMATION (trends, news, competitors, evolution) → web_search
 4. MULTIPLE different things → hybrid
 
 OPTIONAL ACTION SELECTION (Pure LLM Tool Selection):
@@ -81,7 +81,7 @@ If the query contains conjunctions connecting TWO DISTINCT QUESTIONS/REQUESTS, c
 - Look for: "and", "also", "or"
 - If found, check if the parts are TWO DISTINCT QUESTIONS → classify as "hybrid"
 - CRITICAL: Even if BOTH parts are analytics, if they are TWO SEPARATE QUESTIONS, classify as "hybrid"
-- Example: "What is the price AND what are the latest trends" → hybrid (analytics + web_search)
+- Example: "What is the price AND what are the latest trends or evolution" → hybrid (analytics + web_search)
 - Example: "pending orders AND monthly revenue" → hybrid (analytics + analytics) - TWO SEPARATE QUESTIONS
 
 🚨 EXCEPTION TO RULE #0 - SAME TYPE, SAME ENTITY (SINGLE QUERY):
@@ -119,7 +119,7 @@ If the query contains a price request WITH a target site indicator, classify as 
 STEP 3: WEB_SEARCH?
 
 * Requests EXTERNAL or CURRENT information?
-* Keywords: "latest", "recent", "trends", "news", "competitors"
+* Keywords: "latest", "recent", "trends", "news", "competitors", "evolution"
 * YES → {"type":"web_search"}
 * NO → Step 4
 

@@ -4,46 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment=" context enrichment">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="websearch refactoring">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/ExecutionPlan.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/ExecutionPlan.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/PlanExecutor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/PlanExecutor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubPlanExecutor/ResultSynthesizer.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubPlanExecutor/ResultSynthesizer.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubPlanExecutor/SemanticExecutor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubPlanExecutor/SemanticExecutor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubPlanExecutor/ToolExecutor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubPlanExecutor/ToolExecutor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubTaskPlanning/HybridQueryDecomposer.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubTaskPlanning/HybridQueryDecomposer.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubTaskPlanning/SubTaskPlannerPatternAnalysis.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubTaskPlanning/SubTaskPlannerPatternAnalysis.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubTaskPlanning/SubTaskPlannerWebSearch.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubTaskPlanning/SubTaskPlannerWebSearch.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Executor/AnalyticsQueryExecutor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Executor/AnalyticsQueryExecutor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/DomainRouter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/DomainRouter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/ResultFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/ResultFormatter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/SubResultFormatters/ComplexQueryFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/SubResultFormatters/ComplexQueryFormatter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Processor/QuerySplitter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Processor/QuerySplitter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Cache/SearchCacheManager.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Cache/SearchCacheManager.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Executor/WebSearchQueryExecutor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Executor/WebSearchQueryExecutor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Handler/WebSearchHandler.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Handler/WebSearchHandler.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Helper/Formatter/WebSearchFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Helper/Formatter/WebSearchFormatter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Logger/WebSearchLogger.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Logger/WebSearchLogger.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Patterns/WebSearchPatterns.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Patterns/WebSearchPatterns.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Patterns/index.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Tool/WebSearchTool.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/ClicShoppingAdmin/CockpitAI/SubRules/RuleAdjuster.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/ClicShoppingAdmin/CockpitAI/SubRules/RuleAdjuster.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/ClicShoppingAdmin/SEO/Agents/SerpAgent.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/ClicShoppingAdmin/SEO/Agents/SerpAgent.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/ClicShoppingAdmin/SEO/SeoSerpReportRepository.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/ClicShoppingAdmin/SEO/SeoSerpReportRepository.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/Hybrid/EcommerceResultAggregator.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/Hybrid/EcommerceResultAggregator.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Cronjob/ProcessSeoFaqBatch.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Cronjob/ProcessSeoFaqBatch.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/ProductsSerp.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/ProductsSerp.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/rag_web_search_requests.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/rag_web_search_requests.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/rag_web_search_results.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/rag_web_search_results.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/seo_serp_reports.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/seo_serp_reports.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Sites/Shop/Shop.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Sites/Shop/Shop.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/_htaccess" beforeDir="false" afterPath="$PROJECT_DIR$/_htaccess" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/install/Db/clicshopping.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_special/ps_products_special.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_special/ps_products_special.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql_upgrade/update_4_28.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sql_upgrade/update_4_28.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_analytics_agent.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_analytics_agent.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_classification.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_classification.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -218,7 +182,7 @@
       <workItem from="1778427765443" duration="79000" />
       <workItem from="1778483153635" duration="44000" />
       <workItem from="1778602344169" duration="86000" />
-      <workItem from="1778679284767" duration="2018000" />
+      <workItem from="1778679284767" duration="2922000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -508,7 +472,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778679517658</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL-00037" summary="websearch refactoring">
+      <option name="closed" value="true" />
+      <created>1778681542451</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1778681542451</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -538,7 +510,8 @@
     <MESSAGE value="librairies updated" />
     <MESSAGE value="language improvement" />
     <MESSAGE value=" context enrichment" />
-    <option name="LAST_COMMIT_MESSAGE" value=" context enrichment" />
+    <MESSAGE value="websearch refactoring" />
+    <option name="LAST_COMMIT_MESSAGE" value="websearch refactoring" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

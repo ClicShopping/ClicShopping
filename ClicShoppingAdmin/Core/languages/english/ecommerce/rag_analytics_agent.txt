@@ -1494,7 +1494,7 @@ CROSS JOIN (
 **Use Case**: Smooth out short-term fluctuations, identify trends.
 
 **REAL EXAMPLE FROM USER**:
-Query: "Analyse la tendance des ventes avec moyenne mobile sur 3 mois"
+Query: "Analyse la tendance ou evolution des ventes avec moyenne mobile sur 3 mois"
 
 **SQL Pattern** (3-month moving average):
 SELECT 
