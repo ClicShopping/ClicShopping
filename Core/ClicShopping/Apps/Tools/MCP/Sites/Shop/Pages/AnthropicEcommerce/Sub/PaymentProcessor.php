@@ -10,6 +10,8 @@
 
 namespace ClicShopping\Apps\Tools\MCP\Sites\Shop\Pages\AnthropicEcommerce\Sub;
 
+use ClicShopping\OM\HTTP;
+
 /**
  * PaymentProcessor — AnthropicEcommerce MCP
  *
