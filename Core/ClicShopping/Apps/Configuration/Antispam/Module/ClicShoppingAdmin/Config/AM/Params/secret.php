@@ -58,28 +58,21 @@ class secret extends \ClicShopping\Apps\Configuration\Antispam\Module\ClicShoppi
   private function generateSecureSecret(): string
   {
     try {
-      // Generate 32 random bytes (256 bits)
-      $randomBytes = random_bytes(32);
-      
-      // Convert to hexadecimal (64 characters)
-      $secret = bin2hex($randomBytes);
-      
-      return $secret;
+      return bin2hex(random_bytes(32));
     } catch (\Exception $e) {
-      // Fallback: use multiple sources of entropy
-      // This should never happen on PHP 7.0+ but provides safety
-      $fallback = hash('sha256', 
-        uniqid('antispam_', true) . 
-        microtime(true) . 
-        mt_rand() . 
-        (function_exists('random_bytes') ? bin2hex(random_bytes(16)) : '')
+      // Fallback: Still use high-entropy sources, but swap mt_rand for random_int
+      $fallback = hash('sha256',
+        uniqid('antispam_', true) .
+        microtime(true) .
+        random_int(PHP_INT_MIN, PHP_INT_MAX) .
+        bin2hex(random_bytes(16))
       );
-      
+
       trigger_error(
         'Failed to generate cryptographically secure secret, using fallback. Error: ' . $e->getMessage(),
         E_USER_WARNING
       );
-      
+
       return $fallback;
     }
   }
@@ -133,20 +126,20 @@ class secret extends \ClicShopping\Apps\Configuration\Antispam\Module\ClicShoppi
     $input .= '<script>
     function regenerateAntispamSecret() {
       if (confirm("' . $this->app->getDef('cfg_antispam_secret_regenerate_confirm') . '")) {
-        // Generate new secret via AJAX or reload with parameter
         var newSecret = generateRandomHex(32);
         document.getElementById("' . $this->key . '").value = newSecret;
         alert("' . $this->app->getDef('cfg_antispam_secret_regenerated') . '");
       }
     }
     
-    function generateRandomHex(length) {
-      var result = "";
-      var characters = "0123456789abcdef";
-      for (var i = 0; i < length * 2; i++) {
-        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    function generateRandomHex(len) {
+      var uint8 = new Uint8Array(len);
+      window.crypto.getRandomValues(uint8);
+      var hex = "";
+      for (var i = 0; i < uint8.length; i++) {
+        hex += uint8[i].toString(16).padStart(2, "0");
       }
-      return result;
+      return hex;
     }
     </script>';
     

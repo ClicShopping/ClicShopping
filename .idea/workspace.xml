@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little update">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="code update" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,7 +22,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7403" />
+    <option name="cachedIndexableFilesCount" value="7402" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -185,6 +183,7 @@
       <workItem from="1778747585690" duration="63000" />
       <workItem from="1778750238761" duration="724000" />
       <workItem from="1778759019582" duration="2482000" />
+      <workItem from="1778765605020" duration="27000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -538,14 +537,21 @@
       <option name="project" value="LOCAL" />
       <updated>1778759025956</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="code update">
+      <option name="closed" value="true" />
+      <created>1778765627691</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1778765627691</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="version4.28" />
     <MESSAGE value="security improvment" />
     <MESSAGE value="security improvement" />
     <MESSAGE value="fix" />
@@ -570,7 +576,8 @@
     <MESSAGE value="librairies updated" />
     <MESSAGE value="add new sql" />
     <MESSAGE value="little update" />
-    <option name="LAST_COMMIT_MESSAGE" value="little update" />
+    <MESSAGE value="code update" />
+    <option name="LAST_COMMIT_MESSAGE" value="code update" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
