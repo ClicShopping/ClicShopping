@@ -82,7 +82,7 @@ class TimeRangePattern
     // Check for relative time patterns
     $relativePatterns = self::getRelativeTimePatterns();
     foreach ($relativePatterns as $pattern => $range) {
-      if (strpos($query, $pattern) !== false) {
+      if (str_contains($query, $pattern)) {
         return $range;
       }
     }

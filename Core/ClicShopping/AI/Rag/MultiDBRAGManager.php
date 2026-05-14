@@ -1509,7 +1509,7 @@ class MultiDBRAGManager
 
       // Remove prefix and _embedding suffix
       $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-      if (!empty($prefix) && strpos($tableName, $prefix) === 0) {
+      if (!empty($prefix) && str_starts_with($tableName, $prefix)) {
         $tableName = substr($tableName, strlen($prefix));
       }
       $tableName = str_replace('_embedding', '', $tableName);

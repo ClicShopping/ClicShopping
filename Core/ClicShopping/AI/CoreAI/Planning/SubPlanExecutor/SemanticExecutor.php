@@ -338,8 +338,9 @@ class SemanticExecutor
           if ($docName === null && isset($metadata['source_table'])) {
             $tableName = $metadata['source_table'];
             // Remove prefix and _embedding suffix
-            $prefix = defined('CLICSHOPPING_DB_TABLE_PREFIX') ? CLICSHOPPING_DB_TABLE_PREFIX : 'clic_';
-            if (strpos($tableName, $prefix) === 0) {
+            $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+
+            if (str_starts_with($tableName, $prefix)) {
               $tableName = substr($tableName, strlen($prefix));
             }
             $tableName = str_replace('_embedding', '', $tableName);
@@ -500,7 +501,7 @@ class SemanticExecutor
 
     // Remove table prefix if present
     $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-    if (!empty($prefix) && strpos($tableName, $prefix) === 0) {
+    if (!empty($prefix) && str_starts_with($tableName, $prefix)) {
       $tableName = substr($tableName, strlen($prefix));
     }
 

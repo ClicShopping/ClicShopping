@@ -524,7 +524,7 @@ class WebSearchFormatter extends AbstractFormatter
       $isHybrid = count($modesUsed) > 1;
     } elseif (isset($metadata['mode_type'])) {
       $modesUsed = [$metadata['mode_type']];
-      $isHybrid = (strpos($metadata['mode_type'], 'hybrid') !== false);
+      $isHybrid = str_contains($metadata['mode_type'], 'hybrid');
     }
 
     // Display hybrid label if applicable
@@ -536,16 +536,16 @@ class WebSearchFormatter extends AbstractFormatter
     $badges = [];
     foreach ($modesUsed as $mode) {
       $badge = '';
-      
-      if (strpos($mode, 'mode_a') !== false || strpos($mode, 'ai_overview') !== false) {
+
+      if (str_contains($mode, 'mode_a') || str_contains($mode, 'ai_overview')) {
         $badge = "🤖 " . $this->language->getDef('text_rag_mode_ai_overview');
-      } elseif (strpos($mode, 'mode_d') !== false || strpos($mode, 'amazon') !== false) {
+      } elseif (str_contains($mode, 'mode_d') || str_contains($mode, 'amazon')) {
         $badge = "🛒 " . $this->language->getDef('text_rag_mode_amazon_shopping');
-      } elseif (strpos($mode, 'mode_b') !== false || strpos($mode, 'shopping') !== false) {
+      } elseif (str_contains($mode, 'mode_b') || str_contains($mode, 'shopping')) {
         $badge = "🛒 " . $this->language->getDef('text_rag_mode_shopping');
-      } elseif (strpos($mode, 'mode_c') !== false || strpos($mode, 'rag') !== false) {
+      } elseif (str_contains($mode, 'mode_c') || str_contains($mode, 'rag')) {
         $badge = "🔍 " . $this->language->getDef('text_rag_mode_rag_scraping');
-      } elseif (strpos($mode, 'mode_e') !== false || strpos($mode, 'google_trends') !== false) {
+      } elseif (str_contains($mode, 'mode_e') || str_contains($mode, 'google_trends')) {
         $badge = "📈 " . $this->language->getDef('text_rag_mode_google_trends');
       }
       

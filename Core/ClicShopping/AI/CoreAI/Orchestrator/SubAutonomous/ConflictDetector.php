@@ -189,10 +189,10 @@ class ConflictDetector
 
     // Check if goals contain contradictory terms
     foreach ($contradictions as $pair) {
-      $has1in1 = strpos($goal1, $pair[0]) !== false;
-      $has2in1 = strpos($goal1, $pair[1]) !== false;
-      $has1in2 = strpos($goal2, $pair[0]) !== false;
-      $has2in2 = strpos($goal2, $pair[1]) !== false;
+      $has1in1 = str_contains($goal1, $pair[0]);
+      $has2in1 = str_contains($goal1, $pair[1]);
+      $has1in2 = str_contains($goal2, $pair[0]);
+      $has2in2 = str_contains($goal2, $pair[1]);
 
       // If obj1 has first term and obj2 has second term (or vice versa)
       if (($has1in1 && $has2in2) || ($has2in1 && $has1in2)) {
@@ -349,7 +349,7 @@ class ConflictDetector
     ];
 
     foreach ($resourceKeywords as $keyword) {
-      if (strpos($text, $keyword) !== false) {
+      if (str_contains($text, $keyword)) {
         $resources[] = $keyword;
       }
     }
@@ -381,7 +381,7 @@ class ConflictDetector
 
     foreach ($operationPatterns as $operation => $keywords) {
       foreach ($keywords as $keyword) {
-        if (strpos($text, $keyword) !== false) {
+        if (str_contains($text, $keyword)) {
           $operations[] = $operation;
           break;
         }

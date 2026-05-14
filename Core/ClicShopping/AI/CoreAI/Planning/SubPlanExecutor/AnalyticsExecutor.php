@@ -1097,23 +1097,23 @@ class AnalyticsExecutor
     $errorLower = strtolower($errorMessage);
 
     // Check for common error patterns
-    if (strpos($errorLower, 'column') !== false || strpos($errorLower, 'field') !== false) {
+    if (str_contains($errorLower, 'column') || str_contains($errorLower, 'field')) {
       return "The database may not have the required columns for {$temporalPeriod} aggregation. Try a different time period or check your data schema.";
     }
 
-    if (strpos($errorLower, 'table') !== false) {
+    if (str_contains($errorLower, 'table')) {
       return "The required table for {$temporalPeriod} aggregation may not exist. Verify your database structure.";
     }
 
-    if (strpos($errorLower, 'syntax') !== false) {
+    if (str_contains($errorLower, 'syntax')) {
       return "There was a SQL syntax error. Try rephrasing your query or using a simpler time period.";
     }
 
-    if (strpos($errorLower, 'permission') !== false || strpos($errorLower, 'access') !== false) {
+    if (str_contains($errorLower, 'permission') || str_contains($errorLower, 'access')) {
       return "You may not have permission to access the required data. Contact your administrator.";
     }
 
-    if (strpos($errorLower, 'timeout') !== false) {
+    if (str_contains($errorLower, 'timeout')) {
       return "The query took too long. Try a shorter time range or simpler aggregation.";
     }
 

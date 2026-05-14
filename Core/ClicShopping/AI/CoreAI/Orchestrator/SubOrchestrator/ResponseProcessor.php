@@ -139,7 +139,7 @@ class ResponseProcessor
     if (is_array($executionResult)) {
       if (isset($executionResult['text_response']) && !empty($executionResult['text_response'])) {
         // Check if text_response is NOT the JSON fallback
-        if (strpos($executionResult['text_response'], 'Résultat:') === false) {
+        if (!str_contains($executionResult['text_response'], 'Résultat:')) {
           return $executionResult['text_response'];
         }
       }
@@ -541,13 +541,13 @@ class ResponseProcessor
     
     // Priority 4: Check if rawResult has 'text_response' field (but not if it's the JSON fallback)
     if (isset($rawResult['text_response']) && !empty($rawResult['text_response'])) {
-      if (strpos($rawResult['text_response'], 'Résultat:') === false) {
+      if (!str_contains($rawResult['text_response'], 'Résultat:')) {
         return $rawResult['text_response'];
       }
     }
     
     // Priority 5: Use finalResponse if available (but not if it's the JSON fallback)
-    if (!empty($finalResponse) && strpos($finalResponse, 'Résultat:') === false) {
+    if (!empty($finalResponse) && !str_contains($finalResponse, 'Résultat:')) {
       return $finalResponse;
     }
     

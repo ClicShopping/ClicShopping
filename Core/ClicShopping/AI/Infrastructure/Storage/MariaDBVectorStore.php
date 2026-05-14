@@ -63,7 +63,7 @@ class MariaDBVectorStore extends VectorStoreBase
     $this->embeddingGenerator = $embeddingGenerator;
     $prefix = CLICSHOPPING::getConfig('db_table_prefix');
 
-    if (!empty($prefix) && strpos($tableName, $prefix) === 0) {
+    if (!empty($prefix) && str_starts_with($tableName, $prefix)) {
       $this->tableName = $tableName;
     } else {
       $this->tableName = $prefix . $tableName;

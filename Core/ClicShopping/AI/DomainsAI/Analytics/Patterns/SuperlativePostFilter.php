@@ -56,7 +56,7 @@ class SuperlativePostFilter
     $query = strtolower($query);
     
     foreach (SuperlativePatterns::$superlativeKeywords as $pattern) {
-      if (strpos($query, $pattern) !== false) {
+      if (str_contains($query, $pattern)) {
         return true;
       }
     }
@@ -120,7 +120,7 @@ class SuperlativePostFilter
     $detected = [];
     
     foreach (SuperlativePatterns::$superlativeKeywords as $pattern) {
-      if (strpos($query, $pattern) !== false) {
+      if (str_contains($query, $pattern)) {
         $detected[] = $pattern;
       }
     }

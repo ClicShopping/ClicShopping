@@ -103,7 +103,7 @@ class AnalyticsPatterns
     $metrics = self::getMetricsPatterns();
     
     foreach ($metrics as $pattern => $metric) {
-      if (strpos($query, $pattern) !== false) {
+      if (str_contains($query, $pattern)) {
         return $metric;
       }
     }

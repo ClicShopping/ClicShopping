@@ -258,7 +258,7 @@ class UnifiedQueryAnalyzer
         error_log("[INFO : ANALYSE] [UnifiedQueryAnalyzer] Prompt Loading Verification:");
         error_log("  Prompt length: " . strlen($prompt) . " characters");
         error_log("  Prompt preview (first 200 chars): " . substr($prompt, 0, 200) . "...");
-        error_log("  Query in prompt: " . (strpos($prompt, $query) !== false ? 'YES' : 'NO'));
+        error_log("  Query in prompt: " . (str_contains($prompt, $query) ? 'YES' : 'NO'));
       }
 
       // Single GPT call for everything
@@ -1120,7 +1120,7 @@ class UnifiedQueryAnalyzer
       error_log("UnifiedQueryAnalyzer: Built prompt from language file sections");
       error_log("UnifiedQueryAnalyzer: Query to analyze: {$query}");
       error_log("UnifiedQueryAnalyzer: Total prompt length: " . strlen($prompt) . " characters");
-      error_log("UnifiedQueryAnalyzer: Prompt contains query: " . (strpos($prompt, $query) !== false ? 'YES' : 'NO'));
+      error_log("UnifiedQueryAnalyzer: Prompt contains query: " . (str_contains($prompt, $query) ? 'YES' : 'NO'));
     }
 
     return $prompt;

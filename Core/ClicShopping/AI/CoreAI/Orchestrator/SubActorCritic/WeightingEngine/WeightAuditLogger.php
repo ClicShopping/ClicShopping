@@ -334,9 +334,9 @@ class WeightAuditLogger
     private function escapeCsvValue(string $value): string
     {
         // Escape quotes and wrap in quotes if contains comma, quote, or newline
-        if (strpos($value, ',') !== false || strpos($value, '"') !== false || strpos($value, "\n") !== false) {
-            return '"' . str_replace('"', '""', $value) . '"';
-        }
+      if (str_contains($value, ',') || str_contains($value, '"') || str_contains($value, "\n")) {
+        return '"' . str_replace('"', '""', $value) . '"';
+      }
         return $value;
     }
     

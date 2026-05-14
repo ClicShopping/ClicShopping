@@ -273,6 +273,17 @@ class CorrectionMemory
   }
 
   /**
+   * Clean the table
+   * @param string $fullTableName
+   * @return string
+   */
+  private function normalizeTableName(string $fullTableName): string
+  {
+    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+    return str_replace([$prefix, '_embedding'], '', $fullTableName);
+  }
+
+  /**
    * Attempts to extract entity_type from SQL query by analyzing table names
    * 
    * Uses centralized EntityRegistry to dynamically discover entity types from table names.
@@ -290,50 +301,53 @@ class CorrectionMemory
     // Use centralized EntityRegistry for dynamic entity type discovery
     $registry = EntityRegistry::getInstance();
     $allTables = $registry->getAllEntityTables();
-    
+
     // Get table prefix dynamically
     $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-    
+
     // Build a mapping of table names (without prefix) to entity types
     $tableToEntityType = [];
     foreach ($allTables as $fullTableName) {
       $entityType = $registry->getEntityTypeForTable($fullTableName);
       // Remove prefix and _embedding suffix to get base table name
-      $tableName = str_replace([$prefix, '_embedding'], '', $fullTableName);
-      $tableToEntityType[$tableName] = $entityType;
+// Build a mapping of table names (without prefix) to entity types
+      $tableToEntityType = array_combine(
+        array_map($this->normalizeTableName(...), $allTables),
+        array_map($registry->getEntityTypeForTable(...), $allTables)
+      );
     }
-    
+
     // Pattern 1: FROM {table_name}
     if (preg_match('/FROM\s+(?:\w+\.)?(\w+)/i', $query, $matches)) {
       $tableName = strtolower($matches[1]);
       // Remove table prefix if present
       $tableName = preg_replace('/^' . preg_quote($prefix, '/') . '/', '', $tableName);
-      
+
       if (isset($tableToEntityType[$tableName])) {
         return $tableToEntityType[$tableName];
       }
     }
-    
+
     // Pattern 2: JOIN {table_name}
     if (preg_match('/JOIN\s+(?:\w+\.)?(\w+)/i', $query, $matches)) {
       $tableName = strtolower($matches[1]);
       // Remove table prefix if present
       $tableName = preg_replace('/^' . preg_quote($prefix, '/') . '/', '', $tableName);
-      
+
       if (isset($tableToEntityType[$tableName])) {
         return $tableToEntityType[$tableName];
       }
     }
-    
+
     // Pattern 3: {table}_id column name
     if (preg_match('/(?:WHERE|AND)\s+(?:\w+\.)?(\w+)_id\s*=/i', $query, $matches)) {
       $entityName = strtolower($matches[1]);
-      
+
       if (isset($tableToEntityType[$entityName])) {
         return $tableToEntityType[$entityName];
       }
     }
-    
+
     return null;
   }
 

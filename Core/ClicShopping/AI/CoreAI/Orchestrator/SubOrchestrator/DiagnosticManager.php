@@ -263,22 +263,22 @@ class DiagnosticManager
   {
     $message = strtolower($errorMessage);
 
-    if (strpos($message, 'database') !== false || strpos($message, 'sql') !== false) {
+    if (str_contains($message, 'database') || str_contains($message, 'sql')) {
       return 'database';
     }
-    if (strpos($message, 'timeout') !== false || strpos($message, 'time out') !== false) {
+    if (str_contains($message, 'timeout') || str_contains($message, 'time out')) {
       return 'timeout';
     }
-    if (strpos($message, 'memory') !== false) {
+    if (str_contains($message, 'memory')) {
       return 'memory';
     }
-    if (strpos($message, 'validation') !== false || strpos($message, 'invalid') !== false) {
+    if (str_contains($message, 'validation') || str_contains($message, 'invalid')) {
       return 'validation';
     }
-    if (strpos($message, 'classification') !== false || strpos($message, 'intent') !== false) {
+    if (str_contains($message, 'classification') || str_contains($message, 'intent')) {
       return 'classification';
     }
-    if (strpos($message, 'api') !== false || strpos($message, 'gpt') !== false) {
+    if (str_contains($message, 'api') || str_contains($message, 'gpt')) {
       return 'api';
     }
 

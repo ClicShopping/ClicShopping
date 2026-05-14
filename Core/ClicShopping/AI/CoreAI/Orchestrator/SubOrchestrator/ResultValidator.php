@@ -471,7 +471,7 @@ class ResultValidator
     $isValidSource = false;
     
     foreach ($validSourceTypes as $validType) {
-      if (strpos($sourceType, strtolower($validType)) !== false) {
+      if (str_contains($sourceType, strtolower($validType))) {
         $isValidSource = true;
         break;
       }
@@ -520,7 +520,7 @@ class ResultValidator
     ];
     
     foreach ($genericPhrases as $phrase) {
-      if (strpos($response, $phrase) !== false) {
+      if (str_contains($response, $phrase)) {
         $validationErrors[] = "Response contains generic LLM phrase indicating lack of knowledge";
         return false;
       }

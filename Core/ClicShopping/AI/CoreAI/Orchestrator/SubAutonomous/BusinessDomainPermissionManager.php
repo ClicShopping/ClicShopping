@@ -322,7 +322,7 @@ class BusinessDomainPermissionManager
       if ($permissionLevel === self::PERMISSION_PROPOSE) {
         $writeActions = ['create', 'update', 'delete', 'modify', 'propose'];
         foreach ($writeActions as $writeAction) {
-          if (strpos($action, $writeAction) !== false) {
+          if (str_contains($action, $writeAction)) {
             return true;
           }
         }

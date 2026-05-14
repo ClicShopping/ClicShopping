@@ -248,7 +248,7 @@ class SqlSecurityValidator
      */
     private function hasComments(string $sql): bool
     {
-        return preg_match('/--/', $sql) || preg_match('/\/\*/', $sql);
+      return str_contains($sql, '--') || str_contains($sql, '/*');
     }
 
     /**
@@ -259,7 +259,7 @@ class SqlSecurityValidator
      */
     private function hasUnionStatement(string $sql): bool
     {
-        return preg_match('/union/i', $sql);
+      return stripos($sql, 'union') !== false;
     }
 
     /**

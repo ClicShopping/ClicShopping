@@ -218,7 +218,7 @@ class FeedbackLearner
     
     foreach ($keywords as $type => $words) {
       foreach ($words as $word) {
-        if (strpos($text, $word) !== false) {
+        if (str_contains($text, $word)) {
           return $type;
         }
       }

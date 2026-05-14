@@ -1114,10 +1114,10 @@ class Db extends PDO
       foreach ($schema['foreign'] as $name => $fields) {
         // Escape foreign key name for SQL injection protection
         $escaped_fk_name = self::prepareIdentifier($name);
-        
+
         // Escape column names in foreign key definition
-        $escaped_cols = array_map([self::class, 'prepareIdentifier'], $fields['col']);
-        $escaped_ref_cols = array_map([self::class, 'prepareIdentifier'], $fields['ref_col']);
+        $escaped_cols = array_map(self::prepareIdentifier(...), $fields['col']);
+        $escaped_ref_cols = array_map(self::prepareIdentifier(...), $fields['ref_col']);
         
         // Escape reference table name
         $escaped_ref_table = self::prepareIdentifier($fields['ref_table']);

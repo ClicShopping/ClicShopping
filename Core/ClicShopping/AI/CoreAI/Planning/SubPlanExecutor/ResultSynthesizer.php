@@ -1429,11 +1429,11 @@ class ResultSynthesizer
         if (!$hasSources) {
           $sourceType = strtolower($finalResult['source_attribution']['source_type'] ?? '');
           $isLLMFallback = $hasTextResponse && (
-            strpos($sourceType, 'llm') !== false ||
-            strpos($sourceType, 'general knowledge') !== false ||
-            strpos($sourceType, 'conversation') !== false ||
-            strpos($sourceType, 'memory') !== false
-          );
+              str_contains($sourceType, 'llm') ||
+              str_contains($sourceType, 'general knowledge') ||
+              str_contains($sourceType, 'conversation') ||
+              str_contains($sourceType, 'memory')
+            );
 
           if (!$isLLMFallback) {
             $sourcesStatus = isset($finalResult['sources']) ? 'empty' : 'not set';
@@ -1503,22 +1503,23 @@ class ResultSynthesizer
     // Check for common error patterns and generate appropriate messages
     foreach ($errors as $error) {
       // Pattern: "Semantic result missing sources and data"
-      if (strpos($error, 'Semantic result missing sources and data') !== false) {
+      if (str_contains($error, 'Semantic result missing sources and data')) {
         return "I couldn't find any information about that in the database. The requested content (like terms and conditions) may not be available yet. Please try asking about something else or contact support to add this content.";
       }
 
-      // Pattern: "Analytics result missing data"
-      if (strpos($error, 'Analytics result missing data') !== false) {
+// Pattern: "Analytics result missing data"
+      if (str_contains($error, 'Analytics result missing data')) {
         return "I couldn't retrieve the requested data. This might be because there are no records matching your query, or the data hasn't been entered yet. Please try a different query or check if the data exists.";
       }
 
-      // Pattern: "Hybrid result missing"
-      if (strpos($error, 'Hybrid result missing') !== false) {
+// Pattern: "Hybrid result missing"
+      if (str_contains($error, 'Hybrid result missing')) {
         return "I couldn't complete your request because some of the required information is missing. Please try breaking your question into smaller parts or asking about something else.";
       }
 
-      // Pattern: "Empty response"
-      if (strpos($error, 'empty') !== false || strpos($error, 'Empty') !== false) {
+// Pattern: "Empty response"
+// Note: Using stripos here handles 'empty', 'Empty', 'EMPTY', etc., in one go
+      if (stripos($error, 'empty') !== false) {
         return "I couldn't find any results for your query. The information you're looking for might not be available in the system yet. Please try rephrasing your question or asking about something else.";
       }
     }

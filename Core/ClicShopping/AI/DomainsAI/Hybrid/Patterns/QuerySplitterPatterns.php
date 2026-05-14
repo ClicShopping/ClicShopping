@@ -235,7 +235,7 @@ class QuerySplitterPatterns
     $query = strtolower($query);
     
     foreach (self::FINANCIAL_METRICS as $pattern => $metric) {
-      if (strpos($query, $pattern) !== false) {
+      if (str_contains($query, $pattern)) {
         return $metric;
       }
     }
@@ -283,7 +283,7 @@ class QuerySplitterPatterns
     
     // Check for relative time patterns
     foreach (self::RELATIVE_TIME_PATTERNS as $pattern => $range) {
-      if (strpos($query, $pattern) !== false) {
+      if (str_contains($query, $pattern)) {
         return $range;
       }
     }

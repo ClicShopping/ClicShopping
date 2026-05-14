@@ -159,7 +159,7 @@ class SchemaValidator
                     $column = $value;
                 } else {
                     // Format: ['table.column']
-                    if (strpos($value, '.') !== false) {
+                    if (str_contains($value, '.')) {
                         list($table, $column) = explode('.', $value, 2);
                     } else {
                         // Cannot validate without table context

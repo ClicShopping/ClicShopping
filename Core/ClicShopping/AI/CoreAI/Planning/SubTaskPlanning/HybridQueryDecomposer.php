@@ -636,9 +636,9 @@ class HybridQueryDecomposer
             $keywords[] = $entityType;
             $keywords[] = str_replace('_', ' ', $entityType);
 
-            if (substr($entityType, -3) === 'ies') {
+          if (str_ends_with($entityType, 'ies')) {
                 $keywords[] = substr($entityType, 0, -3) . 'y';
-            } elseif (substr($entityType, -1) === 's') {
+          } elseif (str_ends_with($entityType, 's')) {
                 $keywords[] = substr($entityType, 0, -1);
             } else {
                 $keywords[] = $entityType . 's';
@@ -700,9 +700,9 @@ class HybridQueryDecomposer
     private function hasKeyword(string $text, array $keywords): bool
     {
         foreach ($keywords as $keyword) {
-            if (strpos($text, $keyword) !== false) {
-                return true;
-            }
+          if (str_contains($text, $keyword)) {
+            return true;
+          }
         }
         return false;
     }

@@ -555,7 +555,7 @@ class ValidationAgent
 
     // Ajouter le préfixe si nécessaire
     $prefix = CLICSHOPPING::getConfig('db_prefix');
-    if (!empty($prefix) && strpos($table, $prefix) !== 0) {
+    if (!empty($prefix) && !str_starts_with($table, $prefix)) {
       $table = $prefix . $table;
     }
 

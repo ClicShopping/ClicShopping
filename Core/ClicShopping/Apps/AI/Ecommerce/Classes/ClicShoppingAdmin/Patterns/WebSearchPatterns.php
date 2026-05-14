@@ -532,7 +532,7 @@ class WebSearchPatterns
     $needsContext = false;
 
     foreach ($contextualKeywords as $keyword) {
-      if (strpos($lowerQuery, $keyword) !== false) {
+      if (str_contains($lowerQuery, $keyword)) {
         $needsContext = true;
         break;
       }
