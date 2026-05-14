@@ -73,33 +73,29 @@ class fo_footer_multi_template
 
         $footer_tag = '<!-- Start footer social footer -->' . "\n";
         $footer_tag .= '<script type="application/ld+json">' . "\n";
-        $footer_tag .= ' {
-            "@context" : "https://schema.org",
-            "@type" : "Organization",
-            "name" : "' . STORE_NAME . '",
-          ';
 
-        if (!empty(\defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL : '') || !empty(\defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL : '') || !empty(\defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL : '')) {
-          $footer_tag .= '"url" : "' . CLICSHOPPING::getConfig('http_server', 'Shop');
+        $facebook_url  = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL')  ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL  : '';
+        $twitter_url   = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL')   ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL   : '';
+        $pinterest_url = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL : '';
 
-          $footer_tag .= '
-              "sameAs" : [
-            ';
-          if (!empty(\defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL : '')) {
-            $footer_tag .= ' "" ';
-          }
-          if (!empty(\defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL : '')) {
-            $footer_tag .= ' ,"" ';
-          }
-          if (!empty(\defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL : '')) {
-            $footer_tag .= ' ,"" ';
-          }
-          $footer_tag .= '
-            ]';
-        } else {
-          $footer_tag .= '"url" : "' . CLICSHOPPING::getConfig('http_server', 'Shop');
+        $json = [
+          '@context' => 'https://schema.org',
+          '@type'    => 'Organization',
+          'name'     => STORE_NAME,
+          'url'      => CLICSHOPPING::getConfig('http_server', 'Shop'),
+        ];
+
+        $sameAs = [];
+
+        if (!empty($facebook_url))  $sameAs[] = $facebook_url;
+        if (!empty($twitter_url))   $sameAs[] = $twitter_url;
+        if (!empty($pinterest_url)) $sameAs[] = $pinterest_url;
+
+        if (!empty($sameAs)) {
+          $json['sameAs'] = $sameAs;
         }
-        $footer_tag .= '}' . "\n";
+
+        $footer_tag .= json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
         $footer_tag .= '</script>' . "\n";
         $footer_tag .= '<!-- end footer social footer -->' . "\n";
 

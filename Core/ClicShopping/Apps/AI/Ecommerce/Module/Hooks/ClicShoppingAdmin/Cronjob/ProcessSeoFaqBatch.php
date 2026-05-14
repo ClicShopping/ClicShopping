@@ -309,7 +309,7 @@ class ProcessSeoFaqBatch implements \ClicShopping\OM\Modules\HooksInterface
    * @param int $totalProcessed Total products processed
    * @return void
    */
-  private function logExecutionReport(int $productsProcessed, int $totalProcessed): void
+  private function logExecutionReport(int $productsProcessed, int $processedCount): void
   {
     $elapsed = time() - $this->startTime;
     $memoryPeak = memory_get_peak_usage(true) / 1024 / 1024; // Convert to MB
@@ -322,7 +322,8 @@ class ProcessSeoFaqBatch implements \ClicShopping\OM\Modules\HooksInterface
       'execution_time_seconds' => $elapsed,
       'memory_peak_mb' => round($memoryPeak, 2),
       'error_messages' => !empty($this->errors) ? json_encode($this->errors) : null,
-      'created_at' => date('Y-m-d H:i:s')
+      'created_at' => 'now()',
+      'processed_count' => $processedCount
     ];
 
     // Save to log table

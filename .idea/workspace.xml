@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="librairies updated" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="add new sql">
+      <change beforePath="$PROJECT_DIR$/CNAME" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Cronjob/ProcessSeoFaqBatch.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Cronjob/ProcessSeoFaqBatch.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_footer/fo_footer_multi_template.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_footer/fo_footer_multi_template.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sql_upgrade/update_4_28.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sql_upgrade/update_4_28.txt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,7 +27,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7399" />
+    <option name="cachedIndexableFilesCount" value="7404" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -181,6 +186,7 @@
       <workItem from="1778679284767" duration="4670000" />
       <workItem from="1778706418475" duration="55000" />
       <workItem from="1778747585690" duration="63000" />
+      <workItem from="1778750238761" duration="691000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -510,14 +516,21 @@
       <option name="project" value="LOCAL" />
       <updated>1778747640790</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="add new sql">
+      <option name="closed" value="true" />
+      <created>1778750464241</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1778750464241</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix install" />
     <MESSAGE value="little update" />
     <MESSAGE value="version4.28" />
     <MESSAGE value="security improvment" />
@@ -542,7 +555,8 @@
     <MESSAGE value="some update and fix" />
     <MESSAGE value="improve json" />
     <MESSAGE value="librairies updated" />
-    <option name="LAST_COMMIT_MESSAGE" value="librairies updated" />
+    <MESSAGE value="add new sql" />
+    <option name="LAST_COMMIT_MESSAGE" value="add new sql" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
