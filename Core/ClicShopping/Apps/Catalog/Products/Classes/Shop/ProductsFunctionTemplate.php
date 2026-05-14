@@ -613,47 +613,58 @@ class ProductsFunctionTemplate
     $name = str_replace('"', '', $this->productsCommon->getProductsName($products_id));
     $name = HTMLOverrideCommon::cleanHtmlOptimized($name);
 
-    $output = '
-      <script defer type="application/ld+json">
-{
-  "@context": "https://schema.org/",
-  "@type": "Product",
-  "name": "' . $name . '",
-  "model": "' . $this->productsCommon->getProductsModel($products_id) . '",
-  "image": [
-    "' . HTTP::typeUrlDomain() . $this->template->getDirectoryTemplateImages() . $this->productsCommon->getProductsImage($products_id) . '",
-    "' . HTTP::typeUrlDomain() . $this->template->getDirectoryTemplateImages() . $this->productsCommon->getProductsImageMedium($products_id) . '"
-   ],
-  "description": "' . $description . '",
-  "sku": "' . $this->productsCommon->getProductsSKU($products_id) . '",
-  "mpn": "' . $this->productsCommon->getProductsMNP($products_id) . '", 
-  "jan": "' . $this->productsCommon->getProductsJAN($products_id) . '", 
-  "isbn": "' . $this->productsCommon->getProductsISBN($products_id) . '", 
-  "brand": {
-    "@type": "Thing",
-    "name": "' . $this->productsCommon->getProductsManufacturer($products_id) . '"
-  },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "' . $review_average . '",
-    "reviewCount": "' . $CLICSHOPPING_Reviews->getCount($products_id) . '"
-  },
-  "offers": {
-    "@type": "Offer",
-    "url": "' . $this->rewriteUrl->getProductNameUrl($products_id) . '",
-    "priceCurrency": "' . HTML::output(HTML::sanitize($_SESSION['currency'])) . '",
-    "price": "' . $price . '",
-    "priceValidUntil": "",
-    "itemCondition": "https://schema.org/' . $products_packaging . '",
-    "availability": "https://schema.org/' . $stock . '",
-    "seller": {
-      "@type": "Organization",
-      "name": "' . HTML::output(STORE_NAME) . '"
+    $json = [
+      '@context'    => 'https://schema.org/',
+      '@type'       => 'Product',
+      'name'        => $name,
+      'model'       => $this->productsCommon->getProductsModel($products_id),
+      'image'       => [
+        HTTP::typeUrlDomain() . $this->template->getDirectoryTemplateImages() . $this->productsCommon->getProductsImage($products_id),
+        HTTP::typeUrlDomain() . $this->template->getDirectoryTemplateImages() . $this->productsCommon->getProductsImageMedium($products_id),
+      ],
+      'description' => $description,
+      'sku'         => $this->productsCommon->getProductsSKU($products_id),
+      'mpn'         => $this->productsCommon->getProductsMNP($products_id),
+      'jan'         => $this->productsCommon->getProductsJAN($products_id),
+      'isbn'        => $this->productsCommon->getProductsISBN($products_id),
+    ];
+
+    $manufacturer = $this->productsCommon->getProductsManufacturer($products_id);
+    if (!empty($manufacturer)) {
+      $json['brand'] = [
+        '@type' => 'Thing',
+        'name'  => $manufacturer,
+      ];
     }
-}
-}
-</script>      
-      ';
+
+    $json['aggregateRating'] = [
+      '@type'       => 'AggregateRating',
+      'ratingValue' => $review_average,
+      'reviewCount' => $CLICSHOPPING_Reviews->getCount($products_id),
+    ];
+
+    $offer = [
+      '@type'          => 'Offer',
+      'url'            => $this->rewriteUrl->getProductNameUrl($products_id),
+      'priceCurrency'  => HTML::output(HTML::sanitize($_SESSION['currency'])),
+      'price'          => $price,
+      'priceValidUntil'=> '',
+      'availability'   => 'https://schema.org/' . $stock,
+      'seller'         => [
+        '@type' => 'Organization',
+        'name'  => HTML::output(STORE_NAME),
+      ],
+    ];
+
+    if (!empty($products_packaging)) {
+      $offer['itemCondition'] = 'https://schema.org/' . $products_packaging;
+    }
+
+    $json['offers'] = $offer;
+
+    $output = '<script defer type="application/ld+json">' . "\n"
+      . json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
+      . '</script>';
 
     return $output;
   }

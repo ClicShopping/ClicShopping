@@ -38,7 +38,6 @@ class he_header_multi_template
     }
   }
 
-
   public function execute()
   {
     $CLICSHOPPING_Customer = Registry::get('Customer');
