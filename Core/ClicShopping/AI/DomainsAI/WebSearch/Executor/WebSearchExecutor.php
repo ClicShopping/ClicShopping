@@ -477,9 +477,9 @@ class WebSearchExecutor
 
     // Pass max_results from options (engines will use their defaults if not specified)
     // This allows per-engine configuration via constants:
-    // - CLICSHOPPING_APP_AI_WEBSEARCH_SHOPPING_MAX_RESULTS
-    // - CLICSHOPPING_APP_AI_WEBSEARCH_OVERVIEW_MAX_RESULTS
-    // - CLICSHOPPING_APP_AI_WEBSEARCH_RAG_MAX_RESULTS_PER_SITE
+    // - CLICSHOPPING_APP_CHATGPT_WEB_SHOPPING_MAX_RESULTS
+    // - CLICSHOPPING_APP_CHATGPT_WEB_OVERVIEW_MAX_RESULTS
+    // - CLICSHOPPING_APP_CHATGPT_WEB_RAG_MAX_RESULTS_PER_SITE
 
     return $engineOptions;
   }

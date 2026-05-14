@@ -1,0 +1,2 @@
+cfg_ecommerce_web_overview_max_results_title = Afficher les résultats de l'analyse Google overview SERPAPI (vue d'ensemble IA)
+cfg_ecommerce_web_overview_max_results_description = Indiquer le nombre maximal de résultats à afficher. SERPAPI doit être actif.

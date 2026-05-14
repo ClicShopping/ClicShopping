@@ -139,10 +139,7 @@ class GoogleAIOverviewEngine implements WebSearchInterface
     $params = [];
 
     // Add max results (num parameter)
-    $maxResults = $options['max_results'] 
-      ?? (defined('CLICSHOPPING_APP_AI_WEBSEARCH_OVERVIEW_MAX_RESULTS') 
-          ? (int)CLICSHOPPING_APP_AI_WEBSEARCH_OVERVIEW_MAX_RESULTS 
-          : self::DEFAULT_MAX_RESULTS);
+    $maxResults = $options['max_results'] ?? (defined('CLICSHOPPING_APP_CHATGPT_WEB_OVERVIEW_MAX_RESULTS') ? (int)CLICSHOPPING_APP_CHATGPT_WEB_OVERVIEW_MAX_RESULTS : self::DEFAULT_MAX_RESULTS);
     $params['num'] = max(5, min(50, $maxResults)); // Clamp to range 5-50
 
     // Add location parameters if provided

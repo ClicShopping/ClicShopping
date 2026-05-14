@@ -18,6 +18,10 @@ module_ra_introduction = RAG BI (Business Intelligence) with Agent is a techniqu
 Touse this functionality, you need to check if your database is compatible. It requires <strong>MariaDB version 11.7<\strong> or higher. It's a beta functional release.<br>
 MySQL server is not compatible with this feature.<br>Please, active the other module for a best analyse.
 
+module_web_title = Web Search
+module_web_short_title = Web Search
+module_web_introduction = This APP allow you to use Google SERPAPI to create analysis, search (market, trends), price comparison. It's work with Agnostic AI.
+SERPAPI is available with GPT Apps.
 
 module_ac_agent_critics_short_title = Agent Critics
 module_ac_agent_critics_title = Agent Critics

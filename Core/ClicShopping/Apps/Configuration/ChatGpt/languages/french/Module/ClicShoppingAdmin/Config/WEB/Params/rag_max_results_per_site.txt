@@ -1,0 +1,2 @@
+cfg_ecommerce_web_rag_max_results_per_site_title = Afficher les résultats par site
+cfg_ecommerce_web_rag_max_results_per_site_description = Indiquer le nombre maximal de résultats à afficher. SERPAPI doit être activé.

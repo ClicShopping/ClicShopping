@@ -514,7 +514,7 @@ class RagWebSearchEngine implements WebSearchInterface
     $params = [];
 
     // Add max results per site (num parameter)
-    $maxResults = $options['max_results_per_site'] ?? (defined('CLICSHOPPING_APP_AI_WEBSEARCH_RAG_MAX_RESULTS_PER_SITE') ? (int)CLICSHOPPING_APP_AI_WEBSEARCH_RAG_MAX_RESULTS_PER_SITE : self::DEFAULT_MAX_RESULTS_PER_SITE);
+    $maxResults = $options['max_results_per_site'] ?? (defined('CLICSHOPPING_APP_CHATGPT_WEB_RAG_MAX_RESULTS_PER_SITE') ? (int)CLICSHOPPING_APP_CHATGPT_WEB_RAG_MAX_RESULTS_PER_SITE : self::DEFAULT_MAX_RESULTS_PER_SITE);
     $params['num'] = max(3, min(20, $maxResults)); // Clamp to range 3-20
 
     // Add location parameters if provided

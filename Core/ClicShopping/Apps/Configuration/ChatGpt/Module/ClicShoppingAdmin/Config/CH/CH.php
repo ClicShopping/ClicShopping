@@ -17,7 +17,6 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Confi
  */
 class CH extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigAbstract
 {
-
   protected $pm_code = 'chatgpt';
 
   public bool $is_uninstallable = true;

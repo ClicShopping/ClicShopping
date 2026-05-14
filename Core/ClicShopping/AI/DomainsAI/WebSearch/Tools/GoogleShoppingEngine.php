@@ -134,7 +134,7 @@ class GoogleShoppingEngine implements WebSearchInterface
     $params = [];
 
     // Add max results (num parameter)
-    $maxResults = $options['max_results'] ?? (defined('CLICSHOPPING_APP_AI_WEBSEARCH_SHOPPING_MAX_RESULTS') ? (int)CLICSHOPPING_APP_AI_WEBSEARCH_SHOPPING_MAX_RESULTS : self::DEFAULT_MAX_RESULTS);
+    $maxResults = $options['max_results'] ?? (defined('CLICSHOPPING_APP_CHATGPT_WEB_SHOPPING_MAX_RESULTS') ? (int)CLICSHOPPING_APP_CHATGPT_WEB_SHOPPING_MAX_RESULTS : self::DEFAULT_MAX_RESULTS);
     $params['num'] = max(10, min(100, $maxResults)); // Clamp to range 10-100
 
     // Add location parameters if provided

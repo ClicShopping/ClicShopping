@@ -54,8 +54,6 @@ module_cai_title = Product Cockpit AI
 module_cai_short_title =  Product Cockpit AI
 module_cai_introduction = Product Cockpit AI analyse your product with different settings and give recommendations.<br>
 
-
-
 section_domain_overview = Domain Overview
 subsection_domain_info = Domain Information
 subsection_supported_entities = Supported Entities

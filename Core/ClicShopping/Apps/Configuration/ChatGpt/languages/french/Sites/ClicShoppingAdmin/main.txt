@@ -18,6 +18,11 @@ module_ra_introduction = Rag Bi (business intelligence) avec agent est une techn
 Pour utilisez cette fonctionnalité vous devez vérifier si votre base de données est compatible avec <strong>Mariab Db version 11.7</strong> au minimum. >C'est une version beta fonctionnelle.<br />
 MySQL server n'est pas compatible avec cette fonctionnalité.<br>Veuillez activer les autres modules pour une meilleure analyse
 
+module_web_title = Web Search
+module_web_short_title = Web Search
+module_web_introduction = Cette application vous permet d'utiliser l'API SERPAPI de Google pour créer des analyses, effectuer des recherches (marché, tendances ...) et comparer les prix. Elle fonctionne avec Agnostic AI.
+L'API SERPAPI est disponible avec l'APPS GPT.
+
 module_ac_agent_critics_short_title = Agents critiques
 module_ac_agent_critics_title = Agents critiques
 module_ac_agent_critics_introduction = Ce module évalue, compare et critique les comportements, les productions et les processus décisionnels des agents afin d’identifier les forces, les faiblesses et les modes de défaillance selon des critères définis.

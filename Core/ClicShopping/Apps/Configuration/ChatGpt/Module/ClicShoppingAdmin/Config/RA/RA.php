@@ -16,7 +16,6 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Confi
  */
 class RA extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigAbstract
 {
-
   protected $pm_code = 'rag';
 
   public bool $is_uninstallable = true;
@@ -71,5 +70,5 @@ class RA extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdm
 
       $this->app->saveCfgParam('MODULE_MODULES_CHATGPT_INSTALLED', implode(';', $installed));
     }
-}
+  }
 }

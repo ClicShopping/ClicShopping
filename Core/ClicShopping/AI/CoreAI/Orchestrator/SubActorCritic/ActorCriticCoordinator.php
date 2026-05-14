@@ -1100,8 +1100,7 @@ class ActorCriticCoordinator
      */
     private function loadConfig(): array
     {
-        $configPath = CLICSHOPPING::getConfig('dir_root', 'Shop') . 
-                      'Apps/Configuration/ChatGpt/config/adaptive_weighting.php';
+        $configPath = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Apps/Configuration/ChatGpt/config/adaptive_weighting.php';
         
         $config = [];
         if (file_exists($configPath)) {

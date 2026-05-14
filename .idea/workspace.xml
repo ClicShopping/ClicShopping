@@ -6,6 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Tools/GoogleAIOverviewEngine.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Tools/GoogleAIOverviewEngine.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Tools/GoogleShoppingEngine.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Tools/GoogleShoppingEngine.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Tools/RagWebSearchEngine.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Tools/RagWebSearchEngine.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/languages/english/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/languages/english/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Module/ClicShoppingAdmin/Config/CH/CH.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Module/ClicShoppingAdmin/Config/CH/CH.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Module/ClicShoppingAdmin/Config/RA/RA.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Module/ClicShoppingAdmin/Config/RA/RA.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/english/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/english/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/french/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/french/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,7 +32,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7402" />
+    <option name="cachedIndexableFilesCount" value="7414" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -189,6 +197,7 @@
       <workItem from="1778766000051" duration="19000" />
       <workItem from="1778766365477" duration="13000" />
       <workItem from="1778766550698" duration="12000" />
+      <workItem from="1778774467849" duration="519000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />

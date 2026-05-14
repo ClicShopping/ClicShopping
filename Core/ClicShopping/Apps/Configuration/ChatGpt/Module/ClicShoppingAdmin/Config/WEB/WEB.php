@@ -8,18 +8,19 @@
  *
  */
 
-namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\RE;
+namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\WEB;
+
 /**
  * This class represents the ChatGPT configuration module within the ClicShoppingAdmin environment.
  * It extends the ConfigAbstract class and provides functionality for initializing, installing,
  * and uninstalling the ChatGPT module.
  */
-class RE extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigAbstract
+class WEB extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigAbstract
 {
-  protected $pm_code = 'retail';
+  protected $pm_code = 'websearch';
 
   public bool $is_uninstallable = true;
-  public int|null $sort_order = 400;
+  public int|null $sort_order = 25;
 
   /**
    * Initializes the module by setting its title, short title, introduction, and installation status
@@ -29,10 +30,10 @@ class RE extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdm
    */
   protected function init()
   {
-    $this->title = $this->app->getDef('module_re_title');
-    $this->short_title = $this->app->getDef('module_re_short_title');
-    $this->introduction = $this->app->getDef('module_re_introduction');
-    $this->is_installed = \defined('CLICSHOPPING_APP_CHATGPT_RE_STATUS') && (trim(CLICSHOPPING_APP_CHATGPT_RE_STATUS) != '');
+    $this->title = $this->app->getDef('module_web_title');
+    $this->short_title = $this->app->getDef('module_web_short_title');
+    $this->introduction = $this->app->getDef('module_web_introduction');
+    $this->is_installed = \defined('CLICSHOPPING_APP_CHATGPT_WEB_STATUS') && (trim(CLICSHOPPING_APP_CHATGPT_WEB_STATUS) != '');
   }
 
   /**
