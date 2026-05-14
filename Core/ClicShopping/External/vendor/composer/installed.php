@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '01159092c56b2f0b9d76d9682ac37faa46bec80b',
+        'reference' => 'dec2ad734d804a2a5a2b7ecb1e5975ae490b6420',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '01159092c56b2f0b9d76d9682ac37faa46bec80b',
+            'reference' => 'dec2ad734d804a2a5a2b7ecb1e5975ae490b6420',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => 'ec0c867c22e5b8d392815d48e4cc9de37470e8c0',
+            'reference' => 'bc5eb5643ac86830769128f1118ec66194008625',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -427,9 +427,9 @@
             ),
         ),
         'symfony/console' => array(
-            'pretty_version' => 'v8.0.9',
-            'version' => '8.0.9.0',
-            'reference' => '7113778e2e91f4709cb3194a75dfa9c0d028d94d',
+            'pretty_version' => 'v8.0.11',
+            'version' => '8.0.11.0',
+            'reference' => '3156577f46a38aa1b9323aad223de7a9cd426782',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/console',
             'aliases' => array(),
@@ -532,9 +532,9 @@
             'dev_requirement' => false,
         ),
         'symfony/string' => array(
-            'pretty_version' => 'v8.0.8',
-            'version' => '8.0.8.0',
-            'reference' => 'ae9488f874d7603f9d2dfbf120203882b645d963',
+            'pretty_version' => 'v8.0.11',
+            'version' => '8.0.11.0',
+            'reference' => '39be2ad058a3c0bd558edca23e65f009865d75ff',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/string',
             'aliases' => array(),
