@@ -164,7 +164,7 @@ class Upload
     // Check if detected MIME type matches expected extension
     if (isset($allowedMimeTypes[$mimeType])) {
       $fileExtension = strtolower($this->getExtension());
-      return in_array($fileExtension, $allowedMimeTypes[$mimeType]);
+      return in_array($fileExtension, $allowedMimeTypes[$mimeType], true);
     }
 
     return false;

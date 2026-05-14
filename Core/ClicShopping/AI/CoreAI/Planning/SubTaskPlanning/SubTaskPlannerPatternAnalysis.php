@@ -50,12 +50,13 @@ class SubTaskPlannerPatternAnalysis
         $queryLower = strtolower($queryToAnalyze);
         
         foreach ($patternKeywords as $keyword) {
-            if (strpos($queryLower, $keyword) !== false) {
-                if ($this->debug) {
-                    $this->logDebug("Pattern analysis keyword detected: $keyword");
-                }
-                return true;
+          if (str_contains($queryLower, $keyword)) {
+            if ($this->debug) {
+                $this->logDebug("Pattern analysis keyword detected: $keyword");
             }
+
+            return true;
+          }
         }
         
         return false;
