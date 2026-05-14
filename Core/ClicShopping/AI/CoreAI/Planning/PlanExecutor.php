@@ -534,10 +534,10 @@ class PlanExecutor
     if ($this->debug) {
       error_log(str_repeat("-", 100));
       error_log("[INFO] PlanExecutor.executeAnalyticsQuery() CALLED");
-      error_log("-" . str_repeat("-", 99));
-      error_log("Step ID: " . $step->getId());
-      error_log("Step Type: " . $step->getType());
-      error_log("Step Description: " . $step->getDescription());
+      error_log("[INFO] -" . str_repeat("-", 99));
+      error_log("[INFO] Step ID: " . $step->getId());
+      error_log("[INFO] Step Type: " . $step->getType());
+      error_log("[INFO] Step Description: " . $step->getDescription());
     }  
     // Try to get sub_query from metadata
     $subQuery = $step->getMeta('sub_query', null);
@@ -553,17 +553,17 @@ class PlanExecutor
       error_log("[INFO] Query is empty: " . (empty($query) ? 'YES' : 'NO'));
     
       if (empty($query)) {
-      error_log("[error] WARNING: Query is EMPTY in PlanExecutor!");
-      error_log("This means either:");
-      error_log("  1. sub_query metadata is not set");
-      error_log("  2. step description is empty");
-      error_log("  3. Both are empty");
+      error_log("[ERROR] WARNING: Query is EMPTY in PlanExecutor!");
+      error_log("[ERROR] This means either:");
+      error_log("[ERROR]   1. sub_query metadata is not set");
+      error_log("[ERROR]   2. step description is empty");
+      error_log("[ERROR]  3. Both are empty");
       }
     }
     
     if ($this->debug) {
-      error_log("Calling AnalyticsExecutor.executeAnalyticsQuery()...");
-      error_log("-" . str_repeat("-", 99) . "\n");
+      error_log("[INFO] Calling AnalyticsExecutor.executeAnalyticsQuery()...");
+      error_log("[INFO] -" . str_repeat("-", 99) . "\n");
     }
     
     $result = $this->analyticsExecutor->executeAnalyticsQuery($query, $context);
@@ -575,12 +575,8 @@ class PlanExecutor
     
     // Check if target_site is specified in context
     $hasTargetSite = !empty($context['plan_intent']['target_site'] ?? null);
-    
-    // Check feature flag
-    $featureEnabled = defined('CLICSHOPPING_APP_CHATGPT_RA_ANALYTICS_OPTIONAL_WITH_TARGET_SITE') && CLICSHOPPING_APP_CHATGPT_RA_ANALYTICS_OPTIONAL_WITH_TARGET_SITE === 'True';
-    
-    // If feature enabled AND target_site specified AND Analytics empty
-    if ($featureEnabled && $hasTargetSite && $analyticsEmpty) {
+
+    if ($hasTargetSite && $analyticsEmpty) {
       // Mark Analytics as optional failure (don't block execution)
       $result['optional'] = true;
       $result['reason'] = 'product_not_found_but_target_site_specified';
