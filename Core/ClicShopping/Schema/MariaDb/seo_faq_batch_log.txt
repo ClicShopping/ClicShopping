@@ -1,0 +1,17 @@
+id INT(11) not_null auto_increment comment(Primary key - unique identifier for each log entry)
+batch_id INT(11) default null comment(Reference to seo_faq_batch_progress.id - links to batch session)
+language_id INT(11) not_null comment(Language being processed)
+products_processed INT(11) default (0) comment(Number of products processed in this execution)
+products_success INT(11) default (0) comment(Number of products successfully processed)
+products_failed INT(11) default (0) comment(Number of products that failed processing)
+execution_time_seconds INT(11) default (0) comment(Total execution time in seconds)
+memory_peak_mb DECIMAL(10,2) default (0.00) comment(Peak memory usage in megabytes)
+error_messages TEXT COLLATE utf8mb4_unicode_ci default null comment(Error messages encountered during execution)
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP comment(Log entry creation timestamp)
+processed_count int(11) default(0) comment(rotation lof processed count) 
+--
+primary id
+##
+idx_batch_id batch_id
+idx_language_id language_id
+idx_created_at created_at

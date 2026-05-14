@@ -1,0 +1,21 @@
+id int not_null auto_increment comment(Primary key - unique identifier)
+product_name varchar(255) not_null comment(Product name from shopping results)
+product_link varchar(500) comment(URL to product page)
+price decimal(10, 2) not_null comment(Current price extracted from search)
+old_price decimal(10, 2) comment(Previous/sale price if available)
+source varchar(255) comment(Store/merchant name)
+analysis_date dateime not_null comment(Human-readable analysis date (Y-m-d H:i:s))
+analysis_timestamp int not_null comment(Unix timestamp for calculations)
+query varchar(255) comment(Search query used to find this price)
+date_added dateime not_null default CURRENT_TIMESTAMP comment(Record creation timestamp)
+--
+primary id
+idx_product_name product_name
+idx_analysis_date analysis_date
+idx_source source
+idx_date_added date_added
+idx_query query
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

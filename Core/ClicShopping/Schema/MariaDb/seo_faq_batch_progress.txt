@@ -1,0 +1,15 @@
+  id int(11) not_null AUTO_INCREMENT comment(Primary key - unique identifier for each batch session)
+  language_id int(11) not_null comment(Language being processed in this batch)
+  last_processed_product_id int(11) default(0) comment(Last product ID that was successfully processed)
+  total_products int(11) default(0) comment(Total number of products to process in this batch)
+  processed_count int(11) default(0) comment(Number of products processed so far)
+  error_count int(11) default(0) comment(Number of errors encountered during processing)
+  status ENUM('pending','in_progress','completed','failed') default 'pending' comment(Current status of batch processing)
+  started_at datetime default null comment(Timestamp when batch processing started)
+  updated_at datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment(Last update timestamp)
+  completed_at datetime default null comment(Timestamp when batch processing completed)
+  --
+  PRIMARY KEY id
+  ##
+  idx_language_id language_id
+  idx_status status

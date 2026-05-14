@@ -1,0 +1,13 @@
+id INT(11) not_null auto_increment comment(Primary key)
+products_id INT(11) not_null comment(Reference to products table)
+language_id INT(11) not_null comment(Reference to languages table)
+faq_content TEXT default null comment(FAQ content in JSON format (array of Q&A pairs))
+faq_description TEXT default null comment(Plain text summary of FAQ content for search/display)
+date_added DATETIME DEFAULT CURRENT_TIMESTAMP comment(Creation timestamp)
+date_modified DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment(Last modification timestamp)
+--
+primary id
+##
+unique idx_product_language products_id language_id
+idx_products_id products_id
+idx_language_id language_id

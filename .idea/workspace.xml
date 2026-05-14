@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="some update and fix" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="librairies updated" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -180,6 +180,7 @@
       <workItem from="1778602344169" duration="86000" />
       <workItem from="1778679284767" duration="4670000" />
       <workItem from="1778706418475" duration="55000" />
+      <workItem from="1778747585690" duration="63000" />
     </task>
     <task id="LOCAL-00001" summary="libraries updated and fix">
       <option name="closed" value="true" />
@@ -493,14 +494,29 @@
       <option name="project" value="LOCAL" />
       <updated>1778706448591</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL-00040" summary="improve json">
+      <option name="closed" value="true" />
+      <created>1778747602853</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1778747602853</updated>
+    </task>
+    <task id="LOCAL-00041" summary="librairies updated">
+      <option name="closed" value="true" />
+      <created>1778747640790</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1778747640790</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix product to categories" />
     <MESSAGE value="fix install" />
     <MESSAGE value="little update" />
     <MESSAGE value="version4.28" />
@@ -519,13 +535,14 @@
     <MESSAGE value="litlle improvment" />
     <MESSAGE value="libraries updated" />
     <MESSAGE value="improve 404 detection" />
-    <MESSAGE value="librairies updated" />
     <MESSAGE value="language improvement" />
     <MESSAGE value=" context enrichment" />
     <MESSAGE value="websearch refactoring" />
     <MESSAGE value="update prompt" />
     <MESSAGE value="some update and fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="some update and fix" />
+    <MESSAGE value="improve json" />
+    <MESSAGE value="librairies updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="librairies updated" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
