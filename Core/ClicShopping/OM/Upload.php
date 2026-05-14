@@ -99,14 +99,17 @@ class Upload
       return true;
     }
 
-    if (!function_exists('finfo_open')) {
-      // Fallback if finfo is not available
-      return true;
-    }
 
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mimeType = finfo_file($finfo, $filePath);
-    finfo_close($finfo);
+    try {
+      $finfo = new \finfo(FILEINFO_MIME_TYPE);
+      $mimeType = $finfo->file($filePath);
+
+      // Note : Pas de finfo_close() ici.
+      // En PHP 8.4/8.5+, cela génère un E_DEPRECATED.
+      // L'objet est automatiquement détruit par le Garbage Collector.
+    } catch (\Exception $e) {
+      return false;
+    }
 
     // Define allowed MIME types based on configured extensions
     $allowedMimeTypes = [
@@ -159,14 +162,11 @@ class Upload
     ];
 
     // Check if detected MIME type matches expected extension
-    foreach ($allowedMimeTypes as $mime => $extensions) {
-      if ($mimeType === $mime) {
-        $fileExtension = $this->getExtension();
-        return in_array($fileExtension, $extensions);
-      }
+    if (isset($allowedMimeTypes[$mimeType])) {
+      $fileExtension = strtolower($this->getExtension());
+      return in_array($fileExtension, $allowedMimeTypes[$mimeType]);
     }
 
-    // If MIME type not in whitelist, reject
     return false;
   }
 
@@ -205,7 +205,7 @@ class Upload
     // If extension has defined magic bytes, validate them
     if (isset($magicBytes[$extension])) {
       foreach ($magicBytes[$extension] as $magic) {
-        if (strpos($bytes, $magic) === 0) {
+        if (str_starts_with($bytes, $magic)) {
           return true;
         }
       }
