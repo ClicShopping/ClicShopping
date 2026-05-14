@@ -1,12 +1,12 @@
-id int UNSIGNED not_null AUTO_INCREMENT comment(Primary key - unique identifier)
-user_id int UNSIGNED null comment(Administrator id)
+id int unsigned not_null auto_increment comment(Primary key - unique identifier)
+user_id int unsigned null comment(Administrator id)
 query text not_null comment(query generated)
-intent varchar(100) not_null default ('price_comparison')  comment(Intent type created)
+intent varchar(100) not_null default ('price_comparison') comment(Intent type created)
 user_choice varchar(50) not_null comment(Choice of user)
 selected_modes json not_null comment(Mode selected)
 date_created datetime not_null default CURRENT_TIMESTAMP comment(Date created)
 --
-PRIMARY KEY (id
+primary id
 ##
 idx_user_id user_id
 idx_intent intent

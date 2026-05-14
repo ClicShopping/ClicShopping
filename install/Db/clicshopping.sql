@@ -2337,16 +2337,16 @@ INSERT INTO rag_agent_roles VALUES(3, 'ReasoningAgent', 'autonomous_agent', 'act
 INSERT INTO rag_agent_roles VALUES(4, 'ValidationAgent', 'evaluator_agent', 'active', NULL, NULL, '2026-01-28 20:02:44', '2026-01-28 20:02:44');
 INSERT INTO rag_agent_roles VALUES(5, 'CorrectionAgent', 'evaluator_agent', 'active', NULL, NULL, '2026-01-28 20:02:44', '2026-01-28 20:02:44');
 
-INSERT INTO rag_websearch VALUES(1, ''amazon.fr'', 9.5000, 1, ''Amazon France - Leading e-commerce marketplace with extensive product catalog'', ''{\"price_regex\": \"/(\\d+[,\\.]\\d{2})\\s*€/i\", \"currency\": \"EUR\", \"location\": \"FR\"}'');
-INSERT INTO rag_websearch VALUES(2, ''fnac.com'', 8.5000, 1, ''Fnac - French retail chain specializing in cultural and electronic products'', ''{\"price_regex\": \"/(\\d+[,\\.]\\d{2})\\s*€/i\", \"currency\": \"EUR\", \"location\": \"FR\"}'');
-INSERT INTO rag_websearch VALUES(3, ''cdiscount.com'', 8.0000, 1, ''Cdiscount - French e-commerce company offering wide range of products'', ''{\"price_regex\": \"/(\\d+[,\\.]\\d{2})\\s*€/i\", \"currency\": \"EUR\", \"location\": \"FR\"}'');
-INSERT INTO rag_websearch VALUES(4, ''darty.com'', 7.5000, 1, ''Darty - French electronics and appliances retailer'', ''{\"price_regex\": \"/(\\d+[,\\.]\\d{2})\\s*€/i\", \"currency\": \"EUR\", \"location\": \"FR\"}'');
-INSERT INTO rag_websearch VALUES(5, ''boulanger.com'', 7.0000, 1, ''Boulanger - French electronics and home appliances retailer'', ''{\"price_regex\": \"/(\\d+[,\\.]\\d{2})\\s*€/i\", \"currency\": \"EUR\", \"location\": \"FR\"}'');
-INSERT INTO rag_websearch VALUES(6, ''amazon.com'', 9.8000, 1, ''Amazon US - World largest e-commerce marketplace'', ''{\"price_regex\": \"/\\$\\s*(\\d+[,\\.]\\d{2})/i\", \"currency\": \"USD\", \"location\": \"US\"}'');
-INSERT INTO rag_websearch VALUES(7, ''bestbuy.com'', 8.0000, 1, ''Best Buy - American multinational consumer electronics retailer'', ''{\"price_regex\": \"/\\$\\s*(\\d+[,\\.]\\d{2})/i\", \"currency\": \"USD\", \"location\": \"US\"}'');
-INSERT INTO rag_websearch VALUES(8, ''amazon.co.uk'', 9.3000, 1, ''Amazon UK - Leading UK e-commerce marketplace'', ''{\"price_regex\": \"/£\\s*(\\d+[,\\.]\\d{2})/i\", \"currency\": \"GBP\", \"location\": \"GB\"}'');
-INSERT INTO rag_websearch VALUES(9, ''currys.co.uk'', 7.5000, 1, ''Currys - UK electrical retailer'', ''{\"price_regex\": \"/£\\s*(\\d+[,\\.]\\d{2})/i\", \"currency\": \"GBP\", \"location\": \"GB\"}'');
-INSERT INTO rag_websearch VALUES(10, ''example-inactive.com'', 5.0000, 0, ''Inactive test site - should not appear in searches'', ''{\"price_regex\": \"/(\\d+[,\\.]\\d{2})\\s*€/i\", \"currency\": \"EUR\", \"location\": \"FR\"}'');
+INSERT INTO rag_websearch VALUES(1, 'amazon.fr', 9.5000, 1, 'Amazon France - Leading e-commerce marketplace with extensive product catalog', '{"price_regex": "/(\\d+[,\\.]\\d{2})\\s*€/i", "currency": "EUR", "location": "FR"}');
+INSERT INTO rag_websearch VALUES(2, 'fnac.com', 8.5000, 1, 'Fnac - French retail chain specializing in cultural and electronic products', '{"price_regex": "/(\\d+[,\\.]\\d{2})\\s*€/i", "currency": "EUR", "location": "FR"}');
+INSERT INTO rag_websearch VALUES(3, 'cdiscount.com', 8.0000, 1, 'Cdiscount - French e-commerce company offering wide range of products', '{"price_regex": "/(\\d+[,\\.]\\d{2})\\s*€/i", "currency": "EUR", "location": "FR"}');
+INSERT INTO rag_websearch VALUES(4, 'darty.com', 7.5000, 1, 'Darty - French electronics and appliances retailer', '{"price_regex": "/(\\d+[,\\.]\\d{2})\\s*€/i", "currency": "EUR", "location": "FR"}');
+INSERT INTO rag_websearch VALUES(5, 'boulanger.com', 7.0000, 1, 'Boulanger - French electronics and home appliances retailer', '{"price_regex": "/(\\d+[,\\.]\\d{2})\\s*€/i", "currency": "EUR", "location": "FR"}');
+INSERT INTO rag_websearch VALUES(6, 'amazon.com', 9.8000, 1, 'Amazon US - World largest e-commerce marketplace', '{"price_regex": "/\\$\\s*(\\d+[,\\.]\\d{2})/i", "currency": "USD", "location": "US"}');
+INSERT INTO rag_websearch VALUES(7, 'bestbuy.com', 8.0000, 1, 'Best Buy - American multinational consumer electronics retailer', '{"price_regex": "/\\$\\s*(\\d+[,\\.]\\d{2})/i", "currency": "USD", "location": "US"}');
+INSERT INTO rag_websearch VALUES(8, 'amazon.co.uk', 9.3000, 1, 'Amazon UK - Leading UK e-commerce marketplace', '{"price_regex": "/£\\s*(\\d+[,\\.]\\d{2})/i", "currency": "GBP", "location": "GB"}');
+INSERT INTO rag_websearch VALUES(9, 'currys.co.uk', 7.5000, 1, 'Currys - UK electrical retailer', '{"price_regex": "/£\\s*(\\d+[,\\.]\\d{2})/i", "currency": "GBP", "location": "GB"}');
+INSERT INTO rag_websearch VALUES(10, 'example-inactive.com', 5.0000, 0, 'Inactive test site - should not appear in searches', '{"price_regex": "/(\\d+[,\\.]\\d{2})\\s*€/i", "currency": "EUR", "location": "FR"}');
 
 
 INSERT INTO return_orders_status VALUES(1, 1, 'Pending');
@@ -2387,7 +2387,6 @@ INSERT INTO sec_directory_whitelist VALUES(7, 'Core/Work');
 INSERT INTO seo VALUES(1, 1, 'ClicShopping AI B2B B2C Solution', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'ClicShopping AI B2B B2C Solution', '', '', '');
 INSERT INTO seo VALUES(1, 2, 'ClicShopping AI B2B B2C Solution', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'ClicShopping AI B2B B2C Solution', '', '', '');
 
-INSERT INTO seo_faq_batch_log VALUES (1, 0, 0, 0, 0, '{"message": "FAQ tables migration completed successfully via direct SQL"}');
 
 INSERT INTO specials VALUES(1, 3, 76.0000, '2023-04-30 15:17:35', NULL, NULL, NULL, 1, NULL, 0, 0);
 INSERT INTO specials VALUES(2, 6, 47.5000, '2023-04-30 15:17:51', NULL, NULL, NULL, 1, NULL, 0, 0);
