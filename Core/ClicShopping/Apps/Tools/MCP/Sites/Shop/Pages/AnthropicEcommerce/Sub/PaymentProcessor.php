@@ -438,28 +438,24 @@ class PaymentProcessor
   {
     $url = 'https://api.stripe.com' . $path;
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL,            $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_USERPWD,        $secretKey . ':');
-    curl_setopt($ch, CURLOPT_HTTPHEADER,     ['Content-Type: application/x-www-form-urlencoded']);
-    curl_setopt($ch, CURLOPT_TIMEOUT,        30);
+    $data = [
+      'url' => $url,
+      'method' => strtolower($method), // 'get' ou 'post'
+      'parameters' => http_build_query($params), // Stripe attend du x-www-form-urlencoded
+      'header' => [
+        'Authorization: Basic ' . base64_encode($secretKey . ':'),
+        'Content-Type: application/x-www-form-urlencoded'
+      ],
+      'timeout' => 30,
+      'format' => 'json' // Automatiquement décodé par la classe
+    ];
 
-    if ($method === 'POST') {
-      curl_setopt($ch, CURLOPT_POST,       true);
-      curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-    }
-
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
+    $response = HTTP::getResponse($data);
     if ($response === false) {
-      return ['error' => ['message' => 'Stripe API request failed (curl).']];
+      return ['error' => ['message' => 'Stripe API request failed (Guzzle).']];
     }
 
-    $decoded = json_decode($response, true);
-    return is_array($decoded) ? $decoded : ['error' => ['message' => 'Invalid Stripe response.']];
+    return is_array($response) ? $response : ['error' => ['message' => 'Invalid Stripe response.']];
   }
 
   /**
