@@ -1,61 +1,65 @@
 # ARCHITECTURE.md — ClicShopping AI v4.20+
 
 > Core architecture of the PHP framework.
-> Agent rules: `AGENTS.md` | AI: `AI_SYSTEM.md` | DB: `DATABASE.md` | Security: `SECURITY.md`
+> Agent rules: `AGENTS.md` | AI concepts: `AI_SYSTEM.md` | AI directories: `AI_ARCHITECTURE.md`
+> DB: `DATABASE.md` | Security: `SECURITY.md` | Templates: `TEMPLATES.md`
 
 ---
 
 ## 1. Overview
 
 ClicShopping AI is organized into two application sites (`Shop` and `ClicShoppingAdmin`)
-sharing a common core. The AI ​​layer is agnostic and organized to use the business domain approach — see `AI_SYSTEM.md`.
+sharing a common core. The AI layer is agnostic and organized by business domain — see `AI_SYSTEM.md`
+for AI concepts and `AI_ARCHITECTURE.md` for directory structure.
 
 ```
-AGENTS.md ← operational rules for LLM agents
-ARCHITECTURE.md ← framework core, bootstrap, hooks, templates, namespaces
-AI_SYSTEM.md ← agents, RAG, LLM providers, embeddings, architecture directories
-DATABASE.md ← MariaDB, SQL schema, routing, migrations
-SECURITY.md ← 10 layers of security, guardrails, GDPR
+AGENTS.md          ← operational rules for LLM agents
+ARCHITECTURE.md    ← framework core: bootstrap, hooks, templates, namespaces
+AI_SYSTEM.md       ← agents, RAG, LLM providers, memory, embeddings, MCP
+AI_ARCHITECTURE.md ← AI directory structure, orchestrator components, patterns
+DATABASE.md        ← MariaDB, SQL schema, routing, migrations
+SECURITY.md        ← 10 security layers, guardrails, GDPR
+TEMPLATES.md       ← front-office vs back-office rendering, SEO, i18n
 ```
 
 ---
 
-## 2. Bootstrap and routing
+## 2. Bootstrap and Routing
 
 Initialization flow — DO NOT tamper with:
 
 ```
-index.php 
-→ CLICSHOPPING::initialize() 
-→ Site determination (Shop | ClicShoppingAdmin) 
-→ Core services: Db, Session, Language 
-→ setPage() — controller resolution via URL parameter 
+index.php
+→ CLICSHOPPING::initialize()
+→ Site determination (Shop | ClicShoppingAdmin)
+→ Core services: Db, Session, Language
+→ setPage() — controller resolution via URL parameter
 → Controller execution (implements PagesInterface)
 ```
 
-Application Structure
+### Application Structure
 
 ```
 clicshoppingAI/
-├── ClicShoppingAdmin/        # Administrative backend interface
-├── Core/                     # Core application framework
-├── api/                      # REST API endpoints
-├── unit_test/                # Comprehensive testing suite
-├── install/                  # Installation and setup scripts
-├── docs/                     # Documentation about ClicShopping
-├── ext/                      # Asset - javascript for all application...
-├── sources/                  # front office templates and assets for templates
-├── sql_upgrade/                  # sql update for human to update only sql change inside the db
-├── composer.json             # PHP dependencies
-└── index.php                 # Main application entry point
-
+├── ClicShoppingAdmin/   # Administrative backend interface
+├── Core/                # Core application framework
+├── api/                 # REST API endpoints
+├── unit_test/           # Comprehensive testing suite
+├── install/             # Installation and setup scripts
+├── docs/                # Documentation about ClicShopping
+├── ext/                 # JavaScript assets for all applications
+├── sources/             # Front-office templates and assets
+├── sql_upgrade/         # SQL migration guide for humans (documentation only)
+├── composer.json        # PHP dependencies
+└── index.php            # Main application entry point
 ```
 
-Structure of a controller page:
+### Controller Page Structure
+
 ```
 Core/ClicShopping/Sites/{Site}/Pages/{PageName}/
-├── {PageName}.php # Implements PagesInterface
-└── Actions/ # Page actions (POST, processing)
+├── {PageName}.php   # Implements PagesInterface
+└── Actions/         # Page actions (POST, processing)
 ```
 
 ---
@@ -65,11 +69,17 @@ Core/ClicShopping/Sites/{Site}/Pages/{PageName}/
 Central Registry Pattern — uniform access to all services.
 
 ```php
-$db = \ClicShopping\OM\Registry::get('Db');
-\ClicShopping\OM\Registry::set('MyService', new MyService());
+use ClicShopping\OM\Registry;
+use ClicShopping\OM\MyService;
+
+Registry::set('MyService', new MyService());
+$CLICSHOPPING_MyService = Registry::get('MyService');
 ```
 
-Core services available:
+**STRICT ENFORCEMENT**: Direct instantiation of Core services (e.g., `$db = new Db()`) is PROHIBITED.
+Always use `Registry::get('Db')`, `Registry::get('Language')`, etc. No exceptions for "quick fixes".
+
+### Core Services
 
 | Key | Role |
 |---|---|
@@ -82,12 +92,12 @@ Core services available:
 | `Template` | Front-office rendering (Shop) |
 | `TemplateAdmin` | Back-office rendering (ClicShoppingAdmin) |
 
-> **Registry vs DI:** ClicShopping uses the Registry as a locator service.
+> **Registry vs DI:** ClicShopping uses the Registry as a service locator.
 > Do not create an alternative DI container — use `Registry::set/get`.
-> STRICT ENFORCEMENT: Direct instantiation of Core services (e.g., $db = new Db()) is PROHIBITED. You MUST use Registry::get('Db'), Registry::get('Language'), etc. No exceptions for 'quick fixes'.
+
 ---
 
-## 4. Hooks system
+## 4. Hooks System
 
 Primary scalability mechanism. Always evaluate hooks before any other approach.
 
@@ -96,34 +106,35 @@ Primary scalability mechanism. Always evaluate hooks before any other approach.
 namespace ClicShopping\Apps\Vendor\App\Module\Hooks\Shop\MyHook;
 
 class MyHook
-{ 
-public function execute(): string 
-{ 
-return '<!-- injected content -->'; 
-}
+{
+    public function execute(): string
+    {
+        return '<!-- injected content -->';
+    }
 }
 ```
 
 Rules:
-- Registration via existing mechanism included — no manual call - Core/ClicShopping/OM/Hooks.php
+- Registration via existing mechanism — no manual call (`Core/ClicShopping/OM/Hooks.php`)
 - Do not short-circuit the hook loader
 - Document the extension points used in the commit
 
-Discover the hooks available in a scope:
+Discover hooks available in a scope:
 ```bash
 grep -r "Hooks" Core/ClicShopping/Sites/{Site}/ --include="*.php" -l
 ```
 
 ---
-## 5. Namespaces and autoload
+
+## 5. Namespaces and Autoload
 
 ```
-ClicShopping\OM\ → Core/ClicShopping/OM/
+ClicShopping\OM\               → Core/ClicShopping/OM/
 ClicShopping\Apps\{Vendor}\{App}\ → Core/ClicShopping/Apps/{Vendor}/{App}/
-ClicShopping\Custom\ → Core/ClicShopping/Custom/
+ClicShopping\Custom\           → Core/ClicShopping/Custom/
 ```
 
-Class loading is handled by `CLICSHOPPING::autoload` (core) and Composer for `External/vendor`.
+Class loading: `CLICSHOPPING::autoload` (core) + Composer for `External/vendor`.
 Never create an alternative autoload mechanism.
 
 ---
@@ -132,17 +143,14 @@ Never create an alternative autoload mechanism.
 
 Complete documentation: **`TEMPLATES.md`**
 
-Summary of key points for navigating ARCHITECTURE.md:
-
-| Appearance | Shop (Front office) | ClicShoppingAdmin (Back-office) |
+| Aspect | Shop (Front office) | ClicShoppingAdmin (Back-office) |
 |---|---|---|
 | Service Registry | `Template` | `TemplateAdmin` |
 | Resolution | App → global theme (fallback) | App only — no fallback |
 | Cache | Yes — catalog pages | No — fresh data |
-| SEO | Review | Not applicable |
+| SEO | Applicable | Not applicable |
 
-The business logic for FrontOffice are (`Sites/*/Pages/`) and contain orchestration logic. the html templates are (`sources/`) and contain the visual logic and modules
-See `TEMPLATES.md` for structures, helpers, SEO, i18n and complete checklist.
+Business logic lives in `Sites/*/Pages/`; HTML templates live in `sources/`.
 
 ---
 
@@ -151,57 +159,29 @@ See `TEMPLATES.md` for structures, helpers, SEO, i18n and complete checklist.
 | Layer | Path | Scope |
 |---|---|---|
 | **App / Module** | `Core/ClicShopping/Apps/*/languages/{lang}/` | High priority for Apps (Shop and Admin) |
-| **Admin core** | `ClicShoppingAdmin/Core/languages/{lang}/` | Back office global labels |
+| **Admin core** | `ClicShoppingAdmin/Core/languages/{lang}/` | Back-office global labels |
 | **Overall / Theme** | `sources/languages/{lang}/` | Transversal texts and front-office fallback |
 
 Rules:
-- No visible hardcoded string in PHP or templates
+- No visible hardcoded string in PHP or templates — always use `getDef('')`
 - Minimum compatibility: EN + FR
 - Format consistent with existing files in target scope
 
 ---
 
-## 8. Custom/ — Override core
+## 8. Custom/ — Override Core
 
-`Core/ClicShopping/Custom/` allows you to override `OM/` without modifying it directly.
-
-### Scalability Priority Order
-
-```
-1. Existing hook → priority solution
-2. Module → Core/ClicShopping/Apps/*/Module/, self-content
-3. New App → Core/ClicShopping/Apps/{Vendor}/{AppName}/
-4. Custom/ → override core, if 1-3 impossible
-5. OM/ direct → PROHIBITED without agreement from the human coder
-```
+`Core/ClicShopping/Custom/` allows overriding `OM/`, 'Apps' ... without modifying it directly.
 
 ### Structure
 
 ```
 Core/ClicShopping/Custom/
-├── OM/ # Overloading kernel classes (extends required)
-├── Conf/ # Custom configuration
-├── Sites/ # Overload bootstrap Shop or Admin
+├── OM/     # Overloading kernel classes (extends required)
+├── Conf/   # Custom configuration
+├── Sites/  # Overload bootstrap Shop or Admin
 └── Schema/ # Additional tables (*.txt files)
 ```
-
-A db schema example used during the installation:
-```
-api_ip_id int(11) not_null auto_increment comment(Primary key - unique identifier for each API IP whitelist entry)
-api_id int(11) not_null comment(FK to api table - API configuration this IP is allowed for)
-ip varchar(40) not_null comment(Whitelisted IP address - IPv4 or IPv6 format)
-comment varchar(255) default null comment(Optional description of this IP whitelist entry)
---
-primary api_ip_id
-idx_api_ip_id api_ip_id
-##
-engine innodb
-character_set utf8mb4
-collate utf8mb4_unicode_ci
-comment IP address whitelist for API access control and security
-```
-
-
 
 ### Example
 
@@ -209,31 +189,50 @@ comment IP address whitelist for API access control and security
 namespace ClicShopping\Custom\OM;
 
 class Http extends \ClicShopping\OM\Http
-{ 
-public private(set) string $status = 'idle'; //PHP 8.4 
+{
+    public private(set) string $status = 'idle'; // PHP 8.4
 
-public function get(string $url, array $options = []): string 
-{ 
-return parent::get($url, $options); 
-}
+    public function get(string $url, array $options = []): string
+    {
+        return parent::get($url, $options);
+    }
 }
 
 // Registration
-\ClicShopping\OM\Registry::set('Http', new \ClicShopping\Custom\OM\Http());
+use ClicShopping\OM\Registry;
+Registry::set('Test', new Test());
+$CLICSHOPPING_Test = Registry::get('Test');
 ```
 
-Custom Rules/:
+Custom/ rules:
 - `extends` required — never copy and paste core code
 - Namespace: `ClicShopping\Custom\{Subspace}\{Class}`
 - Do not break backward compatibility of existing modules
 
+### Schema File Example for example.txt inside Schema directory
+
+```
+api_ip_id int(11) not_null auto_increment comment(Primary key)
+api_id int(11) not_null comment(FK to api table)
+ip varchar(40) not_null comment(Whitelisted IP address)
+comment varchar(255) default null comment(Optional description)
+--
+primary api_ip_id
+idx_api_ip_id api_ip_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment IP address whitelist for API access control
+```
+
 ---
 
-## 9. Cache — 5-tier architecture
+## 9. Cache — 5-Tier Architecture
 
 | Tier | Technology | Scope |
 |---|---|---|
-| 1 | OpCache | Bytecode PHP |
+| 1 | OpCache | PHP bytecode |
 | 2 | Static cache | Pre-rendered Shop catalog pages |
 | 3 | Memcached | Multi-server distributed cache |
 | 4 | Redis | Sessions + application data |
@@ -246,83 +245,29 @@ Do not introduce a sixth mechanism without explicit agreement.
 ## 10. Sessions
 
 Four backends with automatic fallback:
-1 **Database** — persistent, table storage
-2 **File** — native PHP fallback
-3 **Memcached** — option to be activated - distributed cache, TTL = `session.gc_maxlifetime`
-4 **Redis** — option to be activated - `localhost:6379`, prefix `sess_`, TTL = `session.gc_maxlifetime`
-
-
----
-
-## 11. OrchestratorAgent Architecture (2026-04-30)
-
-### Component Extraction
-
-OrchestratorAgent delegates to specialized components following single-responsibility principle:
-
-| Component | Location | Responsibility |
-|-----------|----------|----------------|
-| **DomainRouter** | `DomainsAI/DomainRouter.php` | Routes queries to appropriate domains (semantic, analytics, hybrid, web) |
-| **QueryProcessor** | `Handler/Query/QueryProcessor.php` | Query processing with retry logic and parallel execution |
-| **HybridQueryHandler** | `DomainsAI/Hybrid/Handler/HybridQueryHandler.php` | Handles hybrid queries (analytics + semantic + web) |
-| **PerformanceTracker** | `Infrastructure/Monitoring/PerformanceTracker.php` | Query-level performance monitoring with markers |
-
-### Domain-Agnostic Architecture
-
-**CRITICAL**: Core AI (`Core/ClicShopping/AI/`) MUST NOT contain domain-specific keywords.
-
-```
-❌ PROHIBITED: Hardcoded keywords in Core AI
-$keywords = ['amazon', 'ebay', 'linkedin', 'bloomberg'];
-
-✅ REQUIRED: Dynamic loading from domain configuration
-$keywords = DomainKeywordsLoader::loadWebSearchKeywords('Ecommerce');
-```
-
-**Keyword Location**: `Apps/AI/{Domain}/Classes/.../Patterns/HybridPreFilter.php`
-
-**Supported Domains**: Ecommerce (active), HR (future), Finance (future), Trading (future)
-
-### Integration Pattern
-
-```php
-// OrchestratorAgent initialization
-$this->domainRouter = new DomainRouter($debug);
-$this->queryProcessor = new QueryProcessor($contextManager, $queryAnalyzer, ...);
-$this->hybridQueryHandler = new HybridQueryHandler($planner, $executor, ...);
-$this->performanceTracker = new PerformanceTracker($collector, $debug);
-
-// Usage - delegation pattern
-$domain = $this->domainRouter->getDomainForIntent($intentType, $context);
-$result = $this->queryProcessor->processWithRetry($query, $options, $callback);
-$hybridResult = $this->hybridQueryHandler->handleHybridQuery($query, ...);
-$this->performanceTracker->startTracking();
-```
-
-### Documentation
-
-- **Overview**: `Core/ClicShopping/AI/ORCHESTRATOR_REFACTORING_2026_04_30.md`
-- **Migration**: `Core/ClicShopping/AI/ORCHESTRATOR_MIGRATION_GUIDE.md`
-- **Class Index**: `Core/ClicShopping/AI/REFACTORING_CLASS_INDEX.md`
-- **Spec**: `.kiro/specs/orchestrator-agent-refactoring/`
+1. **Database** — persistent, table storage
+2. **File** — native PHP fallback
+3. **Memcached** — optional, distributed cache, TTL = `session.gc_maxlifetime`
+4. **Redis** — optional, `localhost:6379`, prefix `sess_`, TTL = `session.gc_maxlifetime`
 
 ---
 
-## 12. Cross-references
+## 11. Cross-References
 
-| Subject                                               | File |
-|-------------------------------------------------------|---|
-| Agent operational rules                               | `AGENTS.md` |
-| AI system, agents, RAG, LLM, architecture directories | `AI_SYSTEM.md` |
-| Database, SQL, embeddings                             | `DATABASE.md` |
-| Security, guardrails, GDPR                            | `SECURITY.md` |
-| Templates, rendering, SEO, i18n                       | `TEMPLATES.md` |
-| Official Wiki                                         | https://github.com/ClicShopping/ClicShopping/wiki |
-| DeepWiki                                              | https://deepwiki.com/ClicShopping/ClicShopping |
-| Tech Framework - Core framework architecture          | https://github.com/ClicShopping/ClicShopping/wiki/Tech--Framework |
-| Modern App Architecture - Modern development patterns | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Modern-App-Architecture |
-| Tech Configuration - Configuration management system  | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Configuration |
-| Tech Database - Database layer and ORM                | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Database |
-| Tech Registry - Service locator pattern               | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Registry |
-| Tech Hooks - Hook system architecture (technical)     | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Hooks |
-| Tech Cache - Multi-layer caching system               | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Cache  |
+| Subject | File |
+|---|---|
+| Agent operational rules | `AGENTS.md` |
+| AI system: agents, RAG, LLM, memory, embeddings | `AI_SYSTEM.md` |
+| AI directory structure, orchestrator, patterns | `AI_ARCHITECTURE.md` |
+| Database, SQL, embeddings schema | `DATABASE.md` |
+| Security, guardrails, GDPR | `SECURITY.md` |
+| Templates, rendering, SEO, i18n | `TEMPLATES.md` |
+| Official Wiki | https://github.com/ClicShopping/ClicShopping/wiki |
+| DeepWiki | https://deepwiki.com/ClicShopping/ClicShopping |
+| Tech Framework | https://github.com/ClicShopping/ClicShopping/wiki/Tech--Framework |
+| Modern App Architecture | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Modern-App-Architecture |
+| Tech Configuration | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Configuration |
+| Tech Database | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Database |
+| Tech Registry | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Registry |
+| Tech Hooks | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Hooks |
+| Tech Cache | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Cache |
