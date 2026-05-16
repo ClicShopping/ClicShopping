@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'dec2ad734d804a2a5a2b7ecb1e5975ae490b6420',
+        'reference' => 'd2161d0b03c29e6fdcbafcdf7dd2f70e9711cc41',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'dec2ad734d804a2a5a2b7ecb1e5975ae490b6420',
+            'reference' => 'd2161d0b03c29e6fdcbafcdf7dd2f70e9711cc41',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -218,9 +218,9 @@
             'dev_requirement' => false,
         ),
         'phpmailer/phpmailer' => array(
-            'pretty_version' => 'v7.0.2',
-            'version' => '7.0.2.0',
-            'reference' => 'ebf1655bd5b99b3f97e1a3ec0a69e5f4cd7ea088',
+            'pretty_version' => 'v7.1.0',
+            'version' => '7.1.0.0',
+            'reference' => 'e193b921a73e65bff40cab89ea0b0293be0e0c20',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpmailer/phpmailer',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => 'bc5eb5643ac86830769128f1118ec66194008625',
+            'reference' => '80f4d3dbb1fc1ef5bb1eee68dbfb44060e1fb4e8',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -550,9 +550,9 @@
             'dev_requirement' => false,
         ),
         'theodo-group/llphant' => array(
-            'pretty_version' => '0.11.19',
-            'version' => '0.11.19.0',
-            'reference' => 'e737181a2e3ef7eac8a1ef561179f03f81539c29',
+            'pretty_version' => '0.11.20',
+            'version' => '0.11.20.0',
+            'reference' => 'c9308d5b6d364d7fd3cbe549b6cf4b769f055a85',
             'type' => 'library',
             'install_path' => __DIR__ . '/../theodo-group/llphant',
             'aliases' => array(),

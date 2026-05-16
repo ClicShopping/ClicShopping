@@ -1,4 +1,4 @@
-# LLPhant - A comprehensive PHP Generative AI Framework
+# LLPhant - The PHP library for Gen AI and Vector Databases
 
 <div align="center">
     <img src="docs/assets/llphant-logo.png" alt="LLPhant" style="border-radius: 50%; padding-bottom: 20px"/>

@@ -1729,17 +1729,17 @@
         },
         {
             "name": "phpmailer/phpmailer",
-            "version": "v7.0.2",
-            "version_normalized": "7.0.2.0",
+            "version": "v7.1.0",
+            "version_normalized": "7.1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "ebf1655bd5b99b3f97e1a3ec0a69e5f4cd7ea088"
+                "reference": "e193b921a73e65bff40cab89ea0b0293be0e0c20"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/ebf1655bd5b99b3f97e1a3ec0a69e5f4cd7ea088",
-                "reference": "ebf1655bd5b99b3f97e1a3ec0a69e5f4cd7ea088",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/e193b921a73e65bff40cab89ea0b0293be0e0c20",
+                "reference": "e193b921a73e65bff40cab89ea0b0293be0e0c20",
                 "shasum": ""
             },
             "require": {
@@ -1770,7 +1770,7 @@
                 "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)",
                 "thenetworg/oauth2-azure": "Needed for Microsoft XOAUTH2 authentication"
             },
-            "time": "2026-01-09T18:02:33+00:00",
+            "time": "2026-05-15T14:22:59+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -1802,7 +1802,7 @@
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
             "support": {
                 "issues": "https://github.com/PHPMailer/PHPMailer/issues",
-                "source": "https://github.com/PHPMailer/PHPMailer/tree/v7.0.2"
+                "source": "https://github.com/PHPMailer/PHPMailer/tree/v7.1.0"
             },
             "funding": [
                 {
@@ -2426,12 +2426,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "bc5eb5643ac86830769128f1118ec66194008625"
+                "reference": "80f4d3dbb1fc1ef5bb1eee68dbfb44060e1fb4e8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/bc5eb5643ac86830769128f1118ec66194008625",
-                "reference": "bc5eb5643ac86830769128f1118ec66194008625",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/80f4d3dbb1fc1ef5bb1eee68dbfb44060e1fb4e8",
+                "reference": "80f4d3dbb1fc1ef5bb1eee68dbfb44060e1fb4e8",
                 "shasum": ""
             },
             "conflict": {
@@ -2552,7 +2552,7 @@
                 "clickstorm/cs-seo": ">=6,<6.8|>=7,<7.5|>=8,<8.4|>=9,<9.3",
                 "co-stack/fal_sftp": "<0.2.6",
                 "cockpit-hq/cockpit": "<2.14",
-                "code16/sharp": "<9.20",
+                "code16/sharp": "<9.22",
                 "codeception/codeception": "<3.1.3|>=4,<4.1.22",
                 "codeigniter/framework": "<3.1.10",
                 "codeigniter4/framework": "<4.6.2",
@@ -2572,7 +2572,7 @@
                 "contao/core-bundle": "<4.13.57|>=5,<5.3.42|>=5.4,<5.6.5",
                 "contao/listing-bundle": ">=3,<=3.5.30|>=4,<4.4.8",
                 "contao/managed-edition": "<=1.5",
-                "coreshop/core-shop": "<4.1.9",
+                "coreshop/core-shop": "<4.1.9|==5",
                 "corveda/phpsandbox": "<1.3.5",
                 "cosenary/instagram": "<=2.3",
                 "couleurcitron/tarteaucitron-wp": "<0.3",
@@ -3176,6 +3176,7 @@
                 "simplesamlphp/saml2": "<=4.16.15|>=5.0.0.0-alpha1,<=5.0.0.0-alpha19",
                 "simplesamlphp/saml2-legacy": "<=4.16.15",
                 "simplesamlphp/simplesamlphp": "<1.18.6",
+                "simplesamlphp/simplesamlphp-module-casserver": "<=7.0.2",
                 "simplesamlphp/simplesamlphp-module-infocard": "<1.0.1",
                 "simplesamlphp/simplesamlphp-module-openid": "<1",
                 "simplesamlphp/simplesamlphp-module-openidprovider": "<0.9",
@@ -3448,7 +3449,7 @@
                 "zoujingli/thinkadmin": "<=6.1.53",
                 "zumba/json-serializer": "<3.2.3"
             },
-            "time": "2026-05-13T16:50:04+00:00",
+            "time": "2026-05-15T18:36:41+00:00",
             "default-branch": true,
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",
@@ -5028,17 +5029,17 @@
         },
         {
             "name": "theodo-group/llphant",
-            "version": "0.11.19",
-            "version_normalized": "0.11.19.0",
+            "version": "0.11.20",
+            "version_normalized": "0.11.20.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LLPhant/LLPhant.git",
-                "reference": "e737181a2e3ef7eac8a1ef561179f03f81539c29"
+                "reference": "c9308d5b6d364d7fd3cbe549b6cf4b769f055a85"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/e737181a2e3ef7eac8a1ef561179f03f81539c29",
-                "reference": "e737181a2e3ef7eac8a1ef561179f03f81539c29",
+                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/c9308d5b6d364d7fd3cbe549b6cf4b769f055a85",
+                "reference": "c9308d5b6d364d7fd3cbe549b6cf4b769f055a85",
                 "shasum": ""
             },
             "require": {
@@ -5089,7 +5090,7 @@
                 "probots-io/pinecone-php": "This is required for the PineconeVectorStore. Use scotteuser/pinecone-php for <= PHP 8.2",
                 "symfony/cache": "This is one of the possible types of psr/cache needed by doctrine/orm"
             },
-            "time": "2026-04-30T17:06:22+00:00",
+            "time": "2026-05-10T15:35:21+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -5121,7 +5122,7 @@
             ],
             "support": {
                 "issues": "https://github.com/LLPhant/LLPhant/issues",
-                "source": "https://github.com/LLPhant/LLPhant/tree/0.11.19"
+                "source": "https://github.com/LLPhant/LLPhant/tree/0.11.20"
             },
             "install-path": "../theodo-group/llphant"
         },
