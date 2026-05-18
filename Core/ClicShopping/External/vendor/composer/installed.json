@@ -1729,17 +1729,17 @@
         },
         {
             "name": "phpmailer/phpmailer",
-            "version": "v7.1.0",
-            "version_normalized": "7.1.0.0",
+            "version": "v7.1.1",
+            "version_normalized": "7.1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "e193b921a73e65bff40cab89ea0b0293be0e0c20"
+                "reference": "1bc1716a507a65e039d4ac9d9adebbbd0d346e15"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/e193b921a73e65bff40cab89ea0b0293be0e0c20",
-                "reference": "e193b921a73e65bff40cab89ea0b0293be0e0c20",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/1bc1716a507a65e039d4ac9d9adebbbd0d346e15",
+                "reference": "1bc1716a507a65e039d4ac9d9adebbbd0d346e15",
                 "shasum": ""
             },
             "require": {
@@ -1770,7 +1770,7 @@
                 "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)",
                 "thenetworg/oauth2-azure": "Needed for Microsoft XOAUTH2 authentication"
             },
-            "time": "2026-05-15T14:22:59+00:00",
+            "time": "2026-05-18T08:06:14+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -1802,7 +1802,7 @@
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
             "support": {
                 "issues": "https://github.com/PHPMailer/PHPMailer/issues",
-                "source": "https://github.com/PHPMailer/PHPMailer/tree/v7.1.0"
+                "source": "https://github.com/PHPMailer/PHPMailer/tree/v7.1.1"
             },
             "funding": [
                 {
@@ -5029,17 +5029,17 @@
         },
         {
             "name": "theodo-group/llphant",
-            "version": "0.11.20",
-            "version_normalized": "0.11.20.0",
+            "version": "0.11.21",
+            "version_normalized": "0.11.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LLPhant/LLPhant.git",
-                "reference": "c9308d5b6d364d7fd3cbe549b6cf4b769f055a85"
+                "reference": "747b979bf772b147bb7d5c544cce85aae6992041"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/c9308d5b6d364d7fd3cbe549b6cf4b769f055a85",
-                "reference": "c9308d5b6d364d7fd3cbe549b6cf4b769f055a85",
+                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/747b979bf772b147bb7d5c544cce85aae6992041",
+                "reference": "747b979bf772b147bb7d5c544cce85aae6992041",
                 "shasum": ""
             },
             "require": {
@@ -5090,7 +5090,7 @@
                 "probots-io/pinecone-php": "This is required for the PineconeVectorStore. Use scotteuser/pinecone-php for <= PHP 8.2",
                 "symfony/cache": "This is one of the possible types of psr/cache needed by doctrine/orm"
             },
-            "time": "2026-05-10T15:35:21+00:00",
+            "time": "2026-05-16T14:31:04+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -5122,7 +5122,7 @@
             ],
             "support": {
                 "issues": "https://github.com/LLPhant/LLPhant/issues",
-                "source": "https://github.com/LLPhant/LLPhant/tree/0.11.20"
+                "source": "https://github.com/LLPhant/LLPhant/tree/0.11.21"
             },
             "install-path": "../theodo-group/llphant"
         },
