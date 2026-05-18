@@ -225,15 +225,18 @@ class AnalyticsAgent
    *               - results: Query results
    *               - corrections: Any applied corrections
    */
-  public function processBusinessQuery(string $question, bool $includeSQL = true, array $feedbackContext = []): array
+  public function processBusinessQuery(string $question, bool $includeSQL = true, array $feedbackContext = [], bool $skipClassification = false): array
   {
-    error_log("\n" . str_repeat("=", 100));
-    error_log("DEBUG: AnalyticsAgent.processBusinessQuery() - START");
-    error_log(str_repeat("=", 100));
-    error_log("Question: '{$question}'");
-    error_log("includeSQL: " . ($includeSQL ? 'true' : 'false'));
-    error_log("feedbackContext items: " . count($feedbackContext));
-
+    if ($this->debug) {
+      error_log("\n" . str_repeat("=", 100));
+      error_log("DEBUG: AnalyticsAgent.processBusinessQuery() - START");
+      error_log(str_repeat("=", 100));
+      error_log("Question: '{$question}'");
+      error_log("includeSQL: " . ($includeSQL ? 'true' : 'false'));
+      error_log("feedbackContext items: " . count($feedbackContext));
+      error_log("skipClassification: " . ($skipClassification ? 'true' : 'false'));
+    }
+    
     try {
       // 0. 🆕 Detect if it's a modification and enrich with the last SQL query
       if ($this->isModificationRequest($question) && $this->conversationMemory) {
@@ -244,12 +247,14 @@ class AnalyticsAgent
         }
       }
 
-      // 1. Check if it's an analytics query
+      // 1. Check if it's an analytics query (skip when called from PlanExecutor — already classified)
       error_log("\n--- STEP 1: Check if analytics query ---");
-      $isAnalytics = $this->isAnalyticsQuery($question);
+      $isAnalytics = $skipClassification ? true : $this->isAnalyticsQuery($question);
 
-      error_log("isAnalyticsQuery() returned: " . ($isAnalytics ? 'TRUE' : 'FALSE'));
-
+      if ($this->debug) {
+        error_log("isAnalyticsQuery() returned: " . ($isAnalytics ? 'TRUE' : 'FALSE') . ($skipClassification ? ' (SKIPPED - pre-classified by orchestrator)' : ''));
+      }
+     
       if (!$isAnalytics) {
         error_log("NOT AN ANALYTICS QUERY - Returning early");
         return [

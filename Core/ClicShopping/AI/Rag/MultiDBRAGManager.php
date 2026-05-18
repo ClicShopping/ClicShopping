@@ -29,8 +29,6 @@ use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\Adm
 use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 use LLPhant\Query\SemanticSearch\LLMReranker;
-use LLPhant\Chat\OpenAIChat;
-use LLPhant\OpenAIConfig;
 
 /**
  * MultiDBRAGManager Class
@@ -151,14 +149,7 @@ class MultiDBRAGManager
       $this->useReranking = true;
 
       try {
-        // Set OpenAI API key as environment variable (required by LLPhant)
-        Gpt::getEnvironment();
-
-        // Create OpenAI chat instance for reranking
-        $config = new OpenAIConfig();
-        $config->model = defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : Gpt::getTechnicalFallbackModel();
-
-        $chat = new OpenAIChat($config);
+        $chat = Gpt::getChatForModel();
 
         // Number of documents to return after reranking
         $nrOfOutputDocuments = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;

@@ -113,7 +113,6 @@ Rule: never invent a constant name. Verify existing constants in the App's
 configuration files before creating a new one.
 
 ---
-
 ## Absolute Prohibitions
 
 ```

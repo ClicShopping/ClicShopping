@@ -1,0 +1,44 @@
+-- BUG-005: Add missing event_type values
+ALTER TABLE clic_rag_security_events
+MODIFY COLUMN event_type ENUM(
+  'threat_detected','threat_blocked','false_positive',
+  'security_check_passed','security_check_failed',
+  'pattern_fallback','llm_unavailable',
+  'response_validation_failed','leakage_detected',
+  'grounding_failed','query_allowed','query_blocked',
+  'security_fallback','layer_performance','test_event',
+  'obfuscation_detected','websearch_facade_initialized'
+) NOT NULL COMMENT 'Type of security event';
+
+-- BUG-007: Add missing detection_method values
+ALTER TABLE clic_rag_security_events
+MODIFY COLUMN detection_method ENUM(
+  'llm_semantic','pattern_based','response_validation','hybrid',
+  'llm','llm_analysis','llm_intent_flag','llm_cached',
+  'pattern_removal','pattern_prefilter','pattern_fallback',
+  'keyword_analysis','dynamic_keyword_match','error','unknown'
+) NOT NULL COMMENT 'Method used for detection';
+
+-- BUG-008: Create missing table
+CREATE TABLE IF NOT EXISTS clic_rag_evaluation_retries (
+  id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  output_id VARCHAR(100) NOT NULL COMMENT 'Identifier of the output being re-evaluated',
+  output_type VARCHAR(50) NOT NULL COMMENT 'Type of output',
+  failed_evaluator_id VARCHAR(100) NOT NULL COMMENT 'Agent that failed the evaluation',
+  retry_evaluator_id VARCHAR(100) COMMENT 'Agent assigned for retry evaluation',
+  attempt_number INT(11) NOT NULL DEFAULT 1 COMMENT 'Current retry attempt number',
+  status ENUM('attempting','success','failed') NOT NULL DEFAULT 'attempting',
+  failure_reason TEXT COMMENT 'Reason for failure when all retries exhausted',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resolved_at DATETIME,
+  PRIMARY KEY (id),
+  INDEX idx_output_id (output_id),
+  INDEX idx_failed_evaluator (failed_evaluator_id),
+  INDEX idx_retry_evaluator (retry_evaluator_id),
+  INDEX idx_status (status),
+  INDEX idx_created_at (created_at),
+  INDEX idx_output_status (output_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `clic_rag_agent_consensus_sessions` CHANGE `session_id` `session_id` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Unique identifier for the consensus session (UUID)';
+ALTER TABLE `clic_rag_agent_consensus_sessions` CHANGE `output_id` `output_id` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Output being evaluated for consensus';

@@ -240,8 +240,8 @@ class AnalyticsExecutor
 
       $executionStart = microtime(true);
 
-      // Execute query using processBusinessQuery for proper formatting
-      $rawResult = $this->analyticsAgent->processBusinessQuery($query, true);
+      // Execute query — skip classification since orchestrator already classified this as analytics
+      $rawResult = $this->analyticsAgent->processBusinessQuery($query, true, [], true);
       $executionTimeMs = (int)round((microtime(true) - $executionStart) * 1000);
 
       if ($this->debugRAManager) {
@@ -249,6 +249,7 @@ class AnalyticsExecutor
         error_log("  SQL query: " . ($rawResult['sql_query'] ?? 'EMPTY'));
         error_log("  Results count: " . count($rawResult['results'] ?? []));
       }
+      
       //  Handle interpretation being an array or string
       $interpretation = $rawResult['interpretation'] ?? 'N/A';
 

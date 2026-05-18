@@ -15,7 +15,6 @@ namespace ClicShopping\AI\DomainsAI\CoreAI\Embedding;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Cache;
 
-use LLPhant\Chat\OpenAIChat;
 use LLPhant\Embeddings\DataReader\FileDataReader;
 use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\DocumentSplitter\DocumentSplitter;
@@ -708,24 +707,6 @@ class NewVector
   }
 
 
-  /**
-   * Initializes and returns an OpenAIChat instance configured with specified parameters.
-   *
-   * @return mixed An instance of the OpenAIChat class configured for GPT functionality.
-   */
-  private static function chat(): mixed // Not use currently
-  {
-    $api_key = self::getApiKey();
-    $parameters = ['model' => CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL];
-
-    $config = new OpenAIConfig();
-    $config->apiKey = $api_key;
-    $config->model = $parameters['model'];
-    $config->modelOptions = $parameters;
-
-    $chat = new OpenAIChat($config);
-    return $chat;
-  }
 
   /**
    * Retrieves the content of a document either from a specified file path or from a text description.

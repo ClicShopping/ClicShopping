@@ -17,8 +17,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\CriticDat
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\LLMPromptBuilder;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightNormalizer;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightAuditLogger;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\LLMProviderFactory;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\AbstractLLMProvider;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Infrastructure\Monitoring\AlertManager;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 
@@ -55,14 +54,12 @@ class LLMWeightingEngine
     private LLMPromptBuilder $promptBuilder;
     private WeightNormalizer $normalizer;
     private WeightAuditLogger $auditLogger;
-    private LLMProviderFactory $llmFactory;
     private AlertManager $alertManager;
     private Cache $cache;
     private ?MigrationManager $migrationManager = null;
     private string $errorLogPath;
-    
+
     // Configuration
-    private string $llmProvider = 'openai'; // Default provider
     private int $maxRetries = 2;
     private int $timeoutSeconds = 30;
     private bool $fallbackEnabled = true;
@@ -93,19 +90,15 @@ class LLMWeightingEngine
         $this->promptBuilder = $promptBuilder;
         $this->normalizer = $normalizer;
         $this->auditLogger = $auditLogger;
-        $this->llmFactory = LLMProviderFactory::getInstance();
         $this->alertManager = new AlertManager();
         $this->cache = new Cache(true);
-        
+
         // Set error log path
         $this->errorLogPath = defined('CLICSHOPPING_BASE_DIR') 
             ? CLICSHOPPING_BASE_DIR . 'Work/Log/adaptive_weighting_errors.log'
             : __DIR__ . '/../../../../../../Work/Log/adaptive_weighting_errors.log';
         
         // Apply configuration overrides
-        if (isset($config['llm_provider'])) {
-            $this->llmProvider = $config['llm_provider'];
-        }
         if (isset($config['max_retries'])) {
             $this->maxRetries = $config['max_retries'];
         }
@@ -232,19 +225,14 @@ class LLMWeightingEngine
         
         while ($attempt <= $this->maxRetries) {
             try {
-                // Get LLM provider
-                $provider = $this->llmFactory->create($this->llmProvider);
-                
-                // Make LLM call
-                $response = $this->callLLM($provider, $prompt);
-                
-                // Success - log if this was a retry
+                $response = $this->callLLM($prompt);
+
                 if ($attempt > 0) {
                     $this->logRetrySuccess($attempt);
                 }
-                
+
                 return $response;
-                
+
             } catch (\Exception $e) {
                 $lastException = $e;
                 $attempt++;
@@ -269,32 +257,23 @@ class LLMWeightingEngine
     }
     
     /**
-     * Call LLM provider
-     * 
-     * Makes the actual LLM API call using the provider's LLPhant Chat interface.
-     * 
-     * Requirements: 10.3
-     * 
-     * @param AbstractLLMProvider $provider LLM provider instance
+     * Call LLM via Gpt facade
+     *
      * @param string $prompt Prompt to send
      * @return string LLM response
      * @throws \RuntimeException If LLM call fails
      */
-    private function callLLM(AbstractLLMProvider $provider, string $prompt): string
+    private function callLLM(string $prompt): string
     {
-        // Build request with JSON response format instruction
         $fullPrompt = $prompt . "\n\nIMPORTANT: You MUST respond with valid JSON only. Do not include any text before or after the JSON object.";
-        
-        // Get LLPhant Chat instance
-        $chat = $provider->getLLPhantChat();
-        
-        // Make the call using LLPhant
+
+        $chat = Gpt::getChatForModel();
         $response = $chat->generateText($fullPrompt);
-        
+
         if (empty($response)) {
             throw new \RuntimeException('Empty response from LLM');
         }
-        
+
         return $response;
     }
     
@@ -454,25 +433,11 @@ class LLMWeightingEngine
     public function getConfig(): array
     {
         return [
-            'llm_provider' => $this->llmProvider,
             'max_retries' => $this->maxRetries,
             'timeout_seconds' => $this->timeoutSeconds,
             'fallback_enabled' => $this->fallbackEnabled,
             'fallback_alert_threshold' => $this->fallbackAlertThreshold
         ];
-    }
-    
-    /**
-     * Set LLM provider
-     * 
-     * Allows changing the LLM provider at runtime.
-     * 
-     * @param string $provider Provider name (openai, anthropic, ollama)
-     * @return void
-     */
-    public function setLLMProvider(string $provider): void
-    {
-        $this->llmProvider = $provider;
     }
     
     /**

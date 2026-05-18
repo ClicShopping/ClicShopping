@@ -1,5 +1,5 @@
-session_id varchar(36) not_null comment(Unique identifier for the consensus session (UUID))
-output_id varchar(36) not_null comment(Output being evaluated for consensus)
+session_id varchar(255) not_null comment(Unique identifier for the consensus session (UUID))
+output_id varchar(255) not_null comment(Output being evaluated for consensus)
 participating_agents longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`participating_agents`)) comment(Array of agent IDs participating in consensus)
 initial_scores longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`initial_scores`)) comment(Initial evaluation scores from each agent)
 consensus_reached tinyint(1) default 0 comment(Whether consensus was achieved)

@@ -15,8 +15,6 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use LLPhant\Chat\OpenAIChat;
-use LLPhant\OpenAIConfig;
 
 /**
  * EntityMatcher Class
@@ -34,7 +32,7 @@ class EntityMatcher
 {
   private SecurityLogger $logger;
   private bool $debug;
-  private OpenAIChat $chat;
+  private mixed $chat;
   private $language;
 
   /**
@@ -47,15 +45,7 @@ class EntityMatcher
     $this->debug = $debug;
     $this->logger = new SecurityLogger();
     
-    // Initialize OpenAI chat
-    // Set OpenAI API key as environment variable (required by LLPhant)
-    Gpt::getEnvironment();
-    
-    // Create OpenAI chat instance
-    $config = new OpenAIConfig();
-    $config->model = defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : Gpt::getTechnicalFallbackModel();
-
-    $this->chat = new OpenAIChat($config);
+    $this->chat = Gpt::getChatForModel();
     
     // Load language definitions
     $this->language = Registry::get('Language');

@@ -13,6 +13,7 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ModelManager;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\LLMProviderInterface;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\LLMProviderFactory;
 use ClicShopping\OM\CLICSHOPPING;
@@ -61,10 +62,11 @@ class ParallelLLMExecutor
   {
     $this->logger = new SecurityLogger();
     
-    // Set provider (create default if not provided)
+    // Set provider (create from configured model if not provided)
     if ($provider === null) {
       $factory = LLMProviderFactory::getInstance();
-      $this->provider = $factory->create('openai'); // Default to OpenAI
+      $providerName = self::detectConfiguredProvider();
+      $this->provider = $factory->create($providerName);
     } else {
       $this->provider = $provider;
     }
@@ -100,6 +102,22 @@ class ParallelLLMExecutor
         'info'
       );
     }
+  }
+
+  /**
+   * Detect the configured LLM provider from CLICSHOPPING_APP_CHATGPT_CH_MODEL
+   * using ModelManager::getModelProviderMap() as the single source of truth.
+   */
+  private static function detectConfiguredProvider(): string
+  {
+    if (!defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL')) {
+      return 'openai';
+    }
+
+    $model = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+    $providerMap = ModelManager::getModelProviderMap();
+
+    return $providerMap[$model] ?? 'openai';
   }
 
   /**
