@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="fix bug" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little language imporvement" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -194,14 +194,7 @@
       <workItem from="1779101941357" duration="39000" />
       <workItem from="1779103284825" duration="42000" />
       <workItem from="1779107975608" duration="26000" />
-    </task>
-    <task id="LOCAL-00009" summary="security improvement">
-      <option name="closed" value="true" />
-      <created>1777387787694</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1777387787694</updated>
+      <workItem from="1779116628452" duration="32000" />
     </task>
     <task id="LOCAL-00010" summary="security improvement">
       <option name="closed" value="true" />
@@ -587,14 +580,21 @@
       <option name="project" value="LOCAL" />
       <updated>1779107995431</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <task id="LOCAL-00058" summary="little language imporvement">
+      <option name="closed" value="true" />
+      <created>1779116654360</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1779116654360</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="orchestrator refactoring" />
     <MESSAGE value="fix accordeon" />
     <MESSAGE value="readme updated" />
     <MESSAGE value="litlle fix" />
@@ -619,7 +619,8 @@
     <MESSAGE value="fix somes bugs" />
     <MESSAGE value="add db" />
     <MESSAGE value="fix bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix bug" />
+    <MESSAGE value="little language imporvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="little language imporvement" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
