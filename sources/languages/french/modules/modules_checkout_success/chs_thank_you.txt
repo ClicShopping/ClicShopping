@@ -40,7 +40,7 @@ module_checkout_success_create_account_success =
 <p class="blockquote">
   <h3>votre commande</h3>
   <br /><br />
-  Vous avez choisi de payer en créant un compte invité, vous ne pouvez pas avoir accès à votre historique de compte.<br /> Seul les emails que nous vous enverrons, vous permettrons de connaitre l'état de la situation de votre commande.<br /><br />
+  Vous avez choisi de payer en créant un compte invité, vous ne pouvez pas avoir accès à votre historique de compte.<br /> Seul les emails que nous vous enverrons, vous permettrons de connaître l'état de la situation de votre commande.<br /><br />
   <br /><br />
   <li><strong>si vous avez payé par chèque</strong>, nous vous demandons de bien vouloir nous faire parvenir soit une copie de votre bon de commande ou du mail de confirmation que vous avez reçu. Dès réception, nous allons traiter votre demande.
   <br /><br />Adresse de {{store_name}}. : {{store_name_address}}</li><br /><br />

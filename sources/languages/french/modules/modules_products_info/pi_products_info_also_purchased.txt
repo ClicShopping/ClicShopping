@@ -1,5 +1,5 @@
-module_products_info_also_purchased_title = Souhaitez-vous afficher les Clients Ont aussi achetés ?
-module_products_info_also_purchased_description = Affiche les Clients Ont aussi achetés
+module_products_info_also_purchased_title = Souhaitez-vous afficher les Clients ont aussi achetés ?
+module_products_info_also_purchased_description = Affiche les Clients ont aussi achetés
 module_products_info_also_purchased_name = Recommandations clients
 
 text_stock =  Stock

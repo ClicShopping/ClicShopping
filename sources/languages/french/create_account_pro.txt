@@ -8,19 +8,19 @@ email_subject = Welcome to {{store_name}}
 email_greet_mr = Dear Mr. {{lastname}},
 email_greet_ms = Dear Ms. {{lastname}},
 
-email_welcome = Nous vous remercions pour la confiance que vous nous témoigniez en vous enregistrant comme nouveau client'. "\n\n" .'<div align="justify">Nous avons pris votre demande d'inscription pour l'ouverture d'un compte professionnel auprès de notre réseau.<br /><br />Vous allez recevoir très rapidement un email vous notifiant la création de votre compte après validation de votre demande par notre service clientèle. <br />Vous recevrez l'ensemble des informations vous permettant de vous connecter et de réaliser vos achats sur {{store_name}} <br /><br />Vous pourrez alors au titre de client privilégié bénéficier de prix exceptionnels sur l'ensemble de nos articles en vous connectant sur votre espace client de {{store_name}}<br /><br />Pour toute aide sur nos services, n'hésitez pas à contacter notre service clientèle  : {{store_owner_email_address}}
+email_welcome = Nous vous remercions pour la confiance que vous nous témoignez en vous enregistrant comme nouveau client'. "\n\n" .'<div align="justify">Nous avons pris votre demande d'inscription pour l'ouverture d'un compte professionnel auprès de notre réseau.<br /><br />Vous allez recevoir très rapidement un email vous notifiant la création de votre compte après validation de votre demande par notre service clientèle. <br />Vous recevrez l'ensemble des informations vous permettant de vous connecter et de réaliser vos achats sur {{store_name}} <br /><br />Vous pourrez alors au titre de client privilégié bénéficier de prix exceptionnels sur l'ensemble de nos articles en vous connectant sur votre espace client de {{store_name}}<br /><br />Pour toute aide sur nos services, n'hésitez pas à contacter notre service clientèle  : {{store_owner_email_address}}
 
 admin_email_subject = Nouveau client sur {{store_name}} - Création de compte Pro
 admin_email_welcome = Bonjour,'. "\n\n" . '
 admin_email_text' = Un nouveau client (mode B2b) vient de s'enregistrer, vous trouverez les informations ci-dessous :<br />
 nom : {{customer_name}} <br />
-prenom :' {{customer_firstame}}<br />
+prenom :' {{customer_firstname}}<br />
 compagnie : {{customer_company}}<br />
 e-mail : {{customer_mail}}<br />
 
 email_text_coupon = {{store_name}} . ' se fait un plaisir de vous offrir un coupon remise sur votre prochaine commande que vous pourrez utiliser n'importe quand sur la boutique (sauf limite de validité).' . "\n\n" . ' Le numéro du coupon est : <strong>
 
-email_network = 'Suivez nous en temps reel sur :
+email_network = 'Suivez nous en temps réel sur :
 email_twitter = http://www.twitter.com/
 email_facebook = http://www.facebook.com/
 

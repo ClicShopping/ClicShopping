@@ -28,7 +28,7 @@ button_continue = Continuer
 
 
 email_text_subject = Demande de retour produit {{store_name}}
-email_text_content = Un client vous a envoyé une demande d'information concernant le retour éventuel d'un produit. Merci de vous connecter à votre espace d'administration afin de connaitre les raisons de cette demande
+email_text_content = Un client vous a envoyé une demande d'information concernant le retour éventuel d'un produit. Merci de vous connecter à votre espace d'administration afin de connaître les raisons de cette demande
 email_text_subject_customer = Prise en compte de votre demande {{store_name}}
 email_text_subject_customer = Bonjour, <br />
 Nous avons bien pris en compte votre demande de support. Nous allons la traiter très rapidement.<br />
@@ -38,5 +38,5 @@ Cordialement<br />
 L'équipe Support
 
 
-text_alert_info = Les retours des produits sont soumis à des clauses. Veuillez vous référer à nos conditions générales pour connaitre le détails des informations et des conditions de retour.
+text_alert_info = Les retours des produits sont soumis à des clauses. Veuillez vous référer à nos conditions générales pour connaître le détails des informations et des conditions de retour.
 Votre délais de rétractation est fixé à {{withdrawal}} jours à partir de la date d'achat. Concernant la garantie des produits, si le produit est garanti, veuillez-vous référer au spécificité du produit.

@@ -17,4 +17,4 @@ text_create_new_payment_address = Veuillez utiliser ce formulaire pour créer un
 
 title_continue_checkout_procedure = Continuer la procédure de commande
 text_continue_checkout_procedure = pour choisir la méthode préférée de paiement.
-error_address_book_no_modify_default = Vous n'etes pas autorisé à modifier l'adresse de facturation. N'hésitez pas à nous contacter pour toutes informations complémentaires.
+error_address_book_no_modify_default = Vous n'êtes pas autorisé à modifier l'adresse de facturation. N'hésitez pas à nous contacter pour toutes informations complémentaires.

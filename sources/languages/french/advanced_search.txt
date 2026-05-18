@@ -12,13 +12,13 @@ heading_search_criteria = Critère de recherche
 
 text_no_products = Il n'y a aucun produit correspondant à vos critères de recherche.
 
-error_at_least_one_input = Au moins un critere de recherche doit etre rempli.
+error_at_least_one_input = Au moins un critère de recherche doit être rempli.
 error_invalid_from_date = Date du champ <u>Depuis la date</u> invalide.
 error_invalid_to_date = Date du champ <u>Jusqu'à la date</u>  invalide.
 error_to_date_less_than_from_date = La date du champ <u>Jusqu'à la date</u> doit être supérieure ou égale à la date du champ <u>Depuis la date</u>
 error_price_from_must_be_num = Le prix du champ <u>Prix à partir de</u> ne doit contenir que des chiffres.
 error_price_to_must_be_num = Le prix du champ <u>Prix jusqu'à</u> ne doit contenir que des chiffres.
-error_price_to_less_than_price_from = Le prix du champ <u>Prix jusqu'à</u> doit être supérieure ou égale au prix du champ <u>Prix à partir de</u>.
+error_price_to_less_than_price_from = Le prix du champ <u>Prix jusqu'à</u> doit être supérieur ou égale au prix du champ <u>Prix à partir de</u>.
 error_invalid_keywords = Mots-clés invalides.
 dob_format_string = mm/dd/yyyy
 button_search = Rechercher

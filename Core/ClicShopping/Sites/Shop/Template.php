@@ -520,7 +520,7 @@ class Template
 
   public function getSiteTemplateModuleDirectory(): string
   {
-    return $this->_directoryTemplateSources . $this->_directoryTemplate . $this->_dynamicTemplate . $this->_directoryModules; // sources/template/SITE_THEMA/modules
+    return $this->_directoryTemplateSources . $this->_directoryTemplate . $this->_dynamicTemplate . '/' .$this->_directoryModules; // sources/template/SITE_THEMA/modules
   }
 
   /**

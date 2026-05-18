@@ -1,4 +1,4 @@
-module_shopping_cart_delay_save_cart_message_title = Souhaitez-vous afficher un message d'information permettant au client de connaitre son délais de sauvegarde de son panier ?
-module_shopping_cart_delay_save_cart_message_description = Affiche un message d'information permettant au client de connaitre son délais de sauvegarde de son panier
+module_shopping_cart_delay_save_cart_message_title = Souhaitez-vous afficher un message d'information permettant au client de connaître son délais de sauvegarde de son panier ?
+module_shopping_cart_delay_save_cart_message_description = Affiche un message d'information permettant au client de connaître son délais de sauvegarde de son panier
 
 module_shopping_cart_delay_save_cart_message_information = Le contenu de votre panier est stocké plus de 30 jours aprés enregistrement, vous pouvez revenir quand vous le souhaitez.

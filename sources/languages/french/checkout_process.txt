@@ -22,14 +22,14 @@ Très cordialement,<br /><br /><strong>L'équipe {{store_name}}</strong>
 
 email_text_subject_stock = Alerte Stock sur {{store_name}}
 
-email_reorder_level_text_stock = Bonjour,<br /><br />Vous recevez une alerte email sur le stock d'alerte (paramétrage générique)  d'un de vos produits. Ce stock vient d'etre atteint. <br />Voici les caractéristiques des produits : <br />
+email_reorder_level_text_stock = Bonjour,<br /><br />Vous recevez une alerte email sur le stock d'alerte (paramétrage générique)  d'un de vos produits. Ce stock vient d'être atteint. <br />Voici les caractéristiques des produits : <br />
 email_text_stock = Bonjour,<br /><br />
 Vous recevez une alerte email concernant l'épuisement du stock d'un de vos produits. Votre produit n'est plus visble sur la boutique. Vous pouvez néanmoins le réactiver sans modifier votre stock. Dans ce cas, le bouton ajouté sera remplacé par le bouton épuisé.  <br /><br />
 Voici les caractéristiques de produit épuisé : <br /><br />
 
 email_text_subject_alert_stock = Alerte Stock fiche produit sur {{store_name}}
 email_reorder_level_text_alert_stock = Bonjour, <br /><br />V
-ous recevez une alerte email concernant le stock d'alerte (défini dans la fiche produit) d'un de vos produits. Ce stock vient d'etre atteint. <br />Voici les caractéristiques des produits :<br />
+ous recevez une alerte email concernant le stock d'alerte (défini dans la fiche produit) d'un de vos produits. Ce stock vient d'être atteint. <br />Voici les caractéristiques des produits :<br />
 email_text_product_alert_stock = Stock restant du produit :
 
 

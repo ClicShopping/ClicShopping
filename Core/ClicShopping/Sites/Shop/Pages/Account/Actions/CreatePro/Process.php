@@ -539,7 +539,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
           $data_array = [
             'customer_name' => HTML::sanitize($_POST['lastname']),
-            'customer_firstame' => HTML::sanitize($_POST['firstname']),
+            'customer_firstname' => HTML::sanitize($_POST['firstname']),
             'customer_company' => HTML::sanitize($_POST['company']),
             'customer_mail' => $_POST['email_address']
           ];

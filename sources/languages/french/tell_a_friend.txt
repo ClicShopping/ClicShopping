@@ -1,8 +1,8 @@
 
-navbar_title = Faire connaitre à un ami
-heading_title_friends = Faire connaitre à un ami
+navbar_title = Faire connaître à un ami
+heading_title_friends = Faire connaître à un ami
 
-heading_title_error = Faire connaitre à un ami
+heading_title_error = Faire connaître à un ami
 
 copy_antispam = Recopier le code AntiSpam
 
@@ -10,7 +10,7 @@ form_title_customer_details = Vous
 form_title_friend_details = Votre ami(e)
 form_title_friend_message = Votre message
 
-text_email_successful_sent = Votre courrier électronique à propos de <strong>%s</strong> Ont été avec succès envoyé à <strong>{{products_name}} {{to_name}}</strong>.
+text_email_successful_sent = Votre courrier électronique à propos de <strong>%s</strong> ont été avec succès envoyé à <strong>{{products_name}} {{to_name}}</strong>.
 
 text_email_subject = Votre ami {{from_name}} vous recommande ce produit de {{store_name}}
 text_email_intro = Bonjour {{to_name}}!'' . "\n\n" . '<br /><br />Vote ami(e), {{from_name}}, pense que vous pourriez être intéressés(és)  par {{products_name}} de {{store_name}}.<br /><br />
@@ -21,7 +21,7 @@ error_to_address = Erreur : L'adresse électronique de votre ami(e) doit être u
 error_from_name = Erreur : Votre nom ne doit pas être vide.
 error_from_address = Erreur : Votre adresse électronique doit être une adresse électronique valide.
 error_to_spam = Erreur : Vos codes concernant l'antispam sont erronées
-error_invalid_product = Ce produit produit n'est pas disponible. Essayer encore une fois.
+error_invalid_product = Ce produit n'est pas disponible. Essayer encore une fois.
 entry_antispam = Combien font :
 
 error_action_recorder = Erreur: un mot de de passe a déjà été envoyé. Veuillez attendre {{module_action_recorder_tell_a_friend_email_minutes}} minutes.

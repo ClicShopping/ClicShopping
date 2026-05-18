@@ -12,7 +12,7 @@ admin_email_welcome = Hi <br /><br />
 
 admin_email_text = New client (B2C mode) is registered, below user details:<br />
 name : {{customer_name}} <br />
-surname :{{customer_firstame}}<br />
+surname :{{customer_firstname}}<br />
 company : {{customer_company}}<br />
 e-mail : {{customer_mail}}<br />
 

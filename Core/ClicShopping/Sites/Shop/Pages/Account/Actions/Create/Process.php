@@ -235,7 +235,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
           $data_array = [
             'customer_name' => $lastname,
-            'customer_firstame' => $firstname,
+            'customer_firstname' => $firstname,
             'customer_mail' => $email_address
           ];
 

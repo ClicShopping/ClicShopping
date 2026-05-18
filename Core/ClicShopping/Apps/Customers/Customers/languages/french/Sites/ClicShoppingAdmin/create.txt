@@ -13,7 +13,7 @@ email_greet_none = Bonjour {{greet_none}}
 
 email_welcome = Bienvenue sur {{store_name}}, nous avons créé un comptepour vous. Pour vous connecter à notre boutique, vous devez suvre la procédure suivant pour retrouver votre mot de passe. si vous avez des questions n'hésitez pas à nous contacter
 
-email_network = '. "\n\n" . 'Suivez nous en temps reel sur :<br />
+email_network = '. "\n\n" . 'Suivez nous en temps réel sur :<br />
 email_twitter = http://www.twitter.com/
 email_facebook = http://www.facebook.com/
 

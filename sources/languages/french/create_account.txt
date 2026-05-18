@@ -11,12 +11,12 @@ admin_email_welcome = Bonjour,'. "\n\n" . '
 
 admin_email_text = Un nouveau client (mode B2C) vient de s'enregistrer, vous trouverez les informations ci-dessous :<br />
   nom : {{customer_name}} <br />
-  prenom : {{customer_firstame}}<br />
+  prenom : {{customer_firstname}}<br />
   compagnie :  {{customer_company}}<br />
   e-mail :{{customer_mail}}<br />
 
 
-email_network = 'Suivez nous en temps reel sur :<br />
+email_network = 'Suivez nous en temps réel sur :<br />
 email_twitter = http://www.twitter.com/
 email_facebook = http://www.facebook.com/
 

@@ -1,2 +1,2 @@
 module_security_check_extended_mysql_utf8_title = MySQL UTF-8MB4 Unicode
-module_security_check_extended_mysql_utf8_error = Certaines tables doivent etre converties en UTF-8 (utf8_utf8mb4).
+module_security_check_extended_mysql_utf8_error = Certaines tables doivent être converties en UTF-8 (utf8_utf8mb4).

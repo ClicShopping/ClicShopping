@@ -5,14 +5,14 @@ module_account_customers_gdpr_title = Accès et rectifications de mes données
 module_account_customers_gdpr_account_intro = Soucieux de la vie privée de nos fidèles clients, nous essayons de vous aider à paramétrer au mieux la confidentialités de vos données.<br />
 Cette section peut évoluer en fonction de nouveaux paramètres que nous mettons en place sur le site et ayant un impact sur l'utilisation de vos données.<br />
 votre compte client vous permet d'activer et de désactiver un certains nombres de fonctionnalité. Afin de mieux vous servir, nous vous conseillons de bien réfléchir avant de réaliser une action.<br /><br />
-<strong>Certaines actions peuvent etre irréversible car elles effaceront toutes vos données.</strong>
+<strong>Certaines actions peuvent être irréversible car elles effaceront toutes vos données.</strong>
 module_account_customers_gdpr_no_ip_address = Ne pas stocker mon adresse IP et le nom de mon provider lors de ma commande
 module_account_customers_gdpr_delete_all_reviews = Supprimer tous mes commentaires
 module_account_customers_gdpr_count_customers_reviews = Nombre de commentaires que vous avez crée
 module_account_customers_gdpr_delete_customers_info = Supprimer les informations relatives à mes connexions sur le site
 module_account_customers_gdpr_delete_my_orders_feedback = Supprimer mes commentaires sur les commandes réalisées
 module_account_customers_gdpr_count_orders_feedback = Nombre de commentaires
-module_account_customers_more_info = Si vous souhaitez que nous réalisions une action concernant vos données personnelles, n'hésitez pas à nous contacter. Il nous fera plaisir d'étuder votre demande et de voir comment elle peut etre réaliser.
+module_account_customers_more_info = Si vous souhaitez que nous réalisions une action concernant vos données personnelles, n'hésitez pas à nous contacter. Il nous fera plaisir d'étuder votre demande et de voir comment elle peut être réaliser.
 module_account_customers_contact_us = Nous contacter
 module_account_customers_gdpr_delete_action_recorder = Supprimer l'enregistrement de mes actions
 module_account_customers_gdpr_customer_bidth = Supprimer ma date de naissance
