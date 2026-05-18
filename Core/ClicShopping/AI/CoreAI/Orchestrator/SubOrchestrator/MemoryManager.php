@@ -234,10 +234,12 @@ class MemoryManager
     $metadata = [
       'success' => true,
       'agent_type' => 'orchestrator_full',
+      'interaction_id' => uniqid('orch_', true),
+      'query_type' => $intent['type'] ?? 'unknown',
       'intent_confidence' => $intent['confidence'],
       'intent_type' => $intent['type'] ?? 'unknown',
       'execution_time' => $response['execution_time'],
-      'plan_steps' => $plan !== null ? count($plan->getSteps()) : 0, 
+      'plan_steps' => $plan !== null ? count($plan->getSteps()) : 0,
       'validations_performed' => count($validationResults),
       'entity_id' => $entityId,
       'entity_type' => $entityType,

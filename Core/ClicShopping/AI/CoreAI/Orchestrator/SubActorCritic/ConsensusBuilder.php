@@ -509,30 +509,30 @@ class ConsensusBuilder
     private function storeAuthoritativeConsensus(Consensus $consensus): void
     {
         // Check if table exists first
-        if (!$this->tableExists('rag_agent_coordinated_results')) {
+        if (!$this->tableExists('rag_agent_consensus_sessions')) {
             if ($this->debug) {
-                error_log("ConsensusBuilder: Table rag_agent_coordinated_results does not exist, skipping storage");
+                error_log("ConsensusBuilder: Table rag_agent_consensus_sessions does not exist, skipping storage");
             }
             return;
         }
         
         try {
-            $sql = "INSERT INTO :table_rag_agent_coordinated_results 
-                    (consensus_id, output_id, consensus_score, consensus_reached, 
-                     aggregated_feedback, outliers, created_at, is_authoritative)
-                    VALUES (:consensus_id, :output_id, :consensus_score, :consensus_reached,
-                            :aggregated_feedback, :outliers, :created_at, 1)";
-            
+            $sql = "INSERT INTO :table_rag_agent_consensus_sessions
+                    (session_id, output_id, participating_agents, initial_scores,
+                     consensus_reached, final_score, created_at)
+                    VALUES (:session_id, :output_id, :participating_agents, :initial_scores,
+                            :consensus_reached, :final_score, :created_at)";
+
             $stmt = $this->db->prepare($sql);
-            $stmt->bindValue(':consensus_id', $consensus->getConsensusId());
+            $stmt->bindValue(':session_id', $consensus->getConsensusId());
             $stmt->bindValue(':output_id', $consensus->getOutputId());
-            $stmt->bindValue(':consensus_score', $consensus->getScore());
+            $stmt->bindValue(':participating_agents', json_encode($consensus->getOutliers()));
+            $stmt->bindValue(':initial_scores', json_encode($consensus->getAggregatedFeedback()));
             $stmt->bindValue(':consensus_reached', $consensus->isReached() ? 1 : 0);
-            $stmt->bindValue(':aggregated_feedback', json_encode($consensus->getAggregatedFeedback()));
-            $stmt->bindValue(':outliers', json_encode($consensus->getOutliers()));
+            $stmt->bindValue(':final_score', $consensus->getScore());
             $stmt->bindValue(':created_at', $consensus->getCreatedAt()->format('Y-m-d H:i:s'));
             $stmt->execute();
-            
+
             if ($this->debug) {
                 error_log(sprintf(
                     "ConsensusBuilder: Stored authoritative consensus %s for output %s",
@@ -540,12 +540,11 @@ class ConsensusBuilder
                     $consensus->getOutputId()
                 ));
             }
-            
+
         } catch (Exception $e) {
             if ($this->debug) {
                 error_log("ConsensusBuilder: Failed to store authoritative consensus - " . $e->getMessage());
             }
-            throw new Exception('Failed to store authoritative consensus: ' . $e->getMessage());
         }
     }
     

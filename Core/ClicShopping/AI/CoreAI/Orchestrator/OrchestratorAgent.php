@@ -455,11 +455,24 @@ class OrchestratorAgent
   }
 
   /**
-   * Point d'entrée principal : traite une requête utilisateur
+   * Main entry point for external callers and tests.
+   * Delegates to processWithValidation().
    *
-   * @param string $query La question de l'utilisateur
-   * @param array $options Options additionnelles (contexte, préférences, etc.)
-   * @return array Réponse structurée avec métadonnées
+   * @param string $query User query
+   * @param array $options Additional options (context, preferences, etc.)
+   * @return array Structured response with metadata
+   */
+  public function execute(string $query, array $options = []): array
+  {
+    return $this->processWithValidation($query, $options);
+  }
+
+  /**
+   * Main processing entry point with full validation pipeline.
+   *
+   * @param string $query User query
+   * @param array $options Additional options (context, preferences, etc.)
+   * @return array Structured response with metadata
    */
   public function processWithValidation(string $query, array $options = []): array
   {

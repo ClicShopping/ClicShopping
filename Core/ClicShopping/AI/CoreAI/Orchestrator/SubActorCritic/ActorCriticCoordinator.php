@@ -24,6 +24,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\CriticDat
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\LLMPromptBuilder;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightNormalizer;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightAuditLogger;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\EvaluationRetryHandler;
 use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\Config\AgentTechnicalConfig;
 use Exception;
@@ -55,6 +56,7 @@ class ActorCriticCoordinator
     private FeedbackManager $feedbackManager;
     private ?LLMWeightingEngine $weightingEngine;
     private ?WeightedConsensusBuilder $weightedConsensusBuilder;
+    private EvaluationRetryHandler $evaluationRetryHandler;
     private $db;
     private bool $debug;
     private array $config;
@@ -88,7 +90,8 @@ class ActorCriticCoordinator
         $this->consensusBuilder = $consensusBuilder ?? new ConsensusBuilder();
         $this->feedbackManager = $feedbackManager ?? new FeedbackManager();
         $this->db = Registry::get('Db');
-        $this->debug = \defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && 
+        $this->evaluationRetryHandler = new EvaluationRetryHandler();
+        $this->debug = \defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') &&
                        CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
         
         // Load adaptive weighting configuration
@@ -645,10 +648,17 @@ class ActorCriticCoordinator
             } catch (Exception $e) {
                 // Decrement load tracking
                 $this->criticRegistry->decrementLoad($criticId);
-                
+
                 // Log failure but continue with other critics (Requirements 21.1, 21.2)
                 $failedCritics[] = $criticId;
-                
+
+                // Track evaluation failure in retry table
+                $this->logEvaluationRetryAttempt(
+                    $result->getResultId(),
+                    $result->getOutputType(),
+                    $criticId
+                );
+
                 if ($this->debug) {
                     error_log(sprintf(
                         "ActorCriticCoordinator: Critic %s evaluation failed - %s",
@@ -706,7 +716,14 @@ class ActorCriticCoordinator
                         );
                         
                         $evaluations[] = $evaluation;
-                        
+
+                        // Mark retry as successful
+                        $this->updateEvaluationRetryStatus(
+                            $result->getResultId(),
+                            $criticId,
+                            'success'
+                        );
+
                     } catch (Exception $e) {
                         $this->criticRegistry->decrementLoad($critic->getCriticId());
                         // Continue with what we have
@@ -720,6 +737,15 @@ class ActorCriticCoordinator
         
         // Final check for minimum critics (Requirement 21.4)
         if (count($evaluations) < $minCriticsRequired) {
+            // Mark all retry records as failed
+            foreach ($failedCritics as $failedCriticId) {
+                $this->updateEvaluationRetryStatus(
+                    $result->getResultId(),
+                    $failedCriticId,
+                    'failed'
+                );
+            }
+
             throw new InsufficientCriticsException(
                 "Too few critics completed evaluation. " .
                 "Required: {$minCriticsRequired}, Received: " . count($evaluations) . ", " .
@@ -1327,5 +1353,70 @@ class ActorCriticCoordinator
             [], // outliers (would need to be calculated if needed)
             [] // aggregated feedback (would need to be extracted if needed)
         );
+    }
+
+    /**
+     * Log evaluation retry attempt to the tracking table
+     *
+     * @param string $resultId The action result ID
+     * @param string $outputType The output type being evaluated
+     * @param string $failedCriticId The critic that failed evaluation
+     */
+    private function logEvaluationRetryAttempt(
+        string $resultId,
+        string $outputType,
+        string $failedCriticId
+    ): void {
+        try {
+            $sql = "INSERT INTO :table_rag_evaluation_retries
+                    (output_id, output_type, failed_evaluator_id, attempt_number, status, created_at)
+                    VALUES (:output_id, :output_type, :failed_evaluator_id, :attempt_number, :status, NOW())";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindValue(':output_id', $resultId);
+            $stmt->bindValue(':output_type', $outputType);
+            $stmt->bindValue(':failed_evaluator_id', $failedCriticId);
+            $stmt->bindValue(':attempt_number', 1);
+            $stmt->bindValue(':status', 'attempting');
+            $stmt->execute();
+        } catch (Exception $e) {
+            if ($this->debug) {
+                error_log("ActorCriticCoordinator: Failed to log evaluation retry - " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Update evaluation retry status
+     *
+     * @param string $outputId The output ID
+     * @param string $retryEvaluatorId The retry evaluator that resolved the retry
+     * @param string $status The new status (success or failed)
+     */
+    private function updateEvaluationRetryStatus(
+        string $outputId,
+        string $retryEvaluatorId,
+        string $status
+    ): void {
+        try {
+            $sql = "UPDATE :table_rag_evaluation_retries
+                    SET status = :status,
+                        retry_evaluator_id = :retry_evaluator_id,
+                        resolved_at = NOW()
+                    WHERE output_id = :output_id
+                      AND status = 'attempting'
+                    ORDER BY created_at DESC
+                    LIMIT 1";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindValue(':status', $status);
+            $stmt->bindValue(':retry_evaluator_id', $retryEvaluatorId);
+            $stmt->bindValue(':output_id', $outputId);
+            $stmt->execute();
+        } catch (Exception $e) {
+            if ($this->debug) {
+                error_log("ActorCriticCoordinator: Failed to update evaluation retry status - " . $e->getMessage());
+            }
+        }
     }
 }

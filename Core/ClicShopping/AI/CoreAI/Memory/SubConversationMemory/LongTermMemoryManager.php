@@ -562,8 +562,30 @@ class LongTermMemoryManager
       }
       $baseDocument->metadata = $metadata;
 
-      // Split document using static method (DocumentSplitter has no constructor)
+      // Split document with cascading separators to guarantee maxChunkSize
       $chunks = DocumentSplitter::splitDocument($baseDocument, $this->maxChunkSize, "\n\n");
+
+      // Re-split any oversized chunks with smaller separator
+      $safeChunks = [];
+      foreach ($chunks as $chunk) {
+        if (strlen($chunk->content) > $this->maxChunkSize) {
+          $subDoc = new Document();
+          $subDoc->content = $chunk->content;
+          $subDoc->sourceType = $chunk->sourceType ?? 'conversation';
+          $subDoc->sourceName = $chunk->sourceName ?? '';
+          if (!property_exists($subDoc, 'metadata')) {
+            @$subDoc->metadata = [];
+          }
+          $subDoc->metadata = get_object_vars($chunk)['metadata'] ?? [];
+          $subChunks = DocumentSplitter::splitDocument($subDoc, $this->maxChunkSize, " ");
+          foreach ($subChunks as $sub) {
+            $safeChunks[] = $sub;
+          }
+        } else {
+          $safeChunks[] = $chunk;
+        }
+      }
+      $chunks = $safeChunks;
 
       // Store each chunk
       $storedCount = 0;

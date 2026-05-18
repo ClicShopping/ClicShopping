@@ -47,6 +47,7 @@ class MemoryManager
       'source' => 'chat_ajax',
       'success' => true,
       'agent_used' => $aiResponse['agent_used'] ?? 'unknown',
+      'query_type' => $aiResponse['intent']['type'] ?? $aiResponse['type'] ?? 'unknown',
       'intent_confidence' => $aiResponse['intent']['confidence'] ?? 0,
       'execution_time' => $aiResponse['execution_time'] ?? 0,
     ], $metadata);

@@ -305,7 +305,7 @@ class AnalyticsAgent
         }
       }
 
-      if ($results['type'] === 'error') {
+      if (($results['type'] ?? 'unknown') === 'error') {
         error_log("ERROR in executeQuery: " . ($results['error'] ?? 'unknown'));
         return $results;
       }
@@ -1770,7 +1770,7 @@ class AnalyticsAgent
       $result = $this->executeQuery($subQuery, $feedbackContext);
 
       // If successful, try to get interpretation
-      if ($result['type'] !== 'error' && !empty($result['results'])) {
+      if (($result['type'] ?? 'error') !== 'error' && !empty($result['results'])) {
         $interpretation = $this->resultInterpreter->interpretResults($subQuery, $result['results']);
         $result['interpretation'] = $interpretation;
       }

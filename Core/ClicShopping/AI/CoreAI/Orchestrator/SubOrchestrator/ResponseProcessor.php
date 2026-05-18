@@ -418,6 +418,10 @@ class ResponseProcessor
     $dataForFormatter = null;
     
     if ($responseProcessor !== null) {
+      if (is_array($rawResult)) {
+        $rawResult['response_type'] = $rawResult['response_type'] ?? $rawResult['type'] ?? 'semantic_results';
+        $rawResult['entity_type'] = $rawResult['entity_type'] ?? $entityType ?? 'general';
+      }
       $dataForFormatter = $responseProcessor->processResponse($rawResult, $query, $intentType);
     } else {
       // For hybrid queries without LLM formatter, use raw result

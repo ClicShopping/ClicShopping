@@ -395,8 +395,31 @@ class SecurityLogger
      * 
      * Requirements: 8.1, 8.2
      */
+    private const ALLOWED_EVENT_TYPES = [
+        'threat_detected', 'threat_blocked', 'false_positive',
+        'security_check_passed', 'security_check_failed',
+        'pattern_fallback', 'llm_unavailable',
+        'response_validation_failed', 'leakage_detected',
+        'grounding_failed', 'query_allowed', 'query_blocked',
+        'security_fallback', 'layer_performance', 'test_event',
+        'obfuscation_detected', 'websearch_facade_initialized',
+    ];
+
+    private const ALLOWED_DETECTION_METHODS = [
+        'llm_semantic', 'pattern_based', 'response_validation', 'hybrid',
+        'llm', 'llm_analysis', 'llm_intent_flag', 'llm_cached',
+        'pattern_removal', 'pattern_prefilter', 'pattern_fallback',
+        'keyword_analysis', 'dynamic_keyword_match', 'error', 'unknown',
+    ];
+
     public function logEvent(string $eventType, array $details): bool
     {
+        // Validate event_type against allowed ENUM values before DB insert
+        if (!in_array($eventType, self::ALLOWED_EVENT_TYPES, true)) {
+            $details['original_event_type'] = $eventType;
+            $eventType = 'security_check_failed';
+        }
+
         // Log to file first (always)
         $fileLogged = $this->logSecurityEvent(
             "Security Event: {$eventType}",
@@ -431,7 +454,9 @@ class SecurityLogger
                 'user_query' => $details['query'] ?? '',
                 'query_language' => $details['language'] ?? 'en',
                 'query_hash' => $details['query_hash'] ?? (isset($details['query']) && $details['query'] ? md5($details['query']) : null),
-                'detection_method' => $details['detection_method'] ?? 'unknown',
+                'detection_method' => in_array($details['detection_method'] ?? 'unknown', self::ALLOWED_DETECTION_METHODS, true)
+                    ? ($details['detection_method'] ?? 'unknown')
+                    : 'unknown',
                 'detection_layer' => $details['detection_layer'] ?? null,
                 'matched_patterns' => isset($details['matched_patterns']) ? json_encode($details['matched_patterns']) : null,
                 'llm_reasoning' => $details['reasoning'] ?? null,

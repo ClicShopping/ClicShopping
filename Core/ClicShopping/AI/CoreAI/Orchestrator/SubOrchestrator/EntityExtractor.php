@@ -154,7 +154,7 @@ class EntityExtractor
     }
 
     if ($this->debug) {
-      $this->logger->logSecurityEvent("[WARNING] NO entity_id found anywhere!", 'warning');
+      $this->logger->logSecurityEvent("No entity_id found - using default (general query)", 'info');
     }
 
     return null;

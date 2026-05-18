@@ -862,7 +862,7 @@ class LlmGuardrails
       self::saveEvaluationResults($question, $result, $evaluationResults);
 
       if (self::$debug) {
-        self::$securityLogger->logSecurityEvent('LLM Evaluation Results: ' . json_encode($evaluationResults), 'error');
+        self::$securityLogger->logSecurityEvent('LLM Evaluation Results: ' . json_encode($evaluationResults), 'info');
       }
 
       return $evaluationResults;
@@ -988,7 +988,7 @@ class LlmGuardrails
     $evaluationPrompt = $criteriaPrompt->getEvaluationPromptForQuestion($question, $result);
 
     if (self::$debug) {
-      self::$securityLogger->logSecurityEvent('LLM Evaluation Prompt: ' . $evaluationPrompt, 'error');
+      self::$securityLogger->logSecurityEvent('LLM Evaluation Prompt: ' . $evaluationPrompt, 'info');
     }
 
     // Appel au modèle d'évaluation (implémentation selon votre architecture)

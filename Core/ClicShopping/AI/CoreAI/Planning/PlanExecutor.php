@@ -217,6 +217,7 @@ class PlanExecutor
     );
 
     $startTime = microtime(true);
+    $this->collector->startTimer('plan_execution');
 
     try {
       $plan->start();
