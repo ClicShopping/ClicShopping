@@ -405,12 +405,10 @@
 
     $details = file_get_contents($url, false, $context);
 
-    if ($details === false) {
-      $http_response_header = $http_response_header ?? [];
+    $http_response_header = $http_response_header ?? [];
+    $responseCode = isset($http_response_header[0]) ? (int)explode(' ', $http_response_header[0])[1] : null;
 
-      // Check the HTTP response headers for the status code
-      $responseCode = isset($http_response_header[0]) ? explode(' ', $http_response_header[0])[1] : null;
-
+    if ($details === false || ($responseCode !== null && $responseCode >= 400)) {
       if ($responseCode == 429) {
         // Handle the "Too Many Requests" error
         echo "Error: Too Many Requests. Please wait and try again later.";
@@ -419,8 +417,12 @@
         echo "Error: Something went wrong. Please try again later.";
       }
     } else {
-      // Process $details as usual
-      $details = json_decode($details, true, 512, JSON_THROW_ON_ERROR);
+      try {
+        $details = json_decode($details, true, 512, JSON_THROW_ON_ERROR);
+      } catch (\JsonException $e) {
+        // Non-JSON response (e.g. HTML error page) — ignore silently
+        $details = null;
+      }
 
       if ($details !== null && isset($details['country'])) {
         $country = $details['country'];

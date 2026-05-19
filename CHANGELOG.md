@@ -1,5 +1,5 @@
 version4.29
-- Agent restrcuturation
+- AI improvement
 - libraries updated
 - small fix
 
