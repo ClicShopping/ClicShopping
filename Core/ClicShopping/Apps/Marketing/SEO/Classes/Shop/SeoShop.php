@@ -32,7 +32,7 @@ class SeoShop
   protected string $seoDefaultReviewsDescription;
   protected string $seoDefaultReviewsKeywords;
   protected string $seoDefaultFavoritesTitle;
-  protected string $seoDefaultFavoritesdDescription;
+  protected string $seoDefaultFavoritesDescription;
   protected string $seoDefaultFavoritesKeywords;
   protected string $seoDefaultFeaturedTitle;
   protected string $seoDefaultFeaturedDescription;
@@ -256,10 +256,10 @@ class SeoShop
    */
   public function getSeoSpecialsDescription(): ?string
   {
-    if (empty($this->seoDefaultSpecialsKeywords)) {
+    if (empty($this->seoDefaultSpecialsDescription)) {
       $result = HTML::outputProtected(STORE_NAME);
     } else {
-      $result = HTML::outputProtected($this->seoDefaultSpecialsKeywords);
+      $result = HTML::outputProtected($this->seoDefaultSpecialsDescription);
     }
 
     return $result;
@@ -272,10 +272,10 @@ class SeoShop
    */
   public function getSeoSpecialsKeywords(): ?string
   {
-    if (empty($this->seoDefaultSpecialsDescription)) {
+    if (empty($this->seoDefaultSpecialsKeywords)) {
       $result = HTML::outputProtected(STORE_NAME);
     } else {
-      $result = HTML::outputProtected($this->seoDefaultSpecialsDescription);
+      $result = HTML::outputProtected($this->seoDefaultSpecialsKeywords);
     }
 
     return $result;
@@ -369,7 +369,7 @@ class SeoShop
     $Qseo->bindInt(':language_id', $this->lang->getId());
     $Qseo->execute();
 
-    $this->seoDefaultSeoFavoritesTitle = $Qseo->value('seo_language_favorites_title');
+    $this->seoDefaultFavoritesTitle = $Qseo->value('seo_language_favorites_title');
     $this->seoDefaultFavoritesDescription = $Qseo->value('seo_language_favorites_description');
     $this->seoDefaultFavoritesKeywords = $Qseo->value('seo_language_favorites_keywords');
   }
@@ -381,10 +381,10 @@ class SeoShop
    */
   public function getSeoFavoritesTitle(): ?string
   {
-    if (empty($this->seoDefaultSeoFavoritesTitle)) {
+    if (empty($this->seoDefaultFavoritesTitle)) {
       $result = CLICSHOPPING::getDef('text_favorites_seo_title') . ', ' . HTML::outputProtected(STORE_NAME);
     } else {
-      $result = HTML::outputProtected($this->seoDefaultSeoFavoritesTitle) . ', ' . HTML::outputProtected(STORE_NAME);
+      $result = HTML::outputProtected($this->seoDefaultFavoritesTitle) . ', ' . HTML::outputProtected(STORE_NAME);
     }
 
     return $result;
@@ -440,7 +440,7 @@ class SeoShop
     $Qseo->bindInt(':language_id', $this->lang->getId());
     $Qseo->execute();
 
-    $this->seoDefaultSeoFeaturedTitle = $Qseo->value('seo_language_featured_title');
+    $this->seoDefaultFeaturedTitle = $Qseo->value('seo_language_featured_title');
     $this->seoDefaultFeaturedDescription = $Qseo->value('seo_language_featured_description');
     $this->seoDefaultFeaturedKeywords = $Qseo->value('seo_language_featured_keywords');
   }
@@ -453,10 +453,10 @@ class SeoShop
    */
   public function getSeoFeaturedTitle(): ?string
   {
-    if (empty($this->seoDefaultSeoFeaturedTitle)) {
+    if (empty($this->seoDefaultFeaturedTitle)) {
       $result = CLICSHOPPING::getDef('text_featured_seo_title') . ', ' . HTML::outputProtected(STORE_NAME);
     } else {
-      $result = HTML::outputProtected($this->seoDefaultSeoFeaturedTitle) . ', ' . HTML::outputProtected(STORE_NAME);
+      $result = HTML::outputProtected($this->seoDefaultFeaturedTitle) . ', ' . HTML::outputProtected(STORE_NAME);
     }
 
     return $result;

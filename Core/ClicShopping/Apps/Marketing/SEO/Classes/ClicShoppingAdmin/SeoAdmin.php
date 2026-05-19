@@ -257,7 +257,7 @@ class SeoAdmin
    * @param int $language_id The identifier for the language.
    * @return string Returns the SEO special keywords for the specified parameters.
    */
-  public static function getSeoProductsSpecialskeywords(int $seo_id, int $language_id): string
+  public static function getSeoProductsSpecialsKeywords(int $seo_id, int $language_id): string
   {
     $Qseo = Registry::get('Db')->get('seo', 'seo_language_special_keywords', ['seo_id' => $seo_id, 'language_id' => $language_id]);
 
@@ -388,7 +388,7 @@ class SeoAdmin
    *
    * @return string Returns the retrieved SEO featured keywords as a string.
    */
-  public static function getSeoFeaturedkeywords(int $seo_id, int $language_id): string
+  public static function getSeoFeaturedKeywords(int $seo_id, int $language_id): string
   {
     $Qseo = Registry::get('Db')->get('seo', 'seo_language_featured_keywords', ['seo_id' => $seo_id, 'language_id' => $language_id]);
 
@@ -749,7 +749,7 @@ class SeoAdmin
    *
    * @return string Returns the retrieved SEO recommendation keywords as a string.
    */
-  public static function getSeoRecommendationstLanguageKeywords(int $seo_id, int $language_id): string
+  public static function getSeoRecommendationsLanguageKeywords(int $seo_id, int $language_id): string
   {
     $Qseo = Registry::get('Db')->get('seo', 'seo_language_recommendations_keywords', ['seo_id' => $seo_id, 'language_id' => $language_id]);
 

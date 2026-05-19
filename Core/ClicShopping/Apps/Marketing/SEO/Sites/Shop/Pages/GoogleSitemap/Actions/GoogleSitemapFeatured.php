@@ -44,7 +44,7 @@ class GoogleSitemapFeatured extends \ClicShopping\OM\Domains\PagesActionsAbstrac
         $location = htmlspecialchars(mb_convert_encoding($this->rewriteUrl->getProductNameUrl($QproductsFeatured->valueInt('products_id')), 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5);
 
         $products_array[$QproductsFeatured->valueInt('products_id')]['loc'] = $location;
-        $products_array[$QproductsFeatured->valueInt('products_id')]['lastmod'] = $QproductsFeatured->valueInt('last_modified');
+        $products_array[$QproductsFeatured->valueInt('products_id')]['lastmod'] = $QproductsFeatured->value('last_modified');
         $products_array[$QproductsFeatured->valueInt('products_id')]['changefreq'] = 'weekly';
         $products_array[$QproductsFeatured->valueInt('products_id')]['priority'] = '0.5';
       }

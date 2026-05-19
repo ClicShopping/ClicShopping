@@ -184,6 +184,22 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   };
 
+  const initSqlToggles = (rootEl) => {
+    const toggles = rootEl.querySelectorAll('a[data-sql-toggle]');
+    toggles.forEach(toggle => {
+      if (toggle.dataset.sqlToggleInit) return;
+      toggle.dataset.sqlToggleInit = '1';
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = toggle.getAttribute('data-sql-toggle');
+        const target = document.getElementById(targetId);
+        if (target) {
+          target.style.display = target.style.display === 'none' ? 'block' : 'none';
+        }
+      });
+    });
+  };
+
   // Initialize HTML sanitizer
   const sanitizerReady = ChatSanitizer.init();
   if (sanitizerReady) {
@@ -368,6 +384,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
           // Initialize bootstrap-table for dynamically inserted tables
           initBootstrapTables(contentDiv);
+          initSqlToggles(contentDiv);
         } else {
           // Fallback: If text_response is not a string, display error
           contentDiv.textContent = t('error_prefix') + t('error_invalid_response');

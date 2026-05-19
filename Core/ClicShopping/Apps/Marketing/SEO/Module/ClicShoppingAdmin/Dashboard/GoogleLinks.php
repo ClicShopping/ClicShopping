@@ -73,8 +73,8 @@ class GoogleLinks extends \ClicShopping\OM\Modules\AdminDashboardAbstract
       '    <th width="20">&nbsp;</th>' .
       '    <th>' . $this->app->getDef('module_admin_dashboard_googlelinks_app_seo_title') . '</th>' .
       '  </tr>' .
-      '</thead>';
-    '<tbody>';
+      '</thead>' .
+      '<tbody>';
 
     $output .= '<tr class="dataTableRow backgroundBlank">' .
       '    <td colspan="2"><a href="' . $url_analytics . '" target="_blank" rel="noreferrer">' . $this->app->getDef('module_admin_dashboard_googlelinks_app_analytics') . '</a></td>' .
@@ -98,7 +98,7 @@ class GoogleLinks extends \ClicShopping\OM\Modules\AdminDashboardAbstract
       '    <td colspan="2"><a href="' . $url_merchant . '" target="_blank" rel="noreferrer">' . $this->app->getDef('module_admin_dashboard_googlelinks_app_merchant') . '</a></td>' .
       '  </tr>';
 
-    $output .= '<tbody>';
+    $output .= '</tbody>';
     $output .= '</table>';
     $output .= '</div>';
     $output .= '<div class="mt-1"></div>';

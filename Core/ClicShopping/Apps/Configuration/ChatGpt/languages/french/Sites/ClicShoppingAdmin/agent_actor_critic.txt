@@ -63,3 +63,12 @@ text_severity = Sévérité
 text_message = Message
 text_created_at = Créé le
 text_no_data = Aucune donnée disponible
+
+help_title = Aide - Comprendre le système Acteur-Critique
+help_description = Cette page présente les métriques du système Acteur-Critique qui sépare la génération de réponses (acteurs) de leur évaluation (critiques).
+help_actors = <strong>Acteurs :</strong> Agents qui produisent les réponses (AnalyticsAgent, SemanticAgent, etc.). Métriques clés : temps d'exécution, taux de réussite, score de qualité.
+help_critics = <strong>Critiques :</strong> Agents qui évaluent la qualité des réponses. Métriques clés : temps d'évaluation, score moyen attribué, précision et complétude.
+help_coordination = <strong>Coordination :</strong> Processus de synchronisation entre acteurs et critiques. Le score de consensus mesure l'accord entre plusieurs évaluateurs.
+help_reputation = <strong>Réputation :</strong> Score cumulatif basé sur l'historique des évaluations. Les critiques avec une haute réputation ont plus de poids dans le consensus.
+help_adaptive = <strong>Pondération adaptative :</strong> Ajuste dynamiquement le poids de chaque critique en fonction de sa fiabilité historique et de ses résultats récents.
+help_export = <strong>Export :</strong> Vous pouvez exporter les métriques en CSV ou JSON pour une analyse externe.

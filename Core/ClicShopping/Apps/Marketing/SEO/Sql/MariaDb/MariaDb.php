@@ -118,9 +118,18 @@ seo_language_special_keywords text,
 seo_language_special_description varchar(255),
 seo_language_reviews_title varchar(255),
 seo_language_reviews_keywords text,
-seo_language_reviews_description varchar(255)
-  PRIMARY KEY seo_id (language_id),
-  KEY idx_seo_seo_id
+seo_language_reviews_description varchar(255),
+seo_language_favorites_title varchar(255),
+seo_language_favorites_keywords text,
+seo_language_favorites_description varchar(255),
+seo_language_featured_title varchar(255),
+seo_language_featured_keywords text,
+seo_language_featured_description varchar(255),
+seo_language_recommendations_title varchar(255),
+seo_language_recommendations_keywords text,
+seo_language_recommendations_description varchar(255),
+  PRIMARY KEY (seo_id, language_id),
+  KEY idx_seo_seo_id (seo_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

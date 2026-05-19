@@ -50,3 +50,10 @@ text_feedback = Commentaires
 text_strengths = Points forts
 text_improvements = Améliorations
 text_evaluated = Évalué
+
+help_title = Aide - Comprendre les évaluations des agents
+help_description = Cette page affiche les évaluations de qualité effectuées par les agents critiques sur les réponses produites par les agents acteurs.
+help_scores = <strong>Scores (0-5) :</strong> Accuracy = exactitude des données, Completeness = exhaustivité de la réponse, Efficiency = optimisation des ressources, Clarity = lisibilité et structure.
+help_consensus = <strong>Sessions de consensus :</strong> Lorsque plusieurs critiques évaluent la même sortie, une session de consensus est créée pour obtenir un score final pondéré.
+help_distribution = <strong>Répartition :</strong> L'onglet distribution montre les scores moyens par dimension pour identifier les axes d'amélioration.
+help_usage = <strong>Utilisation :</strong> Un score global < 3 indique que la qualité des réponses doit être améliorée. Vérifiez les recommandations du système.

@@ -222,40 +222,44 @@ window.AgentObjectivesConfig = {
   }
 };
 </script>
-<script>
-  if (typeof window.applyFilters !== 'function') {
-    window.applyFilters = function () {
-      const agent = (document.getElementById('filter-agent')?.value || '').trim();
-      const status = (document.getElementById('filter-status')?.value || '').trim();
-      const priority = (document.getElementById('filter-priority')?.value || '').trim();
-      const tbody = document.getElementById('objectives-tbody');
-      if (!tbody) return;
 
-      const rows = tbody.querySelectorAll('tr');
-      rows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length < 6) return;
-        const agentText = (cells[1]?.textContent || '').trim();
-        const priorityText = (cells[3]?.textContent || '').trim();
-        const statusText = (cells[4]?.textContent || '').trim();
-        const match = (!agent || agentText === agent)
-          && (!status || statusText === status)
-          && (!priority || priorityText === priority);
-        row.style.display = match ? '' : 'none';
-      });
-    };
-  }
 
-  if (typeof window.clearFilters !== 'function') {
-    window.clearFilters = function () {
-      const agent = document.getElementById('filter-agent');
-      const status = document.getElementById('filter-status');
-      const priority = document.getElementById('filter-priority');
-      if (agent) agent.value = '';
-      if (status) status.value = '';
-      if (priority) priority.value = '';
-      window.applyFilters();
-    };
-  }
-</script>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="accordion mt-4" id="helpAccordion">
+      <div class="accordion-item border-info">
+        <h2 class="accordion-header" id="headingHelp">
+          <button class="accordion-button collapsed bg-light"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseHelp"
+                  aria-expanded="false"
+                  aria-controls="collapseHelp">
+            <i class="bi bi-question-circle me-2"></i>
+            <?php echo $CLICSHOPPING_ChatGpt->getDef('help_title'); ?>
+          </button>
+        </h2>
+        <div id="collapseHelp"
+             class="accordion-collapse collapse"
+             aria-labelledby="headingHelp"
+             data-bs-parent="#helpAccordion">
+          <div class="accordion-body">
+            <p><?php echo $CLICSHOPPING_ChatGpt->getDef('help_description'); ?></p>
+
+            <ul class="mb-0">
+              <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_statuses'); ?></li>
+              <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_priority'); ?></li>
+              <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_actions'); ?></li>
+              <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_metrics'); ?></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="py-4"></div>
+<script src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Agent/agent_objectives_filters.js'); ?>"></script>
 <script src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Agent/agent_objectives.js'); ?>"></script>

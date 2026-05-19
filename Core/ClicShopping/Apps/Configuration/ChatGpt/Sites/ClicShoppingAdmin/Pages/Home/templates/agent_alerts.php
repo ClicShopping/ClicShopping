@@ -261,6 +261,45 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
   </div>
 </div>
 
+
+
+<div class="accordion mt-4" id="helpAccordion2">
+  <div class="accordion-item border-info">
+
+    <h2 class="accordion-header" id="headingHelp2">
+      <button class="accordion-button collapsed bg-light"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseHelp2"
+              aria-expanded="false"
+              aria-controls="collapseHelp2">
+
+        <i class="bi bi-question-circle me-2"></i>
+        <?php echo $CLICSHOPPING_ChatGpt->getDef('help_title'); ?>
+      </button>
+    </h2>
+
+    <div id="collapseHelp2"
+         class="accordion-collapse collapse"
+         aria-labelledby="headingHelp2"
+         data-bs-parent="#helpAccordion2">
+
+      <div class="accordion-body">
+        <p><?php echo $CLICSHOPPING_ChatGpt->getDef('help_description'); ?></p>
+
+        <ul class="mb-0">
+          <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_overdue'); ?></li>
+          <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_systematic'); ?></li>
+          <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_consensus'); ?></li>
+          <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_failed'); ?></li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
 <script>
 window.AgentAlertsConfig = {
   baseUrl: '<?php echo CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'); ?>',
@@ -271,6 +310,8 @@ window.AgentAlertsConfig = {
 </script>
 <script src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Agent/agent_alerts.js'); ?>"></script>
 
+
+<div class="py-4"></div>
 <style>
 .card {
   margin-bottom: 1rem;

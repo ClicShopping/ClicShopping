@@ -49,7 +49,7 @@ class Delete extends \ClicShopping\OM\Domains\ConfigureActionsAbstract
     if ($Qcheck->fetch()) {
 
       $QMenuId = $CLICSHOPPING_Db->prepare('select id
-                                        from :table_seo
+                                        from :table_administrator_menu
                                         where app_code = :app_code
                                       ');
 

@@ -58,3 +58,10 @@ text_metrics = Metriques
 text_failure_reason = Raison de l'echec
 text_previous = Precedent
 text_next = Suivant
+
+help_title = Aide - Comprendre les objectifs des agents
+help_description = Cette page affiche les objectifs assignes aux agents IA du systeme. Chaque objectif represente une tache ou un but que l'agent doit accomplir.
+help_statuses = <strong>Statuts :</strong> Pending = en attente de validation, Approved = valide par un administrateur, Active = en cours d'execution, Completed = termine avec succes, Failed = echec, Cancelled = annule.
+help_priority = <strong>Priorite :</strong> Definit l'urgence de l'objectif. Critical et High sont traites en premier par le systeme.
+help_actions = <strong>Actions :</strong> Vous pouvez approuver, activer, terminer ou annuler un objectif selon son statut actuel.
+help_metrics = <strong>Metriques :</strong> Chaque objectif peut avoir des criteres de succes mesurables (temps de reponse, taux de reussite, etc.).

@@ -1,0 +1,39 @@
+heading_title_agent_alerts = Alertes des Agents
+button_refresh = Actualiser
+button_back_dashboard = Retour au tableau de bord
+
+text_overdue_objectives = Objectifs en retard
+text_systematic_issues = Problèmes systématiques
+text_failed_consensus = Consensus échoués
+text_failed_objectives = Objectifs échoués
+
+text_alert_summary = Résumé des alertes
+text_overdue = En retard
+text_systematic = Systématiques
+text_consensus_failed = Consensus échoués
+text_objectives_failed = Objectifs échoués
+
+text_id = ID
+text_agent = Agent
+text_goal = Objectif
+text_priority = Priorité
+text_deadline = Échéance
+text_days_overdue = Jours de retard
+text_actions = Actions
+text_view = Voir
+text_status = Statut
+text_issue = Problème
+text_occurrences = Occurrences
+text_last_seen = Dernier événement
+text_session_id = ID session
+text_participants = Participants
+text_final_score = Score final
+text_created = Créé
+text_failure_reason = Raison de l'échec
+
+help_title = Aide - Comprendre les alertes des agents
+help_description = Cette page centralise toutes les alertes et anomalies détectées dans le fonctionnement des agents IA.
+help_overdue = <strong>Objectifs en retard :</strong> Objectifs dont la date d'échéance estimée est dépassée. Nécessitent une intervention (relance, réaffectation ou annulation).
+help_systematic = <strong>Problèmes systématiques :</strong> Erreurs récurrentes détectées sur un même agent ou type de requête. Indiquent un dysfonctionnement structurel à corriger.
+help_consensus = <strong>Consensus échoués :</strong> Sessions où les critiques n'ont pas réussi à s'accorder sur un score. Peut indiquer une ambiguïté dans les critères d'évaluation.
+help_failed = <strong>Objectifs échoués :</strong> Objectifs qui n'ont pas pu être atteints. Vérifiez les raisons d'échec pour ajuster les paramètres ou les seuils.

@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="sime ai improvement and fix" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="json error handling">
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -197,14 +200,7 @@
       <workItem from="1779116628452" duration="32000" />
       <workItem from="1779118845032" duration="654000" />
       <workItem from="1779188504425" duration="33000" />
-    </task>
-    <task id="LOCAL-00012" summary="fix">
-      <option name="closed" value="true" />
-      <created>1777390934240</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1777390934240</updated>
+      <workItem from="1779194449367" duration="46000" />
     </task>
     <task id="LOCAL-00013" summary="fix">
       <option name="closed" value="true" />
@@ -590,15 +586,21 @@
       <option name="project" value="LOCAL" />
       <updated>1779188527339</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="json error handling">
+      <option name="closed" value="true" />
+      <created>1779194477477</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1779194477477</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="litlle fix" />
-    <MESSAGE value="litlle improvment" />
     <MESSAGE value="improve 404 detection" />
     <MESSAGE value="language improvement" />
     <MESSAGE value=" context enrichment" />
@@ -622,7 +624,9 @@
     <MESSAGE value="little language imporvement" />
     <MESSAGE value="little language improvement" />
     <MESSAGE value="sime ai improvement and fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="sime ai improvement and fix" />
+    <MESSAGE value="fix json error handling" />
+    <MESSAGE value="json error handling" />
+    <option name="LAST_COMMIT_MESSAGE" value="json error handling" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

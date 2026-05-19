@@ -1,0 +1,39 @@
+heading_title_agent_alerts = Agent Alerts
+button_refresh = Refresh
+button_back_dashboard = Back to Dashboard
+
+text_overdue_objectives = Overdue Objectives
+text_systematic_issues = Systematic Issues
+text_failed_consensus = Failed Consensus
+text_failed_objectives = Failed Objectives
+
+text_alert_summary = Alert Summary
+text_overdue = Overdue
+text_systematic = Systematic
+text_consensus_failed = Consensus Failed
+text_objectives_failed = Objectives Failed
+
+text_id = ID
+text_agent = Agent
+text_goal = Goal
+text_priority = Priority
+text_deadline = Deadline
+text_days_overdue = Days Overdue
+text_actions = Actions
+text_view = View
+text_status = Status
+text_issue = Issue
+text_occurrences = Occurrences
+text_last_seen = Last Seen
+text_session_id = Session ID
+text_participants = Participants
+text_final_score = Final Score
+text_created = Created
+text_failure_reason = Failure Reason
+
+help_title = Help - Understanding Agent Alerts
+help_description = This page centralizes all alerts and anomalies detected in the AI agents operation.
+help_overdue = <strong>Overdue Objectives:</strong> Objectives whose estimated deadline has passed. Require intervention (restart, reassignment, or cancellation).
+help_systematic = <strong>Systematic Issues:</strong> Recurring errors detected on the same agent or query type. Indicate a structural malfunction to fix.
+help_consensus = <strong>Failed Consensus:</strong> Sessions where critics could not agree on a score. May indicate ambiguity in evaluation criteria.
+help_failed = <strong>Failed Objectives:</strong> Objectives that could not be achieved. Check failure reasons to adjust parameters or thresholds.

@@ -731,59 +731,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                       </div>
 
                       <script>
-                        // Source Distribution Pie Chart
-                        (function() {
-                          const sourceCtx = document.getElementById('sourceDistributionChart');
-                          if (sourceCtx) {
-                            new Chart(sourceCtx.getContext('2d'), {
-                              type: 'pie',
-                              data: {
-                                labels: <?php echo json_encode(array_map(function($s) { return ucfirst(str_replace('_', ' ', $s)); }, array_keys($sourceStats['sources']))); ?>,
-                                datasets: [{
-                                  data: <?php echo json_encode(array_column($sourceStats['sources'], 'count')); ?>,
-                                  backgroundColor: [
-                                    'rgba(54, 162, 235, 0.8)',   // documents - blue
-                                    'rgba(75, 192, 192, 0.8)',   // embeddings - teal
-                                    'rgba(255, 159, 64, 0.8)',   // llm - orange
-                                    'rgba(153, 102, 255, 0.8)',  // web_search - purple
-                                    'rgba(255, 99, 132, 0.8)',   // analytics - red
-                                    'rgba(255, 206, 86, 0.8)',   // hybrid - yellow
-                                    'rgba(201, 203, 207, 0.8)'   // conversation_memory - gray
-                                  ],
-                                  borderWidth: 2,
-                                  borderColor: '#fff'
-                                }]
-                              },
-                              options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                  legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                      padding: 10,
-                                      font: {
-                                        size: 11
-                                      }
-                                    }
-                                  },
-                                  tooltip: {
-                                    callbacks: {
-                                      label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.parsed || 0;
-                                        const total = <?php echo $sourceStats['total_queries']; ?>;
-                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                        return label + ': ' + value + ' (' + percentage + '%)';
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            });
-                          }
-                        })();
+                        window.SourceDistributionConfig = {
+                          labels: <?php echo json_encode(array_map(function($s) { return ucfirst(str_replace('_', ' ', $s)); }, array_keys($sourceStats['sources']))); ?>,
+                          data: <?php echo json_encode(array_column($sourceStats['sources'], 'count')); ?>,
+                          totalQueries: <?php echo $sourceStats['total_queries']; ?>
+                        };
                       </script>
+                      <script defer src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Rag/source_distribution_chart.js'); ?>"></script>
                     <?php else: ?>
                       <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('no_source_data'); ?>
@@ -3184,12 +3138,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endif; ?>
 
 
-  <script>
-    // Uncomment to refresh dashboard every 30 seconds
-    // setInterval(function() {
-    //     location.reload();
-    // }, 30000);
-  </script>
 
 
 <?php if ($config['chatgpt_enabled']): ?>
@@ -3372,141 +3320,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 </div>
-
+<div class="py-4"></div>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const confirmButton = document.getElementById('confirmResetCache');
-  const resultDiv = document.getElementById('cacheResetResult');
-  
-  if (confirmButton) {
-    confirmButton.addEventListener('click', function() {
-      // Get selected cache types
-      const checkboxes = document.querySelectorAll('input[name="cache_types[]"]:checked');
-      const cacheTypes = Array.from(checkboxes).map(cb => cb.value);
-      
-      if (cacheTypes.length === 0) {
-        resultDiv.innerHTML = '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_select_one'); ?></div>';
-        resultDiv.style.display = 'block';
-        return;
-      }
-      
-      // Disable button during processing
-      confirmButton.disabled = true;
-      confirmButton.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_resetting'); ?>';
-      
-      // Display loading message
-      resultDiv.innerHTML = '<div class="alert alert-info"><i class="bi bi-arrow-repeat spinner-border spinner-border-sm"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_in_progress'); ?></div>';
-      resultDiv.style.display = 'block';
-      
-      // Send AJAX request
-      fetch('<?php echo CLICSHOPPING::link('ajax/RAG/reset_cache.php'); ?>', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          cache_types: cacheTypes
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          let message = '<div class="alert alert-success"><i class="bi bi-check-circle"></i> <strong><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_success'); ?></strong><br><br>';
-          
-          if (data.details) {
-            message += '<ul class="mb-0">';
-            if (data.details.files !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_files_deleted'); ?> : ' + data.details.files + '</li>';
-            }
-            if (data.details.translations !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_translations_deleted'); ?> : ' + data.details.translations + '</li>';
-            }
-            if (data.details.database !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_db_entries_deleted'); ?> : ' + data.details.database + '</li>';
-            }
-            if (data.details.prompts !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_prompts_deleted'); ?> : ' + data.details.prompts + '</li>';
-            }
-            if (data.details.semantic !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_semantic_deleted'); ?> : ' + data.details.semantic + '</li>';
-            }
-            if (data.details.schema !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_schema_deleted'); ?> : ' + data.details.schema + '</li>';
-            }
-            if (data.details.intent !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_intent_deleted'); ?> : ' + data.details.intent + '</li>';
-            }
-            if (data.details.ambiguity !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_ambiguity_deleted'); ?> : ' + data.details.ambiguity + '</li>';
-            }
-            if (data.details.schema !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_schema_deleted'); ?> : ' + data.details.schema + '</li>';
-            }
-            if (data.details.translation_ambiguity !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_translation_ambiguity_deleted'); ?> : ' + data.details.translation_ambiguity + '</li>';
-            }
-            if (data.details.context !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_context_deleted'); ?> : ' + data.details.context + '</li>';
-            }
-            if (data.details.embeddings !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_embeddings_deleted'); ?> : ' + data.details.embeddings + '</li>';
-            }
-            if (data.details.embedding_search !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_embedding_search_deleted'); ?> : ' + data.details.embedding_search + '</li>';
-            }
-            if (data.details.classification !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_classification_deleted'); ?> : ' + data.details.classification + '</li>';
-            }
-            if (data.details.hybrid !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_hybrid_deleted'); ?> : ' + data.details.hybrid + '</li>';
-            }
-            if (data.details.sql !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_sql_deleted'); ?> : ' + data.details.sql + '</li>';
-            }
-            if (data.details.memory !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_memory_deleted'); ?> : ' + data.details.memory + '</li>';
-            }
-            if (data.details.security !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_security_deleted'); ?> : ' + data.details.security + '</li>';
-            }
-            if (data.details.reputation !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_reputation_deleted'); ?> : ' + data.details.reputation + '</li>';
-            }
-            if (data.details.config !== undefined) {
-              message += '<li><?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_config_deleted'); ?> : ' + data.details.config + '</li>';
-            }
-            message += '</ul>';
-          }
-          
-          message += '</div>';
-          resultDiv.innerHTML = message;
-          
-          // Close modal after 3 seconds
-          setTimeout(function() {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('resetCacheModal'));
-            if (modal) {
-              modal.hide();
-            }
-            // Reload page to update statistics
-            location.reload();
-          }, 3000);
-        } else {
-          resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-circle"></i> <strong><?php echo $CLICSHOPPING_ChatGpt->getDef('modal_reset_cache_error'); ?></strong> ' + (data.message || '<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_error_occurred'); ?>') + '</div>';
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-circle"></i> <strong><?php echo $CLICSHOPPING_ChatGpt->getDef('modal_reset_cache_error'); ?></strong></div>';
-      })
-      .finally(() => {
-        // Reactivate button
-        confirmButton.disabled = false;
-        confirmButton.innerHTML = '<i class="bi bi-trash"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('modal_reset_cache_confirm'); ?>';
-      });
-    });
+window.ResetCacheConfig = {
+  resetUrl: '<?php echo CLICSHOPPING::link('ajax/RAG/reset_cache.php'); ?>',
+  labels: {
+    selectOne: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_select_one'); ?>",
+    resetting: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_resetting'); ?>",
+    inProgress: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_in_progress'); ?>",
+    success: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_success'); ?>",
+    error: "<?php echo $CLICSHOPPING_ChatGpt->getDef('modal_reset_cache_error'); ?>",
+    errorOccurred: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_error_occurred'); ?>",
+    confirm: "<?php echo $CLICSHOPPING_ChatGpt->getDef('modal_reset_cache_confirm'); ?>",
+    details: {
+      files: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_files_deleted'); ?>",
+      translations: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_translations_deleted'); ?>",
+      database: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_db_entries_deleted'); ?>",
+      prompts: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_prompts_deleted'); ?>",
+      semantic: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_semantic_deleted'); ?>",
+      schema: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_schema_deleted'); ?>",
+      intent: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_intent_deleted'); ?>",
+      ambiguity: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_ambiguity_deleted'); ?>",
+      translation_ambiguity: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_translation_ambiguity_deleted'); ?>",
+      context: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_context_deleted'); ?>",
+      embeddings: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_embeddings_deleted'); ?>",
+      embedding_search: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_embedding_search_deleted'); ?>",
+      classification: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_classification_deleted'); ?>",
+      hybrid: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_hybrid_deleted'); ?>",
+      sql: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_sql_deleted'); ?>",
+      memory: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_memory_deleted'); ?>",
+      security: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_security_deleted'); ?>",
+      reputation: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_reputation_deleted'); ?>",
+      config: "<?php echo $CLICSHOPPING_ChatGpt->getDef('cache_reset_config_deleted'); ?>"
+    }
   }
-});
+};
 </script>
+<script defer src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Rag/reset_cache.js'); ?>"></script>
 <?php endif; // End of $config['chatgpt_enabled'] check for reset cache modal ?>
 
 <?php

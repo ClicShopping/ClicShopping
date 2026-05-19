@@ -771,24 +771,20 @@ function getSeverityBadgeClass($severity) {
             </div>
           </div>
         </div>
-
       </div><!-- End Accordion -->
     </div><!-- End Tab 3 -->
   </div>
 </div>
-
+<div class="py-4"></div>
 <script>
-// Configuration for adaptive weighting
 window.AdaptiveWeightingConfig = {
   baseUrl: '<?php echo CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'); ?>',
   weightsEndpoint: 'ajax/Agent/get_adaptive_weights.php',
   consensusEndpoint: 'ajax/Agent/get_agent_consensus.php'
 };
-
-function exportMetrics(format) {
-  const url = '<?php echo CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'); ?>ajax/ChatGpt/export_actor_critic_metrics.php?format=' + format;
-  window.location.href = url;
-}
+window.ExportMetricsConfig = {
+  baseUrl: '<?php echo CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'); ?>'
+};
 </script>
-
+<script src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Agent/export_metrics.js'); ?>"></script>
 <script src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Agent/adaptive_weighting_tab.js'); ?>"></script>

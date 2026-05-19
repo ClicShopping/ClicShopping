@@ -510,7 +510,7 @@ if (\is_array($seoBject)) {
                                 for="<?php echo $CLICSHOPPING_SEO->getDef('text_seo_language_specials_keywords'); ?>"
                                 class="col-5 col-form-label"><?php echo $CLICSHOPPING_SEO->getDef('text_seo_language_specials_keywords'); ?></label>
                               <div class="col-md-7 input-group" id="seo_special_keywords<?php echo $languages_id; ?>">
-                                <?php echo '&nbsp;' . HTML::inputField('seo_language_special_keywords_[' . $languages_id . ']', ($seo_language_special_keywords[$languages_id] ?? SeoAdmin::getSeoProductsSpecialskeywords($seo->seo_id, $languages_id)), 'maxlength="70" size="77" id="seo_special_keywords_' . $languages_id . '"', false); ?>
+                                <?php echo '&nbsp;' . HTML::inputField('seo_language_special_keywords_[' . $languages_id . ']', ($seo_language_special_keywords[$languages_id] ?? SeoAdmin::getSeoProductsSpecialsKeywords($seo->seo_id, $languages_id)), 'maxlength="70" size="77" id="seo_special_keywords_' . $languages_id . '"', false); ?>
                               </div>
                             </div>
                           </div>
@@ -788,7 +788,7 @@ if (\is_array($seoBject)) {
                                 for="<?php echo $CLICSHOPPING_SEO->getDef('text_seo_language_featured_keywords'); ?>"
                                 class="col-5 col-form-label"><?php echo $CLICSHOPPING_SEO->getDef('text_seo_language_featured_keywords'); ?></label>
                               <div class="col-md-7 input-group" id="seo_featured_keywords<?php echo $languages_id; ?>">
-                                <?php echo '&nbsp;' . HTML::inputField('seo_language_featured_keywords_[' . $languages_id . ']', ($seo_language_featured_keywords[$languages_id] ?? SeoAdmin::getSeoFeaturedkeywords($seo->seo_id, $languages_id)), 'maxlength="70" size="77" id="seo_featured_keywords_' . $languages_id . '"', false); ?>
+                                <?php echo '&nbsp;' . HTML::inputField('seo_language_featured_keywords_[' . $languages_id . ']', ($seo_language_featured_keywords[$languages_id] ?? SeoAdmin::getSeoFeaturedKeywords($seo->seo_id, $languages_id)), 'maxlength="70" size="77" id="seo_featured_keywords_' . $languages_id . '"', false); ?>
                               </div>
                             </div>
                           </div>
@@ -890,7 +890,7 @@ if (\is_array($seoBject)) {
                                 class="col-5 col-form-label"><?php echo $CLICSHOPPING_SEO->getDef('text_seo_recommendations_language_keywords'); ?></label>
                               <div class="col-md-7 input-group"
                                    id="seo_recommendations_keywords_tag<?php echo $languages_id; ?>">
-                                <?php echo '&nbsp;' . HTML::inputField('seo_recommendations_language_keywords_[' . $languages_id . ']', ($seo_recommendations_language_title[$languages_id] ?? SeoAdmin::getSeoRecommendationstLanguageKeywords($seo->seo_id, $languages_id)), 'maxlength="70" size="77" id="seo_recommendations_keywords_tag_' . $languages_id . '"', false); ?>
+                                <?php echo '&nbsp;' . HTML::inputField('seo_recommendations_language_keywords_[' . $languages_id . ']', ($seo_recommendations_language_title[$languages_id] ?? SeoAdmin::getSeoRecommendationsLanguageKeywords($seo->seo_id, $languages_id)), 'maxlength="70" size="77" id="seo_recommendations_keywords_tag_' . $languages_id . '"', false); ?>
                               </div>
                             </div>
                           </div>

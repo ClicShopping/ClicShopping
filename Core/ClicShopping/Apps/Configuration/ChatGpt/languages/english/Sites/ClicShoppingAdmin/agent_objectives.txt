@@ -58,3 +58,10 @@ text_metrics = Metrics
 text_failure_reason = Failure Reason
 text_previous = Previous
 text_next = Next
+
+help_title = Help - Understanding Agent Objectives
+help_description = This page displays objectives assigned to the AI agents in the system. Each objective represents a task or goal that the agent must accomplish.
+help_statuses = <strong>Statuses:</strong> Pending = awaiting validation, Approved = validated by an administrator, Active = currently executing, Completed = successfully finished, Failed = failed, Cancelled = cancelled.
+help_priority = <strong>Priority:</strong> Defines the urgency of the objective. Critical and High are processed first by the system.
+help_actions = <strong>Actions:</strong> You can approve, activate, complete, or cancel an objective depending on its current status.
+help_metrics = <strong>Metrics:</strong> Each objective may have measurable success criteria (response time, success rate, etc.).
