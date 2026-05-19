@@ -373,7 +373,7 @@ class MultiDBRAGManager
       error_log("Input tableNames: " . (empty($tableNames) ? 'EMPTY' : implode(', ', $tableNames)));
     }
 
-    // 🔥 DÉCISION : Utiliser les tables fournies OU auto-détection
+    // DECISION: Use provided tables OR auto-detection
     if (empty($tableNames)) {
       if ($this->debug) {
         error_log("[info] No tables provided, using auto-detection...");
@@ -419,7 +419,7 @@ class MultiDBRAGManager
           error_log("[info] Creating VectorStore for: {$tableName}");
         }
 
-        // Vérifier que la table existe avant de créer le VectorStore
+        // Verify that the table exists before creating the VectorStore
         if (!DoctrineOrm::checkTableStructure($tableName)) {
           if ($this->debug) {
             error_log("Table {$tableName} does not exist, skipping");
@@ -429,10 +429,10 @@ class MultiDBRAGManager
           continue;
         }
 
-        // Création du VectorStore
+        // Create the VectorStore
         $vectorStore = new MariaDBVectorStore($this->getEmbeddingGenerator(), $tableName);
 
-        // Stocker dans $this->vectorStores
+        // Store in $this->vectorStores
         $this->vectorStores[$tableName] = $vectorStore;
 
         $successCount++;
@@ -501,7 +501,7 @@ class MultiDBRAGManager
           }
         }
 
-        // Ajouter la table aux vector stores
+        // Add the table to vector stores
         $this->vectorStores[$tableName] = new MariaDBVectorStore($this->embeddingGenerator, $tableName);
       }
 
@@ -612,11 +612,11 @@ class MultiDBRAGManager
       error_log("VectorStores count: " . count($this->vectorStores));
     }
 
-    // VÉRIFICATION CRITIQUE
+    // CRITICAL CHECK
     if (empty($this->vectorStores)) {
       error_log("CRITICAL: No vector stores! Attempting to reinitialize...");
 
-      // Tenter la réinitialisation
+      // Attempt reinitialization
       $this->initializeVectorStores([]);
 
       if (empty($this->vectorStores)) {
@@ -631,7 +631,7 @@ class MultiDBRAGManager
       }
     }
 
-    // Générer l'embedding
+    // Generate the embedding
     error_log("Generating embedding for query...");
     $queryEmbedding = $this->embeddingGenerator->embedText($query);
     error_log("Embedding generated, length: " . count($queryEmbedding));
@@ -825,7 +825,7 @@ class MultiDBRAGManager
       error_log("Limit: {$limit}, MinScore: {$minScore}");
     }
 
-    // VÉRIFICATION CRITIQUE
+    // CRITICAL CHECK
     if (empty($this->vectorStores)) {
       error_log("CRITICAL: No vector stores! Attempting to reinitialize...");
       $this->initializeVectorStores([]);
@@ -1177,20 +1177,20 @@ class MultiDBRAGManager
         'results' => $results['results'] ?? []
       ];
 
-      // Si on a plusieurs blocs de requêtes SQL
-      if (isset($results['multi_query_results'])) {
-        $response['multi_query_results'] = $results['multi_query_results'];
-      } // Sinon on renvoie la requête SQL unique
+      // If we have multiple SQL query blocks
+      if (isset($results[‘multi_query_results’])) {
+        $response[‘multi_query_results’] = $results[‘multi_query_results’];
+      } // Otherwise return the single SQL query
       else {
-        // clé sql_query créée par processBusinessQuery
-        $response['sql_query'] = $results['sql_query'] ?? '';
-        // si vous conservez l’originale
-        if (isset($results['original_sql_query'])) {
-          $response['original_sql_query'] = $results['original_sql_query'];
+        // sql_query key created by processBusinessQuery
+        $response[‘sql_query’] = $results[‘sql_query’] ?? ‘’;
+        // if you keep the original
+        if (isset($results[‘original_sql_query’])) {
+          $response[‘original_sql_query’] = $results[‘original_sql_query’];
         }
-        // corrections éventuelles
-        if (isset($results['corrections'])) {
-          $response['corrections'] = $results['corrections'];
+        // possible corrections
+        if (isset($results[‘corrections’])) {
+          $response[‘corrections’] = $results[‘corrections’];
         }
       }
 
@@ -1205,8 +1205,7 @@ class MultiDBRAGManager
   }
 
   /**
-   * LOGGING METHOD - Ajouter cette méthode dans MultiDBRAGManager
-   * Log les détails complets d'une requête de recherche
+   * LOGGING METHOD - Logs the complete details of a search query
    */
   private function logSearchQuery(string $query, array $params): void
   {
@@ -1518,8 +1517,8 @@ class MultiDBRAGManager
   }
 
   /**
-   * Convertit le tableau de contexte structuré en une chaîne de caractères lisible par le LLM.
-   * (C'est la logique que j'avais placée dans MemoryRetentionService, mais que vous déplacez ici.)
+   * Converts the structured context array into a string readable by the LLM.
+   * (This is the logic that was placed in MemoryRetentionService, now moved here.)
    */
   private function formatContextArrayToLlmString(array $context): string
   {
@@ -1574,20 +1573,20 @@ class MultiDBRAGManager
 //***********************
 
   /**
-   * Analyse le contenu réel d'une table pour comprendre ce qu'elle contient
+   * Analyzes the actual content of a table to understand what it contains
    *
-   * @param string $tableName Nom de la table à analyser
-   * @return array Statistiques et échantillons de contenu
+   * @param string $tableName Name of the table to analyze
+   * @return array Statistics and content samples
    */
   private function analyzeTableContent(string $tableName): array
   {
-    // Utiliser le cache si disponible
+    // Use cache if available
     if (isset(self::$tableStatsCache[$tableName])) {
       return self::$tableStatsCache[$tableName];
     }
 
     try {
-      // Compter les documents
+      // Count documents
       $count = DoctrineOrm::selectOne("SELECT COUNT(*) as total FROM {$tableName}");
 
       if ($count['total'] == 0) {
@@ -1652,11 +1651,11 @@ class MultiDBRAGManager
   }
 
   /**
-   * Construit le prompt avec le contexte récupéré par le MemoryService.
+   * Builds the prompt with context retrieved by the MemoryService.
    *
-   * @param string $prompt La requête utilisateur originale.
-   * @param array $context Le contexte structuré (array) retourné par MemoryRetentionService.
-   * @return string Le prompt final formaté pour le LLM.
+   * @param string $prompt The original user query.
+   * @param array $context The structured context (array) returned by MemoryRetentionService.
+   * @return string The final prompt formatted for the LLM.
    */
   private function buildPromptWithContext(string $userQuery, array $context): string
   {
@@ -1675,8 +1674,7 @@ class MultiDBRAGManager
 
 
   /**
-   * DIAGNOSTIC METHOD - Ajouter cette méthode dans MultiDBRAGManager
-   * Vérifie l'état de toutes les tables d'embedding et le contenu
+   * DIAGNOSTIC METHOD - Checks the state of all embedding tables and their content
    */
   public function performDiagnostics(): array
   {
@@ -1688,7 +1686,7 @@ class MultiDBRAGManager
       'content_samples' => []
     ];
 
-    // 1. Vérifier chaque VectorStore initialisé
+    // 1. Check each initialized VectorStore
     error_log("Step 1: Checking initialized VectorStores");
     foreach ($this->vectorStores as $tableName => $vectorStore) {
       error_log("  - VectorStore found: {$tableName}");
@@ -1700,7 +1698,7 @@ class MultiDBRAGManager
       $diagnostics['vector_stores'] = ['ERROR' => 'No VectorStores'];
     }
 
-    // 2. Vérifier les tables d'embedding dans la base
+    // 2. Check embedding tables in the database
     error_log("Step 2: Checking embedding tables in database");
 
     foreach ($this->knownEmbeddingTable() as $tableName) {
@@ -1714,7 +1712,7 @@ class MultiDBRAGManager
           'document_count' => $count
         ];
 
-        // Si la table a du contenu, prendre un échantillon
+        // If the table has content, take a sample
         if ($count > 0) {
           $sample = DoctrineOrm::selectOne(
             "SELECT content FROM {$tableName} LIMIT 1"
@@ -1736,14 +1734,14 @@ class MultiDBRAGManager
       }
     }
 
-    // 3. Tenter une recherche test
+    // 3. Attempt a test search
     error_log("Step 3: Testing search with simple query");
     try {
-      // Recherche très permissive
+      // Very permissive search
       $testResults = $this->searchDocuments(
         "Strauss produit prix",
         limit: 10,
-        minScore: 0.01  // Très bas pour voir tous les résultats
+        minScore: 0.01  // Very low to see all results
       );
 
       $docCount = count($testResults['documents'] ?? []);

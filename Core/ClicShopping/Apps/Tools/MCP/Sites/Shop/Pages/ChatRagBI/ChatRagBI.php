@@ -22,6 +22,7 @@ namespace ClicShopping\Apps\Tools\MCP\Sites\Shop\Pages\ChatRagBI;
 
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
+use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ContextManager;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\EntityExtractor;
@@ -346,10 +347,25 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
         $responseTime = $statsTracker->stopTracking();
         StatisticsManager::recordTokenUsage($statsTracker);
 
+        $guardrailsEval = LlmGuardrails::getLastEvaluation();
+        if (is_array($guardrailsEval) && !isset($guardrailsEval['error'])) {
+          $securityScore = $guardrailsEval['security_analysis']['overall_security_score'] ?? null;
+          $aiResponse['metrics']['relevance_score'] = (float)($guardrailsEval['relevance'] ?? 0);
+          $aiResponse['metrics']['security_score'] = $securityScore !== null ? (float)$securityScore : 0.8;
+          $aiResponse['metrics']['hallucination_score'] = (float)($guardrailsEval['hallucination_risk'] ?? 0.1);
+          $aiResponse['metrics']['response_quality'] = (float)($guardrailsEval['overall_score'] ?? 0);
+          $aiResponse['metrics']['confidence_score'] = (float)($aiResponse['intent']['confidence'] ?? 0);
+        }
+
         $metrics = StatisticsManager::calculateFallbackMetrics(
           $aiResponse,
           $formattedResponse['data_to_format'] ?? [],
           $formatted
+        );
+
+        $statsTracker->setQualityScores(
+          $metrics['response_quality'] * 100,
+          $metrics['security_score'] * 100
         );
 
         $responseText = MemoryManager::extractResponseText($aiResponse);

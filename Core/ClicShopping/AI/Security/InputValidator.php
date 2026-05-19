@@ -99,7 +99,7 @@ class InputValidator
     return [
       '/;\s*DROP\s+/i',           // Prevent DROP statements
       '/;\s*DELETE\s+/i',         // Prevent DELETE statements outside of proper context
-      '/UNION\s+SELECT/i',        // Prevent UNION-based injections
+      '/[\'\"]\s*UNION\s+(ALL\s+)?SELECT/i', // Prevent UNION-based injections (quote before UNION = injection)
       '/INTO\s+OUTFILE/i',        // Prevent file operations
       '/INFORMATION_SCHEMA/i',    // Prevent schema exploration
       '/SLEEP\s*\(/i',            // Prevent time-based attacks

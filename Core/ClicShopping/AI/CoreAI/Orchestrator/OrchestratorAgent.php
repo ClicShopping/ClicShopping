@@ -54,8 +54,11 @@ use ClicShopping\OM\Registry;
 
 /**
  * OrchestratorAgent Class
- * Main orchestrator agent that coordinates the multi-agent system
- * Handles intent analysis, agent coordination, execution, error management, and response synthesis
+ *
+ * Senior Agent / Coordinator — does NOT implement ActorAgentInterface.
+ * This is by design: the Orchestrator coordinates Actors and Critics but does not
+ * execute domain actions itself. It delegates execution to specialized Actor agents
+ * (AnalyticsActor, ValidationActor, ReasoningActor) via the Actor-Critic framework.
  */
 
 class OrchestratorAgent

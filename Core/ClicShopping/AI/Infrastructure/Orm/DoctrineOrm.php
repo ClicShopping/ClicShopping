@@ -73,18 +73,18 @@ class DoctrineOrm
     $config = ORMSetup::createConfiguration(true, null, null);
     $config->setMetadataDriverImpl(new SimplifiedXmlDriver([]));
 
-    // Désactiver les lazy ghost objects pour éviter la dépendance symfony/var-exporter
-    // Cette fonctionnalité nécessite PHP 8.4+ ou symfony/var-exporter 6.4+
-    // On utilise les proxies classiques de Doctrine à la place
+    // Disable lazy ghost objects to avoid symfony/var-exporter dependency
+    // This feature requires PHP 8.4+ or symfony/var-exporter 6.4+
+    // We use classic Doctrine proxies instead
     if (method_exists($config, 'enableNativeLazyObjects')) {
-      // PHP 8.4+ : activer le support natif des lazy objects
+      // PHP 8.4+: enable native lazy objects support
       $config->enableNativeLazyObjects(true);
     } elseif (method_exists($config, 'setLazyGhostObjectEnabled')) {
-      // Versions antérieures : maintenir l'ancien comportement sans générer de warning
+      // Earlier versions: maintain legacy behavior without generating a warning
       try {
         @$config->setLazyGhostObjectEnabled(false);
       } catch (\Throwable $e) {
-        // Ignorer toute exception liée à l'obsolescence
+        // Ignore any exception related to deprecation
       }
     }
 
@@ -105,7 +105,6 @@ class DoctrineOrm
     try {
       $temporaryConnection = DriverManager::getConnection($connectionParams, $config);
 
-      // CORRECTION : executeQuery() + fetchOne()
       $result = $temporaryConnection->executeQuery("SELECT VERSION()");
       $serverVersion = $result->fetchOne();
 
@@ -116,9 +115,9 @@ class DoctrineOrm
       if ($serverVersion) {
         $serverVersionLower = strtolower($serverVersion);
 
-        // Extraire et formater correctement la version
+        // Extract and properly format the version
         if (strpos($serverVersionLower, 'mariadb') !== false) {
-          // Format typique: "10.11.8-MariaDB" ou "11.7.0-mariadb"
+          // Typical format: "10.11.8-MariaDB" or "11.7.0-mariadb"
           preg_match('/(\d+\.\d+\.\d+)/', $serverVersion, $matches);
 
           if (!empty($matches[1])) {
@@ -200,7 +199,7 @@ class DoctrineOrm
 
   /**
    * Checks if the database has the necessary tables and structures for RAG.
-   * VERSION CORRIGÉE : Compatible avec Doctrine DBAL 3.x+
+   * Compatible with Doctrine DBAL 3.x+
    *
    * @param string $tableName Name of the table to check
    * @return bool True if the structure is correct, false otherwise
@@ -210,13 +209,12 @@ class DoctrineOrm
     try {
       $connection = self::getEntityManager()->getConnection();
 
-      // Utiliser information_schema pour vérifier l'existence
+      // Use information_schema to check existence
       $sql = "SELECT COUNT(*) 
             FROM information_schema.tables 
             WHERE table_schema = DATABASE() 
             AND table_name = :tableName";
 
-      // CORRECTION : executeQuery() + fetchOne()
       $result = $connection->executeQuery($sql, ['tableName' => $tableName]);
       $count = (int)$result->fetchOne();
 
@@ -441,7 +439,7 @@ class DoctrineOrm
 
       $tables = [];
 
-      // 🔥 MÉTHODE 1 : Via information_schema
+      // METHOD 1: Via information_schema
       try {
         $sql = "
         SELECT DISTINCT table_name
@@ -455,7 +453,6 @@ class DoctrineOrm
           error_log("SQL Query: " . $sql);
         }
 
-        // CORRECTION : executeQuery() + fetchFirstColumn()
         $result = $connection->executeQuery($sql);
         $tables = $result->fetchFirstColumn();
 
@@ -469,7 +466,7 @@ class DoctrineOrm
         }
       }
 
-      // MÉTHODE 2 (FALLBACK) : SHOW TABLES LIKE
+      // METHOD 2 (FALLBACK): SHOW TABLES LIKE
       if (empty($tables)) {
         if (self::$debug) {
           error_log("[info] Trying SHOW TABLES fallback method...");
@@ -483,13 +480,12 @@ class DoctrineOrm
             error_log("Pattern: {$pattern}");
           }
 
-          // CORRECTION : executeQuery() avec paramètre positionnel
           $result = $connection->executeQuery($sql, [$pattern]);
 
           while ($row = $result->fetchNumeric()) {
             $tableName = $row[0];
 
-            // Vérifier que la table a bien une colonne 'embedding'
+            // Verify that the table has an 'embedding' column
             if (self::tableHasEmbeddingColumn($tableName)) {
               $tables[] = $tableName;
 
@@ -506,7 +502,7 @@ class DoctrineOrm
         }
       }
 
-      // MÉTHODE 3 (ULTIME FALLBACK) : Liste hardcodée validée
+      // METHOD 3 (ULTIMATE FALLBACK): Validated hardcoded list
       if (empty($tables)) {
         if (self::$debug) {
           error_log("[info] Using hardcoded fallback list...");
@@ -541,7 +537,7 @@ class DoctrineOrm
   }
 
   /**
-   * Vérifie si une table possède une colonne 'embedding'
+   * Checks if a table has an 'embedding' column
    *
    * @param string $tableName
    * @return bool
@@ -553,7 +549,6 @@ class DoctrineOrm
 
       $sql = "SHOW COLUMNS FROM `{$tableName}` LIKE 'embedding'";
 
-      // CORRECTION : executeQuery() + fetchOne()
       $result = $connection->executeQuery($sql);
       $columnExists = $result->fetchOne();
 
@@ -568,8 +563,8 @@ class DoctrineOrm
   }
 
   /**
-   * Liste de fallback des tables d'embedding connues
-   * Valide chaque table avant de la retourner
+   * Fallback list of known embedding tables
+   * Validates each table before returning it
    *
    * @return array
    */
@@ -579,7 +574,6 @@ class DoctrineOrm
 
     $validTables = [];
 
-    // Vérifier quelles tables existent réellement
     foreach ($knownTables as $table) {
       $fullTableName = $table;
 

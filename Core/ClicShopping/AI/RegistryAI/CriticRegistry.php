@@ -162,7 +162,7 @@ class CriticRegistry
      */
     public function incrementLoad(string $criticId): void
     {
-        $this->loadTracking[$criticId] = $this->loadTracking[$criticId] ?? 0 + 1;
+        $this->loadTracking[$criticId] = ($this->loadTracking[$criticId] ?? 0) + 1;
         
         error_log("CriticRegistry: Critic load incremented: {$criticId} -> {$this->loadTracking[$criticId]}");
     }
@@ -175,7 +175,7 @@ class CriticRegistry
      */
     public function decrementLoad(string $criticId): void
     {
-        $this->loadTracking[$criticId] = max(0, $this->loadTracking[$criticId] ?? 0 - 1);
+        $this->loadTracking[$criticId] = max(0, ($this->loadTracking[$criticId] ?? 0) - 1);
         
         error_log("CriticRegistry: Critic load decremented: {$criticId} -> {$this->loadTracking[$criticId]}");
     }

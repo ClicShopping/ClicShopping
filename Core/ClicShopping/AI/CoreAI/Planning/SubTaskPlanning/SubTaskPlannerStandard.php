@@ -211,12 +211,13 @@ class SubTaskPlannerStandard
         $mapping = [
             'analytics' => 'analytics_query',
             'semantic' => 'semantic_search',
+            'hybrid' => 'semantic_search',
             'web_search' => 'web_search',
             'web' => 'web_search',
             'calculator' => 'calculator',
         ];
-        
-        return $mapping[$subQueryType] ?? 'analytics_query'; // Default to analytics_query
+
+        return $mapping[$subQueryType] ?? 'semantic_search';
     }
     
     private function getTablesFromDomain(): array

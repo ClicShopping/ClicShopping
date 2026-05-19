@@ -157,17 +157,17 @@ class WebSearchHandler
   private function formatWebResults(array $webResults): string
   {
     if (empty($webResults['items'])) {
-      return "Aucun résultat trouvé sur le web.";
+      return "No results found on the web.";
     }
 
-    $response = "Résultats de recherche web :\n\n";
+    $response = "Web search results:\n\n";
     
     $count = 0;
     foreach ($webResults['items'] as $item) {
       $count++;
       if ($count > 5) break; // Limit to top 5 results
       
-      $title = $item['title'] ?? 'Sans titre';
+      $title = $item['title'] ?? 'No title';
       $snippet = $item['snippet'] ?? '';
       $source = $item['source'] ?? 'Unknown';
       

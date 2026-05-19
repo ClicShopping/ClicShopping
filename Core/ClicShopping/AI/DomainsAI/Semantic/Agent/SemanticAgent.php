@@ -316,7 +316,6 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
   public static function classifyQuery(string $text, int|null $threshold = null, bool $alreadyTranslated = false): string
   {
     if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
-      // 🔍 DEBUG: Trace pour vérifier que cette méthode est appelée
       error_log("=== SEMANTICAGENT::classifyQuery() CALLED ===");
       error_log("Input text: " . substr($text, 0, 100));
       error_log("Already translated: " . ($alreadyTranslated ? 'YES' : 'NO'));
@@ -327,7 +326,7 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
       $threshold = self::$config['classification_threshold'];
     }
     
-    // 🔧 FIX: Skip translation if already done
+    // Skip translation if already done
     if ($alreadyTranslated) {
       $translated = $text;
       if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {

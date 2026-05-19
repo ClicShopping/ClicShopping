@@ -47,8 +47,19 @@ class LlmGuardrails
   private static mixed $language = null;
   private static bool $debug = false;
 
-  // Pondérations configurables pour le calcul du score global
+  // Configurable weights for overall score calculation
   private static array $suspiciousPatterns = [];
+  private static ?array $lastEvaluation = null;
+
+  /**
+   * Returns the last evaluation results from checkGuardrails.
+   *
+   * @return array|null
+   */
+  public static function getLastEvaluation(): ?array
+  {
+    return self::$lastEvaluation;
+  }
 
   /**
    * Checks guardrails on the LLM response.
@@ -67,7 +78,7 @@ class LlmGuardrails
     self::initLogger();
     $guardrailsValidation = LlmGuardrails::GuardrailsResult($result);
 
-    // Décision basée sur la validation
+    // Decision based on validation
     switch ($guardrailsValidation['action']) {
       case 'block':
         if (self::$debug) {
@@ -84,12 +95,14 @@ class LlmGuardrails
         break;
 
       case 'allow_with_warning':
-        // Ne pas écraser $result - la réponse est déjà validée
-        // Le warning est géré par les métriques de guardrails affichées séparément
+        // Do not overwrite $result - the response is already validated
+        // The warning is handled by guardrails metrics displayed separately
         break;
     }
 
     $evaluationResults = LlmGuardrails::evaluateLlmResponse($question, $result, $groundingMetadata);
+
+    self::$lastEvaluation = $evaluationResults;
 
     return $evaluationResults;
   }
@@ -224,34 +237,34 @@ class LlmGuardrails
     $validationResults = [];
 
     try {
-      // 1. Validation structurelle
+      // 1. Structural validation
       $structuralValidation = self::validateStructure($result);
       $validationResults['structural'] = $structuralValidation;
 
-      // 2. Validation du contenu métier
+      // 2. Business content validation
       $contentValidation = self::validateBusinessContent($result);
       $validationResults['content'] = $contentValidation;
 
       $hallucinationCheck = self::detectHallucinations($result);
       $validationResults['hallucination'] = $hallucinationCheck;
 
-      // 4. Validation numérique pour les métriques BI
+      // 4. Numerical validation for BI metrics
       $numericalValidation = self::validateNumericalData($result);
       $validationResults['numerical'] = $numericalValidation;
 
-      // 5. Validation des sources et citations
+      // 5. Source and citation validation
       $sourceValidation = self::validateSources($result);
       $validationResults['sources'] = $sourceValidation;
 
-      // 6. Score de confiance global
+      // 6. Overall confidence score
       $confidenceScore = self::calculateConfidenceScore($validationResults);
       $validationResults['confidence_score'] = $confidenceScore;
 
-      // 7. Décision finale
+      // 7. Final decision
       $validationResults['is_valid'] = $confidenceScore >= self::CONFIDENCE_THRESHOLD;
       $validationResults['action'] = self::determineAction($confidenceScore, $validationResults);
 
-      // Log pour debug
+      // Debug log
       if (self::$debug) {
         self::$securityLogger->logSecurityEvent('Guardrails Validation: ' . json_encode($validationResults), 'info');
       }
@@ -326,12 +339,12 @@ class LlmGuardrails
    */
   private static function validateJsonStructure(string $text): bool
   {
-    // Si le texte contient du JSON, vérifier sa validité
+    // If the text contains JSON, check its validity
     if (strpos($text, '{') !== false || strpos($text, '[') !== false) {
       return json_last_error() === JSON_ERROR_NONE;
     }
 
-    return true; // Pas de JSON détecté
+    return true; // No JSON detected
   }
 
   /**
@@ -495,7 +508,7 @@ class LlmGuardrails
       }
     }
 
-    // Vérification des dates impossibles
+    // Check for impossible dates
     $futureDates = self::detectFutureDates($result);
     $impossibleValues = self::detectImpossibleValues($result);
 
@@ -504,7 +517,7 @@ class LlmGuardrails
       'detected_patterns' => $detectedPatterns,
       'future_dates' => $futureDates,
       'impossible_values' => $impossibleValues,
-      'score' => 1 - min(1, $suspiciousCount / 3), // Score inversé
+      'score' => 1 - min(1, $suspiciousCount / 3), // Inverted score
       'is_suspect' => $suspiciousCount > 2 || !empty($futureDates) || !empty($impossibleValues)
     ];
   }
@@ -521,8 +534,8 @@ class LlmGuardrails
   private static function detectFutureDates(string $result): array
   {
     $futureDates = [];
-    // Logique de détection des dates futures
-    // Implémentation selon vos besoins spécifiques
+    // Future date detection logic
+    // Implementation according to specific needs
     return $futureDates;
   }
 
@@ -540,10 +553,10 @@ class LlmGuardrails
   {
     $impossibleValues = [];
 
-    // Détection de valeurs impossibles (ex: pourcentages > 100% pour certains contextes)
+    // Detect impossible values (e.g., percentages > 100% for certain contexts)
     if (preg_match_all('/(\d+(?:\.\d+)?)%/', $result, $matches)) {
       foreach ($matches[1] as $value) {
-        if ((float) $value > 1000) { // Pourcentage aberrant
+        if ((float) $value > 1000) { // Absurd percentage
           $impossibleValues[] = $value . '%';
         }
       }
@@ -567,7 +580,7 @@ class LlmGuardrails
    */
   private static function validateNumericalData(string $result): array
   {
-    // Extraction des nombres du texte
+    // Extract numbers from the text
     preg_match_all('/\d+(?:[,.]\d+)*/', $result, $numbers);
 
     $validation = [
@@ -635,8 +648,8 @@ class LlmGuardrails
    */
   private static function validateMathConsistency(string $result): bool
   {
-    // Heuristique simple : égalité entre sous-totaux et totaux
-    // Exemple : "Total: 100€, Produit A: 60€, Produit B: 40€"
+    // Simple heuristic: equality between subtotals and totals
+    // Example: "Total: 100€, Product A: 60€, Product B: 40€"
     if (preg_match_all('/(\d+(?:[.,]\d+)?)\s*(€|\$)?/', $result, $matches)) {
       $values = array_map(fn($v) => (float) str_replace(',', '.', $v), $matches[1]);
 
@@ -693,7 +706,7 @@ class LlmGuardrails
       'score' => 0.0
     ];
 
-    // Patterns de détection des sources (anglais - traitement LLM en anglais)
+    // Source detection patterns (English - LLM processing in English)
     $sourcePatterns = [
       '/source\s*:\s*([^\n]+)/i',
       '/\(see\s+([^)]+)\)/i',
@@ -714,7 +727,7 @@ class LlmGuardrails
 
         foreach ($matches[1] as $source) {
           $source = trim($source);
-          // Vérifier si la source semble valide
+          // Check if the source appears valid
           if (
             strlen($source) > 3 &&
             !preg_match('/^(test|exemple|fictif|imaginaire)/i', $source) &&
@@ -761,7 +774,7 @@ class LlmGuardrails
       }
     }
 
-    // Application du seuil minimal de confiance
+    // Apply minimum confidence threshold
     return min(1.0, max(self::MIN_CONFIDENCE_SCORE, $totalScore));
   }
 
@@ -818,43 +831,43 @@ class LlmGuardrails
     }
 
     try {
-      // 1. Évaluation de la pertinence
+      // 1. Relevance evaluation
       $relevanceScore = self::evaluateRelevance($question, $result);
       $evaluationResults['relevance'] = $relevanceScore;
 
-      // 2. Évaluation de la précision métier
+      // 2. Business accuracy evaluation
       $accuracyScore = self::evaluateBusinessAccuracy($question, $result);
       $evaluationResults['accuracy'] = $accuracyScore;
 
-      // 3. Évaluation de la complétude
+      // 3. Completeness evaluation
       $completenessScore = self::evaluateCompleteness($question, $result);
       $evaluationResults['completeness'] = $completenessScore;
 
-      // 4. Évaluation de la clarté
+      // 4. Clarity evaluation
       $clarityScore = self::evaluateClarity($result);
       $evaluationResults['clarity'] = $clarityScore;
 
-      // Debug des scores individuels
+      // Debug individual scores
       if (self::$debug) {
         self::$securityLogger->logSecurityEvent("Individual Scores: Relevance=$relevanceScore, " . "Accuracy=$accuracyScore, Completeness=$completenessScore, Clarity=$clarityScore", 'info');
       }
 
-      // 5. Utilisation du modèle d'évaluation si disponible
+      // 5. Use evaluation model if available
       if (str_starts_with(CLICSHOPPING_APP_CHATGPT_CH_MODEL, 'gpt') || str_starts_with(CLICSHOPPING_APP_CHATGPT_CH_MODEL, 'anth')) {
         $llmEvaluation = self::performLlmEvaluation($question, $result);
         $evaluationResults['llm_evaluation'] = $llmEvaluation;
       }
 
-      // 6. Score global d'évaluation
+      // 6. Overall evaluation score
       $overallScore = self::calculateOverallEvaluationScore($evaluationResults);
       $evaluationResults['overall_score'] = $overallScore;
 
-      // 7. Calcul des métriques de sécurité pour l'affichage
+      // 7. Calculate security metrics for display
       $evaluationResults['security_analysis'] = self::calculateSecurityMetrics($evaluationResults);
       $evaluationResults['hallucination_risk'] = self::calculateHallucinationRisk($evaluationResults);
       $evaluationResults['source_quality'] = self::calculateSourceQuality($evaluationResults);
 
-      // 8. Recommandations d'amélioration
+      // 8. Improvement recommendations
       $recommendations = self::generateRecommendations($evaluationResults);
       $evaluationResults['recommendations'] = $recommendations;
 
@@ -991,7 +1004,7 @@ class LlmGuardrails
       self::$securityLogger->logSecurityEvent('LLM Evaluation Prompt: ' . $evaluationPrompt, 'info');
     }
 
-    // Appel au modèle d'évaluation (implémentation selon votre architecture)
+    // Call to the evaluation model (implementation according to your architecture)
     try {
       $evaluationResponse = self::callEvaluationModel($evaluationPrompt);
 
@@ -1074,7 +1087,7 @@ class LlmGuardrails
    */
   private static function parseLlmEvaluationResponse(string $response): array
   {
-    // Extraction brute du bloc JSON dans la réponse textuelle
+    // Raw extraction of JSON block from the text response
     if (preg_match('/\{.*\}/s', $response, $matches)) {
       $json = $matches[0];
       $data = json_decode($json, true);
@@ -1316,15 +1329,15 @@ class LlmGuardrails
       $reco[] = CLICSHOPPING::getDef('llm_guardrails_prompt_clarity');
    }
 
-    // Nouvelles recommandations de sécurité
+    // New security recommendations
     $hallucinationRisk = self::calculateHallucinationRisk($evaluationResults);
     if ($hallucinationRisk > 0.5) {
-      $reco[] = "Attention: risque élevé d'hallucination détecté";
+      $reco[] = "Warning: high hallucination risk detected";
     }
 
     $sourceQuality = self::calculateSourceQuality($evaluationResults);
     if ($sourceQuality < 0.5) {
-      $reco[] = "Améliorer la qualité et la fiabilité des sources";
+      $reco[] = "Improve the quality and reliability of sources";
     }
 
     return $reco;
@@ -1353,7 +1366,7 @@ class LlmGuardrails
       'model' => CLICSHOPPING_APP_CHATGPT_CH_MODEL
     ];
 
-    // Implémentation selon votre système de stockage
+    // Implementation according to your storage system
     if (self::$debug) {
       self::$securityLogger->logSecurityEvent('Evaluation saved: ' . json_encode($data), 'success');
     }

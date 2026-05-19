@@ -53,7 +53,7 @@ class SqlSecurityValidator
         '/\/\*/',
         '/\*\//',
         '/;.*--/',
-        '/union.*select/i'
+        '/UNION\s+SELECT/i'
     ];
 
     /**
@@ -67,7 +67,7 @@ class SqlSecurityValidator
         '/\/\*/',
         '/\*\//',
         '/;.*--/',
-        '/union.*select/i',
+        '/UNION\s+SELECT/i',
         '/exec\s*\(/i',
         '/execute\s*\(/i',
         '/xp_cmdshell/i',

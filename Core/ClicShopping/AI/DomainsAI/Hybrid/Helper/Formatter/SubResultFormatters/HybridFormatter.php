@@ -230,19 +230,18 @@ class HybridFormatter extends AbstractFormatter
         if ($subType === 'analytics' && isset($subQuery['results'])) {
           $output .= "<div class='mt-4'>";
 
-      // SQL Query toggle button (Bootstrap 5)
-      // does not seems to work, to check, update or remove
         $analyticsSub = $subQuery;
+        $collapseId = 'sqlQueryCollapse_' . uniqid();
 
         if (!empty($analyticsSub['sql_query'])) {
             $output .= "<div class='mb-3'>";
-            $output .= "<button class='btn btn-outline-primary btn-sm' type='button' data-bs-toggle='collapse' data-bs-target='#sqlQueryCollapse' aria-expanded='false' aria-controls='sqlQueryCollapse'>";
-            $output .= "Afficher / Masquer la requête SQL";
-            $output .= "</button>";
+            $output .= "<a href='#' class='btn btn-outline-primary btn-sm' data-sql-toggle='{$collapseId}'>";
+            $output .= htmlspecialchars($this->language->getDef('toggle_sql_query'));
+            $output .= "</a>";
 
-            $output .= "<div class='collapse mt-2' id='sqlQueryCollapse'>";
+            $output .= "<div id='{$collapseId}' style='display:none;' class='mt-2'>";
             $output .= "<div class='card card-body'>";
-            $output .= "<div class='fw-bold mb-2 text-primary'>Requête SQL :</div>";
+            $output .= "<div class='fw-bold mb-2 text-primary'>" . htmlspecialchars($this->language->getDef('sql_query_label')) . "</div>";
             $output .= "<pre class='mb-0' style='font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; font-family:monospace;'>";
             $output .= htmlspecialchars($this->formatSqlQuery($analyticsSub['sql_query']));
             $output .= "</pre>";

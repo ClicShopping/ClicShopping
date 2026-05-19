@@ -24,6 +24,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\Que
 
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
+use ClicShopping\AI\Security\LlmGuardrails;
 
 // ============================================
 // INITIALIZATION
@@ -146,10 +147,25 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
 
     StatisticsManager::recordTokenUsage($statsTracker);
 
+    $guardrailsEval = LlmGuardrails::getLastEvaluation();
+    if (is_array($guardrailsEval) && !isset($guardrailsEval['error'])) {
+      $securityScore = $guardrailsEval['security_analysis']['overall_security_score'] ?? null;
+      $aiResponse['metrics']['relevance_score'] = (float)($guardrailsEval['relevance'] ?? 0);
+      $aiResponse['metrics']['security_score'] = $securityScore !== null ? (float)$securityScore : 0.8;
+      $aiResponse['metrics']['hallucination_score'] = (float)($guardrailsEval['hallucination_risk'] ?? 0.1);
+      $aiResponse['metrics']['response_quality'] = (float)($guardrailsEval['overall_score'] ?? 0);
+      $aiResponse['metrics']['confidence_score'] = (float)($aiResponse['intent']['confidence'] ?? 0);
+    }
+
     $metrics = StatisticsManager::calculateFallbackMetrics(
       $aiResponse,
       $formattedResponse['data_to_format'],
       $formatted
+    );
+
+    $statsTracker->setQualityScores(
+      $metrics['response_quality'] * 100,
+      $metrics['security_score'] * 100
     );
 
     // ============================================

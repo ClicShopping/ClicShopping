@@ -5,3 +5,6 @@ combined_queries_suffix = requêtes combinées)
 web_search_results_title = 🌐 Résultats de Recherche Web
 analytics_results_title = 📊 Résultats Analytiques
 semantic_results_title = 📚 Résultats Sémantiques
+sources_label = Sources
+toggle_sql_query = Afficher / Masquer la requête SQL
+sql_query_label = Requête SQL :

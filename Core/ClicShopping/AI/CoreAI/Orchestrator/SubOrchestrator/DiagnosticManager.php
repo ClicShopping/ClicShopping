@@ -13,6 +13,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\InterfacesAI\DiagnosticProvider;
 
 /**
  * DiagnosticManager Class
@@ -28,7 +29,7 @@ use ClicShopping\AI\Security\SecurityLogger;
  * - Calculate classification accuracy
  */
 
-class DiagnosticManager
+class DiagnosticManager implements DiagnosticProvider
 {
   private SecurityLogger $logger;
   private bool $debug;

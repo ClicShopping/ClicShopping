@@ -192,21 +192,28 @@ class UnifiedQueryAnalyzer
           error_log("  Factors:");
           error_log("    Sequential words: " . $confidenceResult['factors']['sequential_words']);
           error_log("    Multiple types: " . $confidenceResult['factors']['multiple_types']);
-          error_log("    Mixed keywords: " . $confidenceResult['factors']['mixed_keywords']);
+          error_log("    LLM confidence: " . $confidenceResult['factors']['llm_confidence']);
         }
         
         // Use confidence scoring result to determine hybrid classification
         if ($confidenceResult['is_hybrid']) {
           // Determine sub-types from sub-query classifications
           $types = array_map(function($c) { return $c['type']; }, $subQueryClassifications);
-          $uniqueTypes = array_unique($types);
-          
+          $uniqueTypes = array_values(array_unique($types));
+
+          // When sequential indicator splits into multiple sub-queries but LLM classifies
+          // them as the same type, ensure the decomposer has both analytics and semantic
+          // as options — the LLM classification of individual sub-queries is often wrong
+          if (count($uniqueTypes) === 1 && count($subQueryClassifications) > 1) {
+            $uniqueTypes = ['analytics', 'semantic'];
+          }
+
           // Override classification with hybrid result
           $classification = [
             'type' => 'hybrid',
             'confidence' => $confidenceResult['confidence_score'],
             'reasoning' => $confidenceResult['reasoning'],
-            'sub_types' => array_values($uniqueTypes),
+            'sub_types' => $uniqueTypes,
           ];
           
           if ($this->debug) {

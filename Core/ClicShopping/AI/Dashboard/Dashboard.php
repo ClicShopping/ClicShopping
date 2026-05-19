@@ -20,7 +20,6 @@ use ClicShopping\AI\Infrastructure\Metrics\ColdCacheMetricsCollector;
 /**
  * Dashboard Class
  * 
- * 🔧 MIGRATED TO DOCTRINEORM: December 6, 2025
  * All database queries now use DoctrineOrm instead of PDO
  */
 
@@ -186,19 +185,21 @@ class Dashboard
       ];
 
       if ($monitoringReport !== null) {
-        $report['overall_health'] = $monitoringReport['overall_health'] ?? $report['overall_health'];
-        
-        // Only use MonitoringAgent's component_health if it's not empty
         if (!empty($monitoringReport['component_health'])) {
           $report['component_health'] = $monitoringReport['component_health'];
         }
-        
+
         $report['recommendations'] = $monitoringReport['recommendations'] ?? $report['recommendations'];
         $report['active_alerts'] = $monitoringReport['active_alerts'] ?? $report['active_alerts'];
         $report['trends'] = $monitoringReport['trends'] ?? $report['trends'];
 
         if (!empty($monitoringReport['system_metrics'])) {
-          $report['system_metrics'] = array_merge($report['system_metrics'], $monitoringReport['system_metrics']);
+          $dbMetricKeys = ['total_requests', 'error_rate', 'total_errors', 'avg_response_time', 'total_api_calls', 'total_api_cost', 'total_tokens', 'memory_usage'];
+          foreach ($monitoringReport['system_metrics'] as $key => $value) {
+            if (!in_array($key, $dbMetricKeys, true)) {
+              $report['system_metrics'][$key] = $value;
+            }
+          }
         }
       }
 

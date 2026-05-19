@@ -1320,7 +1320,7 @@ class AnalyticsAgent
       $this->debugLog("Model: {$modelName}", "SCHEMA_RAG");
 
       // Get query-specific system message
-      $systemMessage = $this->promptBuilder->getSystemMessage($query, $modelName);
+      $systemMessage = $this->promptBuilder->getSystemMessage('analytics', $query, $modelName);
 
       // Update chat system message
       $this->chat->setSystemMessage($systemMessage);

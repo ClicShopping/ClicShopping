@@ -638,11 +638,11 @@ class ContextRetriever
       if ($this->conversationMemory) {
         $lastEntity = $this->conversationMemory->getLastEntity();
 
-        if ($lastEntity && $lastEntity['entity_id'] !== null) {
+        if ($lastEntity && ($lastEntity['id'] ?? null) !== null) {
           $context[] = [
             'type' => 'last_entity',
-            'entity_type' => $lastEntity['entity_type'] ?? 'unknown',
-            'entity_id' => $lastEntity['entity_id'],
+            'entity_type' => $lastEntity['type'] ?? 'unknown',
+            'entity_id' => $lastEntity['id'],
             'from_context' => true,
           ];
         }
@@ -823,11 +823,11 @@ class ContextRetriever
       if ($this->conversationMemory) {
         $lastEntity = $this->conversationMemory->getLastEntity();
 
-        if ($lastEntity && $lastEntity['entity_id'] !== null) {
+        if ($lastEntity && ($lastEntity['id'] ?? null) !== null) {
           $context[] = [
             'type' => 'last_entity',
-            'entity_type' => $lastEntity['entity_type'] ?? 'unknown',
-            'entity_id' => $lastEntity['entity_id'],
+            'entity_type' => $lastEntity['type'] ?? 'unknown',
+            'entity_id' => $lastEntity['id'],
             'from_context' => true,
           ];
         }

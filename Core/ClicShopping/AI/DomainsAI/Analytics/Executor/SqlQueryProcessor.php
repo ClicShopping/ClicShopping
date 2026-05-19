@@ -88,7 +88,7 @@ class SqlQueryProcessor
           $query = trim($match[1]);
 
           // Check for suspicious patterns
-          if (preg_match('/(--|#|\/\*|\bunion\b|\bsleep\b|\bbenchmark\b|\bxp_|;)/i', $query)) {
+          if (preg_match('/(--|#|\/\*|\bsleep\b|\bbenchmark\b|\bxp_|;)/i', $query)) {
             $this->securityLogger->logSecurityEvent(
               "Rejected query due to suspicious SQL pattern",
               'warning',
@@ -125,7 +125,7 @@ class SqlQueryProcessor
       if (preg_match($fullPattern, trim($response))) {
         $query = trim($response);
 
-        if (preg_match('/(--|#|\/\*|\bunion\b|\bsleep\b|\bbenchmark\b|\bxp_|;)/i', $query)) {
+        if (preg_match('/(--|#|\/\*|\bsleep\b|\bbenchmark\b|\bxp_|;)/i', $query)) {
           $this->securityLogger->logSecurityEvent(
             "Rejected full response due to suspicious SQL pattern",
             'warning',
