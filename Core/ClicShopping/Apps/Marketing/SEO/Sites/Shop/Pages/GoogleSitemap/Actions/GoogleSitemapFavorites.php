@@ -23,7 +23,7 @@ class GoogleSitemapFavorites extends \ClicShopping\OM\Domains\PagesActionsAbstra
     $CLICSHOPPING_Db = Registry::get('Db');
     $this->rewriteUrl = Registry::get('RewriteUrl');
 
-    if (MODE_VENTE_PRIVEE == 'false') {
+    if (!\defined('MODE_VENTE_PRIVEE') || MODE_VENTE_PRIVEE == 'false') {
 
       $xml = new \SimpleXMLElement("<?xml version='1.0' encoding='UTF-8' ?>\n" . '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9" />');
 
@@ -42,7 +42,7 @@ class GoogleSitemapFavorites extends \ClicShopping\OM\Domains\PagesActionsAbstra
       $Qproducts->execute();
 
       while ($Qproducts->fetch()) {
-        $location = htmlspecialchars(mb_convert_encoding($this->rewriteUrl->getProductNameUrl($Qproducts->valueInt('products_id')), 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5);
+        $location = htmlspecialchars($this->rewriteUrl->getProductNameUrl($Qproducts->valueInt('products_id')), ENT_QUOTES | ENT_XML1, 'UTF-8');
 
         $products_array[$Qproducts->valueInt('products_id')]['loc'] = $location;
         $products_array[$Qproducts->valueInt('products_id')]['lastmod'] = $Qproducts->value('last_modified');
@@ -53,7 +53,7 @@ class GoogleSitemapFavorites extends \ClicShopping\OM\Domains\PagesActionsAbstra
       foreach ($products_array as $k => $v) {
         $url = $xml->addChild('url');
         $url->addChild('loc', $v['loc']);
-        $url->addChild('lastmod', date("Y-m-d", strtotime($v['lastmod'])));
+        $url->addChild('lastmod', date("Y-m-d", strtotime($v['lastmod']) ?: time()));
         $url->addChild('changefreq', 'weekly');
         $url->addChild('priority', '0.5');
       }

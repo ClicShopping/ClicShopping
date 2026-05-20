@@ -20,71 +20,29 @@ class GoogleSitemapIndex extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $this->page->setUseSiteTemplate(false); //don't display Header / Footer
 
-    if (MODE_VENTE_PRIVEE == 'false') {
-      $xml = new \SimpleXMLElement("<?xml version='1.0' encoding='UTF-8'?>\n" . '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9" />');
+    if (!\defined('MODE_VENTE_PRIVEE') || MODE_VENTE_PRIVEE == 'false') {
+      $xml = new \SimpleXMLElement("<?xml version='1.0' encoding='UTF-8'?>\n" . '<sitemapindex xmlns="https://www.sitemaps.org/schemas/sitemap/0.9" />');
 
-      $location = CLICSHOPPING::link(null, 'Sitemap&GoogleSitemapCategories');
-      $url = $xml->addChild('url');
-      $url->addChild('loc', htmlspecialchars(mb_convert_encoding($location, 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5));
-      $url->addChild('lastmod', date("Y-m-d", strtotime("now")));
-      $url->addChild('changefreq', 'weekly');
-      $url->addChild('priority', '0.5');
+      $sitemaps = [
+        'Sitemap&GoogleSitemapCategories',
+        'Sitemap&GoogleSitemapProducts',
+        'Sitemap&GoogleSitemapSpecials',
+        'Sitemap&GoogleSitemapFavorites',
+        'Sitemap&GoogleSitemapManufacturers',
+        'Sitemap&GoogleSitemapBlogCategories',
+        'Sitemap&GoogleSitemapBlogContent',
+        'Sitemap&GoogleSitemapPageManager',
+        'Sitemap&GoogleSitemapFeatured',
+      ];
 
-      $location = CLICSHOPPING::link(null, 'Sitemap&GoogleSitemapProducts');
-      $url = $xml->addChild('url');
-      $url->addChild('loc', htmlspecialchars(mb_convert_encoding($location, 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5));
-      $url->addChild('lastmod', date("Y-m-d", strtotime("now")));
-      $url->addChild('changefreq', 'weekly');
-      $url->addChild('priority', '0.5');
+      $lastmod = date('Y-m-d');
 
-      $location = CLICSHOPPING::link(null, 'Sitemap&GoogleSitemapSpecials');
-      $url = $xml->addChild('url');
-      $url->addChild('loc', htmlspecialchars(mb_convert_encoding($location, 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5));
-      $url->addChild('lastmod', date("Y-m-d", strtotime("now")));
-      $url->addChild('changefreq', 'weekly');
-      $url->addChild('priority', '0.5');
-
-      $location = CLICSHOPPING::link(null, 'Sitemap&GoogleSitemapFavorites');
-      $url = $xml->addChild('url');
-      $url->addChild('loc', htmlspecialchars(mb_convert_encoding($location, 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5));
-      $url->addChild('lastmod', date("Y-m-d", strtotime("now")));
-      $url->addChild('changefreq', 'weekly');
-      $url->addChild('priority', '0.5');
-
-      $location = CLICSHOPPING::link(null, 'Sitemap&GoogleSitemapManufacturers');
-      $url = $xml->addChild('url');
-      $url->addChild('loc', htmlspecialchars(mb_convert_encoding($location, 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5));
-      $url->addChild('lastmod', date("Y-m-d", strtotime("now")));
-      $url->addChild('changefreq', 'weekly');
-      $url->addChild('priority', '0.5');
-
-      $location = CLICSHOPPING::link(null, 'Sitemap&GoogleSitemapBlogCategories');
-      $url = $xml->addChild('url');
-      $url->addChild('loc', htmlspecialchars(mb_convert_encoding($location, 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5));
-      $url->addChild('lastmod', date("Y-m-d", strtotime("now")));
-      $url->addChild('changefreq', 'weekly');
-      $url->addChild('priority', '0.5');
-
-      $location = CLICSHOPPING::link(null, 'Sitemap&GoogleSitemapBlogContent');
-      $url = $xml->addChild('url');
-      $url->addChild('loc', htmlspecialchars(mb_convert_encoding($location, 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5));
-      $url->addChild('lastmod', date("Y-m-d", strtotime("now")));
-      $url->addChild('changefreq', 'weekly');
-      $url->addChild('priority', '0.5');
-
-      $location = CLICSHOPPING::link(null, 'Sitemap&GoogleSitemapPageManager');
-      $url = $xml->addChild('url');
-      $url->addChild('loc', htmlspecialchars(mb_convert_encoding($location, 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5));
-      $url->addChild('lastmod', date("Y-m-d", strtotime("now")));
-      $url->addChild('changefreq', 'weekly');
-      $url->addChild('priority', '0.5');
-
-      $location = CLICSHOPPING::link(null, 'Sitemap&GoogleSitemapFeatured');
-      $url = $xml->addChild('url');
-      $url->addChild('loc', htmlspecialchars(mb_convert_encoding($location, 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5));
-      $url->addChild('lastmod', date("Y-m-d", strtotime("now")));
-      $url->addChild('changefreq', 'weekly');
-      $url->addChild('priority', '0.5');
+      foreach ($sitemaps as $sitemapRoute) {
+        $location = htmlspecialchars(CLICSHOPPING::link(null, $sitemapRoute), ENT_QUOTES | ENT_XML1, 'UTF-8');
+        $sitemap = $xml->addChild('sitemap');
+        $sitemap->addChild('loc', $location);
+        $sitemap->addChild('lastmod', $lastmod);
+      }
 
       header('Content-type: text/xml');
       echo $xml->asXML();

@@ -24,6 +24,7 @@ class GoogleSitemapCategories extends \ClicShopping\OM\Domains\PagesActionsAbstr
     $CLICSHOPPING_Db = Registry::get('Db');
     $this->rewriteUrl = Registry::get('RewriteUrl');
 
+    if (!\defined('MODE_VENTE_PRIVEE') || MODE_VENTE_PRIVEE == 'false') {
     $xml = new \SimpleXMLElement("<?xml version='1.0' encoding='UTF-8' ?>\n" . '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9" />');
 
     $category_array = [];
@@ -49,7 +50,7 @@ class GoogleSitemapCategories extends \ClicShopping\OM\Domains\PagesActionsAbstr
     while ($Qcategorie->fetch()) {
 
       $this->rewriteUrl->getCategoryTreeTitle($Qcategorie->value('categories_name'));
-      $location = htmlspecialchars(mb_convert_encoding($this->rewriteUrl->getCategoryTreeUrl($Qcategorie->valueInt('categories_id')), 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5);
+      $location = htmlspecialchars($this->rewriteUrl->getCategoryTreeUrl($Qcategorie->valueInt('categories_id')), ENT_QUOTES | ENT_XML1, 'UTF-8');
 
       $category_array[$Qcategorie->valueInt('categories_id')]['loc'] = $location;
       $category_array[$Qcategorie->valueInt('categories_id')]['lastmod'] = $Qcategorie->value('last_modified');
@@ -60,7 +61,7 @@ class GoogleSitemapCategories extends \ClicShopping\OM\Domains\PagesActionsAbstr
     foreach ($category_array as $k => $v) {
       $url = $xml->addChild('url');
       $url->addChild('loc', $v['loc']);
-      $url->addChild('lastmod', date("Y-m-d", strtotime($v['lastmod'])));
+      $url->addChild('lastmod', date("Y-m-d", strtotime($v['lastmod']) ?: time()));
       $url->addChild('changefreq', 'weekly');
       $url->addChild('priority', '0.5');
     }
@@ -68,5 +69,6 @@ class GoogleSitemapCategories extends \ClicShopping\OM\Domains\PagesActionsAbstr
     header('Content-type: text/xml');
     echo $xml->asXML();
     exit;
+    }
   }
 }

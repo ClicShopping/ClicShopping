@@ -23,7 +23,7 @@ class GoogleSitemapManufacturers extends \ClicShopping\OM\Domains\PagesActionsAb
     $this->rewriteUrl = Registry::get('RewriteUrl');
     $CLICSHOPPING_Db = Registry::get('Db');
 
-    if (MODE_VENTE_PRIVEE == 'false') {
+    if (!\defined('MODE_VENTE_PRIVEE') || MODE_VENTE_PRIVEE == 'false') {
       $xml = new \SimpleXMLElement("<?xml version='1.0' encoding='UTF-8' ?>\n" . '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9" />');
 
       $manufacturer_array = [];
@@ -40,7 +40,7 @@ class GoogleSitemapManufacturers extends \ClicShopping\OM\Domains\PagesActionsAb
       $Qmanufacturers->execute();
 
       while ($Qmanufacturers->fetch()) {
-        $location = htmlspecialchars(mb_convert_encoding($this->rewriteUrl->getManufacturerUrl($Qmanufacturers->valueInt('manufacturers_id')), 'UTF-8', 'ISO-8859-1'), ENT_QUOTES | ENT_HTML5);
+        $location = htmlspecialchars($this->rewriteUrl->getManufacturerUrl($Qmanufacturers->valueInt('manufacturers_id')), ENT_QUOTES | ENT_XML1, 'UTF-8');
 
         $manufacturer_array[$Qmanufacturers->valueInt('manufacturers_id')]['loc'] = $location;
         $manufacturer_array[$Qmanufacturers->valueInt('manufacturers_id')]['lastmod'] = $Qmanufacturers->value('last_modified');
@@ -51,7 +51,7 @@ class GoogleSitemapManufacturers extends \ClicShopping\OM\Domains\PagesActionsAb
       foreach ($manufacturer_array as $k => $v) {
         $url = $xml->addChild('url');
         $url->addChild('loc', $v['loc']);
-        $url->addChild('lastmod', date("Y-m-d", strtotime($v['lastmod'])));
+        $url->addChild('lastmod', date("Y-m-d", strtotime($v['lastmod']) ?: time()));
         $url->addChild('changefreq', 'weekly');
         $url->addChild('priority', '0.5');
       }
