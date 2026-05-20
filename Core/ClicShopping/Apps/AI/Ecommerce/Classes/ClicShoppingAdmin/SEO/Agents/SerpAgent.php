@@ -535,10 +535,12 @@ class SerpAgent implements ActorAgentInterface
   private function detectFeatures(array $items, array $serpData): array
   {
     try {
-      // Prepare SERP data for LLM
       $serpDataText = json_encode($serpData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
-      // Get prompt
+      if (mb_strlen($serpDataText, 'UTF-8') > 12000) {
+        $serpDataText = mb_substr($serpDataText, 0, 12000, 'UTF-8') . "\n...(truncated)";
+      }
+
       $prompt = SerpAnalysisPrompts::getFeatureDetectionPrompt($serpDataText);
 
       // Call LLM

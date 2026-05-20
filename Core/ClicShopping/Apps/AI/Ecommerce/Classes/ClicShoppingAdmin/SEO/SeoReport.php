@@ -12,6 +12,7 @@
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTTP;
   use ClicShopping\OM\Registry;
+  use GuzzleHttp\Client as GuzzleClient;
 
   class SeoReport
   {
@@ -141,8 +142,17 @@
     }
 
     private function isAlive(): array {
-      $resp = HTTP::getResponse(['url' => $this->linkUrl, 'method' => 'get']);
-      return ['HTTP_CODE' => $resp ? 200 : 0, 'STATUS' => (bool)$resp];
+      try {
+        $client = new GuzzleClient(['timeout' => 10, 'connect_timeout' => 5]);
+        $response = $client->request('GET', $this->linkUrl, [
+          'http_errors' => false,
+          'allow_redirects' => ['max' => 5, 'track_redirects' => true],
+        ]);
+        $code = $response->getStatusCode();
+        return ['HTTP_CODE' => $code, 'STATUS' => ($code >= 200 && $code < 400)];
+      } catch (\Throwable $e) {
+        return ['HTTP_CODE' => 0, 'STATUS' => false];
+      }
     }
 
     private function grabHTML(string $url) { return HTTP::getResponse(['url' => $url]); }
@@ -204,6 +214,9 @@
     }
 
     public function grammar(): array {
+      if (!Registry::exists('Hooks')) {
+        return [];
+      }
       $hooks = Registry::get('Hooks');
       $res = $hooks->call('SEO', 'SeoReportGrammar');
       return is_array($res) ? $res : [];

@@ -58,6 +58,7 @@ class SeoEntityAdapter
   private string $entityType;
   private array $config;
   private mixed $apps;
+  private ?array $cachedFieldMap = null;
 
   public function __construct(string $entityType)
   {
@@ -128,7 +129,12 @@ class SeoEntityAdapter
 
   public function getAvailableFieldMap(): array
   {
+    if ($this->cachedFieldMap !== null) {
+      return $this->cachedFieldMap;
+    }
+
     if (!$this->isSupported()) {
+      $this->cachedFieldMap = [];
       return [];
     }
 
@@ -137,16 +143,16 @@ class SeoEntityAdapter
     $available = [];
 
     foreach ($fields as $key => $column) {
-      // Check if column exists using ClicShopping native approach with prepared statement
       $Qcheck = $this->db->prepare('SHOW COLUMNS FROM :table_' . $table . ' LIKE :column');
       $Qcheck->bindValue(':column', $column);
       $Qcheck->execute();
-      
+
       if ($Qcheck->fetch()) {
         $available[$key] = $column;
       }
     }
 
+    $this->cachedFieldMap = $available;
     return $available;
   }
 

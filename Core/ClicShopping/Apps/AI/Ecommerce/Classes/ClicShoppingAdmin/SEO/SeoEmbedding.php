@@ -351,7 +351,7 @@
         $suggestions['h2'] = '[Recommandé] — Aucune balise H2 détectée';
       }
 
-      if (($current['googleAnalytics'] ?? false) === false) {
+      if (($current['googleanalytics'] ?? false) === false) {
         $suggestions['analytics'] = 'Intégrer Google Analytics (GA4) ou GTM';
       }
 
@@ -367,8 +367,8 @@
         $suggestions['js_minify'] = count($current['js']['jsNotMinFiles']) . ' fichier(s) JS à minifier';
       }
 
-      if (($current['pageLoadTime'] ?? 0) > 3) {
-        $suggestions['performance'] = 'Temps de chargement élevé : ' . round($current['pageLoadTime'], 2) . 's (seuil : 3s)';
+      if (($current['pageloadtime'] ?? 0) > 3) {
+        $suggestions['performance'] = 'Temps de chargement élevé : ' . round($current['pageloadtime'], 2) . 's (seuil : 3s)';
       }
 
       return $suggestions;

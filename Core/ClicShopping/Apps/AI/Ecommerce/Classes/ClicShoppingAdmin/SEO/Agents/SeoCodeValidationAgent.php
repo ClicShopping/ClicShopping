@@ -291,13 +291,13 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     $metaDescription = (string)($changes['meta_description'] ?? '');
     $metaKeywords = (string)($changes['meta_keywords'] ?? '');
 
-    $titleWordCount = str_word_count($metaTitle);
+    $titleWordCount = count(preg_split('/[\s\p{Z}]+/u', trim($metaTitle), -1, PREG_SPLIT_NO_EMPTY));
     if ($titleWordCount < 8 || $titleWordCount > 20) {
       $issues[] = 'Meta title should be around 15 words (current: ' . $titleWordCount . ' words)';
       $suggestions[] = 'Rewrite meta title to approximately 15 words (8-20 words acceptable) while keeping the primary keyword';
     }
 
-    $descLen = strlen($metaDescription);
+    $descLen = mb_strlen($metaDescription, 'UTF-8');
     if ($descLen < 120 || $descLen > 165) {
       $issues[] = 'Meta description must be 120-165 characters (current: ' . $descLen . ')';
       $suggestions[] = 'Rewrite meta description to 120-165 characters with one concrete benefit and a light CTA';
@@ -314,7 +314,7 @@ class SeoCodeValidationAgent implements ActorAgentInterface
       'suggestions' => $suggestions,
       'lengths' => [
         'meta_title_words' => $titleWordCount,
-        'meta_title_chars' => strlen($metaTitle),
+        'meta_title_chars' => mb_strlen($metaTitle, 'UTF-8'),
         'meta_description' => $descLen,
       ],
     ];

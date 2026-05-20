@@ -231,8 +231,7 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
 
     $customer_id = $CLICSHOPPING_Customer->getId();
     $currency = mb_strtoupper($CLICSHOPPING_Order->info['currency']);
-    $total_amount = $CLICSHOPPING_Order->info['total'] * 100;
-    $total_amount = str_replace('.', '', $total_amount);  // Chargeable amount
+    $total_amount = (int)round($CLICSHOPPING_Order->info['total'] * 100);
 
     $metadata = ['customer_id' => (int)$customer_id,
       'customer_name' => $CLICSHOPPING_Customer->getName(),
@@ -267,7 +266,7 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
 
       try {
         $this->intent = PaymentIntent::retrieve($stripe_payment_intent_id);
-          // $this->event_log($customer_id, 'page retrieve intent', $stripe_payment_intent_id, $this->intent);
+        // $this->event_log($customer_id, 'page retrieve intent', $stripe_payment_intent_id, $this->intent);
         $this->intent->amount = $total_amount; //$CLICSHOPPING_Order->info['total'],
         $this->intent->currency = $currency;
         $this->intent->metadata = $metadata;
@@ -275,7 +274,7 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
         $this->intent->save();
 //          $response = $this->intent->save();
 
-      } catch (exception $err) {
+      } catch (\Exception $err) {
         //$this->event_log($customer_id, 'page create intent', $stripe_payment_intent_id, $err->getMessage());
 // failed to save existing intent, so create new one
         unset($stripe_payment_intent_id);
@@ -284,12 +283,13 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
 
     if (!isset($stripe_payment_intent_id)) {
       $description = STORE_NAME . ' - Order date time : ' . date('Y-m-d H:i:s');
-      $token = $_POST['stripeToken'] ?? [];
+      $token = $_POST['stripeToken'] ?? '';
+
+      $metadata['stripe_order_id'] = (int)$CLICSHOPPING_Order->getLastOrderId();
 
       $params = [
         'amount' => $total_amount,
         'currency' => $currency,
-        'source' => $token,
         'setup_future_usage' => 'off_session',
         'description' => $description,
         'capture_method' => $capture_method,
@@ -399,7 +399,9 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
 
     $comment = $this->app->getDef('text_reference_transaction');
 
-    if (CLICSHOPPING_APP_STRIPE_ST_ORDER_STATUS_ID == 0 || empty(CLICSHOPPING_APP_STRIPE_ST_ORDER_STATUS_ID)) {
+    if (CLICSHOPPING_APP_STRIPE_ST_PREPARE_ORDER_STATUS_ID > 0) {
+      $new_order_status = CLICSHOPPING_APP_STRIPE_ST_PREPARE_ORDER_STATUS_ID;
+    } elseif (CLICSHOPPING_APP_STRIPE_ST_ORDER_STATUS_ID == 0 || empty(CLICSHOPPING_APP_STRIPE_ST_ORDER_STATUS_ID)) {
       $new_order_status = DEFAULT_ORDERS_STATUS_ID;
     } else {
       $new_order_status = CLICSHOPPING_APP_STRIPE_ST_ORDER_STATUS_ID;

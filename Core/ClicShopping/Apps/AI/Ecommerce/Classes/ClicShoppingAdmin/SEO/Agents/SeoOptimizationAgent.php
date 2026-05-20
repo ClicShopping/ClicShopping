@@ -312,14 +312,17 @@ class SeoOptimizationAgent implements ActorAgentInterface
       return [];
     }
 
-    return array_map(function (array $item): array {
+    return array_values(array_map(function (mixed $item): array {
+      if (!is_array($item)) {
+        $item = ['text' => (string)$item];
+      }
       $text = (string)($item['text'] ?? '');
       return [
         'level'  => (int)($item['level'] ?? 2),
         'text'   => $text,
         'anchor' => $item['anchor'] ?? $this->slugify($text),
       ];
-    }, $items);
+    }, array_filter($items, fn($item) => !empty($item))));
   }
 
   private function generateSchema(array $vars, string $entityType): string

@@ -12,7 +12,6 @@
 
   use ClicShopping\OM\Registry;
   use ClicShopping\OM\CLICSHOPPING;
-  use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 
   /**
    * Class SeoSerpReportRepository
@@ -77,8 +76,8 @@
         'status'           => $report['status']            ?? '',
         'triggered_by'     => $report['triggered_by']      ?? '',
         'pipeline_metrics' => $this->json($report['pipeline_metrics'] ?? []),
-        'created_at'       => 'now()',
-        'updated_at'       => 'now()',
+        'created_at'       => date('Y-m-d H:i:s'),
+        'updated_at'       => date('Y-m-d H:i:s'),
       ];
 
       $this->db->save('seo_serp_reports', $data);
@@ -107,12 +106,11 @@
      */
     public function getLatestReport(string $entityType, int $entityId, int $languageId): ?array
     {
-      $tableName = CLICSHOPPING::getConfig('db_table_prefix') . 'seo_serp_reports';
+      $Qcheck = $this->db->prepare('SHOW COLUMNS FROM :table_seo_serp_reports LIKE :column');
+      $Qcheck->bindValue(':column', 'entity_type');
+      $Qcheck->execute();
 
-      /** * Safety check to ensure the schema is updated.
-       * Prevents SQL errors if the 'entity_type' column does not exist yet.
-       */
-      if (!DoctrineOrm::columnExists($tableName, 'entity_type')) {
+      if (!$Qcheck->fetch()) {
         return null;
       }
 
