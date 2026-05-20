@@ -123,6 +123,7 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
             // add embedding
             //********************
             if ($embedding_enabled) {
+            $taxonomy = '';
             $embedding_data =  "\n" . $this->app->getDef('text_category_embedded') . "\n";
 
             $embedding_data .= $this->app->getDef('text_category_name') . ' : ' . HTMLOverrideCommon::cleanHtmlForEmbedding($categories_name) . "\n";
@@ -166,36 +167,40 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
                 $embedding_data .= $this->app->getDef('text_category_seo_keywords', ['category_name' => $categories_name]) . ' : ' .  HTMLOverrideCommon::cleanHtmlForSEO($seo_categories_keywords) . "\n";
               }
 
-              // Generate embeddings
-              $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
+              try {
+                // Generate embeddings
+                $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
 
-              // Prepare base metadata
-              $baseMetadata = [
-                'category_name' => $categories_name,
-                'content' => $categories_description,
-                'type' => 'categories',
-                'source' => [
-                  'type' => 'manual',
-                  'name' => 'manual'
-                ],
-                'tags' => $taxonomy ? array_filter(array_map(fn($t) => trim(strip_tags($t)), explode("\n", $taxonomy))) : []
-              ];
+                // Prepare base metadata
+                $baseMetadata = [
+                  'category_name' => $categories_name,
+                  'content' => $categories_description,
+                  'type' => 'categories',
+                  'source' => [
+                    'type' => 'manual',
+                    'name' => 'manual'
+                  ],
+                  'tags' => $taxonomy ? array_filter(array_map(fn($t) => trim(strip_tags($t)), explode("\n", $taxonomy))) : []
+                ];
 
-              // Save all chunks using centralized method
-              $result = NewVector::saveEmbeddingsWithChunks(
-                $embeddedDocuments,
-                'categories_embedding',
-                (int)$categories_id,
-                (int)$item['language_id'],
-                $baseMetadata,
-                $this->app->db,
-                !$insert_embedding  // isUpdate = true if not inserting
-              );
+                // Save all chunks using centralized method
+                $result = NewVector::saveEmbeddingsWithChunks(
+                  $embeddedDocuments,
+                  'categories_embedding',
+                  (int)$categories_id,
+                  (int)$item['language_id'],
+                  $baseMetadata,
+                  $this->app->db,
+                  !$insert_embedding  // isUpdate = true if not inserting
+                );
 
-              if (!$result['success']) {
-                error_log("Categories Update: Failed to save embeddings for category {$categories_id} - " . $result['error']);
-              } else {
-                error_log("Categories Update: Successfully saved {$result['chunks_saved']} chunks for category {$categories_id}");
+                if (!$result['success']) {
+                  error_log("Categories/Update: Failed to save embeddings for category {$categories_id} - " . $result['error']);
+                } else {
+                  error_log("Categories/Update: Successfully saved {$result['chunks_saved']} chunks for category {$categories_id}");
+                }
+              } catch (\Throwable $e) {
+                error_log("Categories/Update: Embedding exception for category {$categories_id} - " . $e->getMessage());
               }
             }
           }

@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="json error handling">
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" afterDir="false" />
-    </list>
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="add js" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,7 +22,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7425" />
+    <option name="cachedIndexableFilesCount" value="7429" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -201,22 +198,7 @@
       <workItem from="1779118845032" duration="654000" />
       <workItem from="1779188504425" duration="33000" />
       <workItem from="1779194449367" duration="46000" />
-    </task>
-    <task id="LOCAL-00013" summary="fix">
-      <option name="closed" value="true" />
-      <created>1777391873748</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1777391873748</updated>
-    </task>
-    <task id="LOCAL-00014" summary="libraries updated">
-      <option name="closed" value="true" />
-      <created>1777569267814</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1777569267815</updated>
+      <workItem from="1779211444690" duration="68000" />
     </task>
     <task id="LOCAL-00015" summary="fix check">
       <option name="closed" value="true" />
@@ -594,15 +576,29 @@
       <option name="project" value="LOCAL" />
       <updated>1779194477477</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <task id="LOCAL-00062" summary="some fix">
+      <option name="closed" value="true" />
+      <created>1779211493819</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1779211493819</updated>
+    </task>
+    <task id="LOCAL-00063" summary="add js">
+      <option name="closed" value="true" />
+      <created>1779211506140</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1779211506140</updated>
+    </task>
+    <option name="localTasksCounter" value="64" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improve 404 detection" />
-    <MESSAGE value="language improvement" />
     <MESSAGE value=" context enrichment" />
     <MESSAGE value="websearch refactoring" />
     <MESSAGE value="update prompt" />
@@ -626,7 +622,9 @@
     <MESSAGE value="sime ai improvement and fix" />
     <MESSAGE value="fix json error handling" />
     <MESSAGE value="json error handling" />
-    <option name="LAST_COMMIT_MESSAGE" value="json error handling" />
+    <MESSAGE value="some fix" />
+    <MESSAGE value="add js" />
+    <option name="LAST_COMMIT_MESSAGE" value="add js" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

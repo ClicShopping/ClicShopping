@@ -164,7 +164,7 @@ class Insert implements \ClicShopping\OM\Modules\HooksInterface
             //-------------------
             $seo_categories_description = '';
 	    
-            if (isset($_POST['option_gpt_seo_title'])) {
+            if (isset($_POST['option_gpt_seo_description'])) {
               $question_summary_description = $this->app->getDef('text_seo_page_summary_description_question', ['category_name' => $categories_name]);
 
               $seo_categories_description = $translate_language . ' ' . $language_name . ' : ' . $question_summary_description;
@@ -246,36 +246,40 @@ class Insert implements \ClicShopping\OM\Modules\HooksInterface
                 $embedding_data .= $this->app->getDef('text_category_seo_keywords', ['category_name' => $categories_name]) . ' : ' . HTMLOverrideCommon::cleanHtmlForSEO($seo_categories_keywords) . "\n";
               }
 
-              // Generate embeddings
-              $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
+              try {
+                // Generate embeddings
+                $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
 
-              // Prepare base metadata
-              $baseMetadata = [
-                'category_name' => $categories_name,
-                'content' => $categories_description,
-                'type' => 'categories',
-                'source' => [
-                  'type' => 'manual',
-                  'name' => 'manual'
-                ],
-                'tags' => $taxonomy ? array_filter(array_map(fn($t) => trim(strip_tags($t)), explode("\n", $taxonomy))) : []
-              ];
+                // Prepare base metadata
+                $baseMetadata = [
+                  'category_name' => $categories_name,
+                  'content' => $categories_description,
+                  'type' => 'categories',
+                  'source' => [
+                    'type' => 'manual',
+                    'name' => 'manual'
+                  ],
+                  'tags' => $taxonomy ? array_filter(array_map(fn($t) => trim(strip_tags($t)), explode("\n", $taxonomy))) : []
+                ];
 
-              // Save all chunks using centralized method
-              $result = NewVector::saveEmbeddingsWithChunks(
-                $embeddedDocuments,
-                'categories_embedding',
-                (int)$item['categories_id'],
-                (int)$item['language_id'],
-                $baseMetadata,
-                $this->app->db,
-                false  // isUpdate = false for insert
-              );
+                // Save all chunks using centralized method
+                $result = NewVector::saveEmbeddingsWithChunks(
+                  $embeddedDocuments,
+                  'categories_embedding',
+                  (int)$item['categories_id'],
+                  (int)$item['language_id'],
+                  $baseMetadata,
+                  $this->app->db,
+                  false  // isUpdate = false for insert
+                );
 
-              if (!$result['success']) {
-                error_log("Categories Insert: Failed to save embeddings for category {$categories_id} - " . $result['error']);
-              } else {
-                error_log("Categories Insert: Successfully saved {$result['chunks_saved']} chunks for category {$categories_id}");
+                if (!$result['success']) {
+                  error_log("Categories/Insert: Failed to save embeddings for category {$categories_id} - " . $result['error']);
+                } else {
+                  error_log("Categories/Insert: Successfully saved {$result['chunks_saved']} chunks for category {$categories_id}");
+                }
+              } catch (\Throwable $e) {
+                error_log("Categories/Insert: Embedding exception for category {$categories_id} - " . $e->getMessage());
               }
             }
           }

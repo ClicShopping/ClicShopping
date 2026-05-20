@@ -11,6 +11,7 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Specials;
 
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\CockpitAIOrchestrator;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
@@ -28,6 +29,7 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
 {
   public mixed $app;
   public mixed $lang;
+  private mixed $CockpitAIOrchestrator;
 
   /**
    * Class constructor.
@@ -44,6 +46,9 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
 
     $this->app = Registry::get('Ecommerce');
     $this->lang = Registry::get('Language');
+
+    Registry::set('CockpitAIOrchestrator', new CockpitAIOrchestrator());
+    $this->CockpitAIOrchestrator = Registry::get('CockpitAIOrchestrator');
   }
 
   /**
@@ -83,11 +88,20 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
    */
   private function clearCockpitCache(int $productId): void
   {
-    // Supprime l'entrée dans la table des scores pour ce produit
-    $this->app->delete('products_cockpit_ai_embedding ', ['products_id' => $productId]);
+    if ($this->CockpitAIOrchestrator !== null) {
+      $this->CockpitAIOrchestrator->clearCockpitCache($productId);
+    } else {
+      $this->app->db->save('products_cockpit_ai_action_log', [
+        'product_id' => (int)$productId,
+        'action_type' => 'system_update_flag',
+        'status' => 'executed',
+        'validation_reason' => 'Promotion update via Specials Hook (Update)',
+        'date_created' => 'now()'
+      ]);
+    }
 
     if (\defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG') && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True') {
-      error_log("[CockpitAI Hook] Specials change detected. Cache cleared for product " . $productId);
+      error_log("[CockpitAI] Specials update: Refresh flag set for product $productId");
     }
   }
 }

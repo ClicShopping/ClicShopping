@@ -56,4 +56,4 @@ help_description = This page displays quality evaluations performed by critic ag
 help_scores = <strong>Scores (0-5):</strong> Accuracy = data correctness, Completeness = response exhaustiveness, Efficiency = resource optimization, Clarity = readability and structure.
 help_consensus = <strong>Consensus Sessions:</strong> When multiple critics evaluate the same output, a consensus session is created to obtain a weighted final score.
 help_distribution = <strong>Distribution:</strong> The distribution tab shows average scores per dimension to identify areas for improvement.
-help_usage = <strong>Usage:</strong> An overall score < 3 indicates response quality needs improvement. Check system recommendations.
+help_usage = <strong>Usage:</strong> An overall score < 0.3 indicates response quality needs improvement. Check system recommendations.

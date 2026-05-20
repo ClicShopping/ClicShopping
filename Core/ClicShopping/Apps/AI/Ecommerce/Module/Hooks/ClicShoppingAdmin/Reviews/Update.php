@@ -101,6 +101,7 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
                                                     r.status,
                                                     r.customers_tag,
                                                     rd.reviews_text,
+                                                    rd.languages_id,
                                                     rv.vote,
                                                     rv.sentiment
                                               from :table_reviews r,
@@ -117,8 +118,8 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
         $reviews_id = $Qreviews->valueInt('reviews_id');
 
         foreach ($reviews_array as $item) {
-      	  $language_code = $this->lang->getLanguageCodeById((int)$item['language_id']);
-          $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/PageManager/rag', $language_code);		    
+      	  $language_code = $this->lang->getLanguageCodeById((int)$item['languages_id']);
+          $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Reviews/rag', $language_code);		    
 		    
           $products_id = $item['products_id'];
           $reviews_text = $item['reviews_text'];
@@ -200,36 +201,40 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
             $embedding_data .= $this->app->getDef('text_reviews_customer_sentiment', ['products_name' => $products_name]) . ': ' . (float)$sentiment . "\n";
           }
 
-          $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
+          try {
+            $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
 
-          // Prepare base metadata
-          $baseMetadata = [
-            'review_name' => HTMLOverrideCommon::cleanHtmlForEmbedding($products_name),
-            'content' => HTMLOverrideCommon::cleanHtmlForEmbedding($reviews_text),
-            'reviews_id' => (int)$item['reviews_id'],
-            'type' => 'reviews',
-            'source' => [
-              'type' => 'manual',
-              'name' => 'manual'
-            ],
-            'tags' => $taxonomy ? array_filter(array_map(fn($t) => trim(strip_tags($t)), explode("\n", $taxonomy))) : []
-          ];
+            // Prepare base metadata
+            $baseMetadata = [
+              'review_name' => HTMLOverrideCommon::cleanHtmlForEmbedding($products_name),
+              'content' => HTMLOverrideCommon::cleanHtmlForEmbedding($reviews_text),
+              'reviews_id' => (int)$item['reviews_id'],
+              'type' => 'reviews',
+              'source' => [
+                'type' => 'manual',
+                'name' => 'manual'
+              ],
+              'tags' => $taxonomy ? array_filter(array_map(fn($t) => trim(strip_tags($t)), explode("\n", $taxonomy))) : []
+            ];
 
-          // Save all chunks using centralized method
-          $result = NewVector::saveEmbeddingsWithChunks(
-            $embeddedDocuments,
-            'reviews_embedding',
-            (int)$item['reviews_id'],
-            (int)$language_id,
-            $baseMetadata,
-            $this->app->db,
-            !$insert_embedding  // isUpdate = true if not inserting
-          );
+            // Save all chunks using centralized method
+            $result = NewVector::saveEmbeddingsWithChunks(
+              $embeddedDocuments,
+              'reviews_embedding',
+              (int)$item['reviews_id'],
+              (int)$language_id,
+              $baseMetadata,
+              $this->app->db,
+              !$insert_embedding  // isUpdate = true if not inserting
+            );
 
-          if (!$result['success']) {
-            error_log("Reviews: Failed to save embeddings for review {$item['reviews_id']} - " . $result['error']);
-          } else {
-            error_log("Reviews: Successfully saved {$result['chunks_saved']} chunks for review {$item['reviews_id']}");
+            if (!$result['success']) {
+              error_log("Reviews/Update: Failed to save embeddings for review {$item['reviews_id']} - " . $result['error']);
+            } else {
+              error_log("Reviews/Update: Successfully saved {$result['chunks_saved']} chunks for review {$item['reviews_id']}");
+            }
+          } catch (\Throwable $e) {
+            error_log("Reviews/Update: Embedding exception for review {$item['reviews_id']} - " . $e->getMessage());
           }
         }
         }

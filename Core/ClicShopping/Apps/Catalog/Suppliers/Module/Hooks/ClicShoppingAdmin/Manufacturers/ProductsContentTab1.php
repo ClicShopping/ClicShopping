@@ -50,14 +50,14 @@ class ProductsContentTab1 implements \ClicShopping\OM\Modules\HooksInterface
    */
   private function getSuppliersId(): int
   {
-    $QsuppliersID = $this->app->db->prepare('select suppliers_id 
+    $Qsuppliers = $this->app->db->prepare('select suppliers_id 
                                                from :table_manufacturers
                                                where manufacturers_id = :manufacturers_id
                                              ');
-    $QsuppliersID->bindInt('manufacturers_id', $_GET['mID']);
-    $QsuppliersID->execute();
+    $Qsuppliers->bindInt('manufacturers_id', $_GET['mID']);
+    $Qsuppliers->execute();
 
-    $suppliers_id = $QsuppliersID->valueInt('suppliers_id');
+    $suppliers_id = $Qsuppliers->valueInt('suppliers_id');
 
     return $suppliers_id;
   }

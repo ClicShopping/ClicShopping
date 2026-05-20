@@ -69,7 +69,7 @@ class AdvancedSearchResult extends \ClicShopping\OM\Modules\HeaderTagsAbstract
    */
   public function getOutput()
   {
-    if (isset($_GET['Search'], $_GET['Q'], $_POST['keywords'])) {
+    if (isset($_POST['Search'], $_POST['Q'], $_POST['keywords'])) {
       $this->template = Registry::get('Template');
 
       if (!Registry::exists('SeoShopSearch')) {
@@ -82,9 +82,11 @@ class AdvancedSearchResult extends \ClicShopping\OM\Modules\HeaderTagsAbstract
       $description = $CLICSHOPPING_SEOShop->getSeoIndexDescription();
       $keywords = $CLICSHOPPING_SEOShop->getSeoIndexKeywords();
 
-      $title = HTML::sanitize($_POST['keywords']) . ',' . $this->template->setTitle($title) . ' ' . $this->template->getTitle();
-      $description = HTML::sanitize($_POST['keywords']) . ',' . $this->template->setDescription($description) . ', ' . $this->template->getDescription();
-      $keywords = HTML::sanitize($_POST['keywords']) . ',' . $this->template->setKeywords($keywords) . ', ' . $this->template->getKeywords();
+      $keywords_clean = HTML::sanitize($_POST['keywords']);
+
+      $title = $keywords_clean . ',' . $this->template->setTitle($title) . ' ' . $this->template->getTitle();
+      $description = $keywords_clean . ',' . $this->template->setDescription($description) . ', ' . $this->template->getDescription();
+      $keywords = $keywords_clean . ',' . $this->template->setKeywords($keywords) . ', ' . $this->template->getKeywords();
 
       $output =
         <<<EOD

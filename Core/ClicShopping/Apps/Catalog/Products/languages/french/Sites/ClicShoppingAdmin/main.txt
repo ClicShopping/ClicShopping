@@ -254,7 +254,7 @@ text_stockable_product = Produit
 text_stockable_consumable = Consommable
 text_stockable_service = Service
 text_categories = Catégories
-text_warning_info_display = Les produits créés dans la racine en sont pas affichés dans le catalogue,veuillez créer une catégorie
+text_warning_info_display = Les produits créés dans la racine ne sont pas affichés dans le catalogue,veuillez créer une catégorie
 
 text_user_name = Créé / Modifié par
 

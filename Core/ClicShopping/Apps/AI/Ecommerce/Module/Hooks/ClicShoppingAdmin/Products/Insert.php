@@ -203,7 +203,7 @@ class Insert implements \ClicShopping\OM\Modules\HooksInterface
 
               if ($seo_product_title !== false) {
                 $sql_data_array = [
-                  'products_head_desc_tag' => SeoAdmin::normalizeSeoDescription($seo_product_description),
+                  'products_head_title_tag' => $seo_product_title,
                 ];
 
                 $this->app->db->save('products_description', $sql_data_array, $update_sql_data);
@@ -346,7 +346,6 @@ class Insert implements \ClicShopping\OM\Modules\HooksInterface
               }
 
               if (!empty($products_description)) {
-                $embedding_data .= $this->app->getDef('text_product_description') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_description) . "\n";
                 $taxonomy = $this->semantics->createTaxonomy(HTMLOverrideCommon::cleanHtmlForEmbedding($products_description), $language_code, null);
 
                 if (!empty($taxonomy)) {
@@ -368,40 +367,44 @@ class Insert implements \ClicShopping\OM\Modules\HooksInterface
                   $embedding_data .= "[$key]: $value\n";
                 }
               }
-            }
 
-            // Generate embeddings
-            $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
+              try {
+                // Generate embeddings
+                $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
 
-            if (!empty($embeddedDocuments)) {
-              // Prepare base metadata
-              $baseMetadata = [
-                'product_name' => $products_name,
-                'content' => $products_description,
-                'type' => 'products',
-                'product_id' => (int)$item['products_id'],
-                'tags' => $taxonomy ? array_filter(array_map(fn($t) => trim(strip_tags($t)), explode("\n", $taxonomy))) : [],
-                'source' => [
-                  'type' => 'manual',
-                  'name' => 'manual'
-                ]
-              ];
+                if (!empty($embeddedDocuments)) {
+                  // Prepare base metadata
+                  $baseMetadata = [
+                    'product_name' => $products_name,
+                    'content' => $products_description,
+                    'type' => 'products',
+                    'product_id' => (int)$item['products_id'],
+                    'tags' => $taxonomy ? array_filter(array_map(fn($t) => trim(strip_tags($t)), explode("\n", $taxonomy))) : [],
+                    'source' => [
+                      'type' => 'manual',
+                      'name' => 'manual'
+                    ]
+                  ];
 
-              // Save all chunks using centralized method
-              $result = NewVector::saveEmbeddingsWithChunks(
-                $embeddedDocuments,
-                'products_embedding',
-                (int)$item['products_id'],
-                (int)$item['language_id'],
-                $baseMetadata,
-                $this->app->db,
-                false  // isUpdate = false for insert
-              );
+                  // Save all chunks using centralized method
+                  $result = NewVector::saveEmbeddingsWithChunks(
+                    $embeddedDocuments,
+                    'products_embedding',
+                    (int)$item['products_id'],
+                    (int)$item['language_id'],
+                    $baseMetadata,
+                    $this->app->db,
+                    false  // isUpdate = false for insert
+                  );
 
-              if (!$result['success']) {
-                error_log("Products/Insert: Failed to save embeddings for product {$item['products_id']} - " . $result['error']);
-              } else {
-                error_log("Products/Insert: Successfully saved {$result['chunks_saved']} chunk(s) for product {$item['products_id']}");
+                  if (!$result['success']) {
+                    error_log("Products/Insert: Failed to save embeddings for product {$item['products_id']} - " . $result['error']);
+                  } else {
+                    error_log("Products/Insert: Successfully saved {$result['chunks_saved']} chunk(s) for product {$item['products_id']}");
+                  }
+                }
+              } catch (\Throwable $e) {
+                error_log("Products/Insert: Embedding exception for product {$item['products_id']} - " . $e->getMessage());
               }
             }
 
