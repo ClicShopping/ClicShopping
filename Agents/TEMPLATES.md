@@ -139,6 +139,8 @@ sources/template/
 ├── css/ # Override Default CSS by language 
 ├── javascript/ # Override Default JS 
 ├── files/ # Overrides the Default template 
+└── ... index.php must copied
+└── ...index_default.php must copied
 ├── modules/ # Override Default modules 
 │ └── ... # Any file missing → fallback to Default/ 
 └── images/
@@ -147,7 +149,8 @@ sources/template/
 ```
 1. sources/template/{CustomTheme}/{file} ← priority — active custom theme. Copy the necessary files from Default template before to change inside the custom Template.
 2. sources/template/Default/{file} ← automatic fallback if missing from custom
-3. The modules ontains some parameters can be applied and customized the module behavior.
+3. All the css directory must copied
+3. The modules contains some parameters can be applied and customized the module behavior.
 ```
 
 A custom theme should only contain the files that it actually overloads.
@@ -378,6 +381,9 @@ module listing → modules/{module_name}/template_html/ (if the module manages a
 [ ] CSRF token on each Shop and Admin form — HTML::form() with ['tokenize' => true]
 [ ] Admin: session verification in the controller (Core/ClicShopping/Sites/ClicShoppingAdmin/Pages/), not in the template
 [ ] App with Sites/Shop/ + clicshopping.json: templates declared correctly in JSON
+[ ] index.php and index_default.php are copied
+[ ] all css are copied
+
 ```
 ---
 

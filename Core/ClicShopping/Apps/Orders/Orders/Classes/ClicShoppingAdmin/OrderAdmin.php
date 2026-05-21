@@ -227,17 +227,40 @@ class OrderAdmin extends \ClicShopping\Apps\Orders\Orders\Classes\Shop\Order
         ]
       );
 
+      $products_ids = [];
+
       while ($Qproducts->fetch()) {
+        $product_id = $Qproducts->valueInt('products_id');
+        $products_ids[] = $product_id;
+
         $Qupdate = $CLICSHOPPING_Db->prepare('update :table_products
-                                                set products_quantity = products_quantity + ' . $Qproducts->valueInt('products_quantity') . ',
-                                                products_ordered = products_ordered - ' . $Qproducts->valueInt('products_quantity') . '
+                                                set products_quantity = products_quantity + :qty,
+                                                    products_ordered = products_ordered - :qty
                                                 where products_id = :products_id
                                                ');
-        $Qupdate->bindInt(':products_id', $Qproducts->valueInt('products_id'));
+        $Qupdate->bindInt(':qty', $Qproducts->valueInt('products_quantity'));
+        $Qupdate->bindInt(':products_id', $product_id);
         $Qupdate->execute();
       }
 
-      $CLICSHOPPING_Db->delete('products_groups', ['products_id' => (int)$Qproducts->value('products_id')]);
+      // Delete products_groups for ALL products in the order (not just the last one)
+      if (!empty($products_ids)) {
+        // Build parameterized delete with named placeholders
+        $conditions = [];
+        $params = [];
+        foreach ($products_ids as $idx => $pid) {
+          $placeholder = ':pid_' . $idx;
+          $conditions[] = 'products_id = ' . $placeholder;
+          $params[$placeholder] = (int)$pid;
+        }
+        $where_clause = implode(' OR ', $conditions);
+        $delete_sql = 'delete from :table_products_groups where ' . $where_clause;
+        $Qdelete = $CLICSHOPPING_Db->prepare($delete_sql);
+        foreach ($params as $name => $value) {
+          $Qdelete->bindInt($name, $value);
+        }
+        $Qdelete->execute();
+      }
     }
 
     $CLICSHOPPING_Db->delete('orders', ['orders_id' => (int)$order_id]);

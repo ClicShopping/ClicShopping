@@ -37,7 +37,7 @@ use ClicShopping\OM\Registry;
  */
 class EmbeddingService
 {
-  private const TABLE_NAME = 'products_cockpit_ai_embedding '; // Nom complet avec préfixe
+  private const TABLE_NAME = 'products_cockpit_ai_embedding'; // Table name without prefix
   private const EMBEDDING_FORMAT_VERSION = '1.0';
   
   private MultiDBRAGManager $ragManager;

@@ -53,26 +53,27 @@
      */
     private function ensureCacheDirectoryExists(): void
     {
-      $directory = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Work/Log/Cache/SEO/';
+      $directory = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/ClicShopping/Work/Log/Cache/SEO/';
 
       if (is_dir($directory)) {
+        if (!is_writable($directory)) {
+          @chmod($directory, 0775);
+        }
         return;
       }
 
-      // Walk up to find the nearest existing ancestor to pre-check writability
-      // This prevents PHP from emitting a native Warning on mkdir() failure
       $ancestor = rtrim($directory, '/');
       while ($ancestor !== '' && $ancestor !== dirname($ancestor) && !is_dir($ancestor)) {
         $ancestor = dirname($ancestor);
       }
 
       if (!is_dir($ancestor) || !is_writable($ancestor)) {
-        error_log("[ERROR] SEO Report: Cannot create cache directory (permission denied): " . $directory);
+        error_log("[WARNING] SEO Report: Cannot create cache directory (permission denied): " . $directory . " — cache disabled for this request.");
         return;
       }
 
-      if (!mkdir($directory, 0777, true) && !is_dir($directory)) {
-        error_log("[ERROR] SEO Report: Directory creation failed: " . $directory);
+      if (!mkdir($directory, 0775, true) && !is_dir($directory)) {
+        error_log("[WARNING] SEO Report: Directory creation failed: " . $directory);
       }
     }
 
@@ -81,7 +82,7 @@
      */
     public function purgeOldCache(int $days = 7): int
     {
-      $directory = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Work/Log/Cache/SEO/';
+      $directory = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/ClicShopping/Work/Log/Cache/SEO/';
       $count = 0;
       $expire = time() - ($days * 86400);
 

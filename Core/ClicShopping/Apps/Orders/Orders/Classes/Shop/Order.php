@@ -154,7 +154,7 @@ class Order
     $this->customer = [
       'id' => $Qorder->valueInt('customers_id'),
       'group_id' => $Qorder->valueInt('customers_group_id'),
-      'name' => $Qorder->value('customers_name'),
+      'name' => Hash::displayDecryptedDataText($Qorder->value('customers_name')),
       'company' => $Qorder->value('customers_company'),
       'street_address' => $Qorder->value('customers_street_address'),
       'suburb' => $Qorder->value('customers_suburb'),
@@ -169,12 +169,12 @@ class Order
     ];
 
     $this->delivery = [
-      'name' => $Qorder->value('delivery_name'),
+      'name' => Hash::displayDecryptedDataText($Qorder->value('delivery_name')),
       'company' => $Qorder->value('delivery_company'),
-      'street_address' => $Qorder->value('delivery_street_address'),
-      'suburb' => $Qorder->value('delivery_suburb'),
-      'city' => $Qorder->value('delivery_city'),
-      'postcode' => $Qorder->value('delivery_postcode'),
+      'street_address' => Hash::displayDecryptedDataText($Qorder->value('delivery_street_address')),
+      'suburb' => Hash::displayDecryptedDataText($Qorder->value('delivery_suburb')),
+      'city' => Hash::displayDecryptedDataText($Qorder->value('delivery_city')),
+      'postcode' => Hash::displayDecryptedDataText($Qorder->value('delivery_postcode')),
       'state' => $Qorder->value('delivery_state'),
       'country' => array('title' => $Qorder->value('delivery_country')),
       'format_id' => $Qorder->valueInt('delivery_address_format_id')
@@ -185,12 +185,12 @@ class Order
     }
 
     $this->billing = [
-      'name' => $Qorder->value('billing_name'),
+      'name' => Hash::displayDecryptedDataText($Qorder->value('billing_name')),
       'company' => $Qorder->value('billing_company'),
-      'street_address' => $Qorder->value('billing_street_address'),
-      'suburb' => $Qorder->value('billing_suburb'),
-      'city' => $Qorder->value('billing_city'),
-      'postcode' => $Qorder->value('billing_postcode'),
+      'street_address' => Hash::displayDecryptedDataText($Qorder->value('billing_street_address')),
+      'suburb' => Hash::displayDecryptedDataText($Qorder->value('billing_suburb')),
+      'city' => Hash::displayDecryptedDataText($Qorder->value('billing_city')),
+      'postcode' => Hash::displayDecryptedDataText($Qorder->value('billing_postcode')),
       'state' => $Qorder->value('billing_state'),
       'country' => array('title' => $Qorder->value('billing_country')),
       'format_id' => $Qorder->valueInt('billing_address_format_id')

@@ -23,6 +23,7 @@
 namespace ClicShopping\Apps\Orders\Orders\Classes\Common;
 
 use ClicShopping\Apps\Orders\Orders\Orders as OrdersApp;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
 
@@ -47,9 +48,9 @@ class EInvoiceService
   // ── OAuth2 in-memory token cache (valid 1 hour per AIFE specification) ───
   private ?string $cachedToken    = null;
   private int     $tokenExpiresAt = 0;
-
-  private mixed $app;
-  private mixed $db;
+  private mixed   $app;
+  private mixed   $db;
+  private ?string $logFile        = null;
 
   /**
    * Constructor — resolves dependencies from the Registry and loads language definitions.
@@ -65,6 +66,41 @@ class EInvoiceService
     $this->db  = Registry::get('Db');
 
     $this->app->loadDefinitions('Sites/ClicShoppingAdmin/e_invoice_service');
+
+    // Initialize log file path
+    $logDir = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/ClicShopping/Work/Log/';
+    
+    if (!is_dir($logDir)) {
+      @mkdir($logDir, 0755, true);
+    }
+    
+    $this->logFile = $logDir . 'einvoice_' . date('Y-m') . '.log';
+  }
+
+  /**
+   * Writes a log entry to the monthly log file.
+   * Also falls back to error_log() if file writing fails.
+   *
+   * @param string $level  DEBUG, INFO, WARNING, ERROR
+   * @param string $message Log message
+   * @param array  $context Optional context data (order_id, etc.)
+   */
+  private function log(string $level, string $message, array $context = []): void
+  {
+    $timestamp = date('Y-m-d H:i:s');
+    $order_ref = $context['order_id'] ?? '-';
+    $log_line  = sprintf('[%s] [%s] [Order:%s] %s', $timestamp, $level, $order_ref, $message);
+
+    // Write to file
+    if ($this->logFile !== null) {
+      $result = @file_put_contents($this->logFile, $log_line . PHP_EOL, FILE_APPEND | LOCK_EX);
+      if ($result === false) {
+        // Fallback to error_log if file write fails
+        error_log($log_line);
+      }
+    } else {
+      error_log($log_line);
+    }
   }
 
   /**
@@ -204,7 +240,7 @@ class EInvoiceService
     $client_secret = defined('CHORUSPRO_PISTE_CLIENT_SECRET') ? CHORUSPRO_PISTE_CLIENT_SECRET : '';
 
     if (empty($client_id) || empty($client_secret)) {
-      error_log('[EInvoiceService] CHORUSPRO_PISTE_CLIENT_ID or CHORUSPRO_PISTE_CLIENT_SECRET not configured.');
+      $this->log('ERROR', '[ERROR EInvoiceService] CHORUSPRO_PISTE_CLIENT_ID or CHORUSPRO_PISTE_CLIENT_SECRET not configured.');
       return null;
     }
 
@@ -224,12 +260,12 @@ class EInvoiceService
     // Single retry on network failure
     $response = HTTP::getResponse($request);
     if ($response === false || empty($response)) {
-      error_log('[EInvoiceService] OAuth2 PISTE request failed — retrying once.');
+      $this->log('WARNING', '[WARNING EInvoiceService] OAuth2 PISTE request failed — retrying once.');
       $response = HTTP::getResponse($request);
     }
 
     if ($response === false || empty($response)) {
-      error_log('[EInvoiceService] OAuth2 PISTE request failed after retry — network error or unreachable endpoint.');
+      $this->log('ERROR', '[ERROR EInvoiceService] OAuth2 PISTE request failed after retry — network error or unreachable endpoint.');
       return null;
     }
 
@@ -239,14 +275,14 @@ class EInvoiceService
     // HTTP::getResponse() does not expose status codes — detect via response body
     if (isset($decoded['error'])) {
       // Never log the full response — it may contain tokens or sensitive data
-      error_log('[EInvoiceService] OAuth2 error — ' . ($decoded['error'] ?? 'unknown') . ': ' . ($decoded['error_description'] ?? '(no description)'));
+      $this->log('ERROR', '[ERROR EInvoiceService] OAuth2 error — ' . ($decoded['error'] ?? 'unknown') . ': ' . ($decoded['error_description'] ?? '(no description)'));
       return null;
     }
 
     $token = $decoded['access_token'] ?? null;
 
     if (empty($token)) {
-      error_log('[EInvoiceService] access_token missing from OAuth2 response: ' . $response);
+      $this->log('ERROR', '[ERROR EInvoiceService] access_token missing from OAuth2 response');
       return null;
     }
 
@@ -292,28 +328,28 @@ class EInvoiceService
     $bank_account_code = defined('CHORUSPRO_BANK_ACCOUNT_CODE')  ? (int)CHORUSPRO_BANK_ACCOUNT_CODE : 0;
 
     if (strlen($siret_supplier) !== 14 || strlen($siret_recipient) !== 14) {
-      error_log('[EInvoiceService] Invalid SIRET — supplier: "' . $siret_supplier . '" / recipient: "' . $siret_recipient . '"');
+      $this->log('ERROR', '[ERROR EInvoiceService] Invalid SIRET — supplier: "' . $siret_supplier . '" / recipient: "' . $siret_recipient . '"');
       return null;
     }
 
     if ($id_fournisseur === 0 || $bank_account_code === 0) {
-      error_log('[EInvoiceService] CHORUSPRO_FOURNISSEUR_ID or CHORUSPRO_BANK_ACCOUNT_CODE not configured.');
+      $this->log('INFO', '[INFO EInvoiceService] CHORUSPRO_FOURNISSEUR_ID or CHORUSPRO_BANK_ACCOUNT_CODE not configured.');
       return null;
     }
 
     if (empty($login)) {
-      error_log('[EInvoiceService] CHORUSPRO_TECHNICAL_LOGIN not configured — required as idUtilisateurCourant.');
+      $this->log('INFO', '[INFO EInvoiceService] CHORUSPRO_TECHNICAL_LOGIN not configured — required as idUtilisateurCourant.');
       return null;
     }
 
     if (empty($products)) {
-      error_log('[EInvoiceService] Order #' . $order_id . ' has no products — lignePoste cannot be empty.');
+      $this->log('ERROR', '[ERROR EInvoiceService] Order #' . $order_id . ' has no products — lignePoste cannot be empty.');
       return null;
     }
 
     $date_ts = strtotime($info['date_purchased'] ?? '');
     if ($date_ts === false || $date_ts <= 0) {
-      error_log('[EInvoiceService] Invalid or missing date_purchased for order #' . $order_id . ' — falling back to current date.');
+      $this->log('WARNING', '[WARNING EInvoiceService] Invalid or missing date_purchased for order #' . $order_id . ' — falling back to current date.');
       $date_ts = time();
     }
     $invoice_num  = date('Ymd', $date_ts) . '-' . $order_id;
@@ -460,13 +496,13 @@ class EInvoiceService
     // No retry on submission — a lost response after success would cause a duplicate invoice.
     // Chorus Pro will reject same numeroFactureSaisi, but the risk is not acceptable.
     if ($raw === false) {
-      error_log('[EInvoiceService] submitToChorusPro: network failure — invoice #' . ($payload['references']['numeroFactureSaisi'] ?? '?') . ' may or may not have been received by Chorus Pro.');
+      $this->log('ERROR', '[ERROR EInvoiceService] submitToChorusPro: network failure — invoice #' . ($payload['references']['numeroFactureSaisi'] ?? '?') . ' may or may not have been received by Chorus Pro.');
       return ['success' => false, 'response' => [], 'error' => 'HTTP request failed (network error or invalid URL).'];
     }
 
     $decoded = json_decode($raw, true);
     if ($decoded === null) {
-      error_log('[EInvoiceService] submitToChorusPro: invalid JSON response (non-parseable) for invoice #' . ($payload['references']['numeroFactureSaisi'] ?? '?'));
+      $this->log('ERROR', '[ERROR EInvoiceService] submitToChorusPro: invalid JSON response (non-parseable) for invoice #' . ($payload['references']['numeroFactureSaisi'] ?? '?'));
       return ['success' => false, 'response' => [], 'error' => 'Invalid JSON response from Chorus Pro.'];
     }
 
@@ -527,7 +563,7 @@ class EInvoiceService
 
     // Single retry on network failure — read-only call, safe to retry
     if ($raw === false) {
-      error_log('[EInvoiceService] checkStatus: network failure on first attempt — retrying for invoice ' . $invoice_number);
+      $this->log('WARNING', '[WARNING EInvoiceService] checkStatus: network failure on first attempt — retrying for invoice ' . $invoice_number);
       
       $raw = HTTP::getResponse([
         'url'        => $this->isSandbox() ? self::STATUS_SANDBOX : self::STATUS_PROD,
@@ -547,13 +583,13 @@ class EInvoiceService
     }
 
     if ($raw === false) {
-      error_log('[EInvoiceService] checkStatus: network failure after retry for invoice ' . $invoice_number);
+      $this->log('ERROR', '[ERROR EInvoiceService] checkStatus: network failure after retry for invoice ' . $invoice_number);
       return ['success' => false, 'error' => 'HTTP request failed for status check.'];
     }
 
     $decoded = json_decode($raw, true);
     if ($decoded === null) {
-      error_log('[EInvoiceService] checkStatus: invalid JSON response for invoice ' . $invoice_number);
+      $this->log('ERROR', '[ERROR EInvoiceService] checkStatus: invalid JSON response for invoice ' . $invoice_number);
       return ['success' => false, 'error' => 'Invalid JSON response from Chorus Pro status check.'];
     }
 
@@ -607,7 +643,7 @@ class EInvoiceService
         'admin_user_name'          => 'Chorus Pro (automatic)',
       ]);
     } catch (\Throwable $e) {
-      error_log('[EInvoiceService] Cannot write order history: ' . $e->getMessage());
+      $this->log('ERROR', '[ERROR EInvoiceService] Cannot write order history: ' . $e->getMessage());
     }
   }
 
@@ -704,7 +740,7 @@ class EInvoiceService
     try {
       $this->db->save('orders', ['erp_invoice' => 1], ['orders_id' => $order_id]);
     } catch (\Throwable $e) {
-      error_log('[EInvoiceService] Cannot update erp_invoice: ' . $e->getMessage());
+      $this->log('ERROR', '[ERROR EInvoiceService] Cannot update erp_invoice: ' . $e->getMessage());
     }
   }
 

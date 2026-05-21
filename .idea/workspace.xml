@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="Merge branch 'version4.281' into version4.29&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;CHANGELOG.md&#10;#&#9;Core/ClicShopping/version.json" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="Merge branch 'version4.282' into version4.29&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;CHANGELOG.md&#10;#&#9;Core/ClicShopping/version.json" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -48,6 +48,65 @@
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0387455947326665" />
+      <entry key="MS500" value="1.6080465916098055" />
+      <entry key="S2" value="2.3916547491160087" />
+      <entry key="S5" value="2.7195715953268476" />
+      <entry key="S10" value="2.852615871321693" />
+      <entry key="S30" value="2.949173739575903" />
+      <entry key="S60" value="2.974367667289737" />
+      <entry key="M2" value="2.987128499127935" />
+      <entry key="M5" value="2.99483805040728" />
+      <entry key="M10" value="2.997416794556904" />
+      <entry key="M15" value="2.9982773669101155" />
+      <entry key="M30" value="2.999138435283921" />
+      <entry key="H1" value="2.9995691555790627" />
+      <entry key="H2" value="2.999784562271292" />
+      <entry key="H4" value="2.999892277255772" />
+      <entry key="D1" value="2.9999820456703974" />
+      <entry key="W1" value="2.999997435082573" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.976178223313982" />
+      <entry key="MS500" value="1.5885878996524727" />
+      <entry key="S2" value="2.3841259643566546" />
+      <entry key="S5" value="2.7160936868881267" />
+      <entry key="S10" value="2.850781383130659" />
+      <entry key="S30" value="2.948539042367309" />
+      <entry key="S60" value="2.9740472861787195" />
+      <entry key="M2" value="2.986967540154846" />
+      <entry key="M5" value="2.994773481064905" />
+      <entry key="M10" value="2.9973844788151234" />
+      <entry key="M15" value="2.998255816169385" />
+      <entry key="M30" value="2.9991276564550398" />
+      <entry key="H1" value="2.9995637652996034" />
+      <entry key="H2" value="2.999781866915259" />
+      <entry key="H4" value="2.9998909295236733" />
+      <entry key="D1" value="2.999981821040869" />
+      <entry key="W1" value="2.9999974029924568" />
+    </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
     <include_path>
@@ -122,7 +181,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "version4.281",
+    "git-widget-placeholder": "version4.29",
     "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -188,14 +247,6 @@
       <workItem from="1778766365477" duration="13000" />
       <workItem from="1778766550698" duration="12000" />
       <workItem from="1778774467849" duration="1010000" />
-    </task>
-    <task id="LOCAL-00003" summary="fix install">
-      <option name="closed" value="true" />
-      <created>1777322977628</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1777322977628</updated>
     </task>
     <task id="LOCAL-00004" summary="little update">
       <option name="closed" value="true" />
@@ -581,7 +632,15 @@
       <option name="project" value="LOCAL" />
       <updated>1779349761744</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="Merge branch 'version4.282' into version4.29&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;CHANGELOG.md&#10;#&#9;Core/ClicShopping/version.json">
+      <option name="closed" value="true" />
+      <created>1779350860925</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1779350860925</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
