@@ -210,7 +210,7 @@ class Image
       $sql_data_array['image'] = '';
     }
 
-    if ($image->check()) {
+    if ($error === false) {
       $filename_image_name = $image->getFilename();
 
       $this->imageResample->load($this->template->getDirectoryPathTemplateShopImages() . $dir_products_image . $filename_image_name);

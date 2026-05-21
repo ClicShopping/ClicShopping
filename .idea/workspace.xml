@@ -5,6 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="fix upload">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Classes/ClicShoppingAdmin/Image.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Classes/ClicShoppingAdmin/Image.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/ClicShopping/version.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/version.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -30,7 +33,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="version4.28" />
+        <entry key="$PROJECT_DIR$" value="version4.281" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -53,23 +56,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0003047682004154" />
-      <entry key="MS500" value="1.1980587027312424" />
-      <entry key="S2" value="1.6671115942531674" />
-      <entry key="S5" value="1.8515532931061534" />
-      <entry key="S10" value="1.9807688334169145" />
-      <entry key="S30" value="3.1349916128152957" />
-      <entry key="S60" value="4.882981823714472" />
-      <entry key="M2" value="6.912323885394891" />
-      <entry key="M5" value="8.993397818631232" />
-      <entry key="M10" value="9.919407994062713" />
-      <entry key="M15" value="10.261039150032849" />
-      <entry key="M30" value="10.620859797294557" />
-      <entry key="H1" value="10.807941388355529" />
-      <entry key="H2" value="10.903339104063834" />
-      <entry key="H4" value="10.951510454576947" />
-      <entry key="D1" value="10.991896209575817" />
-      <entry key="W1" value="10.998841770647932" />
+      <entry key="MS100" value="1.0000501812759655" />
+      <entry key="MS500" value="1.2389356611725515" />
+      <entry key="S2" value="2.5517247893885973" />
+      <entry key="S5" value="3.5251556988131103" />
+      <entry key="S10" value="4.110633175283379" />
+      <entry key="S30" value="4.8072814098372305" />
+      <entry key="S60" value="5.8950719742617315" />
+      <entry key="M2" value="8.419433037462365" />
+      <entry key="M5" value="12.80512382447086" />
+      <entry key="M10" value="15.41243969366524" />
+      <entry key="M15" value="16.48210818935845" />
+      <entry key="M30" value="17.672951055019325" />
+      <entry key="H1" value="18.318435685176496" />
+      <entry key="H2" value="18.654574118587945" />
+      <entry key="H4" value="18.826108948581982" />
+      <entry key="D1" value="18.970853051559594" />
+      <entry key="W1" value="18.99583208734842" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -91,23 +94,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.959538791806878" />
-      <entry key="MS500" value="1.1856994443070075" />
-      <entry key="S2" value="1.6615752568510573" />
-      <entry key="S5" value="1.8486625781479273" />
-      <entry key="S10" value="1.9721643722392377" />
-      <entry key="S30" value="3.101791404028363" />
-      <entry key="S60" value="4.8512674280844115" />
-      <entry key="M2" value="6.890359853078402" />
-      <entry key="M5" value="8.98270792746976" />
-      <entry key="M10" value="9.913701054502923" />
-      <entry key="M15" value="10.257150436321565" />
-      <entry key="M30" value="10.618872450122364" />
-      <entry key="H1" value="10.80693678623875" />
-      <entry key="H2" value="10.90283404794613" />
-      <entry key="H4" value="10.951257234867969" />
-      <entry key="D1" value="10.991853909982664" />
-      <entry key="W1" value="10.998835725487124" />
+      <entry key="MS100" value="0.952685700380991" />
+      <entry key="MS500" value="1.2264065149275785" />
+      <entry key="S2" value="2.544236316127851" />
+      <entry key="S5" value="3.5207916320480677" />
+      <entry key="S10" value="4.108028108522827" />
+      <entry key="S30" value="4.805916674040525" />
+      <entry key="S60" value="5.891269152695637" />
+      <entry key="M2" value="8.412101608514778" />
+      <entry key="M5" value="12.798215553921997" />
+      <entry key="M10" value="15.40782785047686" />
+      <entry key="M15" value="16.478721769324352" />
+      <entry key="M30" value="17.67108588996086" />
+      <entry key="H1" value="18.317456854390127" />
+      <entry key="H2" value="18.654072709870643" />
+      <entry key="H4" value="18.825855190426275" />
+      <entry key="D1" value="18.9708103296132" />
+      <entry key="W1" value="18.995825973646184" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -183,7 +186,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "version4.281",
+    "git-widget-placeholder": "version4.282",
     "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -202,8 +205,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-PS-261.23567.149" />
-        <option value="bundled-php-predefined-a98d8de5180a-022fa7b8ab75-com.jetbrains.php.sharedIndexes-PS-261.23567.149" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-PS-261.24374.185" />
+        <option value="bundled-php-predefined-a98d8de5180a-6bbb74dbab74-com.jetbrains.php.sharedIndexes-PS-261.24374.185" />
       </set>
     </attachedChunks>
   </component>
