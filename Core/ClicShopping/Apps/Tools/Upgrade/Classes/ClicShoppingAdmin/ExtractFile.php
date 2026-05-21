@@ -122,7 +122,26 @@ class ExtractFile
    */
   public function downloadFile(string $file_url)
   {
-    $downloaded_file = file_get_contents($file_url);
+    // Security: Validate URL to prevent SSRF and unauthorized downloads
+    $parsed_url = parse_url($file_url);
+    
+    // Only allow HTTPS URLs
+    if (!isset($parsed_url['scheme']) || $parsed_url['scheme'] !== 'https') {
+      $this->messageStack->add($this->app->getDef('text_file_download_error'), 'error');
+      CLICSHOPPING::redirect('Upgrade&Marketplace');
+      return null;
+    }
+
+    // Optional: Whitelist specific domains (e.g., GitHub)
+    // Uncomment and modify as needed:
+      $allowed_domains = ['github.com', 'api.github.com'];
+      if (!in_array($parsed_url['host'] ?? '', $allowed_domains)) {
+        $this->messageStack->add('Download from unauthorized domain', 'error');
+        CLICSHOPPING::redirect('Upgrade&Marketplace');
+        return null;
+       }
+
+    $downloaded_file = @file_get_contents($file_url);
 
     if ($downloaded_file === false) {
       $this->messageStack->add($this->app->getDef('text_file_download_error'), 'error');
@@ -148,6 +167,32 @@ class ExtractFile
    */
   public function installFiles(string $filename_localisation): void
   {
+    // Security: Validate ZIP contents to prevent path traversal attacks
+    $zip = new ZipArchive();
+    if ($zip->open($filename_localisation) === true) {
+      $has_traversal = false;
+      for ($i = 0; $i < $zip->numFiles; $i++) {
+        $filename = $zip->getNameIndex($i);
+        // Check for path traversal
+        if (strpos($filename, '..') !== false || strpos($filename, '/') === 0 || strpos($filename, '\\') === 0) {
+          $has_traversal = true;
+          break;
+        }
+        // Check for absolute paths
+        if (preg_match('/^[a-zA-Z]:\\/', $filename)) {
+          $has_traversal = true;
+          break;
+        }
+      }
+      $zip->close();
+      
+      if ($has_traversal) {
+        $this->messageStack->add('Invalid ZIP file: contains malicious path entries', 'error');
+        $this->app->redirect('Marketplace');
+        return;
+      }
+    }
+
     $this->getExtractZip($filename_localisation, $this->saveFileFromGithub);
 
 //check if not readme.zip

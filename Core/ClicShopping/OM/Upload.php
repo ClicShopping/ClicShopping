@@ -99,15 +99,18 @@ class Upload
       return true;
     }
 
+    if (empty($filePath) || !file_exists($filePath) || !is_readable($filePath)) {
+      return false;
+    }
 
-    try {
-      $finfo = new \finfo(FILEINFO_MIME_TYPE);
-      $mimeType = $finfo->file($filePath);
+    $finfo = new \finfo(FILEINFO_MIME_TYPE);
+    $mimeType = $finfo->file($filePath);
 
-      // Note : Pas de finfo_close() ici.
-      // En PHP 8.4/8.5+, cela génère un E_DEPRECATED.
-      // L'objet est automatiquement détruit par le Garbage Collector.
-    } catch (\Exception $e) {
+    // Note : Pas de finfo_close() ici.
+    // En PHP 8.4/8.5+, cela génère un E_DEPRECATED.
+    // L'objet est automatiquement détruit par le Garbage Collector.
+
+    if ($mimeType === false) {
       return false;
     }
 
@@ -121,7 +124,7 @@ class Upload
       'image/svg+xml' => ['svg'],
       'image/bmp' => ['bmp'],
       'image/tiff' => ['tif', 'tiff'],
-      
+
       // Documents
       'application/pdf' => ['pdf'],
       'application/msword' => ['doc'],
@@ -130,14 +133,14 @@ class Upload
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['xlsx'],
       'application/vnd.ms-powerpoint' => ['ppt'],
       'application/vnd.openxmlformats-officedocument.presentationml.presentation' => ['pptx'],
-      
+
       // Archives
       'application/zip' => ['zip'],
       'application/x-rar-compressed' => ['rar'],
       'application/x-7z-compressed' => ['7z'],
       'application/x-tar' => ['tar'],
       'application/gzip' => ['gz'],
-      
+
       // Text
       'text/plain' => ['txt'],
       'text/csv' => ['csv'],
@@ -146,14 +149,14 @@ class Upload
       'application/json' => ['json'],
       'application/xml' => ['xml'],
       'text/xml' => ['xml'],
-      
+
       // Video
       'video/mp4' => ['mp4'],
       'video/mpeg' => ['mpeg', 'mpg'],
       'video/quicktime' => ['mov'],
       'video/x-msvideo' => ['avi'],
       'video/webm' => ['webm'],
-      
+
       // Audio
       'audio/mpeg' => ['mp3'],
       'audio/wav' => ['wav'],
@@ -288,7 +291,16 @@ class Upload
         $CLICSHOPPING_MessageStack->add('File Upload [PUT]: $_SERVER[\'CONTENT_LENGTH\'] (' . (int)$_SERVER['CONTENT_LENGTH'] . ') not set or not equal to stream size (' . (int)$size . ')', 'warning');
       }
     } elseif (isset($_FILES[$this->_file])) {
-      if (isset($_FILES[$this->_file]['tmp_name']) && !empty($_FILES[$this->_file]['tmp_name']) && is_uploaded_file($_FILES[$this->_file]['tmp_name']) && ($_FILES[$this->_file]['size'] > 0)) {
+      if ($_FILES[$this->_file]['error'] === UPLOAD_ERR_NO_FILE) {
+        return false;
+      }
+
+      if (isset($_FILES[$this->_file]['tmp_name'])
+        && !empty($_FILES[$this->_file]['tmp_name'])
+        && is_uploaded_file($_FILES[$this->_file]['tmp_name'])
+        && ($_FILES[$this->_file]['size'] > 0)
+        && file_exists($_FILES[$this->_file]['tmp_name'])
+      ) {
         $this->_upload = [
           'type' => 'POST',
           'name' => $_FILES[$this->_file]['name'],
@@ -301,13 +313,13 @@ class Upload
     if (!empty($this->_upload)) {
       // Sanitize filename
       $this->_upload['name'] = $this->sanitizeFilename($this->_upload['name']);
-      
+
       // Validate file size
       if ($this->_upload['size'] > $this->_maxFileSize) {
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_file_too_large') . ' (Max: ' . ($this->_maxFileSize / 1048576) . 'MB)', 'warning');
         return false;
       }
-      
+
       // Validate file size is not zero
       if ($this->_upload['size'] <= 0) {
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_file_empty'), 'warning');
@@ -325,7 +337,7 @@ class Upload
       }
 
       // Get file path for content validation
-      $filePath = ($this->_upload['type'] == 'PUT') 
+      $filePath = ($this->_upload['type'] == 'PUT')
         ? CLICSHOPPING::BASE_DIR . 'Work/Temp/' . $this->_upload['temp_filename']
         : $this->_upload['tmp_name'];
 

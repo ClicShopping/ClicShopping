@@ -40,6 +40,8 @@ class Backup
     $CLICSHOPPING_Db = Registry::get('Db');
 
     set_time_limit(0);
+    ini_set('max_execution_time', 0);
+    ini_set('memory_limit', '512M');
 
     $backup_directory = CLICSHOPPING::BASE_DIR . 'Work/Backups/';
     $backup_file = 'db_' . CLICSHOPPING::getConfig('db_database') . '-' . date('YmdHis') . '.sql';
@@ -258,6 +260,8 @@ class Backup
         
         $row_count = 0;
         while ($Qrows->fetch()) {
+          set_time_limit(0);
+          ini_set('max_execution_time', 0);
           $row_count++;
           $schema = 'insert into ' . $table . ' (' . implode(', ', $table_list) . ') values (';
 

@@ -33,11 +33,9 @@ The solution is built with a modular architecture using Apps and modules for max
 - Seamless updates without breaking existing customizations
 - Vector search via MariaDB 11.7+ when available, with graceful fallback for standard MySQL environments
 
-
-###Advanced Agentic AI Architecture
-
+### Advanced Agentic AI Architecture
 The system implements a multi-agent reasoning architecture with more than eight specialized agents.
-Supported reasoning models include Chain-of-Thought (CoT), Tree-of-Thought (ToT), and Self-Consistency, enabling structured reasoning, task decomposition, and autonomous decision workflows directly within the e-commerce stack.
+- Supported reasoning models include Chain-of-Thought (CoT), Tree-of-Thought (ToT), and Self-Consistency, enabling structured reasoning, task decomposition, and autonomous decision workflows directly within the e-commerce stack.
 
 ## Enterprise-Grade Infrastructure
 – Multi-Database ORM: Doctrine 2.x with MariaDB.
@@ -161,20 +159,30 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 - Dynamic Reports: Sales, inventory, and customer analytics
 
 
-## Comparison between competitors (native functions):
+## Short Comparison between competitors (native functions) on AI implementation:
 
-| Caractéristiques        | ClicShopping         | Shopify             | Magento          | WooCommerce       |
-|-------------------------|----------------------|---------------------|------------------|-------------------|
-| IA Générative           | ✅ Natif multi-agents | ❌ Apps tierces      | ❌ Extensions     | ❌ Plugins         |
-| Support Multi-LLM       | ✅ 6+ fournisseurs    | ❌ OpenAI uniquement | ❌ Limité         | ❌ Limité          |
-| Base Vectorielle        | ✅ MariaDB native     | ❌ Externe requis    | ❌ Externe requis | ❌ Externe requis  |
-| Protocoles IA Ecommerce | ✅ ACP/UCP/MCP        | ❌ Extensions        | ❌ Extensions     | ❌ Extensions      |
-| WebSearch Intégré       | ✅ Natif              | ❌ Apps tierces      | ❌ Extensions     | ❌ Plugins         |
-| Open Source             | ✅ GPL2/MIT           | ❌ Propriétaire      | ✅ Community     | ✅  GPLv2          |
-| Rag                     | ✅ Semantic           | ❌ Propriétaire      | ❌ Integration    | ❌ Integration     |
-| BI                      | ✅ Analytic           | ❌ Propriétaire      | ❌ Integration    | ❌ Integration     |
-| Agentic                 | ✅ 8 Autonomous       | ❌ Propriétaire      | ❌ OIntegration   | ❌ Integration     |
-| MCP management          | ✅ Natif              | ❌ Extensions        | ❌ Extensions     | ❌ Extensions      |
+| Caracteristic              | ClicShopping            | Shopify             | Magento       | WooCommerce  |
+|----------------------------|-------------------------|---------------------|---------------|--------------|
+| Generative  AI             | ✅ Natif multi-agents    | ❌ Basic integration | ❌ Extension   | ❌ Plugins    |
+| Multi-LLM Support          | ✅ 6+ fournisseurs       | ❌ Primarily OpenAI  | ❌ Extension   | ❌ Extension  |
+| Vector Base                | ✅ MariaDB native        | ❌ External required | ❌ Extension   | ❌ Extension  |
+| Protocols IA / Ecommerce   | ✅ ACP/UCP/MCP           | ❌ Extension         | ❌ Extension   | ❌ Extension  |
+| Advanced WebSearch         | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  |
+| Open Source                | ✅ GPL2/MIT              | ❌ Proprietary       | ✅ Community   | ✅  GPLv2     |
+| RAG local                  | ✅ Semantic              | ❌ Proprietary       | ❌ Extension   | ❌ Extension  |
+| Business intelligence      | ✅ Analytics             | ❌ Proprietary       | ❌ Extension   | ❌ Extension  |
+| Agentic (actor and Agent)  | ✅ 8 Autonomous agents   | ❌ Extension         | ❌ Extension   | ❌ Extension  |
+| autonomous Agent           | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
+| MCP management             | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
+| SEO optimization           | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
+| Cockpit AI                 | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
+| AI data sovereignty        | ✅ Native control        | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
+| AI GDPR compliance         | ✅ Native implementation | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
+* Comparison based on native capabilities available without third-party plugins or custom development. 
+* Extension-based features require additional implementation effort and may introduce operational complexity.
+* Data sovereignty and GDPR compliance depend on infrastructure, deployment model, configuration, and operational practices...
+  This comparison only reflects native application capabilities.
+* Information based on publicly available capabilities and documented platform features.
 
 ## Server performance
 - OpCache
@@ -241,9 +249,8 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 
 #documentation
 
-Wiki on github : https://github.com/ClicShopping/ClicShopping/wiki
-DeepWiki :[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ClicShopping/ClicShopping)
-
+- Wiki on github : https://github.com/ClicShopping/ClicShopping/wiki
+- DeepWiki :[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ClicShopping/ClicShopping)
 
 # Donation
  - If you want to make a donation, you can click on this link : <a href="https://www.clicshopping.org/forum/clients/donations/">make a donation</a> or use the button below.
@@ -263,11 +270,11 @@ Available in most hosting control panels
 
 
 #Images
- ![image2](https://www.clicshopping.org/images/frontoffice.png)
+![image2](https://www.clicshopping.org/images/frontoffice.png)
 
- ![image3](https://www.clicshopping.org/images/order.png)
+![image3](https://www.clicshopping.org/images/order.png)
  
- ![image1](https://www.clicshopping.org/images/dashboard.png)
+![image1](https://www.clicshopping.org/images/dashboard.png)
 
 ![image1](https://www.clicshopping.org/images/ai_dashboard.png)
 

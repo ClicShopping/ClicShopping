@@ -55,7 +55,7 @@ class ConfigManager
     static::initializeConstants();
 
     if (!defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY') || empty(CLICSHOPPING_APP_CHATGPT_CH_API_KEY)) {
-      error_log("WARNING: CLICSHOPPING_APP_CHATGPT_CH_API_KEY not defined or empty");
+      error_log("WARNING: ChatGpt API not defined or empty");
       return null;
     }
 

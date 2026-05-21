@@ -1,12 +1,8 @@
 version4.29
-- AI improvement
+- Maintenance version
+- improvement
+- fix / bug resolution
 - libraries updated
-- small fix
-
-
-
-
-
 
 ---------------
 version4.28

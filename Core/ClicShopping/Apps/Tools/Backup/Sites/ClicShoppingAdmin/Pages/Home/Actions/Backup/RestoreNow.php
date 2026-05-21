@@ -12,6 +12,7 @@ namespace ClicShopping\Apps\Tools\Backup\Sites\ClicShoppingAdmin\Pages\Home\Acti
 
 use ClicShopping\OM\Cache;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\RateLimiter;
 use ClicShopping\OM\Registry;
 
 class RestoreNow extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -27,15 +28,33 @@ class RestoreNow extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 
+    // Rate limiting: 120 seconds between restore operations (more conservative than backup)
+    $rate_check = RateLimiter::check('restore', 120);
+    if (!$rate_check['allowed']) {
+      $CLICSHOPPING_MessageStack->add($rate_check['message'], 'warning');
+      $this->app->redirect('Backup');
+      return;
+    }
+
     set_time_limit(0);
+    ini_set('max_execution_time', 0);
     ini_set('memory_limit', '512M');
 
     $backup_directory = CLICSHOPPING::BASE_DIR . 'Work/Backups/';
-    $read_from = $_GET['file'];
 
-    if (is_file($backup_directory . $_GET['file'])) {
-      $restore_file = $backup_directory . $_GET['file'];
-      $extension = substr($_GET['file'], -3);
+    // Sanitize file parameter to prevent path traversal
+    $raw_filename = $_GET['file'] ?? '';
+    $read_from = basename($raw_filename);
+
+    if (empty($read_from) || $read_from !== $raw_filename) {
+      $CLICSHOPPING_MessageStack->add('Invalid backup file name', 'error');
+      $this->app->redirect('Backup');
+      return;
+    }
+
+    if (is_file($backup_directory . $read_from)) {
+      $restore_file = $backup_directory . $read_from;
+      $extension = substr($read_from, -3);
 
       if ($extension == 'sql' || $extension == '.gz' || $extension == 'zip') {
         switch ($extension) {
@@ -146,11 +165,38 @@ class RestoreNow extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $this->app->db->exec('drop table if exists ' . implode(', ', $drop_table_names));
 
+      // Validate and execute SQL statements safely
+      $allowed_statements = ['CREATE', 'DROP', 'INSERT', 'UPDATE', 'DELETE', 'ALTER', 'TRUNCATE'];
+      
       for ($i = 0, $n = \count($sql_array); $i < $n; $i++) {
+        // Prevent timeouts during large restores
+        set_time_limit(0);
+        ini_set('max_execution_time', 0);
+
+        $sql = trim($sql_array[$i]);
+        if (empty($sql)) continue;
+
+        // Extract statement type
+        $stmt_type = strtoupper(trim(explode(' ', $sql)[0]));
+        
+        // Whitelist allowed SQL types
+        if (!in_array($stmt_type, $allowed_statements)) {
+          $CLICSHOPPING_MessageStack->add('Restore skipped: unsupported SQL statement type (' . $stmt_type . ')', 'warning');
+          continue;
+        }
+
+        // Validate DROP TABLE statements to prevent SQL injection
+        if ($stmt_type === 'DROP' || $stmt_type === 'DROP TABLE') {
+          if (!preg_match('/^DROP\s+(TABLE\s+IF\s+EXISTS\s+)?[\w, ]+$/i', $sql)) {
+            $CLICSHOPPING_MessageStack->add('Restore skipped: invalid DROP statement structure', 'warning');
+            continue;
+          }
+        }
+
         try {
-          $this->app->db->exec($sql_array[$i]);
+          $this->app->db->exec($sql);
         } catch (\Exception $e) {
-          $CLICSHOPPING_MessageStack->add('Restore failed: ' . $e->getMessage(), 'error');
+          $CLICSHOPPING_MessageStack->add('Restore failed at statement ' . ($i + 1) . ': ' . $e->getMessage(), 'error');
           $this->app->redirect('Backup');
           return;
         }
