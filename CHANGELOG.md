@@ -5,7 +5,7 @@ version4.29
 - libraries updated
 
 ---------------
-version4.281
+version4.281 et 4.282
 fix upload
 ---------------
 version4.28

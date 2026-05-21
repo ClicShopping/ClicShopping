@@ -122,7 +122,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "version4.29",
+    "git-widget-placeholder": "version4.281",
     "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -573,13 +573,13 @@
       <option name="project" value="LOCAL" />
       <updated>1778775292506</updated>
     </task>
-    <task id="LOCAL-00051" summary="Merge branch 'version4.281' into version4.29&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;CHANGELOG.md&#10;#&#9;Core/ClicShopping/version.json">
+    <task id="LOCAL-00051" summary="fix upload">
       <option name="closed" value="true" />
-      <created>1779350130527</created>
+      <created>1779349761744</created>
       <option name="number" value="00051" />
       <option name="presentableId" value="LOCAL-00051" />
       <option name="project" value="LOCAL" />
-      <updated>1779350130527</updated>
+      <updated>1779349761744</updated>
     </task>
     <option name="localTasksCounter" value="52" />
     <servers />
@@ -588,7 +588,6 @@
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix check" />
     <MESSAGE value="fix http_response_code(): Cannot set response code" />
     <MESSAGE value="SEO improvement analysis" />
     <MESSAGE value="translation" />
@@ -613,7 +612,8 @@
     <MESSAGE value="refactoring" />
     <MESSAGE value="fix" />
     <MESSAGE value="some update" />
-    <option name="LAST_COMMIT_MESSAGE" value="some update" />
+    <MESSAGE value="fix upload" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix upload" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
