@@ -108,16 +108,19 @@ class SH implements \ClicShopping\OM\Modules\OrderTotalInterface
       }
     }
 
-    if (isset($_SESSION['shipping']) && str_contains($_SESSION['shipping']['id'], '\\')) {
-      [$vendor, $app, $module] = explode('\\', $_SESSION['shipping']['id']);
-      [$module, $method] = explode('_', $module);
-
-      $module = $vendor . '\\' . $app . '\\' . $module;
-
-      $code = 'Shipping_' . str_replace('\\', '_', $module);
-
-      if (Registry::exists($code)) {
-        $CLICSHOPPING_SM = Registry::get($code);
+    if (isset($_SESSION['shipping']) && is_string($_SESSION['shipping']['id']) && str_contains($_SESSION['shipping']['id'], '\\')) {
+      $parts = explode('\\', $_SESSION['shipping']['id']);
+      if (count($parts) === 3) {
+        [$vendor, $app, $module] = $parts;
+        $module_parts = explode('_', $module);
+        if (count($module_parts) === 2) {
+          [$module, $method] = $module_parts;
+          $module = $vendor . '\\' . $app . '\\' . $module;
+          $code = 'Shipping_' . str_replace('\\', '_', $module);
+          if (Registry::exists($code)) {
+            $CLICSHOPPING_SM = Registry::get($code);
+          }
+        }
       }
     }
 

@@ -111,6 +111,10 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
         }
       }
 
+      if(empty(CLICSHOPPING_APP_STRIPE_ST_PRIVATE_KEY) | empty(CLICSHOPPING_APP_STRIPE_ST_PUBLIC_KEY)) {
+        $this->enabled = false;
+      }
+
       if (CLICSHOPPING_APP_STRIPE_ST_SERVER_PROD == 'True') {
         $this->private_key = CLICSHOPPING_APP_STRIPE_ST_PRIVATE_KEY;
         $this->public_key = CLICSHOPPING_APP_STRIPE_ST_PUBLIC_KEY;

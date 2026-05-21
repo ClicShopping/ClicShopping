@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="Merge branch 'version4.282' into version4.29&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;CHANGELOG.md&#10;#&#9;Core/ClicShopping/version.json" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little improvement">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/OM/Domains/ConfigureActionsAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/OM/Domains/ConfigureActionsAbstract.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -51,23 +54,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0387455947326665" />
-      <entry key="MS500" value="1.6080465916098055" />
-      <entry key="S2" value="2.3916547491160087" />
-      <entry key="S5" value="2.7195715953268476" />
-      <entry key="S10" value="2.852615871321693" />
-      <entry key="S30" value="2.949173739575903" />
-      <entry key="S60" value="2.974367667289737" />
-      <entry key="M2" value="2.987128499127935" />
-      <entry key="M5" value="2.99483805040728" />
-      <entry key="M10" value="2.997416794556904" />
-      <entry key="M15" value="2.9982773669101155" />
-      <entry key="M30" value="2.999138435283921" />
-      <entry key="H1" value="2.9995691555790627" />
-      <entry key="H2" value="2.999784562271292" />
-      <entry key="H4" value="2.999892277255772" />
-      <entry key="D1" value="2.9999820456703974" />
-      <entry key="W1" value="2.999997435082573" />
+      <entry key="MS100" value="1.0072397628898835" />
+      <entry key="MS500" value="1.6597794968259971" />
+      <entry key="S2" value="4.0114557420608605" />
+      <entry key="S5" value="5.491240181875887" />
+      <entry key="S10" value="6.178581223426833" />
+      <entry key="S30" value="6.709542790892861" />
+      <entry key="S60" value="6.852568778409708" />
+      <entry key="M2" value="6.925724162764848" />
+      <entry key="M5" value="6.970153964526866" />
+      <entry key="M10" value="6.985054260759238" />
+      <entry key="M15" value="6.9900311168258265" />
+      <entry key="M30" value="6.9950130279553715" />
+      <entry key="H1" value="6.997505880997253" />
+      <entry key="H2" value="6.998752782207738" />
+      <entry key="H4" value="6.999376351525421" />
+      <entry key="D1" value="6.99989605309008" />
+      <entry key="W1" value="6.999985150306802" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -89,23 +92,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.976178223313982" />
-      <entry key="MS500" value="1.5885878996524727" />
-      <entry key="S2" value="2.3841259643566546" />
-      <entry key="S5" value="2.7160936868881267" />
-      <entry key="S10" value="2.850781383130659" />
-      <entry key="S30" value="2.948539042367309" />
-      <entry key="S60" value="2.9740472861787195" />
-      <entry key="M2" value="2.986967540154846" />
-      <entry key="M5" value="2.994773481064905" />
-      <entry key="M10" value="2.9973844788151234" />
-      <entry key="M15" value="2.998255816169385" />
-      <entry key="M30" value="2.9991276564550398" />
-      <entry key="H1" value="2.9995637652996034" />
-      <entry key="H2" value="2.999781866915259" />
-      <entry key="H4" value="2.9998909295236733" />
-      <entry key="D1" value="2.999981821040869" />
-      <entry key="W1" value="2.9999974029924568" />
+      <entry key="MS100" value="0.9662089480262113" />
+      <entry key="MS500" value="1.645386318731825" />
+      <entry key="S2" value="4.001099586803189" />
+      <entry key="S5" value="5.4852610743063135" />
+      <entry key="S10" value="6.175156226720079" />
+      <entry key="S30" value="6.7082880114554735" />
+      <entry key="S60" value="6.851926088002371" />
+      <entry key="M2" value="6.925398899440312" />
+      <entry key="M5" value="6.970022906691993" />
+      <entry key="M10" value="6.984988572066978" />
+      <entry key="M15" value="6.989987288782556" />
+      <entry key="M30" value="6.994991096123758" />
+      <entry key="H1" value="6.997494910625366" />
+      <entry key="H2" value="6.998747295907324" />
+      <entry key="H4" value="6.999373608096542" />
+      <entry key="D1" value="6.999895595813222" />
+      <entry key="W1" value="6.9999850849805885" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -173,25 +176,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "version4.29",
-    "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "web.server",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;version4.29&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;web.server&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/sql_upgrade/history" />
@@ -200,8 +203,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-PS-261.23567.149" />
-        <option value="bundled-php-predefined-a98d8de5180a-022fa7b8ab75-com.jetbrains.php.sharedIndexes-PS-261.23567.149" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-PS-261.24374.185" />
+        <option value="bundled-php-predefined-a98d8de5180a-6bbb74dbab74-com.jetbrains.php.sharedIndexes-PS-261.24374.185" />
       </set>
     </attachedChunks>
   </component>
@@ -247,14 +250,7 @@
       <workItem from="1778766365477" duration="13000" />
       <workItem from="1778766550698" duration="12000" />
       <workItem from="1778774467849" duration="1010000" />
-    </task>
-    <task id="LOCAL-00004" summary="little update">
-      <option name="closed" value="true" />
-      <created>1777323988412</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1777323988412</updated>
+      <workItem from="1779356816005" duration="1607000" />
     </task>
     <task id="LOCAL-00005" summary="version4.28">
       <option name="closed" value="true" />
@@ -640,14 +636,21 @@
       <option name="project" value="LOCAL" />
       <updated>1779350860925</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="little improvement">
+      <option name="closed" value="true" />
+      <created>1779356839765</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1779356839765</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix http_response_code(): Cannot set response code" />
     <MESSAGE value="SEO improvement analysis" />
     <MESSAGE value="translation" />
     <MESSAGE value="some refactoring" />
@@ -672,7 +675,8 @@
     <MESSAGE value="fix" />
     <MESSAGE value="some update" />
     <MESSAGE value="fix upload" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix upload" />
+    <MESSAGE value="little improvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="little improvement" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
