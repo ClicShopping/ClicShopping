@@ -122,8 +122,8 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;version4.29&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3/sources/template/Default/modules/modules_footer&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;version4.28&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -135,15 +135,14 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/sources/template/Default/modules/modules_footer" />
       <recent name="$PROJECT_DIR$/sql_upgrade/history" />
     </key>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-PS-261.24374.185" />
-        <option value="bundled-php-predefined-a98d8de5180a-6bbb74dbab74-com.jetbrains.php.sharedIndexes-PS-261.24374.185" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-PS-261.23567.149" />
+        <option value="bundled-php-predefined-a98d8de5180a-022fa7b8ab75-com.jetbrains.php.sharedIndexes-PS-261.23567.149" />
       </set>
     </attachedChunks>
   </component>
@@ -189,20 +188,142 @@
       <workItem from="1778766365477" duration="13000" />
       <workItem from="1778766550698" duration="12000" />
       <workItem from="1778774467849" duration="1010000" />
-      <workItem from="1778843089943" duration="636000" />
-      <workItem from="1778931213559" duration="999000" />
-      <workItem from="1779101941357" duration="39000" />
-      <workItem from="1779103284825" duration="42000" />
-      <workItem from="1779107975608" duration="26000" />
-      <workItem from="1779116628452" duration="32000" />
-      <workItem from="1779118845032" duration="654000" />
-      <workItem from="1779188504425" duration="33000" />
-      <workItem from="1779194449367" duration="46000" />
-      <workItem from="1779211444690" duration="68000" />
-      <workItem from="1779259494616" duration="31000" />
-      <workItem from="1779260026249" duration="22000" />
-      <workItem from="1779262298520" duration="31000" />
-      <workItem from="1779349009398" duration="181000" />
+    </task>
+    <task id="LOCAL-00002" summary="fix product to categories">
+      <option name="closed" value="true" />
+      <created>1777322397995</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1777322397995</updated>
+    </task>
+    <task id="LOCAL-00003" summary="fix install">
+      <option name="closed" value="true" />
+      <created>1777322977628</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1777322977628</updated>
+    </task>
+    <task id="LOCAL-00004" summary="little update">
+      <option name="closed" value="true" />
+      <created>1777323988412</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1777323988412</updated>
+    </task>
+    <task id="LOCAL-00005" summary="version4.28">
+      <option name="closed" value="true" />
+      <created>1777361563610</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1777361563610</updated>
+    </task>
+    <task id="LOCAL-00006" summary="security improvment">
+      <option name="closed" value="true" />
+      <created>1777385603937</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1777385603937</updated>
+    </task>
+    <task id="LOCAL-00007" summary="security improvement">
+      <option name="closed" value="true" />
+      <created>1777386468773</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1777386468773</updated>
+    </task>
+    <task id="LOCAL-00008" summary="security improvement">
+      <option name="closed" value="true" />
+      <created>1777386640496</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1777386640496</updated>
+    </task>
+    <task id="LOCAL-00009" summary="security improvement">
+      <option name="closed" value="true" />
+      <created>1777387787694</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1777387787694</updated>
+    </task>
+    <task id="LOCAL-00010" summary="security improvement">
+      <option name="closed" value="true" />
+      <created>1777390299030</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1777390299030</updated>
+    </task>
+    <task id="LOCAL-00011" summary="fix">
+      <option name="closed" value="true" />
+      <created>1777390793360</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1777390793361</updated>
+    </task>
+    <task id="LOCAL-00012" summary="fix">
+      <option name="closed" value="true" />
+      <created>1777390934240</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1777390934240</updated>
+    </task>
+    <task id="LOCAL-00013" summary="fix">
+      <option name="closed" value="true" />
+      <created>1777391873748</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1777391873748</updated>
+    </task>
+    <task id="LOCAL-00014" summary="libraries updated">
+      <option name="closed" value="true" />
+      <created>1777569267814</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1777569267815</updated>
+    </task>
+    <task id="LOCAL-00015" summary="fix check">
+      <option name="closed" value="true" />
+      <created>1777622004778</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1777622004778</updated>
+    </task>
+    <task id="LOCAL-00016" summary="fix http_response_code(): Cannot set response code">
+      <option name="closed" value="true" />
+      <created>1777622399049</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1777622399050</updated>
+    </task>
+    <task id="LOCAL-00017" summary="SEO improvement analysis">
+      <option name="closed" value="true" />
+      <created>1777645919885</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1777645919885</updated>
+    </task>
+    <task id="LOCAL-00018" summary="orchestrator refactoring">
+      <option name="closed" value="true" />
+      <created>1777647949196</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1777647949196</updated>
     </task>
     <task id="LOCAL-00019" summary="translation">
       <option name="closed" value="true" />
@@ -460,149 +581,28 @@
       <option name="project" value="LOCAL" />
       <updated>1778775292506</updated>
     </task>
-    <task id="LOCAL-00051" summary="version4.29">
-      <option name="closed" value="true" />
-      <created>1778776230073</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1778776230073</updated>
-    </task>
-    <task id="LOCAL-00052" summary="agent updated">
-      <option name="closed" value="true" />
-      <created>1778843120418</created>
-      <option name="number" value="00052" />
-      <option name="presentableId" value="LOCAL-00052" />
-      <option name="project" value="LOCAL" />
-      <updated>1778843120418</updated>
-    </task>
-    <task id="LOCAL-00053" summary="libraries updated">
-      <option name="closed" value="true" />
-      <created>1778931250044</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1778931250045</updated>
-    </task>
-    <task id="LOCAL-00054" summary="libraries updated">
-      <option name="closed" value="true" />
-      <created>1779101975537</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1779101975537</updated>
-    </task>
-    <task id="LOCAL-00055" summary="fix somes bugs">
-      <option name="closed" value="true" />
-      <created>1779103307572</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1779103307572</updated>
-    </task>
-    <task id="LOCAL-00056" summary="add db">
-      <option name="closed" value="true" />
-      <created>1779103322295</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1779103322295</updated>
-    </task>
-    <task id="LOCAL-00057" summary="fix bug">
-      <option name="closed" value="true" />
-      <created>1779107995431</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1779107995431</updated>
-    </task>
-    <task id="LOCAL-00058" summary="little language imporvement">
-      <option name="closed" value="true" />
-      <created>1779116654360</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1779116654360</updated>
-    </task>
-    <task id="LOCAL-00059" summary="little language improvement">
-      <option name="closed" value="true" />
-      <created>1779118869731</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1779118869731</updated>
-    </task>
-    <task id="LOCAL-00060" summary="sime ai improvement and fix">
-      <option name="closed" value="true" />
-      <created>1779188527339</created>
-      <option name="number" value="00060" />
-      <option name="presentableId" value="LOCAL-00060" />
-      <option name="project" value="LOCAL" />
-      <updated>1779188527339</updated>
-    </task>
-    <task id="LOCAL-00061" summary="json error handling">
-      <option name="closed" value="true" />
-      <created>1779194477477</created>
-      <option name="number" value="00061" />
-      <option name="presentableId" value="LOCAL-00061" />
-      <option name="project" value="LOCAL" />
-      <updated>1779194477477</updated>
-    </task>
-    <task id="LOCAL-00062" summary="some fix">
-      <option name="closed" value="true" />
-      <created>1779211493819</created>
-      <option name="number" value="00062" />
-      <option name="presentableId" value="LOCAL-00062" />
-      <option name="project" value="LOCAL" />
-      <updated>1779211493819</updated>
-    </task>
-    <task id="LOCAL-00063" summary="add js">
-      <option name="closed" value="true" />
-      <created>1779211506140</created>
-      <option name="number" value="00063" />
-      <option name="presentableId" value="LOCAL-00063" />
-      <option name="project" value="LOCAL" />
-      <updated>1779211506140</updated>
-    </task>
-    <task id="LOCAL-00064" summary="some fix">
-      <option name="closed" value="true" />
-      <created>1779259516402</created>
-      <option name="number" value="00064" />
-      <option name="presentableId" value="LOCAL-00064" />
-      <option name="project" value="LOCAL" />
-      <updated>1779259516403</updated>
-    </task>
-    <task id="LOCAL-00065" summary="some fix seo">
-      <option name="closed" value="true" />
-      <created>1779260039419</created>
-      <option name="number" value="00065" />
-      <option name="presentableId" value="LOCAL-00065" />
-      <option name="project" value="LOCAL" />
-      <updated>1779260039419</updated>
-    </task>
-    <task id="LOCAL-00066" summary="fix and improvement">
-      <option name="closed" value="true" />
-      <created>1779262324683</created>
-      <option name="number" value="00066" />
-      <option name="presentableId" value="LOCAL-00066" />
-      <option name="project" value="LOCAL" />
-      <updated>1779262324683</updated>
-    </task>
-    <task id="LOCAL-00067" summary="fix and improvement">
-      <option name="closed" value="true" />
-      <created>1779349026633</created>
-      <option name="number" value="00067" />
-      <option name="presentableId" value="LOCAL-00067" />
-      <option name="project" value="LOCAL" />
-      <updated>1779349026633</updated>
-    </task>
-    <option name="localTasksCounter" value="68" />
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="fix check" />
+    <MESSAGE value="fix http_response_code(): Cannot set response code" />
+    <MESSAGE value="SEO improvement analysis" />
+    <MESSAGE value="translation" />
+    <MESSAGE value="some refactoring" />
+    <MESSAGE value="orchestrator refactoring" />
+    <MESSAGE value="fix accordeon" />
+    <MESSAGE value="readme updated" />
+    <MESSAGE value="litlle fix" />
+    <MESSAGE value="litlle improvment" />
+    <MESSAGE value="libraries updated" />
+    <MESSAGE value="improve 404 detection" />
+    <MESSAGE value="language improvement" />
+    <MESSAGE value=" context enrichment" />
+    <MESSAGE value="websearch refactoring" />
     <MESSAGE value="update prompt" />
     <MESSAGE value="some update and fix" />
     <MESSAGE value="improve json" />
@@ -613,22 +613,7 @@
     <MESSAGE value="refactoring" />
     <MESSAGE value="fix" />
     <MESSAGE value="some update" />
-    <MESSAGE value="version4.29" />
-    <MESSAGE value="agent updated" />
-    <MESSAGE value="libraries updated" />
-    <MESSAGE value="fix somes bugs" />
-    <MESSAGE value="add db" />
-    <MESSAGE value="fix bug" />
-    <MESSAGE value="little language imporvement" />
-    <MESSAGE value="little language improvement" />
-    <MESSAGE value="sime ai improvement and fix" />
-    <MESSAGE value="fix json error handling" />
-    <MESSAGE value="json error handling" />
-    <MESSAGE value="add js" />
-    <MESSAGE value="some fix" />
-    <MESSAGE value="some fix seo" />
-    <MESSAGE value="fix and improvement" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix and improvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="some update" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
