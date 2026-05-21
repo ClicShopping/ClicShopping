@@ -46,7 +46,7 @@
     if (!baseUrl) return;
     var form = document.option_order_by;
     if (!form) return;
-    var val = form.selected.options[form.selected.selectedIndex].value;
+    var val = form.elements['selected'].value;
     if (val !== 'none') {
       location = baseUrl + '&option_order_by=' + encodeURIComponent(val);
     }

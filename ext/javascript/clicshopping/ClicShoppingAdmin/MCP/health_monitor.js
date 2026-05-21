@@ -257,29 +257,51 @@ class HealthMonitor {
     if (details.configuration) {
       const config = details.configuration;
       const statusClass = statusColors[config.status] || 'text-info';
-      this.elements.configStatus.innerHTML = `
-        <div class="${statusClass}">
-          <strong>${config.valid ? '✓ Valid' : '✗ Invalid'}</strong>
-        </div>
-        ${config.issues && config.issues.length ?
-        `<small class="text-muted">${config.issues.length} issue(s) found</small>` :
-        '<small class="text-muted">No issues</small>'
+      const configStatusEl = this.elements.configStatus;
+      configStatusEl.innerHTML = ''; // clear
+
+      const statusDiv = document.createElement('div');
+      statusDiv.className = statusClass;
+      const strong = document.createElement('strong');
+      strong.textContent = config.valid ? '✓ Valid' : '✗ Invalid';
+      statusDiv.appendChild(strong);
+      configStatusEl.appendChild(statusDiv);
+
+      if (config.issues && config.issues.length) {
+        const small = document.createElement('small');
+        small.className = 'text-muted';
+        small.textContent = config.issues.length + ' issue(s) found';
+        configStatusEl.appendChild(small);
+      } else {
+        const small = document.createElement('small');
+        small.className = 'text-muted';
+        small.textContent = 'No issues';
+        configStatusEl.appendChild(small);
       }
-      `;
     }
 
     // Connectivity status
     if (details.connectivity) {
       const conn = details.connectivity;
       const statusClass = statusColors[conn.status] || 'text-info';
-      this.elements.connectivityStatus.innerHTML = `
-        <div class="${statusClass}">
-          <strong>${conn.connected ? '✓ Connected' : '✗ Disconnected'}</strong>
-        </div>
-        <small class="text-muted">
-          ${conn.latency ? `Latency: ${conn.latency}ms` : (conn.error || 'Checking...')}
-        </small>
-      `;
+      const connStatusEl = this.elements.connectivityStatus;
+      connStatusEl.innerHTML = ''; // clear
+
+      const statusDiv = document.createElement('div');
+      statusDiv.className = statusClass;
+      const strong = document.createElement('strong');
+      strong.textContent = conn.connected ? '✓ Connected' : '✗ Disconnected';
+      statusDiv.appendChild(strong);
+      connStatusEl.appendChild(statusDiv);
+
+      const small = document.createElement('small');
+      small.className = 'text-muted';
+      if (conn.latency) {
+        small.textContent = 'Latency: ' + conn.latency + 'ms';
+      } else {
+        small.textContent = conn.error || 'Checking...';
+      }
+      connStatusEl.appendChild(small);
     }
 
     // Performance status
@@ -288,21 +310,32 @@ class HealthMonitor {
       const status = perf.status || 'healthy';
       const statusClass = statusColors[status] || 'text-info';
 
-      // Check if uptime, total_requests, and error_rate exist
+      const perfStatusEl = this.elements.performanceStatus;
+      perfStatusEl.innerHTML = ''; // clear
+
+      const statusDiv = document.createElement('div');
+      statusDiv.className = statusClass;
+      const strong = document.createElement('strong');
+      strong.textContent = 'Performance';
+      statusDiv.appendChild(strong);
+      perfStatusEl.appendChild(statusDiv);
+
+      const small = document.createElement('small');
+      small.className = 'text-muted';
       const uptime = Math.floor((perf.uptime || 0) / 3600);
       const requests = perf.total_requests || 0;
       const errorRate = perf.error_rate || 0;
-
-      this.elements.performanceStatus.innerHTML = `
-      <div class="${statusClass}">
-        <strong>Performance</strong>
-      </div>
-      <small class="text-muted">
-        Uptime: ${uptime}h<br>
-        Requests: ${requests}<br>
-        Error Rate: ${errorRate}%
-      </small>
-      `;
+      const uptimeLine = document.createTextNode('Uptime: ' + uptime + 'h');
+      small.appendChild(uptimeLine);
+      const br1 = document.createElement('br');
+      small.appendChild(br1);
+      const requestsLine = document.createTextNode('Requests: ' + requests);
+      small.appendChild(requestsLine);
+      const br2 = document.createElement('br');
+      small.appendChild(br2);
+      const errorLine = document.createTextNode('Error Rate: ' + errorRate + '%');
+      small.appendChild(errorLine);
+      perfStatusEl.appendChild(small);
     }
   }
 
@@ -340,17 +373,34 @@ class HealthMonitor {
     }
 
     const colorClass = colors[type] || 'text-muted';
+
+    // Build DOM elements individually to avoid innerHTML XSS
     const logEntry = document.createElement('div');
     logEntry.className = 'log-entry mb-1';
-    logEntry.innerHTML = `
-      <span class="text-muted">[${timestamp}]</span> 
-      <span class="badge bg-secondary" style="font-size:0.7em;">${serverInfo}</span>
-      <span class="${colorClass}">[${type.toUpperCase()}]</span> 
-      <span>${message}</span>
-    `;
+
+    const tsSpan = document.createElement('span');
+    tsSpan.className = 'text-muted';
+    tsSpan.textContent = `[${timestamp}]`;
+
+    const badgeSpan = document.createElement('span');
+    badgeSpan.className = 'badge bg-secondary';
+    badgeSpan.style.fontSize = '0.7em';
+    badgeSpan.textContent = serverInfo;
+
+    const typeSpan = document.createElement('span');
+    typeSpan.className = colorClass;
+    typeSpan.textContent = `[${type.toUpperCase()}]`;
+
+    const msgSpan = document.createElement('span');
+    msgSpan.textContent = message;
+
+    logEntry.appendChild(tsSpan);
+    logEntry.appendChild(badgeSpan);
+    logEntry.appendChild(typeSpan);
+    logEntry.appendChild(msgSpan);
 
     // If this is the first entry, replace the placeholder
-    if (this.elements.eventLog.innerHTML.includes('No events yet...') || 
+    if (this.elements.eventLog.innerHTML.includes('No events yet...') ||
         this.elements.eventLog.innerHTML.includes('text_no_event')) {
       this.elements.eventLog.innerHTML = '';
     }

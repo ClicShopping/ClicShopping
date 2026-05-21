@@ -23,7 +23,7 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 
   <!-- Require JS (REQUIRED) -->
   <!-- Rename "main.default.js" to "main.js" and edit it if you need configure elFInder options or any things -->
-  <script data-main="./main.default.js" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha256-+Nt5P2o8y8Vv9Q3g4H0VvL6J0X0VvL6J0X0VvL6J0X0=" crossorigin="anonymous"></script>
   <script>
     define('elFinderConfig', {
       // elFinder options (REQUIRED)
