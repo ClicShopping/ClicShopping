@@ -23,8 +23,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 
     if (isset($_POST['customer_group_id'])) {
-      {
-        $customers_groups_id = HTML::sanitize($_POST['customer_group_id']);
+      $customers_groups_id = HTML::sanitize($_POST['customer_group_id']);
       }
 
       if (isset($_POST['customers_group_name'])) {
@@ -84,7 +83,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
         }
 
 // Assujetti ou non a la TVA
-        $group_order_taxe = HTML::sanitize($_POST['group_order_taxe']);
+        $group_order_taxe = (int)HTML::sanitize($_POST['group_order_taxe']);
 
 // Affichage des prix en HT ou en TTC (Mis automatiquement en false "HT" si l'on coche non-assujetti a la TVA)
         if ($group_order_taxe == 1) {

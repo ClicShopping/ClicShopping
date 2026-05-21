@@ -45,7 +45,7 @@ class CustomersAdmin
     $Qcustomer->bindInt(':customers_id', $id);
     $Qcustomer->execute();
 
-    return $Qcustomer->fetchAll();
+    return $Qcustomer->fetch();
   }
 
   /**
@@ -72,9 +72,9 @@ class CustomersAdmin
     $email = Hash::displayDecryptedDataText($email);
     $Qcustomer = $this->db->prepare('select customers_id
                                         from :table_customers
-                                        where customer_email = :customer_email
+                                        where customers_email_address = :customers_email_address
                                       ');
-    $Qcustomer->bindInt(':customer_email', $email);
+    $Qcustomer->bindValue(':customers_email_address', $email);
     $Qcustomer->execute();
 
     return $Qcustomer->valueInt('customers_id');

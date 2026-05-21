@@ -352,11 +352,12 @@ class CustomerShop
                                                where customers_id = :customers_id
                                               ');
       $QcustomerGroup->bindInt(':customers_id', $id);
-      $Qcustomer->bindInt(':customers_id', $id);
       $QcustomerGroup->execute();
 
-      if ($QcustomerGroup->fetch() !== false) {
-        $this->setCustomersGroupID($QcustomerGroup->value('customers_group_id'));
+      $customer_group_data = $QcustomerGroup->fetch();
+      
+      if ($customer_group_data !== false) {
+        $this->setCustomersGroupID($customer_group_data['customers_group_id']);
         $_SESSION['customer_group_id'] = $this->_data1;
       }
 

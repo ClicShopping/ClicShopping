@@ -39,7 +39,7 @@ class GroupsB2BAdmin
                                                    where customers_group_id = :customers_group_id
                                                    order by customers_group_name
                                                   ');
-    $QcustomersGroup->bindInt('customers_group_id', $id);
+    $QcustomersGroup->bindInt(':customers_group_id', $id);
     $QcustomersGroup->execute();
 
     return $QcustomersGroup->value('customers_group_name');

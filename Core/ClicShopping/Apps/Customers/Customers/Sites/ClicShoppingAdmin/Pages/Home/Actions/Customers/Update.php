@@ -320,7 +320,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $QcheckEmail->bindInt(':customers_id', $customers_id);
     $QcheckEmail->execute();
 
-    if ($QcheckEmail->rowCount() > 0) {
+    if ($QcheckEmail->fetch() !== false) {
       $error = true;
       $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Customers->getDef('error_email_exists'), 'error');
     }

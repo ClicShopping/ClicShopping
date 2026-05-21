@@ -170,7 +170,7 @@ class Create extends \ClicShopping\OM\Domains\PagesActionsAbstract
     }
 
     if (isset($_POST['customers_email_address'])) {
-      $customers_email_address = $_POST['customers_email_address'];
+      $customers_email_address = HTML::sanitize($_POST['customers_email_address']);
     }
 
 // Information sur la zone geographique
@@ -208,7 +208,7 @@ class Create extends \ClicShopping\OM\Domains\PagesActionsAbstract
     } // end while
 
 // Controle des saisies faites sur les champs TVA Intracom
-    if ((\strlen($customers_tva_intracom_code_iso > 0) || \strlen($customers_tva_intracom) > 0) && ACCOUNT_TVA_INTRACOM_PRO == 'true') {
+    if ((\strlen($customers_tva_intracom_code_iso) > 0 || \strlen($customers_tva_intracom) > 0) && ACCOUNT_TVA_INTRACOM_PRO == 'true') {
       $QcustomersTva = $CLICSHOPPING_Customers->db->prepare('select countries_iso_code_2
                                                                from :table_countries
                                                                where countries_iso_code_2 = :countries_iso_code_2
@@ -228,7 +228,7 @@ class Create extends \ClicShopping\OM\Domains\PagesActionsAbstract
       if (!empty($customers_tva_intracom_code_iso) && !empty($customers_tva_intracom)) {
         $result = VatNumber::serviceCheckVat($customers_tva_intracom_code_iso, $customers_tva_intracom);
 
-        if ($result === true) {
+        if ($result !== true) {
           $error = true;
           $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Customers->getDef('error_tva_intracom'), 'error');
         }
@@ -273,8 +273,8 @@ class Create extends \ClicShopping\OM\Domains\PagesActionsAbstract
     } else {
       $Qcheck = $CLICSHOPPING_Customers->db->get('zones', 'zone_country_id', ['zone_country_id' => (int)$customers_country_id]);
 
-      if ($Qcheck->ValueInt('zone_country_id') != 0) {
-        $entry_zone_id = $Qcheck->ValueInt('zone_country_id');
+      if ($Qcheck->valueInt('zone_country_id') != 0) {
+        $entry_zone_id = $Qcheck->valueInt('zone_country_id');
       }
 
       if (ACCOUNT_STATE_DROPDOWN == 'true') {
