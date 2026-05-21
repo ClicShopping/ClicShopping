@@ -305,7 +305,7 @@ class HTML
 
     // Security: Validate method against whitelist
     $allowed_methods = ['post', 'get'];
-    $safe_method = in_array(strtolower($method ?? 'post'), $allowed_methods) ? strtolower($method) : 'post';
+    $safe_method = in_array(strtolower($method ?? 'post'), $allowed_methods) ? strtolower($method ?? 'post') : 'post';
 
     // Security: Sanitize form action URL
     $safe_action = static::sanitizeUrl($action);
