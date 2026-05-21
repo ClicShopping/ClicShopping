@@ -73,6 +73,19 @@ class Newsletter
   }
 
   /**
+   * @return bool
+   */
+  public function checkStatus(): bool
+  {
+    if (!\defined('CLICSHOPPING_APP_NEWSLETTER_NL_STATUS') || CLICSHOPPING_APP_NEWSLETTER_NL_STATUS == 'False') {
+      return false;
+    }
+
+    return true;
+  }
+
+
+  /**
    * Executes the confirmation process for newsletter management, including file creation,
    * customer data validation, and UI rendering for confirmation and related actions.
    *
@@ -216,15 +229,13 @@ class Newsletter
    * @param int $newsletter_id The ID of the newsletter being sent.
    * @return mixed
    */
-  public function send(int $newsletter_id): mixed
+  public function send(int $newsletter_id): void
   {
     $CLICSHOPPING_Mail = Registry::get('Mail');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    if (!\defined('CLICSHOPPING_APP_NEWSLETTER_NL_STATUS') || CLICSHOPPING_APP_NEWSLETTER_NL_STATUS == 'False') {
-      return false;
-    }
+    $this->checkStatus();
 
     if ($this->languageId == 0) {
       $Qmail = $this->app->db->prepare('select customers_firstname,
@@ -255,19 +266,18 @@ class Newsletter
     $max_execution_time = 0.8 * (int)ini_get('max_execution_time');
     $time_start = explode(' ', PAGE_PARSE_START_TIME);
 
-// ----------------------
-// if the file is created
-// ----------------------
+    // ----------------------
+    // if the file is created
+    // ----------------------
     if ($this->createFile == 1) {
       $CLICSHOPPING_Mail->addText('<p class="text-center">' . $this->app->getDef('text_send_newsletter_email', ['store_owner_email_address' => STORE_OWNER_EMAIL_ADDRESS]) . '</p>' . $this->content . ' ' . $this->app->getDef('text_send_newsletter', ['store_name' => STORE_NAME]) . ' ' . HTTP::getShopUrlDomain() . 'sources/public/newsletter/newsletter_' . $this->fileId . '.html<br /><br />' . TEXT_UNSUBSCRIBE . HTTP::getShopUrlDomain() . 'index.php?Account&Newsletters');
     } else {
       $CLICSHOPPING_Mail->addText('<p class="text-center">' . $this->app->getDef('text_send_newsletter_email', ['store_owner_email_address' => STORE_OWNER_EMAIL_ADDRESS]) . '</p>' . $this->content . ' ' . $this->app->getDef('text_send_newsletter', ['store_name' => STORE_NAME]) . ' ' . HTTP::getShopUrlDomain() . 'index.php?Account&Newsletters');
     }
 
-// ------------------------------------------
-// copy e-mails to a temporary table if that table is empty
-// ------------------------------------------
-
+    // ------------------------------------------
+    // copy e-mails to a temporary table if that table is empty
+    // ------------------------------------------
     $Qcheck = $this->app->db->prepare('select count(customers_email_address) as num_customers_email_address
                                          from :table_newsletters_customers_temp
                                        ');
@@ -277,7 +287,6 @@ class Newsletter
       // ------------------------------------------
       // copy customers account in temp newsletter
       // ------------------------------------------
-
       $this->app->db->delete('newsletters_customers_temp');
 
       while ($Qmail->fetch()) {
@@ -312,7 +321,7 @@ class Newsletter
 
       $CLICSHOPPING_Mail->send($QmailNewsletterAccountTemp->value('customers_email_address'), $QmailNewsletterAccountTemp->value('customers_firstname') . ' ' . $QmailNewsletterAccountTemp->value('customers_lastname'), null, $this->emailFrom, $this->title);
 
-// delete all entry in the table
+      // delete all entry in the table
       $Qdelete = $this->app->db->prepare('delete
                                             from :table_newsletters_customers_temp
                                             where customers_email_address = :customers_email_address
@@ -345,14 +354,12 @@ class Newsletter
    *
    * @return mixed
    */
-  public function sendCkeditor(): mixed
+  public function sendCkeditor(): void
   {
     $CLICSHOPPING_Mail = Registry::get('Mail');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    if (!\defined('CLICSHOPPING_APP_NEWSLETTER_NL_STATUS') || CLICSHOPPING_APP_NEWSLETTER_NL_STATUS == 'False') {
-      return false;
-    }
+    $this->checkStatus();
 // ----------------------
 //customer witt account
 // ----------------------
