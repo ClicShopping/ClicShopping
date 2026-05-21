@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="some update">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="fix upload">
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/version.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/version.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +30,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="version4.28" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -50,6 +50,65 @@
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0003047682004154" />
+      <entry key="MS500" value="1.1980587027312424" />
+      <entry key="S2" value="1.6671115942531674" />
+      <entry key="S5" value="1.8515532931061534" />
+      <entry key="S10" value="1.9807688334169145" />
+      <entry key="S30" value="3.1349916128152957" />
+      <entry key="S60" value="4.882981823714472" />
+      <entry key="M2" value="6.912323885394891" />
+      <entry key="M5" value="8.993397818631232" />
+      <entry key="M10" value="9.919407994062713" />
+      <entry key="M15" value="10.261039150032849" />
+      <entry key="M30" value="10.620859797294557" />
+      <entry key="H1" value="10.807941388355529" />
+      <entry key="H2" value="10.903339104063834" />
+      <entry key="H4" value="10.951510454576947" />
+      <entry key="D1" value="10.991896209575817" />
+      <entry key="W1" value="10.998841770647932" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.959538791806878" />
+      <entry key="MS500" value="1.1856994443070075" />
+      <entry key="S2" value="1.6615752568510573" />
+      <entry key="S5" value="1.8486625781479273" />
+      <entry key="S10" value="1.9721643722392377" />
+      <entry key="S30" value="3.101791404028363" />
+      <entry key="S60" value="4.8512674280844115" />
+      <entry key="M2" value="6.890359853078402" />
+      <entry key="M5" value="8.98270792746976" />
+      <entry key="M10" value="9.913701054502923" />
+      <entry key="M15" value="10.257150436321565" />
+      <entry key="M30" value="10.618872450122364" />
+      <entry key="H1" value="10.80693678623875" />
+      <entry key="H2" value="10.90283404794613" />
+      <entry key="H4" value="10.951257234867969" />
+      <entry key="D1" value="10.991853909982664" />
+      <entry key="W1" value="10.998835725487124" />
+    </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
     <include_path>
@@ -116,25 +175,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;version4.28&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;web.server&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "version4.281",
+    "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "web.server",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/sql_upgrade/history" />
@@ -190,14 +249,6 @@
       <workItem from="1778766365477" duration="13000" />
       <workItem from="1778766550698" duration="12000" />
       <workItem from="1778774467849" duration="1010000" />
-    </task>
-    <task id="LOCAL-00002" summary="fix product to categories">
-      <option name="closed" value="true" />
-      <created>1777322397995</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1777322397995</updated>
     </task>
     <task id="LOCAL-00003" summary="fix install">
       <option name="closed" value="true" />
@@ -583,14 +634,21 @@
       <option name="project" value="LOCAL" />
       <updated>1778775292506</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="fix upload">
+      <option name="closed" value="true" />
+      <created>1779349761744</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1779349761744</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix check" />
     <MESSAGE value="fix http_response_code(): Cannot set response code" />
     <MESSAGE value="SEO improvement analysis" />
     <MESSAGE value="translation" />
@@ -615,7 +673,8 @@
     <MESSAGE value="refactoring" />
     <MESSAGE value="fix" />
     <MESSAGE value="some update" />
-    <option name="LAST_COMMIT_MESSAGE" value="some update" />
+    <MESSAGE value="fix upload" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix upload" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
