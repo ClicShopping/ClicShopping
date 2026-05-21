@@ -1,4 +1,4 @@
-return_id int not_null comment(Primary key - unique identifier for each return/RMA request)
+return_id int not_null auto_increment comment(Primary key - unique identifier for each return/RMA request)
 return_ref varchar(32) not_null comment(Return reference number displayed to customer - e.g. RMA-2024-001)
 order_id int not_null comment(FK to orders table - original order containing returned product)
 product_id int not_null comment(FK to products table - product being returned)
@@ -18,7 +18,7 @@ comment text not_null comment(Customer comments explaining the return)
 date_ordered date not_null comment(Date of original order)
 date_added datetime not_null comment(Timestamp when return request was submitted)
 date_modified datetime default null comment(Timestamp of last modification to return)
-archive tinyint(1) not_null default (0) comment(Archive status - 0: active, 1: archived)
+archive tinyint(1) not_null default(0) comment(Archive status - 0: active, 1: archived)
 --
 primary return_id
 ##

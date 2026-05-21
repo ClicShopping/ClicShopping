@@ -1,4 +1,4 @@
-return_history_id int not_null comment(Primary key - unique identifier for each return status change)
+return_history_id int not_null auto_increment comment(Primary key - unique identifier for each return status change)
 return_id int not_null comment(FK to return_orders table - return order identifier)
 return_status_id int not_null comment(FK to return_orders_status table - new status applied)
 notify tinyint(1) not_null comment(Customer notification flag - 0: no email sent, 1: email sent to customer)

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little improvement">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="librairies updated">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -53,23 +53,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0072397628898835" />
-      <entry key="MS500" value="1.6597794968259971" />
-      <entry key="S2" value="4.0114557420608605" />
-      <entry key="S5" value="5.491240181875887" />
-      <entry key="S10" value="6.178581223426833" />
-      <entry key="S30" value="6.709542790892861" />
-      <entry key="S60" value="6.852568778409708" />
-      <entry key="M2" value="6.925724162764848" />
-      <entry key="M5" value="6.970153964526866" />
-      <entry key="M10" value="6.985054260759238" />
-      <entry key="M15" value="6.9900311168258265" />
-      <entry key="M30" value="6.9950130279553715" />
-      <entry key="H1" value="6.997505880997253" />
-      <entry key="H2" value="6.998752782207738" />
-      <entry key="H4" value="6.999376351525421" />
-      <entry key="D1" value="6.99989605309008" />
-      <entry key="W1" value="6.999985150306802" />
+      <entry key="MS100" value="1.0067578102927868" />
+      <entry key="MS500" value="1.4707839775458134" />
+      <entry key="S2" value="2.6947301690583547" />
+      <entry key="S5" value="3.363277858556465" />
+      <entry key="S10" value="3.665298142390935" />
+      <entry key="S30" value="4.830913338387872" />
+      <entry key="S60" value="7.171992246460189" />
+      <entry key="M2" value="9.932112327950026" />
+      <entry key="M5" value="12.597723133977034" />
+      <entry key="M10" value="13.72572603433015" />
+      <entry key="M15" value="14.133337575027605" />
+      <entry key="M30" value="14.557860451576639" />
+      <entry key="H1" value="14.776682922695747" />
+      <entry key="H2" value="14.887773881569364" />
+      <entry key="H4" value="14.943744320140501" />
+      <entry key="D1" value="14.99060418303693" />
+      <entry key="W1" value="14.998657253004598" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -91,23 +91,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9662089480262113" />
-      <entry key="MS500" value="1.645386318731825" />
-      <entry key="S2" value="4.001099586803189" />
-      <entry key="S5" value="5.4852610743063135" />
-      <entry key="S10" value="6.175156226720079" />
-      <entry key="S30" value="6.7082880114554735" />
-      <entry key="S60" value="6.851926088002371" />
-      <entry key="M2" value="6.925398899440312" />
-      <entry key="M5" value="6.970022906691993" />
-      <entry key="M10" value="6.984988572066978" />
-      <entry key="M15" value="6.989987288782556" />
-      <entry key="M30" value="6.994991096123758" />
-      <entry key="H1" value="6.997494910625366" />
-      <entry key="H2" value="6.998747295907324" />
-      <entry key="H4" value="6.999373608096542" />
-      <entry key="D1" value="6.999895595813222" />
-      <entry key="W1" value="6.9999850849805885" />
+      <entry key="MS100" value="0.9459604020423014" />
+      <entry key="MS500" value="1.4533627210292879" />
+      <entry key="S2" value="2.686639024409717" />
+      <entry key="S5" value="3.359213517946788" />
+      <entry key="S10" value="3.663079398147579" />
+      <entry key="S30" value="4.829944991184218" />
+      <entry key="S60" value="7.1712795686363116" />
+      <entry key="M2" value="9.931621070737789" />
+      <entry key="M5" value="12.597474451997265" />
+      <entry key="M10" value="13.725590646387234" />
+      <entry key="M15" value="14.133244654576092" />
+      <entry key="M30" value="14.557812605072247" />
+      <entry key="H1" value="14.776658642132544" />
+      <entry key="H2" value="14.887761650584942" />
+      <entry key="H4" value="14.94373818179864" />
+      <entry key="D1" value="14.990603156791531" />
+      <entry key="W1" value="14.998657106319827" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -251,30 +251,7 @@
       <workItem from="1778774467849" duration="1010000" />
       <workItem from="1779356816005" duration="1607000" />
       <workItem from="1779360822528" duration="1112000" />
-    </task>
-    <task id="LOCAL-00006" summary="security improvment">
-      <option name="closed" value="true" />
-      <created>1777385603937</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1777385603937</updated>
-    </task>
-    <task id="LOCAL-00007" summary="security improvement">
-      <option name="closed" value="true" />
-      <created>1777386468773</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1777386468773</updated>
-    </task>
-    <task id="LOCAL-00008" summary="security improvement">
-      <option name="closed" value="true" />
-      <created>1777386640496</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1777386640496</updated>
+      <workItem from="1779373316111" duration="762000" />
     </task>
     <task id="LOCAL-00009" summary="security improvement">
       <option name="closed" value="true" />
@@ -644,15 +621,37 @@
       <option name="project" value="LOCAL" />
       <updated>1779360907714</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="DOM text reinterpreted as HTML">
+      <option name="closed" value="true" />
+      <created>1779373349599</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1779373349599</updated>
+    </task>
+    <task id="LOCAL-00056" summary="some improvment">
+      <option name="closed" value="true" />
+      <created>1779374017521</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1779374017521</updated>
+    </task>
+    <task id="LOCAL-00057" summary="librairies updated">
+      <option name="closed" value="true" />
+      <created>1779374124240</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1779374124241</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="SEO improvement analysis" />
-    <MESSAGE value="translation" />
     <MESSAGE value="some refactoring" />
     <MESSAGE value="orchestrator refactoring" />
     <MESSAGE value="fix accordeon" />
@@ -667,7 +666,6 @@
     <MESSAGE value="update prompt" />
     <MESSAGE value="some update and fix" />
     <MESSAGE value="improve json" />
-    <MESSAGE value="librairies updated" />
     <MESSAGE value="add new sql" />
     <MESSAGE value="little update" />
     <MESSAGE value="code update" />
@@ -676,7 +674,10 @@
     <MESSAGE value="some update" />
     <MESSAGE value="fix upload" />
     <MESSAGE value="little improvement" />
-    <option name="LAST_COMMIT_MESSAGE" value="little improvement" />
+    <MESSAGE value="DOM text reinterpreted as HTML" />
+    <MESSAGE value="some improvment" />
+    <MESSAGE value="librairies updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="librairies updated" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -921,9 +921,25 @@ class RewriteUrl
 
   public function getProductNameUrl($products_id, string $parameters = ''): string
   {
-    $CLICSHOPPING_ProductsCommon = Registry::get('ProductsCommon');
     $CLICSHOPPING_Language = Registry::get('Language');
     $CLICSHOPPING_Db = Registry::get('Db');
+    $products_name = null;
+
+    // Fallback for product name if ProductsCommon is not registered (e.g., in admin context)
+    if (Registry::exists('ProductsCommon')) {
+      $CLICSHOPPING_ProductsCommon = Registry::get('ProductsCommon');
+      $products_name = $CLICSHOPPING_ProductsCommon->getProductsName($products_id);
+    } else {
+      $Qname = $CLICSHOPPING_Db->prepare('select products_name
+                                             from :table_products_description
+                                             where products_id = :products_id
+                                             and language_id = :language_id
+                                           ');
+      $Qname->bindInt(':products_id', $products_id);
+      $Qname->bindInt(':language_id', $CLICSHOPPING_Language->getId());
+      $Qname->execute();
+      $products_name = $Qname->value('products_name');
+    }
 
     if (defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true' && CLICSHOPPING::getSite() != 'ClicShoppingAdmin') {
       if (defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true') {
@@ -940,7 +956,6 @@ class RewriteUrl
         $products_seo_url = $Qseo->value('products_seo_url');
 
         if (empty($products_seo_url) || is_null($products_seo_url)) {
-          $products_name = $CLICSHOPPING_ProductsCommon->getProductsName($products_id);
           $products_name = $this->replaceString($products_name) ?? 'product';
           $products_url_rewrited = 'Products&Description&' . $products_name . '&Id=' . $products_id;
         } else {

@@ -90,7 +90,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $CLICSHOPPING_Hooks->call('ProductReturn', 'Process');
 
-      $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('success_account_updated'), 'success', 'account_return');
+      $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('success_account_updated'), 'success', 'main');
 
       CLICSHOPPING::redirect(null, 'Account&Main');
     }
