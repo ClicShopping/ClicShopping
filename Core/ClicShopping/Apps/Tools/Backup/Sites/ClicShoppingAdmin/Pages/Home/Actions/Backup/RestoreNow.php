@@ -29,7 +29,8 @@ class RestoreNow extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 
     // Rate limiting: 120 seconds between restore operations (more conservative than backup)
-    $rate_check = RateLimiter::check('restore', 120);
+    $limiter = new RateLimiter(['restore' => 120]);
+    $rate_check = $limiter->check('restore');
     if (!$rate_check['allowed']) {
       $CLICSHOPPING_MessageStack->add($rate_check['message'], 'warning');
       $this->app->redirect('Backup');

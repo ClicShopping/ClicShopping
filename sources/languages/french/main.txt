@@ -309,3 +309,5 @@ text_install =
    <div><br /> - Pour en savoir plus sur l'installation des modules , veuillez vous rendre sur la Market Place à section du guide : <a href ="https://www.clicshopping.org/marketplace/mes-premiers-pas-bl-9.html" target="_blank">Mes premiers pas</a></div>
    <div> - Pour télécharger le pack Starter : veuillez cliquez sur : <a href="https://www.clicshopping.org/marketplace/sources/public/clicshopping/" target="_blank">Pack Starter</a> et l'installer via le syst&egrave;me d'installation de modules de ClicShopping et activer les modules</div>
    <div> - Pour de plus amples informations, veuillez consulter notre : <a href="https://www.clicshopping.org/marketplace/index.php?Blog&Categories" target="_blank" rel="noopener">blog</a></div>
+
+success_account_updated = Mise à jour effectuée.

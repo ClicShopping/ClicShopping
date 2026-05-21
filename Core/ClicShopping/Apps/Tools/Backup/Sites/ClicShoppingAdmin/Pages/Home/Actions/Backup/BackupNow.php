@@ -26,7 +26,8 @@ class BackupNow extends \ClicShopping\OM\Domains\PagesActionsAbstract
   public function execute()
   {
     // Rate limiting: 60 seconds between backup operations
-    $rate_check = RateLimiter::check('backup', 60);
+    $limiter = new RateLimiter(['backup' => 60]);
+    $rate_check = $limiter->check('backup');
     if (!$rate_check['allowed']) {
       $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
       $CLICSHOPPING_MessageStack->add($rate_check['message'], 'warning');
@@ -34,7 +35,7 @@ class BackupNow extends \ClicShopping\OM\Domains\PagesActionsAbstract
     }
 
     Backup::backupNow();
-    RateLimiter::record('backup');
+    $limiter->record('backup');
 
     $this->app->redirect('Backup');
   }

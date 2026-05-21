@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="some fix" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="fix" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -252,14 +252,7 @@
       <workItem from="1779373316111" duration="762000" />
       <workItem from="1779376884879" duration="20000" />
       <workItem from="1779381860341" duration="35000" />
-    </task>
-    <task id="LOCAL-00011" summary="fix">
-      <option name="closed" value="true" />
-      <created>1777390793360</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1777390793361</updated>
+      <workItem from="1779383922609" duration="142000" />
     </task>
     <task id="LOCAL-00012" summary="fix">
       <option name="closed" value="true" />
@@ -645,7 +638,15 @@
       <option name="project" value="LOCAL" />
       <updated>1779381870968</updated>
     </task>
-    <option name="localTasksCounter" value="60" />
+    <task id="LOCAL-00060" summary="fix">
+      <option name="closed" value="true" />
+      <created>1779383943565</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1779383943565</updated>
+    </task>
+    <option name="localTasksCounter" value="61" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -669,7 +670,6 @@
     <MESSAGE value="little update" />
     <MESSAGE value="code update" />
     <MESSAGE value="refactoring" />
-    <MESSAGE value="fix" />
     <MESSAGE value="some update" />
     <MESSAGE value="fix upload" />
     <MESSAGE value="little improvement" />
@@ -677,7 +677,8 @@
     <MESSAGE value="some improvment" />
     <MESSAGE value="librairies updated" />
     <MESSAGE value="some fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="some fix" />
+    <MESSAGE value="fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

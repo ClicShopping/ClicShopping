@@ -305,3 +305,5 @@ text_install =
 <div><br /> - More about install module, please click on this link : <a href ="https://www.clicshopping.org/marketplace/mes-premiers-pas-bl-9.html" target="_blank" rel="noopener">My first step</a></div>
 <div> - To download the Starter Pack : please click on : <a href="https://www.clicshopping.org/marketplace/sources/public/clicshopping/" target="_blank" rel="noopener">Pack Starter</a> and install via the installation system of ClicShopping and activate the modules</div>
 <div> - Form more informations, please go to see our : <a href="https://www.clicshopping.org/marketplace/index.php?Blog&Categories" target="_blank" rel="noopener">blog</a></div>
+
+success_account_updated = Success : updated

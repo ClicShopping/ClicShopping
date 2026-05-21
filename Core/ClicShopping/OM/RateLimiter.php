@@ -1,9 +1,11 @@
 <?php
 /**
- * Rate Limiter for heavy operations
- * 
- * Prevents abuse of resource-intensive operations like backup, restore, upgrade, etc.
- * Uses session-based rate limiting with configurable time windows.
+ * Rate Limiter - Session-based rate limiting for heavy operations
+ *
+ * Prevents abuse of resource-intensive operations by tracking
+ * timestamps in the user session.
+ *
+ * @package ClicShopping\OM
  */
 
 namespace ClicShopping\OM;
@@ -11,109 +13,84 @@ namespace ClicShopping\OM;
 class RateLimiter
 {
     /**
-     * Default rate limit in seconds (60 seconds between operations)
+     * Time windows per operation type (seconds)
+     * Defined at instantiation to allow per-context configuration.
      */
-    const DEFAULT_LIMIT = 60;
+    private array $windows;
 
     /**
-     * Session key prefix for rate limiting
+     * Constructor.
+     *
+     * @param array $default_windows Associative array of operation => seconds.
      */
-    const SESSION_KEY_PREFIX = 'ratelimit_';
+    public function __construct(array $default_windows = [])
+    {
+        $this->windows = $default_windows;
+    }
 
     /**
-     * Check if an operation is allowed
-     * 
-     * @param string $operation The operation name (e.g., 'backup', 'restore')
-     * @param int $limit_seconds Time window in seconds (default: 60)
+     * Check if an operation is allowed within the rate limit window.
+     *
+     * @param string $operation The operation name (e.g., 'import_data', 'crawler')
      * @return array ['allowed' => bool, 'message' => string, 'wait_seconds' => int]
      */
-    public static function check(string $operation, int $limit_seconds = self::DEFAULT_LIMIT): array
+    public function check(string $operation): array
     {
-        $session_key = self::SESSION_KEY_PREFIX . $operation;
-        
-        // Initialize session if not started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Get last execution time
-        $last_execution = isset($_SESSION[$session_key]) ? (int)$_SESSION[$session_key] : 0;
-        $now = time();
-        $elapsed = $now - $last_execution;
+        $window = $this->windows[$operation] ?? 60;
+        $key = 'ratelimit_' . $operation;
 
-        if ($elapsed < $limit_seconds) {
-            $wait_seconds = $limit_seconds - $elapsed;
-            return [
-                'allowed' => false,
-                'message' => sprintf(
-                    'Veuillez attendre %d secondes avant de relancer cette opération.',
-                    $wait_seconds
-                ),
-                'wait_seconds' => $wait_seconds
-            ];
+        if (isset($_SESSION[$key])) {
+            $elapsed = time() - $_SESSION[$key];
+            if ($elapsed < $window) {
+                $wait = $window - $elapsed;
+                return [
+                    'allowed' => false,
+                    'message' => sprintf('Veuillez attendre %d secondes avant de relancer cette opération.', $wait),
+                    'wait_seconds' => $wait,
+                ];
+            }
         }
 
         return [
             'allowed' => true,
             'message' => '',
-            'wait_seconds' => 0
+            'wait_seconds' => 0,
         ];
     }
 
     /**
-     * Record an operation execution
-     * 
+     * Record that an operation was completed. Starts the rate limit window.
+     *
      * @param string $operation The operation name
+     * @return void
      */
-    public static function record(string $operation): void
+    public function record(string $operation): void
     {
-        $session_key = self::SESSION_KEY_PREFIX . $operation;
-        
-        // Initialize session if not started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        $_SESSION[$session_key] = time();
+        $key = 'ratelimit_' . $operation;
+        $_SESSION[$key] = time();
     }
 
     /**
-     * Reset rate limit for an operation (e.g., after successful completion)
-     * 
+     * Reset the rate limit for an operation (useful for admin override).
+     *
      * @param string $operation The operation name
+     * @return void
      */
-    public static function reset(string $operation): void
+    public function reset(string $operation): void
     {
-        $session_key = self::SESSION_KEY_PREFIX . $operation;
-        
-        // Initialize session if not started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        unset($_SESSION[$session_key]);
-    }
-
-    /**
-     * Get remaining wait time for an operation
-     * 
-     * @param string $operation The operation name
-     * @param int $limit_seconds Time window in seconds
-     * @return int Remaining seconds
-     */
-    public static function getRemainingTime(string $operation, int $limit_seconds = self::DEFAULT_LIMIT): int
-    {
-        $session_key = self::SESSION_KEY_PREFIX . $operation;
-        
-        // Initialize session if not started
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        $last_execution = isset($_SESSION[$session_key]) ? (int)$_SESSION[$session_key] : 0;
-        $now = time();
-        $elapsed = $now - $last_execution;
-
-        return max(0, $limit_seconds - $elapsed);
+        $key = 'ratelimit_' . $operation;
+        unset($_SESSION[$key]);
     }
 }
