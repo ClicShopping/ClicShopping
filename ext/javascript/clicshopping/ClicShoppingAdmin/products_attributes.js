@@ -48,7 +48,7 @@
     if (!form) return;
     var val = form.selected.options[form.selected.selectedIndex].value;
     if (val !== 'none') {
-      location = baseUrl + '&option_order_by=' + val;
+      location = baseUrl + '&option_order_by=' + encodeURIComponent(val);
     }
   };
 

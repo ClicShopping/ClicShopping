@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little improvement">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/OM/Domains/ConfigureActionsAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/OM/Domains/ConfigureActionsAbstract.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -251,14 +250,7 @@
       <workItem from="1778766550698" duration="12000" />
       <workItem from="1778774467849" duration="1010000" />
       <workItem from="1779356816005" duration="1607000" />
-    </task>
-    <task id="LOCAL-00005" summary="version4.28">
-      <option name="closed" value="true" />
-      <created>1777361563610</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1777361563610</updated>
+      <workItem from="1779360822528" duration="1112000" />
     </task>
     <task id="LOCAL-00006" summary="security improvment">
       <option name="closed" value="true" />
@@ -644,7 +636,15 @@
       <option name="project" value="LOCAL" />
       <updated>1779356839765</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="little improvement">
+      <option name="closed" value="true" />
+      <created>1779360907713</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1779360907714</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
