@@ -716,3 +716,5 @@ text_orchestrator_no_business_configured_domain_general = Je suis désolé(e), m
 
 text_notify_user_site_unavailable = Le site [{{targetSite}}] n'est pas encore disponible dans la base de données compétiteur, veuillez compléter votre base de sites compétiteurs.\n\nSites disponibles actuellement : {{availableSites}}.
 Nous effectuons une recherche Google Shopping à la place.
+
+text_rate_limiter_wait = Veuillez attendre {{wait}} secondes avant de relancer cette opération.

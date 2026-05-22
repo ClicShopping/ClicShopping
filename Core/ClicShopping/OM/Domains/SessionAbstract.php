@@ -79,6 +79,8 @@ abstract class SessionAbstract
       ini_set('session.use_only_cookies', 1);
     }
 
+    ini_set('session.serialize_handler', 'php_serialize');
+
     $session_can_start = true;
 
     Registry::get('Hooks')->call('Session', 'StartBefore', [

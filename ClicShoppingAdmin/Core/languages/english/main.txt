@@ -644,3 +644,5 @@ text_orchestrator_no_business_configured_domain_general = I'm sorry, but this qu
 
 text_notify_user_site_unavailable = The site [{{targetSite}}] is not yet available in the competitor database. Please complete your competitor site database.\n\nCurrently available sites: {{availableSites}}.
 We are performing a Google Shopping search instead.
+
+text_rate_limiter_wait = Please wait {{wait}} seconds before restarting this operation.

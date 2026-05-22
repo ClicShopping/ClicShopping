@@ -28,6 +28,16 @@ $CLICSHOPPING_Address = Registry::get('Address');
 define('FPDF_FONTPATH', CLICSHOPPING::BASE_DIR . 'External/vendor/setasign/fpdf/font/');
 require_once(CLICSHOPPING::BASE_DIR . 'External/vendor/setasign/fpdf/fpdf.php');
 
+/**
+ * Helper to set text color from a comma-separated RGB string (e.g. '158,11,14').
+ * FPDF::SetTextColor() expects three separate numeric arguments.
+ */
+function SetTextColorRGB(\FPDF $pdf, string $rgb): void
+{
+  $parts = array_map('intval', explode(',', $rgb));
+  $pdf->SetTextColor($parts[0] ?? 0, $parts[1] ?? 0, $parts[2] ?? 0);
+}
+
 Registry::set('PDF', new PDF());
 $PDF = Registry::get('PDF');
 
@@ -117,7 +127,7 @@ if (DISPLAY_INVOICE_HEADER == 'false') {
   $pdf->SetX(0);
   $pdf->SetY(10);
   $pdf->SetFont('Arial', 'B', 10);
-  $pdf->SetTextColor((float)INVOICE_RGB);
+  SetTextColorRGB($pdf, INVOICE_RGB);
   $pdf->Ln(0);
   $pdf->Cell(125);
   $pdf->MultiCell(100, 3.5, mb_convert_encoding(STORE_NAME, 'ISO-8859-1', 'UTF-8'), 0, 'L');
@@ -126,7 +136,7 @@ if (DISPLAY_INVOICE_HEADER == 'false') {
   $pdf->SetX(0);
   $pdf->SetY(15);
   $pdf->SetFont('Arial', '', 8);
-  $pdf->SetTextColor((float)INVOICE_RGB);
+  SetTextColorRGB($pdf, INVOICE_RGB);
   $pdf->Ln(0);
   $pdf->Cell(125);
   $pdf->MultiCell(100, 3.5, mb_convert_encoding(STORE_NAME_ADDRESS, 'ISO-8859-1', 'UTF-8'), 0, 'L');
@@ -135,7 +145,7 @@ if (DISPLAY_INVOICE_HEADER == 'false') {
   $pdf->SetX(0);
   $pdf->SetY(30);
   $pdf->SetFont('Arial', '', 8);
-  $pdf->SetTextColor((float)INVOICE_RGB);
+  SetTextColorRGB($pdf, INVOICE_RGB);
   $pdf->Ln(0);
   $pdf->Cell(-3);
   $pdf->MultiCell(100, 3.5, mb_convert_encoding($CLICSHOPPING_Orders->getDef('entry_email'), 'ISO-8859-1', 'UTF-8') . STORE_OWNER_EMAIL_ADDRESS, 0, 'L');
@@ -144,7 +154,7 @@ if (DISPLAY_INVOICE_HEADER == 'false') {
   $pdf->SetX(0);
   $pdf->SetY(34);
   $pdf->SetFont('Arial', '', 8);
-  $pdf->SetTextColor((float)INVOICE_RGB);
+  SetTextColorRGB($pdf, INVOICE_RGB);
   $pdf->Ln(0);
   $pdf->Cell(-3);
   $pdf->MultiCell(100, 3.5, $CLICSHOPPING_Orders->getDef('entry_http_site') . ' ' . CLICSHOPPING::getConfig('http_server', 'Shop'), 0, 'L');
@@ -405,52 +415,52 @@ if (DISPLAY_INVOICE_FOOTER == 'false') {
   // Remerciement
   $pdf->SetY(-65);
   $pdf->SetFont('Arial', 'B', 8);
-  $pdf->SetTextColor((float)INVOICE_RGB);
+  SetTextColorRGB($pdf, INVOICE_RGB);
   $pdf->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_Orders->getDef('thank_you_customer'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
 // Proprieties Legal
   $pdf->SetY(-60);
   $pdf->SetFont('Arial', '', 7);
-  $pdf->SetTextColor((float)INVOICE_RGB);
+  SetTextColorRGB($pdf, INVOICE_RGB);
   $pdf->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_Orders->getDef('reserve_propriete', ['store_name' => STORE_NAME]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
   $pdf->SetY(-55);
   $pdf->SetFont('Arial', '', 7);
-  $pdf->SetTextColor((float)INVOICE_RGB);
+  SetTextColorRGB($pdf, INVOICE_RGB);
   $pdf->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_Orders->getDef('reserve_propriete_next'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
   $pdf->SetY(-50);
   $pdf->SetFont('Arial', '', 7);
-  $pdf->SetTextColor((float)INVOICE_RGB);
+  SetTextColorRGB($pdf, INVOICE_RGB);
   $pdf->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_Orders->getDef('reserve_propriete_next1', ['url_sell_conditions' => HTTP::getShopUrlDomain() . SHOP_CODE_URL_CONDITIONS_VENTE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
 // Informations de la compagnie
   if (DISPLAY_DOUBLE_TAXE == 'false') {
     $pdf->SetY(-45);
     $pdf->SetFont('Arial', '', 8);
-    $pdf->SetTextColor((float)INVOICE_RGB);
+    SetTextColorRGB($pdf, INVOICE_RGB);
     $pdf->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_Orders->getDef('entry_info_societe', ['info_societe' => SHOP_CODE_CAPITAL . ' - ' . SHOP_CODE_RCS . ' - ' . SHOP_CODE_APE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
     $pdf->SetY(-40);
     $pdf->SetFont('Arial', '', 8);
-    $pdf->SetTextColor((float)INVOICE_RGB);
+    SetTextColorRGB($pdf, INVOICE_RGB);
     $pdf->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_Orders->getDef('entry_info_societe_next', ['tva_intracom' => TVA_SHOP_INTRACOM]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
   } else {
     $pdf->SetY(-45);
     $pdf->SetFont('Arial', '', 8);
-    $pdf->SetTextColor((float)INVOICE_RGB);
+    SetTextColorRGB($pdf, INVOICE_RGB);
     $pdf->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_Orders->getDef('entry_info_societe1', ['info_societe1' => SHOP_CODE_CAPITAL . ' - ' . SHOP_CODE_RCS . ' - ' . SHOP_CODE_APE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
     $pdf->SetY(-40);
     $pdf->SetFont('Arial', '', 8);
-    $pdf->SetTextColor((float)INVOICE_RGB);
+    SetTextColorRGB($pdf, INVOICE_RGB);
     $pdf->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_Orders->getDef('entry_info_societe_next1', ['info_societe1' => TVA_SHOP_PROVINCIAL . ' - ' . TVA_SHOP_FEDERAL]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
   }
 
 // Autres informations (champ libre) sur la compagnie
   $pdf->SetY(-35);
   $pdf->SetFont('Arial', '', 8);
-  $pdf->SetTextColor((float)INVOICE_RGB);
+  SetTextColorRGB($pdf, INVOICE_RGB);
   $pdf->Cell(0, 10, mb_convert_encoding(SHOP_DIVERS, 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 }
 

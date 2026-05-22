@@ -54,7 +54,7 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
 // Recuperation de la valeur id de order.php
     if (isset($_GET['order_id'])) {
-      $oID = HTML::sanitize($_GET['order_id']);
+      $oID = HTML::sanitize((int)$_GET['order_id']);
 
       if (is_null($oID)) {
         CLICSHOPPING::redirect(null, 'Account&Main');
@@ -103,13 +103,17 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $order_status_invoice_display = $QOrdersStatusInvoice->value('orders_status_invoice_name');
 
-    $QstatusOrder = $CLICSHOPPING_Db->prepare('select orders_status
-                                                 from :table_orders
-                                                 where orders_id = :orders_id
+    $QstatusOrder = $CLICSHOPPING_Db->prepare('select orders_status,
+                                                       date_purchased,
+                                                       payment_method
+                                                from :table_orders
+                                                where orders_id = :orders_id
                                                ');
     $QstatusOrder->bindInt(':orders_id', (int)$oID);
     $QstatusOrder->execute();
 
+    $order_date_purchased = $QstatusOrder->value('date_purchased');
+    $order_payment_method = $QstatusOrder->value('payment_method');
 // Set the Page Margins
 // Marge de la page
     $pdf->SetMargins(10, 2, 6);
@@ -223,11 +227,11 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (($QordersHistory->valueInt('orders_status_invoice_id') == 1)) {
 // Display the order
       $temp = str_replace('&nbsp;', ' ', CLICSHOPPING::getDef('print_order_date') . ' ' . $order_status_invoice_display . ' : ');
-      $pdf->Text(60, 113, $temp . DateTime::toShort($CLICSHOPPING_Order->info['date_purchased']));
+      $pdf->Text(60, 113, $temp . DateTime::toShort($order_date_purchased ?? ''));
     } elseif ($QordersHistory->valueInt('orders_status_invoice_id') == 2) {
 //Display the invoice
       $temp = str_replace('&nbsp;', ' ', CLICSHOPPING::getDef('print_order_date') . ' ' . $order_status_invoice_display . ' : ');
-      $pdf->Text(60, 113, $temp . DateTime::toShort($CLICSHOPPING_Order->info['date_purchased']));
+      $pdf->Text(60, 113, $temp . DateTime::toShort($order_date_purchased ?? ''));
     } elseif ($QordersHistory->valueInt('orders_status_invoice_id') == 3) {
 //Display the cancelling
       $temp = str_replace('&nbsp;', ' ', '');
@@ -235,7 +239,7 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
     } else {
 // Display the order
       $temp = str_replace('&nbsp;', ' ', CLICSHOPPING::getDef('print_order_date') . ' ' . $order_status_invoice_display . ' : ');
-      $pdf->Text(60, 113, $temp . DateTime::toShort($CLICSHOPPING_Order->info['date_purchased']));
+      $pdf->Text(60, 113, $temp . DateTime::toShort($order_date_purchased ?? ''));
     }
 
 
@@ -243,7 +247,7 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
 //      $payment_info = substr(mb_convert_encoding($CLICSHOPPING_Order->info['payment_method'], 'ISO-8859-1', 'UTF-8') , 0, 30);
 //      $pdf->Text(120,113, CLICSHOPPING::getDef('entry_payment_method') . ' ' . $payment_info);
 
-    $temp = substr(mb_convert_encoding($CLICSHOPPING_Order->info['payment_method'], 'ISO-8859-1', 'UTF-8'), 0, 30);
+    $temp = substr(mb_convert_encoding($order_payment_method, 'ISO-8859-1', 'UTF-8'), 0, 30);
     $pdf->Text(120, 113, CLICSHOPPING::getDef('entry_payment_method') . ' ' . $temp);
 
 // Cadre pour afficher "BON DE COMMANDE" ou "FACTURE"

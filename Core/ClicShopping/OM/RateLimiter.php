@@ -49,7 +49,7 @@ class RateLimiter
                 $wait = $window - $elapsed;
                 return [
                     'allowed' => false,
-                    'message' => sprintf('Veuillez attendre %d secondes avant de relancer cette opération.', $wait),
+                    'message' => CLICSHOPPING::getDef('text_rate_limiter_wait', ['wait' => $wait]),
                     'wait_seconds' => $wait,
                 ];
             }
