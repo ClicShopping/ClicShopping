@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="fix date">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="&#10;little improvement">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Sites/Shop/Pages/Account/Actions/OrderInvoice.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Sites/Shop/Pages/Account/Actions/OrderInvoice.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_account_customers/ac_account_customers_history_info_invoice_pdf.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_account_customers/ac_account_customers_history_info_invoice_pdf.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,23 +53,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0326590377324165" />
-      <entry key="MS500" value="2.1887209057915893" />
-      <entry key="S2" value="5.122018793909688" />
-      <entry key="S5" value="7.944788333506728" />
-      <entry key="S10" value="9.639669787105152" />
-      <entry key="S30" value="11.972276094761074" />
-      <entry key="S60" value="14.609050153234374" />
-      <entry key="M2" value="17.573477799057798" />
-      <entry key="M5" value="20.424486306081562" />
-      <entry key="M10" value="21.632798177305435" />
-      <entry key="M15" value="22.06986472405283" />
-      <entry key="M30" value="22.52533171524329" />
-      <entry key="H1" value="22.760214296264913" />
-      <entry key="H2" value="22.879487712221067" />
-      <entry key="H4" value="22.939588171276483" />
-      <entry key="D1" value="22.989909668530974" />
-      <entry key="W1" value="22.99855799188903" />
+      <entry key="MS100" value="1.005380328221133" />
+      <entry key="MS500" value="1.5706676691934987" />
+      <entry key="S2" value="2.893717014535974" />
+      <entry key="S5" value="3.485621663838025" />
+      <entry key="S10" value="3.7288501112590917" />
+      <entry key="S30" value="3.9063019941487997" />
+      <entry key="S60" value="3.9527234557301765" />
+      <entry key="M2" value="3.980533801837677" />
+      <entry key="M5" value="4.722985574159576" />
+      <entry key="M10" value="8.092026349542422" />
+      <entry key="M15" value="11.274963807056778" />
+      <entry key="M30" value="16.933863060893223" />
+      <entry key="H1" value="21.246920022531057" />
+      <entry key="H2" value="23.916601707069393" />
+      <entry key="H4" value="25.40278992825038" />
+      <entry key="D1" value="26.725743432206283" />
+      <entry key="W1" value="26.960618566052094" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -93,23 +91,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.994961655591716" />
-      <entry key="MS500" value="2.058038429106619" />
-      <entry key="S2" value="4.895320578127133" />
-      <entry key="S5" value="7.80407993068602" />
-      <entry key="S10" value="9.557814736280609" />
-      <entry key="S30" value="11.941879986921721" />
-      <entry key="S60" value="14.593240771584783" />
-      <entry key="M2" value="17.565337992584038" />
-      <entry key="M5" value="20.421152703011195" />
-      <entry key="M10" value="21.631115878436848" />
-      <entry key="M15" value="22.06873952173286" />
-      <entry key="M30" value="22.524767218629723" />
-      <entry key="H1" value="22.75993156232684" />
-      <entry key="H2" value="22.879346222336395" />
-      <entry key="H4" value="22.939517395414427" />
-      <entry key="D1" value="22.989897868243247" />
-      <entry key="W1" value="22.99855630602785" />
+      <entry key="MS100" value="0.9847257514392422" />
+      <entry key="MS500" value="1.5646327270890419" />
+      <entry key="S2" value="2.8909762867208397" />
+      <entry key="S5" value="3.4842971113495054" />
+      <entry key="S10" value="3.7281405593551473" />
+      <entry key="S30" value="3.9060539423049763" />
+      <entry key="S60" value="3.9525979177742165" />
+      <entry key="M2" value="3.980468667397567" />
+      <entry key="M5" value="4.722840663401545" />
+      <entry key="M10" value="8.09169506565116" />
+      <entry key="M15" value="11.274584275865616" />
+      <entry key="M30" value="16.933534657492576" />
+      <entry key="H1" value="21.24670364892799" />
+      <entry key="H2" value="23.91647747875194" />
+      <entry key="H4" value="25.40272336382167" />
+      <entry key="D1" value="26.725731679245946" />
+      <entry key="W1" value="26.960616870364817" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -258,15 +256,8 @@
       <workItem from="1779381860341" duration="35000" />
       <workItem from="1779383922609" duration="142000" />
       <workItem from="1779388870564" duration="40000" />
-      <workItem from="1779435646641" duration="1441000" />
-    </task>
-    <task id="LOCAL-00015" summary="fix check">
-      <option name="closed" value="true" />
-      <created>1777622004778</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1777622004778</updated>
+      <workItem from="1779435646641" duration="2326000" />
+      <workItem from="1779441055211" duration="12000" />
     </task>
     <task id="LOCAL-00016" summary="fix http_response_code(): Cannot set response code">
       <option name="closed" value="true" />
@@ -652,14 +643,21 @@
       <option name="project" value="LOCAL" />
       <updated>1779435957922</updated>
     </task>
-    <option name="localTasksCounter" value="64" />
+    <task id="LOCAL-00064" summary="&#10;little improvement">
+      <option name="closed" value="true" />
+      <created>1779437106291</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1779437106291</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="readme updated" />
     <MESSAGE value="litlle fix" />
     <MESSAGE value="litlle improvment" />
     <MESSAGE value="libraries updated" />
@@ -684,7 +682,8 @@
     <MESSAGE value="fix" />
     <MESSAGE value="ratelimiter improvment" />
     <MESSAGE value="fix date" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix date" />
+    <MESSAGE value="&#10;little improvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="&#10;little improvement" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

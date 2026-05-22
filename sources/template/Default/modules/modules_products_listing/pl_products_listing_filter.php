@@ -44,7 +44,8 @@ class pl_products_listing_filter
     $CLICSHOPPING_Category = Registry::get('Category');
     $CLICSHOPPING_Language = Registry::get('Language');
     $CLICSHOPPING_Manufacturers = Registry::get('Manufacturers');
-
+    $products_listing_filter =  '';
+    
     if (!empty($CLICSHOPPING_Category->getPath())) {
       if ($CLICSHOPPING_Category->getID()) {
         if ($CLICSHOPPING_Category->getDepth() == 'nested' || $CLICSHOPPING_Category->getDepth() == 'products') {
@@ -134,12 +135,12 @@ class pl_products_listing_filter
                 $Qfilter->execute();
 
               } else {
-// Affichage du menu deroulant des Marques sur la liste des produits d'une categorie
+                // Affichage du menu deroulant des Marques sur la liste des produits d'une categorie
                 $Qfilter = $CLICSHOPPING_Db->prepare('select SQL_CALC_FOUND_ROWS  m.manufacturers_id as id,
                                                                                    m.manufacturers_name as name
                                                         from :table_products p,
                                                             :table_products_to_categories p2c,
-                                                            :table_categories c
+                                                            :table_categories c,
                                                             :table_manufacturers m
                                                         where p.products_status = 1
                                                         and p.products_view = 1
@@ -159,7 +160,7 @@ class pl_products_listing_filter
             }
 
             if ($Qfilter->rowCount() > 0) {
-              $products_listing_filter = '<!-- product_listing_manufacturers start -->' . "\n";
+              $products_listing_filter .= '<!-- product_listing_manufacturers start -->' . "\n";
 
               $products_listing_filter .= HTML::form('filter', CLICSHOPPING::link(null, '', false), 'get', null, ['session_id' => true]);
               $products_listing_filter .= '<div class="col-md-' . $bootstrap_column . '">';
@@ -202,7 +203,6 @@ class pl_products_listing_filter
             $products_listing_filter .= '<!-- product_listing_manufacturers end -->' . "\n";
 
             $CLICSHOPPING_Template->addBlock($products_listing_filter, $this->group);
-
           }
         }
       }
