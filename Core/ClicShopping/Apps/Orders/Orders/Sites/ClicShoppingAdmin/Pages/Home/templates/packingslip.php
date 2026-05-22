@@ -98,7 +98,8 @@ $QordersStatusInvoice->execute();
 
 $order_status_invoice_display = $QordersStatusInvoice->value('orders_status_invoice_name');
 
-$QstatusOrder = $CLICSHOPPING_Orders->db->prepare('select orders_status
+$QstatusOrder = $CLICSHOPPING_Orders->db->prepare('select orders_status,
+                                                     date_purchased
                                                      from :table_orders
                                                      where orders_id = :orders_id
                                                    ');
@@ -106,6 +107,7 @@ $QstatusOrder->bindInt(':orders_id', (int)$oID);
 $QstatusOrder->execute();
 
 $status_order = $QstatusOrder->fetch();
+$order_date_purchased = $QstatusOrder->value('date_purchased');
 
 Registry::set('Order', new OrderAdminPackingSlip($oID));
 $order = Registry::get('Order');
@@ -258,11 +260,11 @@ if (($QordersHistory->valueInt('orders_status_invoice_id') == 1)) {
 if (($QordersHistory->valueInt('orders_status_invoice_id') == 1)) {
 // Display the order
   $temp = str_replace('&nbsp;', ' ', $CLICSHOPPING_Orders->getDef('print_order_date') . ' ' . $order_status_invoice_display . ' : ');
-  $pdf->Text(55, 113, $temp . DateTime::toShort($order->info['date_purchased']));
+    $pdf->Text(55, 113, $temp . DateTime::toShort($order_date_purchased ?? ''));
 } elseif ($QordersHistory->valueInt('orders_status_invoice_id') == 2) {
 //Display the invoice
   $temp = str_replace('&nbsp;', ' ', $CLICSHOPPING_Orders->getDef('print_order_date') . ' ' . $order_status_invoice_display . ' : ');
-  $pdf->Text(55, 113, $temp . DateTime::toShort($order->info['date_purchased']));
+    $pdf->Text(55, 113, $temp . DateTime::toShort($order_date_purchased ?? ''));
 } elseif ($QordersHistory->valueInt('orders_status_invoice_id') == 3) {
 //Display the cancelling
   $temp = str_replace('&nbsp;', ' ', '');
@@ -270,7 +272,7 @@ if (($QordersHistory->valueInt('orders_status_invoice_id') == 1)) {
 } else {
 // Display the order
   $temp = str_replace('&nbsp;', ' ', $CLICSHOPPING_Orders->getDef('print_order_date') . ' ' . $order_status_invoice_display . ' : ');
-  $pdf->Text(55, 113, $temp . DateTime::toShort($order->info['date_purchased']));
+    $pdf->Text(55, 113, $temp . DateTime::toShort($order_date_purchased ?? ''));
 }
 
 //Draw Payment Method Text
