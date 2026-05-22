@@ -52,7 +52,7 @@ class ac_account_customers_history_info_invoice_pdf
         $order_id = HTML::sanitize($_GET['order_id']);
 
         if ($display_support == 0) {
-          $print_invoice_pdf = HTML::link(CLICSHOPPING::link(null, 'Account&OrderInvoice&order_id=' . (int)$order_id) . '" target="_blank" rel="noopener"', HTML::Button(null, 'bi bi-printer-fill HistoyInfoPDF'));
+          $print_invoice_pdf = HTML::link(CLICSHOPPING::link(null, 'Account&OrderInvoice&order_id=' . (int)$order_id), HTML::Button(null, 'bi bi-printer-fill HistoyInfoPDF'),  'target="_blank" rel="noopener"');
         }
       }
 
