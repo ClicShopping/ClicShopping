@@ -4,8 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="update">
-      <change beforePath="$PROJECT_DIR$/CLA.md" beforeDir="false" afterPath="$PROJECT_DIR$/CLA.md" afterDir="false" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="improvement">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Client.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Client.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Handler/CurlMultiHandler.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Handler/CurlMultiHandler.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Utils.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Utils.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,7 +32,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7437" />
+    <option name="cachedIndexableFilesCount" value="7440" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -53,23 +61,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0257372192896117" />
-      <entry key="MS500" value="1.480963727332426" />
-      <entry key="S2" value="1.8337417975538506" />
-      <entry key="S5" value="2.1133386719994904" />
-      <entry key="S10" value="3.179301292165433" />
-      <entry key="S30" value="6.656113058682751" />
-      <entry key="S60" value="9.250566698403205" />
-      <entry key="M2" value="12.440081015649294" />
-      <entry key="M5" value="18.965352407925327" />
-      <entry key="M10" value="30.047517582251405" />
-      <entry key="M15" value="40.26554399816362" />
-      <entry key="M30" value="62.660137363185314" />
-      <entry key="H1" value="85.00794370818052" />
-      <entry key="H2" value="101.67329814171072" />
-      <entry key="H4" value="112.00189613220876" />
-      <entry key="D1" value="121.87151763405417" />
-      <entry key="W1" value="123.69259288250603" />
+      <entry key="MS100" value="1.000000000212768" />
+      <entry key="MS500" value="1.0116300410559886" />
+      <entry key="S2" value="1.32839407434945" />
+      <entry key="S5" value="1.640557506298348" />
+      <entry key="S10" value="1.8003485621830828" />
+      <entry key="S30" value="1.937675405512128" />
+      <entry key="S60" value="2.099364352531663" />
+      <entry key="M2" value="2.5028134862653584" />
+      <entry key="M5" value="3.3117531594260536" />
+      <entry key="M10" value="6.287631059863656" />
+      <entry key="M15" value="11.966156684169572" />
+      <entry key="M30" value="32.68652249540299" />
+      <entry key="H1" value="62.476493083648535" />
+      <entry key="H2" value="89.67271457509821" />
+      <entry key="H4" value="108.45360415167464" />
+      <entry key="D1" value="127.69140863431258" />
+      <entry key="W1" value="131.3742875790818" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -91,23 +99,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9907968440421868" />
-      <entry key="MS500" value="1.470733963628293" />
-      <entry key="S2" value="1.830567094907236" />
-      <entry key="S5" value="2.1118913356920266" />
-      <entry key="S10" value="3.1782568839666037" />
-      <entry key="S30" value="6.655410887010477" />
-      <entry key="S60" value="9.250071702514289" />
-      <entry key="M2" value="12.439734548958537" />
-      <entry key="M5" value="18.964537891408366" />
-      <entry key="M10" value="30.04164618824457" />
-      <entry key="M15" value="40.255021940957704" />
-      <entry key="M30" value="62.64579382411412" />
-      <entry key="H1" value="84.99605830733255" />
-      <entry key="H2" value="101.66564131099906" />
-      <entry key="H4" value="111.99754954988144" />
-      <entry key="D1" value="121.87071227730279" />
-      <entry key="W1" value="123.69247572252102" />
+      <entry key="MS100" value="6.885190948851643E-7" />
+      <entry key="MS500" value="0.05947382206673429" />
+      <entry key="S2" value="0.6659022934507539" />
+      <entry key="S5" value="1.2497581138437268" />
+      <entry key="S10" value="1.5725750800106642" />
+      <entry key="S30" value="1.852979057427679" />
+      <entry key="S60" value="2.055793424837614" />
+      <entry key="M2" value="2.4806998389470514" />
+      <entry key="M5" value="3.302815249395544" />
+      <entry key="M10" value="6.282670683436018" />
+      <entry key="M15" value="11.961189823625993" />
+      <entry key="M30" value="32.67881147761266" />
+      <entry key="H1" value="62.46792071812187" />
+      <entry key="H2" value="89.6661271815032" />
+      <entry key="H4" value="108.44950104531867" />
+      <entry key="D1" value="127.69058578241386" />
+      <entry key="W1" value="131.37416622155996" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -263,22 +271,7 @@
       <workItem from="1779530822088" duration="768000" />
       <workItem from="1779534702049" duration="3010000" />
       <workItem from="1779547650089" duration="1524000" />
-    </task>
-    <task id="LOCAL-00025" summary="libraries updated">
-      <option name="closed" value="true" />
-      <created>1777897259557</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1777897259557</updated>
-    </task>
-    <task id="LOCAL-00026" summary="litlle fix">
-      <option name="closed" value="true" />
-      <created>1777962874208</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1777962874208</updated>
+      <workItem from="1779556261792" duration="2168000" />
     </task>
     <task id="LOCAL-00027" summary="litlle improvment">
       <option name="closed" value="true" />
@@ -656,14 +649,29 @@
       <option name="project" value="LOCAL" />
       <updated>1779549151459</updated>
     </task>
-    <option name="localTasksCounter" value="74" />
+    <task id="LOCAL-00074" summary="pdf refactoring">
+      <option name="closed" value="true" />
+      <created>1779556292808</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1779556292808</updated>
+    </task>
+    <task id="LOCAL-00075" summary="improvement">
+      <option name="closed" value="true" />
+      <created>1779558229753</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1779558229753</updated>
+    </task>
+    <option name="localTasksCounter" value="76" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=" context enrichment" />
     <MESSAGE value="websearch refactoring" />
     <MESSAGE value="update prompt" />
     <MESSAGE value="some update and fix" />
@@ -686,9 +694,10 @@
     <MESSAGE value="fix" />
     <MESSAGE value="new license" />
     <MESSAGE value="fix bug" />
-    <MESSAGE value="improvement" />
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="pdf refactoring" />
+    <MESSAGE value="improvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="improvement" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

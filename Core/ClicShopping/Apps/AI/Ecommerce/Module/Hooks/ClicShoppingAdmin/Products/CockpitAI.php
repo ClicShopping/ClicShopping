@@ -70,6 +70,7 @@
           return false;
         }
       }
+
       $CLICSHOPPING_ProductsAdmin = Registry::get('ProductsAdmin');
 
       // Load language definitions
@@ -117,6 +118,7 @@
               $hasAnalysis = true;
             }
           }
+        } catch (\Exception $e) {
           if (defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG')
               && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True') {
             error_log('CockpitAI Hook: Failed to load last analysis: ' . $e->getMessage());
