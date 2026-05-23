@@ -14,13 +14,12 @@ the contributor agrees that:
 
 -   The contribution may be used under the project\'s dual licensing
     model (AGPLv3 or commercial license)
-
 -   The project maintainers may integrate, modify, and redistribute the
     contribution
-
 -   This CLA supersedes any prior license (MIT, GPL) that may have
     applied to earlier versions of the contributor\'s work submitted to
-    this project
+    this project.
+- Any redistribution must mention the origin of the code, retain copyright notices,  clearly identify modified versions.
 
 **Grant of Rights**
 
@@ -28,13 +27,9 @@ The contributor grants Loic Richard a non-exclusive, worldwide,
 royalty-free, perpetual, and irrevocable license to:
 
 -   Use the contribution
-
 -   Modify the contribution
-
 -   Distribute the contribution
-
 -   Combine the contribution with other code
-
 -   Relicense the contribution under AGPLv3 or commercial terms
 
 **Moral Rights (Droits moraux)**
@@ -54,10 +49,8 @@ The contributor represents that:
 
 -   They are the original author or have the right to submit the
     contribution
-
 -   The contribution does not infringe third-party rights to the best of
     their knowledge
-
 -   The contribution is not subject to any agreement that would restrict
     the rights granted herein
 

@@ -11,7 +11,7 @@ All rights reserved on original works and compilation where applicable.
 
 **IMPORTANT --- Transition from previous licenses:**
 
-Prior to version 3.28, ClicShopping was distributed under the MIT
+Prior to version 3.282, ClicShopping was distributed under the MIT
 License and/or GPLv2+. Those prior versions remain available under their
 original license terms.
 
@@ -36,7 +36,6 @@ Full text: https://www.gnu.org/licenses/agpl-3.0.html
 This project is distributed under a dual licensing model:
 
 -   AGPLv3 for open-source use
-
 -   Commercial license for non-AGPL-compatible use
 
 The copyright holder reserves the right to offer alternative commercial
@@ -45,9 +44,7 @@ licensing terms.
 **Related Documents**
 
 -   Commercial license terms: COMMERCIAL.md
-
 -   Contributor License Agreement: CLA.md
-
 -   Trademark Policy: TRADEMARK.md
 
 **Governing Law and Jurisdiction**
