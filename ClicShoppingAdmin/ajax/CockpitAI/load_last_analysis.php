@@ -78,12 +78,12 @@ try {
   $db = Registry::get('Db');
 
   // Query last embedding for this product and language
-  $query = $db->prepare('SELECT metadata, 
-                                date_modified 
-                         FROM :table_products_cockpit_ai_embedding  
-                         WHERE entity_id = :entity_id 
-                         AND language_id = :language_id 
-                         ORDER BY date_modified DESC 
+  $query = $db->prepare('SELECT metadata,
+                                date_modified
+                         FROM :table_products_cockpit_ai_embedding
+                         WHERE entity_id = :entity_id
+                         AND language_id = :language_id
+                         ORDER BY date_modified DESC
                          LIMIT 1');
 
   $query->bindInt(':entity_id', $productId);
@@ -171,7 +171,7 @@ try {
         DATE(date_modified)                                            AS date,
         ROUND(JSON_EXTRACT(metadata, \'$.scores.score_x\'), 1)        AS score_x,
         ROUND(JSON_EXTRACT(metadata, \'$.scores.score_y\'), 1)        AS score_y
-      FROM :table_products_cockpit_ai_embedding 
+      FROM :table_products_cockpit_ai_embedding
       WHERE entity_id = :entity_id
         AND language_id = :language_id
         AND JSON_EXTRACT(metadata, \'$.scores.score_x\') IS NOT NULL

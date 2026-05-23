@@ -75,7 +75,7 @@
      */
     public function logSecurityError(string $message, ?string $file = null): void
     {
-      $log_message = "[" . date('Y-m-d H:i:s') . "] CSS Compressor Security: " . $message;
+      $log_message = "[WARNING CSS] " . date('Y-m-d H:i:s') . "] CSS Compressor Security: " . $message;
 
       if ($file) {
         $log_message .= " - File: " . $file;

@@ -1,8 +1,10 @@
-version4.29
+version4.30
 - Maintenance version
 - improvement
 - fix / bug resolution
 - libraries updated
+- new license
+
 
 ---------------
 version4.281 et 4.282

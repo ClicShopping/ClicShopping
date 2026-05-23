@@ -335,9 +335,9 @@ class CategoriesAdmin
 // Manufacturer
 //*******************************
     $QduplicateImageManufacturers = $this->db->prepare('select count(*) as total
-                                                          from :table_manufacturers
-                                                          where manufacturers_image = :manufacturers_image
-                                                         ');
+                                                        from :table_manufacturers
+                                                        where manufacturers_image = :manufacturers_image
+                                                       ');
     $QduplicateImageManufacturers->bindValue(':manufacturers_image', $QcategoriesImage->value('categories_image'));
 
     $QduplicateImageManufacturers->execute();
@@ -346,9 +346,9 @@ class CategoriesAdmin
 // Supplier
 //*******************************
     $QduplicateImageSuppliers = $this->db->prepare('select count(*) as total
-                                                                  from :table_suppliers
-                                                                  where suppliers_image = :suppliers_image
-                                                                 ');
+                                                    from :table_suppliers
+                                                    where suppliers_image = :suppliers_image
+                                                   ');
     $QduplicateImageSuppliers->bindValue(':suppliers_image', $QcategoriesImage->value('categories_image'));
 
     $QduplicateImageSuppliers->execute();
@@ -357,9 +357,9 @@ class CategoriesAdmin
 // Products
 //*******************************
     $QduplicateProductsImage = $this->db->prepare('select count(*) as total
-                                                          from :table_products
-                                                          where products_image = :products_image
-                                                         ');
+                                                    from :table_products
+                                                    where products_image = :products_image
+                                                   ');
     $QduplicateProductsImage->bindValue(':products_image', $QcategoriesImage->value('categories_image'));
 
     $QduplicateProductsImage->execute();
