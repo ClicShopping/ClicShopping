@@ -63,5 +63,5 @@ scale of deployment, and any questions regarding AGPLv3 compliance.
 
 **Governing Law**
 
-Any commercial license agreement is governed by French law. Disputes
+Any commercial license agreement is governed by  the residence of the city of the owner. Disputes
 shall be submitted to the competent courts of the residence city of the owner.

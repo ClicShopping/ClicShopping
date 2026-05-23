@@ -54,7 +54,7 @@ licensing terms.
 
 This license and all related documents are governed by the residence of the city of the owner. Any
 dispute arising out of or in connection with this license shall be
-subject to the exclusive jurisdiction of the courts of the residence of the city of the owner,
+subject to the exclusive jurisdiction of the courts of residence of the city of the owner,
 unless mandatory consumer protection rules in the user\'s jurisdiction
 require otherwise.
 
