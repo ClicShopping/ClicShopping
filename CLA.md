@@ -17,8 +17,8 @@ the contributor agrees that:
 -   The project maintainers may integrate, modify, and redistribute the
     contribution
 -   This CLA supersedes any prior license (MIT, GPL) that may have
-    applied to earlier versions of the contributor\'s work submitted to
-    this project.
+    applied to earlier versions of the contributor\'s work submitted to this project.
+
 - Any redistribution must mention the origin of the code, retain copyright notices,  clearly identify modified versions.
 
 **Grant of Rights**
@@ -67,8 +67,8 @@ AGPLv3 terms for external users.
 
 **Governing Law**
 
-This CLA is governed by French law. Disputes shall be submitted to the
-competent courts of place of the owner.
+This CLA is governed by the residence of the city of the product owner. Disputes shall be submitted to the
+competent courts of place of the residence of the city of the product owner.
 
 **Enforcement**
 

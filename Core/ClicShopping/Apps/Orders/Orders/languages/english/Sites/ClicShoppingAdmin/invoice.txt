@@ -28,3 +28,10 @@ entry_info_societe = {{info_societe}}
 entry_info_societe_next = {{tva_intracom}}
 entry_info_societe1 = {{info_societe1}}
 entry_info_societe_next1 = {{info_societe1}}
+
+table_heading_qte = Qty
+table_heading_products_model = Model
+table_heading_products = Products
+table_heading_tax = Tax
+table_heading_price_excluding_tax = Price (ex)
+table_heading_total_excluding_tax = Total (ex)

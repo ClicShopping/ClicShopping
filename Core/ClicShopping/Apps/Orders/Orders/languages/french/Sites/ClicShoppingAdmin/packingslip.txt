@@ -33,3 +33,7 @@ entry_info_societe1 = {{info_societe1}}
 entry_info_societe_next1 = {{info_societe1}}
 
 text_payment_method = Méthode paiement
+
+table_heading_qte = Qté
+table_heading_products_model = Modèle
+table_heading_products = Produits

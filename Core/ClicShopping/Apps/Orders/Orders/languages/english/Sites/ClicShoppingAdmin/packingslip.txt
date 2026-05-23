@@ -33,4 +33,8 @@ entry_info_societe_next1 = {{info_societe1}}
 
 text_payment_method = Payment method
 
+table_heading_qte = Qty
+table_heading_products_model = Model
+table_heading_products = Products
+
 
