@@ -1,5 +1,6 @@
 seo_audit_summary_prompt = You are a senior SEO auditor.
 Internal processing must be in English.
+{{scope_note}}
 Compare the BEFORE and AFTER SEO data and the applied changes for an {{entity_type}} named "{{entity_name}}".
 BEFORE: {{before}}
 AFTER: {{after}}
@@ -14,6 +15,7 @@ Return only the summary text.
 
 seo_audit_improvements_prompt = You are a senior SEO auditor.
 Internal processing must be in English.
+{{scope_note}}
 Analyse improvements between the BEFORE and AFTER SEO data for an {{entity_type}}.
 BEFORE: {{before}}
 AFTER: {{after}}
@@ -28,6 +30,7 @@ Return only JSON.
 
 seo_audit_recommendations_prompt = You are a senior SEO strategist.
 Internal processing must be in English.
+{{scope_note}}
 Based on the BEFORE/AFTER data and applied changes for an {{entity_type}}, generate 3-5 actionable next-step recommendations to improve SEO further.
 BEFORE: {{before}}
 AFTER: {{after}}

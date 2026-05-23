@@ -199,6 +199,15 @@
         'seo_status'        => (string) ($config['seo_status'] ?? 'NOT_ANALYZED'),
         'seo_score'         => isset($config['seo_score']) ? (float) $config['seo_score'] : null,
 
+        // SEO Quality Benchmark — exposed so RuleRegistry::seo_quality_regression
+        // (and any future rule) can branch on the latest content-quality verdict.
+        'seo_benchmark_score'      => isset($productData['seo_benchmark_score'])      ? (float)$productData['seo_benchmark_score'] : null,
+        'seo_benchmark_verdict'    => $productData['seo_benchmark_verdict']           ?? null,
+        'seo_benchmark_reason'     => $productData['seo_benchmark_reason']            ?? null,
+        'seo_benchmark_coverage'   => isset($productData['seo_benchmark_coverage'])   ? (float)$productData['seo_benchmark_coverage']   : null,
+        'seo_benchmark_diversity'  => isset($productData['seo_benchmark_diversity'])  ? (float)$productData['seo_benchmark_diversity']  : null,
+        'seo_benchmark_repetition' => isset($productData['seo_benchmark_repetition']) ? (float)$productData['seo_benchmark_repetition'] : null,
+
         // Factor details
         'score_description' => $scoreDescription,
 

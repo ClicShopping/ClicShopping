@@ -7,50 +7,6 @@
  * Licensed under AGPLv3 or commercial license.
  * See LICENSE file.
  *
- * This utility class provides centralized access to domain-specific configuration
- * for the multi-domain RAG system. It enables domain-aware language loading by
- * constructing paths with domain subdirectories (e.g., ClicShoppingAdmin/ecommerce).
- *
- * Key Features:
- * - Retrieves active domain identifier (app name) from configuration
- * - Constructs language paths with domain subdirectories
- * - Supports multiple domains: Ecommerce, Hr, Finance, Trading, etc.
- * - Maintains backward compatibility (empty activities = root directory)
- * - Used by all AI components for domain-specific prompt loading
- *
- * Usage Example:
- * ```php
- * use ClicShopping\AI\Config\DomainConfig;
- *
- * // Get active domain identifier
- * $domain = DomainConfig::getActivities(); // Returns 'Ecommerce'
- *
- * // Get language path with domain subdirectory
- * $path = DomainConfig::getLanguagePath(); // Returns 'ClicShoppingAdmin/ecommerce'
- * $path = DomainConfig::getLanguagePath('Shop'); // Returns 'Shop/ecommerce'
- * ```
- *
- * Directory Structure:
- * ```
- * ClicShoppingAdmin/Core/languages/
- * ├-- english/
- * |   ├-- ecommerce/
- * |   |   ├-- rag_analytics_agent.txt
- * |   |   ├-- rag_semantic_agent.txt
- * |   |   +-- ...
- * |   ├-- hr/
- * |   |   ├-- rag_analytics_agent.txt
- * |   |   +-- ...
- * |   +-- finance/
- * |       +-- ...
- * +-- french/
- *     ├-- ecommerce/
- *     +-- ...
- * ```
- *
- * @created 2026-01-18
- * @see .kiro/specs/active/rag-multi-domain-evolution/requirements.md (Requirement 27)
- * @see .kiro/specs/active/rag-multi-domain-evolution/tasks.md (Task 3.1)
  */
 
 namespace ClicShopping\AI\Config;

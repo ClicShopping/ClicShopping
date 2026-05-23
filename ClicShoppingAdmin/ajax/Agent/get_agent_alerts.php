@@ -8,8 +8,6 @@
  *
  * Licensed under AGPLv3 or commercial license.
  * See LICENSE file.
- * 
- * @date 2026-01-28
  */
 
 use ClicShopping\OM\CLICSHOPPING;

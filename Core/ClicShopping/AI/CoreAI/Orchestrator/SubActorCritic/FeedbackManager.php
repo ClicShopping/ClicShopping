@@ -315,7 +315,7 @@ class FeedbackManager
             // Retrieve feedback history (Requirements 13.4, 13.5)
             $sql = "SELECT 
                         feedback_id,
-                        target_agent_id,
+                        target_actor_id,
                         output_id,
                         consensus_score,
                         categorized_feedback,
@@ -326,7 +326,7 @@ class FeedbackManager
                         delivered_at,
                         acknowledged_at
                     FROM :table_rag_agent_actor_critic_feedback
-                    WHERE target_agent_id = :actor_id
+                    WHERE target_actor_id = :actor_id
                     ORDER BY created_at DESC
                     LIMIT :limit OFFSET :offset";
             
@@ -411,7 +411,7 @@ class FeedbackManager
                         AVG(consensus_score) as average_score,
                         SUM(CASE WHEN acknowledged = 1 THEN 1 ELSE 0 END) as acknowledged_count
                     FROM :table_rag_agent_actor_critic_feedback
-                    WHERE target_agent_id = :actor_id";
+                    WHERE target_actor_id = :actor_id";
             
             $stmt = $this->db->prepare($sql);
             $stmt->bindValue(':actor_id', $actorId);
@@ -505,14 +505,14 @@ class FeedbackManager
             }
             
             $sql = "INSERT INTO :table_rag_agent_actor_critic_feedback 
-                    (feedback_id, target_agent_id, output_id, consensus_score,
+                    (feedback_id, target_actor_id, output_id, consensus_score,
                      categorized_feedback, strengths, improvements, acknowledged, created_at)
-                    VALUES (:feedback_id, :target_agent_id, :output_id, :consensus_score,
+                    VALUES (:feedback_id, :target_actor_id, :output_id, :consensus_score,
                             :categorized_feedback, :strengths, :improvements, 0, :created_at)";
             
             $stmt = $this->db->prepare($sql);
             $stmt->bindValue(':feedback_id', $feedback->getFeedbackId());
-            $stmt->bindValue(':target_agent_id', $feedback->getTargetActorId());
+            $stmt->bindValue(':target_actor_id', $feedback->getTargetActorId());
             $stmt->bindValue(':output_id', $feedback->getOutputId());
             $stmt->bindValue(':consensus_score', $feedback->getConsensusScore());
             $stmt->bindValue(':categorized_feedback', json_encode($feedback->getCategorizedFeedback()));
@@ -593,7 +593,7 @@ class FeedbackManager
             // Get last 10 feedback scores
             $sql = "SELECT consensus_score 
                     FROM :table_rag_agent_actor_critic_feedback
-                    WHERE target_agent_id = :actor_id
+                    WHERE target_actor_id = :actor_id
                     ORDER BY created_at DESC
                     LIMIT 20";
             

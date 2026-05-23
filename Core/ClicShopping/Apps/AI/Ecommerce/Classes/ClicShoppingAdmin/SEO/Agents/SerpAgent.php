@@ -576,6 +576,26 @@ class SerpAgent implements ActorAgentInterface
     string $language   = 'en'
   ): array
   {
+    // Guard: when WebSearch returned zero results the LLM has nothing to
+    // analyze.  Asking it to "extract topics" from an empty SERP blob
+    // makes the model invent generic SEO meta-topics like
+    // "Search Engine Optimization (SEO) techniques", which then leak into
+    // primary_keyword and contaminate the whole optimization downstream.
+    // Returning empty arrays makes SeoOptimizationAgent fall back to the
+    // product name as the primary keyword, which is the correct behaviour
+    // when no SERP signal is available.
+    if (empty($items)) {
+      if ($this->debug) {
+        error_log('[SerpAgent] Topic extraction skipped: empty SERP results.');
+      }
+      return [
+        'topics'           => [],
+        'keywords'         => [],
+        'content_patterns' => [],
+        'user_questions'   => [],
+      ];
+    }
+
     try {
       $cacheKey    = $this->serpCacheKey($queryEn, $language, $entityType, 'topics');
       $serpResults = $this->formatSerpResultsForLLM($items);
@@ -770,6 +790,15 @@ class SerpAgent implements ActorAgentInterface
     string $language   = 'en'
   ): array
   {
+    // Same guard as extractTopics(): without real SERP results the LLM
+    // would invent fictitious competitor patterns.
+    if (empty($items)) {
+      if ($this->debug) {
+        error_log('[SerpAgent] Competitor analysis skipped: empty SERP results.');
+      }
+      return [];
+    }
+
     try {
       $cacheKey    = $this->serpCacheKey($queryEn, $language, $entityType, 'competitors');
       $serpResults = $this->formatSerpResultsForLLM($items);

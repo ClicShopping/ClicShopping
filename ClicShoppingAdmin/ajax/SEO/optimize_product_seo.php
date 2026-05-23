@@ -6,16 +6,14 @@
  * See LICENSE file.
  */
 
-  use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTTP;
-  use ClicShopping\OM\Registry;
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoAgenticPipeline;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoMultilingualOrchestrator;
 
-  // Increase PHP execution time for long-running SEO optimization
-  set_time_limit(300); // 5 minutes
-  ini_set('max_execution_time', '300');
+  set_time_limit(0);
+  ini_set('max_execution_time', '0');
+  ignore_user_abort(true);
 
   define('CLICSHOPPING_BASE_DIR', realpath(__DIR__ . '/../../../Core/ClicShopping/') . DIRECTORY_SEPARATOR);
 
@@ -45,27 +43,17 @@
     exit;
   }
 
-  $languageId = (int)($_POST['language_id'] ?? 0);
-  if ($languageId <= 0) {
-    $languageId = (int)Registry::get('Language')->getId();
-  }
-
-  // Include language code in the crawl URL so SeoReport fetches the correct language
-  // version of the page. Without this, it always crawls the default language (EN),
-  // causing the post-save audit to see no changes and triggering an unnecessary rollback.
-  $languageCode = Registry::get('Language')->getLanguageCodeById($languageId);
-  $linkUrl = HTTP::getShopUrlDomain() . 'index.php?Products&Description&products_id=' . $productId
-           . '&language=' . urlencode($languageCode);
+  // The new multilingual workflow no longer reads $_POST['language_id']:
+  // the orchestrator iterates every enabled language itself, starting from
+  // English (code = 'en') as the canonical source and propagating translations.
   $baseUrl = HTTP::getShopUrlDomain();
 
   try {
-    $pipeline = new SeoAgenticPipeline('product');
+    $orchestrator = new SeoMultilingualOrchestrator('product');
 
-    $result = $pipeline->optimize(
-      entityId: $productId,
-      languageId: $languageId,
-      url: $linkUrl,
-      baseUrl: $baseUrl,
+    $result = $orchestrator->run(
+      entityId:    $productId,
+      baseUrl:     $baseUrl,
       triggeredBy: 'ajax'
     );
 

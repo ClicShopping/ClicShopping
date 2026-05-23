@@ -1,5 +1,6 @@
 seo_validation_quality_prompt = You are a senior SEO quality evaluator.
 Internal processing must be in English.
+{{scope_note}}
 Evaluate the SEO content for an {{entity_type}} named "{{entity_name}}".
 Content: {{content}}
 Primary keyword: {{primary_keyword}}
@@ -30,6 +31,7 @@ Return only JSON.
 
 seo_validation_coherence_prompt = You are a senior SEO content coherence validator.
 Internal processing must be in English.
+{{scope_note}}
 Check if the SEO content is coherent, internally consistent, and aligned with the entity type and search intent for an {{entity_type}} named "{{entity_name}}".
 Search intent: {{search_intent}}
 Content: {{content}}

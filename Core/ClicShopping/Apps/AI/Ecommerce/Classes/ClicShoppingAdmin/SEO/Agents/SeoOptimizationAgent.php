@@ -98,6 +98,9 @@ class SeoOptimizationAgent implements ActorAgentInterface
     $entityName         = (string)($params['entity_name']         ?? '');
     $entityType         = (string)($params['entity_type']         ?? 'product');
     $validationFeedback = $params['validation_feedback'] ?? [];
+    // Phase 2 / Phase 3 split: when true, FAQ generation is skipped here
+    // and produced separately by SeoFaqPipeline with grounding / hallucination checks.
+    $excludeFaq         = (bool)($params['exclude_faq']   ?? false);
 
     $context    = $action->getContext();
     $languageId = $context->getLanguageId() ?? 1;
@@ -110,8 +113,19 @@ class SeoOptimizationAgent implements ActorAgentInterface
 
     // --- SERP signals ---
     $intent           = (string)($serpReport['intent_dominant']     ?? 'transactional');
-    $topics           = implode(', ', $serpReport['topics']          ?? []);
-    $keywords         = implode(', ', $serpReport['keywords']        ?? []);
+    // Filter out meta-SEO noise (LLM-hallucinated topics like
+    // "Search Engine Optimization techniques") so they never leak into the
+    // generation prompt.  See isMetaSeoTerm() for the deny list.
+    $topicsArr        = array_values(array_filter(
+      $serpReport['topics'] ?? [],
+      fn($t): bool => is_string($t) && $t !== '' && !$this->isMetaSeoTerm($t)
+    ));
+    $keywordsArr      = array_values(array_filter(
+      $serpReport['keywords'] ?? [],
+      fn($k): bool => is_string($k) && $k !== '' && !$this->isMetaSeoTerm($k)
+    ));
+    $topics           = implode(', ', $topicsArr);
+    $keywords         = implode(', ', $keywordsArr);
     $peopleAlsoAsk    = implode('; ', $serpReport['people_also_ask'] ?? []);
     $aiOverview       = (string)($serpReport['ai_overview']['summary'] ?? '');
     $competitorTitles = $this->extractCompetitorTitles($serpReport);
@@ -121,7 +135,14 @@ class SeoOptimizationAgent implements ActorAgentInterface
     $primaryKeyword  = $this->resolvePrimaryKeyword($current, $keywords, $entityName);
     $productBrand    = (string)($current['brand']     ?? '');
     $productModel    = (string)($current['model']     ?? '');
-    $productPrice    = (string)($current['price']     ?? '');
+    // products.products_price is DECIMAL(15,4) → comes through as
+    // "200.0000" which the LLM faithfully repeats in meta descriptions.
+    // Normalise to two decimals for human-facing copy; the schema.org
+    // numeric field is regenerated separately from the raw value.
+    $rawPrice        = (string)($current['price']     ?? '');
+    $productPrice    = ($rawPrice !== '' && is_numeric($rawPrice))
+      ? number_format((float)$rawPrice, 2, '.', '')
+      : $rawPrice;
     $productCurrency = (string)($current['currency']  ?? 'EUR');
     $productStock    = (string)($current['quantity']  ?? '');
     $productSku      = (string)($current['sku']       ?? $current['model'] ?? '');
@@ -178,7 +199,7 @@ class SeoOptimizationAgent implements ActorAgentInterface
       $metaKws     = $this->generateMetaKeywords($vars);
       $summary     = $this->generateSummary($vars);
       $description = $this->generateDescription($vars);
-      $faq         = $this->generateFaq($vars);
+      $faq         = $excludeFaq ? [] : $this->generateFaq($vars);
       $h2          = $this->generateH2($vars);
       $schema      = $this->generateSchema($vars, $entityType);
 
@@ -232,12 +253,18 @@ class SeoOptimizationAgent implements ActorAgentInterface
 
   private function generateMetaTitle(array $vars): string
   {
-    // Do not pass price to meta title: price in title causes currency inconsistency
-    // between meta title (LLM may invent currency) and description (EUR).
-    // Modern SEO best practice: price belongs in description and schema, not title.
+    // Hard-strip identifiers and numeric facts from the meta title prompt:
+    // model numbers, SKU codes, price and currency NEVER belong in a SERP
+    // title — they waste characters on a 60-char budget and produce noise
+    // like "Ricardo Set of 2 Glasses REF-1526836441" (74 chars), busting
+    // the 30-65 SEO length rule.  Brand + product name + one differentiator
+    // is enough for ranking and CTR.
     $titleVars = $vars;
-    $titleVars['product_price'] = '';
+    $titleVars['product_price']    = '';
     $titleVars['product_currency'] = '';
+    $titleVars['product_model']    = '';
+    $titleVars['product_sku']      = '';
+    $titleVars['product_stock']    = '';
 
     return trim($this->llm->generateResponse(
       $this->prompts->getMetaTitlePrompt($titleVars),
@@ -247,32 +274,79 @@ class SeoOptimizationAgent implements ActorAgentInterface
 
   private function generateMetaDescription(array $vars): string
   {
+    // Same hard-strip as the meta title: SKU, model, price, currency and
+    // stock counts have no place in the SERP description either.  "Under
+    // 50.00 Shop now" with a hallucinated price is worse than no price at
+    // all — and Google often rewrites descriptions that contain shaky
+    // numeric claims, so we lose the field anyway.
+    $descVars = $vars;
+    $descVars['product_price']    = '';
+    $descVars['product_currency'] = '';
+    $descVars['product_model']    = '';
+    $descVars['product_sku']      = '';
+    $descVars['product_stock']    = '';
+
     return trim($this->llm->generateResponse(
-      $this->prompts->getMetaDescriptionPrompt($vars),
+      $this->prompts->getMetaDescriptionPrompt($descVars),
       ['maxTokens' => 120, 'temperature' => 0.3]
     ));
   }
 
   private function generateMetaKeywords(array $vars): string
   {
+    // Same hard-strip as title / description: keywords mentioning SKUs
+    // ("ricardo REF-1526836441") or inventing numeric facts ("350ml" for a
+    // 420ml product) trigger spam detection downstream and pollute the
+    // search index.  Strip the numeric / identifier vars so the LLM only
+    // works with brand + name + topics.
+    $kwVars = $vars;
+    $kwVars['product_price']    = '';
+    $kwVars['product_currency'] = '';
+    $kwVars['product_stock']    = '';
+    $kwVars['product_sku']      = '';
+    $kwVars['product_model']    = '';
+
     return trim($this->llm->generateResponse(
-      $this->prompts->getMetaKeywordsPrompt($vars),
+      $this->prompts->getMetaKeywordsPrompt($kwVars),
       ['maxTokens' => 120, 'temperature' => 0.2]
     ));
   }
 
   private function generateSummary(array $vars): string
   {
+    // Summary is shown alongside the description on the product page; same
+    // anti-hallucination policy as the meta and description blocks.
+    $sumVars = $vars;
+    $sumVars['product_price']    = '';
+    $sumVars['product_currency'] = '';
+    $sumVars['product_stock']    = '';
+    $sumVars['product_sku']      = '';
+    $sumVars['product_model']    = '';
+
     return trim($this->llm->generateResponse(
-      $this->prompts->getSummaryPrompt($vars),
+      $this->prompts->getSummaryPrompt($sumVars),
       ['maxTokens' => 120, 'temperature' => 0.2]
     ));
   }
 
   private function generateDescription(array $vars): string
   {
+    // Hard-strip identifiers and numeric facts from the description prompt:
+    // price, currency, stock count, SKU and model number belong in
+    // structured data (schema.org Offer) and dedicated UI fields, never in
+    // the description text.  Even with the prompt forbidding them, leaving
+    // them in the vars block is enough for the LLM to weave "priced at
+    // 200.00 / model REF-…" sentences into the prose.  Removing them
+    // from the input eliminates the temptation entirely.
+    $descVars = $vars;
+    $descVars['product_price']    = '';
+    $descVars['product_currency'] = '';
+    $descVars['product_stock']    = '';
+    $descVars['product_sku']      = '';
+    $descVars['product_model']    = '';
+
     return trim($this->llm->generateResponse(
-      $this->prompts->getEnrichedDescriptionPrompt($vars),
+      $this->prompts->getEnrichedDescriptionPrompt($descVars),
       ['maxTokens' => 600, 'temperature' => 0.35]
     ));
   }
@@ -290,6 +364,30 @@ class SeoOptimizationAgent implements ActorAgentInterface
       }
       return [];
     }
+  }
+
+  /**
+   * Generate the FAQ block in isolation for Phase 3.
+   *
+   * Phase 2 emits SEO content with exclude_faq = true.  Phase 3 then calls
+   * this method from SeoFaqPipeline to produce the FAQ candidate that will
+   * be screened by AnswerGroundingVerifier and HallucinationDetector before
+   * being persisted via FaqRepository.
+   *
+   * The caller is responsible for building the $vars array (entity_name,
+   * product_*, primary_keyword, etc.) — mirror the shape used internally
+   * by executeAction().  Returns an empty array on failure so the calling
+   * pipeline can decide whether to retry or accept the empty result rather
+   * than persist a hallucinated FAQ.
+   *
+   * @param array  $vars     Prompt variables consumed by ContentGenerationPrompts.
+   * @param string $langCode Target language code (e.g. 'en', 'fr').
+   * @return array<int, array{q:string,a:string}>
+   */
+  public function generateFaqForVars(array $vars, string $langCode): array
+  {
+    $this->prompts = new ContentGenerationPrompts($langCode);
+    return $this->generateFaq($vars);
   }
 
   private function generateH2(array $vars): array
@@ -354,17 +452,58 @@ class SeoOptimizationAgent implements ActorAgentInterface
 
     if (preg_match('/primary[_\s]keyword[:\s]+([^\n,;]+)/i', (string)$notes, $m)) {
       $kw = trim($m[1]);
-      if ($kw !== '') {
+      if ($kw !== '' && !$this->isMetaSeoTerm($kw)) {
         return $kw;
       }
     }
 
-    $parts = array_filter(array_map('trim', explode(',', $keywords)));
+    // When WebSearch returns no results, the SERP topic-extraction LLM tends
+    // to hallucinate meta-SEO words ("SEO", "content marketing", "keyword
+    // research"…) as keywords.  Picking one of those as the primary keyword
+    // contaminates every downstream prompt.  Filter them out before falling
+    // back to the entity name, which is always a safer anchor.
+    $parts = array_filter(
+      array_map('trim', explode(',', $keywords)),
+      fn(string $kw): bool => $kw !== '' && !$this->isMetaSeoTerm($kw)
+    );
     if (!empty($parts)) {
       return reset($parts);
     }
 
     return strtolower($entityName);
+  }
+
+  /**
+   * Returns true when the candidate keyword is a generic meta-SEO term that
+   * should never be promoted as a primary keyword.  Match is case- and
+   * whitespace-insensitive and looks at substrings so multi-word variants
+   * ("Search Engine Optimization (SEO) techniques", "Content marketing
+   * strategies") are caught as well.
+   */
+  private function isMetaSeoTerm(string $keyword): bool
+  {
+    $needle = strtolower(trim($keyword));
+    if ($needle === '') {
+      return false;
+    }
+    static $banned = [
+      'seo',
+      'search engine optimization',
+      'content marketing',
+      'keyword research',
+      'on-page',
+      'off-page',
+      'user intent',
+      'serp',
+      'meta description',
+      'meta title',
+    ];
+    foreach ($banned as $term) {
+      if (str_contains($needle, $term)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private function extractCompetitorTitles(array $serpReport): string

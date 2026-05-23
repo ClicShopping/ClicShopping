@@ -314,8 +314,10 @@
           error_log('[Info CockpitAI] seo score :' . $Qseo->valueDecimal('seo_score_after') . '-' . $Qseo->rowCount());
         }
 
-        $seoStatus = 'NOT_ANALYZED';
-        $seoScore  = null;
+        $seoStatus           = 'NOT_ANALYZED';
+        $seoScore            = null;
+        $seoThinContentLevel = null;
+        $seoWordcountBody    = null;
 
         if ($Qseo->rowCount() > 0) {
           $rawScore = $Qseo->valueDecimal('seo_score_after') ?? 0;
@@ -323,6 +325,90 @@
           if ($rawScore > 0) {
             $seoStatus = 'ANALYZED';
             $seoScore  = $rawScore; // [0..100] — normalized ÷100 in ScoreFactor
+          }
+
+          // Try to extract the thin-content flag from the seo_after JSON
+          // payload stored alongside the score.  Defensive: malformed JSON
+          // or missing keys silently fall back to null so the analysis is
+          // never blocked on the freshness probe.
+          try {
+            $Qafter = $this->db->prepare('
+              SELECT seo_after
+              FROM   :table_seo_serp_reports
+              WHERE  entity_type = :entity_type
+                AND  entity_id   = :entity_id
+                AND  language_id = :language_id
+                AND  seo_score_after > 0
+              ORDER BY created_at DESC
+              LIMIT 1
+            ');
+            $Qafter->bindValue(':entity_type', 'product');
+            $Qafter->bindInt(':entity_id',     $productId);
+            $Qafter->bindInt(':language_id',   $languageId);
+            $Qafter->execute();
+            if ($Qafter->rowCount() > 0) {
+              $seoAfterJson = (string)$Qafter->value('seo_after');
+              $seoAfterArr  = json_decode($seoAfterJson, true);
+              if (is_array($seoAfterArr)) {
+                if (isset($seoAfterArr['thin_content_level'])) {
+                  $seoThinContentLevel = (string)$seoAfterArr['thin_content_level'];
+                }
+                if (isset($seoAfterArr['wordcount_body'])) {
+                  $seoWordcountBody = (int)$seoAfterArr['wordcount_body'];
+                }
+              }
+            }
+          } catch (\Throwable $e) {
+            if ($this->debug) {
+              error_log('[Info CockpitAI] thin-content probe failed: ' . $e->getMessage());
+            }
+          }
+        }
+
+        // ── SEO Quality Benchmark — latest entry per (product, language) ───
+        // The new Phase 2 anti-regression guard (SeoQualityBenchmark) writes
+        // one row per optimization attempt in clic_seo_quality_benchmark_log.
+        // We read the most recent non-unknown verdict so CockpitAI can:
+        //   - factor benchmark composite into Score_X (semantic quality),
+        //   - flag regressions in rules / autopilot decisions,
+        //   - surface verdict trends in the dashboard.
+        $seoBenchmarkScore      = null;
+        $seoBenchmarkVerdict    = null;
+        $seoBenchmarkReason     = null;
+        $seoBenchmarkCoverage   = null;
+        $seoBenchmarkDiversity  = null;
+        $seoBenchmarkRepetition = null;
+        try {
+          $Qbm = $this->db->prepare('
+            SELECT generated_score, verdict, regression_reason,
+                   entity_coverage, generated_diversity, repetition
+            FROM   :table_seo_quality_benchmark_log
+            WHERE  entity_type = :entity_type
+              AND  entity_id   = :entity_id
+              AND  language_id = :language_id
+              AND  verdict    != :unknown_verdict
+            ORDER BY date_modified DESC
+            LIMIT 1
+          ');
+          $Qbm->bindValue(':entity_type',     'product');
+          $Qbm->bindInt(':entity_id',         $productId);
+          $Qbm->bindInt(':language_id',       $languageId);
+          $Qbm->bindValue(':unknown_verdict', 'unknown');
+          $Qbm->execute();
+          if ($Qbm->rowCount() > 0) {
+            $seoBenchmarkScore      = (float)($Qbm->valueDecimal('generated_score')     ?? 0);
+            $seoBenchmarkVerdict    = (string)$Qbm->value('verdict');
+            $seoBenchmarkReason     = (string)$Qbm->value('regression_reason');
+            $seoBenchmarkCoverage   = (float)($Qbm->valueDecimal('entity_coverage')     ?? 0);
+            $seoBenchmarkDiversity  = (float)($Qbm->valueDecimal('generated_diversity') ?? 0);
+            $seoBenchmarkRepetition = (float)($Qbm->valueDecimal('repetition')          ?? 0);
+          }
+        } catch (\Throwable $e) {
+          // The table is created lazily by Apps/AI/Ecommerce/Sql/MariaDb.
+          // Until the migration has run on this environment, silently fall
+          // back to null values — never block the analysis pipeline.
+          if ($this->debug) {
+            error_log('[Info CockpitAI] benchmark query failed: ' . $e->getMessage());
           }
         }
 
@@ -378,6 +464,18 @@
           // ── SEO (injected into Context → ScoreFactor) ──────────────────
           'seo_status' => $seoStatus,   // 'NOT_ANALYZED' | 'ANALYZED'
           'seo_score'  => $seoScore,    // float [0..100] | null
+
+          // ── Thin-content signal (Phase 1 verdict, surfaced for CockpitAI UI)
+          'seo_thin_content_level' => $seoThinContentLevel, // 'critical' | 'warning' | 'ok' | null
+          'seo_wordcount_body'     => $seoWordcountBody,    // int|null — body word count when known
+
+          // ── SEO Quality Benchmark (injected into Context, scored by ProductScoreAxis)
+          'seo_benchmark_score'      => $seoBenchmarkScore,      // composite [0..1] | null
+          'seo_benchmark_verdict'    => $seoBenchmarkVerdict,    // improvement|parity|regression | null
+          'seo_benchmark_reason'     => $seoBenchmarkReason,     // low_coverage|repetition|… | null
+          'seo_benchmark_coverage'   => $seoBenchmarkCoverage,   // source-entity coverage [0..1]
+          'seo_benchmark_diversity'  => $seoBenchmarkDiversity,  // type-token ratio [0..1]
+          'seo_benchmark_repetition' => $seoBenchmarkRepetition, // repetition penalty [0..1]
 
           // ── Score_Y fields (CommercialScoreAxis) ───────────────────────
           'products_viewed'      => (int) ($product['products_viewed'] ?? 0),

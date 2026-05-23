@@ -14,8 +14,8 @@
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoAgenticPipeline;
 
   // Increase PHP execution time for long-running SEO optimization
-  set_time_limit(300); // 5 minutes
-  ini_set('max_execution_time', '300');
+  set_time_limit(900); // 15 minutes
+  ini_set('max_execution_time', '900');
 
   define('CLICSHOPPING_BASE_DIR', realpath(__DIR__ . '/../../../Core/ClicShopping/') . DIRECTORY_SEPARATOR);
 

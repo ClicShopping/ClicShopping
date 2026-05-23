@@ -14,12 +14,6 @@
  *
  * Licensed under AGPLv3 or commercial license.
  * See LICENSE file.
- * 
- * @created 2026-02-09
- * @see .kiro/specs/hybrid-query-decomposition/requirements.md (Requirement 7.3)
- * @see .kiro/specs/hybrid-query-decomposition/design.md
- * 
- * @package ClicShopping\AI\Infrastructure\Cache
  */
 
 namespace ClicShopping\AI\Infrastructure\Cache;

@@ -103,6 +103,10 @@ class SeoAuditAgent implements ActorAgentInterface
     $before  = $params['seo_before'] ?? [];
     $after   = $params['seo_after']  ?? [];
     $changes = $params['changes']    ?? [];
+    $excludeFaq = (bool)($params['exclude_faq'] ?? false);
+    if ($excludeFaq) {
+      unset($changes['faq']);
+    }
 
     $scoreBefore = (int)($before['seo_score'] ?? 0);
     $scoreAfter  = (int)($after['seo_score']  ?? 0);
@@ -131,9 +135,9 @@ class SeoAuditAgent implements ActorAgentInterface
       /**
        * Step 2: Generate AI outputs.
        */
-      $summary = $this->generateSummary($beforeEn, $afterEn, $changesEn);
-      $improvements = $this->analyzeImprovements($beforeEn, $afterEn, $changesEn);
-      $recommendations = $this->generateRecommendations($beforeEn, $afterEn, $changesEn);
+      $summary = $this->generateSummary($beforeEn, $afterEn, $changesEn, $excludeFaq);
+      $improvements = $this->analyzeImprovements($beforeEn, $afterEn, $changesEn, $excludeFaq);
+      $recommendations = $this->generateRecommendations($beforeEn, $afterEn, $changesEn, $excludeFaq);
 
       /**
        * Step 3: Translate AI output back to target language if required.
@@ -261,12 +265,13 @@ class SeoAuditAgent implements ActorAgentInterface
   /**
    * Generates LLM summary text.
    */
-  private function generateSummary(array $before, array $after, array $changes): string
+  private function generateSummary(array $before, array $after, array $changes, bool $excludeFaq = false): string
   {
     $prompt = $this->prompts->getSummaryPrompt([
       'before' => json_encode($before, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'after' => json_encode($after, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'changes' => json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'scope_note' => $this->scopeNote($excludeFaq),
     ]);
 
     return $this->llm->generateResponse($prompt, [
@@ -278,12 +283,13 @@ class SeoAuditAgent implements ActorAgentInterface
   /**
    * Generates structured improvements list.
    */
-  private function analyzeImprovements(array $before, array $after, array $changes): array
+  private function analyzeImprovements(array $before, array $after, array $changes, bool $excludeFaq = false): array
   {
     $prompt = $this->prompts->getImprovementsPrompt([
       'before' => json_encode($before, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'after' => json_encode($after, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'changes' => json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'scope_note' => $this->scopeNote($excludeFaq),
     ]);
 
     return $this->llm->generateStructuredResponse($prompt, [
@@ -295,18 +301,32 @@ class SeoAuditAgent implements ActorAgentInterface
   /**
    * Generates structured recommendations list.
    */
-  private function generateRecommendations(array $before, array $after, array $changes): array
+  private function generateRecommendations(array $before, array $after, array $changes, bool $excludeFaq = false): array
   {
     $prompt = $this->prompts->getRecommendationsPrompt([
       'before' => json_encode($before, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'after' => json_encode($after, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'changes' => json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'scope_note' => $this->scopeNote($excludeFaq),
     ]);
 
     return $this->llm->generateStructuredResponse($prompt, [
       'maxTokens' => 400,
       'temperature' => 0.4,
     ]);
+  }
+
+  /**
+   * Build the phase-scope hint injected as {{scope_note}} into every audit
+   * prompt.  When Phase 2 runs with exclude_faq, the LLM must NOT recommend
+   * adding a FAQ (Phase 3 handles it separately with grounding checks) and
+   * must NOT count the missing FAQ as a regression.
+   */
+  private function scopeNote(bool $excludeFaq): string
+  {
+    return $excludeFaq
+      ? 'IMPORTANT: this is Phase 2 of a multi-phase workflow — FAQ generation is INTENTIONALLY out of scope and will be handled by Phase 3 with anti-hallucination grounding checks. Do NOT recommend adding a FAQ section, do NOT mention the absence of a FAQ as an issue, do NOT list FAQ-related items in improvements or recommendations.'
+      : '';
   }
 
   /**

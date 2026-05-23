@@ -117,6 +117,23 @@
         ];
       }
 
+      $sourceThin = $this->evaluateSourceThinForEntity($entityId, $languageId, $pageType, $seoReport);
+      if ($sourceThin !== null) {
+        $pageLevel = $data['thin_content_level'] ?? 'ok';
+        if ($this->thinSeverity($sourceThin['level']) > $this->thinSeverity($pageLevel)) {
+          $data['thin_content']       = $sourceThin['thin_content'];
+          $data['thin_content_level'] = $sourceThin['level'];
+          $data['thin_content_msg']   = $sourceThin['message'];
+          // Reapply cap on the seo_score with the worse level.
+          if ($sourceThin['level'] === 'critical') {
+            $data['seo_score'] = min((int)($data['seo_score'] ?? 0), SeoReport::THIN_CONTENT_CRITICAL_CAP);
+          } elseif ($sourceThin['level'] === 'warning') {
+            $data['seo_score'] = min((int)($data['seo_score'] ?? 0), SeoReport::THIN_CONTENT_WARNING_CAP);
+          }
+        }
+        $data['source_wordcount'] = $sourceThin['word_count'];
+      }
+
       $textForEmbedding = $seoReport->serializeForEmbedding($data);
 
       $metadata = [
@@ -151,12 +168,17 @@
       }
 
       return [
-        'success'      => true,
-        'mode'         => 'initial',
-        'embedding_id' => $id,
-        'seo_score'    => $data['seo_score'] ?? 0,
-        'report'       => $reportHtml,
-        'message'      => 'Analyse initiale effectuée. Score SEO : ' . ($data['seo_score'] ?? 0) . '/100.',
+        'success'             => true,
+        'mode'                => 'initial',
+        'embedding_id'        => $id,
+        'seo_score'           => $data['seo_score']           ?? 0,
+        'report'              => $reportHtml,
+        'message'             => 'Analyse initiale effectuée. Score SEO : ' . ($data['seo_score'] ?? 0) . '/100.',
+        'thin_content'        => (bool)($data['thin_content']       ?? false),
+        'thin_content_level'  => (string)($data['thin_content_level'] ?? 'ok'),
+        'thin_content_msg'    => (string)($data['thin_content_msg']   ?? ''),
+        'wordcount_body'      => (int)($data['wordcount_body']        ?? 0),
+        'source_wordcount'    => (int)($data['source_wordcount']      ?? 0),
       ];
     }
 
@@ -167,6 +189,80 @@
     private function filterRawReport(array $data): array
     {
       return array_diff_key($data, array_flip(['wordCount', 'generated_at']));
+    }
+
+    /**
+     * Read the source description directly from the database (not from the
+     * crawled front-office HTML) and evaluate its thin-content level.
+     *
+     * The page crawl mixes header / menu / footer / structured-data into the
+     * word count, which hides short product descriptions behind page
+     * chrome.  The DB read gives us the actual editable content the admin
+     * needs to expand — far more actionable.
+     *
+     * Returns null when the entity type is unknown or the row is missing.
+     *
+     * @return array{word_count:int, level:string, thin_content:bool, message:string}|null
+     */
+    private function evaluateSourceThinForEntity(
+      int       $entityId,
+      int       $languageId,
+      string    $pageType,
+      SeoReport $seoReport
+    ): ?array {
+      $table  = match ($pageType) {
+        'product'  => 'products_description',
+        'category' => 'categories_description',
+        default    => null,
+      };
+      $column = match ($pageType) {
+        'product'  => 'products_description',
+        'category' => 'categories_description',
+        default    => null,
+      };
+      $idCol  = match ($pageType) {
+        'product'  => 'products_id',
+        'category' => 'categories_id',
+        default    => null,
+      };
+      if ($table === null || $column === null || $idCol === null) {
+        return null;
+      }
+
+      try {
+        $stmt = $this->db->prepare(
+          'SELECT ' . $column . ' AS source_text
+             FROM :table_' . $table . '
+            WHERE ' . $idCol . ' = :eid
+              AND language_id = :lid
+            LIMIT 1'
+        );
+        $stmt->bindInt(':eid', $entityId);
+        $stmt->bindInt(':lid', $languageId);
+        $stmt->execute();
+        $row = $stmt->fetch();
+      } catch (\Throwable $e) {
+        return null;
+      }
+
+      if (!$row || empty($row['source_text'])) {
+        return null;
+      }
+
+      return $seoReport->evaluateSourceThinContent((string)$row['source_text']);
+    }
+
+    /**
+     * Numeric severity for thin-content level so callers can pick the
+     * "worse" of two evaluations (page-level vs source-level).
+     */
+    private function thinSeverity(string $level): int
+    {
+      return match ($level) {
+        'critical' => 2,
+        'warning'  => 1,
+        default    => 0,
+      };
     }
 
     // ============================================================
@@ -430,6 +526,102 @@
       }
 
       return implode("\n", $lines);
+    }
+
+    /**
+     * Persist an optimized_report entry produced by Phase 2 of the new
+     * 3-button workflow (SeoMultilingualOrchestrator → SeoAgenticPipeline).
+     *
+     * The agentic pipeline writes its own audit row in products_seo_serp_report
+     * but does NOT touch products_seo_embedding.  Phase 2 needs a per-language
+     * trace in the embedding history so the display hook (ProductsSerp) can:
+     *   - mark Phase 2 as completed (getLatestReport != initial_report),
+     *   - render the per-language history table.
+     *
+     * This method goes through the same MultiDBRAGManager pipeline as the
+     * existing initial / cycle writers — it does NOT bypass the RAG layer,
+     * so the VECTOR(3072) column is populated normally.
+     *
+     * @param int    $entityId    Product / category primary key.
+     * @param int    $languageId  Target language id (the row written is this language).
+     * @param string $pageType    'product' | 'category' | ...
+     * @param string $url         Public-front URL of the entity for this language.
+     * @param int    $scoreBefore SEO score captured before the run.
+     * @param int    $scoreAfter  SEO score captured after the run.
+     * @param array  $appliedFields Subset of SeoEntityAdapter::normalizeChanges()
+     *                             that was actually saved to products_description.
+     * @param array  $auditResult Audit payload produced by SeoAuditAgent (or compatible shape).
+     * @param string $triggeredBy 'manual' | 'ajax' | 'cron' | ...
+     * @param string $sourceName  Identifier for the writer: defaults to 'SeoMultilingualOrchestrator'.
+     * @return int  Newly inserted row id, or 0 on failure.
+     */
+    public function recordOptimizedReport(
+      int    $entityId,
+      int    $languageId,
+      string $pageType,
+      string $url,
+      int    $scoreBefore,
+      int    $scoreAfter,
+      array  $appliedFields,
+      array  $auditResult = [],
+      string $triggeredBy = 'manual',
+      string $sourceName  = 'SeoMultilingualOrchestrator',
+      string $type        = 'optimized_report',
+      array  $benchmark   = []
+    ): int {
+      // Build the textual payload that the RAG layer will embed.  We embed
+      // the applied SEO fields so semantic search over the history makes
+      // sense (matching titles / descriptions / keywords).
+      $contentLines = [];
+      foreach ($appliedFields as $key => $value) {
+        if ($value === '' || $value === null || is_array($value)) {
+          continue;
+        }
+        $contentLines[] = strtoupper((string)$key) . ': ' . (string)$value;
+      }
+      if (!empty($auditResult['summary'])) {
+        $contentLines[] = 'AUDIT: ' . (string)$auditResult['summary'];
+      }
+      $content = implode("\n", $contentLines);
+      if ($content === '') {
+        // Nothing meaningful to embed → do not pollute the history.
+        return 0;
+      }
+
+      $improved = (bool)($auditResult['improved'] ?? ($scoreAfter > $scoreBefore));
+      $status   = $improved ? 'applied' : 'completed';
+
+      $metadata = [
+        'page_type'        => $pageType,
+        'url'              => $url,
+        'seo_score_before' => $scoreBefore,
+        'seo_score_after'  => $scoreAfter,
+        'status'           => $status,
+        'triggered_by'     => $triggeredBy,
+        'report_raw'       => null,
+        'serp_data'        => null,
+        'suggestions'      => $appliedFields,
+        'audit_result'     => $auditResult,
+        // Benchmark verdict + breakdown so the history modal can render
+        // a side-by-side source-vs-generated comparison table.
+        'benchmark'        => $benchmark,
+      ];
+
+      try {
+        return $this->storeEmbedding(
+          content:    $content,
+          type:       $type,
+          sourcetype: $triggeredBy,
+          sourcename: $sourceName,
+          entityType: $pageType,
+          entityId:   $entityId,
+          languageId: $languageId,
+          metadata:   $metadata
+        );
+      } catch (\Throwable $e) {
+        error_log('[SeoEmbedding] recordOptimizedReport failed: ' . $e->getMessage());
+        return 0;
+      }
     }
 
     /**

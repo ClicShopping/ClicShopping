@@ -1,17 +1,20 @@
 seo_prompt_meta_title = You are a senior SEO copywriter.
 Internal processing must be in English.
 Generate an SEO meta title for an {{entity_type}} named "{{entity_name}}".
-If entity_type is product, incorporate brand {{product_brand}}, model {{product_model}}, and price {{product_price}} when relevant.
+If entity_type is product AND brand "{{product_brand}}" is NOT empty, you may mention the brand when it strengthens trust.
+If "{{product_brand}}" is EMPTY, omit any brand mention entirely. Do NOT invent a brand, do NOT use placeholder tokens such as "[Brand]", "[Brand Name]", "[X]", "{{X}}".
 Primary keyword: {{primary_keyword}}.
 Search intent: {{search_intent}}.
-SERP topics: {{topics}}.
+SERP topics (lexical inspiration only — do NOT add facts from this list): {{topics}}.
 Competitor titles: {{competitor_titles}}.
-AI overview insights: {{ai_overview_insights}}.
 Validation feedback: {{validation_feedback}}.
 Requirements:
-- Length: strictly 50-60 characters including spaces.
+- Length: target 50-58 characters, hard maximum 65 characters including spaces. Count carefully.
+- The title MUST contain only words that are either: the product name, the brand (if non-empty), the primary keyword, or one natural differentiator drawn from {{topics}}.
+- FORBIDDEN: any placeholder token between square brackets ("[Brand]", "[X]") or double braces ("{{X}}") — these are template artefacts and must never appear in the output.
+- FORBIDDEN in the title: SKU codes, model numbers, internal references (e.g. "REF-1234"), price figures, currency amounts, stock numbers, year ranges or numeric counts that are not in the source product data.
+- FORBIDDEN marketing fillers when they are not in the source: "Premium", "Best", "Top", "Ultimate", "Pro", random numbers, generic adjectives padded only to reach a length target.
 - Place the primary keyword as close to the beginning as naturally possible.
-- Integrate one semantically related secondary keyword or synonym from {{topics}} if it fits within the character limit.
 - Do not repeat the primary keyword more than once.
 - No emojis, no quotes, no trailing period, no clickbait.
 - Differentiate clearly from competitor titles listed above.
@@ -21,19 +24,20 @@ Output only the title.
 seo_prompt_meta_description = You are a senior SEO copywriter.
 Internal processing must be in English.
 Generate a meta description for an {{entity_type}} named "{{entity_name}}".
-If entity_type is product, include one measurable spec (capacity, material, or dimension), brand {{product_brand}}, and a price cue {{product_price}} if available.
+If entity_type is product, include one measurable spec (capacity, material, dimension) ONLY when it is explicitly present in "Existing description"; otherwise omit it. Brand {{product_brand}} may be mentioned once when it strengthens trust.
 Primary keyword: {{primary_keyword}}.
 Search intent: {{search_intent}}.
-SERP topics: {{topics}}.
-AI overview insights: {{ai_overview_insights}}.
+SERP topics (lexical inspiration only — do NOT add facts from this list): {{topics}}.
 Competitor snippets: {{competitor_snippets}}.
+Existing description (SOURCE OF TRUTH — every fact in your output must trace back here): {{entity_description}}.
 Validation feedback: {{validation_feedback}}.
 Requirements:
-- Length: strictly 150-160 characters including spaces. Count carefully.
+- Length: strictly 120-160 characters including spaces. Count carefully.
 - The primary keyword must appear within the first 60 characters.
-- Include one concrete, measurable benefit (e.g. "keeps drinks hot 2x longer", "14 oz borosilicate glass") — not a vague claim.
+- Cite at most ONE concrete fact and ONLY if it appears in "Existing description" (e.g. "14 oz borosilicate" is fine only if the source says it).  Do NOT invent specs.
+- FORBIDDEN: price figures, currency amounts, stock counts, SKU codes, model numbers, "under XX", any numeric claim absent from the source.
 - End with a transactional CTA of 2-3 words maximum ("Shop now", "Order today", "Discover the set").
-- BANNED: "enhance your", "elevate your", "perfect for", "premium quality", "ideal solution", "unique", "best".
+- BANNED phrasings: "enhance your", "elevate your", "perfect for", "premium quality", "ideal solution", "unique", "best".
 - No emojis, no quotes, no trailing period.
 Write the output in {{output_language}}.
 Output only the description.
@@ -41,38 +45,44 @@ Output only the description.
 seo_prompt_summary = You are a senior SEO copywriter.
 Internal processing must be in English.
 Generate a short SEO summary for an {{entity_type}} named "{{entity_name}}".
-If entity_type is product, mention brand {{product_brand}}, model {{product_model}}, and a key spec (dimensions, material, compatibility, or primary use case).
+You may mention brand {{product_brand}} and ONE concrete attribute (material, capacity, dimension, or primary use case) BUT only when that attribute is explicitly stated in "Existing description". Never include SKU, model number, price, currency, or stock count.
 Primary keyword: {{primary_keyword}}.
 Search intent: {{search_intent}}.
-Topics: {{topics}}.
-AI overview insights: {{ai_overview_insights}}.
+Topics (synonym pool — paraphrase concepts from the source, do NOT add new facts): {{topics}}.
 Competitor snippets: {{competitor_snippets}}.
-Existing description: {{entity_description}}.
+Existing description (SOURCE OF TRUTH — every fact must trace back here): {{entity_description}}.
 Validation feedback: {{validation_feedback}}.
 Requirements:
 - Length: strictly 90-120 characters including spaces.
 - Primary keyword must appear exactly once, naturally integrated.
-- Include one secondary entity (brand, material, usage, or compatible product type) to reinforce topical relevance.
+- Include one secondary entity term (semantic synonym, material, usage drawn from the source) to reinforce topical relevance.
 - No emojis, no quotes, no trailing period.
 Write the output in {{output_language}}.
 Output only the summary.
 
 seo_prompt_meta_keywords = You are a senior SEO specialist.
 Internal processing must be in English.
+
+FACT-VS-LEXICON CONTRACT:
+- FACTS: every numeric or attribute claim (capacity, dimension, weight, material, certification…) must trace back to "Existing description". Inventing "350ml" for a 420ml product, or "stainless steel" for a product whose material is not stated, is forbidden.
+- LEXICON: you ARE encouraged to enrich with semantic synonyms and related entity terms for concepts that ARE in the source. If the source mentions "double wall" / "borosilicate" / "keeps drinks hot or cold", you should generate variants like "insulated glass", "thermal glass", "double-walled tumbler", "heat-retaining glass", "isolated drinkware" — these are SEO gold, not hallucinations.
+
 Generate 8-12 SEO keywords for an {{entity_type}} named "{{entity_name}}".
-If entity_type is product, include: brand {{product_brand}} and model {{product_model}} variants, material variants, capacity variants, and use-case variants.
-If entity_type is category, include subcategory names, product type variants, and buyer-intent phrases.
+You may use the brand {{product_brand}} and the primary keyword.
 Primary keyword: {{primary_keyword}}.
-Topics: {{topics}}.
+Topics (synonym pool — paraphrase source concepts, do NOT add new facts): {{topics}}.
 Keywords from SERP: {{keywords}}.
+Existing description (SOURCE OF TRUTH for facts): {{entity_description}}.
 Validation feedback: {{validation_feedback}}.
 Requirements:
 - 1-4 words per keyword.
-- Include a balanced mix: informational (how, what, best), transactional (buy, price, shop), and navigational (brand + model).
-- Include at least 2 long-tail variants (3-4 words) with high purchase intent.
-- Include at least 2 LSI synonyms: for thermal/insulated products these must include terms like "insulated glass", "thermal glass"; for coffee drinkware add "latte glass", "cappuccino glass"; adapt to the actual product type.
+- FORBIDDEN: SKU codes, internal references ("REF-1234"), model numbers, price figures, currency amounts, stock counts, AND any numeric capacity / dimension / weight not stated in "Existing description".
+- FORBIDDEN promotional fillers: "best", "top", "premium", "ultimate", "buy [product] price", "shop [product] now" — keep transactional intent natural.
+- ENCOURAGED: semantic variants of source attributes (e.g. "insulated glass", "thermal glass", "double wall glass" for a double-walled product the source describes); related entity terms (e.g. "latte glass", "espresso cup" when the source mentions coffee).
+- Mix: brand/product navigational + informational + transactional + attribute synonyms.
+- 2-3 long-tail variants (3-4 words) with natural purchase intent.
 - Do NOT include stopwords as standalone keywords.
-- Comma-separated, no # symbols, no duplicates.
+- Comma-separated, no # symbols, no duplicates, no repeated stems.
 Write the output in {{output_language}}.
 Output only the comma-separated list.
 
@@ -99,48 +109,58 @@ Output only the JSON array.
 seo_prompt_h2 = You are a senior SEO content architect.
 Internal processing must be in English.
 Generate H2 and H3 headings for an {{entity_type}} named "{{entity_name}}".
-If entity_type is product, mandatory sections: features/specifications, compatibility, usage/installation, and at least one comparative or contextual section (e.g. "How {{entity_name}} compares to alternatives").
-If entity_type is category, mandatory sections: overview of the category, key selection criteria, price range overview, top subcategories, and at least one section referencing specific products or use cases.
 Primary keyword: {{primary_keyword}}.
 Search intent: {{search_intent}}.
-Topics: {{topics}}.
+Topics (lexical inspiration only — do NOT invent factual sections from this list): {{topics}}.
+Existing description (SOURCE OF TRUTH — every heading must correspond to material actually present in this text): {{entity_description}}.
 Validation feedback: {{validation_feedback}}.
 Requirements:
 - Return a JSON array of heading objects. Each object has: "level" (2 or 3), "text" (the heading), and optionally "anchor" (a URL-safe slug).
-- Include 4-6 H2 headings.
-- For each H2, include 1-2 H3 sub-headings that develop the section topic.
-- The primary keyword must appear in at least 2 H2 headings, naturally integrated.
-- Use semantically related terms and synonyms (from {{topics}}) across the remaining headings to build topical breadth.
-- No numbering in heading text, no trailing punctuation.
-Write questions and answers in {{output_language}}.
+- Produce 3-6 H2 headings, each grounded in material the source actually contains. Cover EVERY meaningful attribute group the source touches (features, materials, usages, care, accessories). Do not pad with off-topic sections; do not drop sections the source clearly supports.
+- For each H2, include 1-2 H3 sub-headings when the source contains enough material to develop the subsection. Use semantic synonyms across H2/H3 to broaden topical reach (e.g. "Thermal performance" alongside "Insulating double wall").
+- FORBIDDEN H2 / H3 unless they are explicitly present in "Existing description": "Warranty Information", "Where to Buy", "Trusted Retailers", "Promotions", "Pricing", "Price and Value Assessment", "Unique Selling Points", "How [product] Compares to Alternatives", "Customer Reviews", "Awards", "Certifications". Skip the section if the data is not in the source.
+- The primary keyword may appear in 1-2 H2 headings, naturally integrated. Do not stuff variants.
+- No numbering in heading text, no trailing punctuation, no model number / SKU / price in any heading.
+Write the headings in {{output_language}}.
 Output only the JSON array.
 
 seo_prompt_enriched_description = You are a senior SEO content writer specialised in e-commerce product pages.
 Internal processing must be in English.
-Write an enriched product or category description for an {{entity_type}} named "{{entity_name}}".
-If entity_type is product, mention: brand {{product_brand}}, model {{product_model}}, price {{product_price}}, stock status {{product_stock}}, key specifications (dimensions, materials, capacity, weight, variants) when available.
-If entity_type is category, mention: product count {{product_count}}, top products {{top_products}}, subcategories {{subcategories}}, and typical buyer profiles.
-Primary keyword: {{primary_keyword}}.
+
+FACT-VS-LEXICON CONTRACT — read this section first, it overrides every other instruction.
+
+A) FACTS — the "Existing description" block below is the ONLY source of NEW factual claims.
+   - You may NOT introduce: a material, dimension, capacity, weight, certification, standard, age range, country of origin, brand history detail, use case, compatibility statement, or numeric attribute that is NOT explicitly stated in the source.
+   - Example (bad): source says "couverts pour enfants à partir de 3 ans" → you cannot write "made of 18/10 stainless steel".
+   - Never include in the prose: price figures, currency amounts, stock counts, SKU codes, model numbers, internal references — these live in structured data only.
+
+B) LEXICON — within the factual envelope of the source, you MUST enrich semantically:
+   - Express each source attribute with multiple equivalent terms when natural ("double wall" ↔ "double-walled" ↔ "insulating" ↔ "thermal").
+   - Cover EVERY attribute the source mentions: do not drop a feature just because it sounds technical. If the source mentions a cork base, the output should mention it (or paraphrase it: "non-slip cork base", "cork foot", etc.).
+   - Cover EVERY usage the source mentions (e.g. coffee, tea, cocktails, beer) with related entity terms ("hot beverages", "cold drinks", "espresso", "latte glass" when applicable).
+   - Use {{topics}} as a SYNONYM POOL for concepts already in the source — never as a source of new facts.
+
+In short: rephrase richly, but never extend the fact set.
+
+Write an enriched description for an {{entity_type}} named "{{entity_name}}".
+Primary keyword (use sparingly and naturally): {{primary_keyword}}.
 Search intent: {{search_intent}}.
-Topics: {{topics}}.
-Secondary entities to integrate naturally: materials, usage contexts, technical specifications, related product types inferred from {{topics}} and {{ai_overview_insights}}.
-AI overview insights: {{ai_overview_insights}}.
-Existing description: {{entity_description}}.
-Validation feedback: {{validation_feedback}}.
+Brand (factual mention only, no embellishment): {{product_brand}}.
+Topics (synonym pool — paraphrase concepts already in the source, do NOT add new facts from this list): {{topics}}.
+Existing description (SOURCE OF TRUTH — every fact in your output must trace back here): {{entity_description}}.
+Validation feedback (errors to fix from previous attempt): {{validation_feedback}}.
 Requirements:
-- Length: 200-300 words for products; 300-500 words for categories.
-- Keyword density: primary keyword must appear EXACTLY 2 times. Not once, not 3 times — exactly 2. This is a hard constraint.
-- Position the primary keyword: once in the first sentence, once in the body. Never in the closing paragraph.
-- Include 4-6 semantically related terms from {{topics}} (e.g. "insulated glass", "thermal glass", "borosilicate", "latte glass") distributed naturally.
-- For products: include at least 3 concrete technical facts (capacity in ml/oz, material, a measurable feature). Do NOT invent specifications not provided.
-- Structure: first paragraph states what the product IS and its primary function with the keyword; second paragraph covers measurable specifications and features; third paragraph covers real use cases (specific drinks, settings); closing sentence is a factual CTA (max 1 sentence, no superlatives).
+- Length: roughly 1.0x to 1.5x the source word count. Use the extra room for lexical enrichment, NOT for adding facts.
+- A short source still warrants full coverage of every attribute it mentions; do not skip an attribute just to stay short.
+- Primary keyword appears 2-3 times, naturally placed. Do not stuff variants — but DO use semantic synonyms freely (they are not "the same keyword").
+- Tone: factual, neutral, vocabulary-rich, no marketing superlatives, no emotional claims about user experience.
+- Structure: paragraph 1 — what the product is and who it is for; paragraph 2 — every concrete feature the source states, rephrased and paraphrased richly; paragraph 3 — usage notes EXPLICITLY mentioned in the source (beverage types, dishwasher safety, etc.) with their semantic variants.
 - Insert a line break at the beginning of each paragraph.
 - BANNED phrases — do not use any of these or semantically equivalent expressions:
   * "enhance your experience", "elevate your", "perfect for", "premium quality", "functional design"
-  * "seamlessly fitting", "diverse usage contexts", "compatible brands of [unrelated products]"
   * "daily rituals", "entertaining moments", "refined experience", "ideal solution"
-  * Any claim of compatibility with machines or devices unless technically accurate and provided in the product data.
-- No keyword stuffing, no emojis, no quotes, no marketing superlatives.
+  * Any claim of compatibility with machines, certifications, age-suitability ranges, or use cases NOT explicitly present in the source.
+- No emojis, no quotes, no marketing superlatives, no closing CTA mentioning price or stock.
 - Return HTML using <p> paragraphs only (no <h2>, no <ul>, no <div>).
 Write the output in {{output_language}}.
 Output only the HTML.

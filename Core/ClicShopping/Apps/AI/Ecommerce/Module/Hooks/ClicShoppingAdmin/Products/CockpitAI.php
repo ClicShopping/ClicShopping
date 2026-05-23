@@ -117,9 +117,8 @@
               $hasAnalysis = true;
             }
           }
-        } catch (\Exception $e) {
-          // Silently fail - will show analyze button
-          if (CockpitAIClass::debug()) {
+          if (defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG')
+              && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True') {
             error_log('CockpitAI Hook: Failed to load last analysis: ' . $e->getMessage());
           }
         }
@@ -373,16 +372,37 @@
             var seoStatus = data.header?.seo_status || "NOT_ANALYZED";
             var seoClass  = seoStatus === "ANALYZED" ? "success" : "warning";
             var analysisDate = data.header?.analysis_date ? new Date(data.header.analysis_date).toLocaleString() : "";
+            var seoScore  = data.header?.seo_score;
+            var seoStale  = data.header?.seo_data_stale === true;
 
             html += "<div class=\"alert alert-success mb-3\">";
             html += "  <div class=\"d-flex justify-content-between align-items-center\">";
             html += "    <div>";
             html += "      <h5 class=\"mb-1\"><i class=\"bi bi-check-circle\"></i> ' . $this->app->getDef('text_analysis_success') . '</h5>";
             html += "      <small>" + analysisDate + " | " + (data.technical?.pipeline_duration_ms || 0).toFixed(0) + "ms</small>";
-            html += "      <span class=\"badge bg-" + seoClass + " ms-2\">SEO: " + seoStatus + "</span>";
+            html += "      <span class=\"badge bg-" + seoClass + " ms-2\">SEO: " + seoStatus;
+            if (seoScore !== null && seoScore !== undefined && seoScore > 0) {
+              html += " " + Math.round(seoScore) + "/100";
+            }
+            html += "</span>";
             html += "    </div>";
             html += "  </div>";
             html += "</div>";
+
+            // Stale-SEO banner: shown when a fresh SEO optimization happened
+            // AFTER the cached CockpitAI analysis.  The seo_status badge
+            // above already reflects the latest SEO state, but Score X / Y /
+            // quadrant / recommendations are still based on the cached
+            // snapshot — re-running CockpitAI will refresh them.
+            if (seoStale) {
+              html += "<div class=\"alert alert-warning d-flex align-items-center mb-3\">";
+              html += "  <i class=\"bi bi-arrow-clockwise me-2\"></i>";
+              html += "  <div>SEO has been re-optimized since the last CockpitAI analysis. ";
+              html += "    The Score X / Y and recommendations below are based on the previous state — ";
+              html += "    re-run the analysis to refresh them.";
+              html += "  </div>";
+              html += "</div>";
+            }
 
             // ── Score X & Y cards ───────────────────────────────────────────
             var scoreX = parseFloat(data.score_x?.value || 0);

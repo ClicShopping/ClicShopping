@@ -203,6 +203,37 @@
       ));
 
       // ────────────────────────────────────────────────────────────────────
+      // Rule 2b: seo_quality_regression (new — Phase 2 benchmark)
+      // Fires when the latest SEO optimization attempt regressed the content
+      // quality vs the source description (SeoQualityBenchmark verdict =
+      // 'regression', or coverage < 60 %, or repetition > 20 %).  Triggers
+      // a re-optimize action so the regression is addressed before the
+      // catalog drifts.  Higher specificity than seo_low_score so it wins
+      // when both apply — a regressed product needs the dedicated retry,
+      // not a generic "optimize SEO" action.
+      // ────────────────────────────────────────────────────────────────────
+      $registry->register(new Rule(
+        code:        'seo_quality_regression',
+        action:      new Action(
+          code:        'reoptimize_seo_quality',
+          label:       $this->app->getDef('text_label_seo_regression') ?: 'Re-optimize SEO (quality regression)',
+          priority:    ActionPriority::High,
+          description: $this->app->getDef('text_seo_quality_regression')
+            ?: 'The latest SEO optimization attempt regressed the content quality benchmark — re-run with broader source-attribute coverage.',
+          exclusive:   false,
+        ),
+        condition:   static function (array $ctx): bool {
+          $verdict   = $ctx['seo_benchmark_verdict']    ?? null;
+          $coverage  = $ctx['seo_benchmark_coverage']   ?? null;
+          $repeat    = $ctx['seo_benchmark_repetition'] ?? null;
+          return $verdict === 'regression'
+            || ($coverage !== null && $coverage < 0.60)
+            || ($repeat   !== null && $repeat   > 0.20);
+        },
+        specificity: 3,
+      ));
+
+      // ────────────────────────────────────────────────────────────────────
       // Rule 3: description_poor (Req. 14.3)
       // ────────────────────────────────────────────────────────────────────
       $registry->register(new Rule(

@@ -99,6 +99,12 @@ class SeoCodeValidationAgent implements ActorAgentInterface
 
     $entityType = (string)($params['entity_type'] ?? '');
     $changes = $params['changes'] ?? [];
+    // Phase 2 excludes FAQ generation (handled separately by Phase 3 /
+    // SeoFaqPipeline with anti-hallucination grounding).  Forward the flag
+    // to every LLM-based check so the evaluator is told FAQ is OUT OF SCOPE
+    // and stops dragging the quality / coherence score down with "no FAQ
+    // section provided" issues that we expect at this stage.
+    $excludeFaq   = (bool)($params['exclude_faq'] ?? false);
     $context = $action->getContext();
     $languageId = $context->getLanguageId() ?? 1;
     $languageCode = $this->translator->getLanguageCode($languageId);
@@ -132,7 +138,7 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     $approved = $approved && $lengthCheck['passed'];
 
     try {
-      $quality = $this->validateQuality($changes, $entityType, $languageCode);
+      $quality = $this->validateQuality($changes, $entityType, $languageCode, $excludeFaq);
       $qualityScore = (int)($quality['quality_score'] ?? 0);
       $issues = array_merge($issues, $quality['issues'] ?? []);
       $suggestions = array_merge($suggestions, $quality['suggestions'] ?? []);
@@ -163,7 +169,21 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     }
 
     try {
-      $coherence = $this->checkCoherence($changes, $entityType, $languageCode);
+      $coherence = $this->checkCoherence($changes, $entityType, $languageCode, $excludeFaq);
+
+      // Placeholder detection has its own dedicated array in the coherence
+      // payload — previously we only scanned the textual `issues` strings,
+      // which meant the LLM emitting "[Brand Name]" was caught by the LLM
+      // coherence check but never blocked approval because the structured
+      // placeholder list wasn't inspected.  Treat any non-empty
+      // `placeholder_fields_detected` as a critical blocker.
+      $placeholderFields = $coherence['placeholder_fields_detected'] ?? [];
+      if (!empty($placeholderFields) && is_array($placeholderFields)) {
+        $approved = false;
+        $issues[] = 'Unfilled placeholders detected in output: ' . implode(', ', array_map('strval', $placeholderFields));
+        $suggestions[] = 'Remove any "[Brand Name]", "{{...}}", "[XXX]" or similar template-style tokens before regenerating.';
+      }
+
       if (($coherence['passed'] ?? true) === false) {
         // Coherence issues are warnings — they do not block approval on their own,
         // but they are surfaced as suggestions so the retry loop can improve them.
@@ -175,11 +195,11 @@ class SeoCodeValidationAgent implements ActorAgentInterface
             break;
           }
         }
-        
+
         if ($criticalCoherenceIssue) {
           $approved = false;
         }
-        
+
         $issues    = array_merge($issues, $coherence['issues']      ?? []);
         $suggestions = array_merge($suggestions, $coherence['suggestions'] ?? []);
       }
@@ -272,9 +292,16 @@ class SeoCodeValidationAgent implements ActorAgentInterface
 
   /**
    * Validates meta title, description, keywords lengths.
-   * 
-   * Meta title uses word count (8-20 words, ~15 ideal) for flexible validation.
-   * Meta description uses character count (120-165 chars).
+   *
+   * Meta title uses character count (30-65 chars) aligned with the Google
+   * SERP truncation threshold (~600 px / ~60 chars).  The previous "8-20
+   * words" rule conflicted with the generation prompt itself
+   * (seo_prompt_meta_title asks for 50-60 chars), causing an unwinnable
+   * loop where a perfectly compliant 50-60 char title was rejected for
+   * being "only 7 words".
+   *
+   * Meta description uses character count (120-165 chars), in line with
+   * Google's 150-160 char display window.
    * Meta keywords must be present.
    *
    * @param array $changes Proposed SEO changes containing meta_title, meta_description, meta_keywords
@@ -289,10 +316,11 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     $metaDescription = (string)($changes['meta_description'] ?? '');
     $metaKeywords = (string)($changes['meta_keywords'] ?? '');
 
+    $titleChars     = mb_strlen($metaTitle, 'UTF-8');
     $titleWordCount = count(preg_split('/[\s\p{Z}]+/u', trim($metaTitle), -1, PREG_SPLIT_NO_EMPTY));
-    if ($titleWordCount < 8 || $titleWordCount > 20) {
-      $issues[] = 'Meta title should be around 15 words (current: ' . $titleWordCount . ' words)';
-      $suggestions[] = 'Rewrite meta title to approximately 15 words (8-20 words acceptable) while keeping the primary keyword';
+    if ($titleChars < 30 || $titleChars > 65) {
+      $issues[] = 'Meta title must be 30-65 characters (current: ' . $titleChars . ')';
+      $suggestions[] = 'Rewrite meta title to 50-60 characters with the primary keyword close to the start';
     }
 
     $descLen = mb_strlen($metaDescription, 'UTF-8');
@@ -312,7 +340,7 @@ class SeoCodeValidationAgent implements ActorAgentInterface
       'suggestions' => $suggestions,
       'lengths' => [
         'meta_title_words' => $titleWordCount,
-        'meta_title_chars' => mb_strlen($metaTitle, 'UTF-8'),
+        'meta_title_chars' => $titleChars,
         'meta_description' => $descLen,
       ],
     ];
@@ -331,7 +359,7 @@ class SeoCodeValidationAgent implements ActorAgentInterface
    * @return array Quality validation result with quality_score, issues, suggestions
    * @throws \Throwable If LLM call fails
    */
-  private function validateQuality(array $changes, string $entityType, string $languageCode): array
+  private function validateQuality(array $changes, string $entityType, string $languageCode, bool $excludeFaq = false): array
   {
     $content = $this->buildValidationContent($changes, $languageCode);
     $primaryKeyword = (string)($changes['primary_keyword'] ?? '');
@@ -343,6 +371,9 @@ class SeoCodeValidationAgent implements ActorAgentInterface
       'content' => $content,
       'primary_keyword' => $primaryKeyword,
       'topics' => '', // Could be enhanced later
+      'scope_note' => $excludeFaq
+        ? 'IMPORTANT: this is Phase 2 of a multi-phase workflow — FAQ generation is INTENTIONALLY out of scope and will be handled by Phase 3 with anti-hallucination grounding checks. Do NOT lower the score because no FAQ section is present; do NOT list "missing FAQ" as an issue.'
+        : '',
     ]);
 
     return $this->llm->generateStructuredResponse($prompt, [
@@ -459,7 +490,7 @@ class SeoCodeValidationAgent implements ActorAgentInterface
    * @return array Coherence check result with passed status, issues, suggestions
    * @throws \Throwable If LLM call fails
    */
-  private function checkCoherence(array $changes, string $entityType, string $languageCode): array
+  private function checkCoherence(array $changes, string $entityType, string $languageCode, bool $excludeFaq = false): array
   {
     $content = $this->buildValidationContent($changes, $languageCode);
     $entityName = (string)($changes['summary'] ?? $changes['meta_title'] ?? '');
@@ -470,6 +501,9 @@ class SeoCodeValidationAgent implements ActorAgentInterface
       'entity_name' => $entityName,
       'content' => $content,
       'search_intent' => $searchIntent,
+      'scope_note' => $excludeFaq
+        ? 'IMPORTANT: this is Phase 2 of a multi-phase workflow — FAQ generation is INTENTIONALLY out of scope and will be handled by Phase 3 with anti-hallucination grounding checks. SKIP check (3) entirely and do NOT report FAQ-related issues.'
+        : '',
     ]);
 
     return $this->llm->generateStructuredResponse($prompt, [

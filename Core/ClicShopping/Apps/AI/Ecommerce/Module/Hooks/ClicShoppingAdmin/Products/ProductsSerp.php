@@ -73,39 +73,22 @@
       }
 
       $productId = (int)$_GET['pID'];
-      $languageId = (int)$this->lang->getId();
 
-      if (isset($_GET['language_id'])) {
-        $requestedLanguage = (int)$_GET['language_id'];
-        if ($requestedLanguage > 0) {
-          $languageId = $requestedLanguage;
-        }
-      }
+      // The 3-button workflow no longer lets the admin pick a language: every
+      // phase processes every enabled language in one pass through
+      // SeoMultilingualOrchestrator.  The history table below is still
+      // language-aware (the embedding table stores one row per language_id),
+      // so we read it for the admin's current language and the orchestrator
+      // populates every other locale in the same run.
+      $languageId = (int)$this->lang->getId();
 
       $linkUrl = HTTP::getShopUrlDomain() . 'index.php?Products&Description&products_id=' . $productId;
       $baseUrl = HTTP::getShopUrlDomain();
 
-      // -- Manual Action: Run/Re-run analysis --
+      // Inline-POST audit trigger was removed: every phase is now driven
+      // exclusively by AJAX so the admin stays inside the non-dismissible
+      // progress modal until the backend completes.
       $actionResult = null;
-      if (isset($_POST['seo_run_analysis']) && (int)($_POST['seo_product_id'] ?? 0) === $productId) {
-        try {
-          $repository = $this->getRepository();
-          $postedLanguage = (int)($_POST['language_id'] ?? 0);
-          if ($postedLanguage > 0) {
-            $languageId = $postedLanguage;
-          }
-          $actionResult = $repository->process(
-            entityId: $productId,
-            languageId: $languageId,
-            url: $linkUrl,
-            baseUrl: $baseUrl,
-            pageType: 'product',
-            triggeredBy: 'manual'
-          );
-        } catch (\Throwable $e) {
-          $actionResult = ['success' => false, 'error' => $e->getMessage()];
-        }
-      }
 
       // -- Load embedding history --
       try {
@@ -139,6 +122,46 @@
         }
       } else {
         $reportHtml = '';
+      }
+
+      // -- Source-level thin-content evaluation --
+      // The crawler word count blends header/menu/footer/JSON-LD into the
+      // total, hiding short product descriptions behind page chrome.  Read
+      // the description directly from clic_products_description and apply
+      // the SAME thresholds — keep the WORST verdict so the warning banner
+      // appears the moment the admin opens the SEO tab, BEFORE Phase 1
+      // even runs.
+      try {
+        $Qdesc = $this->db->prepare(
+          'SELECT products_description
+             FROM :table_products_description
+            WHERE products_id = :pid
+              AND language_id = :lid
+            LIMIT 1'
+        );
+        $Qdesc->bindInt(':pid', $productId);
+        $Qdesc->bindInt(':lid', $languageId);
+        $Qdesc->execute();
+        $descRow = $Qdesc->fetch();
+        $sourceText = $descRow ? (string)($descRow['products_description'] ?? '') : '';
+        if ($sourceText !== '') {
+          $sourceThin = $seoReport->evaluateSourceThinContent($sourceText);
+          $pageLevel  = (string)($seoData['thin_content_level'] ?? 'ok');
+          $severity   = ['critical' => 2, 'warning' => 1, 'ok' => 0];
+          if (($severity[$sourceThin['level']] ?? 0) > ($severity[$pageLevel] ?? 0)) {
+            $seoData['thin_content']       = $sourceThin['thin_content'];
+            $seoData['thin_content_level'] = $sourceThin['level'];
+            $seoData['thin_content_msg']   = $sourceThin['message'];
+            if ($sourceThin['level'] === 'critical') {
+              $seoData['seo_score'] = min((int)($seoData['seo_score'] ?? 0), SeoReport::THIN_CONTENT_CRITICAL_CAP);
+            } elseif ($sourceThin['level'] === 'warning') {
+              $seoData['seo_score'] = min((int)($seoData['seo_score'] ?? 0), SeoReport::THIN_CONTENT_WARNING_CAP);
+            }
+          }
+          $seoData['source_wordcount'] = $sourceThin['word_count'];
+        }
+      } catch (\Throwable) {
+        // Defensive — keep the page-level verdict if the DB probe fails.
       }
 
       // -- UI Assembly --
@@ -194,7 +217,23 @@
     ): string {
       $out = '';
 
-      $out .= $this->renderLanguageSelector($languageId);
+      // Singleton non-dismissible progress modal — every phase button drives it.
+      $out .= $this->renderProgressModal();
+
+      // Thin-content warning banner — surfaced at the top so the admin
+      // knows BEFORE running Phase 2 that the source description is too
+      // short to produce meaningful SEO results and that the score is
+      // already capped by the crawler scorer.
+      $thinLevel = (string)($seoData['thin_content_level'] ?? 'ok');
+      $thinMsg   = (string)($seoData['thin_content_msg']   ?? '');
+      if ($thinLevel !== 'ok' && $thinMsg !== '') {
+        $alertClass = $thinLevel === 'critical' ? 'danger' : 'warning';
+        $icon       = $thinLevel === 'critical' ? 'bi-x-octagon-fill' : 'bi-exclamation-triangle-fill';
+        $out .= '<div class="alert alert-' . $alertClass . ' d-flex align-items-start gap-2 mb-3">';
+        $out .= '<i class="bi ' . $icon . ' fs-5 mt-1"></i>';
+        $out .= '<div>' . htmlspecialchars($thinMsg) . '</div>';
+        $out .= '</div>';
+      }
 
       if ($actionResult !== null) {
         $out .= $this->renderActionBanner($actionResult);
@@ -202,59 +241,12 @@
 
       // Initial Mode: No history yet
       if ($latest === null) {
-        $out .= $this->renderInitialMode($productId, $seoData, $reportHtml, $languageId);
+        $out .= $this->renderInitialMode($productId, $seoData, $reportHtml);
         return $out;
       }
 
       // Optimization Mode: History available
       $out .= $this->renderOptimizationMode($productId, $latest, $history, $seoData, $reportHtml, $agenticLatest, $languageId);
-
-      return $out;
-    }
-
-    private function renderLanguageSelector(int $languageId): string
-    {
-      try {
-        $languages = $this->lang->getAll();
-      } catch (\Throwable) {
-        return '';
-      }
-
-      if (empty($languages)) {
-        return '';
-      }
-
-      $options = '';
-      foreach ($languages as $lang) {
-        $id = (int)($lang['id'] ?? 0);
-        $name = (string)($lang['name'] ?? $id);
-        $selected = $id === $languageId ? ' selected' : '';
-        $options .= '<option value="' . $id . '"' . $selected . '>' . htmlspecialchars($name) . '</option>';
-      }
-
-      $currentUrl = $_SERVER['REQUEST_URI'] ?? '';
-      $separator = str_contains($currentUrl, '?') ? '&' : '?';
-
-      $out  = '<div class="mb-3">';
-      $out .= '<label class="form-label small text-muted">' . $this->app->getDef('text_seo_language_select') . '</label>';
-      $out .= '<select class="form-select form-select-sm" id="seo-language-selector">' . $options . '</select>';
-      $out .= '</div>';
-      $out .= '<script>
-        (function(){
-          var selector = document.getElementById("seo-language-selector");
-          if (!selector) return;
-          selector.addEventListener("change", function(){
-            var url = "' . addslashes($currentUrl) . '";
-            var newUrl = url;
-            if (url.indexOf("language_id=") !== -1) {
-              newUrl = url.replace(/language_id=\d+/, "language_id=" + this.value);
-            } else {
-              newUrl = url + "' . $separator . 'language_id=" + this.value;
-            }
-            window.location.href = newUrl;
-          });
-        })();
-      </script>';
 
       return $out;
     }
@@ -286,14 +278,12 @@
     }
 
     /**
-     * Renders the UI for categories with no previous analysis.
-     * * @param int $productId
-     * @param array $seoData
-     * @param string $reportHtml
-     * @param int $languageId
-     * @return string
+     * Phase 1 view: no embedding history yet.
+     * The "Run audit" button is the only action available — Phase 2 and
+     * Phase 3 unlock progressively once their predecessor has produced a row
+     * in products_seo_embedding.
      */
-    private function renderInitialMode(int $productId, array $seoData, string $reportHtml, int $languageId): string
+    private function renderInitialMode(int $productId, array $seoData, string $reportHtml): string
     {
       $score = $seoData['seo_score'] ?? 0;
       $scoreColor = $this->scoreColor($score);
@@ -319,7 +309,7 @@
         url: $runUrl,
         postName: 'seo_run_analysis',
         buttonClass: 'btn-primary',
-        languageId: $languageId
+        progressMessage: $this->app->getDef('text_seo_progress_phase1') ?: 'Initial SEO audit in progress…'
       );
       $out .= $this->renderReportsButton($productId);
 
@@ -413,10 +403,18 @@
 
 
     /**
-     * Renders a button that triggers an AJAX SEO action.
-     * On success the page reloads via window.location.href (preserving the ClicShopping URL intact)
-     * so the history table refreshes and the SEO tab reopens automatically.
-     * On error a Bootstrap modal shows the message without reloading.
+     * Render a single phase trigger button.
+     *
+     * Clicking the button opens a non-dismissible Bootstrap progress modal
+     * (rendered once per page by renderProgressModal()) and fires the AJAX
+     * request to $url with { $postName: 1, seo_product_id: $productId }.
+     * On success the modal stays visible briefly with a "Success" state then
+     * reloads the page so the history table picks up the new row.  On error
+     * the modal switches to an error layout with a Close button enabled.
+     *
+     * The admin is not allowed to dismiss the modal manually while the AJAX
+     * is in flight — every phase processes every enabled language in one
+     * pass and any interruption would leave the database half-translated.
      */
     private function renderActionButton(
       int    $productId,
@@ -424,158 +422,207 @@
       string $url,
       string $postName,
       string $buttonClass = 'btn-primary',
-      int    $languageId  = 0
+      string $progressMessage = ''
     ): string {
-      $loadingText  = $this->app->getDef('text_seo_loading')              ?: 'Loading…';
-      $ajaxInvalid  = $this->app->getDef('text_seo_ajax_invalid_response') ?: 'Invalid response.';
-      $unknownError = $this->app->getDef('text_seo_unknown_error')         ?: 'Unknown error.';
-      $ajaxFailed   = $this->app->getDef('text_seo_ajax_failed')           ?: 'Request failed';
-
-      // Unique suffix per button so multiple buttons on the same page don't conflict
+      // Unique suffix per (postName, productId) so several buttons on the
+      // same tab (Phase 1 / 2 / 3) bind independent click handlers.
       $uid = 'seo_' . substr(md5($postName . $productId), 0, 8);
+
+      $progressMessage = $progressMessage !== ''
+        ? $progressMessage
+        : ($this->app->getDef('text_seo_progress_default') ?: 'Processing in progress…');
 
       $out  = '<button type="button"';
       $out .= ' id="btn_' . $uid . '"';
       $out .= ' class="btn ' . $buttonClass . ' btn-sm me-2 mb-3"';
-      $out .= ' data-url="'      . htmlspecialchars($url)      . '"';
-      $out .= ' data-post-name="'. htmlspecialchars($postName) . '"';
-      $out .= ' data-product-id="'. $productId . '"';
-      $out .= ' data-language-id="'. (int)$languageId . '">';
+      $out .= ' data-url="'             . htmlspecialchars($url)             . '"';
+      $out .= ' data-post-name="'       . htmlspecialchars($postName)        . '"';
+      $out .= ' data-product-id="'      . $productId                         . '"';
+      $out .= ' data-progress-message="' . htmlspecialchars($progressMessage) . '">';
       $out .= '<i class="bi bi-play-circle me-1"></i>' . htmlspecialchars($label);
       $out .= '</button>';
-
-      // Error modal (only injected once per page via a guard check)
-      $out .= '
-<div class="modal fade" id="seoErrorModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>SEO</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="seoErrorModalBody"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' . ($this->app->getDef('text_seo_modal_close') ?: 'Close') . '</button>
-      </div>
-    </div>
-  </div>
-</div>';
 
       $out .= '<script>
 (function () {
   var btn = document.getElementById(' . json_encode('btn_' . $uid) . ');
-  if (!btn) return;
+  if (!btn || btn.dataset.seoBound === "1") return;
+  btn.dataset.seoBound = "1";
 
   btn.addEventListener("click", function () {
     if (btn.disabled) return;
 
-    var formURL    = btn.getAttribute("data-url");
-    var postName   = btn.getAttribute("data-post-name");
-    var productId  = btn.getAttribute("data-product-id");
-    var languageId = btn.getAttribute("data-language-id");
+    var formURL   = btn.getAttribute("data-url");
+    var postName  = btn.getAttribute("data-post-name");
+    var productId = btn.getAttribute("data-product-id");
+    var message   = btn.getAttribute("data-progress-message");
+
+    if (typeof window.seoOpenProgressModal !== "function") {
+      return;
+    }
+    var modalApi = window.seoOpenProgressModal(message);
 
     var postData = {};
-    postData[postName]       = "1";
+    postData[postName]         = "1";
     postData["seo_product_id"] = productId;
-    postData["language_id"]    = languageId;
 
-    var originalHtml = btn.innerHTML;
-    btn.disabled  = true;
-    btn.innerHTML = \'<span class="spinner-border spinner-border-sm me-1" role="status"></span>\' + ' . json_encode($loadingText) . ';
+    btn.disabled = true;
 
-    // Progress indicator for long-running optimization
-    var progressInterval;
-    var dots = 0;
-    var startTime = Date.now();
-    
-    progressInterval = setInterval(function() {
-      dots = (dots + 1) % 4;
-      var dotStr = ".".repeat(dots);
-      var elapsed = Math.floor((Date.now() - startTime) / 1000);
-      btn.innerHTML = \'<span class="spinner-border spinner-border-sm me-1" role="status"></span>\' 
-                    + ' . json_encode($loadingText) . ' + dotStr + " (" + elapsed + "s)";
-    }, 1000);
-
-    function showSeoError(msg) {
-      if (progressInterval) clearInterval(progressInterval);
-      var modalEl = document.getElementById("seoErrorModal");
-      document.getElementById("seoErrorModalBody").innerHTML = "<p>" + msg + "</p>";
-      bootstrap.Modal.getOrCreateInstance(modalEl).show();
-    }
-    
-    // -----------------------------
-    // SNIPPET 2 — AJAX success logic
-    // -----------------------------
-    
     $.ajax({
       url: formURL,
       type: "POST",
       data: postData,
-      dataType: "json",
-      timeout: 300000  // 5 minutes timeout for long-running SEO optimization
+      dataType: "json"
+      // No client-side timeout: the multilingual orchestrator can run for
+      // several minutes; the non-dismissible modal keeps the admin informed.
     }).done(function (payload) {
-    
-      if (progressInterval) clearInterval(progressInterval);
-      btn.disabled  = false;
-      btn.innerHTML = originalHtml;
-    
       if (!payload || typeof payload !== "object") {
-        showSeoError("Invalid response");
+        modalApi.showError("Invalid response from server.");
+        btn.disabled = false;
         return;
       }
-    
-      // Check success with multiple type checks
-      var isSuccess = (payload.success === true || payload.success === 1 || payload.success === "true" || payload.success === "1");
-    
+      var isSuccess = (payload.success === true || payload.success === 1
+                    || payload.success === "true" || payload.success === "1");
       if (isSuccess) {
-    
-        // Show success message
-        btn.innerHTML = \'<i class="bi bi-check-circle me-1"></i>Success! Reloading...\';
-        btn.classList.remove("btn-success");
-        btn.classList.add("btn-success", "opacity-75");
-    
-        // Reload page after short delay to show success message
-        setTimeout(function() {
-          var base = window.location.href.replace(/#.*$/, "");
-    
-          if (languageId && base.indexOf("language_id=") !== -1) {
-            base = base.replace(/language_id=\\d+/, "language_id=" + languageId);
-          } else if (languageId && base.indexOf("language_id=") === -1) {
-            base = base + (base.indexOf("?") !== -1 ? "&" : "?") + "language_id=" + languageId;
+        modalApi.showSuccess();
+        setTimeout(function () {
+          // Set the hash first so the SEO tab is targeted on the reloaded
+          // page, then call reload() explicitly: when only the hash changes
+          // the browser does NOT reload by itself, which used to be masked
+          // by the old language_id query-string mutation.
+          if (window.location.hash !== "#section_SEOReportApp_content") {
+            window.location.hash = "section_SEOReportApp_content";
           }
-    
-          window.location.replace(base + "#section_SEOReportApp_content");
-        }, 800);
-    
+          window.location.reload();
+        }, 900);
       } else {
-    
-        var msg = payload.error || payload.message || "Unknown error";
-        showSeoError(msg);
-    
+        modalApi.showError(payload.error || payload.message || "Unknown error");
+        btn.disabled = false;
       }
-    
     }).fail(function (xhr) {
-    
-      if (progressInterval) clearInterval(progressInterval);
-      btn.disabled  = false;
-      btn.innerHTML = originalHtml;
-    
       var errorMsg = "Request failed (HTTP " + xhr.status + ")";
       if (xhr.status === 0) {
-        errorMsg = "Request timeout or network error. The optimization may still be running on the server.";
+        errorMsg = "Request timeout or network error. The optimization may still be running on the server — refresh the page in a moment to check.";
       } else if (xhr.status === 504 || xhr.status === 502) {
         errorMsg = "Gateway timeout. The optimization is taking longer than expected. Please refresh the page in a moment to see if changes were applied.";
       }
-      showSeoError(errorMsg);
-    
+      modalApi.showError(errorMsg);
+      btn.disabled = false;
     });
   });
+})();
+</script>';
 
-  function showSeoError(msg) {
-    var modalEl = document.getElementById("seoErrorModal");
-    document.getElementById("seoErrorModalBody").innerHTML = "<p>" + msg + "</p>";
-    bootstrap.Modal.getOrCreateInstance(modalEl).show();
-  }
+      return $out;
+    }
+
+    /**
+     * Render the singleton progress + error modal used by every phase button.
+     *
+     * The modal is non-dismissible (no close button, no backdrop click, no
+     * ESC key) while the AJAX is running.  When the AJAX completes the JS
+     * helper either:
+     *  - swaps the body to a "Success" state and lets the page reload, or
+     *  - swaps the body to an "Error" state and unlocks a Close button.
+     *
+     * The script also exposes window.seoOpenProgressModal() so every button's
+     * inline JS can drive the same modal.
+     */
+    private function renderProgressModal(): string
+    {
+      $titleProgress = $this->app->getDef('text_seo_progress_title')     ?: 'SEO processing in progress';
+      $titleSuccess  = $this->app->getDef('text_seo_progress_success')   ?: 'Success! Reloading…';
+      $titleError    = $this->app->getDef('text_seo_progress_error')     ?: 'SEO action failed';
+      $warn          = $this->app->getDef('text_seo_progress_warning')   ?: 'Please wait and do not reload the page. The process can take several minutes.';
+      $elapsedLabel  = $this->app->getDef('text_seo_progress_elapsed')   ?: 'seconds elapsed';
+      $closeLabel    = $this->app->getDef('text_seo_modal_close')        ?: 'Close';
+
+      $out  = '<div class="modal fade" id="seoProgressModal" tabindex="-1"';
+      $out .= ' data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">';
+      $out .= '<div class="modal-dialog modal-dialog-centered">';
+      $out .= '<div class="modal-content">';
+      $out .= '<div class="modal-header bg-info text-white" id="seoProgressModalHeader">';
+      $out .= '<h5 class="modal-title"><i id="seoProgressIcon" class="bi bi-hourglass-split me-2"></i>';
+      $out .= '<span id="seoProgressTitle">' . htmlspecialchars($titleProgress) . '</span></h5>';
+      $out .= '</div>';
+      $out .= '<div class="modal-body text-center" id="seoProgressBody">';
+      $out .= '  <div id="seoProgressSpinner" class="d-flex flex-column align-items-center">';
+      $out .= '    <div class="spinner-border text-primary mb-3" role="status" style="width:3rem;height:3rem;"><span class="visually-hidden">Loading</span></div>';
+      $out .= '    <div id="seoProgressMessage" class="mb-2 fw-medium"></div>';
+      $out .= '    <div class="alert alert-warning small mb-2"><i class="bi bi-exclamation-triangle me-1"></i>' . htmlspecialchars($warn) . '</div>';
+      $out .= '    <div class="progress mb-2 w-100" style="height:8px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width:100%;"></div></div>';
+      $out .= '    <div class="text-muted small"><span id="seoProgressTimer">0</span> ' . htmlspecialchars($elapsedLabel) . '</div>';
+      $out .= '  </div>';
+      $out .= '  <div id="seoProgressErrorBox" class="text-start" style="display:none;"></div>';
+      $out .= '</div>';
+      $out .= '<div class="modal-footer" id="seoProgressFooter" style="display:none;">';
+      $out .= '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' . htmlspecialchars($closeLabel) . '</button>';
+      $out .= '</div>';
+      $out .= '</div></div></div>';
+
+      $out .= '<script>
+(function () {
+  if (window.seoOpenProgressModal) return; // already bound on this page
+
+  function el(id) { return document.getElementById(id); }
+
+  window.seoOpenProgressModal = function (message) {
+    var modalEl   = el("seoProgressModal");
+    var header    = el("seoProgressModalHeader");
+    var icon      = el("seoProgressIcon");
+    var title     = el("seoProgressTitle");
+    var spinner   = el("seoProgressSpinner");
+    var errorBox  = el("seoProgressErrorBox");
+    var footer    = el("seoProgressFooter");
+    var msgEl     = el("seoProgressMessage");
+    var timerEl   = el("seoProgressTimer");
+
+    // Reset to "in progress" layout
+    header.classList.remove("bg-success", "bg-danger");
+    header.classList.add("bg-info");
+    icon.className = "bi bi-hourglass-split me-2";
+    title.textContent = ' . json_encode($titleProgress) . ';
+    spinner.style.display  = "";
+    errorBox.style.display = "none";
+    footer.style.display   = "none";
+    errorBox.innerHTML     = "";
+    msgEl.textContent      = message || "";
+
+    var startedAt = Date.now();
+    timerEl.textContent = "0";
+    var tickId = setInterval(function () {
+      timerEl.textContent = String(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+
+    return {
+      showSuccess: function () {
+        clearInterval(tickId);
+        header.classList.remove("bg-info");
+        header.classList.add("bg-success");
+        icon.className = "bi bi-check-circle me-2";
+        title.textContent = ' . json_encode($titleSuccess) . ';
+      },
+      showError: function (msg) {
+        clearInterval(tickId);
+        header.classList.remove("bg-info");
+        header.classList.add("bg-danger");
+        icon.className = "bi bi-x-circle me-2";
+        title.textContent = ' . json_encode($titleError) . ';
+        spinner.style.display  = "none";
+        errorBox.style.display = "";
+        errorBox.innerHTML = "<div class=\"alert alert-danger mb-0\"><i class=\"bi bi-x-circle me-1\"></i>" +
+          String(msg).replace(/[<>]/g, function (c) { return c === "<" ? "&lt;" : "&gt;"; }) +
+          "</div>";
+        footer.style.display = "";
+      },
+      hide: function () {
+        clearInterval(tickId);
+        modal.hide();
+      }
+    };
+  };
 })();
 </script>';
 
@@ -668,6 +715,12 @@
         $out .= '</div>';
       }
 
+      // -- Benchmark comparison table (source vs generated) --
+      $benchmark = $prevMeta['benchmark'] ?? [];
+      if (!empty($benchmark) && isset($benchmark['source_score'], $benchmark['generated_score'])) {
+        $out .= $this->renderBenchmarkTable($benchmark);
+      }
+
       // -- Suggestions --
       if (!empty($suggestions)) {
         $out .= '<div class="card mb-3"><div class="card-header d-flex align-items-center gap-2">';
@@ -679,16 +732,49 @@
         ];
 
         foreach ($suggestions as $key => $value) {
+          // Defensive: historic writers may have stored arrays under nested
+          // keys (e.g. h2 headings).  Coerce non-scalar values to a JSON
+          // string so htmlspecialchars() never receives an array.
+          if (is_array($value) || is_object($value)) {
+            $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+          }
+          $value = (string)($value ?? '');
+          if ($value === '') {
+            continue;
+          }
           $icon = $iconMap[$key] ?? 'bi-arrow-right-circle';
           $out .= '<li class="list-group-item d-flex align-items-start gap-2">';
           $out .= '<i class="bi ' . $icon . ' text-primary mt-1"></i>';
-          $out .= '<div><strong>' . strtoupper($key) . '</strong><br /><span class="text-muted">' . htmlspecialchars($value) . '</span></div></li>';
+          $out .= '<div><strong>' . strtoupper((string)$key) . '</strong><br /><span class="text-muted">' . htmlspecialchars($value) . '</span></div></li>';
         }
         $out .= '</ul></div>';
       }
 
       $optUrl = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/SEO/optimize_product_seo.php';
-      $out .= $this->renderActionButton($productId, $this->app->getDef('text_seo_run_optimize'), $optUrl, 'seo_run_optimize', 'btn-success', $languageId);
+      $out .= $this->renderActionButton(
+        $productId,
+        label: $this->app->getDef('text_seo_run_optimize'),
+        url: $optUrl,
+        postName: 'seo_run_optimize',
+        buttonClass: 'btn-success',
+        progressMessage: $this->app->getDef('text_seo_progress_phase2') ?: 'SEO content optimization across all languages in progress…'
+      );
+
+      // Phase 3 — FAQ generation with anti-hallucination grounding.
+      // Visible once Phase 2 has produced at least one optimized_report row
+      // (or a previous faq_generated row, so the admin can regenerate).
+      $latestType = (string)($latest['type'] ?? '');
+      if ($latestType === 'optimized_report' || $latestType === 'faq_generated') {
+        $faqUrl = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/SEO/generate_product_faq.php';
+        $out .= $this->renderActionButton(
+          $productId,
+          label: $this->app->getDef('text_seo_run_faq') ?: 'Generate FAQ',
+          url: $faqUrl,
+          postName: 'seo_run_faq',
+          buttonClass: 'btn-info',
+          progressMessage: $this->app->getDef('text_seo_progress_phase3') ?: 'FAQ generation with anti-hallucination grounding in progress…'
+        );
+      }
      // $out .= $this->renderReportsButton($productId);
 
       // -- Agentic Audit --
@@ -719,6 +805,114 @@
       } catch (\Throwable) {
         return $dateString;
       }
+    }
+
+    /**
+     * Render the side-by-side benchmark comparison table (source vs generated).
+     *
+     * Pulls every metric the SeoQualityBenchmark exposes so the admin can
+     * see at a glance which axis improved, which one regressed and by how
+     * much — complements the textual verdict / diagnostics with a numeric
+     * evolution view.
+     */
+    private function renderBenchmarkTable(array $benchmark): string
+    {
+      $srcBreak = $benchmark['source_score']['breakdown']    ?? [];
+      $genBreak = $benchmark['generated_score']['breakdown'] ?? [];
+      $srcScore = (float)($benchmark['source_score']['score']    ?? 0);
+      $genScore = (float)($benchmark['generated_score']['score'] ?? 0);
+      $delta    = (float)($benchmark['delta'] ?? ($genScore - $srcScore));
+      $verdict  = (string)($benchmark['verdict'] ?? 'unknown');
+      $reason   = (string)($benchmark['regression_reason'] ?? 'none');
+
+      // Each row of the comparison table.  "higher_is_better" controls the
+      // colour coding of the delta column (red when worse, green when better).
+      $rows = [
+        ['key' => 'score',              'label' => 'Composite score',     'src' => $srcScore,                                   'gen' => $genScore,                                   'higher' => true],
+        ['key' => 'normalized_entropy', 'label' => 'Lexical entropy',     'src' => (float)($srcBreak['normalized_entropy'] ?? 0), 'gen' => (float)($genBreak['normalized_entropy'] ?? 0), 'higher' => true],
+        ['key' => 'diversity',          'label' => 'Vocabulary diversity', 'src' => (float)($srcBreak['diversity']          ?? 0), 'gen' => (float)($genBreak['diversity']          ?? 0), 'higher' => true],
+        ['key' => 'entity_coverage',    'label' => 'Source-entity coverage', 'src' => 1.0,                                       'gen' => (float)($genBreak['entity_coverage']    ?? 0), 'higher' => true],
+        ['key' => 'repetition',         'label' => 'Repetition penalty',  'src' => (float)($srcBreak['repetition']         ?? 0), 'gen' => (float)($genBreak['repetition']         ?? 0), 'higher' => false],
+        ['key' => 'word_count',         'label' => 'Word count',          'src' => (float)($srcBreak['word_count']         ?? 0), 'gen' => (float)($genBreak['word_count']         ?? 0), 'higher' => null],
+      ];
+
+      $verdictBadge = match ($verdict) {
+        'improvement' => '<span class="badge bg-success"><i class="bi bi-arrow-up-circle me-1"></i>Improvement</span>',
+        'regression'  => '<span class="badge bg-danger"><i class="bi bi-arrow-down-circle me-1"></i>Regression</span>',
+        'parity'      => '<span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>Parity</span>',
+        default       => '<span class="badge bg-light text-dark">' . htmlspecialchars($verdict) . '</span>',
+      };
+
+      $out  = '<div class="card mb-3">';
+      $out .= '<div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">';
+      $out .= '<div><i class="bi bi-bar-chart-line text-primary me-1"></i><strong>SEO quality benchmark</strong> <span class="text-muted small">(source vs optimized)</span></div>';
+      $out .= '<div>' . $verdictBadge;
+      if ($reason !== 'none' && $reason !== '') {
+        $out .= ' <span class="badge bg-warning text-dark ms-1">' . htmlspecialchars($reason) . '</span>';
+      }
+      $out .= '</div>';
+      $out .= '</div>';
+
+      $out .= '<div class="table-responsive"><table class="table table-sm table-hover mb-0 align-middle">';
+      $out .= '<thead class="table-light"><tr>';
+      $out .= '<th>Metric</th><th class="text-end">Source</th><th class="text-end">Optimized</th><th class="text-end">Δ</th>';
+      $out .= '</tr></thead><tbody>';
+
+      foreach ($rows as $row) {
+        $src    = $row['src'];
+        $gen    = $row['gen'];
+        $diff   = $gen - $src;
+        $higher = $row['higher'];
+
+        $deltaClass = 'text-muted';
+        $deltaIcon  = '';
+        if ($higher !== null && abs($diff) > 1e-6) {
+          $isPositive = $higher ? $diff > 0 : $diff < 0;
+          $deltaClass = $isPositive ? 'text-success' : 'text-danger';
+          $deltaIcon  = $isPositive
+            ? '<i class="bi bi-arrow-up me-1"></i>'
+            : '<i class="bi bi-arrow-down me-1"></i>';
+        }
+
+        $isWordCount = $row['key'] === 'word_count';
+        $fmt         = $isWordCount
+          ? fn(float $v): string => (string)(int)$v
+          : fn(float $v): string => number_format($v, 3);
+        $diffFmt     = $isWordCount
+          ? sprintf('%+d', (int)$diff)
+          : sprintf('%+.3f', $diff);
+
+        $out .= '<tr>';
+        $out .= '<td>' . htmlspecialchars($row['label']) . '</td>';
+        $out .= '<td class="text-end font-monospace small">' . $fmt($src) . '</td>';
+        $out .= '<td class="text-end font-monospace small">' . $fmt($gen) . '</td>';
+        $out .= '<td class="text-end font-monospace small ' . $deltaClass . '">' . $deltaIcon . $diffFmt . '</td>';
+        $out .= '</tr>';
+      }
+
+      $out .= '</tbody>';
+      $out .= '<tfoot class="table-light"><tr>';
+      $out .= '<td colspan="3" class="text-end"><strong>Δ composite</strong></td>';
+      $deltaColor = $delta > 0 ? 'text-success' : ($delta < 0 ? 'text-danger' : 'text-muted');
+      $out .= '<td class="text-end font-monospace fw-bold ' . $deltaColor . '">' . sprintf('%+.3f', $delta) . '</td>';
+      $out .= '</tr></tfoot>';
+      $out .= '</table></div>';
+
+      // Surface the diagnostics messages (if any) right under the table so
+      // the admin reads them in context with the numeric drops.
+      $messages = $benchmark['diagnostics']['messages'] ?? [];
+      if (!empty($messages)) {
+        $out .= '<div class="card-body border-top">';
+        $out .= '<div class="small text-muted mb-1"><i class="bi bi-info-circle me-1"></i>Diagnostics</div>';
+        $out .= '<ul class="mb-0 small">';
+        foreach ($messages as $msg) {
+          $out .= '<li>' . htmlspecialchars((string)$msg) . '</li>';
+        }
+        $out .= '</ul></div>';
+      }
+      $out .= '</div>';
+
+      return $out;
     }
 
     /**
@@ -814,6 +1008,7 @@
       var ico = audit.improved ? "bi-check-circle-fill text-success" : "bi-exclamation-triangle-fill text-warning";
       h += "<div class=\"alert alert-light border d-flex align-items-start gap-2 mb-3\"><i class=\"bi " + ico + " fs-5 mt-1\"></i><div><strong>Audit</strong><br>" + esc(audit.summary) + "</div></div>";
     }
+    h += renderBenchmark(m.benchmark);
     var sugg = m.suggestions || null;
     if (sugg && typeof sugg === "object" && Object.keys(sugg).length) {
       h += "<div class=\"card mb-3\"><div class=\"card-header\"><i class=\"bi bi-lightbulb-fill text-warning me-1\"></i><strong>Suggestions</strong></div><ul class=\"list-group list-group-flush\">";
@@ -831,6 +1026,77 @@
   }
   function sc(s) { return s >= 70 ? "success" : (s >= 40 ? "warning" : "danger"); }
   function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+  // Side-by-side benchmark table, mirrors the server-side renderBenchmarkTable().
+  // higher=true => higher value is better (green when ↑); higher=false => lower
+  // is better (green when ↓); higher=null => neutral (e.g. word count).
+  function renderBenchmark(b) {
+    if (!b || !b.source_score || !b.generated_score) return "";
+    var srcB = b.source_score.breakdown || {};
+    var genB = b.generated_score.breakdown || {};
+    var srcS = Number(b.source_score.score || 0);
+    var genS = Number(b.generated_score.score || 0);
+    var delta = Number(b.delta != null ? b.delta : genS - srcS);
+    var verdict = String(b.verdict || "unknown");
+    var reason  = String(b.regression_reason || "none");
+    var rows = [
+      ["Composite score",          srcS,                                  genS,                                  true],
+      ["Lexical entropy",          Number(srcB.normalized_entropy || 0), Number(genB.normalized_entropy || 0), true],
+      ["Vocabulary diversity",     Number(srcB.diversity || 0),          Number(genB.diversity || 0),          true],
+      ["Source-entity coverage",   1.0,                                   Number(genB.entity_coverage || 0),    true],
+      ["Repetition penalty",       Number(srcB.repetition || 0),         Number(genB.repetition || 0),         false],
+      ["Word count",               Number(srcB.word_count || 0),         Number(genB.word_count || 0),         null]
+    ];
+    var verdictBadge = verdict === "improvement"
+      ? "<span class=\"badge bg-success\"><i class=\"bi bi-arrow-up-circle me-1\"></i>Improvement</span>"
+      : verdict === "regression"
+        ? "<span class=\"badge bg-danger\"><i class=\"bi bi-arrow-down-circle me-1\"></i>Regression</span>"
+        : verdict === "parity"
+          ? "<span class=\"badge bg-secondary\"><i class=\"bi bi-dash-circle me-1\"></i>Parity</span>"
+          : "<span class=\"badge bg-light text-dark\">" + esc(verdict) + "</span>";
+    var reasonBadge = (reason && reason !== "none")
+      ? " <span class=\"badge bg-warning text-dark ms-1\">" + esc(reason) + "</span>"
+      : "";
+    var html = "";
+    html += "<div class=\"card mb-3\">";
+    html += "<div class=\"card-header d-flex align-items-center justify-content-between flex-wrap gap-2\">";
+    html += "<div><i class=\"bi bi-bar-chart-line text-primary me-1\"></i><strong>SEO quality benchmark</strong> <span class=\"text-muted small\">(source vs optimized)</span></div>";
+    html += "<div>" + verdictBadge + reasonBadge + "</div>";
+    html += "</div>";
+    html += "<div class=\"table-responsive\"><table class=\"table table-sm table-hover mb-0 align-middle\">";
+    html += "<thead class=\"table-light\"><tr><th>Metric</th><th class=\"text-end\">Source</th><th class=\"text-end\">Optimized</th><th class=\"text-end\">Δ</th></tr></thead><tbody>";
+    rows.forEach(function (r) {
+      var label = r[0], src = r[1], gen = r[2], higher = r[3];
+      var diff = gen - src;
+      var cls = "text-muted", icon = "";
+      if (higher !== null && Math.abs(diff) > 1e-6) {
+        var positive = higher ? diff > 0 : diff < 0;
+        cls = positive ? "text-success" : "text-danger";
+        icon = positive ? "<i class=\"bi bi-arrow-up me-1\"></i>" : "<i class=\"bi bi-arrow-down me-1\"></i>";
+      }
+      var isWord = label === "Word count";
+      var fmt = function (v) { return isWord ? String(Math.round(v)) : Number(v).toFixed(3); };
+      var diffFmt = isWord ? (diff >= 0 ? "+" : "") + Math.round(diff) : (diff >= 0 ? "+" : "") + Number(diff).toFixed(3);
+      html += "<tr>";
+      html += "<td>" + esc(label) + "</td>";
+      html += "<td class=\"text-end font-monospace small\">" + fmt(src) + "</td>";
+      html += "<td class=\"text-end font-monospace small\">" + fmt(gen) + "</td>";
+      html += "<td class=\"text-end font-monospace small " + cls + "\">" + icon + diffFmt + "</td>";
+      html += "</tr>";
+    });
+    html += "</tbody>";
+    var dColor = delta > 0 ? "text-success" : (delta < 0 ? "text-danger" : "text-muted");
+    html += "<tfoot class=\"table-light\"><tr><td colspan=\"3\" class=\"text-end\"><strong>Δ composite</strong></td><td class=\"text-end font-monospace fw-bold " + dColor + "\">" + (delta >= 0 ? "+" : "") + Number(delta).toFixed(3) + "</td></tr></tfoot>";
+    html += "</table></div>";
+    var messages = (b.diagnostics && b.diagnostics.messages) || [];
+    if (messages.length) {
+      html += "<div class=\"card-body border-top\"><div class=\"small text-muted mb-1\"><i class=\"bi bi-info-circle me-1\"></i>Diagnostics</div><ul class=\"mb-0 small\">";
+      messages.forEach(function (msg) { html += "<li>" + esc(String(msg)) + "</li>"; });
+      html += "</ul></div>";
+    }
+    html += "</div>";
+    return html;
+  }
 })();
 </script>';
 
@@ -847,6 +1113,7 @@
       return match ($type) {
         'initial_report'   => '<span class="badge bg-info text-dark">' . $this->app->getDef('text_seo_type_initial') . '</span>',
         'optimized_report' => '<span class="badge bg-primary">' . $this->app->getDef('text_seo_type_optimized') . '</span>',
+        'faq_generated'    => '<span class="badge bg-info">' . ($this->app->getDef('text_seo_type_faq') ?: 'FAQ') . '</span>',
         default            => '<span class="badge bg-light text-dark">' . htmlspecialchars($type) . '</span>',
       };
     }

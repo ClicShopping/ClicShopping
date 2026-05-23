@@ -85,6 +85,24 @@
         languageId:          $languageId,
         userId:              $userId,
         velocityMax:         $velocityMax,
+        // ── SEO Quality Benchmark signals — populated by DataCollector
+        // from clic_seo_quality_benchmark_log; null when the table is empty
+        // for this (product, language) pair.
+        seoBenchmarkScore:      isset($productData['seo_benchmark_score'])
+          ? (float)$productData['seo_benchmark_score'] : null,
+        seoBenchmarkVerdict:    $productData['seo_benchmark_verdict']     ?? null,
+        seoBenchmarkReason:     $productData['seo_benchmark_reason']      ?? null,
+        seoBenchmarkCoverage:   isset($productData['seo_benchmark_coverage'])
+          ? (float)$productData['seo_benchmark_coverage'] : null,
+        seoBenchmarkDiversity:  isset($productData['seo_benchmark_diversity'])
+          ? (float)$productData['seo_benchmark_diversity'] : null,
+        seoBenchmarkRepetition: isset($productData['seo_benchmark_repetition'])
+          ? (float)$productData['seo_benchmark_repetition'] : null,
+        // Thin-content signal — null when SEO has never been analysed.
+        seoThinContentLevel: isset($productData['seo_thin_content_level'])
+          ? (string)$productData['seo_thin_content_level'] : null,
+        seoWordcountBody: isset($productData['seo_wordcount_body'])
+          ? (int)$productData['seo_wordcount_body'] : null,
       );
     }
 

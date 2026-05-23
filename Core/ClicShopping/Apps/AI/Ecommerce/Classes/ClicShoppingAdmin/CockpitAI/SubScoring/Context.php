@@ -30,7 +30,26 @@ readonly class Context
     public CatalogNormalization $catalog,              // Catalog-wide max values
     public int                  $languageId,           // Current language ID
     public int                  $userId,               // Requesting user ID
-    public float                $velocityMax = 1.0     // Maximum stock velocity across catalog
+    public float                $velocityMax = 1.0,    // Maximum stock velocity across catalog
+    // ── SEO Quality Benchmark signals (Phase 2 algorithmic guard) ────────
+    // Populated by the DataCollector from clic_seo_quality_benchmark_log.
+    // Independent from seoScore (which measures the public-front crawler
+    // score) — the benchmark measures content quality vs source description
+    // (entity coverage, vocabulary diversity, repetition, entropy).
+    public ?float               $seoBenchmarkScore   = null,   // composite [0..1] | null when no benchmark yet
+    public ?string              $seoBenchmarkVerdict = null,   // improvement | parity | regression | null
+    public ?string              $seoBenchmarkReason  = null,   // low_coverage | repetition | … | null
+    public ?float               $seoBenchmarkCoverage   = null, // source-entity coverage [0..1]
+    public ?float               $seoBenchmarkDiversity  = null, // type-token ratio [0..1]
+    public ?float               $seoBenchmarkRepetition = null,  // repetition penalty [0..1]
+    // ── Thin-content signal (Phase 1) ────────────────────────────────────
+    // Populated by the DataCollector from the latest seo_serp_reports
+    // entry.  When the product page body is too short for meaningful SEO
+    // analysis, this carries the level ('warning' or 'critical') and the
+    // associated message so the CockpitAI UI can explain WHY the score
+    // is degraded rather than just showing low numbers.
+    public ?string              $seoThinContentLevel = null,   // 'critical' | 'warning' | 'ok' | null
+    public ?int                 $seoWordcountBody    = null    // body word count when known
   ) {
   }
 

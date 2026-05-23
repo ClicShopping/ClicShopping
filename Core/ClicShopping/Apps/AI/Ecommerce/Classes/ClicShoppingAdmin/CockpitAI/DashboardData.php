@@ -38,8 +38,11 @@ use ClicShopping\OM\Registry;
  */
 class DashboardData
 {
-  private const TABLE       = 'products_cockpit_ai_embedding ';
-  private const CACHE_TTL   = '30'; // minutes
+  private const TABLE       = 'products_cockpit_ai_embedding';
+  // 5-minute TTL: long enough to absorb the dashboard being shown on
+  // several admin pages without re-querying every time, short enough that
+  // a fresh product analysis shows up quickly without manual cache clear.
+  private const CACHE_TTL   = '5'; // minutes
   private const CACHE_NS    = 'CockpitAI';
 
   private mixed $db;
@@ -432,12 +435,38 @@ class DashboardData
   public function clearCache(): void
   {
     // ClicShopping Cache class does not support namespace-wide clear,
-    // so we clear known keys for common language IDs.
-    // For a full clear, restart the cache backend or let TTL expire.
-    foreach ([1, 2, 3] as $lid) {
-      foreach (['quadrant', 'top_y', 'velocity', 'kpis'] as $key) {
+    // so we clear known keys for every enabled language.  Previously the
+    // language list was hardcoded to [1, 2, 3] and the stockout key prefix
+    // was missing entirely, leaving stale stockout counts on the widget
+    // after every fresh analysis.
+    $languageIds = [];
+    try {
+      foreach (Registry::get('Language')->getAll() as $row) {
+        if ((int)($row['status'] ?? 1) !== 0 && !empty($row['id'])) {
+          $languageIds[] = (int)$row['id'];
+        }
+      }
+    } catch (\Throwable) {
+      $languageIds = [1, 2]; // safe fallback for EN + FR installs
+    }
+    if (empty($languageIds)) {
+      $languageIds = [1, 2];
+    }
+
+    $simpleKeys = ['quadrant', 'top_y', 'velocity', 'kpis'];
+
+    foreach ($languageIds as $lid) {
+      foreach ($simpleKeys as $key) {
         try {
           (new Cache("dashboard_{$key}_{$lid}", self::CACHE_NS))->clear();
+        } catch (\Throwable) {
+        }
+      }
+      // stockout has variable threshold/limit suffixes — clear the common
+      // combinations used by the dashboard widget (70 % / 5, 70 % / 15).
+      foreach ([[70, 5], [70, 15], [50, 5], [50, 15]] as [$th, $lim]) {
+        try {
+          (new Cache("dashboard_stockout_{$lid}_{$th}_{$lim}", self::CACHE_NS))->clear();
         } catch (\Throwable) {
         }
       }

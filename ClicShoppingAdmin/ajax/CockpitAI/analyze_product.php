@@ -73,7 +73,11 @@ try {
   }
 
   // Get language ID from POST parameter or session
-  $languageId = Registry::get('Language')->getId();
+  if (isset($_POST['language_id']) && is_numeric($_POST['language_id'])) {
+    $languageId = (int)$_POST['language_id'];
+  } else {
+    $languageId = Registry::get('Language')->getId();
+  }
 
   $user_id = AdministratorAdmin::getUserAdminId();
 

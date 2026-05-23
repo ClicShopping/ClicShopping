@@ -19,8 +19,8 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\DomainsAI\CoreAI\Embedding\NewVector;
-use ClicShopping\AI\Services\SemanticAgent;
-use ClicShopping\Apps\Tools\HTMLOverride\Classes\ClicShoppingAdmin\HTMLOverrideCommon;
+use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\Sites\Common\HTMLOverrideCommon;
 
 /**
  * FaqEmbeddingGenerator Class

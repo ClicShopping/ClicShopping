@@ -67,13 +67,20 @@
     private const MAX_IMAGE_SLOTS            = 2;    // products_image + products_image_zoom (only 2 exist in DB)
     private const TOTAL_COMPLETENESS_FIELDS  = 7;    // fields counted for completeness score
 
+    // Weights re-balanced to accommodate the SEO Quality Benchmark factor.
+    // seo_score is the crawler-side score (HTML output); seo_quality is the
+    // content-vs-source benchmark (entropy, diversity, entity coverage,
+    // repetition) produced by SeoQualityBenchmark.  The two cover
+    // complementary aspects of SEO health and are weighted accordingly:
+    // crawler score keeps the higher weight as it reflects what Google sees.
     private array $weights = [
       'description'   => 2.0,
       'images'        => 1.5,
       'keywords'      => 1.5,
       'creation_date' => 1.0,
       'completeness'  => 1.5,
-      'seo_score'     => 2.5,
+      'seo_score'     => 2.0,  // ↓ from 2.5 to leave room for seo_quality
+      'seo_quality'   => 1.5,  // new — SEO benchmark composite (Phase 2 guard)
     ];
 
     public function getCode(): string
@@ -148,6 +155,21 @@
         $factors['seo_score'] = new ScoreFactor($context->seoScore, 100.0);
       } else {
         $factors['seo_score'] = new ScoreFactor(null, 100.0, notAnalyzed: true);
+      }
+
+      // seo_quality: composite benchmark from clic_seo_quality_benchmark_log
+      // (range 0..1 — already normalized).  When a regression verdict is
+      // present, hard-cap the contribution to 0.5 so a regressed product
+      // cannot mask its issue behind a misleadingly high seo_score.  When
+      // no benchmark exists for this product/language, mark as notAnalyzed.
+      if ($context->seoBenchmarkScore !== null) {
+        $benchmarkValue = $context->seoBenchmarkScore;
+        if ($context->seoBenchmarkVerdict === 'regression') {
+          $benchmarkValue = min($benchmarkValue, 0.5);
+        }
+        $factors['seo_quality'] = new ScoreFactor($benchmarkValue, 1.0);
+      } else {
+        $factors['seo_quality'] = new ScoreFactor(null, 1.0, notAnalyzed: true);
       }
 
       // REQ-SC-01 : Récupération de l'âge du produit et du max catalogue

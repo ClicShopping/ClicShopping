@@ -9,9 +9,6 @@
  *
  * Licensed under AGPLv3 or commercial license.
  * See LICENSE file.
- * @date 2026-01-08
- * 
- * Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6
  */
 
 namespace ClicShopping\AI\DomainsAI\Hybrid\Cache;

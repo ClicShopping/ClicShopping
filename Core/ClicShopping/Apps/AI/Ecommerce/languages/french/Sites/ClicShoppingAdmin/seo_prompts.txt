@@ -1,17 +1,20 @@
 seo_prompt_meta_title = Vous êtes un rédacteur SEO senior.
 Le traitement interne doit se faire en anglais.
 Générez un meta title SEO pour un {{entity_type}} nommé "{{entity_name}}".
-Si entity_type est product, intégrez la marque {{product_brand}}, le modèle {{product_model}} et le prix {{product_price}} si pertinent.
+Si entity_type est product ET que la marque "{{product_brand}}" n'est PAS vide, vous pouvez la mentionner quand elle renforce la confiance.
+Si "{{product_brand}}" est VIDE, omettez complètement toute mention de marque. N'INVENTEZ PAS de marque, n'utilisez PAS de jetons placeholder tels que "[Marque]", "[Brand]", "[X]", "{{X}}".
 Mot-clé principal : {{primary_keyword}}.
 Intention de recherche : {{search_intent}}.
-Sujets SERP : {{topics}}.
+Sujets SERP (inspiration lexicale uniquement — n'ajoutez PAS de faits depuis cette liste) : {{topics}}.
 Titres concurrents : {{competitor_titles}}.
-Insights AI Overview : {{ai_overview_insights}}.
 Retour de validation : {{validation_feedback}}.
 Exigences :
-- Longueur : strictement 50-60 caractères espaces inclus.
+- Longueur : cible 50-58 caractères, maximum strict 65 caractères espaces inclus. Comptez précisément.
+- Le titre NE DOIT contenir que des mots qui sont : le nom du produit, la marque (si non vide), le mot-clé principal, ou un différenciateur naturel issu de {{topics}}.
+- INTERDIT : tout jeton placeholder entre crochets ("[Marque]", "[X]") ou doubles accolades ("{{X}}") — ce sont des artefacts de template, ils ne doivent jamais apparaître en sortie.
+- INTERDIT dans le titre : codes SKU, numéros de modèle, références internes (ex. "REF-1234"), montants, devises, niveaux de stock, années ou chiffres qui ne sont pas dans la source produit.
+- INTERDIT remplissage marketing s'il n'est pas dans la source : "Premium", "Best", "Top", "Ultimate", "Pro", chiffres aléatoires, adjectifs génériques utilisés seulement pour atteindre une longueur cible.
 - Placez le mot-clé principal aussi près du début que possible de façon naturelle.
-- Intégrez un mot-clé secondaire ou synonyme issu de {{topics}} si la longueur le permet.
 - Ne répétez pas le mot-clé principal plus d'une fois.
 - Pas d'emojis, pas de guillemets, pas de point final, pas de clickbait.
 - Différenciez-vous clairement des titres concurrents listés ci-dessus.
@@ -21,19 +24,20 @@ Retournez uniquement le titre.
 seo_prompt_meta_description = Vous êtes un rédacteur SEO senior.
 Le traitement interne doit se faire en anglais.
 Générez une meta description pour un {{entity_type}} nommé "{{entity_name}}".
-Si entity_type est product, incluez une spécification mesurable (capacité, matériau ou dimension), la marque {{product_brand}} et une indication de prix {{product_price}} si disponible.
+Si entity_type est product, incluez une spécification mesurable (capacité, matériau, dimension) UNIQUEMENT si elle apparaît explicitement dans "Description existante" ; sinon omettez-la. La marque {{product_brand}} peut être mentionnée une fois quand elle renforce la confiance.
 Mot-clé principal : {{primary_keyword}}.
 Intention de recherche : {{search_intent}}.
-Sujets SERP : {{topics}}.
-Insights AI Overview : {{ai_overview_insights}}.
+Sujets SERP (inspiration lexicale uniquement — n'ajoutez PAS de faits depuis cette liste) : {{topics}}.
 Extraits concurrents : {{competitor_snippets}}.
+Description existante (SOURCE DE VÉRITÉ — chaque fait doit pouvoir s'y retrouver) : {{entity_description}}.
 Retour de validation : {{validation_feedback}}.
 Exigences :
-- Longueur : strictement 150-160 caractères espaces inclus. Comptez précisément.
+- Longueur : strictement 120-160 caractères espaces inclus. Comptez précisément.
 - Le mot-clé principal doit apparaître dans les 60 premiers caractères.
-- Incluez un avantage concret et mesurable (ex. "maintient la température 2x plus longtemps", "verre borosilicate 420 ml") — pas une formule vague.
+- Citez au plus UN fait concret et UNIQUEMENT s'il apparaît dans "Description existante" (ex. "verre borosilicate 420 ml" seulement si la source le dit). N'inventez PAS de spécifications.
+- INTERDITS : montants, devises, niveaux de stock, codes SKU, références modèles, "moins de XX", toute donnée chiffrée absente de la source.
 - Terminez par un CTA transactionnel de 2-3 mots maximum ("Commandez", "Découvrez le set", "En stock").
-- INTERDITS : "améliorez votre", "sublimez votre", "parfait pour", "qualité premium", "solution idéale", "unique", "meilleur".
+- FORMULES INTERDITES : "améliorez votre", "sublimez votre", "parfait pour", "qualité premium", "solution idéale", "unique", "meilleur".
 - Pas d'emojis, pas de guillemets, pas de point final.
 Write the output in {{output_language}}.
 Retournez uniquement la description.
@@ -41,38 +45,44 @@ Retournez uniquement la description.
 seo_prompt_summary = Vous êtes un rédacteur SEO senior.
 Le traitement interne doit se faire en anglais.
 Générez un court résumé SEO pour un {{entity_type}} nommé "{{entity_name}}".
-Si entity_type est product, mentionnez la marque {{product_brand}}, le modèle {{product_model}} et une spécification clé (dimensions, matériau, compatibilité ou usage principal).
+Vous pouvez mentionner la marque {{product_brand}} et UN attribut concret (matériau, capacité, dimension ou usage principal) UNIQUEMENT s'il est explicitement énoncé dans "Description existante". N'incluez jamais SKU, numéro de modèle, prix, devise ou niveau de stock.
 Mot-clé principal : {{primary_keyword}}.
 Intention de recherche : {{search_intent}}.
-Sujets : {{topics}}.
-Insights AI Overview : {{ai_overview_insights}}.
+Sujets (pool de synonymes — paraphrasez les concepts source, n'ajoutez PAS de nouveaux faits) : {{topics}}.
 Extraits concurrents : {{competitor_snippets}}.
-Description existante : {{entity_description}}.
+Description existante (SOURCE DE VÉRITÉ — chaque fait doit pouvoir s'y retrouver) : {{entity_description}}.
 Retour de validation : {{validation_feedback}}.
 Exigences :
 - Longueur : strictement 90-120 caractères espaces inclus.
 - Le mot-clé principal doit apparaître exactement une fois, intégré naturellement.
-- Incluez une entité secondaire (marque, matériau, usage ou type de produit compatible) pour renforcer la pertinence thématique.
+- Incluez un terme d'entité secondaire (synonyme sémantique, matériau, usage tiré de la source) pour renforcer la pertinence thématique.
 - Pas d'emojis, pas de guillemets, pas de point final.
 Write the output in {{output_language}}.
 Retournez uniquement le résumé.
 
 seo_prompt_meta_keywords = Vous êtes un spécialiste SEO senior.
 Le traitement interne doit se faire en anglais.
+
+CONTRAT FAITS / LEXIQUE :
+- FAITS : toute donnée numérique ou attributaire (capacité, dimension, poids, matériau, certification…) doit pouvoir se retrouver dans "Description existante". Inventer "350ml" pour un produit de 420ml, ou "acier inoxydable" pour un produit dont le matériau n'est pas spécifié, est interdit.
+- LEXIQUE : vous êtes ENCOURAGÉ à enrichir par des synonymes sémantiques et termes d'entité liés pour les concepts QUI SONT dans la source. Si la source mentionne "double paroi" / "borosilicate" / "garde les boissons chaudes ou froides", vous devez générer des variantes comme "verre isolant", "verre thermique", "verre double paroi", "verre à isolation", "drinkware isolé" — ce sont des opportunités SEO, pas des hallucinations.
+
 Générez 8-12 mots-clés SEO pour un {{entity_type}} nommé "{{entity_name}}".
-Si entity_type est product, incluez : variantes de marque {{product_brand}} et modèle {{product_model}}, variantes de matériau, variantes de capacité et variantes de cas d'usage.
-Si entity_type est category, incluez des noms de sous-catégories, des variantes de type de produit et des expressions à intention d'achat.
+Vous pouvez utiliser la marque {{product_brand}} et le mot-clé principal.
 Mot-clé principal : {{primary_keyword}}.
-Sujets : {{topics}}.
+Sujets (pool de synonymes — paraphrasez les concepts source, n'ajoutez PAS de nouveaux faits) : {{topics}}.
 Mots-clés issus du SERP : {{keywords}}.
+Description existante (SOURCE DE VÉRITÉ pour les faits) : {{entity_description}}.
 Retour de validation : {{validation_feedback}}.
 Exigences :
 - 1 à 4 mots par mot-clé.
-- Mélange équilibré : informationnels (comment, qu'est-ce que, meilleur), transactionnels (acheter, prix, commander) et navigationnels (marque + modèle).
-- Au moins 2 variantes longue traîne (3-4 mots) à forte intention d'achat.
-- Au moins 2 synonymes LSI : pour les produits thermiques/isolants, inclure obligatoirement des termes comme "verre isolant", "verre thermique" ; pour la vaisselle à café, ajouter "verre à latte", "verre cappuccino" ; adapter au type de produit réel.
+- INTERDIT : codes SKU, références internes ("REF-1234"), numéros de modèle, montants, devises, niveaux de stock, ET toute capacité / dimension / poids numérique non énoncé dans "Description existante".
+- INTERDIT remplissage promotionnel : "meilleur", "top", "premium", "ultime", "acheter [produit] prix", "shop [produit] now" — gardez l'intention transactionnelle naturelle.
+- ENCOURAGÉ : variantes sémantiques des attributs source (ex. "verre isolant", "verre thermique", "verre double paroi" pour un produit double paroi décrit par la source) ; termes d'entité liés (ex. "verre à latte", "tasse espresso" quand la source mentionne le café).
+- Mélange : marque/navigationnel + informationnel + transactionnel + synonymes d'attribut.
+- 2-3 variantes longue traîne (3-4 mots) à intention d'achat naturelle.
 - Ne pas inclure de mots-clés composés uniquement de mots vides (stopwords).
-- Séparés par des virgules, pas de symboles #, pas de doublons.
+- Séparés par des virgules, pas de symboles #, pas de doublons, pas de répétition de racines.
 Write the output in {{output_language}}.
 Retournez uniquement la liste séparée par des virgules.
 
@@ -99,48 +109,58 @@ Retournez uniquement le tableau JSON.
 seo_prompt_h2 = Vous êtes un architecte de contenu SEO senior.
 Le traitement interne doit se faire en anglais.
 Générez des titres H2 et H3 pour un {{entity_type}} nommé "{{entity_name}}".
-Si entity_type est product, sections obligatoires : caractéristiques/spécifications, compatibilité, usage/installation, et au moins une section comparative ou contextuelle (ex. « Comment {{entity_name}} se compare aux alternatives »).
-Si entity_type est category, sections obligatoires : présentation de la catégorie, critères de sélection clés, fourchette de prix, principales sous-catégories, et au moins une section référençant des produits ou cas d'usage spécifiques.
 Mot-clé principal : {{primary_keyword}}.
 Intention de recherche : {{search_intent}}.
-Sujets : {{topics}}.
+Sujets (inspiration lexicale uniquement — n'inventez PAS de sections factuelles depuis cette liste) : {{topics}}.
+Description existante (SOURCE DE VÉRITÉ — chaque titre doit correspondre à du contenu réellement présent dans ce texte) : {{entity_description}}.
 Retour de validation : {{validation_feedback}}.
 Exigences :
 - Retournez un tableau JSON d'objets de titre. Chaque objet contient : "level" (2 ou 3), "text" (le titre), et optionnellement "anchor" (un slug sûr pour URL).
-- Incluez 4 à 6 titres H2.
-- Pour chaque H2, incluez 1 à 2 sous-titres H3 développant le sujet de la section.
-- Le mot-clé principal doit apparaître dans au moins 2 titres H2, intégré naturellement.
-- Utilisez des termes sémantiquement liés et des synonymes (issus de {{topics}}) dans les titres restants.
-- Pas de numérotation dans les textes de titres, pas de ponctuation en fin.
-Write questions and answers in {{output_language}}.
+- Produisez 3 à 6 titres H2, chacun fondé sur du contenu réellement présent dans la source. Couvrez CHAQUE groupe d'attributs significatif que la source aborde (caractéristiques, matériaux, usages, entretien, accessoires). Ne complétez pas avec des sections hors-sujet ; ne supprimez pas les sections que la source soutient clairement.
+- Pour chaque H2, incluez 1 à 2 sous-titres H3 lorsque la source fournit assez de matière pour développer la sous-section. Utilisez des synonymes sémantiques entre H2/H3 pour élargir la portée thématique (ex. "Performance thermique" à côté de "Double paroi isolante").
+- INTERDITS sauf s'ils sont explicitement présents dans "Description existante" : « Informations de garantie », « Où acheter », « Détaillants de confiance », « Promotions », « Tarification », « Évaluation prix et valeur », « Points de vente uniques », « Comment [produit] se compare aux alternatives », « Avis clients », « Récompenses », « Certifications ». Sautez la section si la donnée n'est pas dans la source.
+- Le mot-clé principal peut apparaître dans 1 à 2 titres H2, intégré naturellement. Pas de bourrage de variantes.
+- Pas de numérotation dans les textes de titres, pas de ponctuation en fin, pas de référence modèle / SKU / prix dans un titre.
+Write the headings in {{output_language}}.
 Retournez uniquement le tableau JSON.
 
 seo_prompt_enriched_description = Vous êtes un rédacteur de contenu SEO senior spécialisé dans les fiches produit e-commerce.
 Le traitement interne doit se faire en anglais.
+
+CONTRAT FAITS / LEXIQUE — lisez cette section en premier, elle prime sur toutes les autres instructions.
+
+A) FAITS — le bloc "Description existante" ci-dessous est la SEULE source de NOUVELLES affirmations factuelles.
+   - Vous ne pouvez PAS introduire : un matériau, une dimension, une capacité, un poids, une certification, une norme, une tranche d'âge, un pays d'origine, un détail d'histoire de marque, un cas d'usage, une affirmation de compatibilité ou un attribut numérique qui n'est PAS explicitement énoncé dans la source.
+   - Exemple (mauvais) : si la source dit "couverts pour enfants à partir de 3 ans", vous ne pouvez PAS écrire "fabriqué en acier inoxydable 18/10".
+   - N'incluez JAMAIS dans la prose : montants, devises, niveaux de stock, codes SKU, références modèles — ces données vivent uniquement dans les données structurées.
+
+B) LEXIQUE — à l'intérieur de l'enveloppe factuelle de la source, vous DEVEZ enrichir sémantiquement :
+   - Exprimez chaque attribut source avec plusieurs termes équivalents lorsque c'est naturel ("double paroi" ↔ "double-walled" ↔ "isolant" ↔ "thermique" ↔ "verre isolant" ↔ "verre thermique").
+   - Couvrez CHAQUE attribut mentionné par la source : ne supprimez pas une caractéristique parce qu'elle est technique. Si la source parle d'une base en liège, votre sortie doit la mentionner (ou la paraphraser : "base anti-dérapante en liège", "embase liège", etc.).
+   - Couvrez CHAQUE usage mentionné par la source (ex. café, thé, cocktails, bière) avec leurs entités liées ("boissons chaudes", "boissons froides", "espresso", "verre à latte" si applicable).
+   - Utilisez {{topics}} comme un POOL DE SYNONYMES pour des concepts déjà présents dans la source — jamais comme source de nouveaux faits.
+
+En résumé : reformulez richement, mais n'étendez JAMAIS l'ensemble des faits.
+
 Rédigez une description enrichie pour un {{entity_type}} nommé "{{entity_name}}".
-Si entity_type est product, mentionnez : marque {{product_brand}}, modèle {{product_model}}, prix {{product_price}}, état du stock {{product_stock}}, spécifications clés (dimensions, matériau, capacité, poids, variantes) si disponibles.
-Si entity_type est category, mentionnez : nombre de produits {{product_count}}, produits vedettes {{top_products}}, sous-catégories {{subcategories}} et profils d'acheteurs typiques.
-Mot-clé principal : {{primary_keyword}}.
+Mot-clé principal (utilisez-le avec parcimonie et de façon naturelle) : {{primary_keyword}}.
 Intention de recherche : {{search_intent}}.
-Sujets : {{topics}}.
-Entités secondaires à intégrer naturellement : matériaux, contextes d'usage, spécifications techniques, types de produits liés déduits de {{topics}} et {{ai_overview_insights}}.
-Insights AI Overview : {{ai_overview_insights}}.
-Description existante : {{entity_description}}.
-Retour de validation : {{validation_feedback}}.
+Marque (mention factuelle uniquement, sans embellissement) : {{product_brand}}.
+Sujets (pool de synonymes — paraphrasez les concepts déjà dans la source, n'ajoutez PAS de nouveaux faits depuis cette liste) : {{topics}}.
+Description existante (SOURCE DE VÉRITÉ — chaque fait de votre sortie doit pouvoir s'y retrouver) : {{entity_description}}.
+Retour de validation (erreurs à corriger depuis la tentative précédente) : {{validation_feedback}}.
 Exigences :
-- Longueur : 200-300 mots pour les produits ; 300-500 mots pour les catégories.
-- Densité du mot-clé : le mot-clé principal doit apparaître EXACTEMENT 2 fois. Pas une, pas trois — exactement deux. C'est une contrainte absolue.
-- Positionnement du mot-clé : une fois dans la première phrase, une fois dans le corps. Jamais dans le paragraphe de clôture.
-- Incluez 4-6 termes sémantiquement liés issus de {{topics}} (ex. "verre isolant", "verre thermique", "borosilicate", "verre à latte") distribués naturellement.
-- Pour les produits : incluez au moins 3 données techniques concrètes (capacité en ml/oz, matériau, une caractéristique mesurable). N'inventez pas de spécifications non fournies.
-- Structure : premier paragraphe définit ce qu'est le produit et sa fonction principale avec le mot-clé ; deuxième paragraphe couvre les spécifications mesurables et caractéristiques ; troisième paragraphe couvre les cas d'usage réels (boissons spécifiques, contextes) ; phrase de clôture : CTA factuel (1 phrase max, sans superlatif).
-- A chaque paragraphe, faire un retour à ligne.
+- Longueur : environ 1,0x à 1,5x le compteur de mots de la source. Utilisez l'espace supplémentaire pour l'enrichissement lexical, PAS pour ajouter des faits.
+- Une source courte mérite quand même une couverture intégrale de chaque attribut qu'elle mentionne ; ne sautez pas un attribut pour rester court.
+- Le mot-clé principal apparaît 2-3 fois, placé naturellement. Pas de bourrage de variantes — mais utilisez librement les synonymes sémantiques (ils ne sont PAS "le même mot-clé").
+- Ton : factuel, neutre, lexique riche, pas de superlatifs marketing, pas d'affirmations émotionnelles sur l'expérience utilisateur.
+- Structure : paragraphe 1 — ce qu'est le produit et à qui il s'adresse ; paragraphe 2 — chaque caractéristique concrète énoncée par la source, reformulée et paraphrasée avec richesse ; paragraphe 3 — notes d'usage EXPLICITEMENT mentionnées (types de boissons, lavage, etc.) avec leurs variantes sémantiques.
+- À chaque paragraphe, faire un retour à la ligne.
 - EXPRESSIONS INTERDITES — ne pas utiliser ces formules ni leurs équivalents sémantiques :
   * "améliorer votre expérience", "sublimez votre", "parfait pour", "qualité premium", "design fonctionnel"
-  * "s'intégrant parfaitement", "contextes d'usage variés", "marques compatibles de [produits non liés]"
   * "rituels quotidiens", "moments de convivialité", "expérience raffinée", "solution idéale"
-  * Toute affirmation de compatibilité avec des appareils à moins qu'elle soit techniquement exacte et fournie dans les données produit.
-- Pas de bourrage de mots-clés, pas d'emojis, pas de guillemets, pas de superlatifs marketing.
+  * Toute affirmation de compatibilité avec des appareils, certifications, tranches d'âge ou cas d'usage NON explicitement présents dans la source.
+- Pas d'emojis, pas de guillemets, pas de superlatifs marketing, pas de CTA de clôture mentionnant le prix ou le stock.
 - Retournez du HTML avec des balises <p> uniquement (pas de <h2>, pas de <ul>, pas de <div>).
 Write the output in {{output_language}}.
 Retournez uniquement le HTML.

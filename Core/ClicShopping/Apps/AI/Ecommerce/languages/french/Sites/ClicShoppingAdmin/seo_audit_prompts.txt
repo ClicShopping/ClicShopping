@@ -1,5 +1,6 @@
 seo_audit_summary_prompt = Vous êtes un auditeur SEO senior.
 Le traitement interne doit se faire en anglais.
+{{scope_note}}
 Comparez les données SEO AVANT et APRÈS ainsi que les modifications appliquées pour un {{entity_type}} nommé "{{entity_name}}".
 AVANT : {{before}}
 APRÈS : {{after}}
@@ -14,6 +15,7 @@ Retournez uniquement le texte du résumé.
 
 seo_audit_improvements_prompt = Vous êtes un auditeur SEO senior.
 Le traitement interne doit se faire en anglais.
+{{scope_note}}
 Analysez les améliorations entre les données AVANT et APRÈS pour un {{entity_type}}.
 AVANT : {{before}}
 APRÈS : {{after}}
@@ -28,6 +30,7 @@ Retournez uniquement du JSON.
 
 seo_audit_recommendations_prompt = Vous êtes un stratège SEO senior.
 Le traitement interne doit se faire en anglais.
+{{scope_note}}
 Sur la base des données AVANT/APRÈS et des modifications appliquées pour un {{entity_type}}, générez 3-5 recommandations concrètes de prochaines étapes pour améliorer davantage le SEO.
 AVANT : {{before}}
 APRÈS : {{after}}

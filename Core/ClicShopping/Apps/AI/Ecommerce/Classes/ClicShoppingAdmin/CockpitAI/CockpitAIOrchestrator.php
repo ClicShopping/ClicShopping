@@ -314,6 +314,19 @@
 
         $this->concurrencyManager->releaseSlot($userId);
 
+        // Invalidate the dashboard widget cache so the new analysis is
+        // visible immediately on the admin home / product page widget
+        // rather than waiting for the TTL to elapse.  The cache class
+        // does not support namespace-wide clear, hence the targeted
+        // key-by-key wipe inside DashboardData::clearCache().
+        try {
+          (new \ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\DashboardData())->clearCache();
+        } catch (\Throwable $e) {
+          if ($this->debug) {
+            error_log('[CockpitAI] Dashboard cache clear failed: ' . $e->getMessage());
+          }
+        }
+
         if ($this->debug) {
           error_log("--------------------");
           error_log("[COCPITAI - End of analysis");

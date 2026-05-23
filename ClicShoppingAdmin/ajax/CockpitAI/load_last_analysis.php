@@ -112,6 +112,45 @@ try {
     exit;
   }
 
+  $effectiveSeoStatus = $metadata['seo']['status'] ?? 'NOT_ANALYZED';
+  $effectiveSeoScore  = $metadata['seo']['score']  ?? null;
+  $seoDataStale       = false;
+  try {
+    $Qfresh = $db->prepare('
+      SELECT seo_score_after, created_at
+      FROM   :table_seo_serp_reports
+      WHERE  entity_type = :entity_type
+        AND  entity_id   = :entity_id
+        AND  language_id = :language_id
+        AND  seo_score_after > 0
+      ORDER BY created_at DESC
+      LIMIT 1
+    ');
+    $Qfresh->bindValue(':entity_type', 'product');
+    $Qfresh->bindInt(':entity_id',     $productId);
+    $Qfresh->bindInt(':language_id',   $languageId);
+    $Qfresh->execute();
+    if ($Qfresh->rowCount() > 0) {
+      $seoCreatedAt = (string)$Qfresh->value('created_at');
+      $analysisAt   = (string)($result['date_modified'] ?? '');
+      $freshScore   = (float)($Qfresh->valueDecimal('seo_score_after') ?? 0);
+      // If a fresher SEO row exists, override status + score and flag stale
+      if ($seoCreatedAt !== '' && (
+            $analysisAt === '' || strtotime($seoCreatedAt) > strtotime($analysisAt)
+          )) {
+        $effectiveSeoStatus = 'ANALYZED';
+        $effectiveSeoScore  = $freshScore;
+        $seoDataStale       = true;
+      } elseif ($effectiveSeoStatus !== 'ANALYZED' && $freshScore > 0) {
+        // Older row but still valid SEO — surface it rather than show NOT_ANALYZED
+        $effectiveSeoStatus = 'ANALYZED';
+        $effectiveSeoScore  = $freshScore;
+      }
+    }
+  } catch (\Throwable $e) {
+    // Defensive — never block the UI on the freshness probe.
+  }
+
   // Reconstruct Analysis_Report structure from metadata
   // This matches the structure returned by analyze_product.php
   $report = [
@@ -119,7 +158,9 @@ try {
       'product_id' => $productId,
       'language_id' => $languageId,
       'analysis_date' => $result['date_modified'],
-      'seo_status' => $metadata['seo']['status'] ?? 'NOT_ANALYZED',
+      'seo_status' => $effectiveSeoStatus,
+      'seo_score'  => $effectiveSeoScore,
+      'seo_data_stale' => $seoDataStale, // true when SEO is fresher than CockpitAI
       'pipeline_duration_ms' => $metadata['technical']['pipeline_duration_ms'] ?? 0,
     ],
 
@@ -145,12 +186,52 @@ try {
     ],
 
     'action_plan' => [
-      'actions' => $metadata['actions'] ?? [],
+      'actions' => (function() use ($metadata, $effectiveSeoStatus, $effectiveSeoScore) {
+        $actions = $metadata['actions'] ?? [];
+        if (!is_array($actions) || empty($actions) || $effectiveSeoStatus !== 'ANALYZED') {
+          return $actions;
+        }
+        $obsoleteCodes = ['launch_seo_analysis'];
+        // If the live SEO score is also above the low-score threshold,
+        // the optimize_seo recommendation no longer applies either.
+        if ($effectiveSeoScore !== null && (float)$effectiveSeoScore >= 50.0) {
+          $obsoleteCodes[] = 'optimize_seo';
+        }
+        $filtered = [];
+        foreach ($actions as $a) {
+          $code = is_array($a) ? ($a['code'] ?? $a['action_code'] ?? '') : '';
+          if (in_array($code, $obsoleteCodes, true)) {
+            continue;
+          }
+          $filtered[] = $a;
+        }
+        return $filtered;
+      })(),
       'total_rules_triggered' => count($metadata['actions'] ?? []),
       'conflicts_resolved' => 0,
     ],
 
-    'history' => [], // History is stored as content strings, not in metadata
+    'history' => (function() use ($db, $productId, $languageId) {
+      try {
+        $Qhist = $db->prepare('SELECT content, date_modified
+                               FROM :table_products_cockpit_ai_embedding
+                               WHERE entity_id = :entity_id
+                                 AND language_id = :language_id
+                               ORDER BY date_modified DESC
+                               LIMIT 3');
+        $Qhist->bindInt(':entity_id', $productId);
+        $Qhist->bindInt(':language_id', $languageId);
+        $Qhist->execute();
+
+        $history = [];
+        while ($row = $Qhist->fetch()) {
+          $history[] = ['content' => $row['content'] ?? '', 'date' => $row['date_modified'] ?? ''];
+        }
+        return $history;
+      } catch (\Throwable) {
+        return [];
+      }
+    })(),
 
     'technical' => [
       'steps_executed' => 8,
@@ -175,6 +256,7 @@ try {
         AND JSON_EXTRACT(metadata, \'$.scores.score_x\') IS NOT NULL
       ORDER BY date_modified ASC
     ');
+
     $Qhist->bindInt(':entity_id', $productId);
     $Qhist->bindInt(':language_id', $languageId);
     $Qhist->execute();
@@ -199,8 +281,10 @@ try {
   ]);
 
 } catch (\Throwable $e) {
-  // Log error
-  if (CockpitAI::debug()) {
+  $cockpitDebug = defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG')
+    && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True';
+
+  if ($cockpitDebug) {
     error_log('CockpitAI Load Last Analysis Error: ' . $e->getMessage());
     error_log('Stack trace: ' . $e->getTraceAsString());
   }
@@ -210,7 +294,7 @@ try {
     'success' => false,
     'error' => 'An error occurred while loading last analysis: ' . $e->getMessage(),
     'error_code' => 'LOAD_ERROR',
-    'debug' => CockpitAI::debug() ? [
+    'debug' => $cockpitDebug ? [
       'message' => $e->getMessage(),
       'file' => $e->getFile(),
       'line' => $e->getLine()
