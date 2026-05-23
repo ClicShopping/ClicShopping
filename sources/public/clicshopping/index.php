@@ -1,11 +1,9 @@
 <?php
 /**
+ * Copyright (c) 2008–2026 Loic Richard
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">

@@ -11,7 +11,10 @@ created_at DATETIME DEFAULT CURRENT_TIMESTAMP comment(Log entry creation timesta
 processed_count int(11) default(0) comment(rotation lof processed count) 
 --
 primary id
-##
 idx_batch_id batch_id
 idx_language_id language_id
 idx_created_at created_at
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

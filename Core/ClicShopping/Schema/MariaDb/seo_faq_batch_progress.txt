@@ -10,6 +10,9 @@ updated_at datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP commen
 completed_at datetime default null comment(Timestamp when batch processing completed)
 --
 primary id
-##
 idx_language_id language_id
 idx_status status
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

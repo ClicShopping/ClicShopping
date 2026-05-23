@@ -1,21 +1,10 @@
 <?php
 /**
+ * Copyright (c) 2008–2026 Loic Richard
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
- *
- * @deprecated Pattern-based logic superseded by Pure LLM Mode
- *             Scheduled for removal in Q3 2026
- *             Use UnifiedQueryAnalyzer for intent classification instead
- *             See Domain/Patterns/DEPRECATED.md for migration guide
- *
- * @moved 2026-01-22 - From Domain/Patterns/Hybrid/ to Apps/AI/Ecommerce/
- *        Reason: Contains e-commerce specific dimensions (product, category, customer, supplier, manufacturer, brand, store)
- *        Part of multi-domain-agnostic-ai architecture
- **/
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns;
 

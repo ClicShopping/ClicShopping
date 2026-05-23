@@ -1,11 +1,9 @@
 <?php
 /**
+ * Copyright (c) 2008–2026 Loic Richard
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\Sites\Common;
@@ -21,19 +19,6 @@ use ClicShopping\OM\Registry;
  */
 class PDF extends FPDF
 {
-  /**
-   * Helper to set text color from a comma-separated RGB string (e.g. '158,11,14').
-   * FPDF::SetTextColor() expects three separate numeric arguments.
-   *
-   * @param string $rgb Comma-separated RGB string
-   * @return void
-   */
-  protected function SetTextColorRGB(string $rgb): void
-  {
-    $parts = array_map('intval', explode(',', $rgb));
-    $this->SetTextColor($parts[0] ?? 0, $parts[1] ?? 0, $parts[2] ?? 0);
-  }
-
   /**
    * Retrieves the global PDF object from the session if it exists; otherwise, it fetches it from the global scope.
    *
@@ -140,7 +125,7 @@ class PDF extends FPDF
     $this->SetX(0);
     $this->SetY(10);
     $this->SetFont('Arial', 'B', 10);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Ln(0);
     $this->Cell(125);
     $this->MultiCell(100, 3.5, mb_convert_encoding(STORE_NAME, 'ISO-8859-1', 'UTF-8'), 0, 'L');
@@ -149,7 +134,7 @@ class PDF extends FPDF
     $this->SetX(0);
     $this->SetY(15);
     $this->SetFont('Arial', '', 8);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Ln(0);
     $this->Cell(125);
     $this->MultiCell(100, 3.5, mb_convert_encoding(STORE_NAME_ADDRESS, 'ISO-8859-1', 'UTF-8'), 0, 'L');
@@ -158,7 +143,7 @@ class PDF extends FPDF
     $this->SetX(0);
     $this->SetY(30);
     $this->SetFont('Arial', '', 8);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Ln(0);
     $this->Cell(-3);
     $this->MultiCell(100, 3.5, mb_convert_encoding(CLICSHOPPING::getDef('entry_email'), 'ISO-8859-1', 'UTF-8') . ' ' . STORE_OWNER_EMAIL_ADDRESS, 0, 'L');
@@ -167,7 +152,7 @@ class PDF extends FPDF
     $this->SetX(0);
     $this->SetY(34);
     $this->SetFont('Arial', '', 8);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Ln(0);
     $this->Cell(-3);
     $this->MultiCell(100, 3.5, CLICSHOPPING::getDef('entry_http_site') . ' ' . HTTP::typeUrlDomain(), 0, 'L');
@@ -187,40 +172,40 @@ class PDF extends FPDF
 // Remerciement
     $this->SetY(-55);
     $this->SetFont('Arial', 'B', 8);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('thank_you_customer'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
 // Proprieties Legal
     $this->SetY(-45);
     $this->SetFont('Arial', '', 7);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('reserve_propriete'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
     $this->SetY(-40);
     $this->SetFont('Arial', '', 7);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('reserve_propriete_next'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
     $this->SetY(-35);
     $this->SetFont('Arial', '', 7);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('reserve_propriete_next1'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
 // Informations de la compagnie
     $this->SetY(-25);
     $this->SetFont('Arial', '', 8);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
     $this->SetY(-20);
     $this->SetFont('Arial', '', 8);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe_next'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
 // Autres informations (champ libre) sur la compagnie
     $this->SetY(-15);
     $this->SetFont('Arial', '', 8);
-    $this->SetTextColorRGB(INVOICE_RGB);
+    $this->SetTextColor(INVOICE_RGB);
     $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('shop_divers'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
   }
 

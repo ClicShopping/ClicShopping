@@ -2,13 +2,13 @@
   <img src="https://www.clicshopping.org/images/logonew.png">
 </p>
 
-ClicShopping AI™ is a powerful, open-source e-commerce platform designed for B2B, B2C, and hybrid B2B-B2C businesses with autonomous agent (agentic). Built on modern, responsive design principles, it delivers excellent performance across all devices — mobile, tablet, and desktop — while keeping your data, your infrastructure, and your business logic fully under your control.
+ClicShopping™ AI is a powerful, open-source e-commerce platform designed for B2B, B2C, and hybrid B2B-B2C businesses with autonomous agent (agentic). Built on modern, responsive design principles, it delivers excellent performance across all devices — mobile, tablet, and desktop — while keeping your data, your infrastructure, and your business logic fully under your control.
 
 ###What Makes It Different
 Unlike cloud-hosted platforms, ClicShopping AI™ is designed for businesses that require data sovereignty, GDPR compliance, and full ownership of their e-commerce stack. Deploy it on your own server, your own infrastructure, or any standard hosting environment — including shared hosting via Softaculous — without vendor lock-in.
 Generative AI Integration
 
-ClicShopping AI™ integrates with leading Generative AI systems including GPT, Ollama, and Anthropic...
+ClicShopping™ AI integrates with leading Generative AI systems including GPT, Ollama, and Anthropic...
 It leverages Retrieval-Augmented Generation (RAG) and Business Intelligence pipelines to improve product discovery, customer interaction, inventory optimization, and sales performance.
 
 ### What Makes It Different
@@ -168,7 +168,7 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 | Vector Base                | ✅ MariaDB native        | ❌ External required | ❌ Extension   | ❌ Extension  |
 | Protocols IA / Ecommerce   | ✅ ACP/UCP/MCP           | ❌ Extension         | ❌ Extension   | ❌ Extension  |
 | Advanced WebSearch         | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  |
-| Open Source                | ✅ GPL2/MIT              | ❌ Proprietary       | ✅ Community   | ✅  GPLv2     |
+| Open Source                | ✅ AGPLv3/Commercial     | ❌ Proprietary       | ✅ Community   | ✅  GPLv2     |
 | RAG local                  | ✅ Semantic              | ❌ Proprietary       | ❌ Extension   | ❌ Extension  |
 | Business intelligence      | ✅ Analytics             | ❌ Proprietary       | ❌ Extension   | ❌ Extension  |
 | Agentic (actor and Agent)  | ✅ 8 Autonomous agents   | ❌ Extension         | ❌ Extension   | ❌ Extension  |
@@ -215,13 +215,10 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 # Marketplace
     - A marketplace is also available on the : 
     - For all App : [community](https://www.clicshopping.org/forum/files/) 
-    - Or github :
-        - Community : https://github.com/ClicShoppingV3Community
-        - Official : https://github.com/ClicShoppingOfficialModulesV3
-
+ 
 # Requirement (more information in the wiki)
  - Apache 2.x <br>
- - MYSQL 8.x / MariaDb 11.x but 11.7 (recommended for embeddings and vectors)<br>
+ - MYSQL 9.x / MariaDb 11.x but 11.7 (recommended for embeddings and vectors)<br>
  - PHP >= 8.4
  - More information in the Github Wiki
 
@@ -260,8 +257,11 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
  - More information are available on the community website.
 
 # Trademark
-- License GPL2 - MIT
-- ClicShopping( AItm) has a trademark deposed : https://www.clicshopping.org/forum/trademark/
+- ClicShopping(tm) and derivated  (Ex . ClicSHoppingAI)has a trademark deposed : see TRADEMARK.md
+
+# License 
+- ClicShopping(tm) has a dual license : AGPLv3 et commercial license
+-  See LICENSE.md
 
 # One-Click Installation
 Available in most hosting control panels

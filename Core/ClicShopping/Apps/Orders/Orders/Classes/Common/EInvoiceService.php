@@ -1,23 +1,9 @@
 <?php
 /**
+ * Copyright (c) 2008–2026 Loic Richard
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand     ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence   GPL 2 & MIT
- * E-Invoice Service — Chorus Pro (PISTE/AIFE)
- *
- * Central reusable service class for electronic invoicing via the French
- * government portal Chorus Pro, accessed through the PISTE API gateway.
- * Invoice statuses (orders_status_invoice):
- *   1 = Order            -> no transmission
- *   2 = Invoice          -> submits FAC document to Chorus Pro
- *   3 = Cancel           -> submits AVR (credit note) — legally required to reverse a validated invoice
- *   4 = Credit Note      -> submits AVR document to Chorus Pro
- *
- * @see https://portail.chorus-pro.gouv.fr
- * @see https://developer.aife.economie.gouv.fr
- * @see https://entreprendre.service-public.gouv.fr/vosdroits/R52176
- * @see https://communaute.chorus-pro.gouv.fr/documentation/aides-aux-developpeurs-api-en-mode-oauth2/
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\Apps\Orders\Orders\Classes\Common;

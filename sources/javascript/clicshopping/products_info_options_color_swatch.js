@@ -1,21 +1,8 @@
 /**
+ * Copyright (c) 2008–2026 Loic Richard
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
- * products_info_options_color_swatch.js
- *
- * Gestion de la sélection des swatches couleur (color_picker).
- *
- * Principe :
- *  - Les swatches sont des <button type="button"> purement visuels, sans rôle de formulaire.
- *  - Chaque groupe de swatches est lié à un <input type="hidden"> sentinel qui porte
- *    le name="id[X]" et l'attribut "required".
- *  - Au clic sur un swatch, on met à jour la valeur du sentinel => la validation HTML5
- *    native passe sans jamais bloquer sur un input invisible.
- *  - On gère aussi aria-checked et la classe CSS .swatch-selected pour l'UX.
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 /**
  * products_info_options_color_swatch.js

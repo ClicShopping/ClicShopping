@@ -1,16 +1,13 @@
 <?php
 /**
+ * Copyright (c) 2008–2026 Loic Richard
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
- *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\Sites\Shop\Pages\Account\Actions;
 
-use ClicShopping\Apps\Orders\Orders\Classes\Shop\Order as OrderClass;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
@@ -33,6 +30,7 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Db = Registry::get('Db');
     $CLICSHOPPING_Language = Registry::get('Language');
     $CLICSHOPPING_Address = Registry::get('Address');
+    $CLICSHOPPING_Order = Registry::get('Order');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
     $CLICSHOPPING_Hooks->call('OrderInvoice', 'PreAction');
@@ -54,7 +52,7 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
 // Recuperation de la valeur id de order.php
     if (isset($_GET['order_id'])) {
-      $oID = HTML::sanitize((int)$_GET['order_id']);
+      $oID = HTML::sanitize($_GET['order_id']);
 
       if (is_null($oID)) {
         CLICSHOPPING::redirect(null, 'Account&Main');
@@ -63,14 +61,8 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
       CLICSHOPPING::redirect(null, 'Account&Main');
     }
 
-// Load order data with the correct order_id (boot-time Order is in cart() mode)
-    $CLICSHOPPING_Order = new OrderClass((int)$oID);
-
     $QordersInfo = $CLICSHOPPING_Db->prepare('select orders_id,
-                                                       customers_id,
-                                                       currency,
-                                                       currency_value,
-                                                       payment_method
+                                                       customers_id
                                                 from :table_orders
                                                 where orders_id = :orders_id
                                                ');
@@ -80,10 +72,6 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if ($QordersInfo->fetch() === false) {
       CLICSHOPPING::redirect(null, 'Account&Main');
     }
-
-    $order_currency = $QordersInfo->value('currency');
-    $order_currency_value = $QordersInfo->value('currency_value');
-    $order_payment_method = $QordersInfo->value('payment_method');
 
     $QordersHistory = $CLICSHOPPING_Db->prepare('select orders_status_id,
                                                          date_added,
@@ -113,17 +101,13 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $order_status_invoice_display = $QOrdersStatusInvoice->value('orders_status_invoice_name');
 
-    $QstatusOrder = $CLICSHOPPING_Db->prepare('select orders_status,
-                                                       date_purchased,
-                                                       payment_method
-                                                from :table_orders
-                                                where orders_id = :orders_id
+    $QstatusOrder = $CLICSHOPPING_Db->prepare('select orders_status
+                                                 from :table_orders
+                                                 where orders_id = :orders_id
                                                ');
     $QstatusOrder->bindInt(':orders_id', (int)$oID);
     $QstatusOrder->execute();
 
-    $order_date_purchased = $QstatusOrder->value('date_purchased');
-    $order_payment_method = $QstatusOrder->value('payment_method');
 // Set the Page Margins
 // Marge de la page
     $pdf->SetMargins(10, 2, 6);
@@ -237,11 +221,11 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (($QordersHistory->valueInt('orders_status_invoice_id') == 1)) {
 // Display the order
       $temp = str_replace('&nbsp;', ' ', CLICSHOPPING::getDef('print_order_date') . ' ' . $order_status_invoice_display . ' : ');
-      $pdf->Text(60, 113, $temp . DateTime::toShort($order_date_purchased ?? ''));
+      $pdf->Text(60, 113, $temp . DateTime::toShort($CLICSHOPPING_Order->info['date_purchased']));
     } elseif ($QordersHistory->valueInt('orders_status_invoice_id') == 2) {
 //Display the invoice
       $temp = str_replace('&nbsp;', ' ', CLICSHOPPING::getDef('print_order_date') . ' ' . $order_status_invoice_display . ' : ');
-      $pdf->Text(60, 113, $temp . DateTime::toShort($order_date_purchased ?? ''));
+      $pdf->Text(60, 113, $temp . DateTime::toShort($CLICSHOPPING_Order->info['date_purchased']));
     } elseif ($QordersHistory->valueInt('orders_status_invoice_id') == 3) {
 //Display the cancelling
       $temp = str_replace('&nbsp;', ' ', '');
@@ -249,15 +233,15 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
     } else {
 // Display the order
       $temp = str_replace('&nbsp;', ' ', CLICSHOPPING::getDef('print_order_date') . ' ' . $order_status_invoice_display . ' : ');
-      $pdf->Text(60, 113, $temp . DateTime::toShort($order_date_purchased ?? ''));
+      $pdf->Text(60, 113, $temp . DateTime::toShort($CLICSHOPPING_Order->info['date_purchased']));
     }
 
 
 //Draw Payment Method Text
-//      $payment_info = substr(mb_convert_encoding($order_payment_method, 'ISO-8859-1', 'UTF-8') , 0, 30);
+//      $payment_info = substr(mb_convert_encoding($CLICSHOPPING_Order->info['payment_method'], 'ISO-8859-1', 'UTF-8') , 0, 30);
 //      $pdf->Text(120,113, CLICSHOPPING::getDef('entry_payment_method') . ' ' . $payment_info);
 
-    $temp = substr(mb_convert_encoding($order_payment_method, 'ISO-8859-1', 'UTF-8'), 0, 30);
+    $temp = substr(mb_convert_encoding($CLICSHOPPING_Order->info['payment_method'], 'ISO-8859-1', 'UTF-8'), 0, 30);
     $pdf->Text(120, 113, CLICSHOPPING::getDef('entry_payment_method') . ' ' . $temp);
 
 // Cadre pour afficher "BON DE COMMANDE" ou "FACTURE"
@@ -343,23 +327,23 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $pdf->SetY($Y_Table_Position);
       $pdf->SetX(158);
       $pdf->SetFont('Arial', '', 7);
-      $pdf->MultiCell(20, 6, mb_convert_encoding(html_entity_decode($CLICSHOPPING_Currencies->format($CLICSHOPPING_Order->products[$i]['final_price'], true, $order_currency, $order_currency_value)), 'ISO-8859-1', 'UTF-8'), 1, 'C');
+      $pdf->MultiCell(20, 6, mb_convert_encoding(html_entity_decode($CLICSHOPPING_Currencies->format($CLICSHOPPING_Order->products[$i]['final_price'], true, $CLICSHOPPING_Order->info['currency'], $CLICSHOPPING_Order->info['currency_value'])), 'ISO-8859-1', 'UTF-8'), 1, 'C');
       /*
       // Prix TTC
       $pdf->SetY($Y_Table_Position);
       $pdf->SetX(138);
-      $pdf->MultiCell(20,6,$currencies->format(Tax::addTax($CLICSHOPPING_Order->products[$i]['final_price'], $CLICSHOPPING_Order->products[$i]['tax']), true, $order_currency, $order_currency_value),1,'C');
+      $pdf->MultiCell(20,6,$currencies->format(Tax::addTax($CLICSHOPPING_Order->products[$i]['final_price'], $CLICSHOPPING_Order->products[$i]['tax']), true, $CLICSHOPPING_Order->info['currency'], $CLICSHOPPING_Order->info['currency_value']),1,'C');
       */
 // Total HT
       $pdf->SetY($Y_Table_Position);
       $pdf->SetX(178);
-      $pdf->MultiCell(20, 6, mb_convert_encoding(html_entity_decode($CLICSHOPPING_Currencies->format($CLICSHOPPING_Order->products[$i]['final_price'] * $CLICSHOPPING_Order->products[$i]['qty'], true, $order_currency, $order_currency_value)), 'ISO-8859-1', 'UTF-8'), 1, 'C');
+      $pdf->MultiCell(20, 6, mb_convert_encoding(html_entity_decode($CLICSHOPPING_Currencies->format($CLICSHOPPING_Order->products[$i]['final_price'] * $CLICSHOPPING_Order->products[$i]['qty'], true, $CLICSHOPPING_Order->info['currency'], $CLICSHOPPING_Order->info['currency_value'])), 'ISO-8859-1', 'UTF-8'), 1, 'C');
       $Y_Table_Position += 6;
       /*
       // Total TTC
         $pdf->SetY($Y_Table_Position);
         $pdf->SetX(178);
-        $pdf->MultiCell(20,6,$CLICSHOPPING_Currencies->format(Tax::addTax($CLICSHOPPING_Order->products[$i]['final_price'], $CLICSHOPPING_Order->products[$i]['tax']) * $CLICSHOPPING_Order->products[$i]['qty'], true, $order_currency, $order_currency_value),1,'C');
+        $pdf->MultiCell(20,6,$CLICSHOPPING_Currencies->format(Tax::addTax($CLICSHOPPING_Order->products[$i]['final_price'], $CLICSHOPPING_Order->products[$i]['tax']) * $CLICSHOPPING_Order->products[$i]['qty'], true, $CLICSHOPPING_Order->info['currency'], $CLICSHOPPING_Order->info['currency_value']),1,'C');
         $Y_Table_Position += 6;
       */
 // Check for product line overflow

@@ -1,19 +1,10 @@
 <?php
   /**
-   *
-   * @copyright 2008 - https://www.clicshopping.org
-   * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
-   * @Licence GPL 2 & MIT
-   * @Info : https://www.clicshopping.org/forum/trademark/
-   *
-   *
-   * In order to minimize the number and size of HTTP requests for CSS content,
-   * this script combines multiple CSS files into a single file and compresses
-   * it on-the-fly.
-   *
-   * To use this in your HTML, link to it in the usual way:
-   * <link rel="stylesheet" type="text/css" media="screen, print" href="/css/compressed.css.php" />
-   */
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
 
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\Registry;
