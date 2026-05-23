@@ -5,9 +5,10 @@
  * Provides progressive feedback to users during long-running query execution.
  * Sends progress updates, processing messages, and completion notifications.
  * 
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\AI\Infrastructure\Response;

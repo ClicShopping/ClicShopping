@@ -4,9 +4,10 @@
  * Orchestrates different cache backends (DB, File, Memcached, Redis)
  * Reduces response times from 57s to < 1s for repeated queries
  * 
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\AI\Infrastructure\Cache;

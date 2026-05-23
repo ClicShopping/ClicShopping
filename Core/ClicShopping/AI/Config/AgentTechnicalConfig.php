@@ -2,10 +2,10 @@
 /**
  * Agent Technical Configuration
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  *
  * Provides configuration management for the Agent Technical (AT) module.
  * Controls actor-critic coordination, consensus building, and LLM provider selection.

@@ -10,9 +10,10 @@
  * - Format: JSON files with md5 hash filenames
  * - TTL: 1 hour (3600 seconds)
  * 
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  * 
  * @created 2026-02-09
  * @see .kiro/specs/hybrid-query-decomposition/requirements.md (Requirement 7.3)

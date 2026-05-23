@@ -2,9 +2,10 @@
 /**
  * Configuration Helper Utility
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  *
  * This utility class provides convenient helper methods for working with
  * actor-critic configuration. It simplifies common configuration tasks

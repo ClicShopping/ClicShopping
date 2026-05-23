@@ -5,9 +5,10 @@
  * Collects and tracks performance metrics for Critic agents in the actor-critic separation system.
  * Monitors evaluation counts, agreement with consensus, feedback quality, and evaluation times.
  * 
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\AI\Infrastructure\Metrics;

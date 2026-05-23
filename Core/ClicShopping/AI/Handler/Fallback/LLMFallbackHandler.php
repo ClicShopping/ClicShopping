@@ -5,10 +5,10 @@
  * Handles LLM fallback when no documents are found in vector stores.
  * Queries the LLM directly with the user's question.
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\AI\Handler\Fallback;

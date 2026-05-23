@@ -2,10 +2,10 @@
 /**
  * Agent Domains Configuration
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  *
  * Provides configuration management for the Agent Domains (AD) module.
  * Controls domain-specific agent activation and multi-domain support.

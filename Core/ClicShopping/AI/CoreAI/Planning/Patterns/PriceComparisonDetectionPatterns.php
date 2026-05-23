@@ -2,9 +2,10 @@
 /**
  * Price Comparison Detection Patterns
  * 
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  * 
  * IMPORTANT: This class is a FALLBACK ONLY for when LLM detection fails.
  * 

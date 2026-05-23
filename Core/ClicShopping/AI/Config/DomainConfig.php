@@ -2,9 +2,10 @@
 /**
  * Domain Configuration Utility for RAG System
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  *
  * This utility class provides centralized access to domain-specific configuration
  * for the multi-domain RAG system. It enables domain-aware language loading by

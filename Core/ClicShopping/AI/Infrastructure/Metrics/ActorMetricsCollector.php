@@ -5,9 +5,10 @@
  * Collects and tracks performance metrics for Actor agents in the actor-critic separation system.
  * Monitors execution success rates, response times, quality scores, and load metrics.
  * 
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\AI\Infrastructure\Metrics;

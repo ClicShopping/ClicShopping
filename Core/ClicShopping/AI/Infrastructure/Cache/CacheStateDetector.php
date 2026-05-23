@@ -5,9 +5,10 @@
  * Detects cache state (cold, warm, expired) to enable adaptive timeout management.
  * Uses QueryCache to check cache existence and validity.
  * 
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\AI\Infrastructure\Cache;

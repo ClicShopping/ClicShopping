@@ -5,10 +5,10 @@
  * Response class for indicating that user input is required before proceeding.
  * Used for multi-turn conversations where the system needs user choice/confirmation.
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  *
  * @package ClicShopping\AI\DomainsAI\WebSearch\Response
  * @since 2026-05-06

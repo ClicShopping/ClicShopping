@@ -5,10 +5,10 @@
  * Pattern class for detecting temporal conflicts and granularity in queries.
  * Extracted from AmbiguityOptimizer to follow pattern separation principle.
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand : ClicShoppingAI(TM) at Inpi all right Reserved
- * @Licence GPL 2 & MIT
- * @Info : https://www.clicshopping.org/forum/trademark/
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  *
  * REFACTORING: Extracted from AmbiguityOptimizer (2026-01-09)
  *
