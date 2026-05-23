@@ -1,55 +1,83 @@
-# CONTRIBUTOR LICENSE AGREEMENT (CLA)
+**CONTRIBUTOR LICENSE AGREEMENT (CLA)**
 
-## Purpose
+**Purpose**
 
-This CLA governs the terms under which contributions are submitted to the ClicShopping project.
+This CLA governs the terms under which contributions are submitted to
+the ClicShopping project. It ensures that the project maintainer has the
+necessary rights to distribute contributions under both AGPLv3 and
+commercial licenses.
 
----
+**Acceptance Requirement**
 
-## Acceptance Requirement
+By submitting a contribution (code, documentation, or other material),
+the contributor agrees that:
 
-By submitting a contribution (code, documentation, or other material), the contributor agrees that:
+-   The contribution may be used under the project\'s dual licensing
+    model (AGPLv3 or commercial license)
 
-- The contribution may be used under the project’s dual licensing model (AGPLv3 or commercial license)
-- The project maintainers may integrate, modify, and redistribute the contribution
+-   The project maintainers may integrate, modify, and redistribute the
+    contribution
 
----
+-   This CLA supersedes any prior license (MIT, GPL) that may have
+    applied to earlier versions of the contributor\'s work submitted to
+    this project
 
-## Grant of Rights
+**Grant of Rights**
 
-The contributor grants Loic Richard a non-exclusive, worldwide license to:
+The contributor grants Loic Richard a non-exclusive, worldwide,
+royalty-free, perpetual, and irrevocable license to:
 
-- Use the contribution
-- Modify the contribution
-- Distribute the contribution
-- Combine the contribution with other code
-- Relicense the contribution under AGPLv3 or commercial terms
+-   Use the contribution
 
----
+-   Modify the contribution
 
-## Warranties
+-   Distribute the contribution
+
+-   Combine the contribution with other code
+
+-   Relicense the contribution under AGPLv3 or commercial terms
+
+**Moral Rights (Droits moraux)**
+
+The contributor retains all moral rights in their contribution as
+recognized under applicable law, including the right to be identified as
+the author. The contributor\'s name may appear in changelogs,
+contributor lists, or acknowledgment files.
+
+This CLA does not require the contributor to waive any moral rights that
+are inalienable under applicable national law (notably French law,
+Article L.121-1 CPI).
+
+**Warranties**
 
 The contributor represents that:
 
-- They are the original author or have the right to submit the contribution
-- The contribution does not infringe third-party rights to the best of their knowledge
+-   They are the original author or have the right to submit the
+    contribution
 
----
+-   The contribution does not infringe third-party rights to the best of
+    their knowledge
 
-## Optional Additional Requirements
+-   The contribution is not subject to any agreement that would restrict
+    the rights granted herein
 
-Some contributions may require explicit signed agreement via electronic CLA acceptance (e.g. GitHub CLA bot).
+**Optional Additional Requirements**
 
-Such requirement will be indicated before merge.
+Some contributions may require explicit signed agreement via electronic
+CLA acceptance (e.g. GitHub CLA bot). Such requirement will be indicated
+before merge.
 
----
+**Relationship to LICENSE**
 
-## Relationship to LICENSE
+This CLA operates in conjunction with LICENSE.md and does not replace
+AGPLv3 terms for external users.
 
-This CLA operates in conjunction with LICENSE.md and does not replace AGPLv3 terms for external users.
+**Governing Law**
 
----
+This CLA is governed by French law. Disputes shall be submitted to the
+competent courts of place of the owner.
 
-## Enforcement
+**Enforcement**
 
-Contributions not covered by an accepted CLA may be rejected or excluded from commercial relicensing.
+Contributions not covered by an accepted CLA may be rejected or excluded
+from commercial relicensing.
