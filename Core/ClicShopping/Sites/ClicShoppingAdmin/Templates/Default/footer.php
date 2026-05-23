@@ -42,7 +42,7 @@ if (VERTICAL_MENU_CONFIGURATION == 'true') {
           <span class="col-md-7 navbar-text nav-item text-center">
                 <?php echo $CLICSHOPPING_Language->getLanguageText(); ?>
               </span>
-          <span class="col-md-2 navbar-text text-end footerHelp go-top">Licence MIT - GPL2</span>
+          <span class="col-md-2 navbar-text text-end footerHelp go-top">Licence AGPLv3 & commercial</span>
           <?php
         }
         ?>
