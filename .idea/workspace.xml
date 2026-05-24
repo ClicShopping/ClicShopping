@@ -4,16 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="improvement">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Client.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Client.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Handler/CurlMultiHandler.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Handler/CurlMultiHandler.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Utils.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle/src/Utils.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,23 +53,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.000000000212768" />
-      <entry key="MS500" value="1.0116300410559886" />
-      <entry key="S2" value="1.32839407434945" />
-      <entry key="S5" value="1.640557506298348" />
-      <entry key="S10" value="1.8003485621830828" />
-      <entry key="S30" value="1.937675405512128" />
-      <entry key="S60" value="2.099364352531663" />
-      <entry key="M2" value="2.5028134862653584" />
-      <entry key="M5" value="3.3117531594260536" />
-      <entry key="M10" value="6.287631059863656" />
-      <entry key="M15" value="11.966156684169572" />
-      <entry key="M30" value="32.68652249540299" />
-      <entry key="H1" value="62.476493083648535" />
-      <entry key="H2" value="89.67271457509821" />
-      <entry key="H4" value="108.45360415167464" />
-      <entry key="D1" value="127.69140863431258" />
-      <entry key="W1" value="131.3742875790818" />
+      <entry key="MS100" value="1.0065694034394874" />
+      <entry key="MS500" value="1.6301180554740649" />
+      <entry key="S2" value="3.4245091204405425" />
+      <entry key="S5" value="4.576249107088994" />
+      <entry key="S10" value="5.1850864820543086" />
+      <entry key="S30" value="5.699852584248937" />
+      <entry key="S60" value="5.845931438632265" />
+      <entry key="M2" value="5.921933584462367" />
+      <entry key="M5" value="5.981749506252021" />
+      <entry key="M10" value="6.381628870819923" />
+      <entry key="M15" value="7.888172045818177" />
+      <entry key="M30" value="19.0149983092544" />
+      <entry key="H1" value="45.42876924691959" />
+      <entry key="H2" value="77.2385525386866" />
+      <entry key="H4" value="102.66570681533953" />
+      <entry key="D1" value="131.2659964904256" />
+      <entry key="W1" value="137.01487095292333" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -99,23 +91,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="6.885190948851643E-7" />
-      <entry key="MS500" value="0.05947382206673429" />
-      <entry key="S2" value="0.6659022934507539" />
-      <entry key="S5" value="1.2497581138437268" />
-      <entry key="S10" value="1.5725750800106642" />
-      <entry key="S30" value="1.852979057427679" />
-      <entry key="S60" value="2.055793424837614" />
-      <entry key="M2" value="2.4806998389470514" />
-      <entry key="M5" value="3.302815249395544" />
-      <entry key="M10" value="6.282670683436018" />
-      <entry key="M15" value="11.961189823625993" />
-      <entry key="M30" value="32.67881147761266" />
-      <entry key="H1" value="62.46792071812187" />
-      <entry key="H2" value="89.6661271815032" />
-      <entry key="H4" value="108.44950104531867" />
-      <entry key="D1" value="127.69058578241386" />
-      <entry key="W1" value="131.37416622155996" />
+      <entry key="MS100" value="0.9858536109879249" />
+      <entry key="MS500" value="1.6231751271992096" />
+      <entry key="S2" value="3.420762787392309" />
+      <entry key="S5" value="4.574239021213894" />
+      <entry key="S10" value="5.1839475271766675" />
+      <entry key="S30" value="5.699435399320669" />
+      <entry key="S60" value="5.845717535943545" />
+      <entry key="M2" value="5.921825230692475" />
+      <entry key="M5" value="5.981670129243071" />
+      <entry key="M10" value="6.381293456211205" />
+      <entry key="M15" value="7.887369332561526" />
+      <entry key="M30" value="19.01191941126066" />
+      <entry key="H1" value="45.42335522857992" />
+      <entry key="H2" value="77.2333174004337" />
+      <entry key="H4" value="102.66204873904087" />
+      <entry key="D1" value="131.26518911490984" />
+      <entry key="W1" value="137.01474990562411" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -271,15 +263,7 @@
       <workItem from="1779530822088" duration="768000" />
       <workItem from="1779534702049" duration="3010000" />
       <workItem from="1779547650089" duration="1524000" />
-      <workItem from="1779556261792" duration="2168000" />
-    </task>
-    <task id="LOCAL-00027" summary="litlle improvment">
-      <option name="closed" value="true" />
-      <created>1778173271453</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1778173271453</updated>
+      <workItem from="1779556261792" duration="4191000" />
     </task>
     <task id="LOCAL-00028" summary="libraries updated">
       <option name="closed" value="true" />
@@ -665,7 +649,15 @@
       <option name="project" value="LOCAL" />
       <updated>1779558229753</updated>
     </task>
-    <option name="localTasksCounter" value="76" />
+    <task id="LOCAL-00076" summary="little update">
+      <option name="closed" value="true" />
+      <created>1779560851009</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1779560851009</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -677,7 +669,6 @@
     <MESSAGE value="some update and fix" />
     <MESSAGE value="improve json" />
     <MESSAGE value="add new sql" />
-    <MESSAGE value="little update" />
     <MESSAGE value="code update" />
     <MESSAGE value="refactoring" />
     <MESSAGE value="some update" />
@@ -697,7 +688,8 @@
     <MESSAGE value="update" />
     <MESSAGE value="pdf refactoring" />
     <MESSAGE value="improvement" />
-    <option name="LAST_COMMIT_MESSAGE" value="improvement" />
+    <MESSAGE value="little update" />
+    <option name="LAST_COMMIT_MESSAGE" value="little update" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
