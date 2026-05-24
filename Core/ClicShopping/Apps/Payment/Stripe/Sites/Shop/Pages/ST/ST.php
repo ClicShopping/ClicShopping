@@ -20,9 +20,10 @@ use ClicShopping\OM\Registry;
  * according to Stripe's webhook specifications.
  * 
  * @package ClicShopping\Apps\Payment\Stripe\Sites\Shop\Pages\ST
- * @author ClicShopping Team
- * @copyright 2008 - https://www.clicshopping.org
- * @license GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 class ST extends \ClicShopping\OM\Domains\PagesAbstract
 {

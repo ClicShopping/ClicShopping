@@ -940,7 +940,8 @@ For any question or issue:
 
 ## License
 
-GPL 2 & MIT - ClicShopping
+Licensed under AGPLv3 or commercial license.
+ See LICENSE file.
 MARKDOWN;
   }
 }

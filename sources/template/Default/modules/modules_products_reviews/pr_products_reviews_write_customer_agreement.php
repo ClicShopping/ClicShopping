@@ -17,9 +17,10 @@ use ClicShopping\OM\Registry;
  * display is controlled by configuration settings. The module can be enabled/disabled,
  * positioned, and its width and sort order can be configured.
  *
- * @package ClicShopping\Modules\ProductsReviews
- * @copyright 2008 - https://www.clicshopping.org
- * @license GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 class pr_products_reviews_write_customer_agreement
 {

@@ -19,9 +19,10 @@ use ClicShopping\OM\Registry;
  * within the ClicShoppingAdmin environment.
  * 
  * @package ClicShopping\Apps\Payment\MoneyOrder\Sites\ClicShoppingAdmin\Pages\Home\Actions
- * @author ClicShopping Team
- * @copyright 2008 - https://www.clicshopping.org
- * @license GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 class Configure extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {

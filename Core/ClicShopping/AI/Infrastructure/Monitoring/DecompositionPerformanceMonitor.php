@@ -15,11 +15,10 @@
  * Thread-safety:
  * - Not thread-safe by design; intended for per-request lifecycle usage
  *
- * @copyright 2008 - https://www.clicshopping.org
- * @Brand ClicShoppingAI(TM)
- * @Licence GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
  *
- * @created 2026-02-09
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 
 namespace ClicShopping\AI\Infrastructure\Monitoring;

@@ -14,9 +14,10 @@ use ClicShopping\OM\Registry;
  *
  * Displays a summary of the sitemap on the site. Handles module configuration, caching, and rendering.
  *
- * @package ClicShopping\Modules\Sitemap
- * @copyright 2008 - https://www.clicshopping.org
- * @license GPL 2 & MIT
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
  */
 class si_sitemap_summary
 {
