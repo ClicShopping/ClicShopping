@@ -6,75 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="license">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Archive/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Archive/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Categories/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Categories/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Manufacturers/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Manufacturers/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/ProductsAttributes/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/ProductsAttributes/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/Newsletter/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/Newsletter/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Administrators/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Administrators/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Cache/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Cache/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Countries/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Countries/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Currency/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Currency/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Langues/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Langues/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Modules/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Modules/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/OrdersStatus/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/OrdersStatus/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/OrdersStatusInvoice/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/OrdersStatusInvoice/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ProductsLength/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ProductsLength/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ProductsQuantityUnit/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ProductsQuantityUnit/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Settings/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Settings/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/TaxClass/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/TaxClass/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/TaxGeoZones/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/TaxGeoZones/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/TaxRates/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/TaxRates/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/TemplateEmail/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/TemplateEmail/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Weight/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Weight/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Zones/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Zones/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Groups/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Groups/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Members/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Members/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/BannerManager/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/BannerManager/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Favorites/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Favorites/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Featured/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Featured/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Recommendations/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Recommendations/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/SEO/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/SEO/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Specials/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Specials/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/OrderTotal/SubTotal/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/OrderTotal/SubTotal/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/OrderTotal/Total/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/OrderTotal/Total/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/OrderTotal/TotalShipping/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/OrderTotal/TotalShipping/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/OrderTotal/TotalTax/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/OrderTotal/TotalTax/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Orders/Orders/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Orders/Orders/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Orders/ReturnOrders/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Orders/ReturnOrders/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Payment/COD/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Payment/COD/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Payment/MoneyOrder/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Payment/MoneyOrder/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Payment/Stripe/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Payment/Stripe/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Report/StatsProductsNotification/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Report/StatsProductsNotification/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Shipping/Item/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Shipping/Item/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Shipping/Table/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Shipping/Table/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/ActionsRecorder/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/ActionsRecorder/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/AdministratorMenu/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/AdministratorMenu/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Apps/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Apps/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Backup/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Backup/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Cronjob/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Cronjob/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/DataBaseTables/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/DataBaseTables/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/DefineLanguage/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/DefineLanguage/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/EditDesign/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/EditDesign/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/EditLogError/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/EditLogError/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/ModulesHooks/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/ModulesHooks/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/SecDirPermissions/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/SecDirPermissions/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/SecurityCheck/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/SecurityCheck/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/ServiceAPP/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/ServiceAPP/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Upgrade/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Upgrade/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/WhosOnline/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/WhosOnline/clicshopping.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/ClicShoppingAdmin/Dashboard/ProductCockpitAI.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/ClicShoppingAdmin/Dashboard/ProductCockpitAI.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Cronjob/ProcessSeoFaqBatch.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +28,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7478" />
+    <option name="cachedIndexableFilesCount" value="7477" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -122,23 +57,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0065694034394874" />
-      <entry key="MS500" value="1.6301180554740649" />
-      <entry key="S2" value="3.4245091204405425" />
-      <entry key="S5" value="4.576249107088994" />
-      <entry key="S10" value="5.1850864820543086" />
-      <entry key="S30" value="5.699852584248937" />
-      <entry key="S60" value="5.845931438632265" />
-      <entry key="M2" value="5.921933584462367" />
-      <entry key="M5" value="5.981749506252021" />
-      <entry key="M10" value="6.381628870819923" />
-      <entry key="M15" value="7.888172045818177" />
-      <entry key="M30" value="19.0149983092544" />
-      <entry key="H1" value="45.42876924691959" />
-      <entry key="H2" value="77.2385525386866" />
-      <entry key="H4" value="102.66570681533953" />
-      <entry key="D1" value="131.2659964904256" />
-      <entry key="W1" value="137.01487095292333" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.000000000000426" />
+      <entry key="S2" value="1.000818690306676" />
+      <entry key="S5" value="1.078115075862023" />
+      <entry key="S10" value="1.647288390131456" />
+      <entry key="S30" value="5.190233061423273" />
+      <entry key="S60" value="8.035769808250611" />
+      <entry key="M2" value="10.172046668537511" />
+      <entry key="M5" value="11.784265761875613" />
+      <entry key="M10" value="12.743694330393932" />
+      <entry key="M15" value="14.401190131159282" />
+      <entry key="M30" value="25.553692290859168" />
+      <entry key="H1" value="51.93990571054215" />
+      <entry key="H2" value="83.83833203902253" />
+      <entry key="H4" value="109.40324882076092" />
+      <entry key="D1" value="138.2105547558312" />
+      <entry key="W1" value="144.0066146086566" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -160,23 +95,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9858536109879249" />
-      <entry key="MS500" value="1.6231751271992096" />
-      <entry key="S2" value="3.420762787392309" />
-      <entry key="S5" value="4.574239021213894" />
-      <entry key="S10" value="5.1839475271766675" />
-      <entry key="S30" value="5.699435399320669" />
-      <entry key="S60" value="5.845717535943545" />
-      <entry key="M2" value="5.921825230692475" />
-      <entry key="M5" value="5.981670129243071" />
-      <entry key="M10" value="6.381293456211205" />
-      <entry key="M15" value="7.887369332561526" />
-      <entry key="M30" value="19.01191941126066" />
-      <entry key="H1" value="45.42335522857992" />
-      <entry key="H2" value="77.2333174004337" />
-      <entry key="H4" value="102.66204873904087" />
-      <entry key="D1" value="131.26518911490984" />
-      <entry key="W1" value="137.01474990562411" />
+      <entry key="MS100" value="0.9395227492140118" />
+      <entry key="MS500" value="0.9876008614457933" />
+      <entry key="S2" value="0.9977018308302085" />
+      <entry key="S5" value="1.076770150560148" />
+      <entry key="S10" value="1.646293259086947" />
+      <entry key="S30" value="5.189318387296279" />
+      <entry key="S60" value="8.03509202041851" />
+      <entry key="M2" value="10.171626741445605" />
+      <entry key="M5" value="11.784042039732675" />
+      <entry key="M10" value="12.743298245809395" />
+      <entry key="M15" value="14.40036428632239" />
+      <entry key="M30" value="25.550645699084942" />
+      <entry key="H1" value="51.93453062630413" />
+      <entry key="H2" value="83.83311553552677" />
+      <entry key="H4" value="109.39959621950953" />
+      <entry key="D1" value="138.20974713186095" />
+      <entry key="W1" value="144.00649348589116" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -334,23 +269,8 @@
       <workItem from="1779547650089" duration="1524000" />
       <workItem from="1779556261792" duration="4191000" />
       <workItem from="1779639545599" duration="29000" />
-      <workItem from="1779640998482" duration="331000" />
-    </task>
-    <task id="LOCAL-00029" summary="libraries updated">
-      <option name="closed" value="true" />
-      <created>1778352226797</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1778352226797</updated>
-    </task>
-    <task id="LOCAL-00030" summary="libraries updated">
-      <option name="closed" value="true" />
-      <created>1778427819983</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1778427819983</updated>
+      <workItem from="1779640998482" duration="1392000" />
+      <workItem from="1779697756649" duration="409000" />
     </task>
     <task id="LOCAL-00031" summary="libraries updated">
       <option name="closed" value="true" />
@@ -728,7 +648,23 @@
       <option name="project" value="LOCAL" />
       <updated>1779639566186</updated>
     </task>
-    <option name="localTasksCounter" value="78" />
+    <task id="LOCAL-00078" summary="license">
+      <option name="closed" value="true" />
+      <created>1779641336924</created>
+      <option name="number" value="00078" />
+      <option name="presentableId" value="LOCAL-00078" />
+      <option name="project" value="LOCAL" />
+      <updated>1779641336924</updated>
+    </task>
+    <task id="LOCAL-00079" summary="license">
+      <option name="closed" value="true" />
+      <created>1779643535720</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1779643535721</updated>
+    </task>
+    <option name="localTasksCounter" value="80" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

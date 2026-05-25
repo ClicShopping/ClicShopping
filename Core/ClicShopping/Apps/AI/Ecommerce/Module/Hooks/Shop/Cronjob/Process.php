@@ -8,12 +8,13 @@
 
   namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\Shop\Cronjob;
 
+  use ClicShopping\AI\Security\RateLimit;
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-  use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron;
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTML;
   use ClicShopping\OM\Registry;
   use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Common\CronLogger;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\CockpitAIOrchestrator;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\FeedbackCollector;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\RuleAdjuster;
@@ -92,6 +93,14 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
    */
   public function execute()
   {
+    // Master switch — when the merchant flips this constant to 'False' in
+    // app configuration, the scheduler still fires us but we opt out
+    // cleanly instead of consuming LLM credits.
+    if (defined('CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_STATUS')
+        && CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_STATUS !== 'True') {
+      return false;
+    }
+
     $requiredConstants = [
       'CLICSHOPPING_APP_ECOMMERCE_EC_STATUS',
       'CLICSHOPPING_APP_CHATGPT_RA_OPENAI_EMBEDDING',
@@ -134,7 +143,7 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
           }
         }
       } else {
-        // Exécution directe (CLI ou appel sans ID spécifique)
+        // Direct execution (CLI or call without specific ID)
         if ($cron_id_update) {
           Cronjob::updateCron($cron_id_update);
         }
@@ -157,8 +166,23 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
       'errors' => [],
     ];
 
+    // ── Unified cron log + global rate-limit lock (one run per hour) ────
+    $logger = new CronLogger('cockpitai', self::CRON_USER_ID);
+    $logger->start();
+
+    $globalLock = new RateLimit('cockpitai_cron_lock', 1, 3600);
+    if (!$globalLock->checkLimit('global')) {
+      if ($this->debug) {
+        error_log('[ProductCockpitAi] Skipped: another run is active within the hour.');
+      }
+      $logger->finish('skipped', [
+        'error_messages' => 'Global lock active — another CockpitAI cron run is in progress.',
+      ]);
+      return;
+    }
+
     try {
-      // 1. Récupération des cibles (Boucles 1 & 2 à l'intérieur de fetch)
+      // 1. Target collection: today's orders + modified since last analysis + never analysed
       $targets = $this->fetchTodayTargets();
       $summary['products_found'] = count($targets);
 
@@ -167,12 +191,12 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
         return;
       }
 
-      // 2. Limite de sécurité (Safety Cap)
+      // 2. Safety Cap
       if (count($targets) > self::MAX_PRODUCTS_PER_RUN) {
         $targets = array_slice($targets, 0, self::MAX_PRODUCTS_PER_RUN);
       }
 
-      // 3. Orchestration et Exécution (Boucle 3)
+      // 3. Orchestration and Execution (Loop 3)
       $orchestrator = new CockpitAIOrchestrator();
 
       foreach ($targets as $target) {
@@ -180,13 +204,13 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
         $languageId = $target['languages_id'];
 
         try {
-          // APPEL CRITIQUE : executeAnalysis déclenche l'ActionExecutor
+          // CRITICAL CALL: executeAnalysis triggers the ActionExecutor
           // Si CLICSHOPPING_APP_ECOMMERCE_CAI_AUTO_MODE est True, le prix change ici.
           $result = $orchestrator->executeAnalysis($productId, $languageId, self::CRON_USER_ID);
 
           $summary['analyses_succeeded']++;
 
-          // On vérifie si une action réelle a été appliquée (REQ-EXE-02)
+          // Check whether a real action was applied (REQ-EXE-02)
           if (!empty($result['technical']['execution_results'])) {
             foreach ($result['technical']['execution_results'] as $exec) {
               if ($exec['status'] === 'SUCCESS') {
@@ -206,13 +230,13 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
     }
 
     // ── Feedback Loop Adaptatif (optionnel) ───────────────────────────────
-    // Exécuté après toutes les analyses du jour, indépendamment de leur résultat.
-    // N'affecte pas le rapport email si désactivé.
+    // Executed after all analyses of the day, regardless of their result.
+    // Does not affect the email report if disabled.
     $summary['feedback_loop'] = 'disabled';
 
     if ($this->isFeedbackLoopEnabled()) {
       try {
-        // Étape A : Collecte du feedback Score Y pour les actions éligibles (J+7)
+        // Step A: Collect Score Y feedback for eligible actions (D+7)
         $collector = new FeedbackCollector();
         $collectorStats = $collector->run();
 
@@ -224,7 +248,7 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
           error_log("[ProductCockpitAi] FeedbackCollector: processed={$collectorStats['processed']} skipped={$collectorStats['skipped']} errors={$collectorStats['errors']}");
         }
 
-        // Étape B : Ajustement des seuils si suffisamment de données collectées
+        // Step B: Threshold adjustment when enough data has been collected
         if ($collectorStats['processed'] > 0) {
           $adjuster    = new RuleAdjuster();
           $adjustments = $adjuster->run();
@@ -255,6 +279,28 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
 
     // 4. Finalisation et Rapport
     $this->sendSummaryEmail($summary, microtime(true) - $startTime);
+
+    // 5. Persist the unified cron-log row so analytics queries can compare
+    // CockpitAI runs with SEO / FAQ runs in a single SELECT.
+    $finalStatus = match (true) {
+      $summary['analyses_failed'] === 0 && $summary['analyses_succeeded'] > 0 => 'completed',
+      $summary['analyses_succeeded'] > 0                                       => 'partial',
+      $summary['products_found']   === 0                                       => 'completed',
+      default                                                                   => 'failed',
+    };
+    $logger->finish($finalStatus, [
+      'targets_found'     => (int)$summary['products_found'],
+      'targets_processed' => (int)$summary['analyses_succeeded'] + (int)$summary['analyses_failed'],
+      'success_count'     => (int)$summary['analyses_succeeded'],
+      'failure_count'     => (int)$summary['analyses_failed'],
+      'error_messages'    => !empty($summary['errors']) ? array_slice($summary['errors'], 0, 50) : null,
+      'metadata'          => [
+        'actions_executed' => (int)$summary['actions_executed'],
+        'feedback_loop'    => $summary['feedback_loop']    ?? 'disabled',
+        'feedback_processed' => $summary['feedback_processed'] ?? 0,
+        'rule_adjustments'   => $summary['rule_adjustments']   ?? 0,
+      ],
+    ]);
   }
     
   /**
@@ -270,7 +316,7 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
    */
   private function fetchTodayTargets(): array
   {
-    // 1. Récupérer les produits commandés aujourd'hui
+    // ── Source A: products ordered today (priority 1) ──────────────────
     $Qproducts = $this->db->prepare('SELECT DISTINCT op.products_id
                                       FROM :table_orders_products op
                                       INNER JOIN :table_orders o ON op.orders_id = o.orders_id
@@ -281,12 +327,64 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
 
     $productIds = [];
     while ($row = $Qproducts->fetch()) {
-      $productIds[] = (int)$row['products_id'];
+      $productIds[(int)$row['products_id']] = true;
+    }
+
+    // ── Source B: products modified since the last CockpitAI analysis ──
+    // Keeps the catalogue in sync for items edited without a new sale.
+    try {
+      $QmodSinceLast = $this->db->prepare('
+        SELECT p.products_id
+        FROM :table_products p
+        INNER JOIN (
+          SELECT entity_id, MAX(date_modified) AS last_analysis
+          FROM :table_products_cockpit_ai_embedding
+          GROUP BY entity_id
+        ) e ON e.entity_id = p.products_id
+        WHERE p.products_status = 1
+          AND p.products_last_modified IS NOT NULL
+          AND p.products_last_modified > e.last_analysis
+        ORDER BY p.products_last_modified DESC
+        LIMIT 100
+      ');
+      $QmodSinceLast->execute();
+      while ($row = $QmodSinceLast->fetch()) {
+        $productIds[(int)$row['products_id']] = true;
+      }
+    } catch (\Throwable $e) {
+      if ($this->debug) {
+        error_log('[ProductCockpitAi] Source B (modified) query failed: ' . $e->getMessage());
+      }
+    }
+
+    // ── Source C: active in-stock products never analysed (priority 3) ─
+    try {
+      $QneverAnalysed = $this->db->prepare('
+        SELECT p.products_id
+        FROM :table_products p
+        WHERE p.products_status = 1
+          AND p.products_quantity > 0
+          AND NOT EXISTS (
+            SELECT 1 FROM :table_products_cockpit_ai_embedding e
+            WHERE e.entity_id = p.products_id
+          )
+        ORDER BY p.products_date_added DESC
+        LIMIT 50
+      ');
+      $QneverAnalysed->execute();
+      while ($row = $QneverAnalysed->fetch()) {
+        $productIds[(int)$row['products_id']] = true;
+      }
+    } catch (\Throwable $e) {
+      if ($this->debug) {
+        error_log('[ProductCockpitAi] Source C (never analysed) query failed: ' . $e->getMessage());
+      }
     }
 
     if (empty($productIds)) return [];
+    $productIds = array_keys($productIds);
 
-    // 2. Récupérer les langues actives
+    // 2. Fetch active languages
     $Qlangs = $this->db->prepare('SELECT languages_id 
                                  FROM :table_languages 
                                  ORDER BY sort_order ASC
@@ -294,7 +392,7 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
     $Qlangs->execute();
     $languages = $Qlangs->fetchAll();
 
-    // 3. Construire la liste des cibles (Produit x Langues)
+    // 3. Build the target list (Product x Languages)
     $targets = [];
     foreach ($productIds as $pId) {
       foreach ($languages as $l) {
@@ -375,7 +473,7 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
 
     // ── HTML ───────────────────────────────────────────────────────────────
     $statusColor = $hasError ? '#c0392b' : '#27ae60';
-    $actionColor = ($executed > 0) ? '#2980b9' : '#333'; // Bleu si des actions ont été faites
+    $actionColor = ($executed > 0) ? '#2980b9' : '#333'; // Blue when actions were performed
     $errHtml     = '';
 
     if (!empty($summary['errors'])) {

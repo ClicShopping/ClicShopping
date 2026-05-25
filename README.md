@@ -129,8 +129,7 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 - Server MCP (model context Protocol) for ecommerce agentic approach
   - Chat Rab - BI - WebSearch Connexion
   - Anthropic Ecommerce Connexion
-- Agentic Commerce Protocol (ACP) from OpenAI.
-- Universal Commerce Protocol (UCP) from Google.
+- Agentic Commerce Protocol (ACP / UDP, UCP).
 - Agentic SEO Analysis (Cokpit AI and Agentic SEO Text optimization)
 - Product cockpit AI with forecasting metrics and customers recommendations
 - AI product recommendation
@@ -158,32 +157,6 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 - Cron System: Automated tasks and maintenance
 - Dynamic Reports: Sales, inventory, and customer analytics
 
-
-## Short Comparison between competitors (native functions) on AI implementation:
-
-| Caracteristic              | ClicShopping            | Shopify             | Magento       | WooCommerce  |
-|----------------------------|-------------------------|---------------------|---------------|--------------|
-| Generative  AI             | ✅ Natif multi-agents    | ❌ Basic integration | ❌ Extension   | ❌ Plugins    |
-| Multi-LLM Support          | ✅ 6+ fournisseurs       | ❌ Primarily OpenAI  | ❌ Extension   | ❌ Extension  |
-| Vector Base                | ✅ MariaDB native        | ❌ External required | ❌ Extension   | ❌ Extension  |
-| Protocols IA / Ecommerce   | ✅ ACP/UCP/MCP           | ❌ Extension         | ❌ Extension   | ❌ Extension  |
-| Advanced WebSearch         | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  |
-| Open Source                | ✅ AGPLv3/Commercial     | ❌ Proprietary       | ✅ Community   | ✅  GPLv2     |
-| RAG local                  | ✅ Semantic              | ❌ Proprietary       | ❌ Extension   | ❌ Extension  |
-| Business intelligence      | ✅ Analytics             | ❌ Proprietary       | ❌ Extension   | ❌ Extension  |
-| Agentic (actor and Agent)  | ✅ 8 Autonomous agents   | ❌ Extension         | ❌ Extension   | ❌ Extension  |
-| autonomous Agent           | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
-| MCP management             | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
-| SEO optimization           | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
-| Cockpit AI                 | ✅ Native                | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
-| AI data sovereignty        | ✅ Native control        | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
-| AI GDPR compliance         | ✅ Native implementation | ❌ Extension         | ❌ Extension   | ❌ Extension  | 
-* Comparison based on native capabilities available without third-party plugins or custom development. 
-* Extension-based features require additional implementation effort and may introduce operational complexity.
-* Data sovereignty and GDPR compliance depend on infrastructure, deployment model, configuration, and operational practices...
-  This comparison only reflects native application capabilities.
-* Information based on publicly available capabilities and documented platform features.
-
 ## Server performance
 - OpCache
 - Memcached
@@ -199,7 +172,7 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 
 ## API Connexions
 - REST API: Full REST API for external integrations
-- MCP Connexoion
+- MCP Connexion
 
 # Shipping & Payment
 - Multiple Shipping Options: Flat rate, free shipping, and real-time rates

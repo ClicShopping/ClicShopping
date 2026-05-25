@@ -953,6 +953,10 @@ class PlanExecutor
         'ai_overview' => $aiOverview,
         'metadata' => $searchResult['metadata'] ?? [],
       ];
+
+      if (!empty($searchResult['market_analysis'])) {
+        $formatterData['market_analysis'] = $searchResult['market_analysis'];
+      }
       
       // Add shopping_results for Mode B and Mode D (use original shopping_results from WebSearchFacade)
       // Check for 'mode_b_google_shopping' instead of 'B'

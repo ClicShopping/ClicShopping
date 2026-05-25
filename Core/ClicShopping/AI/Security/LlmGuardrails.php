@@ -34,6 +34,7 @@ class LlmGuardrails
   private const CONFIDENCE_THRESHOLD = 0.75;
   private const MAX_RESPONSE_LENGTH = 8192;
   private const MIN_CONFIDENCE_SCORE = 0.6;
+  private const DEFAULT_CRITIC_RESULT_MAX_CHARS = 8000;
   private const WEIGHTS = [
     'structural' => 0.2,
     'content' => 0.3,
@@ -995,8 +996,10 @@ class LlmGuardrails
   private static function performLlmEvaluation(string $question, string $result): array
   {
     self::initLogger();
+    $trimmedResult = self::trimResultForCritic($result);
+
     $criteriaPrompt = self::getDefaultCriteriaEvaluatorPromptBuilder();
-    $evaluationPrompt = $criteriaPrompt->getEvaluationPromptForQuestion($question, $result);
+    $evaluationPrompt = $criteriaPrompt->getEvaluationPromptForQuestion($question, $trimmedResult);
 
     if (self::$debug) {
       self::$securityLogger->logSecurityEvent('LLM Evaluation Prompt: ' . $evaluationPrompt, 'info');
@@ -1012,6 +1015,63 @@ class LlmGuardrails
 
       return ['error' => 'LLM evaluation failed'];
     }
+  }
+
+  /**
+   * Reduce the response payload to the minimum needed by the LLM critic.
+   *
+   * The critic evaluates accuracy, relevance, completeness, clarity and
+   * reliability — none of which need the HTML markup, image URLs, button
+   * scripts or repeated product card chrome that inflate a Hybrid WebSearch
+   * answer to 130 KB+. We:
+   *   1. Strip every HTML tag (text content only — links, alt text and table
+   *      data are preserved by strip_tags).
+   *   2. Decode HTML entities so the critic reads "your price: 899€" instead
+   *      of "your price: 899&#x20AC;".
+   *   3. Collapse runs of whitespace.
+   *   4. Cap the result length at DEFAULT_CRITIC_RESULT_MAX_CHARS (8000), or
+   *      whatever CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS sets.
+   *
+   * The original payload is logged when truncation happens, so we can audit
+   * what was dropped before evaluation.
+   */
+  private static function trimResultForCritic(string $result): string
+  {
+    if (\defined('CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS')) {
+      $maxChars = (int) \constant('CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS');
+      if ($maxChars <= 0) {
+        $maxChars = self::DEFAULT_CRITIC_RESULT_MAX_CHARS;
+      }
+    } else {
+      $maxChars = self::DEFAULT_CRITIC_RESULT_MAX_CHARS;
+    }
+
+    $originalLength = mb_strlen($result);
+
+    // Strip HTML and collapse whitespace
+    $stripped = strip_tags($result);
+    $stripped = html_entity_decode($stripped, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $stripped = preg_replace('/\s+/u', ' ', $stripped);
+    $stripped = trim($stripped);
+
+    $strippedLength = mb_strlen($stripped);
+
+    if ($strippedLength > $maxChars) {
+      $stripped = mb_substr($stripped, 0, $maxChars)
+        . "\n[...truncated for evaluation — full response: " . $originalLength . " chars]";
+    }
+
+    if (self::$debug) {
+      self::$securityLogger->logSecurityEvent(\sprintf(
+        'Critic payload trimmed: original=%d chars, stripped=%d chars, sent=%d chars (max=%d)',
+        $originalLength,
+        $strippedLength,
+        mb_strlen($stripped),
+        $maxChars
+      ), 'info');
+    }
+
+    return $stripped;
   }
 
   /**

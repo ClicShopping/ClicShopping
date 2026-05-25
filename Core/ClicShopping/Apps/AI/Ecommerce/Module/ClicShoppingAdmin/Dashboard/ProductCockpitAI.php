@@ -50,80 +50,94 @@
 
     $dashUrl = HTML::sanitize(CLICSHOPPING::link('ClicShoppingAdmin/index.php?A&AI\Ecommerce&DashboardProductCockpitAI'));
 
+    $stockColor = $stockoutN > 0 ? '#dc2626' : '#16a34a';
+
     ob_start(); ?>
 <span class="<?= $content_width ?>">
-<div style="font-family:'Segoe UI',sans-serif;font-size:13px;color:#1a1f2e;">
+<div class="card border-0 shadow-sm" style="font-family:'Segoe UI',sans-serif;color:#1a1f2e;">
 
   <!-- Header -->
-  <div style="background:#1a1f2e;color:#fff;padding:8px 14px;border-radius:4px 4px 0 0;
-              display:flex;justify-content:space-between;align-items:center;">
-    <strong style="font-size:13px;">Product CockpitAI — Overview</strong>
-    <a href="<?= $dashUrl ?>" style="font-size:11px;color:#93c5fd;text-decoration:none;">
+  <div class="card-header text-white d-flex flex-wrap justify-content-between align-items-center gap-2"
+       style="background:#1a1f2e;">
+    <strong>Product CockpitAI — Overview</strong>
+    <a href="<?= $dashUrl ?>" class="small text-decoration-none" style="color:#93c5fd;">
       Full dashboard &rsaquo;
     </a>
   </div>
 
-  <div style="border:1px solid #d8dce4;border-top:none;border-radius:0 0 4px 4px;
-              background:#fff;padding:16px;">
+  <div class="card-body">
 
     <!-- KPI row -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
-      <div style="background:#f8f9fc;border-radius:4px;padding:10px;text-align:center;border-top:3px solid #2563eb;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700;">Products</div>
-        <div style="font-size:22px;font-weight:800;"><?= number_format($kpis['total_products']) ?></div>
-        <div style="font-size:9px;color:#6b7280;"><?= number_format($kpis['total_analyses']) ?> analyses</div>
+    <div class="row g-2 mb-3">
+      <div class="col-6 col-md-3">
+        <div class="card h-100 text-center border-0" style="background:#f8f9fc;border-top:3px solid #2563eb !important;">
+          <div class="card-body p-2">
+            <div class="text-uppercase fw-bold text-muted" style="font-size:9px;letter-spacing:.5px;">Products</div>
+            <div class="fw-bolder lh-1 my-1" style="font-size:22px;"><?= number_format($kpis['total_products']) ?></div>
+            <div class="text-muted" style="font-size:9px;"><?= number_format($kpis['total_analyses']) ?> analyses</div>
+          </div>
+        </div>
       </div>
-      <div style="background:#f8f9fc;border-radius:4px;padding:10px;text-align:center;border-top:3px solid <?= $xColor ?>;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700;">Avg Score X</div>
-        <div style="font-size:22px;font-weight:800;color:<?= $xColor ?>;"><?= $avgX ?></div>
-        <div style="font-size:9px;color:#6b7280;">Quality</div>
+      <div class="col-6 col-md-3">
+        <div class="card h-100 text-center border-0" style="background:#f8f9fc;border-top:3px solid <?= $xColor ?> !important;">
+          <div class="card-body p-2">
+            <div class="text-uppercase fw-bold text-muted" style="font-size:9px;letter-spacing:.5px;">Avg Score X</div>
+            <div class="fw-bolder lh-1 my-1" style="font-size:22px;color:<?= $xColor ?>;"><?= $avgX ?></div>
+            <div class="text-muted" style="font-size:9px;">Quality</div>
+          </div>
+        </div>
       </div>
-      <div style="background:#f8f9fc;border-radius:4px;padding:10px;text-align:center;border-top:3px solid <?= $yColor ?>;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700;">Avg Score Y</div>
-        <div style="font-size:22px;font-weight:800;color:<?= $yColor ?>;"><?= $avgY ?></div>
-        <div style="font-size:9px;color:#6b7280;">Commercial</div>
+      <div class="col-6 col-md-3">
+        <div class="card h-100 text-center border-0" style="background:#f8f9fc;border-top:3px solid <?= $yColor ?> !important;">
+          <div class="card-body p-2">
+            <div class="text-uppercase fw-bold text-muted" style="font-size:9px;letter-spacing:.5px;">Avg Score Y</div>
+            <div class="fw-bolder lh-1 my-1" style="font-size:22px;color:<?= $yColor ?>;"><?= $avgY ?></div>
+            <div class="text-muted" style="font-size:9px;">Commercial</div>
+          </div>
+        </div>
       </div>
-      <div style="background:#f8f9fc;border-radius:4px;padding:10px;text-align:center;border-top:3px solid <?= $stockoutN > 0 ? '#dc2626' : '#16a34a' ?>;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;font-weight:700;">Stockout &gt;70%</div>
-        <div style="font-size:22px;font-weight:800;color:<?= $stockoutN > 0 ? '#dc2626' : '#16a34a' ?>;"><?= $stockoutN ?></div>
-        <div style="font-size:9px;color:#6b7280;">urgent reorder</div>
+      <div class="col-6 col-md-3">
+        <div class="card h-100 text-center border-0" style="background:#f8f9fc;border-top:3px solid <?= $stockColor ?> !important;">
+          <div class="card-body p-2">
+            <div class="text-uppercase fw-bold text-muted" style="font-size:9px;letter-spacing:.5px;">Stockout &gt;70%</div>
+            <div class="fw-bolder lh-1 my-1" style="font-size:22px;color:<?= $stockColor ?>;"><?= $stockoutN ?></div>
+            <div class="text-muted" style="font-size:9px;">urgent reorder</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Two charts side by side -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-
-      <!-- Quadrant doughnut -->
-      <div>
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;
-                    color:#6b7280;font-weight:700;margin-bottom:6px;">
-          Quadrant distribution — <?= $totalP ?> products
-        </div>
-        <div style="position:relative;height:180px;">
-          <canvas id="cai-dash-quads"></canvas>
-        </div>
-      </div>
-
-      <!-- Velocity doughnut -->
-      <div>
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;
-                    color:#6b7280;font-weight:700;margin-bottom:6px;">
-          Velocity distribution — <?= $totalV ?> products
-        </div>
-        <div style="position:relative;height:180px;">
-          <canvas id="cai-dash-vel"></canvas>
+    <!-- Two charts side by side (stack on mobile/tablet) -->
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0" style="background:#f8f9fc;">
+          <div class="card-body p-2">
+            <div class="text-uppercase fw-bold text-muted mb-2" style="font-size:10px;letter-spacing:.5px;">
+              Quadrant distribution — <?= $totalP ?> products
+            </div>
+            <div style="position:relative;height:180px;">
+              <canvas id="cai-dash-quads"></canvas>
+            </div>
+          </div>
         </div>
       </div>
-
+      <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0" style="background:#f8f9fc;">
+          <div class="card-body p-2">
+            <div class="text-uppercase fw-bold text-muted mb-2" style="font-size:10px;letter-spacing:.5px;">
+              Velocity distribution — <?= $totalV ?> products
+            </div>
+            <div style="position:relative;height:180px;">
+              <canvas id="cai-dash-vel"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <div style="margin-top:12px;padding-top:8px;border-top:1px solid #f0f2f5;
-                display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:10px;color:#9ca3af;">
-        Last analysis: <?= $kpis['last_analysis'] ? htmlspecialchars(substr($kpis['last_analysis'], 0, 10)) : 'never' ?>
-      </span>
-    </div>
+  <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 small text-muted">
+    Last analysis: <?= $kpis['last_analysis'] ? htmlspecialchars(substr($kpis['last_analysis'], 0, 10)) : 'never' ?>
   </div>
 </div>
 

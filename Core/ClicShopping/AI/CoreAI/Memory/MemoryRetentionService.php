@@ -71,14 +71,23 @@ class MemoryRetentionService
    */
   public function recordInteraction(string $userMessage, string $assistantResponse, array $metadata = []): void
   {
+    $serviceStart = microtime(true);
+
+    if ($this->debug) {
+      error_log(sprintf(
+        "[INFO PERF] MemoryRetentionService::recordInteraction START — assistant response: %d chars",
+        strlen($assistantResponse)
+      ));
+    }
+
     try {
       $timestamp = time();
-      
-      // 🔧 FIX: Use interaction_id from metadata if provided, otherwise generate new one
+
+      // Use interaction_id from metadata if provided, otherwise generate new one
       // This ensures we use the same interaction_id throughout the entire flow
       $interactionId = $metadata['interaction_id'] ?? uniqid('interaction_', true);
 
-      // 🔧 FIX: Validate that user_id is present
+      // Validate that user_id is present
       if (empty($this->userId)) {
         $this->securityLogger->logSecurityEvent(
           "❌ MemoryRetentionService: user_id is empty, cannot record interaction",
@@ -94,7 +103,7 @@ class MemoryRetentionService
       $this->workingMemory->set('last_interaction_id', $interactionId);
       $this->workingMemory->set('last_interaction_timestamp', $timestamp);
 
-      // NEW: Extract entity_id and language_id from metadata
+      // Extract entity_id and language_id from metadata
       $entityId = $metadata['entity_id'] ?? 0;
       $languageId = $metadata['language_id'] ?? $this->languageId;
       $entityType = $metadata['entity_type'] ?? 'unknown';
@@ -103,11 +112,12 @@ class MemoryRetentionService
       if (is_null($entityId) || $entityId === '') {
         $entityId = 0;
       }
+      
       if (is_null($languageId) || $languageId === '') {
         $languageId = (int)DEFAULT_LANGUAGE;
       }
 
-      // 🔧 FIX: Build complete metadata with ALL required fields
+      // Build complete metadata with ALL required fields
       // This ensures user_id and interaction_id are ALWAYS present
       $completeMetadata = array_merge($metadata, [
         'timestamp' => $timestamp,
@@ -169,7 +179,7 @@ class MemoryRetentionService
       ];
       $this->workingMemory->set('interactions_to_migrate', $migrations);
 
-      // ✅ NEW: Log to rag_memory_retention_log table
+      // Log to rag_memory_retention_log table
       try {
         $retentionLog = [
           'user_id' => $this->userId,
@@ -195,7 +205,7 @@ class MemoryRetentionService
         }
       }
 
-      // 🔧 FIX: Enhanced logging to confirm both user_id and interaction_id are present
+      // Enhanced logging to confirm both user_id and interaction_id are present
       if ($this->debug) {
         $this->securityLogger->logSecurityEvent(
           "✅ Interaction recorded: {$interactionId}",
@@ -209,6 +219,13 @@ class MemoryRetentionService
             'has_interaction_id' => !empty($interactionId)
           ]
         );
+       
+       if($this->debug) {
+        error_log(sprintf(
+          "[INFO PERF] MemoryRetentionService::recordInteraction TOTAL %.3fs",
+          microtime(true) - $serviceStart
+        ));
+	}
       }
 
     } catch (\Exception $e) {
@@ -227,7 +244,7 @@ class MemoryRetentionService
   }
 
   /**
-   * 🟢 MIGRATION AUTOMATIQUE
+   *MIGRATION AUTOMATIQUE
    *
    * Migre les interactions anciennes du court terme vers le long terme
    * À appeler périodiquement (par cron ou hook)
@@ -238,7 +255,7 @@ class MemoryRetentionService
       $migrated = 0;
       $now = time();
       
-      // NEW: Query database directly for old short-term interactions
+      //Query database directly for old short-term interactions
       $cutoffTime = date('Y-m-d H:i:s', $now - self::TTL_SHORT_TERM);
       $prefix = CLICSHOPPING::getConfig('db_table_prefix');
       
@@ -322,7 +339,7 @@ class MemoryRetentionService
   }
 
   /**
-   * 🟡 RÉCUPÉRATION MULTI-NIVEAUX
+   * RÉCUPÉRATION MULTI-NIVEAUX
    *
    * Cherche dans tous les niveaux en priorité :
    * 1. Working Memory (exécution actuelle)

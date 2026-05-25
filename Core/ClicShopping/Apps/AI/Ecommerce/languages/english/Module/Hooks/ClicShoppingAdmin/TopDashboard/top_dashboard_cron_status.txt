@@ -1,0 +1,20 @@
+top_dashboard_cron_title = Cron status (24h)
+top_dashboard_cron_view = View logs
+
+top_dashboard_cron_relative_seconds = %d s ago
+top_dashboard_cron_relative_minutes = %d min ago
+top_dashboard_cron_relative_hours = %d h ago
+
+cron_status_origin_seo = SEO
+cron_status_origin_faq = FAQ
+cron_status_origin_cockpitai = CockpitAI
+cron_status_origin_embedding = Embeddings
+cron_status_origin_other = Other
+
+cron_status_state_completed = Success
+cron_status_state_failed = Failed
+cron_status_state_partial = Partial
+cron_status_state_skipped = Skipped
+cron_status_state_running = Running
+
+heading_short_cron_status = Last 24h cron status

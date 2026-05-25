@@ -407,13 +407,33 @@ class RagWebSearchEngine implements WebSearchInterface
       }
     }
 
-    // Fallback: attempt generic price extraction from snippet
+    // Fallback: attempt generic price extraction from multiple SerpAPI fields.
     if ($extracted['extracted_price'] === null) {
-      $priceMatch = $this->extractPriceGeneric($result['snippet'] ?? '');
+      $candidates = [
+        $result['snippet']                            ?? '',
+        $result['title']                              ?? '',
+        $result['rich_snippet']['top']['detected_extensions']['price'] ?? '',
+        is_array($result['rich_snippet']['top']['extensions'] ?? null)
+          ? implode(' ', $result['rich_snippet']['top']['extensions'])
+          : '',
+        is_array($result['rich_snippet']['extensions'] ?? null)
+          ? implode(' ', $result['rich_snippet']['extensions'])
+          : '',
+        is_array($result['extensions'] ?? null)
+          ? implode(' ', $result['extensions'])
+          : '',
+      ];
 
-      if ($priceMatch !== null) {
-        $extracted['price'] = $priceMatch['formatted'];
-        $extracted['extracted_price'] = $priceMatch['numeric'];
+      foreach ($candidates as $text) {
+        if (!is_string($text) || trim($text) === '') {
+          continue;
+        }
+        $priceMatch = $this->extractPriceGeneric($text);
+        if ($priceMatch !== null) {
+          $extracted['price'] = $priceMatch['formatted'];
+          $extracted['extracted_price'] = $priceMatch['numeric'];
+          break;
+        }
       }
     }
 
@@ -455,24 +475,56 @@ class RagWebSearchEngine implements WebSearchInterface
    */
   private function extractPriceGeneric(string $text): ?array
   {
-    // Common price patterns
+    if ($text === '') {
+      return null;
+    }
+
+    // decimal part in group 2 (when present).
     $patterns = [
-      '/(\d+[,\.]\d{2})\s*€/i',           // 99.99 €
-      '/€\s*(\d+[,\.]\d{2})/i',           // € 99.99
-      '/(\d+[,\.]\d{2})\s*EUR/i',         // 99.99 EUR
-      '/\$\s*(\d+[,\.]\d{2})/i',          // $ 99.99
-      '/(\d+[,\.]\d{2})\s*USD/i',         // 99.99 USD
-      '/£\s*(\d+[,\.]\d{2})/i',           // £ 99.99
-      '/(\d+[,\.]\d{2})\s*GBP/i',         // 99.99 GBP
+      // -- EUR --
+      // 1 099,99 € / 1.099,99 € / 1 099.99 € (thousand sep + 2 decimals + €)
+      '/(\d{1,3}(?:[\s\.\x{00A0}\x{202F}]\d{3})+)[,.](\d{2})\s*(?:€|EUR(?!\w))/iu',
+      // 1 099 € / 1.099 € (thousand sep, no decimals, + €)
+      '/(\d{1,3}(?:[\s\.\x{00A0}\x{202F}]\d{3})+)\s*(?:€|EUR(?!\w))/iu',
+      // 899,99 € / 899.99 € (no thousand sep, 2 decimals, + €)
+      '/(\d{2,5})[,.](\d{2})\s*(?:€|EUR(?!\w))/iu',
+      // 899 € / 899€ / 899 EUR (no thousand sep, no decimals, + €)
+      '/(\d{2,6})\s*(?:€|EUR(?!\w))/iu',
+      // € 899,99 / € 899 (currency BEFORE amount)
+      '/(?:€|EUR)\s*(\d{1,3}(?:[\s\.\x{00A0}\x{202F}]\d{3})+)(?:[,.](\d{2}))?\b/iu',
+      '/(?:€|EUR)\s*(\d{2,6})(?:[,.](\d{2}))?\b/iu',
+
+      // -- USD --
+      '/\$\s*(\d{1,3}(?:,\d{3})+)(?:\.(\d{2}))?\b/i',     // $1,099.99 / $1,099
+      '/\$\s*(\d{2,6})(?:\.(\d{2}))?\b/i',                 // $899.99 / $899
+      '/(\d{2,6})(?:\.(\d{2}))?\s*USD\b/i',
+
+      // -- GBP --
+      '/£\s*(\d{1,3}(?:,\d{3})+)(?:\.(\d{2}))?\b/i',
+      '/£\s*(\d{2,6})(?:\.(\d{2}))?\b/i',
+      '/(\d{2,6})(?:\.(\d{2}))?\s*GBP\b/i',
     ];
 
     foreach ($patterns as $pattern) {
       if (preg_match($pattern, $text, $matches)) {
-        $numericPrice = (float)str_replace(',', '.', $matches[1]);
+        $integerPart = preg_replace('/[\s\.\x{00A0}\x{202F},]/u', '', $matches[1]);
+        $decimalPart = $matches[2] ?? '';
+
+        $normalized  = $decimalPart !== ''
+          ? $integerPart . '.' . $decimalPart
+          : $integerPart;
+
+        $numericPrice = (float) $normalized;
+
+        // Sanity guard: prices outside [1, 1_000_000] are almost certainly
+        // false positives (product IDs, SKUs, years, screen sizes, ...).
+        if ($numericPrice < 1.0 || $numericPrice > 1_000_000) {
+          continue;
+        }
 
         return [
-          'formatted' => $matches[0],
-          'numeric' => $numericPrice,
+          'formatted' => trim($matches[0]),
+          'numeric'   => $numericPrice,
         ];
       }
     }

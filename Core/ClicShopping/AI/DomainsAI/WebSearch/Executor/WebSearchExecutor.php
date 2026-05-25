@@ -11,12 +11,8 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Executor;
 use ClicShopping\AI\DomainsAI\WebSearch\Exception\ConfigurationException;
 use ClicShopping\AI\DomainsAI\WebSearch\Logger\WebSearchLogger;
 use ClicShopping\AI\DomainsAI\WebSearch\Processor\RoutingDecision;
-use ClicShopping\AI\DomainsAI\WebSearch\Tools\AmazonShoppingEngine;
-use ClicShopping\AI\DomainsAI\WebSearch\Tools\GoogleAIOverviewEngine;
-use ClicShopping\AI\DomainsAI\WebSearch\Tools\GoogleShoppingEngine;
-use ClicShopping\AI\DomainsAI\WebSearch\Tools\GoogleTrendsEngine;
-use ClicShopping\AI\DomainsAI\WebSearch\Tools\RagWebSearchEngine;
 use ClicShopping\AI\InterfacesAI\WebSearchInterface;
+use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 
 /**
  * WebSearchExecutor - Orchestrator for multi-mode execution
@@ -37,25 +33,24 @@ use ClicShopping\AI\InterfacesAI\WebSearchInterface;
  */
 class WebSearchExecutor
 {
-  private const MODE_ENGINE_MAP = [
-    'mode_a_ai_overview' => GoogleAIOverviewEngine::class,
-    'mode_b_google_shopping' => GoogleShoppingEngine::class,
-    'mode_c_rag_websearch' => RagWebSearchEngine::class,
-    'mode_d_amazon_shopping' => AmazonShoppingEngine::class,
-    'mode_e_google_trends' => GoogleTrendsEngine::class,
-  ];
-
   private const DEFAULT_TIMEOUT = 10; // seconds
 
   private WebSearchLogger $logger;
+  private WebSearchEngineRegistry $registry;
   private bool $debug;
 
   /**
    * Constructor
+   *
+   * Acquires the shared {@see WebSearchEngineRegistry} so engine lookups go
+   * through the agnostic registration system. Built-in Core providers
+   * (Mode A/B/C/E) and any Apps/AI/{Domain}/-registered providers are both
+   * resolved transparently by mode identifier.
    */
   public function __construct()
   {
     $this->logger = new WebSearchLogger();
+    $this->registry = WebSearchEngineRegistry::getInstance();
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER')
       && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
   }
@@ -156,14 +151,10 @@ class WebSearchExecutor
     // Prepare options with location params
     $engineOptions = $this->prepareEngineOptions($options, $routing);
 
-    // For shopping/scraping/trends engines, use the clean product/keyword name
-    // Mode E (Google Trends) needs the keyword, not the full conversational query
-    $usesProductQuery = in_array($mode, [
-      'mode_b_google_shopping',
-      'mode_c_rag_websearch',
-      'mode_d_amazon_shopping',
-      'mode_e_google_trends',
-    ], true);
+    // Per-engine query-type preference is declared by the provider, so Core
+    // never needs to hard-code which mode IDs prefer the canonical product query.
+    $provider = $this->registry->getProvider($mode);
+    $usesProductQuery = $provider !== null && $provider->usesProductQuery();
     $productQuery = $routing->getProduct();
     $engineQuery = ($usesProductQuery && $productQuery !== null) ? $productQuery : $query;
 
@@ -228,13 +219,9 @@ class WebSearchExecutor
       try {
         $engine = $this->instantiateEngine($mode);
 
-        // Determine which query to use per engine type
-        $usesProductQuery = in_array($mode, [
-          'mode_b_google_shopping',
-          'mode_c_rag_websearch',
-          'mode_d_amazon_shopping',
-          'mode_e_google_trends',
-        ], true);
+        // Per-engine query-type preference is declared by the provider
+        $provider = $this->registry->getProvider($mode);
+        $usesProductQuery = $provider !== null && $provider->usesProductQuery();
         $engineQuery = ($usesProductQuery && $productQuery !== null) ? $productQuery : $query;
 
         if ($this->debug) {
@@ -442,6 +429,24 @@ class WebSearchExecutor
       ];
     }
 
+    if (!empty($merged['shopping_results'])) {
+      $priorityMap = [
+        'rag_websearch'    => 0,
+        'amazon'           => 1,
+        'shopping_results' => 2,
+      ];
+      usort($merged['shopping_results'], static function (array $a, array $b) use ($priorityMap): int {
+        $pa = $priorityMap[$a['data_source'] ?? ''] ?? 3;
+        $pb = $priorityMap[$b['data_source'] ?? ''] ?? 3;
+        if ($pa === $pb) {
+          // Preserve original ordering within the same source by falling
+          // back to position (lower position = earlier in the original list).
+          return ($a['position'] ?? PHP_INT_MAX) <=> ($b['position'] ?? PHP_INT_MAX);
+        }
+        return $pa <=> $pb;
+      });
+    }
+
     // **DEBUG: Log merge completion**
     if ($this->debug) {
       error_log(sprintf(
@@ -487,18 +492,22 @@ class WebSearchExecutor
   /**
    * Instantiate engine based on mode identifier
    *
+   * Resolves the mode through {@see WebSearchEngineRegistry}. Both built-in
+   * Core providers and any Apps/AI/{Domain}/-registered providers are looked
+   * up through the same path — Core never owns a per-mode class map.
+   *
    * @param string $mode Mode identifier
    * @return WebSearchInterface Engine instance
-   * @throws \RuntimeException If engine class not found
+   * @throws \RuntimeException If no provider is registered for the mode
    */
   private function instantiateEngine(string $mode): WebSearchInterface
   {
-    if (!isset(self::MODE_ENGINE_MAP[$mode])) {
+    $provider = $this->registry->getProvider($mode);
+    if ($provider === null) {
       throw new \RuntimeException("Unknown mode: {$mode}");
     }
 
-    $engineClass = self::MODE_ENGINE_MAP[$mode];
-
+    $engineClass = $provider->getEngineClass();
     if (!class_exists($engineClass)) {
       throw new \RuntimeException("Engine class not found: {$engineClass}");
     }
@@ -652,15 +661,19 @@ class WebSearchExecutor
   /**
    * Get available engines
    *
+   * Iterates every mode registered with {@see WebSearchEngineRegistry},
+   * built-in or domain-provided, and returns those whose engine reports
+   * itself available (engine class instantiable + `isAvailable()` true).
+   *
    * @return array Array of available engine modes
    */
   public function getAvailableEngines(): array
   {
     $available = [];
 
-    foreach (self::MODE_ENGINE_MAP as $mode => $engineClass) {
+    foreach ($this->registry->getRegisteredModes() as $mode) {
       try {
-        $engine = new $engineClass();
+        $engine = $this->instantiateEngine($mode);
         if ($engine->isAvailable()) {
           $available[] = $mode;
         }
@@ -681,9 +694,9 @@ class WebSearchExecutor
   {
     $metadata = [];
 
-    foreach (self::MODE_ENGINE_MAP as $mode => $engineClass) {
+    foreach ($this->registry->getRegisteredModes() as $mode) {
       try {
-        $engine = new $engineClass();
+        $engine = $this->instantiateEngine($mode);
         if ($engine->isAvailable()) {
           $metadata[$mode] = $engine->getMetadata();
         }

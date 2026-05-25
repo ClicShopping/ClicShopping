@@ -39,8 +39,22 @@ class MemoryManager
     array $aiResponse,
     array $metadata
   ): void {
+    $isDebug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER')
+            && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
+
+    $totalStart = microtime(true);
+
+    $extractStart = microtime(true);
     $responseText = self::extractResponseText($aiResponse);
-    
+
+    if ($isDebug) {
+      error_log(sprintf(
+        "[INFO PERF] MemoryManager::recordInteraction extractResponseText took %.3fs (response %d chars)",
+        microtime(true) - $extractStart,
+        strlen($responseText)
+      ));
+    }
+
     $fullMetadata = array_merge([
       'source' => 'chat_ajax',
       'success' => true,
@@ -49,10 +63,19 @@ class MemoryManager
       'intent_confidence' => $aiResponse['intent']['confidence'] ?? 0,
       'execution_time' => $aiResponse['execution_time'] ?? 0,
     ], $metadata);
-    
+
+    $serviceStart = microtime(true);
     $memoryService->recordInteraction($query, $responseText, $fullMetadata);
-    
-    if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
+
+    if ($isDebug) {
+      error_log(sprintf(
+        "[INFO PERF] MemoryManager::recordInteraction memoryService->recordInteraction() took %.3fs",
+        microtime(true) - $serviceStart
+      ));
+      error_log(sprintf(
+        "[INFO PERF] MemoryManager::recordInteraction TOTAL %.3fs",
+        microtime(true) - $totalStart
+      ));
       error_log('[INFO] INTERACTION RECORDED IN MEMORY');
       error_log('   Query Length: ' . strlen($query));
       error_log('   Response Length: ' . strlen($responseText));

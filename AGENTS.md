@@ -140,6 +140,14 @@ configuration files before creating a new one.
 ✗ Placing domain-specific patterns in the agnostic layer (DomainsAI/)
 ✗ Placing agnostic patterns in domain-specific layer (Apps/AI/{Domain}/)
 ✗ Mixing multilingual keywords in agnostic pattern internal processing (English-only)
+✗ Referencing any commercial brand (Amazon, eBay, LinkedIn, Salesforce, Shopify, etc.)
+  inside Core/ClicShopping/AI/ — brand-specific engines, site routers, providers and
+  patterns MUST live in Apps/AI/{Domain}/ and register themselves via the agnostic
+  registries (e.g. WebSearchEngineRegistry; see
+  Apps/AI/Ecommerce/Classes/ClicShoppingAdmin/WebSearch/Registration/ for the
+  reference template). Public SerpAPI / Google protocol names — google_ai_overview,
+  google_shopping, google_trends — are agnostic engine identifiers and are allowed
+  in Core.
 ✗ Legacy osCommerce / ClicShopping V2/V3 patterns
 ✗ Inventing configuration constant names — always verify existing constants first
 ```

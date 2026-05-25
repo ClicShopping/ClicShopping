@@ -193,16 +193,16 @@
                   </h2>
                   <div id="help-collapse" class="accordion-collapse collapse" aria-labelledby="help-heading" data-bs-parent="#CockpitAI-help-accordion">
                     <div class="accordion-body">
-                      <div class="row">
-                        <div class="col-md-4">
+                      <div class="row g-2">
+                        <div class="col-12 col-md-4">
                           <h6><i class="bi bi-star"></i> ' . $this->app->getDef('label_score_x') . '</h6>
                           <p class="small">' . $this->app->getDef('text_help_score_x') . '</p>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                           <h6><i class="bi bi-graph-up-arrow"></i> ' . $this->app->getDef('label_score_y') . '</h6>
                           <p class="small">' . $this->app->getDef('text_help_score_y') . '</p>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                           <h6><i class="bi bi-grid-3x3"></i> ' . $this->app->getDef('label_quadrant') . '</h6>
                           <p class="small">' . $this->app->getDef('text_help_quadrants') . '</p>
                         </div>
@@ -378,11 +378,11 @@
             var seoStale  = data.header?.seo_data_stale === true;
 
             html += "<div class=\"alert alert-success mb-3\">";
-            html += "  <div class=\"d-flex justify-content-between align-items-center\">";
-            html += "    <div>";
+            html += "  <div class=\"d-flex flex-wrap justify-content-between align-items-center gap-2\">";
+            html += "    <div class=\"d-flex flex-wrap align-items-center gap-2\">";
             html += "      <h5 class=\"mb-1\"><i class=\"bi bi-check-circle\"></i> ' . $this->app->getDef('text_analysis_success') . '</h5>";
-            html += "      <small>" + analysisDate + " | " + (data.technical?.pipeline_duration_ms || 0).toFixed(0) + "ms</small>";
-            html += "      <span class=\"badge bg-" + seoClass + " ms-2\">SEO: " + seoStatus;
+            html += "      <small class=\"text-muted\">" + analysisDate + " | " + (data.technical?.pipeline_duration_ms || 0).toFixed(0) + "ms</small>";
+            html += "      <span class=\"badge bg-" + seoClass + "\">SEO: " + seoStatus;
             if (seoScore !== null && seoScore !== undefined && seoScore > 0) {
               html += " " + Math.round(seoScore) + "/100";
             }
@@ -397,9 +397,9 @@
             // quadrant / recommendations are still based on the cached
             // snapshot — re-running CockpitAI will refresh them.
             if (seoStale) {
-              html += "<div class=\"alert alert-warning d-flex align-items-center mb-3\">";
-              html += "  <i class=\"bi bi-arrow-clockwise me-2\"></i>";
-              html += "  <div>SEO has been re-optimized since the last CockpitAI analysis. ";
+              html += "<div class=\"alert alert-warning d-flex flex-wrap align-items-start gap-2 mb-3\">";
+              html += "  <i class=\"bi bi-arrow-clockwise flex-shrink-0\"></i>";
+              html += "  <div class=\"flex-grow-1\">SEO has been re-optimized since the last CockpitAI analysis. ";
               html += "    The Score X / Y and recommendations below are based on the previous state — ";
               html += "    re-run the analysis to refresh them.";
               html += "  </div>";
@@ -410,7 +410,7 @@
             var scoreX = parseFloat(data.score_x?.value || 0);
             var scoreY = parseFloat(data.score_y?.value || 0);
 
-            html += "<div class=\"row mb-3\">";
+            html += "<div class=\"row g-3 mb-3\">";
 
             // Score X card — quadrant distribution + recommendation
             var qCode      = data.quadrant?.code     || "Q_intermediate";
@@ -426,8 +426,8 @@
             };
             var qBorderColor = qColors[qCode] || "#9ca3af";
 
-            html += "  <div class=\"col-md-6\">";
-            html += "    <div class=\"card\" style=\"border-color:" + qBorderColor + ";border-width:2px;\">";
+            html += "  <div class=\"col-12 col-md-6\">";
+            html += "    <div class=\"card h-100\" style=\"border-color:" + qBorderColor + ";border-width:2px;\">";
             html += "      <div class=\"card-header text-white\" style=\"background:" + qBorderColor + ";\">";
             html += "        <h6 class=\"mb-0\"><i class=\"bi bi-star\"></i> ' . $this->app->getDef('label_score_x') . ' &mdash; " + scoreX.toFixed(1) + "/100</h6>";
             html += "      </div>";
@@ -456,8 +456,8 @@
             html += "  </div>";
 
             // Score Y card
-            html += "  <div class=\"col-md-6\">";
-            html += "    <div class=\"card border-success\">";
+            html += "  <div class=\"col-12 col-md-6\">";
+            html += "    <div class=\"card border-success h-100\">";
             html += "      <div class=\"card-header bg-success text-white\">";
             html += "        <h6 class=\"mb-0\"><i class=\"bi bi-graph-up-arrow\"></i> ' . $this->app->getDef('label_score_y') . '</h6>";
             html += "      </div>";
@@ -591,13 +591,15 @@
 
             // ── Buttons ─────────────────────────────────────────────────────
             html += "<div class=\"row\">";
-            html += "  <div class=\"col-md-12 text-center\">";
-            html += "    <button type=\"button\" class=\"btn btn-primary\" id=\"CockpitAI-refresh-btn\">";
-            html += "      <i class=\"bi bi-arrow-clockwise\"></i> ' . $this->app->getDef('button_refresh') . '";
-            html += "    </button>";
-            html += "    <button type=\"button\" class=\"btn btn-outline-secondary ms-2\" onclick=\"window.print()\">";
-            html += "      <i class=\"bi bi-printer\"></i> Print";
-            html += "    </button>";
+            html += "  <div class=\"col-12\">";
+            html += "    <div class=\"d-flex flex-wrap justify-content-center gap-2\">";
+            html += "      <button type=\"button\" class=\"btn btn-primary\" id=\"CockpitAI-refresh-btn\">";
+            html += "        <i class=\"bi bi-arrow-clockwise\"></i> ' . $this->app->getDef('button_refresh') . '";
+            html += "      </button>";
+            html += "      <button type=\"button\" class=\"btn btn-outline-secondary\" onclick=\"window.print()\">";
+            html += "        <i class=\"bi bi-printer\"></i> Print";
+            html += "      </button>";
+            html += "    </div>";
             html += "  </div>";
             html += "</div>";
 
@@ -766,11 +768,11 @@ EOD;
       $pipelineDuration = $data['technical']['pipeline_duration_ms'] ?? 0;
 
       $html .= '<div class="alert alert-success mb-3">';
-      $html .= '  <div class="d-flex justify-content-between align-items-center">';
-      $html .= '    <div>';
-      $html .= '      <h5 class="mb-1"><i class="bi bi-check-circle"></i> ' . $this->app->getDef('text_analysis_success') . '</h5>';
-      $html .= '      <small>' . $analysisDate . ' | ' . round($pipelineDuration) . 'ms</small>';
-      $html .= '      <span class="badge bg-' . $seoClass . ' ms-2">SEO: ' . $seoStatus . '</span>';
+      $html .= '  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">';
+      $html .= '    <div class="d-flex flex-wrap align-items-center gap-2">';
+      $html .= '      <h5 class="mb-0"><i class="bi bi-check-circle"></i> ' . $this->app->getDef('text_analysis_success') . '</h5>';
+      $html .= '      <small class="text-muted">' . $analysisDate . ' | ' . round($pipelineDuration) . 'ms</small>';
+      $html .= '      <span class="badge bg-' . $seoClass . '">SEO: ' . $seoStatus . '</span>';
       $html .= '    </div>';
       $html .= '  </div>';
       $html .= '</div>';
@@ -779,16 +781,16 @@ EOD;
       $scoreX = $data['scores']['score_x'] ?? 0;
       $scoreY = $data['scores']['score_y'] ?? 0;
 
-      $html .= '<div class="row mb-3">';
+      $html .= '<div class="row g-3 mb-3">';
 
       // Score X
-      $html .= '  <div class="col-md-6">';
-      $html .= '    <div class="card border-primary">';
+      $html .= '  <div class="col-12 col-md-6">';
+      $html .= '    <div class="card border-primary h-100">';
       $html .= '      <div class="card-header bg-primary text-white">';
       $html .= '        <h6 class="mb-0"><i class="bi bi-star"></i> ' . $this->app->getDef('label_score_x') . '</h6>';
       $html .= '      </div>';
       $html .= '      <div class="card-body text-center">';
-      $html .= '        <h2 class="display-4 text-primary mb-2">' . number_format($scoreX, 1) . '<small class="text-muted">/100</small></h2>';
+      $html .= '        <h2 class="display-5 text-primary mb-2 lh-1">' . number_format($scoreX, 1) . '<small class="text-muted fs-6">/100</small></h2>';
       $html .= '        <div class="progress mb-2" style="height: 20px;">';
       $html .= '          <div class="progress-bar bg-primary" role="progressbar" style="width:' . $scoreX . '%">' . number_format($scoreX, 1) . '%</div>';
       $html .= '        </div>';
@@ -848,13 +850,13 @@ EOD;
       $html .= '  </div>';
 
       // Score Y
-      $html .= '  <div class="col-md-6">';
-      $html .= '    <div class="card border-success">';
+      $html .= '  <div class="col-12 col-md-6">';
+      $html .= '    <div class="card border-success h-100">';
       $html .= '      <div class="card-header bg-success text-white">';
       $html .= '        <h6 class="mb-0"><i class="bi bi-graph-up-arrow"></i> ' . $this->app->getDef('label_score_y') . '</h6>';
       $html .= '      </div>';
       $html .= '      <div class="card-body text-center">';
-      $html .= '        <h2 class="display-4 text-success mb-2">' . number_format($scoreY, 1) . '<small class="text-muted">/100</small></h2>';
+      $html .= '        <h2 class="display-5 text-success mb-2 lh-1">' . number_format($scoreY, 1) . '<small class="text-muted fs-6">/100</small></h2>';
       $html .= '        <div class="progress mb-2" style="height: 20px;">';
       $html .= '          <div class="progress-bar bg-success" role="progressbar" style="width:' . $scoreY . '%">' . number_format($scoreY, 1) . '%</div>';
       $html .= '        </div>';
@@ -902,15 +904,15 @@ EOD;
         $seoColor = $seoScore >= 70 ? 'success' : ($seoScore >= 50 ? 'warning' : 'danger');
 
         $html .= '<div class="row mb-3">';
-        $html .= '  <div class="col-md-12">';
+        $html .= '  <div class="col-12">';
         $html .= '    <div class="card border-' . $seoColor . '">';
         $html .= '      <div class="card-header bg-light">';
         $html .= '        <h6 class="mb-0"><i class="bi bi-search"></i> SEO Score</h6>';
         $html .= '      </div>';
         $html .= '      <div class="card-body">';
-        $html .= '        <div class="d-flex align-items-center">';
-        $html .= '          <h3 class="mb-0 me-3">' . $seoScore . '/100</h3>';
-        $html .= '          <div class="progress flex-grow-1" style="height: 25px;">';
+        $html .= '        <div class="d-flex flex-wrap align-items-center gap-3">';
+        $html .= '          <h3 class="mb-0 flex-shrink-0">' . $seoScore . '/100</h3>';
+        $html .= '          <div class="progress flex-grow-1" style="height: 25px; min-width: 150px;">';
         $html .= '            <div class="progress-bar bg-' . $seoColor . '" role="progressbar" style="width:' . $seoScore . '%">' . $seoScore . '%</div>';
         $html .= '          </div>';
         $html .= '        </div>';
@@ -956,13 +958,15 @@ EOD;
           $pIcon = $action['priority'] === 'critical' ? 'exclamation-triangle' : ($action['priority'] === 'high' ? 'exclamation-circle' : ($action['priority'] === 'medium' ? 'info-circle' : 'check-circle'));
 
           $html .= '          <div class="list-group-item">';
-          $html .= '            <span class="badge bg-' . $pClass . ' me-2"><i class="bi bi-' . $pIcon . '"></i> ' . strtoupper($action['priority']) . '</span>';
-          $html .= '            <strong>' . HTML::output($action['label']) . '</strong>';
+          $html .= '            <div class="d-flex flex-wrap align-items-center gap-2">';
+          $html .= '              <span class="badge bg-' . $pClass . ' flex-shrink-0"><i class="bi bi-' . $pIcon . '"></i> ' . strtoupper($action['priority']) . '</span>';
+          $html .= '              <strong class="flex-grow-1">' . HTML::output($action['label']) . '</strong>';
           if ($action['exclusive'] ?? false) {
-            $html .= ' <span class="badge bg-dark ms-1">EXCLUSIVE</span>';
+            $html .= '              <span class="badge bg-dark flex-shrink-0">EXCLUSIVE</span>';
           }
+          $html .= '            </div>';
           if (!empty($action['description'])) {
-            $html .= '<p class="mb-0 mt-1 text-muted"><small>' . HTML::output($action['description']) . '</small></p>';
+            $html .= '            <p class="mb-0 mt-1 text-muted"><small>' . HTML::output($action['description']) . '</small></p>';
           }
           $html .= '          </div>';
         }
@@ -978,13 +982,14 @@ EOD;
       if (isset($data['history'])) {
         $history = $data['history'];
         $html .= '<div class="row mb-3">';
-        $html .= '  <div class="col-md-12">';
+        $html .= '  <div class="col-12">';
         $html .= '    <div class="alert alert-info">';
-        $html .= '      <i class="bi bi-clock-history"></i> ';
-        $html .= '      <strong>Analysis #' . ($history['analysis_number'] ?? 1) . '</strong> | ';
-        $html .= '      Trend: ' . ($history['trend'] ?? 'stable') . ' | ';
-        $html .= '      ΔX: ' . ($history['delta_x'] ?? 0) . 'pts | ';
-        $html .= '      ΔY: ' . ($history['delta_y'] ?? 0) . 'pts';
+        $html .= '      <div class="d-flex flex-wrap align-items-center gap-2">';
+        $html .= '        <span><i class="bi bi-clock-history"></i> <strong>Analysis #' . ($history['analysis_number'] ?? 1) . '</strong></span>';
+        $html .= '        <span class="text-muted">Trend: ' . ($history['trend'] ?? 'stable') . '</span>';
+        $html .= '        <span class="text-muted">ΔX: ' . ($history['delta_x'] ?? 0) . 'pts</span>';
+        $html .= '        <span class="text-muted">ΔY: ' . ($history['delta_y'] ?? 0) . 'pts</span>';
+        $html .= '      </div>';
         $html .= '    </div>';
         $html .= '  </div>';
         $html .= '</div>';
@@ -992,10 +997,12 @@ EOD;
 
       // Refresh button
       $html .= '<div class="row">';
-      $html .= '  <div class="col-md-12 text-center">';
-      $html .= '    <button type="button" class="btn btn-primary" id="CockpitAI-refresh-btn">';
-      $html .= '      <i class="bi bi-arrow-clockwise"></i> ' . $this->app->getDef('button_refresh');
-      $html .= '    </button>';
+      $html .= '  <div class="col-12">';
+      $html .= '    <div class="d-flex flex-wrap justify-content-center gap-2">';
+      $html .= '      <button type="button" class="btn btn-primary" id="CockpitAI-refresh-btn">';
+      $html .= '        <i class="bi bi-arrow-clockwise"></i> ' . $this->app->getDef('button_refresh');
+      $html .= '      </button>';
+      $html .= '    </div>';
       $html .= '  </div>';
       $html .= '</div>';
 

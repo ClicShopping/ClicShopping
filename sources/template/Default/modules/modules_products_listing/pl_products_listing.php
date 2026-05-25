@@ -136,7 +136,6 @@ class pl_products_listing
 
         while ($Qlisting->fetch()) {
           $products_id = $Qlisting->valueInt('products_id');
-          $_POST['products_id'] = $products_id;
 
           $products_name_url = $CLICSHOPPING_ProductsFunctionTemplate->getProductsUrlRewrited()->getProductNameUrl($products_id);
 

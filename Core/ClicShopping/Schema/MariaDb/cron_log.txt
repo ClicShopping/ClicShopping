@@ -1,0 +1,30 @@
+id int(11) not_null auto_increment comment(Primary key - unique identifier per log entry)
+origin enum('seo','faq','cockpitai','embedding','other') not_null default 'other' comment(Domain of the cron run - filters analytics across all crons in one query)
+cron_code varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci not_null comment(Code matching clic_cron.code - e.g. productSeoOptimization, productCockpitAi)
+run_uuid char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci not_null comment(UUID v4 shared by every row of the same cron invocation - rebuild a full run with one WHERE clause)
+language_id int(11) default null comment(Optional language scope when the run is per-locale, null when global)
+status enum('running','completed','failed','partial','skipped') not_null default 'running' comment(Final outcome of the run - partial means some targets failed, skipped means RateLimiter blocked the run)
+started_at datetime not_null default current_timestamp() comment(Run start timestamp - used by idx_started_at for time-range queries)
+finished_at datetime default null comment(Run end timestamp - null while the run is still in progress)
+targets_found int(11) default 0 comment(Total candidates discovered by the selection strategy)
+targets_processed int(11) default 0 comment(Candidates the run actually attempted to handle - capped by batch_size and RateLimiter)
+success_count int(11) default 0 comment(Targets handled without error)
+failure_count int(11) default 0 comment(Targets that raised an exception or returned success=false)
+skipped_count int(11) default 0 comment(Targets bypassed by RateLimiter cooldown or per-product window)
+execution_time_seconds int(11) default 0 comment(Wall clock duration in seconds)
+memory_peak_mb decimal(10,2) default 0.00 comment(Peak memory usage in megabytes during the run)
+error_messages longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci default null comment(Concatenated error messages or JSON list of per-target failures - truncate long inputs upstream)
+metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null comment(Origin-specific JSON details - phase counts, LLM token usage, benchmark deltas, etc.) CHECK (json_valid(metadata))
+date_modified datetime default current_timestamp() on update current_timestamp() comment(Auto-updated timestamp - useful for tracking long-running runs)
+--
+primary id
+idx_origin origin
+idx_cron_code cron_code
+idx_run_uuid run_uuid
+idx_status status
+idx_started_at started_at
+idx_origin_date origin, started_at
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

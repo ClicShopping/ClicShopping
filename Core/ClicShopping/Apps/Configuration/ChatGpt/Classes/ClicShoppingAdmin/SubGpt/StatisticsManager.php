@@ -102,12 +102,26 @@ class StatisticsManager
   {
     $db = Registry::get('Db');
     $dbInteractionId = null;
-    
+
+    // Defensive truncation for rag_interactions.response / .question.
+    //
+    // The historical table was created with TEXT columns (65 535 bytes max);
+    // a Hybrid WebSearch answer renders as ~140 KB of HTML, which made MariaDB
+    // emit "SQLSTATE[22001]: 1406 Data too long for column 'response'" and
+    // silently store a truncated answer (data loss in the audit trail).
+    //
+    // We cap the payload before the INSERT so the row succeeds even if the
+    // schema migration to MEDIUMTEXT has not yet been applied on this
+    // database. Override the cap with
+    // CLICSHOPPING_APP_CHATGPT_RA_INTERACTION_RESPONSE_MAX_CHARS after running
+    // the ALTER to MEDIUMTEXT (suggested value: 16_000_000).
+    $interactionData = self::truncateOversizedColumns($interactionData);
+
     try {
       $db->save('rag_interactions', $interactionData);
       $dbInteractionId = (int)$db->lastInsertId();
       $statsTracker->setInteractionId($dbInteractionId);
-      
+
       if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
         error_log('💾 INTERACTION INSERTED:');
         error_log('   DB ID: ' . $dbInteractionId);
@@ -121,8 +135,43 @@ class StatisticsManager
     } catch (\Exception $e) {
       error_log('[INFO : ERROR]Failed to insert interaction record: ' . $e->getMessage());
     }
-    
+
     return $dbInteractionId;
+  }
+
+  /**
+   * Cap the text columns that are at risk of exceeding the rag_interactions
+   * schema. Adds a "...[truncated, original: N bytes]" marker when truncation
+   * happens so an audit reader knows the row was clipped.
+   */
+  private static function truncateOversizedColumns(array $interactionData): array
+  {
+    $maxResponse = defined('CLICSHOPPING_APP_CHATGPT_RA_INTERACTION_RESPONSE_MAX_CHARS')
+      ? (int) constant('CLICSHOPPING_APP_CHATGPT_RA_INTERACTION_RESPONSE_MAX_CHARS')
+      : 65000; // TEXT-safe default (65 535 minus marker overhead)
+
+    if ($maxResponse > 0) {
+      foreach (['response', 'question'] as $col) {
+        if (empty($interactionData[$col]) || !is_string($interactionData[$col])) {
+          continue;
+        }
+        $value = $interactionData[$col];
+        $length = strlen($value);
+        if ($length > $maxResponse) {
+          $marker = "\n\n[truncated for storage — original: {$length} bytes]";
+          $interactionData[$col] = substr($value, 0, $maxResponse - strlen($marker)) . $marker;
+          error_log(sprintf(
+            "[WARN] StatisticsManager: truncated rag_interactions.%s from %d to %d bytes "
+            . "(see CLICSHOPPING_APP_CHATGPT_RA_INTERACTION_RESPONSE_MAX_CHARS)",
+            $col,
+            $length,
+            strlen($interactionData[$col])
+          ));
+        }
+      }
+    }
+
+    return $interactionData;
   }
   
   /**

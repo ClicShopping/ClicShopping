@@ -104,10 +104,15 @@
       "ClicShoppingAdmin/RAG": {
       },
       "ClicShoppingAdmin/Cronjob": {
-        "Process": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\Process"
+        "Process":         "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\Process",
+        "SeoOptimization": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\SeoOptimization"
+      },
+      "ClicShoppingAdmin/TopDashboard": {
+        "dashboardCron": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\dashboardCron"
       },
       "Shop/Cronjob": {
-        "Process": "Module\\Hooks\\Shop\\Cronjob\\Cron&Process"
+        "Process":         "Module\\Hooks\\Shop\\Cronjob\\Cron&Process",
+        "SeoOptimization": "Module\\Hooks\\Shop\\Cronjob\\Cron&SeoOptimization"
       }
     }
   },

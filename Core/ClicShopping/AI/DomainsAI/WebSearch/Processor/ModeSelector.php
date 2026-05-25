@@ -21,6 +21,8 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Processor;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\DomainsAI\WebSearch\Logger\WebSearchLogger;
 use ClicShopping\AI\DomainsAI\WebSearch\Patterns\LocationPatterns;
+use ClicShopping\AI\InterfacesAI\SiteRouterInterface;
+use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
@@ -147,14 +149,20 @@ class ModeSelector
 
     // Rule 8: Product discovery intent
     if ($intentType === 'product_discovery') {
-      // If target_site is Amazon → Mode D (show Amazon product cards)
-      if ($targetSite !== null && $this->isAmazonSite($targetSite)) {
-        $this->log("Mode selection: Product discovery with Amazon target_site → Mode D", [
-          'intent_type' => $intentType,
-          'target_site' => $targetSite
-        ]);
+      // If a domain SiteRouter owns the target_site → use the modes it recommends
+      $router = $this->findSiteRouter($targetSite);
+      if ($router !== null) {
+        $modes = $router->getRecommendedModes($intentType);
+        if (!empty($modes)) {
+          $this->log("Mode selection: Product discovery with domain-routed target_site", [
+            'intent_type' => $intentType,
+            'target_site' => $targetSite,
+            'router_id' => $router->getRouterId(),
+            'selected_modes' => $modes,
+          ]);
 
-        return ['mode_d_amazon_shopping'];
+          return $modes;
+        }
       }
 
       $this->log("Mode selection: Product discovery → Mode A", [
@@ -367,19 +375,21 @@ class ModeSelector
   /**
    * Select modes for price comparison intent
    *
-   * Implements requirements 9.2, 9.3, 9.4 + Multi-site support (2026-05-07) + Amazon Engine (2026-05-08):
+   * Implements requirements 9.2, 9.3, 9.4 + Multi-site support (2026-05-07)
+   *   + Domain-routed engines (2026-05-24, agnostic refactor):
    * - No target_site → Mode B
-   * - target_site is Amazon → Mode D (Amazon Shopping Engine) + Mode B (Hybrid)
-   * - target_site not in DB (non-Amazon) → Mode B only + User notification
+   * - target_site owned by a domain SiteRouter → modes returned by the router
+   *   (e.g. Ecommerce/Amazon → Mode D + Mode B hybrid)
+   * - target_site not in DB and unrouted → Mode B only + User notification
    * - One target_site in DB → Hybrid (Mode B + Mode C)
    * - Multiple target_sites in DB → Hybrid (Mode B + Mode C for all sites)
    *
-   * IMPLEMENTATION STATUS (2026-05-08):
+   * IMPLEMENTATION STATUS:
    * ✓ target_site handling implemented
-   * ✓ Multi-site support (e.g., amazon.fr + amazon.com)
-   * ✓ Amazon Engine integration (Mode D)
+   * ✓ Multi-site support (e.g. multiple TLDs of the same domain)
+   * ✓ Domain SiteRouter integration via WebSearchEngineRegistry (agnostic)
    * ✓ User notification when site not available
-   * ✓ Hybrid mode (Mode B + Mode C/D) activated when target_site exists
+   * ✓ Hybrid mode activated when target_site exists
    * ✓ Automatic mode selection based on target_site availability
    * ✗ CLI mode REMOVED (deprecated - unreliable, frontend not ready)
    * ✗ UserInputRequiredResponse disabled (frontend not ready)
@@ -405,23 +415,26 @@ class ModeSelector
       return $selectedModes;
     }
     
-    // **NEW (2026-05-08): Check if target_site is Amazon**
-    if ($this->isAmazonSite($targetSite)) {
-      // Case 2: Amazon target_site → Hybrid (Mode D + Mode B)
-      $selectedModes = ['mode_d_amazon_shopping', 'mode_b_google_shopping'];
+    // Domain SiteRouter takes precedence (e.g. Ecommerce → Amazon → hybrid Mode D + Mode B)
+    $router = $this->findSiteRouter($targetSite);
+    
+    if ($router !== null) {
+      $selectedModes = $router->getRecommendedModes('price_comparison');
       
-      $this->log("Mode selection: Price comparison with Amazon target_site → Hybrid (Mode D + Mode B)", [
-        'intent_type' => 'price_comparison',
-        'target_site' => $targetSite,
-        'is_amazon' => true,
-        'selected_modes' => $selectedModes
-      ]);
-      
-      return $selectedModes;
+      if (!empty($selectedModes)) {
+        $this->log("Mode selection: Price comparison with domain-routed target_site", [
+          'intent_type' => 'price_comparison',
+          'target_site' => $targetSite,
+          'router_id' => $router->getRouterId(),
+          'selected_modes' => $selectedModes,
+        ]);
+
+        return $selectedModes;
+      }
     }
     
-    // Case 3: Find all available sites matching the target_site (non-Amazon)
-    // This handles both exact matches and domain variants (e.g., "fnac" → ["fnac.fr", "fnac.com"])
+    // Case 3: Find all available sites matching the target_site (no domain router matched)
+    // This handles both exact matches and TLD variants (e.g. "fnac" → ["fnac.fr", "fnac.com"])
     $availableSites = $this->findAvailableSites($targetSite);
     
     if (empty($availableSites)) {
@@ -476,33 +489,19 @@ class ModeSelector
   }
 
   /**
-   * Check if target site is Amazon
+   * Resolve a target site (as extracted upstream by the Pure-LLM IntentRouter)
+   * to its owning SiteRouter, if any domain has registered one.
    *
-   * Detects Amazon domains (amazon.com, amazon.fr, amazon.co.uk, etc.)
-   * to route to SerpAPI Amazon engine (Mode D) instead of traditional scraping.
+   * Domain-agnostic: Core itself has no knowledge of Amazon, LinkedIn,
+   * Salesforce or any other commercial brand. The Ecommerce / HR / CRM apps
+   * register the routers they own at boot time via WebSearchEngineRegistry.
    *
-   * @param string|null $targetSite Target site from query
-   * @return bool True if Amazon site
+   * @param string|null $targetSite Target site detected by the LLM
+   * @return SiteRouterInterface|null Matching router or null
    */
-  private function isAmazonSite(?string $targetSite): bool
+  private function findSiteRouter(?string $targetSite): ?SiteRouterInterface
   {
-    if (empty($targetSite)) {
-      return false;
-    }
-
-    // Normalize to lowercase
-    $targetSite = strtolower(trim($targetSite));
-
-    // Check for Amazon patterns
-    $amazonPatterns = LocationPatterns::amazonDomainName();
-
-    foreach ($amazonPatterns as $pattern) {
-      if ($targetSite === $pattern || str_contains($targetSite, $pattern)) {
-        return true;
-      }
-    }
-
-    return false;
+    return WebSearchEngineRegistry::getInstance()->findSiteRouter($targetSite);
   }
 
   /**
@@ -528,14 +527,21 @@ class ModeSelector
       return ['mode_a_ai_overview'];
     }
 
-    // If target_site is Amazon → Hybrid (Mode A + Mode D)
-    if ($this->isAmazonSite($targetSite)) {
-      $this->log("Mode selection: Market research with Amazon target_site → Hybrid (Mode A + Mode D)", [
-        'intent_type' => 'market_research',
-        'target_site' => $targetSite
-      ]);
+    // Domain SiteRouter takes precedence (e.g. Ecommerce → Amazon → hybrid Mode A + Mode D)
+    $router = $this->findSiteRouter($targetSite);
+    if ($router !== null) {
+      $modes = $router->getRecommendedModes('market_research');
+      
+      if (!empty($modes)) {
+        $this->log("Mode selection: Market research with domain-routed target_site", [
+          'intent_type' => 'market_research',
+          'target_site' => $targetSite,
+          'router_id' => $router->getRouterId(),
+          'selected_modes' => $modes,
+        ]);
 
-      return ['mode_a_ai_overview', 'mode_d_amazon_shopping'];
+        return $modes;
+      }
     }
 
     // Check if target_site exists in clic_rag_websearch table

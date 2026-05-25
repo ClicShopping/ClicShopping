@@ -39,7 +39,22 @@ class RateLimit
     $this->namespace = $namespace;
     $this->maxRequests = $maxRequests;
     $this->timeWindow = $timeWindow;
-    $this->storageFile = CLICSHOPPING::BASE_DIR . 'Work/Cache/Rag/rag_rate_limits.cache';
+
+    $cacheDir = CLICSHOPPING::BASE_DIR . 'Work/Cache/RateLimit/';
+
+    if (!is_dir($cacheDir)) {
+      @mkdir($cacheDir, 0775, true);
+    }
+
+    // Sanitize the namespace for safe use as a filename:
+    // strip anything outside [a-zA-Z0-9_-] to prevent path traversal and to
+    // avoid the "Undefined variable $safeNs" warning logged on every request.
+    $safeNs = preg_replace('/[^A-Za-z0-9_-]/', '_', $namespace);
+    if ($safeNs === '' || $safeNs === null) {
+      $safeNs = 'default';
+    }
+
+    $this->storageFile = $cacheDir . $safeNs . '.cache';
 
     if (!function_exists('apcu_fetch')) {
       $this->loadStorage();

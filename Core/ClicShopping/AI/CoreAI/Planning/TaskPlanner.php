@@ -92,7 +92,6 @@ class TaskPlanner
         $this->subTaskPlanners = [
             'competitor_analysis' => new SubTaskPlannerCompetitorAnalysis($this->debug, $this->securityLogger),
             'pattern_analysis' => new SubTaskPlannerPatternAnalysis($this->debug, $this->securityLogger),
-            'price_analytics' => new SubTaskPlannerPriceAnalytics($this->debug, $this->securityLogger),
             'analytics' => new SubTaskPlannerAnalytics($this->debug, $this->securityLogger), // Basic analytics catch-all
             'semantic_search' => new SubTaskPlannerSemanticSearch($this->debug, $this->securityLogger),
             'web_search' => new SubTaskPlannerWebSearch($this->debug, $this->securityLogger),
@@ -408,12 +407,14 @@ class TaskPlanner
             $plannersToTest = [
                 'competitor_analysis',  // Most specific
                 'pattern_analysis',     // Specific
-                'price_analytics',      // Specific
                 'analytics'             // Basic analytics catch-all (handles COUNT, SUM, AVG, etc.)
             ];
 
             foreach ($plannersToTest as $plannerKey) {
-                $planner = $this->subTaskPlanners[$plannerKey];
+                $planner = $this->subTaskPlanners[$plannerKey] ?? null;
+                if ($planner === null) {
+                    continue;
+                }
                 if ($planner->canHandle($query)) {
                     if ($this->debug) {
                         $this->securityLogger->logSecurityEvent(
@@ -432,7 +433,7 @@ class TaskPlanner
 
     /**
      * Gets SubTaskPlanner name for logging
-     * 
+     *
      * @param object $planner SubTaskPlanner instance
      * @return string Planner name
      */

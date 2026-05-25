@@ -171,7 +171,6 @@ class fp_new_products
 
           while ($Qproduct->fetch()) {
             $products_id = $Qproduct->valueInt('products_id');
-            $_POST['products_id'] = $products_id;
 
             $products_name_url = $CLICSHOPPING_ProductsFunctionTemplate->getProductsUrlRewrited()->getProductNameUrl($products_id);
 //product name

@@ -18,15 +18,17 @@ Core/ClicShopping/AI/
 ├── Config/              ✅ Configuration
 ├── Dashboard/           ✅ Monitoring
 ├── DomainsAI/           ✅ Business domain query types
-│   └── Analytics/
-│       └── Validator/   ✅ Business logic validators (added May 2026)
+│   ├── Analytics/
+│   │   └── Validator/   ✅ Business logic validators (added May 2026)
+│   └── WebSearch/
+│       └── Providers/   ✅ Built-in agnostic providers Mode A/B/C/E (added May 2026)
 ├── Handler/             ✅ Error, fallback, query handling
 ├── Helper/              ✅ Utilities
 ├── Infrastructure/      ✅ Technical infrastructure
 ├── InterfacesAI/        ✅ Contracts (ActorAgentInterface, etc.)
 ├── LoadBalancing/       ✅ Load balancing
 ├── Rag/                 ✅ RAG Manager
-├── RegistryAI/          ✅ Actor and Critic registries
+├── RegistryAI/          ✅ Actor, Critic and WebSearch engine registries
 ├── Security/            ✅ Guardrails and security
 ├── Services/            ✅ ActorCritic, Autonomous services
 ├── Tools/               ✅ Tools
@@ -165,17 +167,73 @@ Rules:
 
 ## 5. Domain-Agnostic Architecture
 
-**CRITICAL**: `Core/ClicShopping/AI/` MUST NOT contain domain-specific keywords.
+**CRITICAL**: `Core/ClicShopping/AI/` MUST NOT contain any domain-specific keyword,
+commercial brand or marketplace-specific code. Two complementary mechanisms enforce
+this rule depending on the kind of asset being declared:
+
+### 5.1 — Keywords (`DomainKeywordsLoader`)
+
+For per-domain keyword lists used by the deprecated pattern fallbacks:
 
 ```
 ❌ PROHIBITED: Hardcoded keywords in Core AI
 $keywords = ['amazon', 'ebay', 'linkedin', 'bloomberg'];
 
 ✅ REQUIRED: Dynamic loading from domain configuration
-$keywords = DomainKeywordsLoader::loadWebSearchKeywords('Ecommerce');
+$keywords = (new DomainKeywordsLoader())->loadWebSearchKeywords('Ecommerce');
 ```
 
-Keyword location: `Apps/AI/{Domain}/Classes/.../Patterns/HybridPreFilter.php`
+Keyword file location:
+`Apps/AI/{Domain}/Classes/ClicShoppingAdmin/Patterns/HybridPreFilter.php`
+
+### 5.2 — Engines, Providers and SiteRouters (`WebSearchEngineRegistry`)
+
+For domain-specific WebSearch components (engines that call SerpAPI with a
+brand-specific protocol, downstream routing of `target_site → modes`, ...):
+
+```
+❌ PROHIBITED: Brand-specific engine class in Core
+class AmazonShoppingEngine implements WebSearchInterface { ... }  // in DomainsAI/
+
+❌ PROHIBITED: Brand-specific mode/site checks in Core
+if ($targetSite === 'amazon.fr') return ['mode_d_amazon_shopping', ...];
+
+✅ REQUIRED: Domain App registers via WebSearchEngineRegistry
+// Apps/AI/Ecommerce/.../WebSearch/Registration/WebSearchRegistration.php
+final class WebSearchRegistration {
+  public static function register(WebSearchEngineRegistry $r): void {
+    $r->registerProvider(new AmazonShoppingProvider());
+    $r->registerSiteRouter(new AmazonSiteRouter());
+  }
+}
+```
+
+Component file locations (single template, used by every domain):
+
+```
+Apps/AI/{Domain}/Classes/ClicShoppingAdmin/WebSearch/
+├── Engines/{Brand}Engine.php          implements WebSearchInterface
+├── Providers/{Brand}Provider.php      implements WebSearchEngineProviderInterface
+├── SiteRouters/{Brand}SiteRouter.php  implements SiteRouterInterface  (optional)
+└── Registration/WebSearchRegistration.php  — auto-discovered by the registry
+```
+
+The Core registry (`Core/ClicShopping/AI/RegistryAI/WebSearchEngineRegistry.php`)
+scans `Apps/AI/*` on its first instantiation and invokes every domain's
+`WebSearchRegistration::register()`. No file inside `Core/` needs to change when
+a new domain (HR, CRM, Finance, Trading, ...) is added.
+
+### Built-in agnostic engines (allowed in Core)
+
+| Mode | Identifier | Engine | Reason it stays in Core |
+|------|-----------|--------|--------------------------|
+| A | `mode_a_ai_overview` | `GoogleAIOverviewEngine` | Public Google/SerpAPI protocol, no merchant brand |
+| B | `mode_b_google_shopping` | `GoogleShoppingEngine` | Public Google/SerpAPI protocol, no merchant brand |
+| C | `mode_c_rag_websearch` | `RagWebSearchEngine` | Generic site-filtered Google search |
+| E | `mode_e_google_trends` | `GoogleTrendsEngine` | Public Google/SerpAPI protocol |
+
+Mode D is **always domain-registered**. The Ecommerce App ships
+`mode_d_amazon_shopping` via `AmazonShoppingProvider`.
 
 ---
 

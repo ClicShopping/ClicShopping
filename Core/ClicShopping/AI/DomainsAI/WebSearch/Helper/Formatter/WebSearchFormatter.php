@@ -16,6 +16,7 @@ use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters\AbstractFormatter;
+use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 
 /**
  * WebSearchFormatter - Formats web search query results
@@ -93,6 +94,9 @@ class WebSearchFormatter extends AbstractFormatter
 
     $output = "<div class='web-search-results'>";
     $output .= "<h4>" . $this->language->getDef('text_rag_web_search_results_for') . " " . htmlspecialchars($question) . "</h4>";
+    if (!empty($results['market_analysis']) && is_string($results['market_analysis'])) {
+      $output .= $results['market_analysis'];
+    }
 
     // Display mode indicator at top (if metadata available)
     if (isset($results['metadata']) && is_array($results['metadata'])) {
@@ -532,26 +536,32 @@ class WebSearchFormatter extends AbstractFormatter
 
     // Display mode badges
     $badges = [];
+    $registry = WebSearchEngineRegistry::getInstance();
+
     foreach ($modesUsed as $mode) {
       $badge = '';
 
       if (str_contains($mode, 'mode_a') || str_contains($mode, 'ai_overview')) {
         $badge = "🤖 " . $this->language->getDef('text_rag_mode_ai_overview');
-      } elseif (str_contains($mode, 'mode_d') || str_contains($mode, 'amazon')) {
-        $badge = "🛒 " . $this->language->getDef('text_rag_mode_amazon_shopping');
-      } elseif (str_contains($mode, 'mode_b') || str_contains($mode, 'shopping')) {
+      } elseif (str_contains($mode, 'mode_b') || str_contains($mode, 'google_shopping')) {
         $badge = "🛒 " . $this->language->getDef('text_rag_mode_shopping');
       } elseif (str_contains($mode, 'mode_c') || str_contains($mode, 'rag')) {
         $badge = "🔍 " . $this->language->getDef('text_rag_mode_rag_scraping');
       } elseif (str_contains($mode, 'mode_e') || str_contains($mode, 'google_trends')) {
         $badge = "📈 " . $this->language->getDef('text_rag_mode_google_trends');
+      } else {
+        // Domain-registered mode — get its label from the provider
+        $provider = $registry->getProvider($mode);
+        if ($provider !== null) {
+          $badge = "🛒 " . $provider->getDisplayName();
+        }
       }
-      
+
       if (!empty($badge)) {
         $badges[] = "<span class='badge badge-primary' style='margin-right: 10px; padding: 8px 12px; font-size: 0.9em;'>{$badge}</span>";
       }
     }
-    
+
     $output .= implode(' ', $badges);
 
     // Display execution times if available
@@ -610,20 +620,42 @@ class WebSearchFormatter extends AbstractFormatter
     $dataSources = array_unique(array_filter(array_column($shoppingResults, 'data_source')));
     $sourceLabel = '';
     if (!empty($dataSources)) {
-      $hasAmazon = in_array('amazon', $dataSources, true);
-      $hasGoogle = in_array('google_shopping', $dataSources, true);
-      if ($hasAmazon && $hasGoogle) {
-        $sourceLabel = ' — ' . $this->language->getDef('text_rag_source_amazon') . ' & ' . $this->language->getDef('text_rag_source_google_shopping');
-      } elseif ($hasAmazon) {
-        $sourceLabel = ' — ' . $this->language->getDef('text_rag_source_amazon');
-      } elseif ($hasGoogle) {
-        $sourceLabel = ' — ' . $this->language->getDef('text_rag_source_google_shopping');
+      $registry = WebSearchEngineRegistry::getInstance();
+      $labels = [];
+
+      foreach ($dataSources as $source) {
+        $provider = $registry->findProviderByEngineName((string) $source);
+        if ($provider !== null) {
+          $labels[] = $provider->getDisplayName();
+          continue;
+        }
+
+        // Last-resort fallback: title-case the raw source name
+        $labels[] = ucfirst(str_replace('_', ' ', (string) $source));
+      }
+
+      if (!empty($labels)) {
+        $sourceLabel = ' — ' . implode(' & ', $labels);
       }
     }
 
     $output = "<div class='shopping-results' style='margin: 20px 0;'>";
     $output .= '<h5 class="text-primary">🛒 ' . $this->language->getDef('text_rag_shopping_results') . ' (' . $count . ' ' . $this->language->getDef('text_rag_shopping_results_count') . ')' . $sourceLabel . '</h5>';
     
+    $hasRagResults = false;
+    foreach ($shoppingResults as $r) {
+      if (($r['data_source'] ?? '') === 'rag_websearch') {
+        $hasRagResults = true;
+        break;
+      }
+    }
+    if ($hasRagResults) {
+      $output .= "<div class='alert alert-warning' style='background:#fff3cd; border:1px solid #ffeeba; "
+        . "color:#856404; border-radius:6px; padding:8px 12px; margin:8px 0; font-size:0.85em;'>"
+        . "ℹ️ " . htmlspecialchars($this->language->getDef('text_rag_site_search_notice'))
+        . "</div>";
+    }
+
     // Responsive grid layout
     $output .= "<div class='row' style='display: flex; flex-wrap: wrap; margin: 0 -10px;'>";
     
@@ -635,6 +667,17 @@ class WebSearchFormatter extends AbstractFormatter
       $extractedOldPrice = $result['extracted_old_price'] ?? null;
       $source = $result['source'] ?? '';
       $productLink = $result['link'] ?? $result['product_link'] ?? ''; // Try 'link' first, then 'product_link'
+      $productLink = '';
+      foreach (['link', 'product_link'] as $linkKey) {
+        if (!empty($result[$linkKey]) && is_string($result[$linkKey])) {
+          $productLink = $result[$linkKey];
+          break;
+        }
+      }
+      if ($productLink === '' && !empty($title)) {
+        $productLink = 'https://www.google.com/search?tbm=shop&q=' . urlencode($title);
+      }
+
       $thumbnail = $result['thumbnail'] ?? '';
       $rating = $result['rating'] ?? null; // Amazon rating
       $reviews = $result['reviews'] ?? null; // Amazon reviews count
@@ -840,8 +883,23 @@ class WebSearchFormatter extends AbstractFormatter
     $svg .= "</svg>";
 
     $output  = "<div class='trends-chart-container' style='margin:20px 0; border:1px solid #e9ecef; border-radius:8px; padding:15px; background:#fff;'>";
-    //$output .= "<h5 style='margin-bottom:4px;'>📈 " . $this->language->getDef('text_rag_trends_title') . " : " . htmlspecialchars($keyword) . "</h5>";
-    $output .= "<p style='font-size:0.85em; color:#999; margin-bottom:12px;'>{$pointCount} points — " . htmlspecialchars($dateRange) . "</p>";
+    $titleLabel = $this->language->getDef('text_rag_trends_title');
+    if (empty($titleLabel)) {
+        $titleLabel = 'Interest over time';
+    }
+    $output .= "<h5 style='margin:0 0 4px 0; color:#212529; font-size:1.05em;'>📈 "
+        . htmlspecialchars($titleLabel) . " : "
+        . "<span style='color:#36a2eb;'>" . htmlspecialchars($keyword) . "</span></h5>";
+
+    $disclaimer = $this->language->getDef('text_rag_trends_disclaimer');
+    if (empty($disclaimer)) {
+        $disclaimer = 'Google Trends shows the relative search interest for a keyword over time (0 = no data, 100 = peak). It is a proxy for popularity, NOT the actual product price. For real price comparisons across competitors, use Google Shopping / Amazon results above.';
+    }
+    $output .= "<div class='alert alert-info' style='font-size:0.85em; color:#0c5460; background:#d1ecf1; border:1px solid #bee5eb; border-radius:4px; padding:8px 12px; margin:8px 0;'>"
+        . "ℹ️ " . htmlspecialchars($disclaimer)
+        . "</div>";
+
+    $output .= "<p style='font-size:0.85em; color:#666; margin-bottom:12px;'>{$pointCount} points — " . htmlspecialchars($dateRange) . "</p>";
     $output .= $svg;
     $output .= "</div>";
 
@@ -984,10 +1042,14 @@ class WebSearchFormatter extends AbstractFormatter
           $output .= "<div style='font-size: 0.85em;'>";
           if ($dataSource === 'shopping_data') {
             $output .= "<span class='badge badge-info'>🛒 " . $this->language->getDef('text_rag_data_source_shopping') . "</span>";
-          } elseif ($dataSource === 'amazon') {
-            $output .= "<span class='badge badge-info'>🛒 " . $this->language->getDef('text_rag_data_source_amazon') . "</span>";
           } else {
-            $output .= "<span class='badge badge-secondary'>🌐 " . $this->language->getDef('text_rag_data_source_web') . "</span>";
+            $domainProvider = WebSearchEngineRegistry::getInstance()
+              ->findProviderByEngineName((string) $dataSource);
+            if ($domainProvider !== null) {
+              $output .= "<span class='badge badge-info'>🛒 " . htmlspecialchars($domainProvider->getDisplayName()) . "</span>";
+            } else {
+              $output .= "<span class='badge badge-secondary'>🌐 " . $this->language->getDef('text_rag_data_source_web') . "</span>";
+            }
           }
           $output .= "</div>";
           

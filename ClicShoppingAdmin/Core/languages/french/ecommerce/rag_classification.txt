@@ -255,7 +255,21 @@ Si la requête contient une demande de prix AVEC un indicateur de site cible, cl
 
 ÉTAPE 3: WEB_SEARCH?
 - Demande infos EXTERNES/ACTUELLES?
-- Mots-clés: "dernières", "récentes", "tendances", "actualités", "concurrents"
+- Mots-clés: "dernières", "récentes", "tendances", "actualités", "concurrents", "évolution", "historique", "trajectoire", "au fil du temps"
+- 🚨 RÈGLE CRITIQUE — ÉVOLUTION / TENDANCE / HISTORIQUE DE PRIX:
+  Les requêtes demandant l'évolution du prix, la tendance des prix, l'historique
+  de prix ou le prix au fil du temps demandent des données TEMPORELLES EXTERNES
+  (Google Trends), PAS un SQL COUNT/AVG interne. Classez TOUJOURS ces requêtes
+  comme web_search même si le mot "prix" est présent.
+  Exemples:
+  - "donne moi l'évolution du prix du Samsung S25" → web_search
+  - "tendance des prix de l'iPhone 15" → web_search
+  - "prix historique du Galaxy" → web_search
+  - "Samsung prix au fil du temps" → web_search
+  - "évolution du prix Samsung S25" → web_search
+  Contre-exemples (qui restent analytics):
+  - "donne moi le prix du Samsung S25" → analytics (prix interne actuel)
+  - "liste des produits sous 500 EUR" → analytics
 - OUI → {"type":"web_search"}
 - NON → Étape 4
 

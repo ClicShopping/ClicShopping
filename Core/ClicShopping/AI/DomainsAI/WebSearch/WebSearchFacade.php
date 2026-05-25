@@ -24,6 +24,7 @@ use ClicShopping\AI\DomainsAI\WebSearch\Planner\WebSearchPlan;
 use ClicShopping\AI\DomainsAI\WebSearch\Processor\IntentRouter;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\ResultNormalizer;
 use ClicShopping\AI\DomainsAI\WebSearch\Response\UserInputRequiredResponse;
+use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 use ClicShopping\AI\Security\SecurityLogger;
 
 /**
@@ -128,7 +129,8 @@ class WebSearchFacade
    * - Mode A: AI Overview (Google AI-generated synthesis)
    * - Mode B: Google Shopping (structured product results)
    * - Mode C: RAG WebSearch (site-specific search)
-   * - Mode D: Amazon Shopping (Amazon product search)
+   * - Mode D-...: Domain-specific shopping engines registered by each
+   *   Apps/AI/{Domain}/ (e.g. Ecommerce → Amazon, future HR/CRM → ...)
    * - Hybrid: Multiple modes combined
    *
    * @param string $query Natural language search query
@@ -169,7 +171,7 @@ class WebSearchFacade
       );
 
       // Step 1: Detect compound/multi-intent query before single-intent routing
-      // Example: "What are smartphone trends AND compare iPhone price on Amazon"
+      // Example: "What are smartphone trends AND compare iPhone price on a target site"
       // → decomposed into [market_research task, price_comparison task]
       $plan = $this->planner->analyze($query);
       if ($plan->isCompound()) {
@@ -204,6 +206,8 @@ class WebSearchFacade
 
       // Step 2: Execute search via dispatcher
       $results = $this->dispatcher->execute($routing, $query, $options);
+
+      $results = $this->applyResultEnhancers($results, $routing, $query, $options);
 
       // Step 3: Calculate execution time
       $executionTime = microtime(true) - $startTime;
@@ -401,11 +405,10 @@ class WebSearchFacade
    *
    * Returns detailed metadata for all engines including cost, latency, and quality scores.
    *
-   * @return array Array of engine metadata with structure:
-   *               - mode_a_ai_overview: array - Mode A metadata
-   *               - mode_b_google_shopping: array - Mode B metadata
-   *               - mode_c_rag_websearch: array - Mode C metadata
-   *               - mode_d_amazon_shopping: array - Mode D metadata
+   * @return array Array of engine metadata keyed by registered mode identifier.
+   *               Built-in keys include mode_a_ai_overview, mode_b_google_shopping,
+   *               mode_c_rag_websearch, mode_e_google_trends; additional keys are
+   *               contributed by each Apps/AI/{Domain}/-registered provider.
    */
   public function getEngineMetadata(): array
   {
@@ -448,5 +451,87 @@ class WebSearchFacade
       'engines_available' => $enginesAvailable,
       'errors' => $errors
     ];
+  }
+
+  /**
+   * Run every registered WebSearchResultEnhancer on the search payload.
+   *
+   * Builds a small context (intent type, target site, language, original
+   * query) so enhancers can decide whether they want to run without having
+   * to walk the routing-decision tree themselves. Failures are swallowed
+   * and logged — an enhancer must never break the search response.
+   *
+   * @param array          $results Raw result array from the dispatcher
+   * @param mixed          $routing RoutingDecision (or any object with the
+   *                                getters used below) from IntentRouter
+   * @param string         $query   Original user query
+   * @param array          $options Search options forwarded by the caller
+   * @return array Possibly enhanced result array
+   */
+  protected function applyResultEnhancers($results, $routing, string $query, array $options): array
+  {
+    try {
+      $enhancers = WebSearchEngineRegistry::getInstance()->getResultEnhancers();
+    } catch (\Throwable $e) {
+      // If the registry itself blows up, just return untouched results.
+      return is_array($results) ? $results : [];
+    }
+
+    if (empty($enhancers) || !is_array($results)) {
+      return is_array($results) ? $results : [];
+    }
+
+    // Extract a small, enhancer-friendly context from the routing decision.
+    $intent = [];
+    if (is_object($routing) && method_exists($routing, 'toArray')) {
+      $intent = $routing->toArray()['intent'] ?? [];
+    }
+
+    $context = [
+      'query'         => $query,
+      'options'       => $options,
+      'intent_type'   => $intent['intent']        ?? null,
+      'product_query' => $intent['product']       ?? null,
+      'target_site'   => $intent['target_site']   ?? null,
+      'language'      => $intent['language']      ?? ($options['language'] ?? null),
+      'language_id'   => $options['language_id']  ?? null,
+      'confidence'    => $intent['confidence']    ?? null,
+    ];
+
+    foreach ($enhancers as $enhancer) {
+      try {
+        if (!$enhancer->shouldEnhance($results, $context)) {
+          continue;
+        }
+
+        $before = $results;
+        $results = $enhancer->enhance($results, $context);
+        if (!is_array($results)) {
+          // Defensive: rollback if an enhancer returns garbage.
+          $results = $before;
+        }
+
+        if ($this->debug) {
+          error_log(sprintf(
+            '[WebSearchFacade] Result enhancer "%s" applied',
+            $enhancer->getEnhancerId()
+          ));
+        }
+      } catch (\Throwable $e) {
+        $this->logger->logError(
+          'WebSearchFacade enhancer "' . $enhancer->getEnhancerId() . '" failed: ' . $e->getMessage(),
+          [
+            'enhancer_id'   => $enhancer->getEnhancerId(),
+            'enhancer_cls'  => $enhancer::class,
+            'error_type'    => get_class($e),
+            'stack_trace'   => $e->getTraceAsString(),
+          ]
+        );
+        // Continue with the other enhancers — a single failure must not
+        // poison the overall response.
+      }
+    }
+
+    return $results;
   }
 }

@@ -102,13 +102,15 @@ class MariaDb
           embedding vector(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
           chunknumber int default 128 COMMENT 'Chunk size used for embedding generation',
           date_modified datetime DEFAULT NULL COMMENT 'Last modification timestamp',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT COMMENT 'FK to categories table - category ID',
           language_id INT COMMENT 'FK to languages table - language identifier',
           metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - structure varies by type',
           KEY idx_entity_id (entity_id),
           KEY idx_language_id (language_id),
           KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified)
+          KEY idx_date_modified (date_modified),
+          KEY idx_created_at (created_at)
       ) COMMENT='Vector embeddings for categories - enables semantic category search and recommendations';
 
       CREATE VECTOR INDEX embedding_index ON :table_categories_embedding (embedding);
@@ -122,13 +124,15 @@ class MariaDb
           embedding vector(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
           chunknumber int default 128 COMMENT 'Chunk size used for embedding generation',
           date_modified datetime DEFAULT NULL COMMENT 'Last modification timestamp',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT COMMENT 'FK to products table - product ID',
           language_id INT COMMENT 'FK to languages table - language identifier',
           metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include price, category, manufacturer info',
           KEY idx_entity_id (entity_id),
           KEY idx_language_id (language_id),
           KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified)
+          KEY idx_date_modified (date_modified),
+          KEY idx_created_at (created_at)
         ) COMMENT='Vector embeddings for products - enables semantic product search and recommendations';
 
       CREATE VECTOR INDEX embedding_index ON :table_products_embedding (embedding);
@@ -142,13 +146,15 @@ class MariaDb
           embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
           chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
           date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT COMMENT 'FK to manufacturers table - manufacturer ID',
           language_id INT COMMENT 'FK to languages table - language identifier',
           metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include product count, supplier info',
           KEY idx_entity_id (entity_id),
           KEY idx_language_id (language_id),
           KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified)
+          KEY idx_date_modified (date_modified),
+          KEY idx_created_at (created_at)
       ) COMMENT='Vector embeddings for manufacturers - enables semantic manufacturer search and brand discovery';
 
       CREATE VECTOR INDEX embedding_index ON :table_manufacturers_embedding (embedding);
@@ -162,10 +168,12 @@ class MariaDb
           embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
           chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
           date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT COMMENT 'FK to suppliers table - supplier ID',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include product count, contact details',                  
+          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include product count, contact details',
           KEY idx_entity_id (entity_id),
-          KEY idx_date_modified (date_modified)
+          KEY idx_date_modified (date_modified),
+          KEY idx_created_at (created_at)
       ) COMMENT='Vector embeddings for suppliers - enables semantic supplier search and sourcing recommendations';
 
       CREATE VECTOR INDEX embedding_index ON :table_suppliers_embedding (embedding);
@@ -179,13 +187,15 @@ class MariaDb
           embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
           chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
           date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT COMMENT 'FK to reviews table - review ID',
           language_id INT COMMENT 'FK to languages table - language identifier',
           metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include rating, product_id, customer_id',
           KEY idx_entity_id (entity_id),
           KEY idx_language_id (language_id),
           KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified)
+          KEY idx_date_modified (date_modified),
+          KEY idx_created_at (created_at)
       ) COMMENT='Vector embeddings for product reviews - enables semantic review search and sentiment analysis';
 
       CREATE VECTOR INDEX embedding_index ON :table_reviews_embedding (embedding);
@@ -199,13 +209,15 @@ class MariaDb
           embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for sentiment-aware semantic search',
           chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
           date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT COMMENT 'FK to reviews table - review ID',
           language_id INT COMMENT 'FK to languages table - language identifier',
           metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include sentiment_score, review_id, product_id',
           KEY idx_entity_id (entity_id),
           KEY idx_language_id (language_id),
           KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified)
+          KEY idx_date_modified (date_modified),
+          KEY idx_created_at (created_at)
       ) COMMENT='Vector embeddings for review sentiment analysis - enables emotion-aware search and trend detection';
 
       CREATE VECTOR INDEX embedding_index ON :table_reviews_sentiment_embedding (embedding);
@@ -219,10 +231,12 @@ class MariaDb
           embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
           chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
           date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT COMMENT 'FK to return_orders table - return order ID',
           metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include order_status, total, customer_id',
           KEY idx_entity_id (entity_id),
-          KEY idx_date_modified (date_modified)
+          KEY idx_date_modified (date_modified),
+          KEY idx_created_at (created_at)
       ) COMMENT='Vector embeddings for return orders - enables semantic return analysis and pattern detection';
 
       CREATE VECTOR INDEX embedding_index ON :table_return_orders_embedding (embedding);
@@ -236,10 +250,12 @@ class MariaDb
           embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
           chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
           date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT COMMENT 'FK to orders table - order ID',
           metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include order_status, total, customer_id',
           KEY idx_entity_id (entity_id),
-          KEY idx_date_modified (date_modified)
+          KEY idx_date_modified (date_modified),
+          KEY idx_created_at (created_at)
       ) COMMENT='Vector embeddings for orders - enables semantic order search and pattern analysis';
 
       CREATE VECTOR INDEX embedding_index ON :table_orders_embedding (embedding);
@@ -260,12 +276,14 @@ class MariaDb
             embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
             chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
             date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
             entity_id INT COMMENT 'FK to rag_agent_order_insights table - insight ID',
             metadata LONGTEXT COMMENT 'JSON metadata for the embedding',
             language_id INT DEFAULT NULL COMMENT 'Language ID from languages table',
             KEY idx_entity_id (entity_id),
             KEY idx_language_id (language_id),
-            KEY idx_date_modified (date_modified)
+            KEY idx_date_modified (date_modified),
+            KEY idx_created_at (created_at)
         ) COMMENT='Vector embeddings for order insights - enables semantic insight search and pattern analysis across orders'
         EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -288,6 +306,7 @@ class MariaDb
      embedding       VECTOR(3072)  NOT NULL COMMENT 'Vector embedding 3072 dimensions - OpenAI text-embedding-3-large',
      chunknumber     INT(11)       DEFAULT 128 COMMENT 'Chunk number for large reports - default 128 tokens per chunk',
      date_modified   DATETIME      DEFAULT NULL COMMENT 'Timestamp of last modification',
+     created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
      entity_id       INT(11)       NOT NULL COMMENT 'FK - references the entity (category, product, cms page)',
       entity_type     VARCHAR(50)   COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Entity type: category | product | cms',
      language_id     INT(11)       NOT NULL COMMENT 'FK to languages table',
@@ -296,7 +315,8 @@ class MariaDb
       KEY idx_entity_lang    (entity_id,language_id),
       KEY idx_type           (type(50)),
       KEY idx_sourcetype     (sourcetype(50)),
-      KEY idx_date_modified  (date_modified)
+      KEY idx_date_modified  (date_modified),
+      KEY idx_created_at     (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -316,6 +336,7 @@ class MariaDb
       embedding       VECTOR(3072)  NOT NULL COMMENT 'Vector embedding 3072 dimensions - OpenAI text-embedding-3-large',
       chunknumber     INT(11)       DEFAULT 128 COMMENT 'Chunk number for large reports - default 128 tokens per chunk',
       date_modified   DATETIME      DEFAULT NULL COMMENT 'Timestamp of last modification',
+      created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
       entity_id       INT(11)       NOT NULL COMMENT 'FK - references the entity (category, product, cms page)',
         entity_type     VARCHAR(50)   COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Entity type: category | product | cms',
       language_id     INT(11)       NOT NULL COMMENT 'FK to languages table',
@@ -324,7 +345,8 @@ class MariaDb
       KEY idx_entity_lang    (entity_id, language_id),
       KEY idx_type           (type(50)),
       KEY idx_sourcetype     (sourcetype(50)),
-      KEY idx_date_modified  (date_modified)
+      KEY idx_date_modified  (date_modified),
+      KEY idx_created_at     (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -344,14 +366,16 @@ class MariaDb
           chunknumber int(11) DEFAULT 128 COMMENT 'Chunk size for embedding generation',
           embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding 3072 dimensions - OpenAI text-embedding-3-large',
           date_modified DATETIME DEFAULT NULL COMMENT 'Timestamp of analysis generation',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT(11) NOT NULL COMMENT 'FK to products table - product ID',
-          entity_type varchar(50) DEFAULT NULL COMMENT 'Entity type (product, category, etc.)',    
+          entity_type varchar(50) DEFAULT NULL COMMENT 'Entity type (product, category, etc.)',
           language_id INT(11) NOT NULL COMMENT 'FK to languages table - language identifier',
           metadata LONGTEXT COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'JSON structure with versioned analysis details (scores, factors, actions, history)',
           PRIMARY KEY (id),
           KEY idx_entity_id (entity_id),
           KEY idx_date_modified (date_modified),
-          KEY idx_entity_date (entity_id, date_modified)
+          KEY idx_entity_date (entity_id, date_modified),
+          KEY idx_created_at (created_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cockpit IA strategic product analysis embeddings - dual-axis scoring with RAG context'
         EOD;
       $CLICSHOPPING_Db->exec($sql);

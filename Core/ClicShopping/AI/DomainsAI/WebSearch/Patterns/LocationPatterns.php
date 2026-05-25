@@ -142,34 +142,4 @@
       return self::$stopwords[$language] ?? self::$stopwords['en'];
     }
 
-    /**
-     * Amazon domain listing
-     * @return array[]
-     */
-    public static function amazonDomainName() :array
-    {
-      $amazonPatterns = [
-        'amazon',
-        'amazon.com',
-        'amazon.fr',
-        'amazon.co.uk',
-        'amazon.de',
-        'amazon.es',
-        'amazon.it',
-        'amazon.ca',
-        'amazon.com.mx',
-        'amazon.co.jp',
-        'amazon.in',
-        'amazon.com.br',
-        'amazon.com.au',
-        'amazon.nl',
-        'amazon.se',
-        'amazon.pl',
-        'amazon.sg',
-        'amazon.ae',
-        'amazon.sa',
-      ];
-
-      return $amazonPatterns;
-    }
   }

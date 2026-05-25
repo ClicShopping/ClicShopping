@@ -31,3 +31,8 @@ text_rag_source_google_shopping = Google Shopping
 text_rag_mode_google_trends = Google Trends
 text_rag_trends_title = Intérêt au fil du temps
 text_rag_trends_interest_over_time = Intérêt (0–100)
+text_rag_market_analysis_title = Analyse du marché
+text_rag_market_analysis_ai_notice = Synthèse générée par IA
+text_rag_market_analysis_sources = sources analysées
+text_rag_trends_disclaimer = Google Trends affiche l'intérêt de recherche relatif pour ce mot-clé au fil du temps (0 = aucune donnée, 100 = pic d'intérêt). C'est un indicateur de popularité, PAS le prix réel du produit. Pour la comparaison de prix entre concurrents, utilisez les résultats Google Shopping / Amazon.
+text_rag_site_search_notice = Certains résultats proviennent d'un site marchand spécifique (Fnac, Cdiscount, etc.). Chaque marchand utilise sa propre mise en page HTML, donc l'image et le prix du produit peuvent être absents ici — cliquez sur "Voir le produit" pour ouvrir la page complète directement sur le site marchand.

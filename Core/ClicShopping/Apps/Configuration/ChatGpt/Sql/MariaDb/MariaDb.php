@@ -140,13 +140,15 @@ class MariaDb
           embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
           chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
           date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
           entity_id INT COMMENT 'FK to pages_manager table - page ID',
           language_id INT COMMENT 'FK to languages table - language identifier',
           metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include page_type, status, url',
           KEY idx_entity_id (entity_id),
           KEY idx_language_id (language_id),
           KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified)
+          KEY idx_date_modified (date_modified),
+          KEY idx_created_at (created_at)
       ) COMMENT='Vector embeddings for CMS pages - enables semantic page search and content discovery';
 
       CREATE VECTOR INDEX embedding_index ON :table_pages_manager_embedding (embedding);
@@ -173,6 +175,7 @@ class MariaDb
         metadata JSON NOT NULL DEFAULT '{}' COMMENT 'Additional metadata in JSON format',
         chunknumber int(11) DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
         date_modified datetime DEFAULT NULL COMMENT 'Last modification timestamp',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
         entity_id int(11) NULL DEFAULT 0 COMMENT 'Entity ID (0 = no specific entity, NULL = unknown)',
         entity_type VARCHAR(50) NULL COMMENT 'Type of entity (product, category, page, etc.)',
         language_id int(11) NOT NULL COMMENT 'Language identifier for the correction pattern',
@@ -185,7 +188,8 @@ class MariaDb
         KEY idx_entity (entity_id, entity_type),
         KEY idx_entity_language (entity_id, language_id),
         KEY idx_entity_type_language (entity_type, language_id, entity_id),
-        KEY idx_date_modified (date_modified)
+        KEY idx_date_modified (date_modified),
+        KEY idx_created_at (created_at)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
      EOD;
 
@@ -214,7 +218,7 @@ class MariaDb
           user_id VARCHAR(255) DEFAULT NULL COMMENT 'User ID for fast filtering',
           interaction_id VARCHAR(255) DEFAULT NULL COMMENT 'Interaction ID to prevent duplicates',
           metadata JSON NOT NULL DEFAULT '{}' COMMENT 'Additional metadata in JSON format',
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+          created_at timestamp NULL DEFAULT current_timestamp() COMMENT 'Creation timestamp',
           PRIMARY KEY (id),
           UNIQUE KEY id (id),
           VECTOR INDEX embedding_index (embedding),
@@ -252,6 +256,7 @@ class MariaDb
         `chunknumber` int(11) DEFAULT 128 COMMENT 'Taille du chunk utilisé',
         `entity_type` VARCHAR(50) DEFAULT NULL COMMENT 'Type of entity (web_search)',
         `date_modified` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
         `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`metadata`))
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -265,7 +270,8 @@ class MariaDb
         ADD KEY `idx_quality_usage` (`quality_score`,`usage_count`),
         ADD KEY `idx_quality_usage_last` (`quality_score`, `usage_count`, `last_used`),
         ADD KEY `idx_search_engine_quality` (`search_engine`, `quality_score`),
-        ADD KEY `idx_language_quality` (`language_id`, `quality_score`);
+        ADD KEY `idx_language_quality` (`language_id`, `quality_score`),
+        ADD KEY `idx_created_at` (`created_at`);
 
       ALTER TABLE :table_rag_web_cache_embedding MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
       

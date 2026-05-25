@@ -1,14 +1,15 @@
 version4.30
 - Maintenance version
-- improvement
+- Miscellaneous improvement
 - fix / bug resolution
 - libraries updated
 - new license
-
+- AI Speed response improvement
 
 ---------------
 version4.281 et 4.282
 fix upload
+
 ---------------
 version4.28
 - php9 compatibility improvement

@@ -225,30 +225,9 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
 
       // Log the final type for debugging
       if ($this->debug) {
-        error_log("🎯 HybridQueryHandler: Forcing type to 'hybrid' (was: " . ($executionResult['result']['type'] ?? 'unknown') . ")");
+        error_log("[info] HybridQueryHandler: Forcing type to 'hybrid' (was: " . ($executionResult['result']['type'] ?? 'unknown') . ")");
       }
 
-      // Step 3: Store interaction in memory
-      if ($this->conversationMemory !== null) {
-        try {
-          $this->conversationMemory->addInteraction(
-            $queryToProcess,
-            $result['response'] ?? $result['text_response'] ?? 'No response',
-            [
-              'intent_type' => 'hybrid',
-              'confidence' => $intent['confidence'] ?? 0,
-              'sub_query_count' => $stepCount,
-              'execution_time' => $executionTime
-            ]
-          );
-        } catch (\Exception $e) {
-          if ($this->debug) {
-            $this->securityLogger->logStructured('warning', 'HybridQueryHandler', 'memory_storage_failed', [
-              'error' => $e->getMessage()
-            ]);
-          }
-        }
-      }
 
       // Update statistics
       $this->successfulQueries++;
@@ -257,6 +236,13 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
       // Track web search queries
       if ($this->requiresWebSearch($queryToProcess, $intent)) {
         $this->webSearchQueries++;
+      }
+
+      if ($this->debug) {
+        error_log(sprintf(
+          "[PERF] HybridQueryHandler: handle() returning after %.3fs",
+          microtime(true) - $startTime
+        ));
       }
 
       return $result;

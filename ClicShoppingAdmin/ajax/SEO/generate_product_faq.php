@@ -26,7 +26,7 @@
 
   CLICSHOPPING::initialize();
   CLICSHOPPING::loadSite('ClicShoppingAdmin');
-//AdministratorAdmin::hasUserAccess();
+AdministratorAdmin::hasUserAccess();
 
   header('Content-Type: application/json; charset=utf-8');
 

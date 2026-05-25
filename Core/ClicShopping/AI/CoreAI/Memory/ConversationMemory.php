@@ -242,21 +242,42 @@ class ConversationMemory
       }
       
       // 1. Add to short-term memory via ShortTermMemoryManager
+      $shortTermStart = microtime(true);
       $this->shortTermManager->addMessage(new Message('user', $userMessage));
       $this->shortTermManager->addMessage(new Message('assistant', $systemResponse));
-      
+
       // Update local reference for compatibility
       $this->conversationHistory = $this->shortTermManager->getConversationHistory();
+      if ($this->debug) {
+        error_log(sprintf("[PERF] ConversationMemory: short-term store took %.3fs",
+          microtime(true) - $shortTermStart));
+      }
 
-      // 2. Store in long-term memory via LongTermMemoryManager
+      // 2. Store in long-term memory via LongTermMemoryManager (includes embedding)
+      $longTermStart = microtime(true);
       $fullContent = $this->formatInteractionForStorage($userMessage, $systemResponse);
+      if ($this->debug) {
+        error_log(sprintf("[PERF] ConversationMemory: long-term store START — content: %d chars",
+          strlen($fullContent)));
+      }
       $success = $this->longTermManager->storeInteraction($fullContent, $metadata);
-      
-      // 🔧 FIX: Periodically clean duplicates (every 20 interactions)
+      if ($this->debug) {
+        error_log(sprintf("[PERF] ConversationMemory: long-term store END — took %.3fs (success: %s)",
+          microtime(true) - $longTermStart,
+          $success ? 'YES' : 'NO'));
+      }
+
+      // Periodically clean duplicates (every 20 interactions)
       static $cleanupCounter = 0;
       if (++$cleanupCounter % 20 === 0) {
+        $cleanupStart = microtime(true);
         try {
           $cleanupStats = $this->longTermManager->cleanDuplicates();
+          if ($this->debug) {
+            error_log(sprintf("[PERF] ConversationMemory: cleanDuplicates took %.3fs (cleaned: %d)",
+              microtime(true) - $cleanupStart,
+              $cleanupStats['total_cleaned'] ?? 0));
+          }
           if ($this->debug && $cleanupStats['total_cleaned'] > 0) {
             $this->securityLogger->logSecurityEvent(
               "Cleaned {$cleanupStats['total_cleaned']} duplicate entries (by interaction_id: {$cleanupStats['by_interaction_id']}, by content_hash: {$cleanupStats['by_content_hash']})",
@@ -279,7 +300,17 @@ class ConversationMemory
 
       // 4. Learn from successful interactions
       if ($success && ($metadata['success'] ?? true)) {
+        $learnStart = microtime(true);
         $this->learnFromSuccessfulInteraction($userMessage, $systemResponse, $metadata);
+        if ($this->debug) {
+          error_log(sprintf("[PERF] ConversationMemory: learnFromSuccessfulInteraction took %.3fs",
+            microtime(true) - $learnStart));
+        }
+      }
+
+      if ($this->debug) {
+        error_log(sprintf("[PERF] ConversationMemory::addInteraction TOTAL %.3fs",
+          microtime(true) - $startTime));
       }
 
       return $success;
@@ -634,7 +665,50 @@ class ConversationMemory
    */
   private function formatInteractionForStorage(
     string $userMessage,    string $systemResponse): string {
-    return "User: {$userMessage}\n\nAssistant: {$systemResponse}";
+    $cleanedResponse = self::cleanResponseForEmbedding($systemResponse);
+
+    return "User: {$userMessage}\n\nAssistant: {$cleanedResponse}";
+  }
+
+  /**
+   * Reduces an assistant response to the plain semantic text the embedding
+   * model needs. Strips HTML, decodes entities, collapses whitespace and
+   * caps the result so a runaway answer never poisons the embedding cost.
+   *
+   * The default cap (32 000 chars) is well above the typical text content of
+   * a Hybrid response (≈ 5 KB) yet keeps even large pages inside one chunk.
+   * Override via CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS.
+   */
+  private static function cleanResponseForEmbedding(string $response): string
+  {
+    if ($response === '') {
+      return $response;
+    }
+
+    // If there are no HTML tags at all, skip the work
+    $hasTags = (\strpos($response, '<') !== false);
+
+    if ($hasTags) {
+      $response = \strip_tags($response);
+      $response = \html_entity_decode($response, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
+    $response = \preg_replace('/\s+/u', ' ', $response);
+    $response = \trim($response);
+
+    $maxChars = 32000;
+    if (\defined('CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS')) {
+      $override = (int) \constant('CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS');
+      if ($override > 0) {
+        $maxChars = $override;
+      }
+    }
+
+    if (\mb_strlen($response) > $maxChars) {
+      $response = \mb_substr($response, 0, $maxChars);
+    }
+
+    return $response;
   }
 
 

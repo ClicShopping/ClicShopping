@@ -2058,8 +2058,8 @@ INSERT INTO cron VALUES(4, 'marketplace', 'Apps marketplace', 'monthly', 'market
 INSERT INTO cron VALUES(5, 'embeddings', 'Update the embeddings table if it not exist<br>Table updated : categories_embedding, manufacturers_embedding, products_embedding, pages_manager_embedding, reviews_embedding,suppliers_embedding.<br>Table not updated : orders_embedding,return_orders_embedding, reviews_sentiment_embeddings', 'weekly', 'embeddings', 1, '2025-05-15 20:14:27', '2025-05-15 20:19:06');
 INSERT INTO cron VALUES(6, 'McpHealthCron', 'All 5 minutes', 'minute', 'McpHealthCron', 1, '2025-09-25 09:52:21', '2025-09-25 10:56:07');
 INSERT INTO cron VALUES(7, 'reputationUpdateProcessor', 'Reputation update queue processor - processes pending reputation update jobs every 5 minutes (batch size: 50, max attempts: 3)', 'minutes', 'ReputationUpdateProcessor', 0, '2026-02-08 09:59:22', '2026-02-22 19:52:40');
-INSERT INTO cron VALUES(8, 'productCockpitAi', 'Analyse and update the product cockpit AI)', 'day', 'productCockpitAi', 0, '2026-02-08 09:59:22', '2026-02-22 19:52:40');
-INSERT INTO cron VALUES(9, 'seoFaqBatchProcessor', 'Batch processes products without SEO/FAQ content - generates SEO metadata and FAQ for products that need them', 'day', 'seoFaqBatchProcessor', 0, NOW(), NOW());
+INSERT INTO cron VALUES(8, 'productCockpitAi', 'Analyse quotidienne CockpitAI - score les produits commandés du jour, modifiés depuis la dernière analyse, et jamais analysés (en stock). Activable via CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_STATUS. Exécution recommandée à 02h00.', 'day', 'productCockpitAi', 0, NOW(), NOW());
+INSERT INTO cron VALUES(9, 'productSeoOptimization', 'Cron SEO quotidien - exécute la Phase 1 (Audit), la Phase 2 (Optimisation multilingue) et la Phase 3 optionnelle (FAQ ancrée) sur les produits commandés du jour, modifiés depuis la dernière analyse, ou jamais analysés. Activable via CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS / EC_CRON_SEO_FAQ_STATUS. Exécution recommandée à 02h00.', 'day', 'productSeoOptimization', 0, NOW(), NOW());
 
 
 INSERT INTO currencies VALUES(1, 'Euro', 'EUR', '', 'EUR', '.', ',', '2', 1.00000000, '2008-09-13 18:02:35', 1, 0);
