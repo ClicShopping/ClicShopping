@@ -34,7 +34,6 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/mattketmo/email-checker" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/nyholm/psr7" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/php-http/discovery" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpmailer/phpmailer" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpxmlrpc/phpxmlrpc" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/psr/cache" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/psr/container" />
@@ -63,13 +62,14 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stripe/stripe-php" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/amnuts/opcache-gui" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/yethee/tiktoken" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/theodo-group/llphant" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/smalot/pdfparser" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/php-http/multipart-stream-builder" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpoffice/math" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpoffice/phpword" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpoffice/math" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/openai-php/client" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/theodo-group/llphant" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/yethee/tiktoken" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpmailer/phpmailer" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.5">
