@@ -228,7 +228,6 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
         error_log("[info] HybridQueryHandler: Forcing type to 'hybrid' (was: " . ($executionResult['result']['type'] ?? 'unknown') . ")");
       }
 
-
       // Update statistics
       $this->successfulQueries++;
       $this->lastExecution = date('c'); // ISO 8601 format

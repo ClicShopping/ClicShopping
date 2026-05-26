@@ -1,0 +1,2 @@
+cfg_chatgpt_interaction_response_max_chars_title = Nombre maximal de caractères pour la réponse dans les interactions
+cfg_chatgpt_interaction_response_max_chars_description = Indiquez le nombre maximal d'interactions avant troncature

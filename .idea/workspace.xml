@@ -22,7 +22,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7498" />
+    <option name="cachedIndexableFilesCount" value="7503" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -266,14 +266,7 @@
       <workItem from="1779640998482" duration="1392000" />
       <workItem from="1779697756649" duration="409000" />
       <workItem from="1779726586826" duration="34000" />
-    </task>
-    <task id="LOCAL-00032" summary="improve 404 detection">
-      <option name="closed" value="true" />
-      <created>1778483194110</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1778483194110</updated>
+      <workItem from="1779790053473" duration="92000" />
     </task>
     <task id="LOCAL-00033" summary="librairies updated">
       <option name="closed" value="true" />
@@ -659,7 +652,15 @@
       <option name="project" value="LOCAL" />
       <updated>1779726617589</updated>
     </task>
-    <option name="localTasksCounter" value="81" />
+    <task id="LOCAL-00081" summary="some improvement">
+      <option name="closed" value="true" />
+      <created>1779790065947</created>
+      <option name="number" value="00081" />
+      <option name="presentableId" value="LOCAL-00081" />
+      <option name="project" value="LOCAL" />
+      <updated>1779790065947</updated>
+    </task>
+    <option name="localTasksCounter" value="82" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

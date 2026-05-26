@@ -8,14 +8,14 @@
 
 namespace ClicShopping\Apps\Tools\MCP\Sites\Shop\Pages\AnthropicEcommerce\Sub;
 
-use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\ACP\GptCustomerManager;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\Common\GptCustomerManager;
 use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\Message;
 use ClicShopping\OM\HTML;
 
 /**
  * Customers sub-handler for the AnthropicEcommerce MCP endpoint.
  *
- * Delegates to GptCustomerManager (ACP) for all customer operations.
+ * Delegates to GptCustomerManager (Common) for all customer operations.
  *
  * Supported actions:
  *   - customer         GET   Customer detail by ?id=

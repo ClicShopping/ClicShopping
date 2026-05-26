@@ -21,6 +21,18 @@ use ClicShopping\OM\Registry;
  */
 class OrdersShop
 {
+  // Orders status — defined in :table_orders_status, may be renamed but not deleted by admins.
+  private const ORDERS_STATUS_PENDING    = 1;
+  private const ORDERS_STATUS_CANCELLED  = 2;
+  private const ORDERS_STATUS_DELIVERED  = 3;
+  private const ORDERS_STATUS_PROCESSING = 4;
+
+  // Invoice status — defined in :table_orders_status_invoice, may be renamed but not deleted.
+  private const INVOICE_STATUS_ORDER       = 1;
+  private const INVOICE_STATUS_INVOICE     = 2;
+  private const INVOICE_STATUS_CANCELLED   = 3;
+  private const INVOICE_STATUS_CREDIT_NOTE = 4;
+
   /**
    * @var mixed The database connection instance.
    */
@@ -76,28 +88,21 @@ class OrdersShop
   {
     $customerId = $this->getCustomerId();
     if (empty($customerId)) {
-      $this->message->sendError('customer_id is required.');
+      $this->message->sendError('customer_id is required.', 400);
+      return;
     }
 
-    //
-    // Correct Code to be implemented later
-    //
-    /*
-    $limit = filter_var($_GET['limit'] ?? 10, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    $offset = filter_var($_GET['offset'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+    $limit  = filter_var($_GET['limit']  ?? 10, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 200]]);
+    $offset = filter_var($_GET['offset'] ?? 0,  FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
 
     if ($limit === false) {
-        $this->message->sendError('limit must be a positive integer.', 400);
+      $this->message->sendError('limit must be a positive integer (1-200).', 400);
+      return;
     }
     if ($offset === false) {
-        $this->message->sendError('offset must be a non-negative integer.', 400);
+      $this->message->sendError('offset must be a non-negative integer.', 400);
+      return;
     }
-    */
-    //
-    // Test Code
-    //
-    $limit = (int)HTML::sanitize($_GET['limit'] ?? 10);
-    $offset = (int)HTML::sanitize($_GET['offset'] ?? 0);
 
     $Qorders = $this->db->prepare('select o.orders_id,
                                           o.date_purchased,
@@ -160,26 +165,15 @@ class OrdersShop
   public function readOrder(array $data): void
   {
     $customerId = $this->getCustomerId();
-
-    //
-    // Correct Code to be implemented later
-    //
-    /*
-    $orderId = filter_var($data['order_id'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $orderId    = filter_var($data['order_id'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
     if (empty($customerId)) {
-      $this->message->sendError('customer_id is required.');
+      $this->message->sendError('customer_id is required.', 400);
+      return;
     }
     if ($orderId === false) {
       $this->message->sendError('order_id is required and must be a positive integer.', 400);
-    }
-    */
-    //
-    // Test Code
-    //
-    $orderId = (int)($data['order_id'] ?? 0);
-    if (empty($customerId) || empty($orderId)) {
-      $this->message->sendError('customer_id and order_id are required.');
+      return;
     }
 
     $Qorder = $this->db->prepare('select o.orders_id,
@@ -284,27 +278,18 @@ class OrdersShop
    */
   public function cancelOrder(int $orderId): void
   {
-    $customerId = $this->getCustomerId();
-
-    //
-    // Correct Code to be implemented later
-    //
-    /*
-    $orderId = filter_var($orderId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $customerId      = $this->getCustomerId();
+    $validatedOrder  = filter_var($orderId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
     if (empty($customerId)) {
-      $this->message->sendError('customer_id is required.');
+      $this->message->sendError('customer_id is required.', 400);
+      return;
     }
-    if ($orderId === false) {
+    if ($validatedOrder === false) {
       $this->message->sendError('order_id is required and must be a positive integer.', 400);
+      return;
     }
-    */
-    //
-    // Test Code
-    //
-    if (empty($customerId) || empty($orderId)) {
-      $this->message->sendError('customer_id and order_id are required.');
-    }
+    $orderId = $validatedOrder;
 
     $Qorder = $this->db->prepare('select orders_status,
                                            orders_status_invoice
@@ -317,27 +302,43 @@ class OrdersShop
     $Qorder->execute();
 
     if ($Qorder->rowCount() === 0) {
-      $this->message->sendError('Order not found or access denied.');
+      $this->message->sendError('Order not found or access denied.', 404);
+      return;
     }
 
     $currentStatus = (int)$Qorder->valueInt('orders_status');
-    $currentInvoiceStatus = (int)$Qorder->valueInt('orders_status_invoice');
-    $newStatus = \defined('ORDERS_STATUS_CANCELLED_ID') ? (int)\constant('ORDERS_STATUS_CANCELLED_ID') : $currentStatus;
 
-    if ($newStatus !== $currentStatus) {
-      $this->db->save('orders', ['orders_status' => $newStatus, 'last_modified' => 'now()'], ['orders_id' => $orderId]);
+    if ($currentStatus === self::ORDERS_STATUS_DELIVERED) {
+      $this->message->sendError('Delivered orders cannot be cancelled.', 409);
+      return;
+    }
+    if ($currentStatus === self::ORDERS_STATUS_CANCELLED) {
+      $this->message->sendError('Order is already cancelled.', 409);
+      return;
     }
 
+    $this->db->save('orders', [
+      'orders_status'         => self::ORDERS_STATUS_CANCELLED,
+      'orders_status_invoice' => self::INVOICE_STATUS_CANCELLED,
+      'last_modified'         => 'now()',
+    ], ['orders_id' => $orderId]);
+
     $this->db->save('orders_status_history', [
-      'orders_id' => $orderId,
-      'orders_status_id' => $newStatus,
-      'orders_status_invoice_id' => $currentInvoiceStatus,
-      'admin_user_name' => '',
-      'date_added' => 'now()',
-      'customer_notified' => 0,
-      'comments' => '[customer_request] cancel order'
+      'orders_id'                => $orderId,
+      'orders_status_id'         => self::ORDERS_STATUS_CANCELLED,
+      'orders_status_invoice_id' => self::INVOICE_STATUS_CANCELLED,
+      'admin_user_name'          => '',
+      'date_added'               => 'now()',
+      'customer_notified'        => 0,
+      'comments'                 => '[mcp_customer_request] cancel order'
     ]);
-    $this->message->sendSuccess(['action' => 'cancel_order', 'order_id' => $orderId, 'orders_status' => $newStatus]);
+
+    $this->message->sendSuccess([
+      'action'                => 'cancel_order',
+      'order_id'              => $orderId,
+      'orders_status'         => self::ORDERS_STATUS_CANCELLED,
+      'orders_status_invoice' => self::INVOICE_STATUS_CANCELLED,
+    ]);
   }
 
   /**
@@ -349,29 +350,22 @@ class OrdersShop
    */
   public function sendMessageToAdmin(int $orderId, string $message): void
   {
-    $customerId = $this->getCustomerId();
+    $customerId     = $this->getCustomerId();
+    $validatedOrder = filter_var($orderId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
-    //
-    // Correct Code to be implemented later
-    //
-    /*
-    $orderId = filter_var($orderId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     if (empty($customerId)) {
-      $this->message->sendError('customer_id is required.');
+      $this->message->sendError('customer_id is required.', 400);
+      return;
     }
-    if ($orderId === false) {
+    if ($validatedOrder === false) {
       $this->message->sendError('order_id must be a positive integer.', 400);
+      return;
     }
-    if (empty($message)) {
+    if ($message === '') {
       $this->message->sendError('message is required.', 400);
+      return;
     }
-    */
-    //
-    // Test Code
-    //
-    if (empty($customerId) || empty($orderId) || empty($message)) {
-      $this->message->sendError('customer_id, order_id and message are required.');
-    }
+    $orderId = $validatedOrder;
 
     $Qorder = $this->db->prepare('select orders_status,
                                          orders_status_invoice
@@ -409,27 +403,18 @@ class OrdersShop
    */
   public function getOrderHistory(int $orderId): void
   {
-    $customerId = $this->getCustomerId();
-
-    //
-    // Correct Code to be implemented later
-    //
-    /*
-    $orderId = filter_var($orderId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $customerId     = $this->getCustomerId();
+    $validatedOrder = filter_var($orderId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
     if (empty($customerId)) {
-      $this->message->sendError('customer_id is required.');
+      $this->message->sendError('customer_id is required.', 400);
+      return;
     }
-    if ($orderId === false) {
+    if ($validatedOrder === false) {
       $this->message->sendError('order_id must be a positive integer.', 400);
+      return;
     }
-    */
-    //
-    // Test Code
-    //
-    if (empty($customerId) || empty($orderId)) {
-      $this->message->sendError('customer_id and order_id are required.');
-    }
+    $orderId = $validatedOrder;
 
     $Qverify = $this->db->prepare('select orders_id
                                     from :table_orders
@@ -480,21 +465,19 @@ class OrdersShop
    */
   private function getCustomerId(): ?int
   {
-    /*
-    // Correct Code to be implemented later
-    // Prefer authenticated customer if available
-    if (!\is_null($this->customer) && method_exists($this->customer, 'isLoggedOn') && $this->customer->isLoggedOn()) {
-      if (method_exists($this->customer, 'getID')) {
-        return (int)$this->customer->getID();
-      }
-}
-    // Fallback to request data for authenticated API calls
-    $cid = HTML::sanitize($_GET['customer_id'] ?? $_POST['customer_id'] ?? null);
-    return is_numeric($cid) ? (int)$cid : null;
-    */
+    // Prefer an authenticated Customer session when this class is reused server-side.
+    if (!\is_null($this->customer)
+        && method_exists($this->customer, 'isLoggedOn')
+        && $this->customer->isLoggedOn()
+        && method_exists($this->customer, 'getID')
+    ) {
+      return (int)$this->customer->getID();
+    }
 
-    // Test Code
-    $cid = 1;
-    return $cid;
+    // For MCP API calls the customer_id is supplied by the authenticated MCP client
+    // (CRM/ERP). Authentication and authorization are enforced by the caller Page
+    // before this method is reached.
+    $cid = HTML::sanitize($_GET['customer_id'] ?? $_POST['customer_id'] ?? '');
+    return is_numeric($cid) && (int)$cid > 0 ? (int)$cid : null;
   }
 }
