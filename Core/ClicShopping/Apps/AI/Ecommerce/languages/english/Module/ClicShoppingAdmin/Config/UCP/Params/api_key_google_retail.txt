@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_api_key_google_retail_title = Google API key (Universal Commerce Protocol)
+cfg_ecommerce_ucp_api_key_google_retail_description = Shared key used to authenticate Google UCP agents on the retail flow.

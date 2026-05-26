@@ -479,7 +479,6 @@ class RagWebSearchEngine implements WebSearchInterface
       return null;
     }
 
-    // decimal part in group 2 (when present).
     $patterns = [
       // -- EUR --
       // 1 099,99 € / 1.099,99 € / 1 099.99 € (thousand sep + 2 decimals + €)

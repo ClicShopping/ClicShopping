@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="license">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/ClicShoppingAdmin/Dashboard/ProductCockpitAI.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/ClicShoppingAdmin/Dashboard/ProductCockpitAI.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Cronjob/ProcessSeoFaqBatch.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/CockpitAI.php" afterDir="false" />
-    </list>
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="some improvement" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -28,7 +22,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7477" />
+    <option name="cachedIndexableFilesCount" value="7498" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -57,23 +51,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.000000000000426" />
-      <entry key="S2" value="1.000818690306676" />
-      <entry key="S5" value="1.078115075862023" />
-      <entry key="S10" value="1.647288390131456" />
-      <entry key="S30" value="5.190233061423273" />
-      <entry key="S60" value="8.035769808250611" />
-      <entry key="M2" value="10.172046668537511" />
-      <entry key="M5" value="11.784265761875613" />
-      <entry key="M10" value="12.743694330393932" />
-      <entry key="M15" value="14.401190131159282" />
-      <entry key="M30" value="25.553692290859168" />
-      <entry key="H1" value="51.93990571054215" />
-      <entry key="H2" value="83.83833203902253" />
-      <entry key="H4" value="109.40324882076092" />
-      <entry key="D1" value="138.2105547558312" />
-      <entry key="W1" value="144.0066146086566" />
+      <entry key="MS100" value="1.0000020462280714" />
+      <entry key="MS500" value="1.1079475758387454" />
+      <entry key="S2" value="2.5525019953031833" />
+      <entry key="S5" value="4.5722921573371975" />
+      <entry key="S10" value="6.286420159771889" />
+      <entry key="S30" value="10.687537094895971" />
+      <entry key="S60" value="14.003320995536045" />
+      <entry key="M2" value="16.54878669396387" />
+      <entry key="M5" value="18.502330910851427" />
+      <entry key="M10" value="19.593323929516213" />
+      <entry key="M15" value="21.29065527990683" />
+      <entry key="M30" value="32.46416873056391" />
+      <entry key="H1" value="58.854650744433975" />
+      <entry key="H2" value="90.77122298436548" />
+      <entry key="H4" value="116.35988214029499" />
+      <entry key="D1" value="145.20148396057988" />
+      <entry key="W1" value="151.00526580317774" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -95,23 +89,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9395227492140118" />
-      <entry key="MS500" value="0.9876008614457933" />
-      <entry key="S2" value="0.9977018308302085" />
-      <entry key="S5" value="1.076770150560148" />
-      <entry key="S10" value="1.646293259086947" />
-      <entry key="S30" value="5.189318387296279" />
-      <entry key="S60" value="8.03509202041851" />
-      <entry key="M2" value="10.171626741445605" />
-      <entry key="M5" value="11.784042039732675" />
-      <entry key="M10" value="12.743298245809395" />
-      <entry key="M15" value="14.40036428632239" />
-      <entry key="M30" value="25.550645699084942" />
-      <entry key="H1" value="51.93453062630413" />
-      <entry key="H2" value="83.83311553552677" />
-      <entry key="H4" value="109.39959621950953" />
-      <entry key="D1" value="138.20974713186095" />
-      <entry key="W1" value="144.00649348589116" />
+      <entry key="MS100" value="0.9726569377950857" />
+      <entry key="MS500" value="1.1018689153648664" />
+      <entry key="S2" value="2.5490771953905136" />
+      <entry key="S5" value="4.56964552981581" />
+      <entry key="S10" value="6.2844397421770655" />
+      <entry key="S30" value="10.686211377629355" />
+      <entry key="S60" value="14.002406175466481" />
+      <entry key="M2" value="16.548233587095286" />
+      <entry key="M5" value="18.502049515758568" />
+      <entry key="M10" value="19.592900441067428" />
+      <entry key="M15" value="21.289813764471383" />
+      <entry key="M30" value="32.461121095103955" />
+      <entry key="H1" value="58.84927870799821" />
+      <entry key="H2" value="90.7660078836258" />
+      <entry key="H4" value="116.35622964067407" />
+      <entry key="D1" value="145.20067617164628" />
+      <entry key="W1" value="151.00514465057466" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -271,14 +265,7 @@
       <workItem from="1779639545599" duration="29000" />
       <workItem from="1779640998482" duration="1392000" />
       <workItem from="1779697756649" duration="409000" />
-    </task>
-    <task id="LOCAL-00031" summary="libraries updated">
-      <option name="closed" value="true" />
-      <created>1778427832762</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1778427832762</updated>
+      <workItem from="1779726586826" duration="34000" />
     </task>
     <task id="LOCAL-00032" summary="improve 404 detection">
       <option name="closed" value="true" />
@@ -664,14 +651,21 @@
       <option name="project" value="LOCAL" />
       <updated>1779643535721</updated>
     </task>
-    <option name="localTasksCounter" value="80" />
+    <task id="LOCAL-00080" summary="some improvement">
+      <option name="closed" value="true" />
+      <created>1779726617589</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1779726617589</updated>
+    </task>
+    <option name="localTasksCounter" value="81" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="update prompt" />
     <MESSAGE value="some update and fix" />
     <MESSAGE value="improve json" />
     <MESSAGE value="add new sql" />
@@ -696,7 +690,8 @@
     <MESSAGE value="improvement" />
     <MESSAGE value="little update" />
     <MESSAGE value="license" />
-    <option name="LAST_COMMIT_MESSAGE" value="license" />
+    <MESSAGE value="some improvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="some improvement" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -6,19 +6,20 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\Apps\AI\Ecommerce\Module\ClicShoppingAdmin\Config\UCP\Params;
+namespace ClicShopping\Apps\AI\Ecommerce\Module\ClicShoppingAdmin\Config\ACP\Params;
 
 use ClicShopping\OM\HTML;
 
-class shared_key_retail extends \ClicShopping\Apps\AI\Ecommerce\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
+class api_key_openai_retail extends \ClicShopping\Apps\AI\Ecommerce\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
+
   public $default = '';
   public int|null $sort_order = 20;
 
   protected function init()
   {
-    $this->title = $this->app->getDef('cfg_ecommerce_ucp_api_shared_key_retails_title');
-    $this->description = $this->app->getDef('cfg_ecommerce_ucp_api_shared_key_retails_description');
+    $this->title = $this->app->getDef('cfg_ecommerce_acp_api_key_openai_retail_title');
+    $this->description = $this->app->getDef('cfg_ecommerce_acp_api_key_openai_retail_description');
   }
 
   public function getInputField()

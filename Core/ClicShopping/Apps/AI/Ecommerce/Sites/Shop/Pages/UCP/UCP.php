@@ -115,7 +115,7 @@ class UCP extends \ClicShopping\OM\Domains\PagesAbstract
     try {
       if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
         $authHeader = trim($_SERVER['HTTP_AUTHORIZATION']);
-      $expectedSecret = \defined('CLICSHOPPING_APP_ECOMMERCE_UCP_SHARED_KEY_RETAIL') ? CLICSHOPPING_APP_ECOMMERCE_UCP_SHARED_KEY_RETAIL : '';
+      $expectedSecret = \defined('CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL') ? CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL : '';
 
         $expectedHeader = $expectedSecret !== '' ? 'Bearer ' . $expectedSecret : '';
 

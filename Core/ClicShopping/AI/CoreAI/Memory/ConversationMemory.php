@@ -19,7 +19,6 @@ use LLPhant\Embeddings\DocumentSplitter\DocumentSplitter;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 use LLPhant\Chat\Message; // Use the specific LLPhant class for type hinting
 
-// 🆕 Refactored SubConversationMemory components
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ShortTermMemoryManager;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\LongTermMemoryManager;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ContextResolver;

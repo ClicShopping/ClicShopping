@@ -8,8 +8,7 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shop\UCP;
 
-use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\ACP\GptCustomerManager;
-use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\ACP\GptOrderManager;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\Common\GptOrderManager;
 use ClicShopping\Apps\Catalog\Manufacturers\Classes\ClicShoppingAdmin\ManufacturerAdmin;
 use ClicShopping\Apps\Catalog\Products\Classes\Shop\ProductsCommon;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
@@ -54,16 +53,6 @@ class GptRetailersUCP
   protected GptOrderManager $orderManager;
 
   /**
-   * @var GptCustomerManager Manages customer account creation and retrieval.
-   */
-  protected GptCustomerManager $customerManager;
-
-  /**
-   * @var string Directory path for storing session files.
-   */
-  protected string $dirSession;
-
-  /**
    * @var GptSessionManager Manages UCP checkout sessions.
    */
   protected GptSessionManager $sessionManager;
@@ -71,7 +60,7 @@ class GptRetailersUCP
 
   /**
    * GptRetailersUCP constructor.
-   * Initializes dependencies, checks application status, and sets up the session directory.
+   * Initializes dependencies and checks application status.
    */
   public function __construct()
   {
@@ -90,16 +79,10 @@ class GptRetailersUCP
     }
 
     $this->orderManager = new GptOrderManager();
-    $this->customerManager = new GptCustomerManager();
     $this->sessionManager = new GptSessionManager();
     $this->paymentProcessor = new PaymentProcessor();
 
     $this->checkStatus();
-
-    $this->dirSession = CLICSHOPPING::BASE_DIR . 'Work/Sessions/Shop/UCP';
-    if (!is_dir($this->dirSession)) {
-      mkdir($this->dirSession, 0775, true);
-    }
   }
 
   /**
@@ -115,7 +98,7 @@ class GptRetailersUCP
       $result = false;
     }
 
-    if (\defined('CLICSHOPPING_APP_ECOMMERCE_UCP_SHARED_KEY_RETAIL') && empty(CLICSHOPPING_APP_ECOMMERCE_UCP_SHARED_KEY_RETAIL)) {
+    if (\defined('CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL') && empty(CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL)) {
       $result = false;
     }
 

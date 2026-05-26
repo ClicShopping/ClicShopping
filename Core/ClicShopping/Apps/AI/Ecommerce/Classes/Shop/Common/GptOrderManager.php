@@ -6,7 +6,7 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shop\ACP;
+namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shop\Common;
 
 
 use ClicShopping\Apps\Orders\Orders\Classes\Shop\Order;
@@ -17,9 +17,9 @@ use ClicShopping\OM\SimpleLogger;
  * Class GptOrderManager
  *
  * This class is responsible for managing the creation and persistence of orders
- * initiated via an external system, specifically the OpenAI Retailers Agent Controlled Purchase (ACP)
- * session, into the ClicShopping database. It handles the direct insertion of order data,
- * products, totals, and status history.
+ * initiated via an external agent (ACP/OpenAI or UCP/Google), into the ClicShopping
+ * database. It handles the direct insertion of order data, products, totals,
+ * and status history.
  */
 
 class GptOrderManager
@@ -49,9 +49,11 @@ class GptOrderManager
     $this->db = Registry::get('Db');
     $this->lang = Registry::get('Language');
     if (!Registry::exists('SimpleLogger')) {
-      $this->logger = new SimpleLogger('MCP_ClicShopping');
+      $this->logger = new SimpleLogger('ACP_UCP_ClicShopping');
+    } else {
+      $this->logger = Registry::get('SimpleLogger');
     }
-}
+  }
 
   /**
    * Creates an order from a GPT checkout session.
@@ -59,7 +61,7 @@ class GptOrderManager
    * This is the main public entry point for order creation. It validates the session,
    * performs the database insertions, and logs the process.
    *
-   * @param array $sessionData The checkout session data from the GPT Retailers Agent.
+   * @param array $sessionData The checkout session data from the agent (ACP or UCP).
    * Expected keys: 'id', 'items', 'total', 'subtotal', 'tax', 'shipping_cost', 'currency'.
    * @param array $customerData Customer information (ID, name, address, contact) to associate with the order.
    * @param array $paymentData Payment information (method, CC details) for the order header.
@@ -126,7 +128,7 @@ class GptOrderManager
         'order_id' => null
       ];
     }
-}
+  }
 
   /**
    * Validates the session data before creating an order.
@@ -281,7 +283,7 @@ class GptOrderManager
         'attributes' => []
       ];
     }
-}
+  }
 
   /**
    * Sets up customer information (deprecated/unused).
@@ -432,9 +434,9 @@ class GptOrderManager
   private function getOrderData(int $orderId): ?array
   {
     $Qorder = $this->db->prepare('
-      SELECT o.*, 
-             c.customers_firstname, 
-             c.customers_lastname, 
+      SELECT o.*,
+             c.customers_firstname,
+             c.customers_lastname,
              c.customers_email_address
       FROM :table_orders o
       LEFT JOIN :table_customers c ON o.customers_id = c.customers_id
@@ -478,8 +480,7 @@ class GptOrderManager
       $this->db->save('orders', $sql_data_array, ['orders_id' => $orderId]);
 
       // Insert order status history entry
-      // Open Ai Gpt Retails Orders
-      $this->insertOrderStatusHistory($orderId, $status, 'Open Ai Gpt Retails Orders', 0);
+      $this->insertOrderStatusHistory($orderId, $status, 'Agent-driven retail order (ACP/UCP)', 0);
 
       $this->logger->info('Order status updated', [
         'event' => 'gpt_order_status_updated',
@@ -496,7 +497,7 @@ class GptOrderManager
       ]);
       return false;
     }
-}
+  }
 
   /**
    * Retrieves order by ID (public access).
@@ -601,7 +602,7 @@ class GptOrderManager
       $this->insertOrderProducts($orderId, $items);
 
       // --- 4. Insert initial order status history entry ---
-      $this->insertOrderStatusHistory($orderId, 1, 'Open Ai Gpt Retails Orders', 0);
+      $this->insertOrderStatusHistory($orderId, 1, 'Agent-driven retail order (ACP/UCP)', 0);
 
       return $orderId;
 
@@ -614,7 +615,7 @@ class GptOrderManager
       ]);
       return false;
     }
-}
+  }
 
   /**
    * Inserts the order's financial totals (sub-total, tax, shipping, total) into the :table_orders_total table.
@@ -670,7 +671,7 @@ class GptOrderManager
 
       $this->db->save('orders_total', $sql_data_array);
     }
-}
+  }
 
   /**
    * Inserts individual product items for the order into the :table_orders_products table.
@@ -694,17 +695,17 @@ class GptOrderManager
 
       $this->db->save('orders_products', $sql_data_array);
     }
-}
+  }
 
   /**
    * Inserts an entry into the orders status history table (:table_orders_status_history).
    *
    * @param int $orderId The ID of the order.
    * @param int $statusId The status ID (e.g., 1 for Pending).
-   * @param string $comments The comment to associate with the status change. Default: 'Open Ai Gpt Retails Orders'.
+   * @param string $comments The comment to associate with the status change.
    * @param int $customerNotified Flag to indicate if the customer should be notified (0 or 1). Default: 0.
    */
-  private function insertOrderStatusHistory(int $orderId, int $statusId, string $comments = 'Open Ai Gpt Retails Orders', int $customerNotified = 0): void
+  private function insertOrderStatusHistory(int $orderId, int $statusId, string $comments = 'Agent-driven retail order (ACP/UCP)', int $customerNotified = 0): void
   {
     $sql_data_array = [
       'orders_id' => $orderId,

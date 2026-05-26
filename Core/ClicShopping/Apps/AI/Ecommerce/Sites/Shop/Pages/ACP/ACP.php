@@ -110,7 +110,7 @@ class ACP extends \ClicShopping\OM\Domains\PagesAbstract
     try {
       if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
         $authHeader = trim($_SERVER['HTTP_AUTHORIZATION']);
-        $expectedSecret = \defined('CLICSHOPPING_APP_ECOMMERCE_ACP_SHARED_KEY_RETAIL') ? CLICSHOPPING_APP_ECOMMERCE_ACP_SHARED_KEY_RETAIL : '';
+        $expectedSecret = \defined('CLICSHOPPING_APP_ECOMMERCE_ACP_API_KEY_OPENAI_RETAIL') ? CLICSHOPPING_APP_ECOMMERCE_ACP_API_KEY_OPENAI_RETAIL : '';
 
         $expectedHeader = $expectedSecret !== '' ? 'Bearer ' . $expectedSecret : '';
 

@@ -8,6 +8,8 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shop\ACP;
 
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\Common\GptCustomerManager;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\Common\GptOrderManager;
 use ClicShopping\Apps\Catalog\Manufacturers\Classes\ClicShoppingAdmin\ManufacturerAdmin;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
 use ClicShopping\OM\CLICSHOPPING;
@@ -35,40 +37,25 @@ class GptRetailers
    */
   protected ChatGpt $app;
 
+  private ChatGpt $lang;
+  private ChatGpt $db;
+  private mixed $logger;
+
+  private mixed $orderManager;
   /**
    * @var object The language object from the Registry.
-   */
-  protected object $lang;
-
-  /**
-   * @var object The database connection object from the Registry.
-   */
-  protected object $db;
-
-  /**
-   * @var SimpleLogger The simple logger instance for logging events and errors.
-   */
-  protected SimpleLogger $logger;
-
-  /**
-   * @var GptOrderManager Manages the creation and handling of shop orders.
-   */
-  protected GptOrderManager $orderManager;
-
-  /**
-   * @var GptCustomerManager Manages customer account creation and retrieval.
    */
   protected GptCustomerManager $customerManager;
 
   /**
-   * @var string Directory path for storing session files.
+   * @var GptSessionManagerACP Persists ACP checkout sessions on disk.
    */
-  protected string $dirSession;
+  protected GptSessionManagerACP $sessionManager;
 
   /**
    * GptRetailers constructor.
    * Initializes dependencies, checks application status, configures Stripe,
-   * and sets up the session directory.
+   * and sets up the session manager.
    */
   public function __construct()
   {
@@ -89,15 +76,14 @@ class GptRetailers
 
     $this->orderManager = new GptOrderManager();
     $this->customerManager = new GptCustomerManager();
+    $this->sessionManager = new GptSessionManagerACP();
 
     // Perform initial checks
     $this->checkStatus();
     //$this->checkAppStripe();
 
-    // Setup session directory
-    //$this->dirSession = CLICSHOPPING::BASE_DIR . 'Work/Sessions/Shop/OpenAIACP';
     // Configure Stripe API key dynamically (live or test)
-     //Stripe::setApiKey($this->AppStripeKey());
+    //Stripe::setApiKey($this->AppStripeKey());
   }
 
   // ---
@@ -1387,7 +1373,7 @@ class GptRetailers
    */
   public function createSession(array $input): array
   {
-    $sessionId = uniqid('cs_');
+    $sessionId = $this->sessionManager->generateSessionId();
     $items = $this->normalizeItemsInput($input['items'] ?? []);
     $shipping = $input['shipping_address'] ?? [];
     $fulfillmentAddress = $input['fulfillment_address'] ?? $shipping;
@@ -1422,7 +1408,7 @@ class GptRetailers
       "metadata" => $input['metadata'] ?? []
     ];
 
-    file_put_contents( $this->dirSession . '/' . $sessionId . '.json', json_encode(["checkout_session"=>$session], JSON_UNESCAPED_SLASHES));
+    $this->sessionManager->save($sessionId, $session);
 
     return $session;
   }
@@ -1438,13 +1424,11 @@ class GptRetailers
    */
   public function updateSession(string $sessionId, array $input): ?array
   {
-    $file =  $this->dirSession . '/' . $sessionId . '.json';
+    $session = $this->sessionManager->get($sessionId);
 
-    if (!file_exists($file)) {
+    if ($session === null) {
       return null;
     }
-
-    $session = json_decode(file_get_contents($file), true)['checkout_session'];
 
     $array_data = [
       'items',
@@ -1500,7 +1484,7 @@ class GptRetailers
       $session['payment_provider'] = $this->buildPaymentProvider();
     }
 
-    file_put_contents($file, json_encode(["checkout_session" => $session], JSON_UNESCAPED_SLASHES));
+    $this->sessionManager->save($sessionId, $session);
     return $session;
   }
 
@@ -1516,13 +1500,12 @@ class GptRetailers
    */
   public function completeSessionWithStripe(string $sessionId, array $input): ?array
   {
-    $file =  $this->dirSession . '/' . $sessionId . '.json';
+    $session = $this->sessionManager->get($sessionId);
 
-    if (!file_exists($file)) {
+    if ($session === null) {
       return null;
     }
 
-    $session = json_decode(file_get_contents($file), true)['checkout_session'];
     $totalCents = intval($session['total'] * 100);
 
     // Create Stripe PaymentIntent
@@ -1563,7 +1546,7 @@ class GptRetailers
       $session['fulfillment_option_id'] = $session['fulfillment_options'][0]['id'];
     }
 
-    file_put_contents($file, json_encode(["checkout_session" => $session], JSON_UNESCAPED_SLASHES));
+    $this->sessionManager->save($sessionId, $session);
     return $session;
   }
 
@@ -1579,13 +1562,11 @@ class GptRetailers
    */
   public function completeSessionWithDelegatedPayment(string $sessionId, array $input): ?array
   {
-    $file =  $this->dirSession . '/' . $sessionId . '.json';
+    $session = $this->sessionManager->get($sessionId);
 
-    if (!file_exists($file)) {
+    if ($session === null) {
       return null;
     }
-
-    $session = json_decode(file_get_contents($file), true)['checkout_session'];
 
     $delegated = $input['delegated_payment'] ?? null;
     $paymentData = $input['payment_data'] ?? null;
@@ -1624,7 +1605,7 @@ class GptRetailers
       $session['fulfillment_option_id'] = $session['fulfillment_options'][0]['id'];
     }
 
-    file_put_contents($file, json_encode(["checkout_session" => $session], JSON_UNESCAPED_SLASHES));
+    $this->sessionManager->save($sessionId, $session);
     return $session;
   }
 
@@ -1640,28 +1621,7 @@ class GptRetailers
    */
   public function listSessions(bool $fullData = true): array
   {
-    $sessions = [];
-
-    if (!is_dir($this->dirSession)) {
-      return $sessions;
-    }
-
-    $files = glob($this->dirSession . '/*.json');
-
-    foreach ($files as $file) {
-      $sessionId = basename($file, '.json');
-
-      if ($fullData) {
-        $sessionData = json_decode(file_get_contents($file), true);
-        if ($sessionData && isset($sessionData['checkout_session'])) {
-          $sessions[] = $sessionData['checkout_session'];
-        }
-      } else {
-        $sessions[] = $sessionId;
-      }
-    }
-
-    return $sessions;
+    return $this->sessionManager->listAll($fullData);
   }
 
   /**
@@ -1672,19 +1632,7 @@ class GptRetailers
    */
   public function getSessionById(string $sessionId): ?array
   {
-    $file = $this->dirSession . '/' . $sessionId . '.json';
-
-    if (!file_exists($file)) {
-      return null;
-    }
-
-    $sessionData = json_decode(file_get_contents($file), true);
-
-    if ($sessionData && isset($sessionData['checkout_session'])) {
-      return $sessionData['checkout_session'];
-    }
-
-    return null;
+    return $this->sessionManager->get($sessionId);
   }
 
   /**
@@ -1695,13 +1643,7 @@ class GptRetailers
    */
   public function deleteSession(string $sessionId): bool
   {
-    $file = $this->dirSession . '/' . $sessionId . '.json';
-
-    if (!file_exists($file)) {
-      return false;
-    }
-
-    return unlink($file);
+    return $this->sessionManager->delete($sessionId);
   }
 
   /**
@@ -1734,18 +1676,17 @@ class GptRetailers
         http_response_code(404); exit('No session ID');
       }
 
-      $file =  $this->dirSession . '/' . $sessionId . '.json';
+      $session = $this->sessionManager->get($sessionId);
 
-      if (!file_exists($file)) {
+      if ($session === null) {
         http_response_code(404);
         exit('Session not found');
       }
 
-      $session = json_decode(file_get_contents($file), true)['checkout_session'];
       $session['payment']['status'] = 'succeeded';
       $session['payment']['transaction_id'] = $pi->id;
 
-      file_put_contents($file, json_encode(["checkout_session" => $session], JSON_UNESCAPED_SLASHES));
+      $this->sessionManager->save($sessionId, $session);
     }
 
     http_response_code(200);
@@ -1760,16 +1701,15 @@ class GptRetailers
    */
   public function cancelSession(string $sessionId): ?array
   {
-    $file = $this->dirSession . '/' . $sessionId . '.json';
+    $session = $this->sessionManager->get($sessionId);
 
-    if (!file_exists($file)) {
+    if ($session === null) {
       return null;
     }
 
-    $session = json_decode(file_get_contents($file), true)['checkout_session'];
     $session['status'] = 'canceled';
 
-    file_put_contents($file, json_encode(["checkout_session" => $session], JSON_UNESCAPED_SLASHES));
+    $this->sessionManager->save($sessionId, $session);
     return $session;
   }
 
@@ -1935,11 +1875,7 @@ class GptRetailers
         $session['customer_id'] = $customerResult['customer_id'];
         $session['status'] = 'order_created';
 
-        $file = $this->dirSession . '/' . $sessionId . '.json';
-        file_put_contents($file, json_encode(["checkout_session" => $session], JSON_UNESCAPED_SLASHES));
-
-        // 5. Send final webhook event
-        $this->sendWebhookEvent('order.created', $session);
+        $this->sessionManager->save($sessionId, $session);
       }
 
       return $result;

@@ -6,7 +6,7 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shop\ACP;
+namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shop\Common;
 
 
 use ClicShopping\Apps\Configuration\TemplateEmail\Classes\Shop\TemplateEmail;
@@ -21,7 +21,7 @@ use ClicShopping\OM\SimpleLogger;
  * Class GptCustomerManager
  *
  * Manages the creation, validation, and database persistence of customer accounts
- * originating from the OpenAI Retailers Agent Controlled Purchase (ACP) checkout sessions.
+ * originating from agent-driven checkout sessions (ACP/OpenAI and UCP/Google).
  * This includes inserting records into the 'customers', 'address_book', and 'customers_info'
  * tables, along with handling temporary passwords and sending welcome emails.
  */
@@ -60,8 +60,10 @@ class GptCustomerManager
     $this->mail = Registry::get('Mail');
     if (!Registry::exists('SimpleLogger')) {
       $this->logger = new SimpleLogger();
+    } else {
+      $this->logger = Registry::get('SimpleLogger');
     }
-}
+  }
 
   /**
    * Creates a customer account from GPT session data.
@@ -144,7 +146,7 @@ class GptCustomerManager
         'customer_id' => null
       ];
     }
-}
+  }
 
   /**
    * Validates customer data for required fields and email format.
@@ -172,7 +174,7 @@ class GptCustomerManager
           'message' => "Required field missing: $label"
         ];
       }
-}
+    }
 
     // Validate email format
     if (!Is::EmailAddress($customerData['email_address'])) {
@@ -194,8 +196,8 @@ class GptCustomerManager
   public function emailExists(string $email): bool
   {
     $Qcheckemail = $this->db->prepare('
-      SELECT customers_id 
-      FROM :table_customers 
+      SELECT customers_id
+      FROM :table_customers
       WHERE customers_email_address = :customers_email_address
     ');
     $Qcheckemail->bindValue(':customers_email_address', $email);
@@ -254,7 +256,7 @@ class GptCustomerManager
    */
   private function createAddressBookEntry(int $customerId, array $customerData): void
   {
-    // Get dynamic country ID from OpenAI address data
+    // Resolve country ID from agent-provided address data
     $countryId = $this->getCountryIdFromAddress($customerData);
 
     $sql_data_array_book = [
@@ -356,7 +358,7 @@ class GptCustomerManager
         'error' => $e->getMessage()
       ]);
     }
-}
+  }
 
   /**
    * Generates a tokenized URL for one-time password setup.
@@ -381,7 +383,7 @@ class GptCustomerManager
    */
   public function getCustomerById(int $customerId): ?array
   {
-    $Qcustomer = $this->db->prepare(' SELECT c.*, 
+    $Qcustomer = $this->db->prepare(' SELECT c.*,
                                         ci.* FROM :table_customers c
                                       LEFT JOIN :table_customers_info ci ON c.customers_id = ci.customers_info_id
                                       WHERE c.customers_id = :customers_id
@@ -437,32 +439,32 @@ class GptCustomerManager
       ]);
       return false;
     }
-}
+  }
 
   /**
-   * Gets the internal country ID from the external OpenAI address data.
+   * Resolves the internal country ID from agent-provided address data.
    *
    * It attempts resolution using:
    * 1. ISO 2-letter code (`addressData['country']`).
    * 2. Country name (`addressData['country_name']`).
    * 3. Falls back to a hardcoded default (France ID 73).
    *
-   * @param array $addressData Address data from OpenAI checkout.
+   * @param array $addressData Address data from an agent-driven checkout (ACP or UCP).
    * @return int The validated internal ClicShopping Country ID.
    */
   public function getCountryIdFromAddress(array $addressData): int
   {
     try {
-      // First try to get country from ISO 2-letter code (OpenAI standard)
+      // First try to resolve country from ISO 2-letter code (ACP/UCP standard)
       if (!empty($addressData['country'])) {
         $countryCode = strtoupper($addressData['country']);
 
         // Validate country code format (ISO 3166-1 alpha-2)
         if (strlen($countryCode) === 2) {
           $Qcountry = $this->db->prepare('
-            SELECT countries_id 
-            FROM :table_countries 
-            WHERE countries_iso_code_2 = :country_code 
+            SELECT countries_id
+            FROM :table_countries
+            WHERE countries_iso_code_2 = :country_code
             AND status = 1
           ');
           $Qcountry->bindValue(':country_code', $countryCode);
@@ -476,7 +478,7 @@ class GptCustomerManager
               $this->validateZoneForCountry($countryId, $addressData['state']);
             }
 
-            $this->logger->info('Country ID resolved from OpenAI address', [
+            $this->logger->info('Country ID resolved from agent address', [
               'country_code' => $countryCode,
               'country_id' => $countryId,
               'state' => $addressData['state'] ?? null
@@ -484,15 +486,15 @@ class GptCustomerManager
 
             return $countryId;
           }
-}
+        }
       }
 
       // Try country name fallback
       if (!empty($addressData['country_name'])) {
         $Qcountry = $this->db->prepare('
-          SELECT countries_id 
-          FROM :table_countries 
-          WHERE countries_name = :country_name 
+          SELECT countries_id
+          FROM :table_countries
+          WHERE countries_name = :country_name
           AND status = 1
         ');
         $Qcountry->bindValue(':country_name', $addressData['country_name']);
@@ -501,7 +503,7 @@ class GptCustomerManager
         if ($Qcountry->fetch()) {
           return $Qcountry->valueInt('countries_id');
         }
-}
+      }
 
       // Default fallback to France (ID 73) as per business requirements
       $this->logger->warning('Country not found, using default France', [
@@ -519,7 +521,7 @@ class GptCustomerManager
 
       return 73; // France fallback
     }
-}
+  }
 
   /**
    * Validates if a provided state/zone code exists for the given country.
@@ -534,9 +536,9 @@ class GptCustomerManager
   {
     try {
       $Qzone = $this->db->prepare('
-        SELECT zone_id 
-        FROM :table_zones 
-        WHERE zone_country_id = :country_id 
+        SELECT zone_id
+        FROM :table_zones
+        WHERE zone_country_id = :country_id
         AND (zone_code = :state_code OR zone_name = :state_code)
         AND zone_status = 1
       ');
@@ -564,7 +566,7 @@ class GptCustomerManager
 
       return false;
     }
-}
+  }
 
   /**
    * Gets a list of all active countries from the database.
@@ -576,7 +578,7 @@ class GptCustomerManager
     try {
       $Qcountries = $this->db->prepare('
         SELECT countries_id, countries_name, countries_iso_code_2, countries_iso_code_3
-        FROM :table_countries 
+        FROM :table_countries
         WHERE status = 1
         ORDER BY countries_name
       ');
@@ -591,7 +593,7 @@ class GptCustomerManager
 
       return [];
     }
-}
+  }
 
   /**
    * Gets a list of all active zones (states/provinces) for a specific country.
@@ -604,7 +606,7 @@ class GptCustomerManager
     try {
       $Qzones = $this->db->prepare('
         SELECT zone_id, zone_code, zone_name
-        FROM :table_zones 
+        FROM :table_zones
         WHERE zone_country_id = :country_id
         AND zone_status = 1
         ORDER BY zone_name
@@ -622,5 +624,5 @@ class GptCustomerManager
 
       return [];
     }
-}
+  }
 }
