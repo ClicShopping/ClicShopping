@@ -1744,7 +1744,6 @@ INSERT INTO configuration VALUES(1774, 'Sales Weighting', 'CLICSHOPPING_APP_RECO
 INSERT INTO configuration VALUES(1775, 'External Sources Weighting', 'CLICSHOPPING_APP_RECOMMENDATIONS_PR_WEIGHT_EXTERNAL', '0.3', 'Weight applied to the score derived from external recommendations (average of recommendation scores normalized between min and max). Used in the Multiple strategy.', 6, 0, NULL, '2025-09-15 17:07:51', NULL, NULL);
 
 
-
 INSERT INTO configuration VALUES(1776, 'Sort Order', 'CLICSHOPPING_APP_MCP_MC_SORT_ORDER', '500', 'The sort order location of the module shown in the available methods listing (lowest is displayed first).', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
 INSERT INTO configuration VALUES(1777, 'Status', 'CLICSHOPPING_APP_MCP_MC_STATUS', 'True', 'Set True to enable or not the module', 6, 0, NULL, '2025-09-18 18:14:27', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
 INSERT INTO configuration VALUES(1778, 'Parameter [MCP App]', 'MODULE_MODULES_MCP_INSTALLED', 'Tools\\MCP\\MC', 'Parameter [MCP App]', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
@@ -1765,6 +1764,9 @@ INSERT INTO configuration VALUES(1791, 'Chorus Pro Technical Password', 'CHORUSP
 INSERT INTO configuration VALUES(1792, 'Supplier SIRET', 'CHORUSPRO_SIRET_FOURNISSEUR', '','Your company SIRET number (14 digits). Chorus Pro', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
 INSERT INTO configuration VALUES(1793, 'Chorus Pro Supplier ID', 'CHORUSPRO_FOURNISSEUR_ID', '', 'Internal numeric identifier of your supplier entity in Chorus Pro (idFournisseur).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
 INSERT INTO configuration VALUES(1794, 'Chorus Pro Bank Account Code', 'CHORUSPRO_BANK_ACCOUNT_CODE', '', 'Numeric code of the bank account details registered in Chorus Pro (codeCoordonneesBancairesFournisseur).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO configuration VALUES(1795, 'IP Verification Mode', 'CLICSHOPPING_APP_MCP_MC_IP_CHECK_MODE', 'subnet', 'Controls how the client IP is verified on each session request. <strong>strict</strong> = exact match (maximum security, may break mobile clients / NAT / CDN setups). <strong>subnet</strong> = same /24 (IPv4) or /64 (IPv6) — recommended default value. <strong>off</strong> = no IP verification (only the token is checked, OAuth-style behavior).', 6, 0, NULL, '2026-05-26 17:03:52', NULL, NULL);
+INSERT INTO onfiguration VALUES(1796, 'IP Verification Mode', 'CLICSHOPPING_APP_API_AI_IP_CHECK_MODE', 'subnet', 'Controls how the client IP is verified on each session request. <strong>strict</strong> = exact match (maximum security, may break mobile clients / NAT / CDN setups). <strong>subnet</strong> = same /24 (IPv4) or /64 (IPv6) — recommended default value. <strong>off</strong> = no IP verification (only the token is checked, OAuth-style behavior).', 6, 0, NULL, NOW(), NULL, NULL);
+
 
 
 INSERT INTO configuration_group VALUES(1, 'Store Setup', 'General Information on the Store.', 1, 1);

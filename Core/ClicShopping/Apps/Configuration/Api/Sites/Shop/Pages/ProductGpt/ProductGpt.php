@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Configuration\Api\Sites\Shop\Pages\ProductGpt;
 
+use ClicShopping\Apps\Configuration\Api\Classes\Shop\ApiSecurity;
 use ClicShopping\Apps\Configuration\Api\Classes\Shop\ApiShop;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
@@ -27,24 +28,37 @@ class ProductGpt extends \ClicShopping\OM\Domains\PagesAbstract
     $this->Db = Registry::get('Db');
 
     if (!\defined('CLICSHOPPING_APP_API_AI_STATUS') || CLICSHOPPING_APP_API_AI_STATUS == 'False') {
-      return $this->sendErrorResponse('API is disabled');
+      return $this->sendErrorResponse('API is disabled', 503);
     }
 
-    $requestMethod = ApiShop::requestMethod();
-    $token = HTML::sanitize($_GET['token'] ?? null);
-
-    if (!$token || !ApiShop::checkToken($token)) {
-      return $this->sendErrorResponse('Invalid or missing token');
+    try {
+      $requestMethod = ApiShop::requestMethod();
+    } catch (\Exception $e) {
+      return $this->sendErrorResponse('Unsupported request method', 405);
     }
+
+    $token = HTML::sanitize(ApiSecurity::extractToken());
+
+    if ($token === '') {
+      return $this->sendErrorResponse('Invalid or missing token', 401);
+    }
+
+    try {
+      $validToken = ApiShop::checkToken($token);
+    } catch (\Exception $e) {
+      return $this->sendErrorResponse('Invalid or missing token', 401);
+    }
+
+    ApiSecurity::emitSessionHeaders($validToken);
 
     // Handle request method logic
-    $statusCheck = $this->getStatusCheck($token);
+    $statusCheck = $this->getStatusCheck($validToken);
 
     switch ($requestMethod) {
       case 'GET':
         return $this->handleGetRequest($statusCheck);
       default:
-        return $this->sendErrorResponse('Unsupported request method');
+        return $this->sendErrorResponse('Unsupported request method', 405);
     }
   }
 
@@ -92,8 +106,10 @@ class ProductGpt extends \ClicShopping\OM\Domains\PagesAbstract
    * @param string $message The error message to be included in the response.
    * @return array The HTTP response indicating an error.
    */
-  private function sendErrorResponse(string $message): array
+  private function sendErrorResponse(string $message, int $code = 400): array
   {
+    http_response_code($code);
+    header('Content-Type: application/json');
     echo json_encode(['status' => 'error', 'message' => $message]);
     exit;
   }

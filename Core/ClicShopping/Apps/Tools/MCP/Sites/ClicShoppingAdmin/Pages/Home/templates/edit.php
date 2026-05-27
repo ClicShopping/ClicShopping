@@ -173,79 +173,71 @@ if (!empty($cId)) {
             </div>
           </div>
           
-          <!-- Data Permissions Table -->
+          <!-- MCP Data Permissions -->
           <div class="card mt-3">
             <div class="card-header">
               <h6 class="mb-0"><?php echo $CLICSHOPPING_Mcp->getDef('text_data_permissions'); ?></h6>
             </div>
             <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-sm">
-                  <thead class="table-light">
-                    <tr>
-                      <th><?php echo $CLICSHOPPING_Mcp->getDef('text_permission_type'); ?></th>
-                      <th class="text-center"><?php echo $CLICSHOPPING_Mcp->getDef('text_status'); ?></th>
-                      <th><?php echo $CLICSHOPPING_Mcp->getDef('text_description'); ?></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><strong><?php echo $CLICSHOPPING_Mcp->getDef('text_select_data'); ?></strong></td>
-                      <td class="text-center">
-                        <div class="form-check form-switch d-inline-block">
-                          <?php echo HTML::checkboxField('select_data', '1', $Qmcp->valueInt('select_data'), 'class="form-check-input"'); ?>
+              <?php
+              // One card per MCP permission flag. Same visual language as
+              // Configuration/Api's text_api_permissions block (Bootstrap card
+              // grid, colored header, icon + switch + short description).
+              $mcp_permission_flags = [
+                'select_data' => [
+                  'title' => $CLICSHOPPING_Mcp->getDef('text_select_data'),
+                  'desc'  => $CLICSHOPPING_Mcp->getDef('text_select_data_desc'),
+                  'icon'  => 'bi-eye',
+                  'color' => 'success',
+                ],
+                'create_data' => [
+                  'title' => $CLICSHOPPING_Mcp->getDef('text_create_data'),
+                  'desc'  => $CLICSHOPPING_Mcp->getDef('text_create_data_desc'),
+                  'icon'  => 'bi-plus-circle',
+                  'color' => 'info',
+                ],
+                'update_data' => [
+                  'title' => $CLICSHOPPING_Mcp->getDef('text_update_data'),
+                  'desc'  => $CLICSHOPPING_Mcp->getDef('text_update_data_desc'),
+                  'icon'  => 'bi-pencil-square',
+                  'color' => 'warning',
+                ],
+                'delete_data' => [
+                  'title' => $CLICSHOPPING_Mcp->getDef('text_delete_data'),
+                  'desc'  => $CLICSHOPPING_Mcp->getDef('text_delete_data_desc'),
+                  'icon'  => 'bi-trash',
+                  'color' => 'danger',
+                ],
+                'create_db' => [
+                  'title' => $CLICSHOPPING_Mcp->getDef('text_create_db'),
+                  'desc'  => $CLICSHOPPING_Mcp->getDef('text_create_db_desc'),
+                  'icon'  => 'bi-database-add',
+                  'color' => 'dark',
+                ],
+              ];
+              ?>
+
+              <div class="row">
+                <?php foreach ($mcp_permission_flags as $flag => $config): ?>
+                  <div class="col-lg-6 col-md-12 mb-3">
+                    <div class="card border-<?php echo $config['color']; ?> h-100">
+                      <div class="card-header bg-<?php echo $config['color']; ?> text-white">
+                        <h6 class="mb-0">
+                          <i class="<?php echo $config['icon']; ?> me-2"></i>
+                          <?php echo $config['title']; ?>
+                        </h6>
+                      </div>
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <small class="text-muted me-3"><?php echo $config['desc']; ?></small>
+                          <div class="form-check form-switch flex-shrink-0">
+                            <?php echo HTML::checkboxField($flag, '1', $Qmcp->valueInt($flag), 'class="form-check-input" role="switch"'); ?>
+                          </div>
                         </div>
-                      </td>
-                      <td><small
-                          class="text-muted"><?php echo $CLICSHOPPING_Mcp->getDef('text_select_data_desc'); ?></small>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><strong><?php echo $CLICSHOPPING_Mcp->getDef('text_update_data'); ?></strong></td>
-                      <td class="text-center">
-                        <div class="form-check form-switch d-inline-block">
-                          <?php echo HTML::checkboxField('update_data', '1', $Qmcp->valueInt('update_data'), 'class="form-check-input"'); ?>
-                        </div>
-                      </td>
-                      <td><small
-                          class="text-muted"><?php echo $CLICSHOPPING_Mcp->getDef('text_update_data_desc'); ?></small>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><strong><?php echo $CLICSHOPPING_Mcp->getDef('text_create_data'); ?></strong></td>
-                      <td class="text-center">
-                        <div class="form-check form-switch d-inline-block">
-                          <?php echo HTML::checkboxField('create_data', '1', $Qmcp->valueInt('create_data'), 'class="form-check-input"'); ?>
-                        </div>
-                      </td>
-                      <td><small
-                          class="text-muted"><?php echo $CLICSHOPPING_Mcp->getDef('text_create_data_desc'); ?></small>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><strong><?php echo $CLICSHOPPING_Mcp->getDef('text_delete_data'); ?></strong></td>
-                      <td class="text-center">
-                        <div class="form-check form-switch d-inline-block">
-                          <?php echo HTML::checkboxField('delete_data', '1', $Qmcp->valueInt('delete_data'), 'class="form-check-input"'); ?>
-                        </div>
-                      </td>
-                      <td><small
-                          class="text-muted"><?php echo $CLICSHOPPING_Mcp->getDef('text_delete_data_desc'); ?></small>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><strong><?php echo $CLICSHOPPING_Mcp->getDef('text_create_db'); ?></strong></td>
-                      <td class="text-center">
-                        <div class="form-check form-switch d-inline-block">
-                          <?php echo HTML::checkboxField('create_db', '1', $Qmcp->valueInt('create_db'), 'class="form-check-input"'); ?>
-                        </div>
-                      </td>
-                      <td><small
-                          class="text-muted"><?php echo $CLICSHOPPING_Mcp->getDef('text_create_db_desc'); ?></small>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                      </div>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
               </div>
             </div>
           </div>

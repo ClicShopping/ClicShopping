@@ -15,6 +15,11 @@
   ],
   "modules": {
     "Hooks": {
+      "Hooks": {
+        "Shop/Cronjob": {
+          "Process": "Module\\Hooks\\Shop\\Cronjob\\Process"
+        }
+      }
     }
   },
   "routes": {

@@ -49,11 +49,12 @@ licensing terms.
 
 **Governing Law and Jurisdiction**
 
-This license and all related documents are governed by the residence of the city of the owner. Any
-dispute arising out of or in connection with this license shall be
-subject to the exclusive jurisdiction of the courts of residence of the city of the owner,
-unless mandatory consumer protection rules in the user\'s jurisdiction
-require otherwise.
+This license and all related documents are governed by the law of the
+country of habitual residence of the copyright holder at the date on
+which a dispute arises. Any dispute arising out of or in connection
+with this license shall be subject to the exclusive jurisdiction of the
+competent courts of that jurisdiction, unless mandatory consumer
+protection rules in the user\'s jurisdiction require otherwise.
 
 **Disclaimer**
 

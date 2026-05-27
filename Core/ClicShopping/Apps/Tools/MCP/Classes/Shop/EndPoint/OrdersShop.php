@@ -8,6 +8,8 @@
 namespace ClicShopping\Apps\Tools\MCP\Classes\Shop\EndPoint;
 
 
+use ClicShopping\Apps\Orders\Orders\Classes\Common\EInvoiceService;
+use ClicShopping\Apps\Orders\Orders\Classes\Common\OrdersStatus;
 use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\Message;
 use ClicShopping\Apps\Tools\MCP\MCP;
 use ClicShopping\OM\Hash;
@@ -21,18 +23,6 @@ use ClicShopping\OM\Registry;
  */
 class OrdersShop
 {
-  // Orders status — defined in :table_orders_status, may be renamed but not deleted by admins.
-  private const ORDERS_STATUS_PENDING    = 1;
-  private const ORDERS_STATUS_CANCELLED  = 2;
-  private const ORDERS_STATUS_DELIVERED  = 3;
-  private const ORDERS_STATUS_PROCESSING = 4;
-
-  // Invoice status — defined in :table_orders_status_invoice, may be renamed but not deleted.
-  private const INVOICE_STATUS_ORDER       = 1;
-  private const INVOICE_STATUS_INVOICE     = 2;
-  private const INVOICE_STATUS_CANCELLED   = 3;
-  private const INVOICE_STATUS_CREDIT_NOTE = 4;
-
   /**
    * @var mixed The database connection instance.
    */
@@ -308,25 +298,25 @@ class OrdersShop
 
     $currentStatus = (int)$Qorder->valueInt('orders_status');
 
-    if ($currentStatus === self::ORDERS_STATUS_DELIVERED) {
+    if ($currentStatus === OrdersStatus::DELIVERED) {
       $this->message->sendError('Delivered orders cannot be cancelled.', 409);
       return;
     }
-    if ($currentStatus === self::ORDERS_STATUS_CANCELLED) {
+    if ($currentStatus === OrdersStatus::CANCELLED) {
       $this->message->sendError('Order is already cancelled.', 409);
       return;
     }
 
     $this->db->save('orders', [
-      'orders_status'         => self::ORDERS_STATUS_CANCELLED,
-      'orders_status_invoice' => self::INVOICE_STATUS_CANCELLED,
+      'orders_status'         => OrdersStatus::CANCELLED,
+      'orders_status_invoice' => EInvoiceService::STATUS_CANCEL,
       'last_modified'         => 'now()',
     ], ['orders_id' => $orderId]);
 
     $this->db->save('orders_status_history', [
       'orders_id'                => $orderId,
-      'orders_status_id'         => self::ORDERS_STATUS_CANCELLED,
-      'orders_status_invoice_id' => self::INVOICE_STATUS_CANCELLED,
+      'orders_status_id'         => OrdersStatus::CANCELLED,
+      'orders_status_invoice_id' => EInvoiceService::STATUS_CANCEL,
       'admin_user_name'          => '',
       'date_added'               => 'now()',
       'customer_notified'        => 0,
@@ -336,8 +326,8 @@ class OrdersShop
     $this->message->sendSuccess([
       'action'                => 'cancel_order',
       'order_id'              => $orderId,
-      'orders_status'         => self::ORDERS_STATUS_CANCELLED,
-      'orders_status_invoice' => self::INVOICE_STATUS_CANCELLED,
+      'orders_status'         => OrdersStatus::CANCELLED,
+      'orders_status_invoice' => EInvoiceService::STATUS_CANCEL,
     ]);
   }
 

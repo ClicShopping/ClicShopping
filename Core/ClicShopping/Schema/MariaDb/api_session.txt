@@ -7,6 +7,7 @@ date_modified datetime not_null comment(Timestamp of last session activity)
 
 --
 primary api_session_id
+unique idx_session_id session_id
 ##
 engine innodb
 character_set utf8mb4

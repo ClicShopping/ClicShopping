@@ -6,7 +6,7 @@ date_added datetime not_null comment(Timestamp when the session was created)
 date_modified datetime not_null comment(Timestamp of last session activity)
 --
 primary mcp_session_id
-idx_mcp_session_id mcp_session_id
+unique idx_mcp_session_id mcp_session_id
 idx_mcp_id mcp_id
 ##
 engine innodb

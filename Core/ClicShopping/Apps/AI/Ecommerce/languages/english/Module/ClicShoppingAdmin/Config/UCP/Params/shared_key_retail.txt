@@ -1,2 +1,0 @@
-cfg_ecommerce_ucp_api_shared_key_retails_title = UCP shared key
-cfg_ecommerce_ucp_api_shared_key_retails_description = Shared key used to authenticate UCP agents

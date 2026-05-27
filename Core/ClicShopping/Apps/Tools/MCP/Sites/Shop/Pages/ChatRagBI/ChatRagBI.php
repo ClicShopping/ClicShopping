@@ -200,7 +200,8 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
         $authentification = new Authentification($username, $key);
         $mcpSessionId = $authentification->authenticateAndCreateSession();
         // L'utilisateur est maintenant authentifié, on utilise le $username fourni
-        $this->authenticatedUsername = $username;
+        $this->authenticatedUsername  = $username;
+        $this->authenticatedSessionId = $mcpSessionId;
       } catch (\Exception $e) {
         McpSecurity::logSecurityEvent(
           'API Access Denied - Authentication Failed',
@@ -219,7 +220,8 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
         $validSessionId = McpSecurity::checkToken($mcpSessionId);
 
         // IMPORTANT : Récupérer le nom d'utilisateur associé au token pour la vérification des permissions.
-        $this->authenticatedUsername = McpSecurity::getUsernameFromSession($validSessionId);
+        $this->authenticatedUsername  = McpSecurity::getUsernameFromSession($validSessionId);
+        $this->authenticatedSessionId = $validSessionId;
 
         if (empty($this->authenticatedUsername)) {
           throw new \Exception("Session token is valid but associated username could not be found.");
@@ -233,6 +235,10 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
         return;
       }
     }
+
+    // Expose the current session token so clients can reuse it instead of
+    // re-authenticating on every call (covers silent renewal too).
+    McpSecurity::emitSessionHeaders($this->authenticatedSessionId);
 
     // =========================================================================
     // END: LOGIQUE D'AUTHENTIFICATION ET DE GESTION DE SESSION
@@ -256,9 +262,10 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
       return;
     }
 
-    // Vérification de la permission MCP principale pour l'action demandée
-    // Use the MCP context key expected by McpPermissions
-    if (!$this->mcpPermissions->hasPermissionForEndpoint($this->authenticatedUsername, 'RagBI', $action)) {
+    // Vérification de la permission spécifique RAG-BI pour l'action demandée
+    // (RagBIPermissions owns its action whitelist and delegates evaluation to
+    // McpPermissions::evaluateEndpointAction — Core stays endpoint-agnostic.)
+    if (!$this->ragBIPermissions->canPerformAction($this->authenticatedUsername, $action)) {
       McpSecurity::logSecurityEvent('API Access Denied - Permission check failed', [
         'username' => $this->authenticatedUsername,
         'action' => $action

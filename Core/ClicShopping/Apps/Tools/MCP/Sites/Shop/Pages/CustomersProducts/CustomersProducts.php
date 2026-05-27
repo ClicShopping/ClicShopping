@@ -17,9 +17,9 @@
 namespace ClicShopping\Apps\Tools\MCP\Sites\Shop\Pages\CustomersProducts;
 
 
+use ClicShopping\Apps\Tools\MCP\Classes\Shop\EndPoint\CustomersProductsPermissions;
 use ClicShopping\Apps\Tools\MCP\Classes\Shop\EndPoint\Products;
 use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\Authentification;
-use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\McpPermissions;
 use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\McpSecurity;
 use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\Message;
 use ClicShopping\Apps\Tools\MCP\MCP;
@@ -52,8 +52,8 @@ class CustomersProducts extends \ClicShopping\OM\Domains\PagesAbstract
    * @var bool
    */
   public mixed $message;
-  /** @var McpPermissions The McpPermissions instance for access control. */
-  public McpPermissions $mcpPermissions;
+  /** @var CustomersProductsPermissions Endpoint-owned permission manager. */
+  private CustomersProductsPermissions $permissions;
   /**
    * Determines if the site template should be used.
    * @var bool
@@ -66,6 +66,8 @@ class CustomersProducts extends \ClicShopping\OM\Domains\PagesAbstract
   protected ?string $file = null;
   /** @var string The username authenticated via session or key. */
   private string $authenticatedUsername = '';
+  /** @var string|null MCP session token (existing one from request, or freshly created). */
+  private ?string $authenticatedSessionId = null;
   /** @var string|null The username resolved from a key-only auth flow. */
   private ?string $resolvedUsernameFromKey = null;
 
@@ -109,11 +111,8 @@ class CustomersProducts extends \ClicShopping\OM\Domains\PagesAbstract
     }
     $this->message = Registry::get('Message');
 
-    // Initialisation de McpPermissions
-    if (!Registry::exists('McpPermissions')) {
-      Registry::set('McpPermissions', new McpPermissions());
-    }
-    $this->mcpPermissions = Registry::get('McpPermissions');
+    // Endpoint-owned permission manager (its own action whitelist + table whitelist).
+    $this->permissions = new CustomersProductsPermissions();
 
 
     // =========================================================================
@@ -173,7 +172,8 @@ class CustomersProducts extends \ClicShopping\OM\Domains\PagesAbstract
         $authentification = new Authentification($username, $key);
         $mcpSessionId = $authentification->authenticateAndCreateSession();
         // L'utilisateur est maintenant authentifié, on utilise le $username fourni
-        $this->authenticatedUsername = $username;
+        $this->authenticatedUsername  = $username;
+        $this->authenticatedSessionId = $mcpSessionId;
       } catch (\Exception $e) {
         McpSecurity::logSecurityEvent(
           'API Access Denied - Authentication Failed',
@@ -190,7 +190,8 @@ class CustomersProducts extends \ClicShopping\OM\Domains\PagesAbstract
         $validSessionId = McpSecurity::checkToken($mcpSessionId);
 
         // IMPORTANT : Récupérer le nom d'utilisateur associé au token pour la vérification des permissions.
-        $this->authenticatedUsername = McpSecurity::getUsernameFromSession($validSessionId);
+        $this->authenticatedUsername  = McpSecurity::getUsernameFromSession($validSessionId);
+        $this->authenticatedSessionId = $validSessionId;
 
         if (empty($this->authenticatedUsername)) {
           throw new \Exception("Session token is valid but associated username could not be found.");
@@ -206,6 +207,10 @@ class CustomersProducts extends \ClicShopping\OM\Domains\PagesAbstract
       }
     }
 
+    // Expose the current session token so clients can reuse it instead of
+    // re-authenticating on every call (covers silent renewal too).
+    McpSecurity::emitSessionHeaders($this->authenticatedSessionId);
+
     // =========================================================================
     // END: LOGIQUE D'AUTHENTIFICATION ET DE GESTION DE SESSION
     // =========================================================================
@@ -215,8 +220,8 @@ class CustomersProducts extends \ClicShopping\OM\Domains\PagesAbstract
     // Toujours obtenir l'action même si l'URL est pourrie, pour la vérification de permission
     $action = HTML::sanitize($_GET['action'] ?? 'products');
 
-    // Vérification de la permission pour l'action demandée
-    if (!$this->mcpPermissions->hasPermissionForEndpoint($this->authenticatedUsername, 'CustomerProducts', $action)) {
+    // Vérification de la permission pour l'action demandée via la classe d'endpoint.
+    if (!$this->permissions->canPerformAction($this->authenticatedUsername, $action)) {
       McpSecurity::logSecurityEvent('API Access Denied - Permission check failed', [
         'username' => $this->authenticatedUsername,
         'action' => $action

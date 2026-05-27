@@ -138,8 +138,8 @@ INSERT INTO clic_api VALUES(1, 'Default', 'd0a36b839700b60727fe13998e22aa0af197c
 CREATE TABLE :table_api_ip (
   api_ip_id int NOT NULL auto_increment,
   api_id int NOT NULL,
-  ip varchar(40) NOT NULL
-  PRIMARY KEY api_ip_id
+  ip varchar(40) NOT NULL,
+  PRIMARY KEY (api_ip_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE :table_api_session (
@@ -148,8 +148,9 @@ CREATE TABLE :table_api_session (
   session_id varchar(32) NOT NULL,
   ip varchar(40) NOT NULL,
   date_added datetime NOT NULL,
-  date_modified datetime NOT NULL
-  PRIMARY KEY api_session_id
+  date_modified datetime NOT NULL,
+  PRIMARY KEY (api_session_id),
+  UNIQUE KEY idx_session_id (session_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `clic_api_rate_limit` (

@@ -28,6 +28,103 @@ class McpSecurity
   protected static bool $renewSession = true;
 
   /**
+   * Resolve the active IP check mode from the App configuration.
+   * Defaults to 'subnet' when the constant is missing (fresh install or
+   * version pre-dating the ip_check_mode param).
+   *
+   * @return string  One of: 'strict', 'subnet', 'off'.
+   */
+  protected static function ipCheckMode(): string
+  {
+    $mode = \defined('CLICSHOPPING_APP_MCP_MC_IP_CHECK_MODE')
+      ? strtolower((string)CLICSHOPPING_APP_MCP_MC_IP_CHECK_MODE)
+      : 'subnet';
+
+    return in_array($mode, ['strict', 'subnet', 'off'], true) ? $mode : 'subnet';
+  }
+
+  /**
+   * Decide whether $actual matches $expected under the active IP check mode.
+   *
+   * - strict : byte-for-byte equality (legacy behaviour).
+   * - subnet : same /24 for IPv4, same /64 for IPv6 — tolerates NAT, CDN
+   *            multi-PoP, and most carrier-grade NAT cases while still
+   *            blocking trivial cross-network token replay.
+   * - off    : skip entirely (security relies on the 128-bit token secret).
+   *
+   * Returns true when access should be allowed.
+   */
+  public static function isIpAllowed(string $expected, string $actual): bool
+  {
+    $mode = self::ipCheckMode();
+
+    if ($mode === 'off') {
+      return true;
+    }
+
+    if ($mode === 'strict') {
+      return $expected === $actual;
+    }
+
+    // 'subnet' — compare network prefix.
+    $expectedV4 = filter_var($expected, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+    $actualV4   = filter_var($actual,   FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+    if ($expectedV4 !== false && $actualV4 !== false) {
+      // Same /24 (first three octets).
+      return self::ipv4Prefix($expectedV4, 24) === self::ipv4Prefix($actualV4, 24);
+    }
+
+    $expectedV6 = filter_var($expected, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+    $actualV6   = filter_var($actual,   FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+    if ($expectedV6 !== false && $actualV6 !== false) {
+      // Same /64 — first 8 bytes of the 16-byte packed form.
+      return substr(inet_pton($expectedV6), 0, 8) === substr(inet_pton($actualV6), 0, 8);
+    }
+
+    // Mixed family or unparseable — fall back to strict to avoid silent bypass.
+    return $expected === $actual;
+  }
+
+  /**
+   * Return the /$prefix network address of an IPv4 in dotted form.
+   * Used by isIpAllowed() in 'subnet' mode.
+   */
+  private static function ipv4Prefix(string $ip, int $prefix): string
+  {
+    $long = ip2long($ip);
+    if ($long === false) {
+      return $ip;
+    }
+    $mask = -1 << (32 - $prefix);
+    return long2ip($long & $mask);
+  }
+
+  /**
+   * Emit the current session token + remaining TTL as response headers.
+   *
+   * Lets MCP clients reuse the same session across requests instead of
+   * re-authenticating each time (which would create a new mcp_session row
+   * per call). Called by every Page after a successful authentication or
+   * token validation — including silent renewals, so the client can pick
+   * up the new token when checkToken() rotates it.
+   *
+   * Idempotent. Safe to call from anywhere before output starts.
+   */
+  public static function emitSessionHeaders(string $sessionId): void
+  {
+    if ($sessionId === '' || headers_sent()) {
+      return;
+    }
+
+    $timeoutMinutes = \defined('CLICSHOPPING_APP_MCP_MC_SESSION_TIMEOUT_MINUTES')
+      ? (int)CLICSHOPPING_APP_MCP_MC_SESSION_TIMEOUT_MINUTES
+      : 30;
+
+    header('X-MCP-Session-Token: ' . $sessionId);
+    header('X-MCP-Session-Expires-In: ' . max(60, $timeoutMinutes * 60));
+  }
+
+  /**
    * Validates and regenerates the API session token if necessary
    *
    * @param string $token The current session token to check or renew.
@@ -67,49 +164,65 @@ class McpSecurity
         $now = date('Y-m-d H:i:s');
         $date_diff = DateTime::getIntervalDate($Qcheck->value('date_modified'), $now);
 
-        // Vérification de l'IP (Sécurité additionnelle, optionnelle selon la politique)
-        if ($Qcheck->value('ip') !== $clientIp) {
+        // IP verification — mode controlled by CLICSHOPPING_APP_MCP_MC_IP_CHECK_MODE.
+        // strict = exact match (legacy), subnet = /24 IPv4 or /64 IPv6 (default),
+        // off = no check (token secret only). See ip_check_mode param.
+        if (!self::isIpAllowed($Qcheck->value('ip'), $clientIp)) {
           self::logSecurityEvent('Token hijacking attempt detected (IP mismatch)', [
-            'mcp_id' => $Qcheck->valueInt('mcp_id'),
+            'mcp_id'      => $Qcheck->valueInt('mcp_id'),
             'expected_ip' => $Qcheck->value('ip'),
-            'current_ip' => $clientIp
+            'current_ip'  => $clientIp,
+            'mode'        => self::ipCheckMode(),
           ]);
-          // On force l'expiration du token en cas de détection de changement d'IP
           throw new Exception("Token IP mismatch detected. Session terminated.");
         }
 
 
         // Check if session has expired
         if ($date_diff > (int)CLICSHOPPING_APP_MCP_MC_SESSION_TIMEOUT_MINUTES) {
-          // Delete expired session
-          $CLICSHOPPING_Db->delete('mcp_session', ['session_id' => $token]);
 
-          if (static::$renewSession === true) {
-            // Création d'une nouvelle session (Renouvellement)
-            $session_id = bin2hex(random_bytes(16));
-
-            $sql_data_array = [
-              'mcp_id' => $Qcheck->valueInt('mcp_id'),
-              'session_id' => $session_id,
-              'date_modified' => 'now()',
-              'date_added' => $Qcheck->value('date_added'),
-              'ip' => $clientIp
-            ];
-
-            $CLICSHOPPING_Db->save('mcp_session', $sql_data_array);
-
-            self::logSecurityEvent('Session regenerated', [
-              'old_token' => $token,
-              'new_token' => $session_id,
-              'mcp_id' => $Qcheck->valueInt('mcp_id')
-            ]);
-
-            return $session_id;
-
-          } else {
-            // Renouvellement non permis ou non configuré
+          if (static::$renewSession !== true) {
+            // Renewal disabled by policy — purge and reject.
+            $CLICSHOPPING_Db->delete('mcp_session', ['session_id' => $token]);
             throw new Exception("Session expired");
           }
+
+          // Atomic rotation: a single UPDATE replaces the session_id, so that
+          // two concurrent requests with the same expired token cannot both
+          // succeed (only one will get rowCount === 1; the loser gets 0 and
+          // is forced to re-authenticate). Replaces the previous
+          // DELETE+INSERT pair which was racy.
+          $newSessionId = bin2hex(random_bytes(16));
+
+          $Qrotate = $CLICSHOPPING_Db->prepare('
+            UPDATE :table_mcp_session
+               SET session_id   = :new_token,
+                   date_modified = NOW(),
+                   ip            = :ip
+             WHERE session_id   = :old_token
+          ');
+          $Qrotate->bindValue(':new_token', $newSessionId);
+          $Qrotate->bindValue(':ip',        $clientIp);
+          $Qrotate->bindValue(':old_token', $token);
+          $Qrotate->execute();
+
+          if ($Qrotate->rowCount() !== 1) {
+            // Lost the race: another concurrent request already rotated
+            // this token (or it has been purged by the cleanup job).
+            self::logSecurityEvent('Session rotation race lost', [
+              'old_token' => $token,
+              'mcp_id'    => $Qcheck->valueInt('mcp_id'),
+            ]);
+            throw new Exception("Session expired");
+          }
+
+          self::logSecurityEvent('Session regenerated', [
+            'old_token' => $token,
+            'new_token' => $newSessionId,
+            'mcp_id'    => $Qcheck->valueInt('mcp_id'),
+          ]);
+
+          return $newSessionId;
         }
 
         // Session is still valid, update the last modified date

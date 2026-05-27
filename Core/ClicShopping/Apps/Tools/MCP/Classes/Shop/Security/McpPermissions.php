@@ -293,189 +293,76 @@ class McpPermissions
   }
 
   /**
-   * Vérifie si un utilisateur peut accéder à un contexte spécifique
-   * Basé sur les permissions réelles de la table clic_mcp
+   * Generic endpoint permission evaluator.
    *
-   * @param string $username Nom d'utilisateur MCP
-   * @param string $context Contexte d'accès (ragbi, customer_products, admin)
-   * @return bool True si autorisé, false sinon
+   * Endpoint-specific permission classes (e.g. CustomerOrdersPermissions,
+   * AnthropicEcommercePermissions) own their action whitelists and pass them
+   * in. This class stays endpoint-agnostic: no switch on context names, no need
+   * to edit this file when a new endpoint is added.
+   *
+   * @param string $username       Authenticated MCP username.
+   * @param string $action         Requested action.
+   * @param string[] $readActions  Actions requiring only select_data.
+   * @param array<string, string[]> $writeActions Map of action => required permission flag(s);
+   *                                              the user must have select_data + ANY-OF those flags.
+   *                                              Valid flag names: select_data, create_data, update_data,
+   *                                              delete_data, create_db.
+   * @return bool
    */
-  public function canAccessContext(string $username, string $context): bool
-  {
-    try {
-      // Récupérer les permissions réelles de la base de données
-      $permissions = $this->getUserPermissions($username);
+  public function evaluateEndpointAction(
+    string $username,
+    string $action,
+    array $readActions,
+    array $writeActions
+  ): bool {
+    $permissions = $this->getUserPermissions($username);
+    if (!$permissions || (int)$permissions['status'] !== 1) {
+      McpSecurity::logSecurityEvent('Endpoint permission denied - user not found or inactive', [
+        'username' => $username,
+        'action'   => $action,
+      ]);
+      return false;
+    }
 
-      if (!$permissions || !$permissions['status']) {
-        McpSecurity::logSecurityEvent('Context access denied - user not found or inactive', [
+    if (in_array($action, $readActions, true)) {
+      $allowed = (int)$permissions['select_data'] === 1;
+      if (!$allowed) {
+        McpSecurity::logSecurityEvent('Endpoint permission denied - missing select_data', [
           'username' => $username,
-          'context' => $context
+          'action'   => $action,
+        ]);
+      }
+      return $allowed;
+    }
+
+    if (array_key_exists($action, $writeActions)) {
+      if ((int)$permissions['select_data'] !== 1) {
+        McpSecurity::logSecurityEvent('Endpoint permission denied - missing select_data on write', [
+          'username' => $username,
+          'action'   => $action,
         ]);
         return false;
       }
 
-      $canAccess = match ($context) {
-        'ragbi' => $this->checkRagBIAccess($permissions),
-        'customer_products' => $this->checkCustomerProductsAccess($permissions),
-        'admin' => $this->checkAdminAccess($permissions),
-        default => false
-      };
+      foreach ($writeActions[$action] as $flag) {
+        if (!empty($permissions[$flag]) && (int)$permissions[$flag] === 1) {
+          return true;
+        }
+      }
 
-      McpSecurity::logSecurityEvent('Context access check', [
-        'username' => $username,
-        'context' => $context,
-        'granted' => $canAccess,
-        'permissions' => [
-          'select_data' => (bool) $permissions['select_data'],
-          'update_data' => (bool) $permissions['update_data'],
-          'create_data' => (bool) $permissions['create_data'],
-          'delete_data' => (bool) $permissions['delete_data'],
-          'create_db' => (bool) $permissions['create_db']
-        ]
-      ]);
-
-      return $canAccess;
-
-    } catch (\Exception $e) {
-      McpSecurity::logSecurityEvent('Context access check error', [
-        'username' => $username,
-        'context' => $context,
-        'error' => $e->getMessage()
+      McpSecurity::logSecurityEvent('Endpoint permission denied - missing required write flag', [
+        'username'        => $username,
+        'action'          => $action,
+        'required_any_of' => $writeActions[$action],
       ]);
       return false;
     }
+
+    McpSecurity::logSecurityEvent('Endpoint permission denied - action not in whitelist', [
+      'username' => $username,
+      'action'   => $action,
+    ]);
+    return false;
   }
 
-  /**
-   * Vérifie l'accès RAG-BI (nécessite au minimum select_data)
-   *
-   * @param array $permissions Permissions de l'utilisateur
-   * @return bool True si autorisé
-   */
-  private function checkRagBIAccess(array $permissions): bool
-  {
-    // RAG-BI nécessite au minimum la lecture des données
-    return (bool) $permissions['select_data'];
-  }
-
-  /**
-   * Vérifie l'accès Customer Products (flexible selon les actions)
-   *
-   * @param array $permissions Permissions de l'utilisateur
-   * @return bool True si autorisé
-   */
-  private function checkCustomerProductsAccess(array $permissions): bool
-  {
-    // Customer Products nécessite au minimum la lecture
-    // L'écriture est vérifiée au niveau des actions spécifiques
-    return (bool) $permissions['select_data'];
-  }
-
-  /**
-   * Vérifie l'accès Admin (nécessite create_db ou tous les droits)
-   *
-   * @param array $permissions Permissions de l'utilisateur
-   * @return bool True si autorisé
-   */
-  private function checkAdminAccess(array $permissions): bool
-  {
-    // Admin nécessite soit create_db, soit tous les autres droits
-    return (bool) $permissions['create_db'] ||
-      ((bool) $permissions['select_data'] &&
-        (bool) $permissions['update_data'] &&
-        (bool) $permissions['create_data'] &&
-        (bool) $permissions['delete_data']);
-  }
-
-  /**
-   * Alias de canPerformAction pour une vérification de permission plus sémantique
-   * dans les Endpoints (CustomersProducts.php).
-   *
-   * @param string $username Nom d'utilisateur MCP
-   * @param string $context Contexte (ragbi, CustomerProducts, admin)
-   * @param string $action Action demandée
-   * @return bool True si autorisé, false sinon
-   */
-  public function hasPermissionForEndpoint(string $username, string $context, string $action): bool
-  {
-    // La classe CustomersProducts utilise 'CustomerProducts' comme contexte.
-    // Assurons-nous qu'elle corresponde à 'customer_products' en interne.
-    $internalContext = strtolower($context);
-    if ($internalContext === 'customerproducts') {
-      $internalContext = 'customer_products';
-    }
-
-    return $this->canPerformAction($username, $internalContext, $action);
-  }
-
-  /**
-   * Vérifie si un utilisateur peut effectuer une action spécifique dans un contexte
-   *
-   * @param string $username Nom d'utilisateur MCP
-   * @param string $context Contexte (ragbi, customer_products, admin)
-   * @param string $action Action demandée
-   * @return bool True si autorisé, false sinon
-   */
-  public function canPerformAction(string $username, string $context, string $action): bool
-  {
-    // Vérifier d'abord l'accès au contexte
-    if (!$this->canAccessContext($username, $context)) {
-      return false;
-    }
-
-    $permissions = $this->getUserPermissions($username);
-    if (!$permissions) {
-      return false;
-    }
-
-    return match ($context) {
-      'ragbi' => $this->checkRagBIAction($permissions, $action),
-      'customer_products' => $this->checkCustomerProductsAction($permissions, $action),
-      'admin' => $this->checkAdminAction($permissions, $action),
-      default => false
-    };
-  }
-
-
-
-  /**
-   * Vérifie les actions autorisées pour RAG-BI
-   */
-  private function checkRagBIAction(array $permissions, string $action): bool
-  {
-    return match ($action) {
-      'query', 'analyze', 'search', 'report' => (bool) $permissions['select_data'],
-      default => false
-    };
-  }
-
-
-  /**
-   * Vérifie les actions autorisées pour Customer Products
-   */
-  private function checkCustomerProductsAction(array $permissions, string $action): bool
-  {
-    return match ($action) {
-      'products', 'product', 'categories', 'search', 'stats', 'recommendations' => (bool) $permissions['select_data'],
-      'update_product', 'update_stock', 'update_price' => (bool) $permissions['update_data'],
-      'create_product', 'add_product' => (bool) $permissions['create_data'],
-      'delete_product', 'remove_product' => (bool) $permissions['delete_data'],
-      default => (bool) $permissions['select_data'] // Par défaut, lecture seule
-    };
-  }
-
-  /**
-   * Vérifie les actions autorisées pour Admin
-   */
-  private function checkAdminAction(array $permissions, string $action): bool
-  {
-    return match ($action) {
-      'view', 'list', 'search' => (bool) $permissions['select_data'],
-      'update', 'modify', 'edit' => (bool) $permissions['update_data'],
-      'create', 'add', 'insert' => (bool) $permissions['create_data'],
-      'delete', 'remove', 'drop' => (bool) $permissions['delete_data'],
-      'create_db', 'manage_db' => (bool) $permissions['create_db'],
-      default => false
-    };
-  }
 }

@@ -138,16 +138,16 @@ class Authentification extends ApiSecurity
         throw new \Exception("Failed to create session");
       }
 
-      $insertId = $CLICSHOPPING_Db->lastInsertId();
-
       self::logSecurityEvent('New session created', [
-        'api_id' => $api_id,
+        'api_id'     => $api_id,
         'session_id' => $session_id,
-        'ip' => $ip,
-        'insert_id' => $insertId
+        'ip'         => $ip,
+        'insert_id'  => $CLICSHOPPING_Db->lastInsertId(),
       ]);
 
-      return $insertId;
+      // Return the 32-hex session token (what checkToken/clients use),
+      // NOT the auto-increment PK (insert_id) which is useless to the client.
+      return $session_id;
 
     } catch (PDOException $e) {
       self::logSecurityEvent('Database error in addSession', [

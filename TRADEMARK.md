@@ -17,9 +17,7 @@ to trademarks.
 Trademarks may be used without prior written permission:
 
 -   To refer to the ClicShopping project in a factually accurate manner
-
 -   In journalistic, descriptive, or informational contexts
-
 -   In compatibility statements (e.g., \"compatible with ClicShopping\"
     or \"plugin for ClicShopping\")
 
@@ -47,13 +45,9 @@ this software:
 Without prior written permission, you may not:
 
 -   Use trademarks in product names or company names
-
 -   Register domains containing protected marks
-
 -   Create confusingly similar branding
-
 -   Present derived software as official ClicShopping products
-
 -   Use the marks in advertising in a way that implies endorsement
 
 **Attribution Requirement**

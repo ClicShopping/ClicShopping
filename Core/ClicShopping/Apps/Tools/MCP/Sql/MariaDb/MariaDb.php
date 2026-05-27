@@ -164,6 +164,7 @@ CREATE TABLE :table_mcp_session (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ALTER TABLE :table_mcp_session ADD PRIMARY KEY (`mcp_session_id`);
+ALTER TABLE :table_mcp_session ADD UNIQUE KEY `idx_session_id` (`session_id`);
 ALTER TABLE :table_mcp_session  MODIFY `mcp_session_id` int(11) NOT NULL AUTO_INCREMENT;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

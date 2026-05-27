@@ -1,12 +1,21 @@
-the documentation is available
+/*
+* Copyright (c) 2008–2026 Loic Richard
+*
+* Licensed under AGPLv3 or commercial license.
+* See LICENSE.md file.
+  */
 
-- The Github Wiki : [Wiki](https://github.com/ClicShopping/ClicShopping_V3/wiki)
-- The Deepwiki : DeepWiki :[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ClicShopping/ClicShopping)
+The documentation is available at:
 
-For all information you can ask on :
-- the forum  : [Wiki](https://clicshopping.org) 
-- the Github Chanel : [Discussion](https://github.com/ClicShopping/ClicShopping/discussions)
+- GitHub Wiki: [Wiki](https://github.com/ClicShopping/ClicShopping/wiki)
+- DeepWiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ClicShopping/ClicShopping)
 
-of course if identified an issue you can open an issue :
+For any question:
 
-- Issue : [Issue](https://github.com/ClicShopping/ClicShopping/issues)
+- Forum: [clicshopping.org](https://clicshopping.org)
+- GitHub Discussions: [Discussion](https://github.com/ClicShopping/ClicShopping/discussions)
+
+If you identify an issue, you can open one:
+
+- Issues: [Issue tracker](https://github.com/ClicShopping/ClicShopping/issues)
+

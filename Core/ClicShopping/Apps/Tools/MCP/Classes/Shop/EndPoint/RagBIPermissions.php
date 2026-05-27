@@ -77,69 +77,76 @@ class RagBIPermissions
     }
 
     /**
-     * Vérifie si une action RAG-BI est autorisée
+     * Standard endpoint permission gate.
      *
-     * @param string $username Nom d'utilisateur MCP
-     * @param string $action Action demandée
-     * @return bool True si autorisé, false sinon
+     * RAG-BI is strictly read-only: all allowed actions require select_data and
+     * the user must not have any write/admin flag (no update_data, create_data,
+     * delete_data, create_db) — analytics access must not double as a write
+     * channel. The whitelist check is delegated to the generic evaluator.
+     *
+     * Aligned with CustomerOrdersPermissions / AnthropicEcommercePermissions.
+     *
+     * @param string $username
+     * @param string $action
+     * @return bool
      */
-    public function canPerformRagBIAction(string $username, string $action): bool
+    public function canPerformAction(string $username, string $action): bool
     {
         if (!$this->canAccessRagBI($username)) {
             return false;
         }
 
-        if (!in_array($action, self::ALLOWED_ACTIONS, true)) {
-            McpSecurity::logSecurityEvent('RAG-BI action denied - action not in whitelist', [
-                'username' => $username,
-                'action' => $action,
-                'allowed_actions' => self::ALLOWED_ACTIONS
-            ]);
-            return false;
-        }
-
-        return true;
+        // Read-only context: every allowed action is a "read" — no WRITE_ACTIONS.
+        return $this->mcpPermissions->evaluateEndpointAction(
+            $username,
+            $action,
+            self::ALLOWED_ACTIONS,
+            []
+        );
     }
 
     /**
-     * Vérifie si un utilisateur peut accéder au système RAG-BI
+     * Backward-compatible alias kept for callers that still reference the old name.
+     */
+    public function canPerformRagBIAction(string $username, string $action): bool
+    {
+        return $this->canPerformAction($username, $action);
+    }
+
+    /**
+     * Strict access gate for RAG-BI: user must be active and have ONLY select_data.
      *
-     * @param string $username Nom d'utilisateur MCP
-     * @return bool True si autorisé, false sinon
+     * Any other flag (update_data, create_data, delete_data, create_db) is rejected —
+     * this prevents analytics users from being used as a write channel.
+     *
+     * @param string $username
+     * @return bool
      */
   public function canAccessRagBI(string $username): bool
   {
-    // 1. Vérifier la permission de contexte générale (si cette méthode existe dans McpPermissions)
-    // NOTE: Si 'canAccessContext' n'existe pas, vous devrez la remplacer par 'hasPermission($username, 'ragbi_access')'
-    if (!$this->mcpPermissions->canAccessContext($username, 'ragbi')) {
-      return false;
-    }
-
-    // 2. Récupérer TOUTES les permissions de l'utilisateur (méthode existante dans McpPermissions)
     $permissions = $this->mcpPermissions->getUserPermissions($username);
 
-    if (!$permissions) {
+    if (!$permissions || (int)$permissions['status'] !== 1) {
+      McpSecurity::logSecurityEvent('RAG-BI access denied - user not found or inactive', [
+        'username' => $username,
+      ]);
       return false;
     }
 
-    // 3. Vérification stricte pour le RAG-BI (lecture seule analytique)
-    // RAG-BI doit avoir select_data mais PAS les autres permissions (sécurité)
-    // Cette logique est CORRECTE, mais elle utilise les clés des permissions globales.
-    $hasSelectOnly = (bool) $permissions['select_data'] &&
-      !(bool) $permissions['update_data'] &&
-      !(bool) $permissions['create_data'] &&
-      !(bool) $permissions['delete_data'] &&
-      !(bool) $permissions['create_db'];
+    $hasSelectOnly = (int)$permissions['select_data'] === 1
+      && (int)$permissions['update_data'] !== 1
+      && (int)$permissions['create_data'] !== 1
+      && (int)$permissions['delete_data'] !== 1
+      && (int)$permissions['create_db']   !== 1;
 
     if (!$hasSelectOnly) {
       McpSecurity::logSecurityEvent('RAG-BI access denied - user has excessive permissions', [
-        'username' => $username,
-        // Ne pas loguer toute la clé au complet, mais seulement les permissions critiques
+        'username'          => $username,
         'permissions_check' => [
           'select_data' => (bool) $permissions['select_data'],
           'update_data' => (bool) $permissions['update_data'],
           'create_data' => (bool) $permissions['create_data'],
-        ]
+        ],
       ]);
       return false;
     }
@@ -326,8 +333,8 @@ class RagBIPermissions
      */
     public function generateSecurityReport(string $username): array
     {
-        $permissions = $this->mcpPermissions->getUserPermissionsForEndpoint($username);
-        
+        $permissions = $this->mcpPermissions->getUserPermissions($username);
+
         return [
             'username' => $username,
             'ragbi_access' => $this->canAccessRagBI($username),

@@ -1,3 +1,0 @@
-cfg_ecommerce_acp_api_shared_key_retails_title = Clef partagèe (Agentic Commerce Protocol)
-cfg_ecommerce_acp_api_shared_key_retails_description = Veuillez crèè votre clef à partager avec OpenAI (https://chatgpt.com/merchants).<br>
-Nous vous invitons à créer une clef complexe exemple : c815e617da9880530e9

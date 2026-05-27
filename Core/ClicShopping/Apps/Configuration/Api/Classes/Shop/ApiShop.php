@@ -123,111 +123,8 @@ class ApiShop extends ApiSecurity
   }
 
 
-  /**
-   * Validates and regenerates the API session token if necessary
-   *
-   * @param string $token The current session token to check or renew.
-   * @return string The valid session token, either existing or newly generated.
-   * @throws Exception If token processing fails
-   */
-  public static function checkToken(string $token): string
-  {
-    return parent::checkToken($token);
-/*
-    // Validation du token
-    if (empty($token)) {
-      throw new Exception("Token cannot be empty");
-    }
-
-    if (strlen($token) !== 32 || !ctype_xdigit($token)) {
-      throw new Exception("Invalid token format");
-    }
-
-    // Vérification du rate limiting pour les tokens
-    $clientIp = HTTP::getIpAddress();
-
-    if (!self::checkRateLimit($clientIp, 'token_check')) {
-      throw new Exception("Rate limit exceeded for token validation");
-    }
-
-    try {
-      $CLICSHOPPING_Db = Registry::get('Db');
-
-      if (!$CLICSHOPPING_Db) {
-        throw new Exception("Database connection not available");
-      }
-
-      $sql_data_array = [
-        'api_id',
-        'date_modified',
-        'date_added'
-      ];
-
-      $Qcheck = $CLICSHOPPING_Db->get('api_session', $sql_data_array, ['session_id' => $token], 1);
-
-      if (!empty($Qcheck->value('api_id'))) {
-        $now = date('Y-m-d H:i:s');
-        $date_diff = DateTime::getIntervalDate($Qcheck->value('date_modified'), $now);
-
-        // Session expirée après le timeout configuré
-        if ($date_diff > (int)CLICSHOPPING_APP_API_AI_SESSION_TIMEOUT_MINUTES) {
-          // Régénérer la session
-          $CLICSHOPPING_Db->delete('api_session', ['api_id' => (int)$Qcheck->valueInt('api_id')]);
-
-          $session_id = bin2hex(random_bytes(16));
-          $Ip = HTTP::getIpAddress();
-
-          $sql_data_array = [
-            'api_id' => $Qcheck->valueInt('api_id'),
-            'session_id' => $session_id,
-            'date_modified' => 'now()',
-            'date_added' => $Qcheck->value('date_added'),
-            'ip' => $Ip
-          ];
-
-          $CLICSHOPPING_Db->save('api_session', $sql_data_array);
-
-          self::logSecurityEvent('Session regenerated', [
-            'old_token' => $token,
-            'new_token' => $session_id,
-            'api_id' => $Qcheck->valueInt('api_id')
-          ]);
-
-          return $session_id;
-        }
-
-        return $token; // Session encore valide
-      } else {
-        // Token invalide - créer une nouvelle session
-        $session_id = bin2hex(random_bytes(16));
-        $Ip = HTTP::getIpAddress();
-
-        $sql_data_array = [
-          'api_id' => null,
-          'session_id' => $session_id,
-          'date_modified' => 'now()',
-          'date_added' => 'now()',
-          'ip' => $Ip
-        ];
-
-        $CLICSHOPPING_Db->save('api_session', $sql_data_array);
-
-        self::logSecurityEvent('New session created for invalid token', [
-          'old_token' => $token,
-          'new_token' => $session_id
-        ]);
-
-        return $session_id;
-      }
-    } catch (PDOException $e) {
-      self::logSecurityEvent('Database error in checkToken', [
-        'token' => $token,
-        'error' => $e->getMessage()
-      ]);
-      throw new Exception("Token validation failed");
-    }
-*/
-  }
+// (B18) Removed ~100 lines of commented dead code that duplicated and contradicted
+// the parent::checkToken implementation. Inheritance is sufficient.
 
   /**
    * Clears specific cached data for categories, products also purchased, and upcoming items.
@@ -279,51 +176,8 @@ class ApiShop extends ApiSecurity
     ];
   }
 
-  /**
-   * Checks if the account is locked due to too many failed login attempts
-   *
-   * @param string $username The username to check.
-   * @return bool Returns true if the account is locked, otherwise false.
-   */
-  public static function isAccountLocked(string $username): bool
-  {
-    $result =  parent::isAccountLocked($username);
-
-    return $result;
-  }
-
-  /**
-   * Vérifie le rate limiting pour un identifiant et un type d'action
-   */
-  public static function checkRateLimit(string $identifier, string $action): bool
-  {
-    return parent::checkRateLimit($identifier, $action);
-  }
-
-  /**
-   * Incrémente le compteur de tentatives échouées
-   */
-  public static function incrementFailedAttempts(string $username): void
-  {
-    parent::incrementFailedAttempts($username);
-  }
-
-  /**
-   * Remet à zéro le compteur de tentatives échouées
-   */
-  public static function resetFailedAttempts(string $username)
-  {
-    return parent::resetFailedAttempts($username);
-  }
-
-  /**
-   * Logs security events to a file with structured data
-   *
-   * @param string $event The event type (e.g., 'Authentication', 'RateLimitExceeded')
-   * @param array $data Additional data to log (optional)
-   */
-  public static function logSecurityEvent(string $event, array $data = [])
-  {
-   parent::logSecurityEvent($event, $data);
-  }
+  // (B18) Removed trivial wrappers (isAccountLocked, checkRateLimit,
+  // incrementFailedAttempts, resetFailedAttempts, logSecurityEvent): they
+  // just called parent:: with no added value. Direct inheritance from
+  // ApiSecurity exposes the same methods.
 }

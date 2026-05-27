@@ -1,0 +1,6 @@
+cfg_products_api_ip_check_mode_title = Mode de vérification de l'IP
+cfg_products_api_ip_check_mode_description = Contrôle la manière dont l'IP du client est vérifiée à chaque requête de session. <strong>strict</strong> = correspondance exacte (sécurité maximale, peut casser les clients mobiles / NAT / CDN). <strong>subnet</strong> = même /24 (IPv4) ou /64 (IPv6) — valeur recommandée par défaut. <strong>off</strong> = aucune vérification d'IP (seul le token compte, comportement type OAuth).
+
+cfg_products_api_ip_check_mode_strict = strict (IP exacte)
+cfg_products_api_ip_check_mode_subnet = subnet (/24 IPv4 ou /64 IPv6 — recommandé)
+cfg_products_api_ip_check_mode_off = off (pas de vérification d'IP)

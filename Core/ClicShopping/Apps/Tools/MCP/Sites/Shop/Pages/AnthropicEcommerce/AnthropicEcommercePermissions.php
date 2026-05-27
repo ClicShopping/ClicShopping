@@ -51,30 +51,21 @@ class AnthropicEcommercePermissions
     'security_report',
   ];
 
-  // Actions that require write-level permission (select_data + create_data or update_data)
+  /**
+   * Write actions — map of action => required permission flag(s) (any-of).
+   * select_data is always required in addition, enforced by
+   * McpPermissions::evaluateEndpointAction.
+   *
+   * @var array<string, string[]>
+   */
   private const WRITE_ACTIONS = [
-    'session_create',
-    'session_update',
-    'session_complete',
-    'session_cancel',
-    'order_cancel',
-    'order_message',
-    'customer_create',
-  ];
-
-  // Union of all allowed actions (READ + WRITE)
-  private const ALLOWED_ACTIONS = [
-    // Products
-    'products', 'product', 'search', 'categories', 'recommendations', 'stats',
-    // Orders
-    'orders', 'order', 'order_history', 'order_cancel', 'order_message',
-    // Sessions
-    'session_create', 'session_get', 'session_update',
-    'session_complete', 'session_cancel', 'session_list',
-    // Customers
-    'customer', 'customer_create', 'addresses', 'countries',
-    // Admin
-    'security_report',
+    'session_create'   => ['create_data', 'update_data'],
+    'session_update'   => ['create_data', 'update_data'],
+    'session_complete' => ['create_data', 'update_data'],
+    'session_cancel'   => ['create_data', 'update_data'],
+    'order_cancel'     => ['create_data', 'update_data'],
+    'order_message'    => ['create_data', 'update_data'],
+    'customer_create'  => ['create_data', 'update_data'],
   ];
 
   public function __construct()
@@ -106,47 +97,12 @@ class AnthropicEcommercePermissions
    */
   public function canPerformAction(string $username, string $action): bool
   {
-    if (!in_array($action, self::ALLOWED_ACTIONS, true)) {
-      McpSecurity::logSecurityEvent('AnthropicEcommerce - action not in whitelist', [
-        'username' => $username,
-        'action'   => $action,
-      ]);
-      return false;
-    }
-
-    $permissions = $this->mcpPermissions->getUserPermissions($username);
-    if (!$permissions) {
-      return false;
-    }
-
-    // Read actions: select_data is sufficient
-    if (in_array($action, self::READ_ACTIONS, true)) {
-      if ($permissions['select_data'] != 1) {
-        McpSecurity::logSecurityEvent('AnthropicEcommerce - missing select_data', [
-          'username' => $username,
-          'action'   => $action,
-        ]);
-        return false;
-      }
-      return true;
-    }
-
-    // Write actions: select_data + (create_data or update_data)
-    if (in_array($action, self::WRITE_ACTIONS, true)) {
-      $canWrite = ($permissions['select_data'] == 1)
-        && (($permissions['create_data'] == 1) || ($permissions['update_data'] == 1));
-
-      if (!$canWrite) {
-        McpSecurity::logSecurityEvent('AnthropicEcommerce - missing write permission', [
-          'username' => $username,
-          'action'   => $action,
-        ]);
-        return false;
-      }
-      return true;
-    }
-
-    return false;
+    return $this->mcpPermissions->evaluateEndpointAction(
+      $username,
+      $action,
+      self::READ_ACTIONS,
+      self::WRITE_ACTIONS
+    );
   }
 
   /**
@@ -189,7 +145,7 @@ class AnthropicEcommercePermissions
     return [
       'username'         => $username,
       'security_level'   => 'ECOMMERCE_READ_WRITE',
-      'allowed_actions'  => self::ALLOWED_ACTIONS,
+      'allowed_actions'  => $this->getAllowedActions(),
       'read_actions'     => self::READ_ACTIONS,
       'write_actions'    => self::WRITE_ACTIONS,
       'allowed_tables'   => $this->getAllowedTables(),
@@ -215,7 +171,10 @@ class AnthropicEcommercePermissions
    */
   public function getAllowedActions(): array
   {
-    return self::ALLOWED_ACTIONS;
+    return array_values(array_unique(array_merge(
+      self::READ_ACTIONS,
+      array_keys(self::WRITE_ACTIONS)
+    )));
   }
 
   /**

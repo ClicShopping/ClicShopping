@@ -42,3 +42,47 @@ CREATE TABLE IF NOT EXISTS clic_rag_evaluation_retries (
 
 ALTER TABLE `clic_rag_agent_consensus_sessions` CHANGE `session_id` `session_id` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Unique identifier for the consensus session (UUID)';
 ALTER TABLE `clic_rag_agent_consensus_sessions` CHANGE `output_id` `output_id` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Output being evaluated for consensus';
+
+#french
+INSERT INTO `clic_configuration` VALUES(null, 'Mode de vérification de l\'IP', 'CLICSHOPPING_APP_MCP_MC_IP_CHECK_MODE', 'subnet', 'Contrôle la manière dont l\'IP du client est vérifiée à chaque requête de session. <strong>strict</strong> = correspondance exacte (sécurité maximale, peut casser les clients mobiles / NAT / CDN). <strong>subnet</strong> = même /24 (IPv4) ou /64 (IPv6) — valeur recommandée par défaut. <strong>off</strong> = aucune vérification d\'IP (seul le token compte, comportement type OAuth).', 6, 0, NULL, '2026-05-26 17:03:52', NULL, NULL);
+#english
+INSERT INTO `clic_configuration` VALUES(null, 'IP Verification Mode', 'CLICSHOPPING_APP_MCP_MC_IP_CHECK_MODE', 'subnet', 'Controls how the client IP is verified on each session request. <strong>strict</strong> = exact match (maximum security, may break mobile clients / NAT / CDN setups). <strong>subnet</strong> = same /24 (IPv4) or /64 (IPv6) — recommended default value. <strong>off</strong> = no IP verification (only the token is checked, OAuth-style behavior).', 6, 0, NULL, '2026-05-26 17:03:52', NULL, NULL);
+
+-- B11: Add unique index on clic_mcp_session.session_id
+--   Why : the legacy DELETE+INSERT renewal logic could create duplicate
+--         session_id rows under concurrent token expiry; without an index,
+--         every checkToken / getUsernameFromSession also did a full table
+--         scan.
+--   Order: dedup FIRST (keep the row with the highest mcp_session_id per
+--          session_id), THEN add the unique key. The ALTER will fail if
+--          duplicates remain.
+
+DELETE s1 FROM clic_mcp_session s1
+JOIN clic_mcp_session s2
+  ON s1.session_id = s2.session_id
+ AND s1.mcp_session_id < s2.mcp_session_id;
+
+ALTER TABLE clic_mcp_session
+  ADD UNIQUE KEY idx_session_id (session_id);
+
+-- B16: Add unique index on clic_api_session.session_id (mirror of B11 for Api).
+--   Same rationale as B11: anonymous-session creation under unknown tokens
+--   (now removed in B14) plus DELETE+INSERT renewal could create duplicates.
+--   Also fixes a latent SQL syntax bug in the original install schema (missing
+--   comma before PRIMARY KEY + missing parentheses around the column name);
+--   the corrected CREATE is in Apps/Configuration/Api/Sql/MariaDb/MariaDb.php.
+
+DELETE s1 FROM clic_api_session s1
+JOIN clic_api_session s2
+  ON s1.session_id = s2.session_id
+ AND s1.api_session_id < s2.api_session_id;
+
+ALTER TABLE clic_api_session
+  ADD UNIQUE KEY idx_session_id (session_id);
+
+-- B15: New config constant for Api IP check mode. Default 'subnet' tolerates
+-- NAT/CDN/mobile while still blocking trivial cross-network token replay.
+#french
+INSERT INTO `clic_configuration` VALUES(null, 'Mode de vérification de l\'IP', 'CLICSHOPPING_APP_API_AI_IP_CHECK_MODE', 'subnet', 'Contrôle la manière dont l\'IP du client est vérifiée à chaque requête de session. <strong>strict</strong> = correspondance exacte (sécurité maximale, peut casser les clients mobiles / NAT / CDN). <strong>subnet</strong> = même /24 (IPv4) ou /64 (IPv6) — valeur recommandée par défaut. <strong>off</strong> = aucune vérification d\'IP (seul le token compte, comportement type OAuth).', 6, 0, NULL, NOW(), NULL, NULL);
+#english
+INSERT INTO `clic_configuration` VALUES(null, 'IP Verification Mode', 'CLICSHOPPING_APP_API_AI_IP_CHECK_MODE', 'subnet', 'Controls how the client IP is verified on each session request. <strong>strict</strong> = exact match (maximum security, may break mobile clients / NAT / CDN setups). <strong>subnet</strong> = same /24 (IPv4) or /64 (IPv6) — recommended default value. <strong>off</strong> = no IP verification (only the token is checked, OAuth-style behavior).', 6, 0, NULL, NOW(), NULL, NULL);

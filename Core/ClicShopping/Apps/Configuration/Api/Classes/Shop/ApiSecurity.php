@@ -20,6 +20,107 @@ class ApiSecurity {
   protected static $renewSession = true; //temporary time to add a refresh token
 
   /**
+   * Extract the session token from the request, preferring the
+   * X-API-Token header but falling back to the legacy ?token=
+   * URL/body parameter for backward compatibility with existing
+   * clients such as api/get_product.php.
+   */
+  public static function extractToken(): string
+  {
+    $header = $_SERVER['HTTP_X_API_TOKEN'] ?? '';
+    if ($header !== '') {
+      return trim($header);
+    }
+    return (string)($_GET['token'] ?? $_POST['token'] ?? '');
+  }
+
+  /**
+   * Emit the current session token + remaining TTL as response headers.
+   *
+   * Lets Api clients reuse the same session across requests instead of
+   * re-authenticating each call. Mirror of MCP B2. Safe to call from
+   * anywhere before output starts; idempotent.
+   */
+  public static function emitSessionHeaders(string $sessionId): void
+  {
+    if ($sessionId === '' || headers_sent()) {
+      return;
+    }
+
+    $timeoutMinutes = \defined('CLICSHOPPING_APP_API_AI_SESSION_TIMEOUT_MINUTES')
+      ? (int)CLICSHOPPING_APP_API_AI_SESSION_TIMEOUT_MINUTES
+      : 30;
+
+    header('X-API-Session-Token: ' . $sessionId);
+    header('X-API-Session-Expires-In: ' . max(60, $timeoutMinutes * 60));
+  }
+
+  /**
+   * Resolve the active IP check mode from the App configuration.
+   * Defaults to 'subnet' when the constant is missing (fresh install or
+   * version pre-dating the ip_check_mode param).
+   *
+   * @return string  One of: 'strict', 'subnet', 'off'.
+   */
+  protected static function ipCheckMode(): string
+  {
+    $mode = \defined('CLICSHOPPING_APP_API_AI_IP_CHECK_MODE')
+      ? strtolower((string)CLICSHOPPING_APP_API_AI_IP_CHECK_MODE)
+      : 'subnet';
+
+    return in_array($mode, ['strict', 'subnet', 'off'], true) ? $mode : 'subnet';
+  }
+
+  /**
+   * Decide whether $actual matches $expected under the active IP check mode.
+   *
+   * - strict : byte-for-byte equality.
+   * - subnet : same /24 (IPv4) or /64 (IPv6) — tolerates NAT, CDN multi-PoP,
+   *            carrier-grade NAT while still blocking cross-network replay.
+   * - off    : skip entirely (security relies on the 128-bit token secret).
+   */
+  public static function isIpAllowed(string $expected, string $actual): bool
+  {
+    $mode = self::ipCheckMode();
+
+    if ($mode === 'off') {
+      return true;
+    }
+
+    if ($mode === 'strict') {
+      return $expected === $actual;
+    }
+
+    $expectedV4 = filter_var($expected, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+    $actualV4   = filter_var($actual,   FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+    if ($expectedV4 !== false && $actualV4 !== false) {
+      return self::ipv4Prefix($expectedV4, 24) === self::ipv4Prefix($actualV4, 24);
+    }
+
+    $expectedV6 = filter_var($expected, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+    $actualV6   = filter_var($actual,   FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+    if ($expectedV6 !== false && $actualV6 !== false) {
+      return substr(inet_pton($expectedV6), 0, 8) === substr(inet_pton($actualV6), 0, 8);
+    }
+
+    // Mixed family or unparseable — fall back to strict to avoid silent bypass.
+    return $expected === $actual;
+  }
+
+  /**
+   * Return the /$prefix network address of an IPv4 in dotted form.
+   */
+  private static function ipv4Prefix(string $ip, int $prefix): string
+  {
+    $long = ip2long($ip);
+    if ($long === false) {
+      return $ip;
+    }
+    $mask = -1 << (32 - $prefix);
+    return long2ip($long & $mask);
+  }
+
+  /**
    * Validates and regenerates the API session token if necessary
    *
    * @param string $token The current session token to check or renew.
@@ -49,78 +150,83 @@ class ApiSecurity {
         throw new Exception("Database connection not available");
       }
 
-      $sql_data_array = ['api_id', 'date_modified', 'date_added'];
+      $Qcheck = $CLICSHOPPING_Db->get(
+        'api_session',
+        ['api_id', 'date_modified', 'date_added', 'ip'],
+        ['session_id' => $token],
+        1
+      );
 
-      $Qcheck = $CLICSHOPPING_Db->get('api_session', $sql_data_array, ['session_id' => $token], 1);
-
-      if (static::$renewSession === true) {
-        if (!empty($Qcheck->value('api_id'))) {
-          $now = date('Y-m-d H:i:s');
-          $date_diff = DateTime::getIntervalDate($Qcheck->value('date_modified'), $now);
-
-          if ($date_diff > (int)CLICSHOPPING_APP_API_AI_SESSION_TIMEOUT_MINUTES) {
-            $CLICSHOPPING_Db->delete('api_session', ['api_id' => (int)$Qcheck->valueInt('api_id')]);
-
-            throw new Exception("Session expired");
-          }
-
-          return $token;
-        }
-      } else {
-        if (!empty($Qcheck->value('api_id'))) {
-          $now = date('Y-m-d H:i:s');
-          $date_diff = DateTime::getIntervalDate($Qcheck->value('date_modified'), $now);
-
-          if ($date_diff > (int)CLICSHOPPING_APP_API_AI_SESSION_TIMEOUT_MINUTES) {
-            $CLICSHOPPING_Db->delete('api_session', ['api_id' => (int)$Qcheck->valueInt('api_id')]);
-
-            $session_id = bin2hex(random_bytes(16));
-            $Ip = HTTP::getIpAddress();
-
-            $sql_data_array = [
-              'api_id' => $Qcheck->valueInt('api_id'),
-              'session_id' => $session_id,
-              'date_modified' => 'now()',
-              'date_added' => $Qcheck->value('date_added'),
-              'ip' => $Ip
-            ];
-
-            $CLICSHOPPING_Db->save('api_session', $sql_data_array);
-
-            self::logSecurityEvent('Session regenerated', [
-              'old_token' => $token,
-              'new_token' => $session_id,
-              'api_id' => $Qcheck->valueInt('api_id')
-            ]);
-
-            return $session_id;
-          }
-
-          return $token;
-        } else {
-          $session_id = bin2hex(random_bytes(16));
-          $Ip = HTTP::getIpAddress();
-
-          $sql_data_array = [
-            'api_id' => null,
-            'session_id' => $session_id,
-            'date_modified' => 'now()',
-            'date_added' => 'now()',
-            'ip' => $Ip
-          ];
-
-          $CLICSHOPPING_Db->save('api_session', $sql_data_array);
-
-          self::logSecurityEvent('New session created for invalid token', [
-            'old_token' => $token,
-            'new_token' => $session_id
-          ]);
-
-          return $session_id;
-        }
+      // Unknown token → reject. We do NOT silently create an anonymous
+      // session here: the previous behaviour let any random hex spam the
+      // api_session table with api_id=NULL rows nothing would ever purge.
+      if (empty($Qcheck->value('api_id'))) {
+        self::logSecurityEvent('Invalid or unknown token received', [
+          'token' => substr(hash('sha256', $token), 0, 12) . '...',
+        ]);
+        throw new Exception("Invalid or unknown token");
       }
 
-      throw new Exception("Invalid or unknown token");
+      // IP verification — mode controlled by CLICSHOPPING_APP_API_AI_IP_CHECK_MODE
+      // (strict | subnet | off). Backported from MCP B4. See isIpAllowed().
+      if (!self::isIpAllowed((string)$Qcheck->value('ip'), $clientIp)) {
+        self::logSecurityEvent('Token hijacking attempt detected (IP mismatch)', [
+          'api_id'      => $Qcheck->valueInt('api_id'),
+          'expected_ip' => $Qcheck->value('ip'),
+          'current_ip'  => $clientIp,
+          'mode'        => self::ipCheckMode(),
+        ]);
+        throw new Exception("Token IP mismatch detected. Session terminated.");
+      }
+
+      $date_diff = DateTime::getIntervalDate($Qcheck->value('date_modified'), date('Y-m-d H:i:s'));
+
+      // Session still within window — refresh date_modified and reuse the token.
+      if ($date_diff <= (int)CLICSHOPPING_APP_API_AI_SESSION_TIMEOUT_MINUTES) {
+        $CLICSHOPPING_Db->save('api_session', ['date_modified' => 'now()'], ['session_id' => $token]);
+        return $token;
+      }
+
+      // Expired session. If renewal is disabled, purge and reject.
+      if (static::$renewSession !== true) {
+        $CLICSHOPPING_Db->delete('api_session', ['session_id' => $token]);
+        throw new Exception("Session expired");
+      }
+
+      // Atomic rotation: a single UPDATE replaces session_id so that two
+      // concurrent requests with the same expired token cannot both succeed
+      // (only one will get rowCount === 1; the loser gets 0 and is forced to
+      // re-authenticate). Replaces the previous DELETE+INSERT pair which was
+      // racy. Backported from MCP B3.
+      $newSessionId = bin2hex(random_bytes(16));
+
+      $Qrotate = $CLICSHOPPING_Db->prepare('
+        UPDATE :table_api_session
+           SET session_id    = :new_token,
+               date_modified = NOW(),
+               ip            = :ip
+         WHERE session_id    = :old_token
+      ');
+      $Qrotate->bindValue(':new_token', $newSessionId);
+      $Qrotate->bindValue(':ip',        $clientIp);
+      $Qrotate->bindValue(':old_token', $token);
+      $Qrotate->execute();
+
+      if ($Qrotate->rowCount() !== 1) {
+        self::logSecurityEvent('Session rotation race lost', [
+          'old_token' => $token,
+          'api_id'    => $Qcheck->valueInt('api_id'),
+        ]);
+        throw new Exception("Session expired");
+      }
+
+      self::logSecurityEvent('Session regenerated', [
+        'old_token' => $token,
+        'new_token' => $newSessionId,
+        'api_id'    => $Qcheck->valueInt('api_id'),
+      ]);
+
+      return $newSessionId;
 
     } catch (PDOException $e) {
       self::logSecurityEvent('Database error in checkToken', [
@@ -508,6 +614,10 @@ class ApiSecurity {
         throw new Exception("Database connection not available");
       }
 
+      // (B19) Look up by username only, then compare the api_key in PHP with
+      // hash_equals(). Doing the comparison in MySQL (`AND api_key = :key`)
+      // exposes a measurable timing channel on the api_key column. The user
+      // row is still rejected if the key does not match.
       $Qapi = $CLICSHOPPING_Db->prepare('select api_id,
                                                 username,
                                                 api_key,
@@ -517,28 +627,23 @@ class ApiSecurity {
                                          from :table_api
                                          where status = 1
                                          and username = :username
-                                         and api_key = :api_key
+                                         limit 1
                                          ');
 
       $Qapi->bindValue(':username', $username);
-      $Qapi->bindValue(':api_key', $key);
       $Qapi->execute();
 
       $result = $Qapi->fetch();
 
-      $isValid = !empty($result);
-
-      if (!$isValid) {
+      if (empty($result) || !hash_equals((string)$result['api_key'], (string)$key)) {
         self::incrementFailedAttempts($username);
         self::logSecurityEvent('Failed authentication attempt', ['username' => $username]);
-
         return false;
-      } else {
-        self::resetFailedAttempts($username);
-        self::logSecurityEvent('Successful authentication', ['username' => $username]);
-
-        return $result;
       }
+
+      self::resetFailedAttempts($username);
+      self::logSecurityEvent('Successful authentication', ['username' => $username]);
+      return $result;
 
     } catch (PDOException $e) {
       self::logSecurityEvent('Database error in authentication', [

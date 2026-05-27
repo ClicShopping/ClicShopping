@@ -183,8 +183,9 @@ class AnthropicEcommerce extends \ClicShopping\OM\Domains\PagesAbstract
       }
     } else {
       try {
-        $validSessionId              = McpSecurity::checkToken($mcpSessionId);
-        $this->authenticatedUsername = McpSecurity::getUsernameFromSession($validSessionId);
+        $validSessionId               = McpSecurity::checkToken($mcpSessionId);
+        $this->authenticatedUsername  = McpSecurity::getUsernameFromSession($validSessionId);
+        $this->authenticatedSessionId = $validSessionId;
         if (empty($this->authenticatedUsername)) {
           throw new \Exception('Session token is valid but associated username could not be found.');
         }
@@ -197,6 +198,10 @@ class AnthropicEcommerce extends \ClicShopping\OM\Domains\PagesAbstract
         return;
       }
     }
+
+    // Expose the current session token so clients can reuse it instead of
+    // re-authenticating on every call (covers silent renewal too).
+    McpSecurity::emitSessionHeaders($this->authenticatedSessionId);
 
     // =========================================================================
     // ACTION ROUTING + PERMISSION CHECK
