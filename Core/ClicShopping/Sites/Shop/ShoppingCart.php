@@ -334,7 +334,10 @@ class ShoppingCart
           $products_price = $new_price_with_discount_quantity;
         }
 
-        $this->contents[$Qproducts->valueInt('item_id')] = [
+        // Use the composite item_id (e.g. "5{1}2") as the canonical key so the
+        // attributes loop below merges into the same entry. Mixing valueInt() /
+        // value() here used to create two split entries for the same item.
+        $this->contents[$item_id] = [
           'item_id' => $item_id,
           'qty' => $Qproducts->valueInt('customers_basket_quantity'),
           'id' => $products_id,
@@ -359,11 +362,11 @@ class ShoppingCart
                                               ');
 
         $Qattributes->bindInt(':customers_id', $this->customer->getID());
-        $Qattributes->bindValue(':products_id', $Qproducts->value('item_id'));
+        $Qattributes->bindValue(':products_id', $item_id);
         $Qattributes->execute();
 
         while ($Qattributes->fetch()) {
-          $this->contents[$Qproducts->value('item_id')]['attributes'][$Qattributes->valueInt('products_options_id')] = $Qattributes->valueInt('products_options_value_id');
+          $this->contents[$item_id]['attributes'][$Qattributes->valueInt('products_options_id')] = $Qattributes->valueInt('products_options_value_id');
         }
       } else {
         $_delete_array[] = $item_id;

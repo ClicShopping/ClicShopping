@@ -92,9 +92,14 @@ class ProductsAttributesAdmin
    * - The processed image is saved, and the original uploaded image file is deleted.
    * - Returns the sanitized and cleaned name of the processed image file.
    *
+   * @param string|null $fieldName Optional $_FILES key. Defaults to the
+   *                               legacy 'products_image_resize' input used
+   *                               by the standalone ProductsAttributes page.
+   *                               Pass a custom key (e.g. per-row inline
+   *                               file input) to upload from elsewhere.
    * @return string|null The filename of the processed and saved image, or null if an error occurs during upload or processing.
    */
-  public function uploadImage()
+  public function uploadImage(?string $fieldName = null)
   {
     $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
@@ -107,8 +112,10 @@ class ProductsAttributesAdmin
 
     $error = true;
 
+    $uploadFieldName = $fieldName ?? 'products_image_resize';
+
 // load originale image
-    $image = new Upload('products_image_resize', $CLICSHOPPING_Template->getDirectoryPathTemplateShopImages() . $dir_products_image, null, ['gif', 'jpg', 'png', 'jpeg', 'webp']);
+    $image = new Upload($uploadFieldName, $CLICSHOPPING_Template->getDirectoryPathTemplateShopImages() . $dir_products_image, null, ['gif', 'jpg', 'png', 'jpeg', 'webp']);
 
 // When the image is updated
     if ($image->check() && $image->save()) {

@@ -50,10 +50,22 @@ class AddProductOptionValues extends \ClicShopping\OM\Domains\PagesActionsAbstra
 
     }
 
-    $this->app->db->save('products_options_values_to_products_options', ['products_options_id' => (int)$option_id,
-        'products_options_values_id' => (int)$value_id
-      ]
-    );
+    $Qcheck = $this->app->db->prepare('select products_options_values_to_products_options_id
+                                         from :table_products_options_values_to_products_options
+                                        where products_options_id = :products_options_id
+                                          and products_options_values_id = :products_options_values_id
+                                        limit 1
+                                      ');
+    $Qcheck->bindInt(':products_options_id', (int)$option_id);
+    $Qcheck->bindInt(':products_options_values_id', (int)$value_id);
+    $Qcheck->execute();
+
+    if ($Qcheck->fetch() === false) {
+      $this->app->db->save('products_options_values_to_products_options', [
+        'products_options_id' => (int)$option_id,
+        'products_options_values_id' => (int)$value_id,
+      ]);
+    }
 
     $CLICSHOPPING_Hooks->call('AddProductOptionValue', 'AddProductOptionValue');
 

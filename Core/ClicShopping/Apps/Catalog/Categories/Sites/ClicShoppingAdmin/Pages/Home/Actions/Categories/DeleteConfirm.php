@@ -76,7 +76,7 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
 
       foreach (array_keys($products_delete) as $key) {
-        $CLICSHOPPING_Hooks->call('Products', 'RemoveProduct');
+        $CLICSHOPPING_Hooks->call('Products', 'RemoveProduct', ['products_id' => (int)$key]);
       }
 
       $CLICSHOPPING_Hooks->call('Categories', 'DeleteConfirm');

@@ -149,11 +149,13 @@
     var dropdown = document.getElementById('tab3EditValuesDropdown');
     if (!dropdown) return;
 
+    var ajaxUrl = dropdown.getAttribute('data-ajax-url') || '';
     var valuesData = JSON.parse(dropdown.getAttribute('data-values') || '[]');
     var currentOptionsType = dropdown.getAttribute('data-options-type') || '';
     var selectedName = dropdown.getAttribute('data-selected-name') || '';
     var selectedId = parseInt(dropdown.getAttribute('data-selected-id') || '0', 10);
 
+    var optionsSelect = document.getElementById('tab3EditOptionsId');
     var nativeSelect = document.getElementById('tab3EditValuesSelect');
     var display = document.getElementById('tab3EditValuesDisplay');
     var swatch = document.getElementById('tab3EditValuesSwatch');
@@ -198,15 +200,82 @@
       });
     }
 
+    function rebuildNativeSelect() {
+      nativeSelect.innerHTML = '';
+      valuesData.forEach(function (v) {
+        var opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = v.name;
+        nativeSelect.appendChild(opt);
+      });
+    }
+
+    function applyFirstValue() {
+      if (valuesData.length > 0) {
+        nativeSelect.value = valuesData[0].id;
+        label.textContent = valuesData[0].name;
+        renderSwatch(valuesData[0].name, swatch);
+      } else {
+        nativeSelect.value = '';
+        label.textContent = '';
+        renderSwatch('', swatch);
+      }
+    }
+
+    // Fetch values associated with the chosen option via the bridge table
+    // and reset selection (the previous selected value belonged to the old
+    // option family, no longer relevant).
+    function fetchValuesForOption(optionsId) {
+      if (!ajaxUrl || !optionsId) {
+        valuesData = [];
+        rebuildNativeSelect();
+        applyFirstValue();
+        if (isOpen) buildList();
+        return;
+      }
+
+      var url = ajaxUrl + (ajaxUrl.indexOf('?') >= 0 ? '&' : '?') + 'options_id=' + encodeURIComponent(optionsId);
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onload = function () {
+        if (xhr.status !== 200) {
+          console.error('tab3EditValues: cascade AJAX failed', xhr.status, url);
+          return;
+        }
+        try {
+          var data = JSON.parse(xhr.responseText);
+          valuesData = (data && data.values) || [];
+          currentOptionsType = (data && data.type) || '';
+          dropdown.setAttribute('data-options-type', currentOptionsType);
+        } catch (e) {
+          console.error('tab3EditValues: invalid JSON response', e);
+          valuesData = [];
+        }
+        rebuildNativeSelect();
+        applyFirstValue();
+        if (isOpen) buildList();
+      };
+      xhr.send();
+    }
+
     function openList() { buildList(); list.style.display = 'block'; isOpen = true; }
     function closeList() { list.style.display = 'none'; isOpen = false; }
 
     display.addEventListener('click', function (e) { e.stopPropagation(); isOpen ? closeList() : openList(); });
     document.addEventListener('click', closeList);
 
+    // Initial state: keep the server-rendered selection (admin opens edit
+    // row, sees the current value/option pair)
     nativeSelect.value = selectedId;
     label.textContent = selectedName;
     renderSwatch(selectedName, swatch);
+
+    // On option change, refresh the values list via AJAX
+    if (optionsSelect) {
+      optionsSelect.addEventListener('change', function () {
+        fetchValuesForOption(this.value);
+      });
+    }
   }
 
   // -----------------------------------------------------------------------
@@ -217,6 +286,7 @@
     var dropdown = document.getElementById('tab3ValuesDropdown');
     if (!dropdown) return;
 
+    var ajaxUrl = dropdown.getAttribute('data-ajax-url') || '';
     var valuesData = JSON.parse(dropdown.getAttribute('data-values') || '[]');
     var optionsSelect = document.getElementById('tab3InsertOptionsId');
     var nativeSelect = document.getElementById('tab3ValuesSelect');
@@ -268,6 +338,59 @@
       });
     }
 
+    function rebuildNativeSelect() {
+      nativeSelect.innerHTML = '';
+      valuesData.forEach(function (v) {
+        var opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = v.name;
+        nativeSelect.appendChild(opt);
+      });
+    }
+
+    function applyFirstValue() {
+      if (valuesData.length > 0) {
+        nativeSelect.value = valuesData[0].id;
+        label.textContent = valuesData[0].name;
+        renderSwatch(valuesData[0].name, swatch);
+      } else {
+        nativeSelect.value = '';
+        label.textContent = '';
+        renderSwatch('', swatch);
+      }
+    }
+
+    function fetchValuesForOption(optionsId) {
+      if (!ajaxUrl || !optionsId) {
+        valuesData = [];
+        rebuildNativeSelect();
+        applyFirstValue();
+        if (isOpen) buildList();
+        return;
+      }
+
+      var url = ajaxUrl + (ajaxUrl.indexOf('?') >= 0 ? '&' : '?') + 'options_id=' + encodeURIComponent(optionsId);
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onload = function () {
+        if (xhr.status !== 200) {
+          console.error('tab3InsertValues: cascade AJAX failed', xhr.status, url);
+          return;
+        }
+        try {
+          var data = JSON.parse(xhr.responseText);
+          valuesData = (data && data.values) || [];
+        } catch (e) {
+          console.error('tab3InsertValues: invalid JSON response', e);
+          valuesData = [];
+        }
+        rebuildNativeSelect();
+        applyFirstValue();
+        if (isOpen) buildList();
+      };
+      xhr.send();
+    }
+
     function openList() { buildList(); list.style.display = 'block'; isOpen = true; }
     function closeList() { list.style.display = 'none'; isOpen = false; }
 
@@ -279,16 +402,13 @@
 
     if (optionsSelect) {
       optionsSelect.addEventListener('change', function () {
-        var cur = nativeSelect.options[nativeSelect.selectedIndex];
-        if (cur) renderSwatch(cur.text, swatch);
-        if (isOpen) buildList();
+        fetchValuesForOption(this.value);
       });
-    }
 
-    if (valuesData.length > 0) {
-      nativeSelect.value = valuesData[0].id;
-      label.textContent = valuesData[0].name;
-      renderSwatch(valuesData[0].name, swatch);
+      // Initial sync with the default-selected option
+      fetchValuesForOption(optionsSelect.value);
+    } else {
+      applyFirstValue();
     }
   }
 

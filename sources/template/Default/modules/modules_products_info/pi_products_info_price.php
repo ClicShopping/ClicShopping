@@ -59,11 +59,6 @@ class pi_products_info_price
         } else {
           $product_price_kilo = '';
         }
-// Products attributes
-        if ($CLICSHOPPING_ProductsAttributes->getHasProductAttributes($CLICSHOPPING_ProductsCommon->getId()) > 1) {
-          $clic_has_product_attributes = $CLICSHOPPING_ProductsAttributes->getHasProductAttributes($CLICSHOPPING_ProductsCommon->getID());
-        }
-
 // Minimum quantity to take an order
         if ($CLICSHOPPING_ProductsCommon->getProductsMinimumQuantityToTakeAnOrder() > 1) {
           $min_order_quantity_products_display = CLICSHOPPING::getDef('min_qty_order_product') . ' ' . $CLICSHOPPING_ProductsCommon->getProductsMinimumQuantityToTakeAnOrder();
@@ -150,7 +145,7 @@ class pi_products_info_price
           $products_price_content .= ob_get_clean();
 
 // Strong relations with pi_products_options.php Don't delete
-          if ($CLICSHOPPING_ProductsAttributes->getCountProductsAttributes() == 0 || (\defined('MODULE_PRODUCTS_INFO_OPTIONS_SORT_ORDER') && MODULE_PRODUCTS_INFO_PRICE_SORT_ORDER >= MODULE_PRODUCTS_INFO_OPTIONS_SORT_ORDER)) {
+          if ($CLICSHOPPING_ProductsAttributes->getCountProductsAttributes($CLICSHOPPING_ProductsCommon->getId()) == 0 || (\defined('MODULE_PRODUCTS_INFO_OPTIONS_SORT_ORDER') && MODULE_PRODUCTS_INFO_PRICE_SORT_ORDER >= MODULE_PRODUCTS_INFO_OPTIONS_SORT_ORDER)) {
             $products_price_content .= '</form>' . "\n";
           }
         } // end products_group_view

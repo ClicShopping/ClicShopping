@@ -47,7 +47,9 @@ class CloneAttributes extends \ClicShopping\OM\Domains\PagesActionsAbstract
                                                          options_values_price,
                                                          price_prefix,
                                                          products_options_sort_order,
-                                                         customers_group_id
+                                                         products_attributes_image,
+                                                         customers_group_id,
+                                                         status
                                                    from :table_products_attributes
                                                    where products_id = :products_id
                                                   ');
@@ -64,12 +66,18 @@ class CloneAttributes extends \ClicShopping\OM\Domains\PagesActionsAbstract
             'products_options_sort_order' => (int)$Qattributes->valueInt('products_options_sort_order'),
             'products_attributes_reference' => '',
             'customers_group_id' => (int)$Qattributes->valueInt('customers_group_id'),
+            'products_attributes_image' => $Qattributes->value('products_attributes_image'),
+            'status' => $Qattributes->valueInt('status'),
           ];
 
-          $this->app->db->save('products_attributes', [$sql_array]);
+          $this->app->db->save('products_attributes', $sql_array);
         }
       }
       $CLICSHOPPING_Hooks->call('CloneAttributes', 'Save');
+
+      if (\defined('DOWNLOAD_ENABLED') && DOWNLOAD_ENABLED == 'true') {
+        Registry::get('MessageStack')->add($this->app->getDef('text_clone_download_not_cloned'), 'warning', 'ProductsAttributes');
+      }
     }
 
     $this->app->redirect('ProductsAttributes#tab3');

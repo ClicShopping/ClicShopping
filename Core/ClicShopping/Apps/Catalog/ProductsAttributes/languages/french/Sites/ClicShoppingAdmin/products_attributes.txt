@@ -9,7 +9,7 @@ table_heading_type = Type
 table_heading_ref_attributes = Ref. Attribut
 table_heading_product = Nom du produit
 table_heading_opt_name = Nom de l'option
-table_heading_opt_value = Caratéristique de l'option
+table_heading_opt_value = Caractéristique de l'option
 table_heading_opt_price = Prix
 table_heading_opt_price_prefix = Préfixe
 table_heading_opt_order = Ordre affichage catalogue
@@ -49,8 +49,12 @@ text_option_name = Nom de l'option
 
 text_all_groups = All groups
 visitor_name = Normal customer
-text_select = Select
-text_radio = Radio
+text_select = Liste déroulante
+text_radio = Boutons radio
+text_checkbox = Cases à cocher
+text_text = Texte court
+text_textarea = Texte long
+text_color_picker = Sélecteur de couleur
 
 tab_step1 = Step 1 Attribut de l'option produit
 tab_step2 = Step 2 Valeur des attributs
@@ -62,3 +66,5 @@ button_copy = Copier
 
 error_catalog_download_directory_not_writeable = Le répertoire de téléchargement n'est pas en mode écriture : Download/Private
 error_file_not_supported = Format fichier image non supporté
+
+text_clone_download_not_cloned = Les attributs ont été clonés avec succès. À noter : les fichiers de téléchargement n'ont pas été copiés — pensez à les reconfigurer manuellement sur les produits clonés.

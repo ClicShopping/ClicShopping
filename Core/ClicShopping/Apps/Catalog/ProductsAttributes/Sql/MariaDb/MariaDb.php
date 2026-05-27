@@ -96,5 +96,42 @@ ALTER TABLE :table_products_attributes ADD status TINYINT(1) NOT NULL DEFAULT '1
 EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
+
+    self::installBridgeUniqueKey();
+  }
+
+  /**
+   * Adds a UNIQUE key on (products_options_id, products_options_values_id)
+   * for the bridge table so duplicate option-value pairings cannot be
+   * inserted (legacy AddProductOptionValues could create them on
+   * double-submit). Pre-existing duplicates are pruned before the ALTER
+   * since MariaDB rejects UNIQUE creation on a table that already has
+   * collisions. Idempotent: skips if the index already exists.
+   */
+  private static function installBridgeUniqueKey(): void
+  {
+    $CLICSHOPPING_Db = Registry::get('Db');
+
+    $QcheckIndex = $CLICSHOPPING_Db->query("show index from :table_products_options_values_to_products_options where Key_name = 'unique_option_value'");
+
+    if ($QcheckIndex->fetch() !== false) {
+      return;
+    }
+
+    $cleanup = <<<EOD
+DELETE pov2po1
+  FROM :table_products_options_values_to_products_options pov2po1
+  INNER JOIN :table_products_options_values_to_products_options pov2po2
+          ON pov2po1.products_options_id = pov2po2.products_options_id
+         AND pov2po1.products_options_values_id = pov2po2.products_options_values_id
+         AND pov2po1.products_options_values_to_products_options_id > pov2po2.products_options_values_to_products_options_id
+EOD;
+    $CLICSHOPPING_Db->exec($cleanup);
+
+    $alter = <<<EOD
+ALTER TABLE :table_products_options_values_to_products_options
+  ADD UNIQUE KEY unique_option_value (products_options_id, products_options_values_id)
+EOD;
+    $CLICSHOPPING_Db->exec($alter);
   }
 }

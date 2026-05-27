@@ -47,6 +47,10 @@ text_all_groups = All groups
 visitor_name = Normal customer
 text_select = Select
 text_radio = Radio
+text_checkbox = Checkbox
+text_text = Text
+text_textarea = Textarea
+text_color_picker = Color picker
 
 tab_step1 = Step 1 Products options name
 tab_step2 = Step 2 Value option values
@@ -58,3 +62,5 @@ button_copy = Copy
 
 error_catalog_download_directory_not_writeable = Download directory not writeable : Download/Private
 error_file_not_supported = File image format not supported
+
+text_clone_download_not_cloned = Attributes were cloned successfully. Note: download files were not copied — please reconfigure them manually for the cloned products.

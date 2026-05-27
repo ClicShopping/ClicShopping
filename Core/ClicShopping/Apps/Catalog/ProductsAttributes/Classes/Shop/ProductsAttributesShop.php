@@ -83,15 +83,15 @@ class ProductsAttributesShop
       $QproductsAttributes->execute();
     }
 
-    return $QproductsAttributes->valueDecimal('total');
+    return $QproductsAttributes->valueInt('total');
   }
 
   /**
    * Get the count of products attributes
    * @param int|null $id The ID of the product to count attributes for, or null to count for all products
-   * @return mixed
+   * @return int
    */
-  public function getCountProductsAttributes(mixed $id = null)
+  public function getCountProductsAttributes(mixed $id = null): int
   {
     return $this->setCountProductsAttributes($id);
   }

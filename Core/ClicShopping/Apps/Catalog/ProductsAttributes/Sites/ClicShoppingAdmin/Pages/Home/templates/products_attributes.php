@@ -112,16 +112,20 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
                                                                                        p.products_model,
                                                                                        pd.products_name,
                                                                                        pov.products_options_values_name,
-                                                                                       pa.products_attributes_reference
+                                                                                       pa.products_attributes_reference,
+                                                                                       po.products_options_type
                                                                                 from :table_products p,
                                                                                      :table_products_options_values pov,
+                                                                                     :table_products_options po,
                                                                                      :table_products_attributes pa,
                                                                                      :table_products_description pd
                                                                                 where pd.products_id = p.products_id
                                                                                 and pov.language_id = :language_id
                                                                                 and pd.language_id = :language_id
+                                                                                and po.language_id = :language_id
                                                                                 and pa.products_id = p.products_id
                                                                                 and pa.options_id = :options_id
+                                                                                and po.products_options_id = pa.options_id
                                                                                 and pov.products_options_values_id = pa.options_values_id
                                                                                 order by pd.products_name
                                                                               ');
@@ -426,7 +430,7 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
 
             <?php
             } else {
-            $Qvalues = $CLICSHOPPING_ProductsAttributes->db->prepare('select SQL_CALC_FOUND_ROWS pov.products_options_values_id,
+            $Qvalues = $CLICSHOPPING_ProductsAttributes->db->prepare('select SQL_CALC_FOUND_ROWS distinct pov.products_options_values_id,
                                                                                                     pov.products_options_values_name,
                                                                                                     pov2po.products_options_id
                                                                          from :table_products_options_values pov left join :table_products_options_values_to_products_options pov2po on pov.products_options_values_id = pov2po.products_options_values_id
@@ -740,7 +744,7 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
                     </select>
                   </td>
                   <td>
-                    <select name="options_id">
+                    <select name="options_id" id="tab3EditOptionsId">
                       <?php
                       $QoptionValues = $CLICSHOPPING_ProductsAttributes->db->prepare('select *
                                                                                      from :table_products_options
@@ -800,6 +804,7 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
                          data-options-type="<?php echo HTML::outputProtected($options_type); ?>"
                          data-selected-name="<?php echo HTML::outputProtected($tab3EditSelectedName); ?>"
                          data-selected-id="<?php echo (int)$tab3EditSelectedId; ?>"
+                         data-ajax-url="<?php echo CLICSHOPPING::link('ajax/Products/products_attributes_inline.php'); ?>"
                          style="position:relative;display:inline-block;min-width:180px;">
                       <div id="tab3EditValuesDisplay" style="border:1px solid #ced4da;border-radius:4px;padding:4px 8px;cursor:pointer;background:#fff;display:flex;align-items:center;gap:6px;min-height:31px;">
                         <span id="tab3EditValuesSwatch" style="display:inline-block;width:18px;height:18px;border:1px solid #ccc;border-radius:3px;flex-shrink:0;"></span>
@@ -1093,7 +1098,10 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
                     <?php endforeach; ?>
                   </select>
                   <!-- Custom color-aware dropdown -->
-                  <div id="tab3ValuesDropdown" data-values="<?php echo HTML::outputProtected(json_encode($tab3ValuesData)); ?>" style="position:relative;display:inline-block;min-width:180px;">
+                  <div id="tab3ValuesDropdown"
+                       data-values="<?php echo HTML::outputProtected(json_encode($tab3ValuesData)); ?>"
+                       data-ajax-url="<?php echo CLICSHOPPING::link('ajax/Products/products_attributes_inline.php'); ?>"
+                       style="position:relative;display:inline-block;min-width:180px;">
                     <div id="tab3ValuesDisplay" style="border:1px solid #ced4da;border-radius:4px;padding:4px 8px;cursor:pointer;background:#fff;display:flex;align-items:center;gap:6px;min-height:31px;">
                       <span id="tab3ValuesSwatch" style="display:inline-block;width:18px;height:18px;border:1px solid #ccc;border-radius:3px;flex-shrink:0;"></span>
                       <span id="tab3ValuesLabel" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>

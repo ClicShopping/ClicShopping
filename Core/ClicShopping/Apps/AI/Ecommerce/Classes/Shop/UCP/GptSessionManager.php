@@ -17,7 +17,7 @@ class GptSessionManager
 
   public function __construct()
   {
-    $this->dirSession = CLICSHOPPING::BASE_DIR . 'Work/Sessions/Shop/UCP';
+    $this->dirSession = CLICSHOPPING::BASE_DIR . 'Work/Session/Shop/UCP';
     $this->ttl = \defined('CLICSHOPPING_APP_ECOMMERCE_UCP_SESSION_TIMEOUT')
       ? (int)CLICSHOPPING_APP_ECOMMERCE_UCP_SESSION_TIMEOUT
       : 86400;

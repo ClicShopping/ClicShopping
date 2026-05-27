@@ -438,7 +438,18 @@ $Qcustomers->execute();
                     $attributes_reference = '<strong> ' . $order->products[$i]['attributes'][$j]['reference'] . '</strong> - ';
                   }
 
-                  echo '<br /><small>&nbsp;<i> - ' . $attributes_reference . $order->products[$i]['attributes'][$j]['option'] . ': ' . $order->products[$i]['attributes'][$j]['value'];
+                  $attr_value = $order->products[$i]['attributes'][$j]['value'];
+                  $attr_value_display = HTML::outputProtected($attr_value);
+
+                  // If the stored value is a hex color (FFF / FFF017 / #FFF017),
+                  // render only a colored swatch so the operator sees the actual
+                  // hue without the raw hex noise.
+                  if (preg_match('/^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/', trim((string)$attr_value))) {
+                    $hex = '#' . ltrim(trim((string)$attr_value), '#');
+                    $attr_value_display = '<span title="' . HTML::outputProtected($hex) . '" style="display:inline-block;width:14px;height:14px;background-color:' . HTML::outputProtected($hex) . ';border:1px solid #ccc;border-radius:2px;vertical-align:middle;"></span>';
+                  }
+
+                  echo '<br /><small>&nbsp;<i> - ' . $attributes_reference . $order->products[$i]['attributes'][$j]['option'] . ': ' . $attr_value_display;
 
                   if ($order->products[$i]['attributes'][$j]['price'] != 0) echo ' (' . $order->products[$i]['attributes'][$j]['prefix'] . $CLICSHOPPING_Currencies->format($order->products[$i]['attributes'][$j]['price'] * $order->products[$i]['qty'], true, $order->info['currency'], $order->info['currency_value']) . ')';
                   echo '</i></small>';

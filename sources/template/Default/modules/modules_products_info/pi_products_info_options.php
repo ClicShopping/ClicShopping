@@ -129,9 +129,6 @@ class pi_products_info_options
                 'text' => $QproductsOptions->value('products_options_values_name')
               ];
 
-              $products_options_array_id[]   = $QproductsOptions->valueInt('products_options_values_id');
-              $products_options_array_name[] = $QproductsOptions->value('products_options_values_name');
-
               if ($QproductsOptions->valueDecimal('options_values_price') != '0') {
                 $option_price_display = ' (' . $QproductsOptions->value('price_prefix') . $CLICSHOPPING_Currencies->displayPrice($QproductsOptions->valueDecimal('options_values_price'), $CLICSHOPPING_Tax->getTaxRate($CLICSHOPPING_ProductsCommon->getProductsTaxClassId())) . ') ';
 
@@ -149,7 +146,7 @@ class pi_products_info_options
               }
             }
 
-            if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')]) && \is_string($CLICSHOPPING_ProductsCommon->getID())) {
+            if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')])) {
               $selected_attribute = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')];
             } else {
               $selected_attribute = false;
@@ -271,18 +268,11 @@ class pi_products_info_options
               ];
             }
 
-            if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')]) && \is_string($CLICSHOPPING_ProductsCommon->getID())) {
+            if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')])) {
               $selected_attribute = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')];
             } else {
               $selected_attribute = false;
             }
-            /*
-             if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')])) {
-                  $selected_attribute = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')];
-              } else {
-                  $selected_attribute = ''; // Utilisez une chaîne vide au lieu de false
-              }
-             */
             $option_label = $QproductsOptionsName->value('products_options_name');
             $group_id     = 'color_group_' . $QproductsOptionsName->valueInt('products_options_id');
 
@@ -328,7 +318,7 @@ class pi_products_info_options
               }
             }
 
-            if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')]) && \is_string($CLICSHOPPING_ProductsCommon->getID())) {
+            if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')])) {
               $selected_attribute = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')];
             } else {
               $selected_attribute = false;
@@ -388,13 +378,13 @@ class pi_products_info_options
         $products_options_content_display .= '</div>' . "\n";
 
       // Strong relations with pi_products_info_price.php Don't delete
-        if (\defined('MODULE_PRODUCTS_INFO_PRICE_SORT_ORDER') && MODULE_PRODUCTS_INFO_PRICE_SORT_ORDER == '') {
-          $module_produts_info_price_sort_order = -1;
+        if (\defined('MODULE_PRODUCTS_INFO_PRICE_SORT_ORDER') && MODULE_PRODUCTS_INFO_PRICE_SORT_ORDER !== '') {
+          $module_products_info_price_sort_order = (int)MODULE_PRODUCTS_INFO_PRICE_SORT_ORDER;
         } else {
-          $module_produts_info_price_sort_order = MODULE_PRODUCTS_INFO_PRICE_SORT_ORDER ?? 0;
+          $module_products_info_price_sort_order = -1;
         }
 
-        if (MODULE_PRODUCTS_INFO_OPTIONS_SORT_ORDER > $module_produts_info_price_sort_order) {
+        if ((int)MODULE_PRODUCTS_INFO_OPTIONS_SORT_ORDER > $module_products_info_price_sort_order) {
           $products_options_content_display .= '</form>' . "\n";
         }
 

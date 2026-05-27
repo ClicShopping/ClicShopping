@@ -152,28 +152,6 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $this->app->db->save('configuration', ['configuration_value' => $code], ['configuration_key' => 'DEFAULT_LANGUAGE']);
     }
 
-// create additional products_options records
-    $Qoptions = $this->app->db->get('products_options', '*', ['language_id' => $this->lang->getId()]);
-
-    while ($Qoptions->fetch()) {
-      $cols = $Qoptions->toArray();
-
-      $cols['language_id'] = $insert_id;
-
-      $this->app->db->save('products_options', $cols);
-    }
-
-// create additional products_options_values records
-    $Qvalues = $this->app->db->get('products_options_values', '*', ['language_id' => (int)$this->lang->getId()]);
-
-    while ($Qvalues->fetch()) {
-      $cols = $Qvalues->toArray();
-
-      $cols['language_id'] = $insert_id;
-
-      $this->app->db->save('products_options_values', $cols);
-    }
-
     $CLICSHOPPING_Hooks->call('Langues', 'Insert');
 
     Cache::clear('languages-system-shop');

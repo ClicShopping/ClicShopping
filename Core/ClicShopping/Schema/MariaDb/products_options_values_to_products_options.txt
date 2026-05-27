@@ -3,6 +3,7 @@ products_options_id int not_null comment(FK to products_options table - option i
 products_options_values_id int not_null comment(FK to products_options_values table - specific value like Small, Red)
 --
 primary products_options_values_to_products_options_id
+unique unique_option_value products_options_id products_options_values_id
 ##
 engine innodb
 character_set utf8mb4

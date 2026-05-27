@@ -46,7 +46,14 @@ class DeleteValue extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $Qdelete->bindInt(':products_options_values_id', $value_id);
     $Qdelete->execute();
 
-    $CLICSHOPPING_Hooks->call('DeleteValue', 'Delete');
+    $Qdelete = $this->app->db->prepare('delete
+                                          from :table_products_attributes
+                                          where options_values_id = :options_values_id
+                                        ');
+    $Qdelete->bindInt(':options_values_id', $value_id);
+    $Qdelete->execute();
+
+    $CLICSHOPPING_Hooks->call('ProductsAttributes', 'DeleteValue', ['value_id' => (int)$value_id]);
 
     $this->app->redirect('ProductsAttributes&' . $page_info);
   }

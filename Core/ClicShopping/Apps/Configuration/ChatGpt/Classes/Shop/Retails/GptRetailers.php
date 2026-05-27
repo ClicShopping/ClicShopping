@@ -99,7 +99,7 @@ class GptRetailers
     $this->checkAppStripe();
 
     // Setup session directory
-    $this->dirSession = CLICSHOPPING::BASE_DIR . 'Work/Sessions/Shop/ACP';
+    $this->dirSession = CLICSHOPPING::BASE_DIR . 'Work/Session/Shop/ACP';
 
     if (!is_dir( $this->dirSession)){
       mkdir( $this->dirSession, 0777, true);

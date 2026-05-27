@@ -30,17 +30,62 @@ class DeleteOption extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $page_info = 'option_page=' . HTML::sanitize($option_page) . '&value_page=' . HTML::sanitize($value_page) . '&attribute_page=' . HTML::sanitize($attribute_page);
 
-//      $option_id = HTML::sanitize($_POST['option_id']);
-    $option_id = HTML::sanitize($_GET['option_id']);
+    $option_id = (int)HTML::sanitize($_GET['option_id']);
 
+    // 1. Collect value_ids linked to this option before the bridge is dropped
+    $Qvalues = $this->app->db->prepare('select products_options_values_id
+                                          from :table_products_options_values_to_products_options
+                                         where products_options_id = :products_options_id
+                                       ');
+    $Qvalues->bindInt(':products_options_id', $option_id);
+    $Qvalues->execute();
+
+    $value_ids = [];
+
+    while ($Qvalues->fetch()) {
+      $value_ids[] = $Qvalues->valueInt('products_options_values_id');
+    }
+
+    // 2. Delete product attribute rows using this option
     $Qdelete = $this->app->db->prepare('delete
-                                          from :table_products_options
+                                          from :table_products_attributes
+                                          where options_id = :options_id
+                                       ');
+    $Qdelete->bindInt(':options_id', $option_id);
+    $Qdelete->execute();
+
+    // 3. Delete bridge rows for this option
+    $Qdelete = $this->app->db->prepare('delete
+                                          from :table_products_options_values_to_products_options
                                           where products_options_id = :products_options_id
-                                        ');
+                                       ');
     $Qdelete->bindInt(':products_options_id', $option_id);
     $Qdelete->execute();
 
-    $CLICSHOPPING_Hooks->call('DeleteOption', 'Delete');
+    // 4. Drop values that no longer have ANY bridge link (orphans)
+    foreach ($value_ids as $value_id) {
+      $Qcheck = $this->app->db->prepare('select products_options_values_to_products_options_id
+                                           from :table_products_options_values_to_products_options
+                                          where products_options_values_id = :products_options_values_id
+                                          limit 1
+                                         ');
+      $Qcheck->bindInt(':products_options_values_id', $value_id);
+      $Qcheck->execute();
+
+      if ($Qcheck->fetch() === false) {
+        $this->app->db->delete('products_options_values', ['products_options_values_id' => $value_id]);
+      }
+    }
+
+    // 5. Delete the option itself (all languages)
+    $Qdelete = $this->app->db->prepare('delete
+                                          from :table_products_options
+                                          where products_options_id = :products_options_id
+                                       ');
+    $Qdelete->bindInt(':products_options_id', $option_id);
+    $Qdelete->execute();
+
+    $CLICSHOPPING_Hooks->call('ProductsAttributes', 'DeleteOption', ['option_id' => $option_id]);
 
     $this->app->redirect('ProductsAttributes&' . $page_info);
   }

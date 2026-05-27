@@ -35,11 +35,7 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $this->app->db->save('configuration', ['configuration_value' => ''], ['configuration_key' => 'DEFAULT_CURRENCY']);
     }
 
-// Delete all table for the language deleted
     $this->app->db->delete('languages', ['languages_id' => $lID]);
-    $this->app->db->delete('products_options', ['language_id' => $lID]);
-    $this->app->db->delete('products_options_values', ['language_id' => $lID]);
-
     $CLICSHOPPING_Hooks->call('Langues', 'DeleteConfirm');
 
     Cache::clear('languages-system-shop');

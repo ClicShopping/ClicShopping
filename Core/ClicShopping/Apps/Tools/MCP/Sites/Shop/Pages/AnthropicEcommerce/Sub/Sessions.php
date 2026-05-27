@@ -281,7 +281,7 @@ class Sessions
   private function listSessions(): void
   {
     try {
-      $dirSession = \ClicShopping\OM\CLICSHOPPING::BASE_DIR . 'Work/Sessions/Shop/UCP';
+      $dirSession = \ClicShopping\OM\CLICSHOPPING::BASE_DIR . 'Work/Session/Shop/UCP';
       $sessions   = [];
 
       if (is_dir($dirSession)) {

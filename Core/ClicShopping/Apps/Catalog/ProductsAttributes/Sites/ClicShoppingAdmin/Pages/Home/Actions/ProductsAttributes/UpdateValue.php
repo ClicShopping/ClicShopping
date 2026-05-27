@@ -24,7 +24,6 @@ class UpdateValue extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     $CLICSHOPPING_Language = Registry::get('Language');
-    $CLICSHOPPING_Hooks->call('AddOptionName', 'PreAction');
 
     $value_name_array = $_POST['value_name'];
     $value_id = HTML::sanitize($_POST['value_id']);
@@ -51,14 +50,17 @@ class UpdateValue extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $Qupdate->execute();
     }
 
-    $Qupdate = $this->app->db->prepare('update :table_products_options_values_to_products_options
-                                          set products_options_id = :products_options_id
+    $Qdelete = $this->app->db->prepare('delete
+                                          from :table_products_options_values_to_products_options
                                           where products_options_values_id = :products_options_values_id
                                         ');
+    $Qdelete->bindInt(':products_options_values_id', $value_id);
+    $Qdelete->execute();
 
-    $Qupdate->bindInt(':products_options_id', $option_id);
-    $Qupdate->bindInt(':products_options_values_id', $value_id);
-    $Qupdate->execute();
+    $this->app->db->save('products_options_values_to_products_options', [
+      'products_options_id' => (int)$option_id,
+      'products_options_values_id' => (int)$value_id,
+    ]);
 
     $CLICSHOPPING_Hooks->call('UpdateValue', 'Save');
 

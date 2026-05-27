@@ -1,0 +1,29 @@
+tab_products_attributes_inline = Attributs
+
+text_products_attributes_inline = Attributs du produit
+text_help_general = Aide
+text_help_attributes_inline = Ajoutez ou modifiez les variantes de ce produit. Les options et leurs valeurs doivent au préalable être créées dans l'application Attributs Produits. Les modifications sont enregistrées lorsque vous cliquez sur Enregistrer sur le produit.
+
+table_heading_id = ID
+table_heading_image = Image
+table_heading_reference = Réf. Attribut
+table_heading_option = Option
+table_heading_value = Caractéristique
+table_heading_customers_group = B2B / B2C
+table_heading_price = Prix
+table_heading_price_prefix = Préfixe
+table_heading_status = Statut
+table_heading_sort_order = Ordre affichage
+table_heading_action = Action
+
+text_select_option = -- Choisir une option --
+text_select_value = -- Choisir une valeur --
+text_status_active = Actif
+text_status_inactive = Inactif
+text_no_image = Aucune image
+
+button_add = Ajouter une variante
+button_remove = Supprimer
+button_restore = Restaurer
+
+js_confirm_remove = Supprimer cette variante ? La suppression ne sera appliquée que lors de l'enregistrement du produit.

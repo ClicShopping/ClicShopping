@@ -23,14 +23,16 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
   public function execute()
   {
-    if (($_GET['flag'] == 0) || ($_GET['flag'] == 1)) {
-      if (isset($_GET['products_attributes_id'])) {
-        ProductsAttributesStatusAdmin::getStatus($_GET['products_attributes_id'], $_GET['flag']);
+    if (isset($_GET['flag'], $_GET['products_attributes_id']) && is_numeric($_GET['flag']) && is_numeric($_GET['products_attributes_id'])) {
+      $flag = (int)$_GET['flag'];
+
+      if ($flag === 0 || $flag === 1) {
+        ProductsAttributesStatusAdmin::setStatus((int)$_GET['products_attributes_id'], $flag);
       }
     }
 
     if (isset($_GET['products_attributes_id'])) {
-      $this->app->redirect('ProductsAttributes&products_attributes_id=' . $_GET['products_attributes_id'] . '#tab3');
+      $this->app->redirect('ProductsAttributes&products_attributes_id=' . (int)$_GET['products_attributes_id'] . '#tab3');
     } else {
       $this->app->redirect('ProductsAttributes#tab3');
     }

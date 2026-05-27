@@ -30,7 +30,7 @@ class DeleteAttribute extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $page_info = 'option_page=' . HTML::sanitize($option_page) . '&value_page=' . HTML::sanitize($value_page) . '&attribute_page=' . HTML::sanitize($attribute_page);
 
-    $attribute_id = HTML::sanitize($_GET['attribute_id']);
+    $attribute_id = (int)HTML::sanitize($_GET['attribute_id']);
 
     $Qdelete = $this->app->db->prepare('delete
                                           from :table_products_attributes
@@ -48,7 +48,7 @@ class DeleteAttribute extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $Qdelete->execute();
 
 
-    $CLICSHOPPING_Hooks->call('DeleteAttribute', 'Delete');
+    $CLICSHOPPING_Hooks->call('ProductsAttributes', 'DeleteAttribute', ['attribute_id' => $attribute_id]);
 
     $this->app->redirect('ProductsAttributes&' . $page_info);
   }

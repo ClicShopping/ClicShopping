@@ -23,7 +23,7 @@ class GptSessionManagerACP
 
   public function __construct()
   {
-    $this->dirSession = CLICSHOPPING::BASE_DIR . 'Work/Sessions/Shop/ACP';
+    $this->dirSession = CLICSHOPPING::BASE_DIR . 'Work/Session/Shop/ACP';
 
     if (!is_dir($this->dirSession)) {
       mkdir($this->dirSession, 0775, true);

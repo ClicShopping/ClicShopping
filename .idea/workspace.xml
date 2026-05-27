@@ -4,120 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="libraries updated">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="api update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/COMMERCIAL.md" beforeDir="false" afterPath="$PROJECT_DIR$/COMMERCIAL.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/languages/english/Module/ClicShoppingAdmin/Config/ACP/Params/shared_key_retail.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/languages/english/Module/ClicShoppingAdmin/Config/UCP/Params/shared_key_retail.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/languages/french/Module/ClicShoppingAdmin/Config/ACP/Params/shared_key_retail.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/languages/french/Module/ClicShoppingAdmin/Config/UCP/Params/shared_key_retail.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Api.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Api.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Classes/Shop/ApiSecurity.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Classes/Shop/ApiSecurity.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Classes/Shop/ApiShop.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Classes/Shop/ApiShop.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Classes/Shop/Authentification.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Classes/Shop/Authentification.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/AI.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/AI.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/account_lock_duration.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/account_lock_duration.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/max_login_attempts.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/max_login_attempts.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/max_request_per_window.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/max_request_per_window.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/rate_limit_window.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/rate_limit_window.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/session_timeout_minutes.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/session_timeout_minutes.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/sort_order.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/sort_order.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/status.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/AI/Params/status.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/ConfigAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/ConfigAbstract.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/ConfigParamAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Module/ClicShoppingAdmin/Config/ConfigParamAbstract.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/AddIp.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/AddIp.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/Delete.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/Delete.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/DeleteIP.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/DeleteIP.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/DeleteSession.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/DeleteSession.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/Insert.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/Insert.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/SetFlag.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/SetFlag.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/Update.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/Update.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/UpdateAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Api/UpdateAll.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Delete.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Delete.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Install.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Install.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Process.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Process.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Uninstall.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Uninstall.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Edit.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Actions/Edit.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Home.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/Home.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/templates/api.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/templates/api.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/templates/configure.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/templates/configure.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/templates/edit.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/templates/edit.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/templates/main.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/ClicShoppingAdmin/Pages/Home/templates/main.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Category/Category.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Category/Category.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Customers/Customers.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Customers/Customers.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Login/Login.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Login/Login.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Manufacturers/Manufacturers.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Manufacturers/Manufacturers.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Orders/Orders.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Orders/Orders.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Product/Product.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Product/Product.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/ProductGpt/ProductGpt.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/ProductGpt/ProductGpt.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Suppliers/Suppliers.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Suppliers/Suppliers.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Token/Token.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sites/Shop/Pages/Token/Token.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sql/MariaDb/MariaDb.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/Sql/MariaDb/MariaDb.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/clicshopping.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Module/ClicShoppingAdmin/Config/Ai/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Module/ClicShoppingAdmin/Config/Ai/Params/sort_order.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Module/ClicShoppingAdmin/Config/Ai/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Module/ClicShoppingAdmin/Config/Ai/Params/status.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Sites/ClicShoppingAdmin/configure.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Sites/ClicShoppingAdmin/configure.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Sites/ClicShoppingAdmin/install.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Sites/ClicShoppingAdmin/install.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/english/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Module/ClicShoppingAdmin/Config/AI/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Module/ClicShoppingAdmin/Config/AI/Params/sort_order.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Module/ClicShoppingAdmin/Config/AI/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Module/ClicShoppingAdmin/Config/AI/Params/status.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Sites/ClicShoppingAdmin/configure.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Sites/ClicShoppingAdmin/configure.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Sites/ClicShoppingAdmin/install.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Sites/ClicShoppingAdmin/install.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Api/languages/french/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/ClicShoppingAdmin/MCPConnector.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/ClicShoppingAdmin/MCPConnector.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/EndPoint/OrdersShop.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/EndPoint/OrdersShop.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/EndPoint/RagBIPermissions.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/EndPoint/RagBIPermissions.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/Security/McpPermissions.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/Security/McpPermissions.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/Security/McpSecurity.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/Security/McpSecurity.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/Security/McpShop.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/ConfigAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/ConfigAbstract.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/ConfigParamAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/ConfigParamAbstract.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/MC.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/MC.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/account_lock_duration.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/account_lock_duration.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/max_login_attempts.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/max_login_attempts.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/max_request_per_window.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/max_request_per_window.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/rate_limit_window.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/rate_limit_window.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/session_timeout_minutes.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/session_timeout_minutes.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/sort_order.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/sort_order.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/status.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/ClicShoppingAdmin/Config/MC/Params/status.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/Hooks/Shop/Cronjob/Process.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Module/Hooks/Shop/Cronjob/Process.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/AlertViewer.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/AlertViewer.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Delete.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Delete.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Install.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Install.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Process.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Process.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Uninstall.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Configure/Uninstall.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Edit.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/Edit.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/HealthMonitor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/HealthMonitor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/AddIp.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/AddIp.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/Delete.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/Delete.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/DeleteIP.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/DeleteIP.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/DeleteSession.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/DeleteSession.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/Insert.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/Insert.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/SetFlag.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/MCP/SetFlag.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/PerformanceMonitor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Actions/PerformanceMonitor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Home.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/Home.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/templates/configure.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/templates/configure.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/templates/edit.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/templates/edit.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/templates/main.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/templates/main.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/templates/mcp.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/ClicShoppingAdmin/Pages/Home/templates/mcp.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/AnthropicEcommerce/AnthropicEcommerce.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/AnthropicEcommerce/AnthropicEcommerce.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/AnthropicEcommerce/AnthropicEcommercePermissions.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/AnthropicEcommerce/AnthropicEcommercePermissions.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/ChatRagBI/ChatRagBI.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/ChatRagBI/ChatRagBI.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/CustomersProducts/CustomersProducts.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/CustomersProducts/CustomersProducts.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sql/MariaDb/MariaDb.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sql/MariaDb/MariaDb.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/api_session.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/api_session.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/mcp_session.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/mcp_session.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LICENSE.md" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TRADEMARK.md" beforeDir="false" afterPath="$PROJECT_DIR$/TRADEMARK.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/documentation.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/install/Db/clicshopping.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/Shop/ACP/GptSessionManagerACP.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/Shop/ACP/GptSessionManagerACP.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/Shop/UCP/GptSessionManager.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Classes/Shop/UCP/GptSessionManager.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Classes/Shop/Retails/GptRetailers.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Classes/Shop/Retails/GptRetailers.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/AnthropicEcommerce/Sub/Sessions.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Sites/Shop/Pages/AnthropicEcommerce/Sub/Sessions.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -166,22 +58,22 @@
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
       <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0000000000568865" />
-      <entry key="S10" value="1.000012978270845" />
-      <entry key="S30" value="1.0509996649257896" />
-      <entry key="S60" value="1.4332624132701173" />
-      <entry key="M2" value="2.356237370584007" />
-      <entry key="M5" value="3.9919688973985945" />
-      <entry key="M10" value="5.117187341664256" />
-      <entry key="M15" value="5.632256163567912" />
-      <entry key="M30" value="6.2499589266904465" />
-      <entry key="H1" value="6.639456230387281" />
-      <entry key="H2" value="8.961083881246672" />
-      <entry key="H4" value="24.91521160021052" />
-      <entry key="D1" value="113.9656073863137" />
-      <entry key="W1" value="152.36988785981717" />
+      <entry key="MS500" value="1.0000707103358957" />
+      <entry key="S2" value="1.2345888893497947" />
+      <entry key="S5" value="2.5380350213681577" />
+      <entry key="S10" value="4.0155998616470745" />
+      <entry key="S30" value="6.0014914661684235" />
+      <entry key="S60" value="7.037375337599576" />
+      <entry key="M2" value="8.305375479274186" />
+      <entry key="M5" value="10.32003662137111" />
+      <entry key="M10" value="11.693486164425545" />
+      <entry key="M15" value="12.322874375808977" />
+      <entry key="M30" value="13.079080417855833" />
+      <entry key="H1" value="13.548943181177744" />
+      <entry key="H2" value="15.90189147852034" />
+      <entry key="H4" value="31.838034898866713" />
+      <entry key="D1" value="120.90844883846773" />
+      <entry key="W1" value="159.3589919701071" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -203,23 +95,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9592641193252643" />
-      <entry key="MS500" value="0.9917167307382933" />
-      <entry key="S2" value="0.9979227189990506" />
-      <entry key="S5" value="0.9991685692704542" />
-      <entry key="S10" value="0.9995971719356532" />
-      <entry key="S30" value="1.0508552041679584" />
-      <entry key="S60" value="1.4331685686719695" />
-      <entry key="M2" value="2.356164134496558" />
-      <entry key="M5" value="3.9919184897633917" />
-      <entry key="M10" value="5.1171534358857" />
-      <entry key="M15" value="5.632230649644221" />
-      <entry key="M30" value="6.249944331543955" />
-      <entry key="H1" value="6.639445397654031" />
-      <entry key="H2" value="8.96095686939861" />
-      <entry key="H4" value="24.914648713434403" />
-      <entry key="D1" value="113.9650158826619" />
-      <entry key="W1" value="152.36977193356938" />
+      <entry key="MS100" value="7.497223493641603E-20" />
+      <entry key="MS500" value="2.1672177435324067E-4" />
+      <entry key="S2" value="0.3288399416051282" />
+      <entry key="S5" value="1.9041983843130672" />
+      <entry key="S10" value="3.6122473012073613" />
+      <entry key="S30" value="5.840375824512902" />
+      <entry key="S60" value="6.952834507232021" />
+      <entry key="M2" value="8.262033418247585" />
+      <entry key="M5" value="10.30241879150816" />
+      <entry key="M10" value="11.684623928000322" />
+      <entry key="M15" value="12.31695319921824" />
+      <entry key="M30" value="13.076112860868573" />
+      <entry key="H1" value="13.547454601661133" />
+      <entry key="H2" value="15.901025978977762" />
+      <entry key="H4" value="31.83710399112774" />
+      <entry key="D1" value="120.90779600193888" />
+      <entry key="W1" value="159.3588672479783" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -382,15 +274,7 @@
       <workItem from="1779726586826" duration="34000" />
       <workItem from="1779790053473" duration="92000" />
       <workItem from="1779793424197" duration="195000" />
-      <workItem from="1779824107588" duration="1747000" />
-    </task>
-    <task id="LOCAL-00036" summary=" context enrichment">
-      <option name="closed" value="true" />
-      <created>1778679517658</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1778679517658</updated>
+      <workItem from="1779824107588" duration="2666000" />
     </task>
     <task id="LOCAL-00037" summary="websearch refactoring">
       <option name="closed" value="true" />
@@ -776,14 +660,21 @@
       <option name="project" value="LOCAL" />
       <updated>1779793593840</updated>
     </task>
-    <option name="localTasksCounter" value="85" />
+    <task id="LOCAL-00085" summary="api update">
+      <option name="closed" value="true" />
+      <created>1779863140187</created>
+      <option name="number" value="00085" />
+      <option name="presentableId" value="LOCAL-00085" />
+      <option name="project" value="LOCAL" />
+      <updated>1779863140187</updated>
+    </task>
+    <option name="localTasksCounter" value="86" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improve json" />
     <MESSAGE value="add new sql" />
     <MESSAGE value="code update" />
     <MESSAGE value="refactoring" />
@@ -808,7 +699,8 @@
     <MESSAGE value="license" />
     <MESSAGE value="some improvement" />
     <MESSAGE value="libraries updated" />
-    <option name="LAST_COMMIT_MESSAGE" value="libraries updated" />
+    <MESSAGE value="api update" />
+    <option name="LAST_COMMIT_MESSAGE" value="api update" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

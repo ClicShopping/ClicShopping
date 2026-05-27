@@ -20,6 +20,9 @@
         "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"
       },
       "ClicShoppingAdmin/Products": {
+        "PageTab": "Module\\Hooks\\ClicShoppingAdmin\\Products\\PageTab",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Insert",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Update",
         "RemoveProduct": "Module\\Hooks\\ClicShoppingAdmin\\Products\\RemoveProduct"
       }
     }

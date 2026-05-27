@@ -5,7 +5,8 @@ version4.30
 - libraries updated
 - new license
 - AI Speed response improvement
-
+- products attributes improvement
+- 
 ---------------
 version4.281 et 4.282
 fix upload
