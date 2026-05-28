@@ -52,6 +52,23 @@ class pi_products_info_options
       $CLICSHOPPING_Language = Registry::get('Language');
       $CLICSHOPPING_ProductsAttributes = Registry::get('ProductsAttributes');
 
+      // Pre-fill helper: find the first cart entry for this product and
+      // expose its attributes map. ShoppingCart keys items by the composite
+      // products_id_string (e.g. "5{1}2"), so a direct lookup by plain product
+      // id never matches a variant — we have to walk the cart contents.
+      // Multiple cart entries may exist for the same product (one per
+      // attribute combination); we pre-fill from the first one.
+      $cart_attrs_for_product = [];
+      $current_product_id = (int)$CLICSHOPPING_ProductsCommon->getID();
+      if (!empty($CLICSHOPPING_ShoppingCart->contents)) {
+        foreach ($CLICSHOPPING_ShoppingCart->contents as $cart_item) {
+          if (isset($cart_item['id'], $cart_item['attributes']) && (int)$cart_item['id'] === $current_product_id) {
+            $cart_attrs_for_product = $cart_item['attributes'];
+            break;
+          }
+        }
+      }
+
       if ($CLICSHOPPING_ProductsAttributes->getCountProductsAttributes() > 0) {
         if ($CLICSHOPPING_Customer->getCustomersGroupID() != 0) {
           $QproductsOptionsName = $CLICSHOPPING_Db->prepare('select distinct popt.products_options_id,
@@ -146,11 +163,7 @@ class pi_products_info_options
               }
             }
 
-            if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')])) {
-              $selected_attribute = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')];
-            } else {
-              $selected_attribute = false;
-            }
+            $selected_attribute = $cart_attrs_for_product[$QproductsOptionsName->valueInt('products_options_id')] ?? false;
 
             $products_options_content_display .= '<div>';
             $products_options_content_display .= '<label class="ModuleProductsInfoOptionsName">' . $QproductsOptionsName->value('products_options_name') . ' : </label>';
@@ -186,7 +199,7 @@ class pi_products_info_options
               }
             }
 
-            $selected_attributes = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')] ?? [];
+            $selected_attributes = $cart_attrs_for_product[$QproductsOptionsName->valueInt('products_options_id')] ?? [];
 
             $products_options_content_display .= '<label class="ModuleProductsInfoOptionsName">' . $QproductsOptionsName->value('products_options_name') . ': </label>';
 
@@ -218,7 +231,7 @@ class pi_products_info_options
             // text
             //
           } elseif ($QproductsOptionsName->value('products_options_type') == 'text') {
-            $selected_attribute = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')] ?? '';
+            $selected_attribute = $cart_attrs_for_product[$QproductsOptionsName->valueInt('products_options_id')] ?? '';
 
             $products_options_content_display .= '<div>';
             $products_options_content_display .= '<label class="ModuleProductsInfoOptionsName">' . $QproductsOptionsName->value('products_options_name') . ': </label>';
@@ -229,7 +242,7 @@ class pi_products_info_options
             // textarea
             //
           } elseif ($QproductsOptionsName->value('products_options_type') == 'textarea') {
-            $selected_attribute = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')] ?? '';
+            $selected_attribute = $cart_attrs_for_product[$QproductsOptionsName->valueInt('products_options_id')] ?? '';
 
             $products_options_content_display .= '<div>';
             $products_options_content_display .= '<label class="ModuleProductsInfoOptionsName">' . $QproductsOptionsName->value('products_options_name') . ': </label>';
@@ -268,11 +281,7 @@ class pi_products_info_options
               ];
             }
 
-            if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')])) {
-              $selected_attribute = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')];
-            } else {
-              $selected_attribute = false;
-            }
+            $selected_attribute = $cart_attrs_for_product[$QproductsOptionsName->valueInt('products_options_id')] ?? false;
             $option_label = $QproductsOptionsName->value('products_options_name');
             $group_id     = 'color_group_' . $QproductsOptionsName->valueInt('products_options_id');
 
@@ -318,11 +327,7 @@ class pi_products_info_options
               }
             }
 
-            if (isset($CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')])) {
-              $selected_attribute = $CLICSHOPPING_ShoppingCart->contents[(int)$CLICSHOPPING_ProductsCommon->getID()]['attributes'][$QproductsOptionsName->valueInt('products_options_id')];
-            } else {
-              $selected_attribute = false;
-            }
+            $selected_attribute = $cart_attrs_for_product[$QproductsOptionsName->valueInt('products_options_id')] ?? false;
 
             $products_options_content_display .= '<label class="ModuleProductsInfoOptionsName">' . $QproductsOptionsName->value('products_options_name') . ': </label>';
 
