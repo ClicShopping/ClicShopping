@@ -4,14 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="libraries updated">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="language update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_featured/template_html/template_bootstrap_column_5.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_featured/template_html/template_bootstrap_column_5.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_info/template_html/template_bootstrap_column_5.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_info/template_html/template_bootstrap_column_5.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_listing/pl_products_listing.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_listing/pl_products_listing.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_listing/template_html/template_bootstrap_column_5.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_listing/template_html/template_bootstrap_column_5.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_search/pse_products_search.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_search/pse_products_search.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_special/template_html/template_bootstrap_column_5.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_special/template_html/template_bootstrap_column_5.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -280,22 +274,8 @@
       <workItem from="1779981048676" duration="62000" />
       <workItem from="1780067949262" duration="85000" />
       <workItem from="1780070556565" duration="1101000" />
-    </task>
-    <task id="LOCAL-00038" summary="update prompt">
-      <option name="closed" value="true" />
-      <created>1778682646420</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1778682646420</updated>
-    </task>
-    <task id="LOCAL-00039" summary="some update and fix">
-      <option name="closed" value="true" />
-      <created>1778706448591</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1778706448591</updated>
+      <workItem from="1780142461662" duration="652000" />
+      <workItem from="1780143125570" duration="602000" />
     </task>
     <task id="LOCAL-00040" summary="improve json">
       <option name="closed" value="true" />
@@ -673,19 +653,33 @@
       <option name="project" value="LOCAL" />
       <updated>1779981101602</updated>
     </task>
-    <option name="localTasksCounter" value="87" />
+    <task id="LOCAL-00087" summary="little improvement">
+      <option name="closed" value="true" />
+      <created>1780142492491</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1780142492491</updated>
+    </task>
+    <task id="LOCAL-00088" summary="language update">
+      <option name="closed" value="true" />
+      <created>1780143092984</created>
+      <option name="number" value="00088" />
+      <option name="presentableId" value="LOCAL-00088" />
+      <option name="project" value="LOCAL" />
+      <updated>1780143092984</updated>
+    </task>
+    <option name="localTasksCounter" value="89" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="add new sql" />
     <MESSAGE value="code update" />
     <MESSAGE value="refactoring" />
     <MESSAGE value="some update" />
     <MESSAGE value="fix upload" />
-    <MESSAGE value="little improvement" />
     <MESSAGE value="DOM text reinterpreted as HTML" />
     <MESSAGE value="some improvment" />
     <MESSAGE value="librairies updated" />
@@ -705,7 +699,9 @@
     <MESSAGE value="some improvement" />
     <MESSAGE value="api update" />
     <MESSAGE value="libraries updated" />
-    <option name="LAST_COMMIT_MESSAGE" value="libraries updated" />
+    <MESSAGE value="little improvement" />
+    <MESSAGE value="language update" />
+    <option name="LAST_COMMIT_MESSAGE" value="language update" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
