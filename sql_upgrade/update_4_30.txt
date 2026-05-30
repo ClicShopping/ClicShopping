@@ -62,8 +62,7 @@ JOIN clic_mcp_session s2
   ON s1.session_id = s2.session_id
  AND s1.mcp_session_id < s2.mcp_session_id;
 
-ALTER TABLE clic_mcp_session
-  ADD UNIQUE KEY idx_session_id (session_id);
+ALTER TABLE clic_mcp_session ADD UNIQUE KEY idx_session_id (session_id);
 
 -- B16: Add unique index on clic_api_session.session_id (mirror of B11 for Api).
 --   Same rationale as B11: anonymous-session creation under unknown tokens
@@ -77,8 +76,7 @@ JOIN clic_api_session s2
   ON s1.session_id = s2.session_id
  AND s1.api_session_id < s2.api_session_id;
 
-ALTER TABLE clic_api_session
-  ADD UNIQUE KEY idx_session_id (session_id);
+ALTER TABLE clic_api_session ADD UNIQUE KEY idx_session_id (session_id);
 
 -- B15: New config constant for Api IP check mode. Default 'subnet' tolerates
 -- NAT/CDN/mobile while still blocking trivial cross-network token replay.

@@ -176,6 +176,10 @@ text_descendingly = descendingly
 text_ascendingly = ascendingly
 text_by =  by
 
+text_sort_by = Sort by
+text_view_grid = Grid view
+text_view_list = List view
+
 text_stock = Stock level :
 
 text_shopping_cart_checkout_step1 = Shopping cart

@@ -685,7 +685,7 @@ class ConversationMemory
     }
 
     // If there are no HTML tags at all, skip the work
-    $hasTags = (\strpos($response, '<') !== false);
+    $hasTags = str_contains($response, '<');
 
     if ($hasTags) {
       $response = \strip_tags($response);

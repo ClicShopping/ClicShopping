@@ -160,7 +160,7 @@ product_removed = {{products_name}} a été supprimé de votre panier
 text_ticker_products_new = Nouveauté
 text_ticker_specials = promotion
 text_ticker_favorite = Favoris
-text_ticker_featured = Sélectionné
+text_ticker_featured = Sélection
 
 text_button_display_stock_good = En stock
 text_button_display_stock_alert = Bientôt en rupture de stock
@@ -176,6 +176,10 @@ text_sort_products = Trier les produits
 text_descendingly = décroissant
 text_ascendingly = croissant
 text_by =  par
+
+text_sort_by = Trier par
+text_view_grid = Vue grille
+text_view_list = Vue liste
 
 text_stock = Niveau du stock :
 

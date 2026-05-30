@@ -27,7 +27,7 @@ text_products_volume = Volume
 text_display_products_weight = Kg
 text_price =
 
-text_sort_by = Display by
+text_sort_by = Sort by
 
 text_out_of_stock = Out of stock
 text_out_of_stock_pre_order = Only pre-order

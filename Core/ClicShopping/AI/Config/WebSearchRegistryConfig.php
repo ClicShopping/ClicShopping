@@ -15,6 +15,10 @@ namespace ClicShopping\AI\Config;
  *
  * Default configuration for the agnostic WebSearch engine registry.
  *
+ * Provides fallback values that callers can override through ClicShopping
+ * configuration constants. Values defined here are used by
+ * during its auto-scan bootstrap and should rarely need to be changed.
+ *
  */
 class WebSearchRegistryConfig
 {
