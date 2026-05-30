@@ -172,7 +172,7 @@ class ExtractFile
       for ($i = 0; $i < $zip->numFiles; $i++) {
         $filename = $zip->getNameIndex($i);
         // Check for path traversal
-        if (strpos($filename, '..') !== false || strpos($filename, '/') === 0 || strpos($filename, '\\') === 0) {
+        if (str_contains($filename, '..') || str_starts_with($filename, '/') || str_starts_with($filename, '\\')) {
           $has_traversal = true;
           break;
         }

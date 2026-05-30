@@ -281,7 +281,7 @@ class Hash
         throw $e;
       }
 
-      $result = mt_rand($min, $max);
+      $result = random_int($min, $max);
     }
 
     return $result;

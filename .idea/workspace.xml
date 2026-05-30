@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="api updateproducts attributes improvement" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="libraries updated">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_featured/template_html/template_bootstrap_column_5.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_featured/template_html/template_bootstrap_column_5.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_info/template_html/template_bootstrap_column_5.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_info/template_html/template_bootstrap_column_5.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_listing/pl_products_listing.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_listing/pl_products_listing.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_listing/template_html/template_bootstrap_column_5.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_listing/template_html/template_bootstrap_column_5.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_search/pse_products_search.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_search/pse_products_search.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_special/template_html/template_bootstrap_column_5.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_special/template_html/template_bootstrap_column_5.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,7 +30,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7510" />
+    <option name="cachedIndexableFilesCount" value="7520" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -269,14 +277,9 @@
       <workItem from="1779790053473" duration="92000" />
       <workItem from="1779793424197" duration="195000" />
       <workItem from="1779824107588" duration="2666000" />
-    </task>
-    <task id="LOCAL-00037" summary="websearch refactoring">
-      <option name="closed" value="true" />
-      <created>1778681542451</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1778681542451</updated>
+      <workItem from="1779981048676" duration="62000" />
+      <workItem from="1780067949262" duration="85000" />
+      <workItem from="1780070556565" duration="1101000" />
     </task>
     <task id="LOCAL-00038" summary="update prompt">
       <option name="closed" value="true" />
@@ -662,7 +665,15 @@
       <option name="project" value="LOCAL" />
       <updated>1779863140187</updated>
     </task>
-    <option name="localTasksCounter" value="86" />
+    <task id="LOCAL-00086" summary="libraries updated">
+      <option name="closed" value="true" />
+      <created>1779981101602</created>
+      <option name="number" value="00086" />
+      <option name="presentableId" value="LOCAL-00086" />
+      <option name="project" value="LOCAL" />
+      <updated>1779981101602</updated>
+    </task>
+    <option name="localTasksCounter" value="87" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -692,9 +703,9 @@
     <MESSAGE value="little update" />
     <MESSAGE value="license" />
     <MESSAGE value="some improvement" />
-    <MESSAGE value="libraries updated" />
     <MESSAGE value="api update" />
-    <option name="LAST_COMMIT_MESSAGE" value="api update" />
+    <MESSAGE value="libraries updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="libraries updated" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

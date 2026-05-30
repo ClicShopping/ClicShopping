@@ -30,7 +30,7 @@ class pse_products_search
 
     if (\defined('MODULE_PRODUCTS_SEARCH_STATUS')) {
       $this->sort_order = \defined('MODULE_PRODUCTS_SEARCH_SORT_ORDER') ? (int)MODULE_PRODUCTS_SEARCH_SORT_ORDER : 0;
-      $this->enabled = (MODULE_PRODUCTS_SEARCH_STATUS == 'True');
+      $this->enabled = \defined('MODULE_PRODUCTS_SEARCH_STATUS') ? (MODULE_PRODUCTS_SEARCH_STATUS == 'True') : false;
     }
   }
 

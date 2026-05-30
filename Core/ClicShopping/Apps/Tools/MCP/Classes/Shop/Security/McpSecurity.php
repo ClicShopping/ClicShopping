@@ -78,7 +78,7 @@ class McpSecurity
     $actualV6   = filter_var($actual,   FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
     if ($expectedV6 !== false && $actualV6 !== false) {
       // Same /64 — first 8 bytes of the 16-byte packed form.
-      return substr(inet_pton($expectedV6), 0, 8) === substr(inet_pton($actualV6), 0, 8);
+      return str_starts_with(inet_pton($actualV6), substr(inet_pton($expectedV6), 0, 8));
     }
 
     // Mixed family or unparseable — fall back to strict to avoid silent bypass.

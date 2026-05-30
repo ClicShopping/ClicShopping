@@ -69,10 +69,10 @@ class pl_products_listing
       $new_prods_content .= '</button>';
       $new_prods_content .= '<ul class="dropdown-menu text-start"  aria-labelledby="dropdownMenu2">';
 
+          // number of sort criterias
       $column_list = $ProductsListing->getColumnList();
       $lc_text = CLICSHOPPING::getDef('table_heading_date');
 
-// number of sort criterias
       for ($col = 0, $n = \count($column_list); $col < $n; $col++) {
         switch ($column_list[$col]) {
           case 'PRODUCT_LIST_MODEL':
@@ -319,16 +319,31 @@ class pl_products_listing
     } // php_self
   } // public function execute
 
+  /**
+   * Returns whether the module is enabled.
+   *
+   * @return bool
+   */
   public function isEnabled()
   {
     return $this->enabled;
   }
 
+  /**
+   * Checks if the module configuration is defined.
+   *
+   * @return bool
+   */
   public function check()
   {
     return \defined('MODULE_PRODUCTS_LISTING_STATUS');
   }
 
+  /**
+   * Installs the module configuration into the database.
+   *
+   * @return void
+   */
   public function install()
   {
     $CLICSHOPPING_Db = Registry::get('Db');
@@ -397,7 +412,7 @@ class pl_products_listing
         'configuration_title' => 'Do you want to remove words of your short description ?',
         'configuration_key' => 'MODULE_PRODUCTS_LISTING_SHORT_DESCRIPTION_DELETE_WORLDS',
         'configuration_value' => '0',
-        'configuration_description' => 'Please indicate a number',
+        'configuration_description' => 'Indicate Remove words of your short description for the first caracters',
         'configuration_group_id' => '6',
         'sort_order' => '4',
         'set_function' => '',
@@ -471,18 +486,28 @@ class pl_products_listing
         'configuration_value' => '100',
         'configuration_description' => 'Sort order of display. Lowest is displayed first. The sort order must be different on every module',
         'configuration_group_id' => '6',
-        'sort_order' => '4',
+        'sort_order' => '12',
         'set_function' => '',
         'date_added' => 'now()'
       ]
     );
   }
 
+  /**
+   * Removes the module configuration from the database.
+   *
+   * @return int
+   */
   public function remove()
   {
     return Registry::get('Db')->exec('delete from :table_configuration where configuration_key in ("' . implode('", "', $this->keys()) . '")');
   }
 
+  /**
+   * Returns the configuration keys used by this module.
+   *
+   * @return array
+   */
   public function keys()
   {
     return array(

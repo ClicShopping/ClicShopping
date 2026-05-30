@@ -27,7 +27,7 @@ use ClicShopping\OM\HTML;
         if (!empty($products_short_description)) {
           ?>
           <div class="ModulesProductsSpecialsBoostrapColumn5ShortDescription">
-            <h3><?php echo $products_short_description; ?></h3></div>
+            <h6><?php echo $products_short_description; ?></h6></div>
           <?php
         }
         ?>

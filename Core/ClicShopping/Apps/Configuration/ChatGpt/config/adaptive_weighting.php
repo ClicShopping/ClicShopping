@@ -21,20 +21,24 @@
 $llmProvider = 'openai'; // Default
 if (defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL')) {
     $model = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
-    
-    // Determine provider from model name
-    if (strpos($model, 'anth-') === 0 || strpos($model, 'claude') !== false) {
-        $llmProvider = 'anthropic';
-    } elseif (strpos($model, 'mistral') !== false) {
-        $llmProvider = 'mistral';
-    } elseif (strpos($model, 'ollama:') === 0 || strpos($model, 'mistral:') === 0) {
-        $llmProvider = 'ollama';
-    } elseif (strpos($model, 'openai/') === 0 || strpos($model, 'microsoft/') === 0 || strpos($model, 'qwen/') === 0) {
-        $llmProvider = 'lmstudio';
-    } else {
-        // Default to OpenAI for gpt-* models
-        $llmProvider = 'openai';
-    }
+
+  // Determine provider from model name
+  if (str_starts_with($model, 'anth-') || str_contains($model, 'claude')) {
+    $llmProvider = 'anthropic';
+  } elseif (str_contains($model, 'mistral')) {
+    $llmProvider = 'mistral';
+  } elseif (str_starts_with($model, 'ollama:') || str_starts_with($model, 'mistral:')) {
+    $llmProvider = 'ollama';
+  } elseif (
+    str_starts_with($model, 'openai/') ||
+    str_starts_with($model, 'microsoft/') ||
+    str_starts_with($model, 'qwen/')
+  ) {
+    $llmProvider = 'lmstudio';
+  } else {
+    // Default to OpenAI for gpt-* models
+    $llmProvider = 'openai';
+  }
 }
 
 return [
