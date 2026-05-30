@@ -45,8 +45,8 @@ div.ModulesProductsInfokiloPrice, span.ModulesProductsInfokiloPrice h3 {
 }
 
 div.ModulesProductsInfoMinOrderQuandityProductsDisplay, span.ModulesProductsInfoMinOrderQuandityProductsDisplay h3 {
-  height: 0rem;
-
+  height: auto;
+  font-size: 0.80rem;
   color: #A39993;
   padding-bottom: 0.625rem;
 }

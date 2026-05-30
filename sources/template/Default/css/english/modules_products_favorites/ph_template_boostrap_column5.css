@@ -5,16 +5,18 @@
  * See LICENSE file.
 
  */
-
 .ModulesProductsFavoritesBoostrapColumn5Image {
   text-align: center;
 }
 
 .ModulesProductsFavoritesBoostrapColumn5Title h3 {
+  font-size: 1rem;
   text-align: center;
   vertical-align: text-top;
   padding-top: 0.3125rem;
-  height: 0.625rem;
+  height: auto;
+  min-height: 2.4em;
+  line-height: 1.2;
   padding-left: 0.3125rem;
   padding-right: 5px;
   font-size: 0.875rem !important;
@@ -24,13 +26,14 @@
   text-decoration: none;
 }
 
-.ModulesProductsFavoritesBoostrapColumn5ShortDescription h3 {
+.ModulesProductsFavoritesBoostrapColumn5ShortDescription h6 {
   text-align: center;
-  padding-top: 0.3125rem;
+  padding-top: 3rem;
   color: #7F736F;
   text-transform: lowercase;
   padding-left: 0.3125rem;
   padding-right: 5px;
+  font-size: smaller;
 }
 
 .ModulesProductsFavoritesBoostrapColumn5TextPrice {
@@ -75,3 +78,22 @@
   text-align: center;
   text-transform: uppercase;
 }
+
+/* ==========================================================================
+ PARTIE 2 : (GRID vs LInE)
+ ========================================================================== */
+  /* Annule le padding-top historique du mode colonne */
+  .pn-grid-list-item:not([class*="col-sm-2"]):not([class*="col-sm-3"]):not([class*="col-sm-4"]):not([class*="col-md-2"]):not([class*="col-md-3"]):not([class*="col-md-4"]) .ModulesProductsFeaturedBoostrapColumn5ShortDescription h6 {
+      padding-top: 0 !important;
+  }
+
+
+  /* Prix poussé à droite */
+  .pn-grid-list-item:not([class*="col-sm-2"]):not([class*="col-sm-3"]):not([class*="col-sm-4"]):not([class*="col-md-2"]):not([class*="col-md-3"]):not([class*="col-md-4"]) .ModulesProductsFavoritesBoostrapColumn5TextPrice {
+      display: block !important;
+      text-align: right !important;
+      font-weight: bold !important;
+      font-size: 1.25rem !important;
+      padding: 0 !important;
+      margin: 0 0 15px 0 !important;
+  }

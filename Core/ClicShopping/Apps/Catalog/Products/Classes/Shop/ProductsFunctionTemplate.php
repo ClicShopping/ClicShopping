@@ -163,7 +163,7 @@ class ProductsFunctionTemplate
         if ($this->productsCommon->getHasProductAttributes($products_id) === false) {
           $input_quantity = CLICSHOPPING::getDef('text_customer_quantity') . $tag . $this->productsCommon->getProductsAllowingToInsertQuantity($products_id);
         }
-}
+      }
     }
 
     return $input_quantity;
@@ -257,19 +257,29 @@ class ProductsFunctionTemplate
    */
   public function getTicker(string $constant, string $products_id, string $cssSpecial, string $cssFavorites, string $cssFeatured, string $cssProductsNew): string
   {
-    $ticker = '';
-
-    if ($this->productsCommon->getProductsTickerSpecials() == 'True' && $constant == 'True') {
-      $ticker = HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage(CLICSHOPPING::getDef('text_ticker_specials'), $cssSpecial, $this->productsCommon->getProductsTickerSpecials($products_id)));
-    } elseif ($this->productsCommon->getProductsTickerFavorites() == 'True' && $constant == 'True') {
-      $ticker = HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage(CLICSHOPPING::getDef('text_ticker_favorite'), $cssFavorites, $this->productsCommon->getProductsTickerFavorites($products_id)));
-    } elseif ($this->productsCommon->getProductsTickerFeatured() == 'True' && $constant == 'True') {
-      $ticker = HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage(CLICSHOPPING::getDef('text_ticker_featured'), $cssFeatured, $this->productsCommon->getProductsTickerFeatured($products_id)));
-    } elseif ($this->productsCommon->getProductsTickerProductsNew() == 'True' && $constant == 'True') {
-      $ticker = HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage(CLICSHOPPING::getDef('text_ticker_products_new'), $cssProductsNew, $this->productsCommon->getProductsTickerProductsNew($products_id)));
+    if ($constant !== 'True') {
+      return '';
     }
 
-    return $ticker;
+    $id = (int)$products_id;
+
+    if ($this->productsCommon->getProductsTickerSpecials($id) === true) {
+      return HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage(CLICSHOPPING::getDef('text_ticker_specials'), $cssSpecial, true));
+    }
+
+    if ($this->productsCommon->getProductsTickerFavorites($id) === true) {
+      return HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage(CLICSHOPPING::getDef('text_ticker_favorite'), $cssFavorites, true));
+    }
+
+    if ($this->productsCommon->getProductsTickerFeatured($id) === true) {
+      return HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage(CLICSHOPPING::getDef('text_ticker_featured'), $cssFeatured, true));
+    }
+
+    if ($this->productsCommon->getProductsTickerProductsNew($id) === true) {
+      return HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage(CLICSHOPPING::getDef('text_ticker_products_new'), $cssProductsNew, true));
+    }
+
+    return '';
   }
 
   /**
@@ -283,13 +293,17 @@ class ProductsFunctionTemplate
    */
   public function getTickerPourcentage(string $constant, string $products_id, string $cssPourcentage): string
   {
-    if ($constant == 'True' && !is_null($this->productsCommon->getProductsTickerSpecialsPourcentage($products_id))) {
-      $ticker = HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage($this->productsCommon->getProductsTickerSpecialsPourcentage($products_id), $cssPourcentage, true));
-    } else {
-      $ticker = '';
+    if ($constant !== 'True') {
+      return '';
     }
 
-    return $ticker;
+    $percentage = $this->productsCommon->getProductsTickerSpecialsPourcentage($products_id);
+
+    if (empty($percentage)) {
+      return '';
+    }
+
+    return HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::tickerImage($percentage, $cssPourcentage, true));
   }
 
   /**
@@ -542,7 +556,7 @@ class ProductsFunctionTemplate
   {
     if (isset($_GET['manufacturersId']) && is_numeric($_GET['manufacturersId'])) {
       $manufacturer_id = HTML::sanitize($_GET['manufacturersId']);
-      $image = HTML::link(CLICSHOPPING::link(null, 'Products&Description&manufacturersId=' . $manufacturer_id . '&products_id=' . $products_id), HTML::image($this->template->getDirectoryTemplateImages() . $products_image, HTML::outputProtected($this->productsCommon->getProductsName($products_id), (int)SMALL_IMAGE_WIDTH, (int)SMALL_IMAGE_HEIGHT, null, true)));
+      $image = HTML::link(CLICSHOPPING::link(null, 'Products&Description&manufacturersId=' . $manufacturer_id . '&products_id=' . $products_id), HTML::image($this->template->getDirectoryTemplateImages() . $products_image, HTML::outputProtected($this->productsCommon->getProductsName($products_id)), (int)SMALL_IMAGE_WIDTH, (int)SMALL_IMAGE_HEIGHT, null, true));
     } else {
       $image = HTML::link($this->rewriteUrl->getProductNameUrl($products_id, 'products_id=', ($this->category->getPath() ? 'cPath=' . $this->category->getPath() . '&' : '') . 'products_id=' . $products_id), HTML::image($this->template->getDirectoryTemplateImages() . $products_image, HTML::outputProtected($this->productsCommon->getProductsName($products_id)), (int)SMALL_IMAGE_WIDTH, (int)SMALL_IMAGE_HEIGHT, null, true));
     }

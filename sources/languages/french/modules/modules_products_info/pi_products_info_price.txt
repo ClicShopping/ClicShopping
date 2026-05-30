@@ -8,6 +8,6 @@ button_pre_order = Pré-commander
 
 customer_quantity = Quantité
 
-min_qty_order_product = Qté min :
+min_qty_order_product = Ce produit a une quantité minimale de commande de
 products_not_sell = Produit non vendu
 button_continue = Continuer

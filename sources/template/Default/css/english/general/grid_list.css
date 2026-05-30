@@ -1,0 +1,97 @@
+
+/* ==========================================================================
+   PARTIE 2 : SÉCURISATION ET MUTUALISATION (GRILLE vs LIGNE)
+   ========================================================================== */
+
+/* --- COMPORTEMENT PAR DÉFAUT : MODE GRILLE (COLONNE) --- */
+.pn-main-flex-container {
+    display: flex !important;
+    flex-direction: column !important; /* Mode colonne par défaut */
+    align-items: center !important;
+    justify-content: flex-start !important;
+    height: 100% !important; /* remplit la carte pour permettre l'alignement bas */
+}
+.pn-image-block { width: 100% !important; }
+.pn-text-block { width: 100% !important; text-align: center !important; }
+/* Prix + boutons collés en bas de la carte : cartes homogènes même si certains
+   produits ont des avis/infos et d'autres non (margin-top:auto pousse vers le bas).
+   En mode ligne (.col-md-12) le margin est remis à 0 par la règle media plus bas. */
+.pn-action-block { width: 100% !important; margin-top: auto !important; }
+
+
+/* --- ACTIVATION STRICTE DU MODE LIGNE (Uniquement si col-12 actif et aucune sous-colonne Bootstrap) --- */
+@media (min-width: 768px) {
+
+    /* Si le conteneur principal est une ligne complète (col-12), et ne contient PAS de classes de grilles réduites */
+    .pn-grid-list-item.col-md-12 .pn-main-flex-container {
+        flex-direction: row !important; /* Bascule en ligne */
+        align-items: flex-start !important; /* vertical-align: top */
+        justify-content: space-between !important;
+        gap: 25px !important;
+        padding: 15px !important;
+    }
+
+    /* 1ère Colonne : IMAGE (À gauche, alignée en haut) */
+    .pn-grid-list-item.col-md-12 .pn-image-block {
+        flex: 0 0 250px !important;
+        max-width: 250px !important;
+        text-align: left !important;
+        margin: 0 !important;
+    }
+
+    /* 2ème Colonne : BLOC TEXTES (Au milieu, aligné à gauche et en haut) */
+    .pn-grid-list-item.col-md-12 .pn-text-block {
+        flex: 1 1 auto !important; /* Occupe l'espace central restant */
+        text-align: left !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Forcer les alignements de textes à gauche en mode liste et annuler les hauteurs restrictives */
+    .pn-grid-list-item.col-md-12 .pn-text-block h3,
+    .pn-grid-list-item.col-md-12 .pn-text-block h6 {
+        text-align: left !important;
+        height: auto !important;
+        padding: 0 !important;
+        margin: 0 0 6px 0 !important;
+    }
+
+    /* Métadonnées du stock alignées à gauche sous la description */
+    .pn-grid-list-item.col-md-12 .pn-stock-sub-group {
+        display: block !important;
+        text-align: left !important;
+        margin-top: 10px !important;
+    }
+
+    .pn-grid-list-item.col-md-12 .pn-stock-sub-group div {
+        text-align: left !important;
+        padding: 0 !important;
+        margin: 0 0 5px 0 !important;
+    }
+
+    /* 3ème Colonne : TARIF ET BOUTONS (À l'extrême droite, alignés en haut) */
+    .pn-grid-list-item.col-md-12 .pn-action-block {
+        flex: 0 0 220px !important;
+        max-width: 220px !important;
+        text-align: right !important;
+        margin: 0 !important;
+    }
+
+    /* Alignement vertical des boutons à l'extrême droite */
+    .pn-grid-list-item.col-md-12 .form-group-center {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important; /* Contre le bord droit */
+        gap: 8px !important;
+        margin: 0 !important;
+        text-align: right !important;
+    }
+
+    .pn-grid-list-item.col-md-12 .form-group-center span {
+        display: block !important;
+        text-align: right !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: auto !important;
+    }
+}

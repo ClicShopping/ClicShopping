@@ -80,19 +80,48 @@ class ProductsCommon extends Prod
   }
 
   /**
-   * Retrieves the ID if it is valid, numeric, and not empty.
+   * Bind the current product context to an explicit id.
+   *
+   * Many helpers on this class (getProductsBuyButton, getProductsAllowingToInsertQuantity,
+   * getProductsOrdersView, getOrdersGroupView, getPriceGroupView, ...) read
+   * their data from setData() which itself binds on getID(). Outside of a
+   * product-detail page that id comes from $_GET / $_POST and is empty
+   * inside listing loops, leaving every helper to read stale or null state.
+   *
+   * Listing renderers should call setID($products_id) at the top of each
+   * iteration and clearID() after the loop so that subsequent requests on
+   * the same shared instance fall back to the legacy GET/POST resolution.
+   */
+  public function setID(int $id): void
+  {
+    $this->id = $id;
+  }
+
+  /**
+   * Drop the explicit override and restore the legacy GET/POST id resolution.
+   */
+  public function clearID(): void
+  {
+    $this->id = null;
+  }
+
+  /**
+   * Retrieves the current product id. Honors setID() first, then falls back
+   * to the parent {@see Prod::getID()} which reads $_GET / $_POST.
    *
    * @return int|false Returns the ID if valid, otherwise returns false.
    */
   public function getID(): mixed
   {
-    if (parent::getID() === null || !is_numeric(parent::getID()) || empty(parent::getID())) {
-      return false;
-    } else {
-      $id = parent::getID();
+    if ($this->id !== null && is_numeric($this->id) && (int)$this->id > 0) {
+      return (int)$this->id;
     }
 
-    return $id;
+    if (parent::getID() === null || !is_numeric(parent::getID()) || empty(parent::getID())) {
+      return false;
+    }
+
+    return parent::getID();
   }
 
   /**
@@ -175,7 +204,6 @@ class ProductsCommon extends Prod
   public function get(mixed $obj = null)
   {
     $array_data = $this->getData();
-
     if (isset($array_data[$obj])) {
       return $array_data[$obj];
     }
@@ -211,14 +239,53 @@ class ProductsCommon extends Prod
     return $this->get('products_archive');
   }
 
+
+
+
+
+
+
+
   /**
-   * Retrieve the quantity of products.
-   * @return mixed The quantity of products.
+   * Retrieve the quantity in stock of a product.
+   *
+   * When $id is provided, performs a direct database lookup independent of
+   * the instance internal state (safe inside listing loops where the
+   * ProductsCommon instance is not bound to the current row).
+   * When $id is null, falls back to the legacy behavior reading from the
+   * internal state previously loaded via setData().
+   *
+   * @param int|null $id Optional product id to look up directly.
+   * @return int|mixed The quantity in stock, or 0 when the product is unknown.
    */
-  public function getProductsQuantity()
+  public function getProductsQuantity(?int $id = null)
   {
+    if ($id !== null) {
+      $Qproduct = $this->db->prepare('select products_quantity
+                                      from :table_products
+                                      where products_id = :products_id
+                                     ');
+      $Qproduct->bindInt(':products_id', $id);
+      $Qproduct->execute();
+
+      if ($Qproduct->fetch() === false) {
+        return 0;
+      }
+
+      return $Qproduct->valueInt('products_quantity');
+    }
+
     return $this->get('products_quantity');
   }
+
+
+
+
+
+
+
+
+
 
   /**
    * Retrieve the tax class ID of a product.
@@ -1542,9 +1609,13 @@ class ProductsCommon extends Prod
       if ($QproductMinOrder->valueInt('products_min_qty_order') > 0.1) {
         $min_quantity_order = $QproductMinOrder->valueInt('products_min_qty_order');
       } else {
-        $min_quantity_order = \defined('MAX_MIN_IN_CART') ? (int)MAX_MIN_IN_CART : 0;
-        if (\defined('MAX_MIN_IN_CART') && (int)MAX_MIN_IN_CART > \defined('MAX_QTY_IN_CART') ? (int)MAX_QTY_IN_CART : 0) {
-          $min_quantity_order = \defined('MAX_QTY_IN_CART') ? (int)MAX_QTY_IN_CART : 0;
+        $max_min_in_cart = \defined('MAX_MIN_IN_CART') ? (int)MAX_MIN_IN_CART : 0;
+        $max_qty_in_cart = \defined('MAX_QTY_IN_CART') ? (int)MAX_QTY_IN_CART : 0;
+        $min_quantity_order = $max_min_in_cart;
+        // Cap the per-cart minimum by the per-cart maximum when both are set
+        // and the minimum would exceed the maximum.
+        if ($max_min_in_cart > $max_qty_in_cart && $max_qty_in_cart > 0) {
+          $min_quantity_order = $max_qty_in_cart;
         }
 }
     } else {
@@ -1639,9 +1710,15 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
+    // The visible field must honor the real minimum order quantity so the
+    // browser prevents going below it (the cart enforces the same minimum
+    // server-side; aligning both avoids a confusing silent correction).
+    $min_qty = max(1, (int)$this->getProductsMinimumQuantity($id));
+    $input_params = 'id="Quantity' . $id . '" placeholder="qty" class="input-small" maxlength="4" size="4" min="' . $min_qty . '"';
+
     if ($this->customer->getCustomersGroupID() != 0 && $this->getOrdersGroupView() != 0) {
       $input_quantity = '<label for="Quantity' . $id . '" class="visually-hidden"></label>';
-      $input_quantity .= HTML::inputField('cart_quantity', (int)$this->setProductsMinimumQuantityToTakeAnOrder($id), 'id="Quantity' . $id . '" placeholder="qty" class="input-small" maxlength="4" size="4" min="1"') . '&nbsp;&nbsp;';
+      $input_quantity .= HTML::inputField('cart_quantity', (int)$this->setProductsMinimumQuantityToTakeAnOrder($id), $input_params) . '&nbsp;&nbsp;';
     } else {
       $input_quantity = '';
     }
@@ -1649,10 +1726,10 @@ class ProductsCommon extends Prod
     if ($this->customer->getCustomersGroupID() == 0 && $this->getProductsOrdersView() != 0) {
       if (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'false') {
         $input_quantity = '<label for="Quantity' . $id . '" class="visually-hidden"></label>';
-        $input_quantity .= HTML::inputField('cart_quantity', (int)$this->setProductsMinimumQuantityToTakeAnOrder($id), 'id="Quantity' . $id . '" placeholder="qty" class="input-small" maxlength="4" size="4" min="1"') . '&nbsp;&nbsp;';
+        $input_quantity .= HTML::inputField('cart_quantity', (int)$this->setProductsMinimumQuantityToTakeAnOrder($id), $input_params) . '&nbsp;&nbsp;';
       } elseif (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true' && $this->customer->isLoggedOn()) {
         $input_quantity = '<label for="Quantity' . $id . '" class="visually-hidden"></label>';
-        $input_quantity .= HTML::inputField('cart_quantity', (int)$this->setProductsMinimumQuantityToTakeAnOrder($id), 'id="Quantity' . $id . '" placeholder="qty" class="input-small" maxlength="4" size="4" min="1"') . '&nbsp;&nbsp;';
+        $input_quantity .= HTML::inputField('cart_quantity', (int)$this->setProductsMinimumQuantityToTakeAnOrder($id), $input_params) . '&nbsp;&nbsp;';
       } else {
         $input_quantity = '';
       }
@@ -1719,34 +1796,55 @@ class ProductsCommon extends Prod
    * Determines and returns the appropriate "buy button" status for a product
    * based on customer login state, customer group, and product/view settings.
    *
-   * @return string The finalized "buy button" status for the product.
+   * When $id is provided, the guard data (orders_view, orders_group_view,
+   * price_group_view) is loaded from the database for that specific product;
+   * this is the safe path inside listing loops, where the ProductsCommon
+   * internal state is not bound to the current row. When $id is null, the
+   * legacy behavior using the internal state is preserved.
+   *
+   * @param int|null $id Optional product id to look up directly.
+   * @return string The finalized "buy button" markup, or an empty string when guards forbid it.
    */
-
-  public function setProductsBuyButton(): string
+  public function setProductsBuyButton(?int $id = null): string
   {
-    $buy_button = $this->button;
+    $buy_button = $this->button ?? '';
 
-    if ((\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true' && !$this->customer->isLoggedOn())) {
+    if ($id !== null) {
+      $guards = $this->loadBuyButtonGuards($id);
+      $orders_view = $guards['orders_view'];
+      $orders_group_view = $guards['orders_group_view'];
+      $price_group_view = $guards['price_group_view'];
+    } else {
+      $orders_view = (int)$this->getProductsOrdersView();
+      $orders_group_view = (int)$this->getOrdersGroupView();
+      $price_group_view = (int)$this->getPriceGroupView();
+    }
+
+    $customers_group_id = (int)$this->customer->getCustomersGroupID();
+    $is_logged_in = $this->customer->isLoggedOn();
+    $prices_logged_in = \defined('PRICES_LOGGED_IN') ? PRICES_LOGGED_IN : null;
+
+    if ($prices_logged_in === 'true' && !$is_logged_in) {
       $buy_button = '';
-    } elseif ($this->getProductsOrdersView() == 0 && $this->customer->getCustomersGroupID() == 0) {
+    } elseif ($orders_view === 0 && $customers_group_id === 0) {
       $buy_button = '';
     }
 
-    if (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true' && $this->customer->isLoggedOn()) {
-      if ($this->getProductsOrdersView() == 0 && $this->customer->getCustomersGroupID() == 0) {
+    if ($prices_logged_in === 'true' && $is_logged_in) {
+      if ($orders_view === 0 && $customers_group_id === 0) {
         $buy_button = '';
-      } elseif ($this->getOrdersGroupView() == 0 && $this->customer->getCustomersGroupID() != 0) {
-        $buy_button = '';
-      }
-} elseif (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'false' && $this->customer->isLoggedOn()) {
-      if ($this->getProductsOrdersView() == 0 && $this->customer->getCustomersGroupID() == 0) {
-        $buy_button = '';
-      } elseif ($this->getOrdersGroupView() == 0 && $this->customer->getCustomersGroupID() != 0) {
+      } elseif ($orders_group_view === 0 && $customers_group_id !== 0) {
         $buy_button = '';
       }
-}
+    } elseif ($prices_logged_in === 'false' && $is_logged_in) {
+      if ($orders_view === 0 && $customers_group_id === 0) {
+        $buy_button = '';
+      } elseif ($orders_group_view === 0 && $customers_group_id !== 0) {
+        $buy_button = '';
+      }
+    }
 
-    if ($this->getPriceGroupView() == 0 && $this->customer->getCustomersGroupID() != 0) {
+    if ($price_group_view === 0 && $customers_group_id !== 0) {
       $buy_button = '';
     }
 
@@ -1756,11 +1854,63 @@ class ProductsCommon extends Prod
   /**
    * Retrieves the buy button configuration for a product.
    *
+   * @param int|null $id Optional product id. See {@see setProductsBuyButton()}.
    * @return string The buy button value for the product.
    */
-  public function getProductsBuyButton(): string
+  public function getProductsBuyButton(?int $id = null): string
   {
-    return $this->setProductsBuyButton();
+    return $this->setProductsBuyButton($id);
+  }
+
+  /**
+   * Load the three guard fields used by setProductsBuyButton() directly from
+   * the database for an explicit product id, bypassing the instance internal
+   * state. Returns zero defaults when the product or the matching group row
+   * is not visible.
+   *
+   * @param int $id The product id to inspect.
+   * @return array{orders_view:int,orders_group_view:int,price_group_view:int}
+   */
+  private function loadBuyButtonGuards(int $id): array
+  {
+    $customers_group_id = (int)$this->customer->getCustomersGroupID();
+
+    if ($customers_group_id !== 0) {
+      $Q = $this->db->prepare('select p.orders_view,
+                                      coalesce(g.orders_group_view, 0) as orders_group_view,
+                                      coalesce(g.price_group_view, 0) as price_group_view
+                               from :table_products p
+                               left join :table_products_groups g
+                                 on p.products_id = g.products_id
+                                and g.customers_group_id = :customers_group_id
+                               where p.products_id = :products_id
+                              ');
+      $Q->bindInt(':customers_group_id', $customers_group_id);
+    } else {
+      $Q = $this->db->prepare('select p.orders_view,
+                                      0 as orders_group_view,
+                                      0 as price_group_view
+                               from :table_products p
+                               where p.products_id = :products_id
+                              ');
+    }
+
+    $Q->bindInt(':products_id', $id);
+    $Q->execute();
+
+    if ($Q->fetch() === false) {
+      return [
+        'orders_view'       => 0,
+        'orders_group_view' => 0,
+        'price_group_view'  => 0,
+      ];
+    }
+
+    return [
+      'orders_view'       => $Q->valueInt('orders_view'),
+      'orders_group_view' => $Q->valueInt('orders_group_view'),
+      'price_group_view'  => $Q->valueInt('price_group_view'),
+    ];
   }
 
   /**
@@ -2141,16 +2291,19 @@ class ProductsCommon extends Prod
   public function getDisplayProductsStock($id): string
   {
     $display_products_stock = $this->getProductsStock($id);
+    // Extract the reorder threshold first: the previous inline ternary
+    // collided with PHP's > and && precedence, producing arbitrary results.
+    $threshold = \defined('STOCK_REORDER_LEVEL') ? (int)STOCK_REORDER_LEVEL : 0;
 
-    if ($display_products_stock > \defined('STOCK_REORDER_LEVEL') ? STOCK_REORDER_LEVEL : 0) {
-      $display_stock_values = HTML::tickerImage(CLICSHOPPING::getDef('text_in_stock'), 'ModulesTickerBootstrapTickerStockGood', true);
-    } elseif ($display_products_stock <= \defined('STOCK_REORDER_LEVEL') ? STOCK_REORDER_LEVEL : 0  && $display_products_stock > 0) {
-      $display_stock_values = HTML::tickerImage(CLICSHOPPING::getDef('text_alert_stock'), 'ModulesTickerBootstrapTickerStockWarning', true);
-    } else {
-      $display_stock_values = HTML::tickerImage(CLICSHOPPING::getDef('text_out_of_stock'), 'ModulesTickerBootstrapTickerStockDanger', true);
+    if ($display_products_stock > $threshold) {
+      return HTML::tickerImage(CLICSHOPPING::getDef('text_in_stock'), 'ModulesTickerBootstrapTickerStockGood', true);
     }
 
-    return $display_stock_values;
+    if ($display_products_stock > 0) {
+      return HTML::tickerImage(CLICSHOPPING::getDef('text_alert_stock'), 'ModulesTickerBootstrapTickerStockWarning', true);
+    }
+
+    return HTML::tickerImage(CLICSHOPPING::getDef('text_out_of_stock'), 'ModulesTickerBootstrapTickerStockDanger', true);
   }
 
   /**
@@ -2432,18 +2585,21 @@ class ProductsCommon extends Prod
     $Qproducts->bindInt(':products_id', $id);
 
     $Qproducts->execute();
-
+    if ($Qproducts->fetch()) {
 // 2592000 = 30 days in the unix timestamp format
-    $day_new_products = 86400 * (int)DAY_NEW_PRODUCTS_ARRIVAL;
-    $today_time = time();
+      $day_new_products = 86400 * (int)DAY_NEW_PRODUCTS_ARRIVAL;
+      $today_time = time();
 
-    if (($today_time - strtotime($Qproducts->value('products_date_added'))) < $day_new_products) {
-      $ticker = true;
+      if (($today_time - strtotime($Qproducts->value('products_date_added'))) < $day_new_products) {
+        $ticker = true;
+      } else {
+        $ticker = false;
+      }
+
+      return $ticker;
     } else {
-      $ticker = false;
+      return  '';
     }
-
-    return $ticker;
   }
 
   /**
@@ -2490,17 +2646,21 @@ class ProductsCommon extends Prod
 
     $Qproducts->execute();
 
+    if ($Qproducts->fetch()) {
 // 2592000 = 30 days in the unix timestamp format
-    $day_new_products = 86400 *  \defined('DAY_NEW_PRODUCTS_ARRIVAL') ? (int)DAY_NEW_PRODUCTS_ARRIVAL : 0;
-    $today_time = time();
+      $day_new_products = 86400 * (\defined('DAY_NEW_PRODUCTS_ARRIVAL') ? (int)DAY_NEW_PRODUCTS_ARRIVAL : 0);
+      $today_time = time();
 
-    if (($today_time - strtotime($Qproducts->value('specials_date_added'))) < $day_new_products) {
-      $ticker = true;
+      if (($today_time - strtotime($Qproducts->value('specials_date_added'))) < $day_new_products) {
+        $ticker = true;
+      } else {
+        $ticker = false;
+      }
+
+      return $ticker;
     } else {
-      $ticker = false;
+      return  '';
     }
-
-    return $ticker;
   }
 
   /**
@@ -2555,17 +2715,21 @@ class ProductsCommon extends Prod
     $Qproducts->bindInt(':products_id', $id);
     $Qproducts->execute();
 
-// 2592000 = 30 days in the unix timestamp format
-    $day_new_products = 86400 * \defined('DAY_NEW_PRODUCTS_ARRIVAL') ? (int)DAY_NEW_PRODUCTS_ARRIVAL : 0;
-    $today_time = time();
+    if ($Qproducts->fetch()) {
+  // 2592000 = 30 days in the unix timestamp format
+      $day_new_products = 86400 * (\defined('DAY_NEW_PRODUCTS_ARRIVAL') ? (int)DAY_NEW_PRODUCTS_ARRIVAL : 0);
+      $today_time = time();
 
-    if (($today_time - strtotime($Qproducts->value('products_favorites_date_added'))) < $day_new_products) {
-      $ticker = true;
+      if (($today_time - strtotime($Qproducts->value('products_favorites_date_added'))) < $day_new_products) {
+        $ticker = true;
+      } else {
+        $ticker = false;
+      }
+
+      return $ticker;
     } else {
-      $ticker = false;
+      return  '';
     }
-
-    return $ticker;
   }
 
   /**
@@ -2590,17 +2754,21 @@ class ProductsCommon extends Prod
 
     $Qproducts->execute();
 
+    if ($Qproducts->fetch()) {
 // 2592000 = 30 days in the unix timestamp format
-    $day_new_products = 86400 * \defined('DAY_NEW_PRODUCTS_ARRIVAL') ? (int)DAY_NEW_PRODUCTS_ARRIVAL : 0;
-    $today_time = time();
+      $day_new_products = 86400 * (\defined('DAY_NEW_PRODUCTS_ARRIVAL') ? (int)DAY_NEW_PRODUCTS_ARRIVAL : 0);
+      $today_time = time();
 
-    if (($today_time - strtotime($Qproducts->value('products_featured_date_added'))) < $day_new_products) {
-      $ticker = true;
+      if (($today_time - strtotime($Qproducts->value('products_featured_date_added'))) < $day_new_products) {
+        $ticker = true;
+      } else {
+        $ticker = false;
+      }
+
+      return $ticker;
     } else {
-      $ticker = false;
+      return  '';
     }
-
-    return $ticker;
   }
 
   /**
@@ -2630,17 +2798,21 @@ class ProductsCommon extends Prod
 
     $Qproducts->execute();
 
+    if ($Qproducts->fetch()) {
 // 2592000 = 30 days in the unix timestamp format
-    $day_new_products = 86400 * \defined('DAY_NEW_PRODUCTS_ARRIVAL') ? (int)DAY_NEW_PRODUCTS_ARRIVAL : 0;
-    $today_time = time();
+      $day_new_products = 86400 * (\defined('DAY_NEW_PRODUCTS_ARRIVAL') ? (int)DAY_NEW_PRODUCTS_ARRIVAL : 0);
+      $today_time = time();
 
-    if (($today_time - strtotime($Qproducts->value('date_added'))) < $day_new_products) {
-      $ticker = true;
+      if (($today_time - strtotime($Qproducts->value('date_added'))) < $day_new_products) {
+        $ticker = true;
+      } else {
+        $ticker = false;
+      }
+
+      return $ticker;
     } else {
-      $ticker = false;
+      return  '';
     }
-
-    return $ticker;
   }
 
   /**
@@ -2834,14 +3006,14 @@ class ProductsCommon extends Prod
 
     if (isset($sortby)) {
       if (isset($_POST['keywords']) || isset($_GET['keywords'])) {
-        $sort_prefix = '<a href="' . CLICSHOPPING::link(null, CLICSHOPPING::getAllGET(array('page', 'info', 'sort')) . '&keywords=' . $keywords . '&page=1&sort=' . $column . ($sortby == $column . 'a' ? 'd' : 'a')) . '" title="' . HTML::output(CLICSHOPPING::getDef('text_sort_products') . ($sortby == $column . 'd' || substr($sortby, 0, 1) != $column ? CLICSHOPPING::getDef('text_ascendingly') : CLICSHOPPING::getDef('text_descendingly')) . CLICSHOPPING::getDef('text_by') . $heading) . '" class="productListing-heading">';
+        $sort_prefix = '<a href="' . CLICSHOPPING::link(null, CLICSHOPPING::getAllGET(array('page', 'info', 'sort')) . '&keywords=' . $keywords . '&page=1&sort=' . $column . ($sortby == $column . 'a' ? 'd' : 'a')) . '" title="' . HTML::output(CLICSHOPPING::getDef('text_sort_products') . ' ' . ($sortby == $column . 'd' || substr($sortby, 0, 1) != $column ? CLICSHOPPING::getDef('text_ascendingly') : CLICSHOPPING::getDef('text_descendingly')) . ' ' . trim(CLICSHOPPING::getDef('text_by')) . ' ' . $heading) . '" class="productListing-heading">';
         $sort_suffix = ' ' . (substr($sortby, 0, 1) == $column ? (substr($sortby, 1, 1) == 'a' ? '+' : '-') : '') . '</a>';
       } else {
-        $sort_prefix = '<a href="' . CLICSHOPPING::link(null, CLICSHOPPING::getAllGET(array('page', 'info', 'sort')) . '&page=1&sort=' . $column . ($sortby == $column . 'a' ? 'd' : 'a')) . '" title="' . HTML::output(CLICSHOPPING::getDef('text_sort_products') . ($sortby == $column . 'd' || substr($sortby, 0, 1) != $column ? CLICSHOPPING::getDef('text_ascendingly') : CLICSHOPPING::getDef('text_descendingly')) . CLICSHOPPING::getDef('text_by') . $heading) . '" class="productListing-heading">';
+        $sort_prefix = '<a href="' . CLICSHOPPING::link(null, CLICSHOPPING::getAllGET(array('page', 'info', 'sort')) . '&page=1&sort=' . $column . ($sortby == $column . 'a' ? 'd' : 'a')) . '" title="' . HTML::output(CLICSHOPPING::getDef('text_sort_products') . ' ' . ($sortby == $column . 'd' || substr($sortby, 0, 1) != $column ? CLICSHOPPING::getDef('text_ascendingly') : CLICSHOPPING::getDef('text_descendingly')) . ' ' . trim(CLICSHOPPING::getDef('text_by')) . ' ' . $heading) . '" class="productListing-heading">';
         $sort_suffix = ' ' . (substr($sortby, 0, 1) == $column ? (substr($sortby, 1, 1) == 'a' ? '+' : '-') : '') . '</a>';
       }
 } else {
-      $sort_prefix = '<a href="' . CLICSHOPPING::link(null, CLICSHOPPING::getAllGET(array('page', 'info', 'sort')) . '&keywords=' . $keywords . '&page=1&sort=' . $column . ($sortby == $column . 'a' ? 'd' : 'a')) . '" title="' . HTML::output(CLICSHOPPING::getDef('text_sort_products') . ($sortby == $column . 'd' || substr($sortby, 0, 1) != $column ? CLICSHOPPING::getDef('text_ascendingly') : CLICSHOPPING::getDef('text_descendingly')) . CLICSHOPPING::getDef('text_by') . $heading) . '" class="productListing-heading">';
+      $sort_prefix = '<a href="' . CLICSHOPPING::link(null, CLICSHOPPING::getAllGET(array('page', 'info', 'sort')) . '&keywords=' . $keywords . '&page=1&sort=' . $column . ($sortby == $column . 'a' ? 'd' : 'a')) . '" title="' . HTML::output(CLICSHOPPING::getDef('text_sort_products') . ' ' . ($sortby == $column . 'd' || substr($sortby, 0, 1) != $column ? CLICSHOPPING::getDef('text_ascendingly') : CLICSHOPPING::getDef('text_descendingly')) . ' ' . trim(CLICSHOPPING::getDef('text_by')) . ' ' . $heading) . '" class="productListing-heading">';
       $sort_suffix = ' ' . (substr($sortby, 0, 1) == $column ? (substr($sortby, 1, 1) == 'a' ? '+' : '-') : '') . '</a>';
     }
 

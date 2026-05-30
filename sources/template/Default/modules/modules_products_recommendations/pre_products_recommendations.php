@@ -9,10 +9,19 @@
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Catalog\Products\Classes\Shop\ProductsListingContext;
+use ClicShopping\Apps\Catalog\Products\Classes\Shop\ProductsListingRenderer;
 use ClicShopping\Apps\Marketing\Recommendations\Classes\Shop\RecommendationsShop;
 use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\CockpitAI\ProductsTracking;
 
-
+/**
+ *
+ *
+ * This class handles the display and configuration of the "Products Recommendations" module in ClicShopping.
+ * It manages the listing, sorting, and rendering of products recommendations for customers, including
+ * configuration options for display templates, columns, short descriptions, stock, and more.
+ *
+ */
 class pre_products_recommendations
 {
   public string $code;
@@ -32,7 +41,7 @@ class pre_products_recommendations
 
     if (\defined('MODULE_PRODUCTS_RECOMMENDATIONS_STATUS')) {
       $this->sort_order = \defined('MODULE_PRODUCTS_RECOMMENDATIONS_SORT_ORDER') ? (int)MODULE_PRODUCTS_RECOMMENDATIONS_SORT_ORDER : 0;
-      $this->enabled = (MODULE_PRODUCTS_RECOMMENDATIONS_STATUS == 'True');
+      $this->enabled = \defined('MODULE_PRODUCTS_RECOMMENDATIONS_STATUS') ? (MODULE_PRODUCTS_RECOMMENDATIONS_STATUS == 'True') : false;
     }
   }
 
@@ -40,10 +49,6 @@ class pre_products_recommendations
   {
     $CLICSHOPPING_ProductsCommon = Registry::get('ProductsCommon');
     $CLICSHOPPING_Template = Registry::get('Template');
-    $CLICSHOPPING_ProductsFunctionTemplate = Registry::get('ProductsFunctionTemplate');
-    $CLICSHOPPING_ProductsAttributes = Registry::get('ProductsAttributes');
-    $CLICSHOPPING_Reviews = Registry::get('Reviews');
-    $CLICSHOPPING_Language = Registry::get('Language');
 
     // normalisation position module (left/right)
     $module_position = ($this->group === 'boxes_column_left') ? 'left' : 'right';
@@ -57,6 +62,38 @@ class pre_products_recommendations
 
         $listingTotalRow = $Qlisting->getPageSetTotalRows();
 
+        $context = new ProductsListingContext(
+          constantsPrefix: 'MODULE_PRODUCTS_RECOMMENDATIONS',
+          cssContainerClass: 'ModulesProductsRecommandationsContainer',
+          cssHeadingClass: null,
+          headingTextDef: null,
+          tickerClasses: [
+            'special'  => 'ModulesProductsRecommandationsBootstrapTickerSpecial',
+            'favorite' => 'ModulesProductsRecommandationsBootstrapTickerFavorite',
+            'featured' => 'ModulesProductsRecommandationsBootstrapTickerFeatured',
+            'new'      => 'ModulesProductsRecommandationsBootstrapTickerNew',
+          ],
+          tickerPercentageClass: 'ModulesProductsRecommandationsBootstrapTickerPourcentage',
+          group: $this->group,
+          trackingCode: $this->code,
+          modulePosition: $module_position,
+          sortOrder: (int)$this->sort_order,
+          trackingWeight: 0.45,
+          listingCommentLabel: 'Products Recommandations',
+          hiddenUrlField: 'Products&Recommandations',
+          displayCartButton: defined('MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_CART_BUTTON') && MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_CART_BUTTON === 'True',
+          displayDetailsButton: defined('MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_DETAILS_BUTTON') && MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_DETAILS_BUTTON === 'True',
+          displaySortBar: false,
+          sortColumns: [],
+          displayViewSwitch: true,
+          displayOptions: [
+            'weight' => false,
+            'quantityUnit' => false,
+          ],
+        );
+
+        $renderer = new ProductsListingRenderer($context);
+
         $new_prods_content = '<!-- New Products start -->' . "\n";
         $new_prods_content .= '<div class="clearfix"></div>';
         $new_prods_content .= '<div class="mt-1"></div>';
@@ -64,13 +101,13 @@ class pre_products_recommendations
         $new_prods_content .= '<div class="ModulesProductsNewContainer">';
 
         if ($listingTotalRow > 0) {
-          $new_prods_content .= '<div class="col-md-7 float-start">';
+          $new_prods_content .= '<div class="col-md-5 float-start">';
           $new_prods_content .= '<div class="page-title ModulesProductsNewHeadingTitle">';
           $new_prods_content .= '<h1>' . CLICSHOPPING::getDef('text_heading_title') . '</h1>';
           $new_prods_content .= '</div>';
           $new_prods_content .= '</div>';
 
-          $new_prods_content .= '<div class="col-md-3 float-end">';
+          $new_prods_content .= '<div class="col-md-5 float-end">';
           $new_prods_content .= '<div style="padding-right:2em; padding-top:0.5rem;">';
           $new_prods_content .= '<div class="dropdown">';
           $new_prods_content .= '<div class="btn-group btn-group-sm float-end">';
@@ -79,7 +116,7 @@ class pre_products_recommendations
           $new_prods_content .= '</button>';
           $new_prods_content .= '<ul class="dropdown-menu text-start" aria-labelledby="dropdownMenu2">';
 
-// number of sort criterias
+          // number of sort criterias
           $column_list = RecommendationsShop::getCountColumnList();
 
           for ($col = 0, $n = \count($column_list); $col < $n; $col++) {
@@ -109,6 +146,8 @@ class pre_products_recommendations
           $new_prods_content .= '</ul>';
           $new_prods_content .= '</div>';
           $new_prods_content .= '</div>';
+
+          $new_prods_content .= '<div class="float-end" style="padding-right:0.5rem;">' . $renderer->renderViewSwitch() . '</div>';
           $new_prods_content .= '</div>';
           $new_prods_content .= '</div>';
 
@@ -137,169 +176,7 @@ class pre_products_recommendations
         $new_prods_content .= '<div class="boxContentsModulesProductsNew">';
 
         if ($listingTotalRow > 0) {
-          $new_prods_content .= '<div class="d-flex flex-wrap">';
-
-// display number of short description
-          $products_short_description_number = \defined('MODULE_PRODUCTS_RECOMMENDATIONS_SHORT_DESCRIPTION') ? (int)MODULE_PRODUCTS_RECOMMENDATIONS_SHORT_DESCRIPTION : 0;
-// delete words
-          $delete_word = (int)MODULE_PRODUCTS_RECOMMENDATIONS_SHORT_DESCRIPTION_DELETE_WORLDS;
-// nbr of column to display  boostrap
-          $bootstrap_column = \defined('MODULE_PRODUCTS_RECOMMENDATIONS_COLUMNS') ? (int)MODULE_PRODUCTS_RECOMMENDATIONS_COLUMNS : 0;
-// initialisation des boutons
-          $size_button = $CLICSHOPPING_ProductsCommon->getSizeButton('md');
-
-// Template define
-          $filename = $CLICSHOPPING_Template->getTemplateModulesFilename($this->group . '/template_html/' . MODULE_PRODUCTS_RECOMMENDATIONS_TEMPLATE);
-          $counter = 1;
-
-          while ($Qlisting->fetch()) {
-            $products_id = $Qlisting->valueInt('products_id');
-            //trackingProduct
-            ProductsTracking::insertProductTracking($products_id,  $this->code, $module_position, $this->sort_order, $CLICSHOPPING_Language->getId(), null, 0.55);
-
-            $products_name_url = $CLICSHOPPING_ProductsFunctionTemplate->getProductsUrlRewrited()->getProductNameUrl($products_id);
-//product name
-            $products_name = $CLICSHOPPING_ProductsCommon->getProductsName($products_id);
-//Stock (good, alert, out of stock).
-            $products_stock = $CLICSHOPPING_ProductsFunctionTemplate->getStock(MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_STOCK, $products_id);
-//Flash discount
-            $products_flash_discount = $CLICSHOPPING_ProductsFunctionTemplate->getFlashDiscount($products_id, '<br />');
-// Minimum quantity to take an order
-            $min_order_quantity_products_display = $CLICSHOPPING_ProductsFunctionTemplate->getMinOrderQuantityProductDisplay($products_id);
-// display a message in public function the customer group applied - before submit button
-            $submit_button_view = $CLICSHOPPING_ProductsFunctionTemplate->getButtonView($products_id);
-// button buy
-            $button_buy_id = 'buttonBuyId_' . $counter++;
-            $buy_button = HTML::button(CLICSHOPPING::getDef('button_buy_now'), null, null, 'primary', ['params' => 'id="' . $button_buy_id . '"'], 'sm');
-            $CLICSHOPPING_ProductsCommon->getBuyButton($buy_button);
-
-// Display an input allowing for the customer to insert a quantity
-            if ($CLICSHOPPING_ProductsCommon->getProductsQuantity() > 0) {
-              $input_quantity = $CLICSHOPPING_ProductsFunctionTemplate->getDisplayInputQuantity(MODULE_PRODUCTS_RECOMMENDATIONS_DELETE_BUY_BUTTON, $products_id);
-            } else {
-              $input_quantity = '';
-            }
-
-// display the differents prices before button
-            $product_price = $CLICSHOPPING_ProductsCommon->getCustomersPrice($products_id);
-//Short description
-            $products_short_description = $CLICSHOPPING_ProductsCommon->getProductsShortDescription($products_id, $delete_word, $products_short_description_number);
-// Reviews
-            $avg_reviews = '<span class="ModulesReviews">' . HTML::stars($CLICSHOPPING_Reviews->getAverageProductReviews($products_id)) . '</span>';
-
-// **************************
-// display the differents buttons before minorder qty
-// **************************
-            $submit_button = '';
-            $form = '';
-            $endform = '';
-
-            if (MODULE_PRODUCTS_RECOMMENDATIONS_DELETE_BUY_BUTTON == 'False') {
-              if ($CLICSHOPPING_ProductsCommon->getProductsMinimumQuantity($products_id) != 0 && $CLICSHOPPING_ProductsCommon->getProductsQuantity($products_id) != 0) {
-                if ($CLICSHOPPING_ProductsAttributes->getHasProductAttributes($products_id) === false) {
-                  $form = HTML::form('cart_quantity', CLICSHOPPING::link(null, 'Cart&Add'), 'post', 'class="justify-content-center"', ['tokenize' => true]) . "\n";
-                  $form .= HTML::hiddenField('products_id', $products_id);
-                  if (isset($_GET['Recommendations'])) $form .= HTML::hiddenField('url', 'Products&ProductsRecommendations');
-                  $endform = '</form>';
-                  $submit_button = $CLICSHOPPING_ProductsCommon->getProductsBuyButton($products_id);
-                }
-              }
-            }
-
-// Quantity type
-            $products_quantity_unit = $CLICSHOPPING_ProductsFunctionTemplate->getProductQuantityUnitType($products_id);
-
-// **************************************************
-// Button Free - Must be above getProductsSoldOut
-// **************************************************
-            if ($CLICSHOPPING_ProductsCommon->getProductsOrdersView($products_id) != 1 && NOT_DISPLAY_PRICE_ZERO == 'false') {
-              $submit_button = HTML::button(CLICSHOPPING::getDef('text_products_free'), '', $products_name_url, 'danger');
-              $min_quantity = 0;
-              $form = '';
-              $endform = '';
-              $input_quantity = '';
-              $min_order_quantity_products_display = '';
-            }
-
-// **************************
-// Display an information if the stock is sold_out for all groups
-// **************************
-            if (!empty($CLICSHOPPING_ProductsCommon->getProductsSoldOut($products_id))) {
-              $submit_button = $CLICSHOPPING_ProductsCommon->getProductsSoldOut($products_id);
-              $form = '';
-              $endform = '';
-              $min_quantity = 0;
-              $input_quantity = '';
-              $min_order_quantity_products_display = '';
-            }
-
-// See the button more view details
-            $button_small_view_details = $CLICSHOPPING_ProductsFunctionTemplate->getButtonViewDetails(MODULE_PRODUCTS_RECOMMENDATIONS_DELETE_BUY_BUTTON, $products_id);
-
-// Display the image
-            $products_image = $CLICSHOPPING_ProductsFunctionTemplate->getImage(MODULE_PRODUCTS_RECOMMENDATIONS_IMAGE_MEDIUM, $products_id);
-
-// Ticker Image
-            $products_image .= $CLICSHOPPING_ProductsFunctionTemplate->getTicker(MODULE_PRODUCTS_RECOMMENDATIONS_TICKER, $products_id, 'ModulesProductsNewBootstrapTickerSpecial', 'ModulesProductsNewBootstrapTickerFavorite', 'ModulesProductsNewBootstrapTickerFeatured', 'ModulesProductsNewBootstrapTickerNew');
-
-            $ticker = $CLICSHOPPING_ProductsFunctionTemplate->getTickerPourcentage(MODULE_PRODUCTS_RECOMMENDATIONS_POURCENTAGE_TICKER, $products_id, 'ModulesProductsFeaturedBootstrapTickerPourcentage');
-
-//******************************************************************************************************************
-//            Options -- activate and insert code in template and css
-//******************************************************************************************************************
-
-// products model
-            $products_model = $CLICSHOPPING_ProductsFunctionTemplate->getProductsModel($products_id);
-// manufacturer
-            $products_manufacturers = $CLICSHOPPING_ProductsFunctionTemplate->getProductsManufacturer($products_id);
-// display the price by kilo
-            $product_price_kilo = $CLICSHOPPING_ProductsFunctionTemplate->getProductsPriceByWeight($products_id);
-// display date available
-            $products_date_available = $CLICSHOPPING_ProductsFunctionTemplate->getProductsDateAvailable($products_id);
-// display products only shop
-            $products_only_shop = $CLICSHOPPING_ProductsFunctionTemplate->getProductsOnlyTheShop($products_id);
-// display products only shop
-            $products_only_web = $CLICSHOPPING_ProductsFunctionTemplate->getProductsOnlyOnTheWebSite($products_id);
-// display products packaging
-            $products_packaging = $CLICSHOPPING_ProductsFunctionTemplate->getProductsPackaging($products_id);
-// display shipping delay
-            $products_shipping_delay = $CLICSHOPPING_ProductsFunctionTemplate->getProductsShippingDelay($products_id);
-// display products tag
-            $tag = $CLICSHOPPING_ProductsFunctionTemplate->getProductsHeadTag($products_id);
-
-            $products_tag = '';
-            if (isset($tag) && \is_array($tag)) {
-              foreach ($tag as $value) {
-                $products_tag .= '#<span class="productTag">' . HTML::link(CLICSHOPPING::link(null, 'Search&keywords=' . HTML::outputProtected(mb_convert_encoding($value, "UTF-8", mb_detect_encoding($value, 'auto'))($value) . '&search_in_description=1&categories_id=&inc_subcat=1'), 'rel="nofollow"'), $value) . '</span> ';
-              }
-            }
-// display products volume
-            $products_volume = $CLICSHOPPING_ProductsFunctionTemplate->getProductsVolume($products_id);
-// display products weight
-            $products_weight = $CLICSHOPPING_ProductsFunctionTemplate->getProductsWeight($products_id);
-// Reviews
-            $avg_reviews = '<span class="ModulesReviews">' . HTML::stars($CLICSHOPPING_Reviews->getAverageProductReviews($products_id)) . '</span>';
-// Json ltd
-            $jsonLtd = $CLICSHOPPING_ProductsFunctionTemplate->getProductJsonLd($products_id);
-
-//******************************************************************************************************************
-//            End Options -- activate and insert code in template and css
-//******************************************************************************************************************
-
-// *************************
-//      Template call
-// **************************
-            if (is_file($filename)) {
-              ob_start();
-              require($filename);
-              $new_prods_content .= ob_get_clean();
-            } else {
-              echo CLICSHOPPING::getDef('template_does_not_exist') . '<br /> ' . $filename;
-              exit;
-            }
-          } //while
-
-          $new_prods_content .= '</div>';  // flex
+          $new_prods_content .= $renderer->renderList($Qlisting);
         } else {
           $new_prods_content .= '<div class="mt-1"></div>';
           $new_prods_content .= '<div class="text-center alert alert-info">' . CLICSHOPPING::getDef('text_no_products') . '</div>';
@@ -332,20 +209,34 @@ class pre_products_recommendations
       $new_prods_content .= '<!-- New Products End -->' . "\n";
 
       $CLICSHOPPING_Template->addBlock($new_prods_content, $this->group);
-
     } // php_self
   } // public function execute
 
+  /**
+   * Returns whether the module is enabled.
+   *
+   * @return bool
+   */
   public function isEnabled()
   {
     return $this->enabled;
   }
 
+  /**
+   * Checks if the module configuration is defined.
+   *
+   * @return bool
+   */
   public function check()
   {
     return \defined('MODULE_PRODUCTS_RECOMMENDATIONS_STATUS');
   }
 
+  /**
+   * Installs the module configuration into the database.
+   *
+   * @return void
+   */
   public function install()
   {
     $CLICSHOPPING_Db = Registry::get('Db');
@@ -389,7 +280,7 @@ class pre_products_recommendations
     $CLICSHOPPING_Db->save('configuration', [
         'configuration_title' => 'Please indicate the number of column that you want to display ?',
         'configuration_key' => 'MODULE_PRODUCTS_RECOMMENDATIONS_COLUMNS',
-        'configuration_value' => '6',
+        'configuration_value' => '3',
         'configuration_description' => 'Choose a number between 1 and 12',
         'configuration_group_id' => '6',
         'sort_order' => '3',
@@ -411,13 +302,13 @@ class pre_products_recommendations
     );
 
     $CLICSHOPPING_Db->save('configuration', [
-        'configuration_title' => 'Do you want to remove words of your short description ?',
-        'configuration_key' => 'MODULE_PRODUCTS_RECOMMENDATIONS_SHORT_DESCRIPTION_DELETE_WORLDS',
-        'configuration_value' => '0',
-        'configuration_description' => 'Indicate Remove words of your short description for the first caracters',
+        'configuration_title' => 'Do you want to display the quantity input field ?',
+        'configuration_key' => 'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_QUANTITY_INPUT',
+        'configuration_value' => 'False',
+        'configuration_description' => 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).',
         'configuration_group_id' => '6',
-        'sort_order' => '4',
-        'set_function' => '',
+        'sort_order' => '8',
+        'set_function' => 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))',
         'date_added' => 'now()'
       ]
     );
@@ -531,12 +422,24 @@ class pre_products_recommendations
     );
 
     $CLICSHOPPING_Db->save('configuration', [
-        'configuration_title' => 'Do you want to remove the details button ?',
-        'configuration_key' => 'MODULE_PRODUCTS_RECOMMENDATIONS_DELETE_BUY_BUTTON',
-        'configuration_value' => 'False',
-        'configuration_description' => 'Remove the button details',
+        'configuration_title' => 'Do you want to display the details button ?',
+        'configuration_key' => 'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_DETAILS_BUTTON',
+        'configuration_value' => 'True',
+        'configuration_description' => 'Display or remove the details button',
         'configuration_group_id' => '6',
         'sort_order' => '11',
+        'set_function' => 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))',
+        'date_added' => 'now()'
+      ]
+    );
+
+    $CLICSHOPPING_Db->save('configuration', [
+        'configuration_title' => 'Do you want to display the cart button ?',
+        'configuration_key' => 'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_CART_BUTTON',
+        'configuration_value' => 'True',
+        'configuration_description' => 'Display or remove the cart button',
+        'configuration_group_id' => '6',
+        'sort_order' => '13',
         'set_function' => 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))',
         'date_added' => 'now()'
       ]
@@ -555,11 +458,21 @@ class pre_products_recommendations
     );
   }
 
+  /**
+   * Removes the module configuration from the database.
+   *
+   * @return int
+   */
   public function remove()
   {
     return Registry::get('Db')->exec('delete from :table_configuration where configuration_key in ("' . implode('", "', $this->keys()) . '")');
   }
 
+  /**
+   * Returns the configuration keys used by this module.
+   *
+   * @return array
+   */
   public function keys()
   {
     return array(
@@ -568,7 +481,7 @@ class pre_products_recommendations
       'MODULE_PRODUCTS_RECOMMENDATIONS_MAX_DISPLAY',
       'MODULE_PRODUCTS_RECOMMENDATIONS_COLUMNS',
       'MODULE_PRODUCTS_RECOMMENDATIONS_SHORT_DESCRIPTION',
-      'MODULE_PRODUCTS_RECOMMENDATIONS_SHORT_DESCRIPTION_DELETE_WORLDS',
+      'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_QUANTITY_INPUT',
       'MODULE_PRODUCTS_RECOMMENDATIONS_TICKER',
       'MODULE_PRODUCTS_RECOMMENDATIONS_POURCENTAGE_TICKER',
       'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_STOCK',
@@ -578,7 +491,8 @@ class pre_products_recommendations
       'MODULE_PRODUCTS_RECOMMENDATIONS_LIST_QUANTITY',
       'MODULE_PRODUCTS_RECOMMENDATIONS_LIST_WEIGHT',
       'MODULE_PRODUCTS_RECOMMENDATIONS_IMAGE_MEDIUM',
-      'MODULE_PRODUCTS_RECOMMENDATIONS_DELETE_BUY_BUTTON',
+      'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_DETAILS_BUTTON',
+      'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_CART_BUTTON',
       'MODULE_PRODUCTS_RECOMMENDATIONS_SORT_ORDER'
     );
   }

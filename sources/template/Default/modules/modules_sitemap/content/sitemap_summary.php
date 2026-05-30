@@ -45,3 +45,4 @@ use ClicShopping\OM\HTML;
     </div>
   </div>
 </div>
+<div class="py-5"></div>

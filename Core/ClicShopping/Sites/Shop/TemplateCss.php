@@ -34,6 +34,7 @@
       'modules_shopping_cart/modules_shopping_cart_general.css',
       'modules_products_search/modules_products_search_general.css',
       'general/bootstrap_customize.css',
+      'general/grid_list.css',
     ];
 
     // Dynamic storage for additional priority CSS files added at runtime

@@ -9,6 +9,6 @@
 
  customer_quantity = Quantité
 
- min_qty_order_product = Qty min :
+ min_qty_order_product = This product has a minimum quantity of
  products_not_sell = products not sell
  button_continue = continue

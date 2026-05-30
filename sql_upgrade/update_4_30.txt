@@ -84,3 +84,140 @@ ALTER TABLE clic_api_session ADD UNIQUE KEY idx_session_id (session_id);
 INSERT INTO `clic_configuration` VALUES(null, 'Mode de vérification de l\'IP', 'CLICSHOPPING_APP_API_AI_IP_CHECK_MODE', 'subnet', 'Contrôle la manière dont l\'IP du client est vérifiée à chaque requête de session. <strong>strict</strong> = correspondance exacte (sécurité maximale, peut casser les clients mobiles / NAT / CDN). <strong>subnet</strong> = même /24 (IPv4) ou /64 (IPv6) — valeur recommandée par défaut. <strong>off</strong> = aucune vérification d\'IP (seul le token compte, comportement type OAuth).', 6, 0, NULL, NOW(), NULL, NULL);
 #english
 INSERT INTO `clic_configuration` VALUES(null, 'IP Verification Mode', 'CLICSHOPPING_APP_API_AI_IP_CHECK_MODE', 'subnet', 'Controls how the client IP is verified on each session request. <strong>strict</strong> = exact match (maximum security, may break mobile clients / NAT / CDN setups). <strong>subnet</strong> = same /24 (IPv4) or /64 (IPv6) — recommended default value. <strong>off</strong> = no IP verification (only the token is checked, OAuth-style behavior).', 6, 0, NULL, NOW(), NULL, NULL);
+
+
+
+
+
+INSERT INTO `clic_configuration` VALUES(null, 'Do you want to display the cart button ?', 'MODULE_FRONT_PAGE_NEW_PRODUCTS_DISPLAY_CART_BUTTON', 'True', 'Display or remove the cart button', 6, 12, NULL, '2026-05-28 10:22:21', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(null, 'Do you want to display the sort filter ?', 'MODULE_FRONT_PAGE_NEW_PRODUCTS_DISPLAY_FILTER', 'True', 'Display a sort dropdown (price, quantity, weight, date) above the listing', 6, 13, NULL, '2026-05-28 10:22:21', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+UPDATE configuration
+   SET configuration_key = 'MODULE_FRONT_PAGE_NEW_PRODUCTS_DISPLAY_DETAILS_BUTTON',
+       configuration_value = CASE WHEN configuration_value = 'False' THEN 'True' ELSE 'False' END,
+       configuration_title = 'Do you want to display the details button ?',
+       configuration_description = 'Display or remove the details button'
+ WHERE configuration_key = 'MODULE_FRONT_PAGE_NEW_PRODUCTS_DISPLAY_DETAILS_BUTTON';
+
+
+INSERT INTO `clic_configuration` VALUES(null, 'Do you want to display the cart button ?', 'MODULE_INDEX_CATEGORIES_NEW_PRODUCTS_DISPLAY_CART_BUTTON', 'True', 'Display or remove the cart button', 6, 13, NULL, '2026-05-28 13:10:32', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(nul, 'Do you want to display the sort filter ?', 'MODULE_INDEX_CATEGORIES_NEW_PRODUCTS_DISPLAY_FILTER', 'True', 'Display a sort dropdown (manufacturer, price, date) above the listing', 6, 14, NULL, '2026-05-28 13:10:32', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+UPDATE configuration
+   SET configuration_key = 'MODULE_INDEX_CATEGORIES_NEW_PRODUCTS_DISPLAY_DETAILS_BUTTON',
+       configuration_value = CASE WHEN configuration_value = 'False' THEN 'True' ELSE 'False' END,
+       configuration_title = 'Do you want to display the details button ?',
+       configuration_description = 'Display or remove the details button'
+ WHERE configuration_key = 'MODULE_INDEX_CATEGORIES_NEW_PRODUCTS_DELETE_BUY_BUTTON';
+
+
+#products new
+INSERT INTO `clic_configuration` VALUES(null, 'Do you want to display the details button ?', 'MODULE_PRODUCTS_NEW_DISPLAY_DETAILS_BUTTON', 'True', 'Display or remove the details button', 6, 11, NULL, '2026-05-28 14:59:28', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(null, 'Do you want to display the cart button ?', 'MODULE_PRODUCTS_NEW_DISPLAY_CART_BUTTON', 'True', 'Display or remove the cart button', 6, 13, NULL, '2026-05-28 14:59:28', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+ UPDATE configuration
+     SET configuration_key='MODULE_PRODUCTS_NEW_DISPLAY_DETAILS_BUTTON',
+         configuration_value=CASE WHEN configuration_value='False' THEN 'True' ELSE 'False' END,
+         configuration_title='Do you want to display the details button ?',
+         configuration_description='Display or remove the details button'
+   WHERE configuration_key='MODULE_PRODUCTS_NEW_DELETE_BUY_BUTTON';
+
+
+#specials
+INSERT INTO `clic_configuration` VALUES(null, 'Do you want to display the details button ?', 'MODULE_PRODUCTS_SPECIAL_DISPLAY_DETAILS_BUTTON', 'True', 'Display or remove the details button', 6, 11, NULL, '2026-05-28 14:59:28', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(null, 'Do you want to display the cart button ?', 'MODULE_PRODUCTS_SPECIAL_DISPLAY_CART_BUTTON', 'True', 'Display or remove the cart button', 6, 13, NULL, '2026-05-28 14:59:28', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+  UPDATE configuration
+     SET configuration_key='MODULE_PRODUCTS_SPECIAL_DISPLAY_DETAILS_BUTTON',
+         configuration_value=CASE WHEN configuration_value='False' THEN 'True' ELSE 'False' END,
+         configuration_title='Do you want to display the details button ?',
+   WHERE configuration_key='MODULE_PRODUCTS_SPECIAL_DELETE_BUY_BUTTON';
+
+
+#favorites
+INSERT INTO `clic_configuration` VALUES(2629, 'Do you want to display the details button ?', 'MODULE_PRODUCTS_FAVORITES_DISPLAY_DETAILS_BUTTON', 'True', 'Display or remove the details button', 6, 11, NULL, '2026-05-29 10:33:12', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(2630, 'Do you want to display the cart button ?', 'MODULE_PRODUCTS_FAVORITES_DISPLAY_CART_BUTTON', 'True', 'Display or remove the cart button', 6, 13, NULL, '2026-05-29 10:33:12', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+  UPDATE configuration
+     SET configuration_key='MODULE_PRODUCTS_FAVORITES_DISPLAY_DETAILS_BUTTON',
+         configuration_value=CASE WHEN configuration_value='False' THEN 'True' ELSE 'False' END,
+         configuration_title='Do you want to display the details button ?',
+   WHERE configuration_key='MODULE_PRODUCTS_FAVORITES_DELETE_BUY_BUTTON';
+
+
+#recommendations
+INSERT INTO `clic_configuration` VALUES(2665, 'Do you want to display the details button ?', 'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_DETAILS_BUTTON', 'True', 'Display or remove the details button', 6, 11, NULL, '2026-05-29 11:34:04', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(2666, 'Do you want to display the cart button ?', 'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_CART_BUTTON', 'True', 'Display or remove the cart button', 6, 13, NULL, '2026-05-29 11:34:04', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+
+  UPDATE configuration
+     SET configuration_key='MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_DETAILS_BUTTON',
+         configuration_value=CASE WHEN configuration_value='False' THEN 'True' ELSE 'False' END,
+         configuration_title='Do you want to display the details button ?',
+   WHERE configuration_key='MODULE_PRODUCTS_RECOMMENDATIONS_DELETE_BUY_BUTTON';
+
+
+
+#search
+INSERT INTO `clic_configuration` VALUES(2685, 'Do you want to display the details button ?', 'MODULE_PRODUCTS_SEARCH_DISPLAY_DETAILS_BUTTON', 'True', 'Display or remove the details button', 6, 11, NULL, '2026-05-29 12:35:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(2686, 'Do you want to display the cart button ?', 'MODULE_PRODUCTS_SEARCH_DISPLAY_CART_BUTTON', 'True', 'Display or remove the cart button', 6, 11, NULL, '2026-05-29 12:35:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+
+  UPDATE configuration
+     SET configuration_key='MODULE_PRODUCTS_SEARCH_DISPLAY_DETAILS_BUTTON',
+         configuration_value=CASE WHEN configuration_value='False' THEN 'True' ELSE 'False' END,
+         configuration_title='Do you want to display the details button ?',
+   WHERE configuration_key='MODULE_PRODUCTS_SEARCH_DELETE_BUY_BUTTON';
+
+
+# ============================================================================
+# Quantity input toggle — replaces the unused *_SHORT_DESCRIPTION_DELETE_WORLDS
+# slot. New key MODULE_xxx_DISPLAY_QUANTITY_INPUT (True/False), default True.
+# Applied per migrated module (do NOT run a global LIKE delete: non-migrated
+# modules still read *_SHORT_DESCRIPTION_DELETE_WORLDS directly).
+# ============================================================================
+
+#front page new products
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_FRONT_PAGE_NEW_PRODUCTS_SHORT_DESCRIPTION_DELETE_WORLDS';
+INSERT INTO `clic_configuration` VALUES(2687, 'Do you want to display the quantity input field ?', 'MODULE_FRONT_PAGE_NEW_PRODUCTS_DISPLAY_QUANTITY_INPUT', 'True', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#index categories new products
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_INDEX_CATEGORIES_NEW_PRODUCTS_SHORT_DESCRIPTION_DELETE_WORLDS';
+INSERT INTO `clic_configuration` VALUES(2688, 'Do you want to display the quantity input field ?', 'MODULE_INDEX_CATEGORIES_NEW_PRODUCTS_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#favorites
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_FAVORITES_SHORT_DESCRIPTION_DELETE_WORLDS';
+INSERT INTO `clic_configuration` VALUES(2689, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_FAVORITES_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#featured
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_FEATURED_SHORT_DESCRIPTION_DELETE_WORLDS';
+INSERT INTO `clic_configuration` VALUES(2690, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_FEATURED_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#listing
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_LISTING_SHORT_DESCRIPTION_DELETE_WORLDS';
+INSERT INTO `clic_configuration` VALUES(2691, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_LISTING_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#new products
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_NEW_SHORT_DESCRIPTION_DELETE_WORLDS';
+INSERT INTO `clic_configuration` VALUES(2692, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_NEW_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#recommendations
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_RECOMMENDATIONS_SHORT_DESCRIPTION_DELETE_WORLDS';
+# also drop the mis-named key (was created without the DISPLAY_ prefix)
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_RECOMMENDATIONS_QUANTITY_INPUT';
+INSERT INTO `clic_configuration` VALUES(2693, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#specials
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_SPECIAL_SHORT_DESCRIPTION_DELETE_WORLDS';
+# also drop the mis-named key (was created without the DISPLAY_ prefix)
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_SPECIAL_QUANTITY_INPUT';
+INSERT INTO `clic_configuration` VALUES(2694, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_SPECIAL_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#search
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_SEARCH_SHORT_DESCRIPTION_DELETE_WORLDS';
+INSERT INTO `clic_configuration` VALUES(2695, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_SEARCH_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#products info also purchased (inline module, not renderer-based)
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_SHORT_DESCRIPTION_DELETE_WORLDS';
+INSERT INTO `clic_configuration` VALUES(2696, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#products info recommendation (inline module, not renderer-based)
+DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_INFO_RECOMMENDATION_SHORT_DESCRIPTION_DELETE_WORLDS';
+INSERT INTO `clic_configuration` VALUES(2697, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_INFO_RECOMMENDATION_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');

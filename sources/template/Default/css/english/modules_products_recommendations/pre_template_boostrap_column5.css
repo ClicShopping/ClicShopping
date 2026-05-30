@@ -14,7 +14,9 @@
   text-align: center;
   vertical-align: text-top;
   padding-top: 0.3125rem;
-  height: 0.625rem;
+  height: auto;
+  min-height: 2.4em;
+  line-height: 1.2;
   padding-left: 0.3125rem;
   padding-right: 5px;
   font-size: 0.875rem !important;
@@ -31,6 +33,7 @@
   text-transform: lowercase;
   padding-left: 0.3125rem;
   padding-right: 5px;
+  font-size: smaller;
 }
 
 .ModulesProductsRecommendationsBoostrapColumn5TextPrice {
@@ -47,7 +50,7 @@
   padding-top: 0.625rem;
 }
 
-div.ModulesProductsRecommendationsBoostrapColumn5ImageNewArrival {
+.ModulesProductsRecommendationsBoostrapColumn5ImageNewArrival {
   text-align: center;
   vertical-align: text-top;
   color: #7F736F;
@@ -75,3 +78,22 @@ div.ModulesProductsRecommendationsBoostrapColumn5ImageNewArrival {
   text-align: center;
   text-transform: uppercase;
 }
+
+/* ==========================================================================
+ PARTIE 2 : (GRID vs LInE)
+ ========================================================================== */
+  /* Annule le padding-top historique du mode colonne */
+  .pn-grid-list-item:not([class*="col-sm-2"]):not([class*="col-sm-3"]):not([class*="col-sm-4"]):not([class*="col-md-2"]):not([class*="col-md-3"]):not([class*="col-md-4"]) .ModulesProductsRecommendationsBoostrapColumn5ShortDescription h6 {
+      padding-top: 0 !important;
+  }
+
+
+  /* Prix poussé à droite */
+  .pn-grid-list-item:not([class*="col-sm-2"]):not([class*="col-sm-3"]):not([class*="col-sm-4"]):not([class*="col-md-2"]):not([class*="col-md-3"]):not([class*="col-md-4"]) .ModulesProductsRecommendationsBoostrapColumn5TextPrice {
+      display: block !important;
+      text-align: right !important;
+      font-weight: bold !important;
+      font-size: 1.25rem !important;
+      padding: 0 !important;
+      margin: 0 0 15px 0 !important;
+  }

@@ -47,14 +47,11 @@ class pl_products_listing_filter
     if (!empty($CLICSHOPPING_Category->getPath())) {
       if ($CLICSHOPPING_Category->getID()) {
         if ($CLICSHOPPING_Category->getDepth() == 'nested' || $CLICSHOPPING_Category->getDepth() == 'products') {
-
           $bootstrap_column = (int)MODULE_PRODUCTS_LISTING_FILTER_COLUMNS;
-// optional Product List Filter
+          // optional Product List Filter
           if (MODULE_PRODUCTS_LISTING_FILTER_DISPLAY_FILTER > 0) {
-
             if ($CLICSHOPPING_Customer->getCustomersGroupID() != 0) {
               if ($CLICSHOPPING_Manufacturers->getID() && !empty($CLICSHOPPING_Manufacturers->getID())) {
-
                 $Qfilter = $CLICSHOPPING_Db->prepare('select SQL_CALC_FOUND_ROWS distinct c.categories_id as id,
                                                                                              cd.categories_name as name
                                                        from :table_products p left join :table_products_groups g on p.products_id = g.products_id,
@@ -77,10 +74,7 @@ class pl_products_listing_filter
                 $Qfilter->bindInt(':manufacturers_id', $CLICSHOPPING_Manufacturers->getID());
                 $Qfilter->bindInt(':manufacturers_id1', $_GET['filter_id']);
                 $Qfilter->execute();
-
               } else {
-// Affichage en mode B2B du menu deroulant des Marques sur la liste des produits d'une categorie
-
                 $Qfilter = $CLICSHOPPING_Db->prepare('select SQL_CALC_FOUND_ROWS distinct m.manufacturers_id as id,
                                                                                             m.manufacturers_name as name
                                                         from :table_products p left join :table_products_groups g on p.products_id = g.products_id,
@@ -102,11 +96,9 @@ class pl_products_listing_filter
                 $Qfilter->bindInt(':customers_group_id', (int)$CLICSHOPPING_Customer->getCustomersGroupID());
                 $Qfilter->bindInt(':categories_id', $CLICSHOPPING_Category->getID());
                 $Qfilter->execute();
-
               }
 // Clients Grand Public
             } else {
-
               if ($CLICSHOPPING_Manufacturers->getID() && !empty($CLICSHOPPING_Manufacturers->getID())) {
 // Affichage du menu deroulant des categories sur une selection d'une marque depuis la boxe manufacturer
 
@@ -159,47 +151,44 @@ class pl_products_listing_filter
 
             if ($Qfilter->rowCount() > 0) {
               $products_listing_filter .= '<!-- product_listing_manufacturers start -->' . "\n";
-
               $products_listing_filter .= HTML::form('filter', CLICSHOPPING::link(null, '', false), 'get', null, ['session_id' => true]);
               $products_listing_filter .= '<div class="col-md-' . $bootstrap_column . '">';
 
               if ($CLICSHOPPING_Manufacturers->getID() && !empty($CLICSHOPPING_Manufacturers->getID())) {
-
                 $products_listing_filter .= HTML::hiddenField('manufacturersId', $CLICSHOPPING_Manufacturers->getID());
 
-                $options = array(
-                  array(
+                $options = [
+                  [
                     'id' => '',
                     'text' => CLICSHOPPING::getDef('text_all_categories')
-                  )
-                );
+                  ]
+                ];
               } else {
                 $products_listing_filter .= HTML::hiddenField('cPath', $CLICSHOPPING_Category->getPath());
 
-                $options = array(
-                  array(
+                $options =  [
+                  [
                     'id' => '',
                     'text' => CLICSHOPPING::getDef('text_all_filter')
-                  )
-                );
+                  ]
+                ];
               }
 
               $products_listing_filter .= HTML::hiddenField('sort', HTML::sanitize($_GET['sort']));
 
               while ($Qfilter->fetch()) {
-                $options[] = ['id' => $Qfilter->valueInt('id'),
+                $options[] = [
+                  'id' => $Qfilter->valueInt('id'),
                   'text' => $Qfilter->value('name')
                 ];
               }
 
               $products_listing_filter .= HTML::selectMenu('filter_id', $options, (isset($_GET['filter_id']) ? $_GET['filter_id'] : ''), 'onchange="this.form.submit()"');
-
+              $products_listing_filter .= '</div>';
               $products_listing_filter .= '</form>';
             }
 
-            $products_listing_filter .= '</div>';
             $products_listing_filter .= '<!-- product_listing_manufacturers end -->' . "\n";
-
             $CLICSHOPPING_Template->addBlock($products_listing_filter, $this->group);
           }
         }

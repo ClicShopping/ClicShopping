@@ -302,3 +302,31 @@ fieldset, label {
 .rating > input:checked ~ label:hover ~ label {
   color: #FFED85;
 }
+
+/* ===== Products listing toolbar (sort dropdown + grid/line view switch) ===== */
+/* Shared by every front-office listing via ProductsListingRenderer::renderSortBar() */
+.ProductsListingToolbar {
+  margin-bottom: .75rem;
+}
+
+.ProductsListingToolbar .ProductsListingSortBar .dropdown-menu li {
+  list-style: none;
+}
+
+.ProductsListingToolbar .ProductsListingSortBar .dropdown-menu li > a {
+  display: block;
+  padding: .25rem 1rem;
+  white-space: nowrap;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ProductsListingToolbar .ProductsListingSortBar .dropdown-menu li > a:hover {
+  background-color: var(--bs-tertiary-bg, #e9ecef);
+}
+
+.ProductsListingToolbar .ProductsListingViewSwitch .btn.active {
+  z-index: 1;
+}
+
+.ModulesCartQuantity {}

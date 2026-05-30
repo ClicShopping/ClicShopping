@@ -115,8 +115,10 @@ class pi_products_info_also_purchased
       if ($Qproducts->rowCount() > 0) {
 // display number of short description
         $products_short_description_number = (int)MODULE_PRODUCTS_INFO_ALSO_PURCHASED_SHORT_DESCRIPTION;
-// delete words
-        $delete_word = (int)MODULE_PRODUCTS_INFO_ALSO_PURCHASED_SHORT_DESCRIPTION_DELETE_WORLDS;
+// word deletion feature removed; keep $delete_word neutral
+        $delete_word = 0;
+// quantity input toggle (replaces the former SHORT_DESCRIPTION_DELETE_WORLDS slot)
+        $show_qty_input = \defined('MODULE_PRODUCTS_INFO_ALSO_PURCHASED_DISPLAY_QUANTITY_INPUT') && MODULE_PRODUCTS_INFO_ALSO_PURCHASED_DISPLAY_QUANTITY_INPUT === 'True';
 // nbr of column to display  boostrap
         $bootstrap_column = (int)MODULE_PRODUCTS_INFO_ALSO_PURCHASED_COLUMNS;
 // initialisation des boutons
@@ -168,9 +170,9 @@ class pi_products_info_also_purchased
 // **************************
           $input_quantity = '';
 
-          if ($CLICSHOPPING_ProductsCommon->getProductsAllowingToInsertQuantity($products_id) != '') {
+          if ($show_qty_input && $CLICSHOPPING_ProductsCommon->getProductsAllowingToInsertQuantity($products_id) != '') {
             if ($CLICSHOPPING_ProductsAttributes->getHasProductAttributes($products_id) === false) {
-              $input_quantity = CLICSHOPPING::getDef('text_customer_quantity') . ' ' . $CLICSHOPPING_ProductsCommon->getProductsAllowingToInsertQuantity();
+              $input_quantity = CLICSHOPPING::getDef('text_customer_quantity') . ' ' . $CLICSHOPPING_ProductsCommon->getProductsAllowingToInsertQuantity($products_id);
             }
           }
 
@@ -183,15 +185,27 @@ class pi_products_info_also_purchased
 
           if ($CLICSHOPPING_ProductsCommon->getProductsMinimumQuantity($products_id) != 0 && $CLICSHOPPING_ProductsCommon->getProductsQuantity($products_id) != 0) {
             if ($CLICSHOPPING_ProductsAttributes->getHasProductAttributes($products_id) === false) {
-              $form = HTML::form('cart_quantity', CLICSHOPPING::link(null, 'Cart&Add'), 'post', 'class="justify-content-center"', ['tokenize' => true]) . "\n";
-              $form .= HTML::hiddenField('products_id', $products_id);
-              
-	      if (isset($_GET['Id']) || isset($_GET['products_id'])) {
-                $form .= HTML::hiddenField('url', 'Products&Description');
+              $minQty = (int)$CLICSHOPPING_ProductsCommon->getProductsMinimumQuantity($products_id);
+
+              if (!$show_qty_input && $minQty > 1) {
+// Hidden input + minimum order quantity > 1: link to the product page (shows the min-qty notice).
+                $submit_button = HTML::button(CLICSHOPPING::getDef('button_buy_now'), null, $products_name_url, 'primary', null, 'sm');
+              } else {
+                $form = HTML::form('cart_quantity', CLICSHOPPING::link(null, 'Cart&Add'), 'post', 'class="justify-content-center"', ['tokenize' => true]) . "\n";
+                $form .= HTML::hiddenField('products_id', $products_id);
+
+                if (isset($_GET['Id']) || isset($_GET['products_id'])) {
+                  $form .= HTML::hiddenField('url', 'Products&Description');
+                }
+
+// When the visible field is hidden, still submit the (minimum) quantity.
+                if (!$show_qty_input) {
+                  $form .= HTML::hiddenField('cart_quantity', max(1, $minQty));
+                }
+
+                $endform = '</form>';
+                $submit_button = $CLICSHOPPING_ProductsCommon->getProductsBuyButton($products_id);
               }
-	      
-              $endform = '</form>';
-              $submit_button = $CLICSHOPPING_ProductsCommon->getProductsBuyButton($products_id);
             }
           }
 // Quantity type
@@ -388,13 +402,13 @@ class pi_products_info_also_purchased
     );
 
     $CLICSHOPPING_Db->save('configuration', [
-        'configuration_title' => 'Do you want to delete a certain length of descriptive text?',
-        'configuration_key' => 'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_SHORT_DESCRIPTION_DELETE_WORLDS',
-        'configuration_value' => '0',
-        'configuration_description' => 'Please indicate the number of words to delete. This system is useful with the tab module <br /> <br /> <i> - 0 for no deletion <br /> - 50 for the first 50 characters </i>',
+        'configuration_title' => 'Do you want to display the quantity input field ?',
+        'configuration_key' => 'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_DISPLAY_QUANTITY_INPUT',
+        'configuration_value' => 'False',
+        'configuration_description' => 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).',
         'configuration_group_id' => '6',
         'sort_order' => '8',
-        'set_function' => '',
+        'set_function' => 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))',
         'date_added' => 'now()'
       ]
     );
@@ -486,7 +500,7 @@ class pi_products_info_also_purchased
       'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_MAX_DISPLAY',
       'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_COLUMNS',
       'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_SHORT_DESCRIPTION',
-      'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_SHORT_DESCRIPTION_DELETE_WORLDS',
+      'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_DISPLAY_QUANTITY_INPUT',
       'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_POURCENTAGE_TICKER',
       'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_TICKER',
       'MODULE_PRODUCTS_INFO_ALSO_PURCHASED_DISPLAY_STOCK',
