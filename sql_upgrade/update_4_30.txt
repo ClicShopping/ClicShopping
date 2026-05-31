@@ -178,10 +178,6 @@ INSERT INTO `clic_configuration` VALUES(2686, 'Do you want to display the cart b
 DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_FRONT_PAGE_NEW_PRODUCTS_SHORT_DESCRIPTION_DELETE_WORLDS';
 INSERT INTO `clic_configuration` VALUES(2687, 'Do you want to display the quantity input field ?', 'MODULE_FRONT_PAGE_NEW_PRODUCTS_DISPLAY_QUANTITY_INPUT', 'True', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
 
-
-
-
-
 #index categories new products
 DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_INDEX_CATEGORIES_NEW_PRODUCTS_SHORT_DESCRIPTION_DELETE_WORLDS';
 INSERT INTO `clic_configuration` VALUES(2688, 'Do you want to display the quantity input field ?', 'MODULE_INDEX_CATEGORIES_NEW_PRODUCTS_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');

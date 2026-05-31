@@ -22,9 +22,9 @@ feedback_snapshot text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci default 
 date_modified datetime default current_timestamp() comment(Insertion timestamp)
 --
 primary id
-idx_entity entity_type, entity_id
+idx_entity entity_type entity_id
 idx_entity_lang entity_id language_id
-idx_regression_window verdict, date_modified, delta
+idx_regression_window verdict date_modified delta
 idx_run pipeline_run_uuid
 idx_critical critical
 idx_reason regression_reason

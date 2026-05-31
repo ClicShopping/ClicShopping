@@ -5,8 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="libraries updated">
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources/536f8999-06f1-466f-b6af-633d3c12c045.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources/536f8999-06f1-466f-b6af-633d3c12c045/storage_v2/_src_/schema/information_schema.FNRwLQ.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources/data_sources_history.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/data_source_mapping.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Agents/TEMPLATES.md" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/TEMPLATES.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/cron_log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/cron_log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/seo_quality_benchmark_log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/seo_quality_benchmark_log.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/install/Db/clicshopping.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" afterDir="false" />
@@ -57,23 +66,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0000000000003428" />
-      <entry key="S10" value="1.00000058547151" />
-      <entry key="S30" value="1.0084654579135919" />
-      <entry key="S60" value="1.1031210976348418" />
-      <entry key="M2" value="1.4785429745258616" />
-      <entry key="M5" value="3.2418693923694404" />
-      <entry key="M10" value="6.232860634007855" />
-      <entry key="M15" value="8.658595612870819" />
-      <entry key="M30" value="14.894721191373403" />
-      <entry key="H1" value="23.74257651569908" />
-      <entry key="H2" value="33.44531982642218" />
-      <entry key="H4" value="51.86798971701888" />
-      <entry key="D1" value="146.6717722856953" />
-      <entry key="W1" value="190.19778019421506" />
+      <entry key="MS100" value="1.00000000000009" />
+      <entry key="MS500" value="1.002664091880285" />
+      <entry key="S2" value="1.3424940337285565" />
+      <entry key="S5" value="1.9990664451847868" />
+      <entry key="S10" value="2.5457771461254843" />
+      <entry key="S30" value="3.305463625787197" />
+      <entry key="S60" value="3.613619771294299" />
+      <entry key="M2" value="3.8432391343684023" />
+      <entry key="M5" value="4.608059994037228" />
+      <entry key="M10" value="7.184907325509888" />
+      <entry key="M15" value="11.404290382650881" />
+      <entry key="M30" value="25.485337028396557" />
+      <entry key="H1" value="46.35748992437963" />
+      <entry key="H2" value="69.12880579782687" />
+      <entry key="H4" value="96.36528527375444" />
+      <entry key="D1" value="203.8011343529863" />
+      <entry key="W1" value="253.77752610455912" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -95,23 +104,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.6830201283771977" />
-      <entry key="MS500" value="0.9265880618903709" />
-      <entry key="S2" value="0.9811189749983187" />
-      <entry key="S5" value="0.9924043746861594" />
-      <entry key="S10" value="0.99619553194307" />
-      <entry key="S30" value="1.0071873879479034" />
-      <entry key="S60" value="1.102431960854357" />
-      <entry key="M2" value="1.4780754754793766" />
-      <entry key="M5" value="3.2411974885791026" />
-      <entry key="M10" value="6.231783371042585" />
-      <entry key="M15" value="8.657390779491601" />
-      <entry key="M30" value="14.893440526346637" />
-      <entry key="H1" value="23.741434155610484" />
-      <entry key="H2" value="33.444434299867396" />
-      <entry key="H4" value="51.867070415474004" />
-      <entry key="D1" value="146.6711101407621" />
-      <entry key="W1" value="190.19765066805783" />
+      <entry key="MS100" value="0.9138314502294826" />
+      <entry key="MS500" value="0.9847558256716686" />
+      <entry key="S2" value="1.336417730222981" />
+      <entry key="S5" value="1.9954014815537997" />
+      <entry key="S10" value="2.5434179705499904" />
+      <entry key="S30" value="3.304426274935238" />
+      <entry key="S60" value="3.6130486837598013" />
+      <entry key="M2" value="3.842912999614824" />
+      <entry key="M5" value="4.607777302790216" />
+      <entry key="M10" value="7.1843207355105525" />
+      <entry key="M15" value="11.403217059133102" />
+      <entry key="M30" value="25.48331487751313" />
+      <entry key="H1" value="46.355195282696464" />
+      <entry key="H2" value="69.12690944984898" />
+      <entry key="H4" value="96.36374989956309" />
+      <entry key="D1" value="203.80033859423122" />
+      <entry key="W1" value="253.77737354889524" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -181,25 +190,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;version4.30&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;copyright&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "version4.30",
+    "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "copyright",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mariadb"
+    ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -285,14 +299,6 @@
       <workItem from="1780158411301" duration="522000" />
       <workItem from="1780161404348" duration="397000" />
       <workItem from="1780224409266" duration="8000" />
-    </task>
-    <task id="LOCAL-00041" summary="librairies updated">
-      <option name="closed" value="true" />
-      <created>1778747640790</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1778747640790</updated>
     </task>
     <task id="LOCAL-00042" summary="add new sql">
       <option name="closed" value="true" />
@@ -678,14 +684,21 @@
       <option name="project" value="LOCAL" />
       <updated>1780158652325</updated>
     </task>
-    <option name="localTasksCounter" value="90" />
+    <task id="LOCAL-00090" summary="db updated">
+      <option name="closed" value="true" />
+      <created>1780234761727</created>
+      <option name="number" value="00090" />
+      <option name="presentableId" value="LOCAL-00090" />
+      <option name="project" value="LOCAL" />
+      <updated>1780234761727</updated>
+    </task>
+    <option name="localTasksCounter" value="91" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactoring" />
     <MESSAGE value="some update" />
     <MESSAGE value="fix upload" />
     <MESSAGE value="DOM text reinterpreted as HTML" />
@@ -710,7 +723,8 @@
     <MESSAGE value="language update" />
     <MESSAGE value="template improvement" />
     <MESSAGE value="libraries updated" />
-    <option name="LAST_COMMIT_MESSAGE" value="libraries updated" />
+    <MESSAGE value="db updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="db updated" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

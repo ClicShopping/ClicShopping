@@ -23,7 +23,7 @@ idx_cron_code cron_code
 idx_run_uuid run_uuid
 idx_status status
 idx_started_at started_at
-idx_origin_date origin, started_at
+idx_origin_date origin started_at
 ##
 engine innodb
 character_set utf8mb4

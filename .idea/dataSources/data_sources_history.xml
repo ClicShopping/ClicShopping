@@ -1,0 +1,26 @@
+<DataSourcesHistory>
+  <DataSourceFromHistory isRemovedFromProject="false">
+    <data-source source="LOCAL" name="clicshopping_v4@localhost" uuid="536f8999-06f1-466f-b6af-633d3c12c045">
+      <database-info product="MariaDB" version="11.8.6-MariaDB-5 from Ubuntu" jdbc-version="4.2" driver-name="MariaDB Connector/J" driver-version="3.5.7" dbms="MARIADB" exact-version="11.8.6" exact-driver-version="3.5">
+        <extra-name-characters>#@</extra-name-characters>
+        <identifier-quote-string>`</identifier-quote-string>
+      </database-info>
+      <case-sensitivity plain-identifiers="exact" quoted-identifiers="exact" />
+      <driver-ref>mariadb</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mariadb://localhost:3306/clicshopping_v4</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="database.introspection.mysql.dbe5060" value="true" />
+      </jdbc-additional-properties>
+      <secret-storage>master_key</secret-storage>
+      <user-name>root</user-name>
+      <schema-mapping>
+        <introspection-scope>
+          <node kind="schema" qname="@" />
+        </introspection-scope>
+      </schema-mapping>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+  </DataSourceFromHistory>
+</DataSourcesHistory>

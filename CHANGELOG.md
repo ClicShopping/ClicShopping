@@ -1,13 +1,13 @@
 version4.30
-- Maintenance version
 - Miscellaneous improvement
 - fix / bug resolution
 - libraries updated
 - new license
 - AI Speed response and improvement
 - products attributes improvement
-- product templating improvment
-- 
+- product templating improvement
+- template refactoring
+
 ---------------
 version4.281 et 4.282
 fix upload
