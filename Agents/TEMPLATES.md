@@ -149,7 +149,6 @@ sources/template/
 ```
 1. sources/template/{CustomTheme}/{file} ← priority — active custom theme. Copy the necessary files from Default template before to change inside the custom Template.
 2. sources/template/Default/{file} ← automatic fallback if missing from custom
-3. All the css directory must copied
 3. The modules contains some parameters can be applied and customized the module behavior.
 ```
 
@@ -369,9 +368,9 @@ $ai->generate('...');
 [ ] No visible hardcoded string — always via $CLICSHOPPING->getDef('key')
 [ ] URLs via routing helpers, not hardcoded
 [ ] Correct location of the template: 
-header/footer → root of Default/ (not in modules/) 
-fixed module → modules/{module_name}/content/ 
-module listing → modules/{module_name}/template_html/ (if the module manages a list)
+    header/footer → root of Default/ (not in modules/) 
+    fixed module → modules/{module_name}/content/ 
+    module listing → modules/{module_name}/template_html/ (if the module manages a list)
 [ ] template_html/ created only if the module actually manages a listing
 [ ] Custom theme: only contains overloaded files — no copy of Default/
 [ ] New template intended for all themes → create it in Default/
@@ -382,7 +381,6 @@ module listing → modules/{module_name}/template_html/ (if the module manages a
 [ ] Admin: session verification in the controller (Core/ClicShopping/Sites/ClicShoppingAdmin/Pages/), not in the template
 [ ] App with Sites/Shop/ + clicshopping.json: templates declared correctly in JSON
 [ ] index.php and index_default.php are copied
-[ ] all css are copied
 
 ```
 ---

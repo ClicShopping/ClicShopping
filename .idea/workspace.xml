@@ -5,171 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="libraries updated">
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ArgumentResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ArgumentResolverInterface.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/Exception/NearMissValueResolverException.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/Exception/ResolverNotFoundException.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/TraceableArgumentResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/BackedEnumValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/BuiltinTypeValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/DateTimeValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/DefaultValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/InputFileValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/MapInputValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/ServiceValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/TraceableValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/UidValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/ValueResolverInterface.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ArgumentResolver/ValueResolver/VariadicValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/AsTargetedValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/AskChoice.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/MapDateTime.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/ValueResolver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ConsoleBundle.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/DependencyInjection/ConsoleArgumentValueResolverPass.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/DependencyInjection/RegisterCommandArgumentLocatorsPass.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/DependencyInjection/RemoveEmptyCommandArgumentLocatorsPass.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Event/QuestionAnsweredEvent.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/EventListener/ValidateQuestionInputListener.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Exception/InputValidationFailedException.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Helper/FileInputHelper.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Input/File/InputFile.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Input/RawInputInterface.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Output/CombinedOutput.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Output/TestOutput.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Question/FileQuestion.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Resources/config/console.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Terminal/Image/ITerm2Protocol.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Terminal/Image/ImageProtocolInterface.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Terminal/Image/KittyGraphicsProtocol.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Tester/ConsoleAssertionsTrait.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Tester/Constraint/CommandFailed.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Tester/Constraint/CommandIsInvalid.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Tester/ExecutionResult.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/DnsResolvingHttpClient.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/GuzzleHttpHandler.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Internal/FollowRedirectsTrait.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone/DeepClone.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone/Resources/stubs/ClassNotFoundException.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone/Resources/stubs/NotInstantiableException.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone/bootstrap.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone/bootstrap81.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone/composer.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/Php85.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/Resources/stubs/DelayedTargetValidation.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/Resources/stubs/Filter/FilterException.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/Resources/stubs/Filter/FilterFailedException.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/Resources/stubs/NoDiscard.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/bootstrap.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/bootstrap80.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85/composer.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/DeepCloner.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/clicshopping_V3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/clicshopping_V3.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/php.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/autoload_classmap.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/autoload_classmap.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/autoload_files.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/autoload_files.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/autoload_psr4.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/autoload_psr4.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/autoload_static.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/autoload_static.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/installed.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/platform_check.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer/platform_check.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/src/AppendStream.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/src/AppendStream.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/src/CachingStream.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/src/CachingStream.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/src/LimitStream.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/src/LimitStream.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/src/UriNormalizer.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7/src/UriNormalizer.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/ArrayAdapter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/ArrayAdapter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/ChainAdapter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/ChainAdapter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/DoctrineDbalAdapter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/DoctrineDbalAdapter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/NullAdapter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/NullAdapter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/PhpFilesAdapter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/PhpFilesAdapter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/ProxyAdapter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/ProxyAdapter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/TraceableAdapter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Adapter/TraceableAdapter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/DependencyInjection/CachePoolPass.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/DependencyInjection/CachePoolPass.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/LockRegistry.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/LockRegistry.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RedisClusterProxy.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RedisClusterProxy.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RedisProxy.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RedisProxy.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RedisTrait.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RedisTrait.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RelayClusterProxy.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RelayClusterProxy.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RelayProxy.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/Traits/RelayProxy.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Application.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Application.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Argument.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Argument.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/AsCommand.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/AsCommand.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Ask.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Ask.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Interact.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Interact.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/MapInput.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/MapInput.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Option.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Option.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Reflection/ReflectionMember.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Attribute/Reflection/ReflectionMember.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Command/Command.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Command/Command.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Command/InvokableCommand.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Command/InvokableCommand.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Command/TraceableCommand.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Command/TraceableCommand.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ConsoleEvents.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/ConsoleEvents.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/DependencyInjection/AddConsoleCommandPass.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/DependencyInjection/AddConsoleCommandPass.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Helper/Helper.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Helper/Helper.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Helper/ProgressBar.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Helper/ProgressBar.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Helper/QuestionHelper.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Helper/QuestionHelper.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Helper/Table.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Helper/Table.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Input/Input.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Input/Input.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Input/InputArgument.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Input/InputArgument.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Input/InputOption.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Input/InputOption.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Interaction/Interaction.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Interaction/Interaction.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Output/OutputInterface.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Output/OutputInterface.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Question/Question.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Question/Question.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Style/SymfonyStyle.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Style/SymfonyStyle.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Terminal.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Terminal.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Tester/CommandTester.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Tester/CommandTester.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Tester/TesterTrait.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Tester/TesterTrait.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/CachingHttpClient.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/CachingHttpClient.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/CurlHttpClient.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/CurlHttpClient.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/HttpClientTrait.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/HttpClientTrait.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/HttpOptions.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/HttpOptions.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Internal/AmpClientState.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Internal/AmpClientState.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Internal/AmpListener.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Internal/AmpListener.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Internal/CurlClientState.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Internal/CurlClientState.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/NativeHttpClient.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/NativeHttpClient.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/NoPrivateNetworkHttpClient.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/NoPrivateNetworkHttpClient.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Response/AmpResponse.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Response/AmpResponse.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Response/CurlResponse.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Response/CurlResponse.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Response/MockResponse.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Response/MockResponse.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Response/NativeResponse.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/Response/NativeResponse.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/stopwatch/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/stopwatch/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/stopwatch/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/stopwatch/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/AbstractString.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/AbstractString.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/AbstractUnicodeString.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/AbstractUnicodeString.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/ByteString.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/ByteString.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/UnicodeString.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/UnicodeString.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Exception/ClassNotFoundException.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Exception/ClassNotFoundException.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Exception/NotInstantiableTypeException.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Exception/NotInstantiableTypeException.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Hydrator.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Hydrator.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Instantiator.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Instantiator.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/Exporter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/Exporter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/Hydrator.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/LazyDecoratorTrait.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/LazyDecoratorTrait.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/LazyObjectRegistry.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/LazyObjectRegistry.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/NamedClosure.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/Registry.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/Registry.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/Internal/Values.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console/Exception/InvalidFileException.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/ProxyHelper.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/ProxyHelper.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/VarExporter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/VarExporter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/TEMPLATES.md" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/TEMPLATES.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/install/Db/clicshopping.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -188,7 +28,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7522" />
+    <option name="cachedIndexableFilesCount" value="7527" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -217,23 +57,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.013509397202627" />
-      <entry key="MS500" value="1.5038689106221543" />
-      <entry key="S2" value="2.6737250264067294" />
-      <entry key="S5" value="3.3452475037994236" />
-      <entry key="S10" value="3.677546568779094" />
-      <entry key="S30" value="5.608592208419418" />
-      <entry key="S60" value="8.884759620198768" />
-      <entry key="M2" value="12.775786920070185" />
-      <entry key="M5" value="17.42537628689449" />
-      <entry key="M10" value="20.04780935786267" />
-      <entry key="M15" value="21.168281493485033" />
-      <entry key="M30" value="22.468122027818303" />
-      <entry key="H1" value="23.23337272235332" />
-      <entry key="H2" value="25.72430517861782" />
-      <entry key="H4" value="41.68403464388859" />
-      <entry key="D1" value="130.8220601083945" />
-      <entry key="W1" value="169.3429040123847" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0000000000003428" />
+      <entry key="S10" value="1.00000058547151" />
+      <entry key="S30" value="1.0084654579135919" />
+      <entry key="S60" value="1.1031210976348418" />
+      <entry key="M2" value="1.4785429745258616" />
+      <entry key="M5" value="3.2418693923694404" />
+      <entry key="M10" value="6.232860634007855" />
+      <entry key="M15" value="8.658595612870819" />
+      <entry key="M30" value="14.894721191373403" />
+      <entry key="H1" value="23.74257651569908" />
+      <entry key="H2" value="33.44531982642218" />
+      <entry key="H4" value="51.86798971701888" />
+      <entry key="D1" value="146.6717722856953" />
+      <entry key="W1" value="190.19778019421506" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -255,23 +95,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9526626723396153" />
-      <entry key="MS500" value="1.4878805248503815" />
-      <entry key="S2" value="2.6666065847969698" />
-      <entry key="S5" value="3.3416564666060564" />
-      <entry key="S10" value="3.6742822362150673" />
-      <entry key="S30" value="5.582269526409155" />
-      <entry key="S60" value="8.848787869003703" />
-      <entry key="M2" value="12.745888046009727" />
-      <entry key="M5" value="17.4091238514972" />
-      <entry key="M10" value="20.038802010159305" />
-      <entry key="M15" value="21.162065844228522" />
-      <entry key="M30" value="22.46490468241501" />
-      <entry key="H1" value="23.23173294063796" />
-      <entry key="H2" value="25.723358368069903" />
-      <entry key="H4" value="41.68306318254113" />
-      <entry key="D1" value="130.82140030056985" />
-      <entry key="W1" value="169.34277824237475" />
+      <entry key="MS100" value="0.6830201283771977" />
+      <entry key="MS500" value="0.9265880618903709" />
+      <entry key="S2" value="0.9811189749983187" />
+      <entry key="S5" value="0.9924043746861594" />
+      <entry key="S10" value="0.99619553194307" />
+      <entry key="S30" value="1.0071873879479034" />
+      <entry key="S60" value="1.102431960854357" />
+      <entry key="M2" value="1.4780754754793766" />
+      <entry key="M5" value="3.2411974885791026" />
+      <entry key="M10" value="6.231783371042585" />
+      <entry key="M15" value="8.657390779491601" />
+      <entry key="M30" value="14.893440526346637" />
+      <entry key="H1" value="23.741434155610484" />
+      <entry key="H2" value="33.444434299867396" />
+      <entry key="H4" value="51.867070415474004" />
+      <entry key="D1" value="146.6711101407621" />
+      <entry key="W1" value="190.19765066805783" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
