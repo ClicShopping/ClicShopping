@@ -8,17 +8,11 @@
 
 namespace ClicShopping\Apps\Configuration\TemplateEmail\Sites\ClicShoppingAdmin\Pages\Home\Actions;
 
-use ClicShopping\OM\Registry;
-
 class Edit extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public function execute()
   {
-    $CLICSHOPPING_TemplateEmail = Registry::get('TemplateEmail');
-
     $this->page->setFile('edit.php');
     $this->page->data['action'] = 'Update';
-
-    $CLICSHOPPING_TemplateEmail->loadDefinitions('Sites/ClicShoppingAdmin/TemplateEmail');
   }
 }

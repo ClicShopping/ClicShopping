@@ -87,7 +87,7 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
               <div class="col-md-12">
                 <div class="form-group row">
                   <label for="name"
-                         class="col-12 col-form-label"><?php echo $CLICSHOPPING_TemplateEmail->getDef('template_email_text_name'); ?>
+                         class="col-12 col-form-label"><?php echo $CLICSHOPPING_TemplateEmail->getDef('template_email_text_name'); ?></label>
                 </div>
               </div>
             </div>
@@ -154,23 +154,25 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
               <?php
               for ($i = 0, $n = \count($languages); $i < $n; $i++) {
                 ?>
+                <?php
+                if ($i == 0) {
+                  $show = ' show';
+                  $collapsed = '';
+                } else {
+                  $show = '';
+                  $collapsed = ' collapsed';
+                }
+                ?>
                 <div class="accordion-item">
-                  <h2 class="accordion-header" id="heading<?php $i; ?>">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  <h2 class="accordion-header" id="heading<?php echo $i; ?>">
+                    <button class="accordion-button<?php echo $collapsed; ?>" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse<?php echo $i; ?>" aria-expanded="<?php echo $i == 0 ? 'true' : 'false'; ?>" aria-controls="collapse<?php echo $i; ?>">
                       <?php echo $CLICSHOPPING_Language->getImage($languages[$i]['code']); ?>
                     </button>
                   </h2>
-                  <?php
-                  if ($i == 0) {
-                    $show = ' show';
-                  } else {
-                    $show = '';
-                  }
-                  ?>
 
-                  <div id="collapseOne" class="accordion-collapse collapse <?php echo $show; ?>"
-                       aria-labelledby="heading<?php $i; ?>" data-bs-parent="#accordionExample">
+                  <div id="collapse<?php echo $i; ?>" class="accordion-collapse collapse <?php echo $show; ?>"
+                       aria-labelledby="heading<?php echo $i; ?>" data-bs-parent="#accordionExample">
                     <div class="accordion-body">
                       <div class="row">
                         <div class="col-md-12">

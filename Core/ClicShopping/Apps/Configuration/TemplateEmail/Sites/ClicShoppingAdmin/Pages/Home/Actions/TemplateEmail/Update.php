@@ -32,11 +32,11 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     for ($i = 0, $n = \count($languages); $i < $n; $i++) {
       $template_language_id = $languages[$i]['id'];
 
-      $sql_data_array['template_email_name'] = HTML::sanitize($_POST['template_email_name'][$template_language_id]);
-      $sql_data_array['template_email_short_description'] = HTML::sanitize($_POST['template_email_short_description'][$template_language_id]);
-      $sql_data_array['template_email_description'] = $_POST['template_email_description'][$template_language_id];
-
-      $sql_data_array = array_merge($sql_data_array);
+      $sql_data_array = [
+        'template_email_name' => HTML::sanitize($_POST['template_email_name'][$template_language_id]),
+        'template_email_short_description' => HTML::sanitize($_POST['template_email_short_description'][$template_language_id]),
+        'template_email_description' => $_POST['template_email_description'][$template_language_id]
+      ];
 
       $this->app->db->save('template_email_description', $sql_data_array, ['template_email_id' => (int)$template_email_id,
           'language_id' => (int)$template_language_id

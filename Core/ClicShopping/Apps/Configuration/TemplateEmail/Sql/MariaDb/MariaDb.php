@@ -96,8 +96,8 @@ class MariaDb
 CREATE TABLE :table_template_email (
   template_email_id int NOT NULL auto_increment,
   template_email_variable varchar(250) NOT NULL,
-  customers_group_id int(2) default(0) NOT NULL,
-  template_email_type smallint(1) default(0) NOT NULL
+  customers_group_id int NOT NULL DEFAULT 0,
+  template_email_type smallint NOT NULL DEFAULT 0,
   PRIMARY KEY (template_email_id),
   KEY idx_template_email_id (template_email_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -114,9 +114,9 @@ CREATE TABLE :table_template_email_description (
   language_id int NOT NULL,
   template_email_name varchar(250),
   template_email_short_description varchar(250),
-  template_email_description longtext
-  PRIMARY KEY (template_email_id) (language_id),
-  KEY idx_template_email_name (idx_template_email_name)
+  template_email_description longtext,
+  PRIMARY KEY (template_email_id, language_id),
+  KEY idx_template_email_name (template_email_name)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

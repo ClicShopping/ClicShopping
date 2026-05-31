@@ -47,6 +47,8 @@ class TE extends \ClicShopping\Apps\Configuration\TemplateEmail\Module\ClicShopp
 
     if (\defined('MODULE_MODULES_TEMPLATE_EMAIL_INSTALLED')) {
       $installed = explode(';', MODULE_MODULES_TEMPLATE_EMAIL_INSTALLED);
+    } else {
+      $installed = [];
     }
 
     $installed[] = $this->app->vendor . '\\' . $this->app->code . '\\' . $this->code;

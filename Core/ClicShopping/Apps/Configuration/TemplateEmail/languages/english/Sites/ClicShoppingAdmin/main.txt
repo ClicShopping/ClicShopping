@@ -24,17 +24,12 @@ button_insert = Insert
 button_reset = Reset
 button_update = Update
 
-dialog_uninstall_title = Uninstall
-dialog_uninstall_body = Do you want to install this App ?
 dialog_uninstall_title = Uninstall Module?
 dialog_uninstall_body = Are you sure you want to uninstall this module?
 
 alert_module_install_success = Module has been successfully installed.
 alert_module_uninstall_success = Module has been successfully uninstalled.
 alert_cfg_saved_success = Configuration parameters have been successfully saved.
-
-tab_general = General
-tab_description = description
 
 table_heading_template_email_name = Template name
 table_heading_template_email_description = Description
@@ -54,11 +49,11 @@ text_template_email_catalog = Catalog
 text_template_email_admin = Administration
 text_template_email_admin_catalog = Administration and catalog
 text_template_email_b2c = Mode B2C
-text_template_eail_b2c_b2b = Mode B2B B2C
+text_template_email_b2c_b2b = Mode B2B B2C
 
 tab_description = Description
 tab_general = General
-title_information_name = Genaral informations
+title_information_name = General informations
 title_message = Message to sent
 
 image_edit = Edit

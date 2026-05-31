@@ -93,9 +93,9 @@ $QtemplateEmail->execute();
         $template_email_type = $CLICSHOPPING_TemplateEmail->getDef('text_template_email_admin_catalog');
       }
 
-      if ($QtemplateEmail->value('customers_group_id') == 0) {
+      if ($QtemplateEmail->valueInt('customers_group_id') == 0) {
         $template_email_customer_group = $CLICSHOPPING_TemplateEmail->getDef('text_template_email_b2c');
-      } elseif ($QtemplateEmail->valueInt('template_email_type') == 1) {
+      } else {
         $template_email_customer_group = $CLICSHOPPING_TemplateEmail->getDef('text_template_email_b2c_b2b');
       }
       ?>
@@ -105,7 +105,7 @@ $QtemplateEmail->execute();
         <td><?php echo $QtemplateEmail->value('template_email_short_description'); ?></td>
         <td class="text-center"><?php echo $template_email_customer_group; ?></td>
         <td
-          class="text-end"><?php echo HTML::link($CLICSHOPPING_TemplateEmail->link('Edit&page=' . $page . '&tID=' . $QtemplateEmail->valueInt('template_email_id')), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_TemplateEmail->getDef('icon_edit') . '"></i></h4>'); ?></td>
+          class="text-end"><?php echo HTML::link($CLICSHOPPING_TemplateEmail->link('Edit&page=' . $page . '&tID=' . $QtemplateEmail->valueInt('template_email_id')), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_TemplateEmail->getDef('image_edit') . '"></i></h4>'); ?></td>
       </tr>
       <?php
     }

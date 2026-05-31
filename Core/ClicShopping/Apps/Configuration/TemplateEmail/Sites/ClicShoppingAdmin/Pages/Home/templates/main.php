@@ -44,7 +44,7 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
           </div>
         </div>
         <div class="mt-1"></div>
-        <div class="separator"></div
+        <div class="separator"></div>
         <div class="col-md-12">
           <div>
             <div class="col-md-12 text-center">

@@ -5,13 +5,12 @@ module_te_short_title = Template E-mail
 text_template_email =  Template E-mail
 text_configure =  Configurer App Module
 
-text_intro = Cette app vous permet d'include une gestion de tmeplate des emails <br /><br />
+text_intro = Cette app vous permet d'inclure une gestion de template des emails <br /><br />
 - Activer ce module qui est situé dans le menu Configuration
 
 text_intro_fa =  Veuillez créer ce lien dans votre boutique pour accéder au template email
 
 module_te_introduction = Le processus d'installation installe la base de données et le menu
-module_te_short_title = TemplateEmail
 
 button_install_title = Installer
 button_configure = Configurer
@@ -27,8 +26,6 @@ button_back = Retour
 button_reset = Réinitialiser
 button_update = Mettre à jour
 
-dialog_uninstall_title = Désinstaller
-dialog_uninstall_body = Souhaitez-vous installer cette App ?
 dialog_uninstall_title = Désinstaller le module?
 dialog_uninstall_body = Etes vous sur de désinstaller ce module?
 
@@ -36,13 +33,10 @@ alert_module_install_success = Le module a été installé.
 alert_module_uninstall_success = Le module a été désinstallé.
 alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
 
-tab_general = General
-tab_description = description
-
 table_heading_template_email_name = Nom du template
 table_heading_template_email_description = Description
 table_heading_template_email_type = Email envoyé de
-table_heading_template_customer_group = Mode du groupe client
+table_heading_template_customer_groups = Mode du groupe client
 table_heading_action = Actions
 
 text_info_template_catalog = Template Admin / Catalogue
@@ -57,7 +51,7 @@ text_template_email_catalog = Catalogue
 text_template_email_admin = Administration
 text_template_email_admin_catalog = Administration et catalogue
 text_template_email_b2c = Mode B2C
-text_template_eail_b2c_b2b = Mode B2B B2C
+text_template_email_b2c_b2b = Mode B2B B2C
 
 tab_description = Description
 tab_general = Général
