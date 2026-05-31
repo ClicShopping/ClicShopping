@@ -48,7 +48,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $CLICSHOPPING_Shipping = Registry::get('Shipping');
 
       if (($CLICSHOPPING_Shipping->geCountShippingModules() > 0) || ($_SESSION['free_shipping'] === true)) {
-        if ((isset($_POST['shipping'])) && (strpos($_POST['shipping'], '_'))) {
+        if ((isset($_POST['shipping'])) && (str_contains($_POST['shipping'], '_'))) {
           $_SESSION['shipping'] = $_POST['shipping'];
 
           $CLICSHOPPING_SM = null;

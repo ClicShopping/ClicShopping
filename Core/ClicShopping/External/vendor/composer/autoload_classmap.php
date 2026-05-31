@@ -7,8 +7,14 @@ $baseDir = dirname(dirname(dirname(dirname($vendorDir))));
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'DeepClone\\ClassNotFoundException' => $vendorDir . '/symfony/polyfill-deepclone/Resources/stubs/ClassNotFoundException.php',
+    'DeepClone\\NotInstantiableException' => $vendorDir . '/symfony/polyfill-deepclone/Resources/stubs/NotInstantiableException.php',
+    'DelayedTargetValidation' => $vendorDir . '/symfony/polyfill-php85/Resources/stubs/DelayedTargetValidation.php',
     'Deprecated' => $vendorDir . '/symfony/polyfill-php84/Resources/stubs/Deprecated.php',
     'FPDF' => $vendorDir . '/setasign/fpdf/fpdf.php',
+    'Filter\\FilterException' => $vendorDir . '/symfony/polyfill-php85/Resources/stubs/Filter/FilterException.php',
+    'Filter\\FilterFailedException' => $vendorDir . '/symfony/polyfill-php85/Resources/stubs/Filter/FilterFailedException.php',
+    'NoDiscard' => $vendorDir . '/symfony/polyfill-php85/Resources/stubs/NoDiscard.php',
     'Normalizer' => $vendorDir . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
     'Pdo\\Dblib' => $vendorDir . '/symfony/polyfill-php84/Resources/stubs/Pdo/Dblib.php',
     'Pdo\\Firebird' => $vendorDir . '/symfony/polyfill-php84/Resources/stubs/Pdo/Firebird.php',

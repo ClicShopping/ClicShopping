@@ -41,7 +41,7 @@ class StartBefore
             }
 
             if (!empty($spider)) {
-              if (strpos($user_agent, $spider) !== false) {
+              if (!empty($spider) && str_contains($user_agent, $spider)) {
                 $parameters['can_start'] = false;
                 break;
               }

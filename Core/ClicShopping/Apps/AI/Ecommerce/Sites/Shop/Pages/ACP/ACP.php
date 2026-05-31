@@ -151,7 +151,7 @@ class ACP extends \ClicShopping\OM\Domains\PagesAbstract
 // --------------------------------------------------------------------------------
 // POST /agentic_commerce/delegate_payment - Handle delegated payment vaulting
 // --------------------------------------------------------------------------------
-    if ($method === 'POST' && ($hasDelegatePaymentParam || strpos($path, '/agentic_commerce/delegate_payment') !== false)) {
+    if ($method === 'POST' && ($hasDelegatePaymentParam || str_contains($path, '/agentic_commerce/delegate_payment'))) {
       $headers = [
         'idempotency_key' => $_SERVER['HTTP_IDEMPOTENCY_KEY'] ?? null,
         'request_id' => $_SERVER['HTTP_REQUEST_ID'] ?? null
@@ -166,7 +166,7 @@ class ACP extends \ClicShopping\OM\Domains\PagesAbstract
 // GET /products - Returns product catalog
 // --------------------------------------------------------------------------------
 
-    if ($method === 'GET' && ($hasProductsParam || strpos($path, '/products') !== false)) {
+    if ($method === 'GET' && ($hasProductsParam || str_contains($path, '/products'))) {
       // Return full product catalog
       $products = $CLICSHOPPING_getRetailers->getProducts();
       echo json_encode(['products' => $products], JSON_UNESCAPED_SLASHES);
@@ -213,9 +213,9 @@ class ACP extends \ClicShopping\OM\Domains\PagesAbstract
       $sessionId = $checkoutIdParam;
     }
 
-    if ($method === 'POST' && ($hasCheckoutParam || strpos($path, '/checkout_sessions') !== false)) {
+    if ($method === 'POST' && ($hasCheckoutParam || str_contains($path, '/checkout_sessions'))) {
       if ($sessionId) {
-        if ($hasCompleteParam || strpos($path, '/complete') !== false) {
+        if ($hasCompleteParam || str_contains($path, '/complete')) {
           $validation = $CLICSHOPPING_getRetailers->validateAcpInput($input, 'complete', $input['items'] ?? []);
           if (!empty($validation)) {
             http_response_code(400);
@@ -233,7 +233,7 @@ class ACP extends \ClicShopping\OM\Domains\PagesAbstract
               echo json_encode($result, JSON_UNESCAPED_SLASHES);
             }
           }
-        } elseif ($hasCancelParam || strpos($path, '/cancel') !== false) {
+        } elseif ($hasCancelParam || str_contains($path, '/cancel')) {
           $result = $CLICSHOPPING_getRetailers->cancelSession($sessionId);
           if ($result === null) {
             http_response_code(404);
@@ -362,7 +362,7 @@ class ACP extends \ClicShopping\OM\Domains\PagesAbstract
 // --------------------------------------------------------------------------------
 // POST /stripe_webhook - Handle Stripe webhooks
 // --------------------------------------------------------------------------------
-    if ($method === 'POST' && ($hasStripeWebhookParam || strpos($path, '/stripe_webhook') !== false)) {
+    if ($method === 'POST' && ($hasStripeWebhookParam || str_contains($path, '/stripe_webhook'))) {
       $CLICSHOPPING_getRetailers->handleStripeWebhook();
 
       exit;
@@ -373,7 +373,7 @@ class ACP extends \ClicShopping\OM\Domains\PagesAbstract
     $hasCreateOrderParam = isset($_GET['create_order']);
     $orderSessionIdParam = isset($_GET['session_id']) ? (string)$_GET['session_id'] : null;
 
-    if ($method === 'POST' && ($hasCreateOrderParam || strpos($path, '/create_order') !== false)) {
+    if ($method === 'POST' && ($hasCreateOrderParam || str_contains($path, '/create_order'))) {
       if (empty($orderSessionIdParam)) {
         http_response_code(400);
         echo json_encode(['error' => 'Session ID required']);
@@ -393,7 +393,7 @@ class ACP extends \ClicShopping\OM\Domains\PagesAbstract
     $hasCompleteAndOrderParam = isset($_GET['complete_and_order']);
     $completeSessionIdParam = isset($_GET['session_id']) ? (string)$_GET['session_id'] : null;
 
-    if ($method === 'POST' && ($hasCompleteAndOrderParam || strpos($path, '/complete_and_order') !== false)) {
+    if ($method === 'POST' && ($hasCompleteAndOrderParam || str_contains($path, '/complete_and_order'))) {
       if (empty($completeSessionIdParam)) {
         http_response_code(400);
         echo json_encode(['error' => 'Session ID required']);

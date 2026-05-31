@@ -1,0 +1,2 @@
+cfg_stripe_buffer_ttl_days_title = Payment buffer retention (days)
+cfg_stripe_buffer_ttl_days_description = Number of days a pending payment-attempt buffer row is kept before automatic purge. Must stay above Stripe's webhook retry window (minimum 3 days; default 30).

@@ -287,8 +287,6 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
       $description = STORE_NAME . ' - Order date time : ' . date('Y-m-d H:i:s');
       $token = $_POST['stripeToken'] ?? '';
 
-      $metadata['stripe_order_id'] = (int)$CLICSHOPPING_Order->getLastOrderId();
-
       $params = [
         'amount' => $total_amount,
         'currency' => $currency,
@@ -303,9 +301,14 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
 
       // $this->event_log($customer_id, "page create intent", json_encode($params), $this->intent);
       $stripe_payment_intent_id = $this->intent->id;
-
-      unset($_SESSION['stripe_payment_intent_id']);
     }
+
+    // Keep the intent id server-side so it can be reused and linked to the order in after_process().
+    $_SESSION['stripe_payment_intent_id'] = $stripe_payment_intent_id;
+
+    // Persist the agnostic payment-attempt buffer (before the client-side payment) so the webhook
+    // can reconcile the payment with the order even if the customer drops right after paying.
+    $this->upsertPaymentActionBuffer($stripe_payment_intent_id, (int)$customer_id, $CLICSHOPPING_Order);
 
     $content = '';
 
@@ -423,6 +426,121 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
     $sql_insert = ['orders_id' => (int)$orders_id];
 
     $this->app->db->save('orders', $sql_data_array, $sql_insert);
+
+    // Link the payment buffer to the created order and push the real order id into the
+    // PaymentIntent metadata so the webhook can reconcile (buffer keyed by payment_intent_id).
+    $intentId = $_SESSION['stripe_payment_intent_id'] ?? null;
+
+    if (!empty($intentId) && !empty($orders_id)) {
+      $this->app->db->save('order_customer_payment_action',
+        ['orders_id' => (int)$orders_id, 'status' => 'completed', 'date_modified' => 'now()'],
+        ['payment_intent_id' => $intentId, 'type_apps_payment' => 'Stripe']
+      );
+
+      try {
+        StripeAPI::setApiKey($this->private_key);
+        PaymentIntent::update($intentId, ['metadata' => ['orders_id' => (int)$orders_id]]);
+      } catch (\Exception $e) {
+        // Non-blocking: the order is already recorded; the webhook falls back to the buffer lookup.
+      }
+
+      unset($_SESSION['stripe_payment_intent_id']);
+    }
+  }
+
+  /**
+   * Persists / refreshes the agnostic payment-attempt buffer for the current PaymentIntent.
+   *
+   * Written at confirmation time (before the client-side payment) so the webhook can reconcile
+   * the payment with the order even if the customer drops after paying. Also runs an
+   * opportunistic TTL purge of stale pending rows (no cron required).
+   *
+   * @param string $intentId The Stripe PaymentIntent id.
+   * @param int $customerId The logged-in customer id.
+   * @param mixed $order The current Order object (snapshot source).
+   * @return void
+   */
+  private function upsertPaymentActionBuffer(string $intentId, int $customerId, $order): void
+  {
+    if (empty($intentId)) {
+      return;
+    }
+
+    // Opportunistic purge (no cron). TTL must exceed Stripe's webhook retry window (~3 days); default 30 days.
+    $ttl = \defined('CLICSHOPPING_APP_STRIPE_ST_BUFFER_TTL_DAYS') ? (int)CLICSHOPPING_APP_STRIPE_ST_BUFFER_TTL_DAYS : 30;
+    $cutoff = date('Y-m-d H:i:s', time() - ($ttl * 86400));
+
+    $Qpurge = $this->app->db->prepare("delete from :table_order_customer_payment_action
+                                         where type_apps_payment = 'Stripe'
+                                         and status = 'pending'
+                                         and date_added < :cutoff
+                                       ");
+    $Qpurge->bindValue(':cutoff', $cutoff);
+    $Qpurge->execute();
+
+    $data = [
+      'type_apps_payment' => 'Stripe',
+      'payment_intent_id' => $intentId,
+      'customers_id' => $customerId,
+      'status' => 'pending',
+      'sendto' => isset($_SESSION['sendto']) ? (int)$_SESSION['sendto'] : null,
+      'billto' => isset($_SESSION['billto']) ? (int)$_SESSION['billto'] : null,
+      'cart_snapshot' => $this->buildCartSnapshot($order),
+      'date_modified' => 'now()',
+    ];
+
+    $Qexists = $this->app->db->get('order_customer_payment_action', 'payment_order_customer_action_id', [
+      'payment_intent_id' => $intentId,
+      'type_apps_payment' => 'Stripe'
+    ]);
+
+    if ($Qexists->fetch() === false) {
+      $data['date_added'] = 'now()';
+      $this->app->db->save('order_customer_payment_action', $data);
+    } else {
+      $this->app->db->save('order_customer_payment_action', $data, [
+        'payment_intent_id' => $intentId,
+        'type_apps_payment' => 'Stripe'
+      ]);
+    }
+  }
+
+  /**
+   * Builds a minimal JSON snapshot of the order-to-be (no raw PII; addresses are referenced
+   * by sendto/billto). Used for reconciliation/recovery and a future stateless order rebuild.
+   *
+   * @param mixed $order The current Order object.
+   * @return string JSON snapshot.
+   */
+  private function buildCartSnapshot($order): string
+  {
+    $products = [];
+
+    if (!empty($order->products) && \is_array($order->products)) {
+      foreach ($order->products as $p) {
+        $products[] = [
+          'id' => $p['id'] ?? null,
+          'qty' => $p['qty'] ?? null,
+          'name' => $p['name'] ?? '',
+          'price' => $p['price'] ?? null,
+        ];
+      }
+    }
+
+    $data = [
+      'currency' => $order->info['currency'] ?? null,
+      'total' => $order->info['total'] ?? null,
+      'payment' => $_SESSION['payment'] ?? null,
+      'shipping' => $_SESSION['shipping'] ?? null,
+      'comments' => $_SESSION['comments'] ?? null,
+      'products' => $products,
+    ];
+
+    try {
+      return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    } catch (\JsonException $e) {
+      return '{}';
+    }
   }
 
   /**

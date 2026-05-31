@@ -151,7 +151,7 @@ switch ($action) {
         if ($Qcols->hasValue('Collation') && !\is_null($Qcols->value('Collation'))) {
           // Skip VECTOR columns - they are binary data and cannot be converted to UTF8
           $columnType = strtolower($Qcols->value('Type'));
-          if (strpos($columnType, 'vector') !== false) {
+          if (str_contains($columnType, 'vector')) {
             continue;
           }
           

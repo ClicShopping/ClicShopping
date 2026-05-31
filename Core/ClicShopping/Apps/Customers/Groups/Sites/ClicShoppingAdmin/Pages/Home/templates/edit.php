@@ -291,7 +291,7 @@ echo HTML::button($CLICSHOPPING_Groups->getDef('button_update'), null, null, 'su
             $include_modules = [];
 
             foreach ($modules_payment as $value) {
-              if (strpos($value, '\\') !== false) {
+              if (str_contains($value, '\\')) {
                 $class = Apps::getModuleClass($value, 'Payment');
 
                 $include_modules[] = ['class' => $value,
@@ -301,7 +301,7 @@ echo HTML::button($CLICSHOPPING_Groups->getDef('button_update'), null, null, 'su
             }
 
             for ($i = 0, $n = \count($include_modules); $i < $n; $i++) {
-              if (strpos($include_modules[$i]['class'], '\\') !== false) {
+              if (str_contains($include_modules[$i]['class'], '\\')) {
                 Registry::set('Payment_' . str_replace('\\', '_', $include_modules[$i]['class']), new $include_modules[$i]['file']);
                 $module = Registry::get('Payment_' . str_replace('\\', '_', $include_modules[$i]['class']));
                 ?>
@@ -361,7 +361,7 @@ echo HTML::button($CLICSHOPPING_Groups->getDef('button_update'), null, null, 'su
             $include_modules = [];
 
             foreach ($modules_shipping as $value) {
-              if (strpos($value, '\\') !== false) {
+              if (str_contains($value, '\\')) {
                 $class = Apps::getModuleClass($value, 'Shipping');
 
                 $include_modules[] = ['class' => $value,
@@ -371,7 +371,7 @@ echo HTML::button($CLICSHOPPING_Groups->getDef('button_update'), null, null, 'su
             }
 
             for ($i = 0, $n = \count($include_modules); $i < $n; $i++) {
-              if (strpos($include_modules[$i]['class'], '\\') !== false) {
+              if (str_contains($include_modules[$i]['class'], '\\')) {
                 Registry::set('Shipping_' . str_replace('\\', '_', $include_modules[$i]['class']), new $include_modules[$i]['file']);
                 $module = Registry::get('Shipping_' . str_replace('\\', '_', $include_modules[$i]['class']));
                 ?>

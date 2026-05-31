@@ -11,8 +11,10 @@ class ComposerStaticInit559d5c9b702bf740c3f0e192226eea14
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        'deecf9d6b2672fb73429f9b28fdee35f' => __DIR__ . '/..' . '/symfony/polyfill-deepclone/bootstrap.php',
         '8825ede83f2f289127722d4e842cf7e8' => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme/bootstrap.php',
         'e69f7f6ee287b969198c3c9d6777bd38' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/bootstrap.php',
+        '606a39d89246991a373564698c2d8383' => __DIR__ . '/..' . '/symfony/polyfill-php85/bootstrap.php',
         'b6b991a57620e2fb6b2f66f03fe9ddc2' => __DIR__ . '/..' . '/symfony/string/Resources/functions.php',
         '9d2b9fc6db0f153a0a149fefb182415e' => __DIR__ . '/..' . '/symfony/polyfill-php84/bootstrap.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
@@ -27,10 +29,12 @@ class ComposerStaticInit559d5c9b702bf740c3f0e192226eea14
         ),
         'S' =>
         array (
+            'Symfony\\Polyfill\\Php85\\' => 23,
             'Symfony\\Polyfill\\Php84\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
             'Symfony\\Polyfill\\Intl\\Grapheme\\' => 31,
+            'Symfony\\Polyfill\\DeepClone\\' => 27,
             'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Contracts\\Service\\' => 26,
             'Symfony\\Contracts\\HttpClient\\' => 29,
@@ -109,6 +113,10 @@ class ComposerStaticInit559d5c9b702bf740c3f0e192226eea14
         array (
             0 => __DIR__ . '/..' . '/yethee/tiktoken/src',
         ),
+        'Symfony\\Polyfill\\Php85\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php85',
+        ),
         'Symfony\\Polyfill\\Php84\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php84',
@@ -124,6 +132,10 @@ class ComposerStaticInit559d5c9b702bf740c3f0e192226eea14
         'Symfony\\Polyfill\\Intl\\Grapheme\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme',
+        ),
+        'Symfony\\Polyfill\\DeepClone\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-deepclone',
         ),
         'Symfony\\Polyfill\\Ctype\\' =>
         array (
@@ -312,8 +324,14 @@ class ComposerStaticInit559d5c9b702bf740c3f0e192226eea14
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'DeepClone\\ClassNotFoundException' => __DIR__ . '/..' . '/symfony/polyfill-deepclone/Resources/stubs/ClassNotFoundException.php',
+        'DeepClone\\NotInstantiableException' => __DIR__ . '/..' . '/symfony/polyfill-deepclone/Resources/stubs/NotInstantiableException.php',
+        'DelayedTargetValidation' => __DIR__ . '/..' . '/symfony/polyfill-php85/Resources/stubs/DelayedTargetValidation.php',
         'Deprecated' => __DIR__ . '/..' . '/symfony/polyfill-php84/Resources/stubs/Deprecated.php',
         'FPDF' => __DIR__ . '/..' . '/setasign/fpdf/fpdf.php',
+        'Filter\\FilterException' => __DIR__ . '/..' . '/symfony/polyfill-php85/Resources/stubs/Filter/FilterException.php',
+        'Filter\\FilterFailedException' => __DIR__ . '/..' . '/symfony/polyfill-php85/Resources/stubs/Filter/FilterFailedException.php',
+        'NoDiscard' => __DIR__ . '/..' . '/symfony/polyfill-php85/Resources/stubs/NoDiscard.php',
         'Normalizer' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
         'Pdo\\Dblib' => __DIR__ . '/..' . '/symfony/polyfill-php84/Resources/stubs/Pdo/Dblib.php',
         'Pdo\\Firebird' => __DIR__ . '/..' . '/symfony/polyfill-php84/Resources/stubs/Pdo/Firebird.php',

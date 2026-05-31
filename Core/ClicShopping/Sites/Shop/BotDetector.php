@@ -77,7 +77,7 @@
         foreach ($content as $line) {
           $line = trim($line);
           // Ignore empty lines and comments starting with '#'
-          if (!empty($line) && strpos($line, '#') !== 0) {
+          if (!empty($line) && !str_starts_with($line, '#')) {
             $spiders_array[] = strtolower($line);
           }
         }

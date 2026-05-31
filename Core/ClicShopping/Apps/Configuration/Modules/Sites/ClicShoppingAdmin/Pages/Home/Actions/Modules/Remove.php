@@ -45,7 +45,7 @@ class Remove extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $appModuleType = $CLICSHOPPING_ModulesAdmin->getSwitchModules($module_type);
 
-    if (strpos($_GET['module'], '\\') !== false) {
+    if (str_contains($_GET['module'], '\\')) {
       $class = Apps::getModuleClass($_GET['module'], $appModuleType);
 
       if (class_exists($class)) {

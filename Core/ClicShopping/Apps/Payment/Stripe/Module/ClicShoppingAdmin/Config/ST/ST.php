@@ -63,6 +63,9 @@ class ST extends \ClicShopping\Apps\Payment\Stripe\Module\ClicShoppingAdmin\Conf
   {
     parent::uninstall();
 
+    // Shared cross-module payment-attempt buffer: remove only this gateway's rows (DELETE, never DROP).
+    \ClicShopping\OM\Registry::get('Db')->delete('order_customer_payment_action', ['type_apps_payment' => 'Stripe']);
+
     $installed = explode(';', MODULE_PAYMENT_INSTALLED);
     $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed);
 

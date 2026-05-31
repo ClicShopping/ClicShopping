@@ -102,7 +102,7 @@ class Shop extends \ClicShopping\OM\Domains\SitesAbstract
 
             // phpredis ne sérialise pas les tableaux : la valeur est stockée via serialize()
             if ($raw !== false) {
-              $decoded = @unserialize($raw);
+              $decoded = @unserialize($raw, ['allowed_classes' => false]);
 
               if (is_array($decoded)) {
                 $cached_config = $decoded;

@@ -98,14 +98,15 @@ class ST extends \ClicShopping\OM\Domains\PagesAbstract
   {
     $intent = $event->data->object;
     $intentId = $intent->id;
-    $orderId = $intent->metadata['stripe_order_id'] ?? null;
+    $orderId = $this->resolveOrderId($intentId, $intent->metadata['orders_id'] ?? null);
 
-    if (empty($orderId)) {
-      error_log('[Stripe Webhook] Aucun ID commande dans les métadonnées pour l\'intent ' . $intentId);
+    if ($orderId === null) {
+      // Edge: payment confirmed but the synchronous checkout never created the order.
+      error_log('[Stripe Webhook] Paiement validé sans commande (intent ' . $intentId . ') - à réconcilier manuellement');
       return;
     }
 
-    $this->updateOrderStatus((int)$orderId, CLICSHOPPING_APP_STRIPE_ST_ORDER_STATUS_ID, 'Paiement réussi via Stripe. Intent ID: ' . $intentId);
+    $this->updateOrderStatus($orderId, (int)CLICSHOPPING_APP_STRIPE_ST_ORDER_STATUS_ID, 'Paiement réussi via Stripe. Intent ID: ' . $intentId);
   }
 
   /**
@@ -116,15 +117,14 @@ class ST extends \ClicShopping\OM\Domains\PagesAbstract
   {
     $intent = $event->data->object;
     $intentId = $intent->id;
-    $orderId = $intent->metadata['stripe_order_id'] ?? null;
+    $orderId = $this->resolveOrderId($intentId, $intent->metadata['orders_id'] ?? null);
 
-    if (empty($orderId)) {
-      error_log('[Stripe Webhook] Aucun ID commande pour l\'intent échoué ' . $intentId);
-      return;
+    if ($orderId === null) {
+      return; // no order created for this attempt; nothing to update
     }
 
     $errorMessage = $intent->last_payment_error ? $intent->last_payment_error->message : 'Paiement échoué';
-    $this->updateOrderStatus((int)$orderId, DEFAULT_ORDERS_STATUS_ID, 'Paiement échoué via Stripe. Intent ID: ' . $intentId . ' - ' . $errorMessage);
+    $this->updateOrderStatus($orderId, (int)DEFAULT_ORDERS_STATUS_ID, 'Paiement échoué via Stripe. Intent ID: ' . $intentId . ' - ' . $errorMessage);
   }
 
   /**
@@ -134,11 +134,11 @@ class ST extends \ClicShopping\OM\Domains\PagesAbstract
   private function handleChargeSucceeded(\Stripe\Event $event): void
   {
     $charge = $event->data->object;
-    $intentId = $charge->payment_intent ?? null;
-    $orderId = $charge->metadata['stripe_order_id'] ?? null;
+    $intentId = (string)($charge->payment_intent ?? '');
+    $orderId = $this->resolveOrderId($intentId, $charge->metadata['orders_id'] ?? null);
 
-    if (empty($orderId)) return;
-    $this->updateOrderStatus((int)$orderId, CLICSHOPPING_APP_STRIPE_ST_ORDER_STATUS_ID, 'Charge réussi via Stripe. Intent ID: ' . ($intentId ?? 'N/A'));
+    if ($orderId === null) return;
+    $this->updateOrderStatus($orderId, (int)CLICSHOPPING_APP_STRIPE_ST_ORDER_STATUS_ID, 'Charge réussi via Stripe. Intent ID: ' . ($intentId !== '' ? $intentId : 'N/A'));
   }
 
   /**
@@ -148,10 +148,45 @@ class ST extends \ClicShopping\OM\Domains\PagesAbstract
   private function handleChargeRefunded(\Stripe\Event $event): void
   {
     $charge = $event->data->object;
-    $orderId = $charge->metadata['stripe_order_id'] ?? null;
-    if (!empty($orderId)) {
-      $this->updateOrderStatus((int)$orderId, DEFAULT_ORDERS_STATUS_ID, 'Remboursement traité via Stripe. Montant: ' . ($charge->amount / 100) . ' ' . $charge->currency);
+    $intentId = (string)($charge->payment_intent ?? '');
+    $orderId = $this->resolveOrderId($intentId, $charge->metadata['orders_id'] ?? null);
+    if ($orderId !== null) {
+      $this->updateOrderStatus($orderId, (int)DEFAULT_ORDERS_STATUS_ID, 'Remboursement traité via Stripe. Montant: ' . ($charge->amount / 100) . ' ' . $charge->currency);
     }
+  }
+
+  /**
+   * Resolves the order id for a Stripe PaymentIntent, primarily via the agnostic payment-attempt
+   * buffer (keyed by payment_intent_id), with the intent/charge metadata as a fallback.
+   *
+   * @param string $intentId The Stripe PaymentIntent id.
+   * @param mixed $metadataOrderId Order id carried in the Stripe metadata (fallback), if any.
+   * @return int|null The linked order id, or null when no order is linked yet.
+   */
+  private function resolveOrderId(string $intentId, $metadataOrderId = null): ?int
+  {
+    if ($intentId !== '') {
+      $db = Registry::get('Db');
+      $Q = $db->prepare("SELECT orders_id
+                           FROM :table_order_customer_payment_action
+                           WHERE payment_intent_id = :payment_intent_id
+                           AND type_apps_payment = 'Stripe'
+                           LIMIT 1");
+      $Q->bindValue(':payment_intent_id', $intentId);
+      $Q->execute();
+
+      if ($Q->fetch() !== false) {
+        $oid = $Q->valueInt('orders_id');
+
+        if ($oid > 0) {
+          return $oid;
+        }
+      }
+    }
+
+    $meta = (int)$metadataOrderId;
+
+    return $meta > 0 ? $meta : null;
   }
 
   /**

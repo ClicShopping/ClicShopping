@@ -168,7 +168,7 @@ class UCP extends \ClicShopping\OM\Domains\PagesAbstract
     $hasCompleteParam = isset($_GET['complete']);
     $hasWebhookParam = isset($_GET['webhook']);
 
-    if ($method === 'GET' && ($hasProductsParam || strpos($path, '/products') !== false)) {
+    if ($method === 'GET' && ($hasProductsParam || str_contains($path, '/products'))) {
       $filters = [
         'page' => $_GET['page'] ?? 1,
         'limit' => $_GET['limit'] ?? 100,
@@ -187,8 +187,8 @@ class UCP extends \ClicShopping\OM\Domains\PagesAbstract
       exit;
     }
 
-    if ($method === 'POST' && ($hasCheckoutParam || strpos($path, '/checkout_sessions') !== false)) {
-      if (($hasCompleteParam || strpos($path, '/complete') !== false) && (($checkoutIdParam !== null) || preg_match('#/checkout_sessions/([^/]+)/complete#', $path, $matches))) {
+    if ($method === 'POST' && ($hasCheckoutParam || str_contains($path, '/checkout_sessions'))) {
+      if (($hasCompleteParam || str_contains($path, '/complete')) && (($checkoutIdParam !== null) || preg_match('#/checkout_sessions/([^/]+)/complete#', $path, $matches))) {
         $sessionId = $checkoutIdParam ?? $matches[1] ?? null;
         if (!$sessionId) {
           $errorResponse('VALIDATION_ERROR', 'Missing session id');
@@ -247,7 +247,7 @@ class UCP extends \ClicShopping\OM\Domains\PagesAbstract
       exit;
     }
 
-    if ($method === 'POST' && ($hasWebhookParam || strpos($path, '/webhook') !== false)) {
+    if ($method === 'POST' && ($hasWebhookParam || str_contains($path, '/webhook'))) {
       $result = $ucp->handleWebhook($input);
       echo json_encode($result, JSON_UNESCAPED_SLASHES);
       $logger->info('UCP response', [

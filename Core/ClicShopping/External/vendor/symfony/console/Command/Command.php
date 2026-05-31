@@ -61,20 +61,13 @@ class Command implements SignalableCommandInterface
      */
     public function __construct(?string $name = null, ?callable $code = null)
     {
-        if (null !== $code) {
-            if (!\is_object($code) || $code instanceof \Closure) {
-                throw new InvalidArgumentException(\sprintf('The command must be an instance of "%s" or an invokable object.', self::class));
-            }
-
-            /** @var AsCommand $attribute */
-            $attribute = ((new \ReflectionObject($code))->getAttributes(AsCommand::class)[0] ?? null)?->newInstance()
-                ?? throw new LogicException(\sprintf('The command must use the "%s" attribute.', AsCommand::class));
-            $this->setCode($code);
-        } else {
-            $attribute = ((new \ReflectionClass(static::class))->getAttributes(AsCommand::class)[0] ?? null)?->newInstance();
-        }
-
         $this->definition = new InputDefinition();
+
+        $attribute = $this->getCommandAttribute($code);
+
+        if ($code) {
+            $this->setCode($code);
+        }
 
         if (null !== $name ??= $attribute?->name) {
             $aliases = explode('|', $name);
@@ -109,7 +102,7 @@ class Command implements SignalableCommandInterface
             $this->addUsage($usage);
         }
 
-        if (!$code && \is_callable($this) && self::class === (new \ReflectionMethod($this, 'execute'))->getDeclaringClass()->name) {
+        if (!$code && \is_callable($this) && self::class === (new \ReflectionMethod($this, 'execute'))->class) {
             $this->code = new InvokableCommand($this, $this(...));
         }
 
@@ -589,7 +582,7 @@ class Command implements SignalableCommandInterface
             $list[] = $alias;
         }
 
-        $this->aliases = \is_array($aliases) ? $aliases : $list;
+        $this->aliases = $list;
 
         return $this;
     }
@@ -679,5 +672,35 @@ class Command implements SignalableCommandInterface
         if (!preg_match('/^[^\:]++(\:[^\:]++)*$/', $name)) {
             throw new InvalidArgumentException(\sprintf('Command name "%s" is invalid.', $name));
         }
+    }
+
+    private function getCommandAttribute(?callable $code): ?AsCommand
+    {
+        if (null === $code) {
+            /** @var AsCommand|null $attribute */
+            $attribute = (new \ReflectionClass(static::class)->getAttributes(AsCommand::class)[0] ?? null)?->newInstance();
+
+            return $attribute;
+        }
+
+        $reflection = new \ReflectionFunction($code(...));
+
+        if ($reflection->isAnonymous() || !$class = $reflection->getClosureScopeClass()) {
+            throw new InvalidArgumentException(\sprintf('The command must be an instance of "%s", an invokable object or a method of an object.', self::class));
+        }
+
+        /** @var AsCommand|null $attribute */
+        $attribute = ($reflection->getAttributes(AsCommand::class)[0] ?? null)?->newInstance();
+
+        if (!$attribute && '__invoke' === $reflection->getName()) {
+            /** @var AsCommand|null $attribute */
+            $attribute = ($class->getAttributes(AsCommand::class)[0] ?? null)?->newInstance();
+        }
+
+        if (!$attribute) {
+            throw new LogicException(\sprintf('The command must use the "%s" attribute.', AsCommand::class));
+        }
+
+        return $attribute;
     }
 }

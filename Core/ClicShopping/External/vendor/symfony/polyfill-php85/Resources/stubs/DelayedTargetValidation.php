@@ -9,17 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Component\VarExporter\Internal;
-
-/**
- * @author Nicolas Grekas <p@tchwork.com>
- *
- * @internal
- */
-class Values
-{
-    public function __construct(
-        public readonly array $values,
-    ) {
+if (\PHP_VERSION_ID < 80500) {
+    // @author Daniel Scherzer <daniel.e.scherzer@gmail.com>
+    #[Attribute(Attribute::TARGET_ALL)]
+    final class DelayedTargetValidation
+    {
     }
 }

@@ -143,7 +143,7 @@ if (isset($_GET['refresh']) && is_numeric($_GET['refresh'])) {
 
                   $attributes = [];
 
-                  if (strpos($Qproducts->valueInt('products_id'), '{') !== false) {
+                  if (str_contains($Qproducts->valueInt('products_id'), '{')) {
                     $combos = [];
                     preg_match_all('/(\{[0-9]+\}[0-9]+){1}/', $Qproducts->valueInt('products_id'), $combos);
 
