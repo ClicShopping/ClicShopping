@@ -6,53 +6,171 @@
  * See LICENSE file.
  */
 
+namespace ClicShopping\Apps\Communication\Newsletter\Module\ClicShoppingAdmin\Newsletter;
+
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
+use ClicShopping\OM\Is;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Communication\Newsletter\Newsletter as AppNewsletter;
+use ClicShopping\Apps\Configuration\TemplateEmail\Classes\ClicShoppingAdmin\TemplateEmailAdmin;
 
-class productNotification
+/**
+ * Newsletter module targeting customers who subscribed to product notifications.
+ *
+ * The audience is built from the products_notifications table (per-product watchers)
+ * and from customers who enabled global product notifications. Because that audience
+ * is usually small and targeted, sending is performed synchronously.
+ */
+class ProductNotification
 {
-  public $show_chooseAudience;
-  public $title;
-  public $content;
+  public mixed $app;
+  public bool $show_chooseAudience;
+  public string $title;
+  public string $content;
+
+  private string $emailFrom;
 
   /**
-   * Constructor for initializing the newsletter application.
-   *
    * @param string $title The title of the newsletter.
    * @param string $content The content of the newsletter.
-   *
    * @return void
    */
-  public function __construct($title, $content)
+  public function __construct(string $title, string $content)
   {
-
     if (!Registry::exists('Newsletter')) {
       Registry::set('Newsletter', new AppNewsletter());
     }
 
-    /**
-     *
-     */
-      $this->app = Registry::get('Newsletter');
+    $this->app = Registry::get('Newsletter');
+    $this->app->loadDefinitions('modules/newsletter');
 
     $this->show_chooseAudience = true;
     $this->title = $title;
     $this->content = $content;
+    $this->emailFrom = HTML::sanitize(STORE_OWNER_EMAIL_ADDRESS);
+  }
+
+  /**
+   * Checks whether the Newsletter App is enabled.
+   *
+   * @return bool
+   */
+  public function checkStatus(): bool
+  {
+    if (!\defined('CLICSHOPPING_APP_NEWSLETTER_NL_STATUS') || CLICSHOPPING_APP_NEWSLETTER_NL_STATUS == 'False') {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Builds the audience for a product notification newsletter.
+   *
+   * Combines watchers of the selected products (or every watcher when the "global"
+   * flag is set) with customers who enabled global product notifications. Recipients
+   * are de-duplicated by customer id and filtered on a valid e-mail address.
+   *
+   * @return array<int, array{firstname: string, lastname: string, email_address: string}>
+   */
+  private function getAudience(): array
+  {
+    $audience = [];
+
+    if (isset($_POST['global']) && $_POST['global'] === 'true') {
+      $Qproducts = $this->app->db->get([
+        'customers c',
+        'products_notifications pn'
+      ], [
+        'distinct pn.customers_id',
+        'c.customers_firstname',
+        'c.customers_lastname',
+        'c.customers_email_address'
+      ], [
+        'c.customers_id' => ['rel' => 'pn.customers_id'],
+        'c.customers_email_validation' => 0
+      ]);
+    } else {
+      $chosen = [];
+
+      foreach (($_POST['chosen'] ?? []) as $id) {
+        if (is_numeric($id) && !\in_array((int)$id, $chosen, true)) {
+          $chosen[] = (int)$id;
+        }
+      }
+
+      if (\count($chosen) === 0) {
+        return [];
+      }
+
+      $placeholders = array_map(static function ($k) {
+        return ':products_id_' . $k;
+      }, array_keys($chosen));
+
+      $Qproducts = $this->app->db->prepare('select distinct pn.customers_id,
+                                                    c.customers_firstname,
+                                                    c.customers_lastname,
+                                                    c.customers_email_address
+                                             from :table_customers c,
+                                                  :table_products_notifications pn
+                                             where c.customers_id = pn.customers_id
+                                             and c.customers_email_validation = 0
+                                             and pn.products_id in (' . implode(', ', $placeholders) . ')
+                                            ');
+
+      foreach ($chosen as $k => $v) {
+        $Qproducts->bindInt(':products_id_' . $k, $v);
+      }
+
+      $Qproducts->execute();
+    }
+
+    while ($Qproducts->fetch()) {
+      if (Is::EmailAddress($Qproducts->value('customers_email_address'))) {
+        $audience[$Qproducts->valueInt('customers_id')] = [
+          'firstname' => $Qproducts->value('customers_firstname'),
+          'lastname' => $Qproducts->value('customers_lastname'),
+          'email_address' => $Qproducts->value('customers_email_address')
+        ];
+      }
+    }
+
+    // customers who opted in to global product notifications
+    $Qcustomers = $this->app->db->get([
+      'customers c',
+      'customers_info ci'
+    ], [
+      'c.customers_id',
+      'c.customers_firstname',
+      'c.customers_lastname',
+      'c.customers_email_address'
+    ], [
+      'c.customers_id' => ['rel' => 'ci.customers_info_id'],
+      'ci.global_product_notifications' => 1,
+      'c.customers_email_validation' => 0
+    ]);
+
+    while ($Qcustomers->fetch()) {
+      if (Is::EmailAddress($Qcustomers->value('customers_email_address'))) {
+        $audience[$Qcustomers->valueInt('customers_id')] = [
+          'firstname' => $Qcustomers->value('customers_firstname'),
+          'lastname' => $Qcustomers->value('customers_lastname'),
+          'email_address' => $Qcustomers->value('customers_email_address')
+        ];
+      }
+    }
+
+    return $audience;
   }
 
   /**
    * Generates the JavaScript and HTML structure for selecting and managing a list of products as part of the notification audience.
    *
-   * Retrieves the list of available products based on the current language and their status, and then constructs an interactive UI
-   * allowing the user to add or remove products from the selection. Includes JavaScript functionality for moving items between available
-   * and selected lists and ensuring valid submission.
-   *
    * @return string Returns the constructed HTML and JavaScript string for the audience selection interface.
    */
-  public function chooseAudience()
+  public function chooseAudience(): string
   {
     $CLICSHOPPING_Language = Registry::get('Language');
 
@@ -80,6 +198,9 @@ class productNotification
         'text' => $Qproducts->value('products_name')
       ];
     }
+
+    $page = (int)($_GET['page'] ?? 1);
+    $nID = (int)($_GET['nID'] ?? 0);
 
     $chooseAudience_string = '<script type="text/javascript"><!--
 function mover(move) {
@@ -126,15 +247,15 @@ function selectAll(FormName, SelectBox) {
 //--></script>';
 
     $global_button = '<script language="javascript"><!--' . "\n" .
-      'document.write(\'<input type="button" value="' . $this->app->getDef('button_global') . '" style="width: 8em;" onclick="document.location=\\\'' . $this->app->link('Newsletter&page=' . (int)$_GET['page'] . '&nID=' . (int)$_GET['nID'] . '&action=confirm&global=true') . '\\\'">\');' . "\n" .
-      '//--></script><noscript><a href="' . $this->app->link('Newsletter&page=' . (int)$_GET['page'] . '&nID=' . (int)$_GET['nID'] . '&action=confirm&global=true') . '">[ ' . $this->app->getDef('button_global') . ' ]</a></noscript>';
+      'document.write(\'<input type="button" value="' . $this->app->getDef('button_global') . '" style="width: 8em;" onclick="document.location=\\\'' . $this->app->link('Send&page=' . $page . '&nID=' . $nID . '&action=confirm&global=true') . '\\\'">\');' . "\n" .
+      '//--></script><noscript><a href="' . $this->app->link('Send&page=' . $page . '&nID=' . $nID . '&action=confirm&global=true') . '">[ ' . $this->app->getDef('button_global') . ' ]</a></noscript>';
 
     $chooseAudience_string .= '    <td class="pageHeading text-end"><table border="0" cellspacing="0" cellpadding="0">' .
-      '     <form name="notifications" action="' . $this->app->link('Newsletter&page=' . (int)$_GET['page'] . '&nID=' . (int)$_GET['nID'] . '&action=confirm') . '" method="post" onSubmit="return selectAll(\'notifications\', \'chosen[]\')">' . "\n" .
+      '     <form name="notifications" action="' . $this->app->link('Send&page=' . $page . '&nID=' . $nID . '&action=confirm') . '" method="post" onSubmit="return selectAll(\'notifications\', \'chosen[]\')">' . "\n" .
       '      <tr>' .
       '          <td class="text-end">' . HTML::button($this->app->getDef('button_send'), null, null, 'primary') . '</td>' .
       '          <td>&nbsp;</td>' .
-      '          <td class="text-end"><a href="' . $this->app->link('Newsletter&page=' . (int)$_GET['page'] . '&nID=' . (int)$_GET['nID']) . '">' . HTML::button($this->app->getDef('button_cancel'), null, null, 'danger') . '</a></td>' .
+      '          <td class="text-end"><a href="' . $this->app->link('Newsletter&page=' . $page . '&nID=' . $nID) . '">' . HTML::button($this->app->getDef('button_cancel'), null, null, 'danger') . '</a></td>' .
       '        </tr>' .
       '      </table></td>' .
       '    </tr>' .
@@ -148,7 +269,7 @@ function selectAll(FormName, SelectBox) {
       '  <tr>' . "\n" .
       '    <td class="text-center"><b>' . $this->app->getDef('text_products') . '</b><br />' . HTML::selectMenu('products', $products_array, '', 'size="20" style="width: 20em;" multiple') . '</td>' . "\n" .
       '    <td class="text-center">&nbsp;<br />' . $global_button . '<br /><br /><br /><input type="button" value="' . $this->app->getDef('button_select') . '" style="width: 8em;" onClick="mover(\'remove\');"><br /><br /><input type="button" value="' . $this->app->getDef('button_unselect') . '" style="width: 8em;" onClick="mover(\'add\');"></td>' . "\n" .
-      '    <td class="text-center"><b>' . $this->app->getDef('text_selected_products') . '</b><br />' . HTML::selectMenu('chosen[]', array(), '', 'size="20" style="width: 20em;" multiple') . '</td>' . "\n" .
+      '    <td class="text-center"><b>' . $this->app->getDef('text_selected_products') . '</b><br />' . HTML::selectMenu('chosen[]', [], '', 'size="20" style="width: 20em;" multiple') . '</td>' . "\n" .
       '  </tr>' . "\n" .
       '</table></form>';
 
@@ -159,85 +280,48 @@ function selectAll(FormName, SelectBox) {
    * Generates and returns the confirmation string for the newsletter sending process,
    * including hidden fields, summary of audience details, and action buttons.
    *
-   * This method calculates the audience for the newsletter based on global or product-specific
-   * parameters. Depending on the input criteria, it retrieves the relevant customer IDs and formats
-   * the confirmation output with buttons and audience details for further processing.
-   *
    * @return string The generated confirmation HTML string containing audience details and action buttons.
    */
-  public function confirm()
+  public function confirm(): string
   {
-    $audience = [];
+    $page = (int)($_GET['page'] ?? 1);
+    $nID = (int)($_GET['nID'] ?? 0);
 
-    if (isset($_GET['global']) && ($_GET['global'] == 'true')) {
+    $audience = $this->getAudience();
 
-      $Qproducts = $this->app->db->get('products_notifications', 'distinct customers_id');
+    $is_global = isset($_GET['global']) && $_GET['global'] === 'true';
 
-      while ($Qproducts->fetch()) {
-        $audience[$Qproducts->valueInt('customers_id')] = '1';
-      }
+    $chosen = [];
 
-      $Qcustomers = $this->app->db->get('customers_info', 'customers_info_id', ['global_product_notifications' => '1']);
-
-      while ($Qcustomers->fetch()) {
-        $audience[$Qcustomers->valueInt('customers_info_id')] = '1';
-      }
-
-    } else {
-      $chosen = [];
-
-      foreach ($_POST['chosen'] as $id) {
-        if (is_numeric($id) && !\in_array($id, $chosen)) {
-          $chosen[] = $id;
+    if (!$is_global) {
+      foreach (($_POST['chosen'] ?? []) as $id) {
+        if (is_numeric($id) && !\in_array((int)$id, $chosen, true)) {
+          $chosen[] = (int)$id;
         }
-      }
-
-      $ids = array_map(function ($k) {
-        return ':products_id_' . $k;
-      },
-        array_keys($chosen)
-      );
-
-      $Qproducts = $this->app->db->prepare('select distinct customers_id
-                                              from :table_products_notifications
-                                              where products_id in (' . implode(', ', $ids) . ')
-                                             ');
-
-      foreach ($chosen as $k => $v) {
-        $Qproducts->bindInt(':products_id_' . $k, $v);
-      }
-
-      $Qproducts->execute();
-
-      while ($Qproducts->fetch()) {
-        $audience[$Qproducts->valueInt('customers_id')] = '1';
-      }
-
-      $Qcustomers = $this->app->db->get('customers_info', 'customers_info_id', ['global_product_notifications' => '1']);
-
-      while ($Qcustomers->fetch()) {
-        $audience[$Qcustomers->valueInt('customers_info_id')] = '1';
       }
     }
 
+    $confirm_button_string = '';
+
     if (\count($audience) > 0) {
-      if (isset($_GET['global']) && ($_GET['global'] == 'true')) {
+      if ($is_global) {
         $confirm_button_string .= HTML::hiddenField('global', 'true');
       } else {
-        for ($i = 0, $n = \count($chosen); $i < $n; $i++) {
-          $confirm_button_string .= HTML::hiddenField('chosen[]', $chosen[$i]);
+        foreach ($chosen as $value) {
+          $confirm_button_string .= HTML::hiddenField('chosen[]', $value);
         }
       }
+
       $confirm_button_string .= HTML::button($this->app->getDef('button_submit'), null, null, 'primary') . ' ';
     }
 
     $confirm_string = '    <td class="pageHeading text-end"><table border="0" cellspacing="0" cellpadding="0">' .
-      '      <tr>' . HTML::form('confirm', $this->app->link('Newsletter&ConfirmSend&page=' . (int)$_GET['page'] . '&nID=' . (int)$_GET['nID'])) .
+      '      <tr>' . HTML::form('confirm', $this->app->link('ConfirmSend&page=' . $page . '&nID=' . $nID)) .
       '          <td  class="text-end">' . $confirm_button_string . '</td>' .
       '          <td>&nbsp;</td>' .
-      '          <td class="text-end">' . HTML::button($this->app->getDef('button_back'), null, $this->app->link('Newsletter&page=' . (int)$_GET['page'] . '&nID=' . (int)$_GET['nID'] . '&action=send'), 'primary') . '</a></td>' .
+      '          <td class="text-end">' . HTML::button($this->app->getDef('button_back'), null, $this->app->link('Send&page=' . $page . '&nID=' . $nID), 'primary') . '</td>' .
       '          <td>&nbsp;</td>' .
-      '          <td class="text-end">' . HTML::button($this->app->getDef('button_cancel'), null, $this->app->link('Newsletter&page=' . (int)$_GET['page'] . '&nID=' . (int)$_GET['nID']), 'danger') . '</a></td>' .
+      '          <td class="text-end">' . HTML::button($this->app->getDef('button_cancel'), null, $this->app->link('Newsletter&page=' . $page . '&nID=' . $nID), 'danger') . '</td>' .
       '        </tr>' .
       '      </table></td>' .
       '    </tr>' .
@@ -245,11 +329,11 @@ function selectAll(FormName, SelectBox) {
       '</tr>' .
       '<tr>' .
       '  <td>&nbsp;</td>' .
-      '</tr>';
+      '</tr></form>';
 
     $confirm_string .= '<table border="0" cellspacing="0" cellpadding="2">' . "\n" .
       '  <tr>' . "\n" .
-      '    <td class="main"><p style="color:#ff0000;"><strong>' . $this->app->getDef('text_count_customers', ['audience' => \count($audience)]) . '</strong></p></td>' . "\n" .
+      '    <td class="main"><p style="color:#ff0000;"><strong>' . $this->app->getDef('text_count_customers') . ' ' . \count($audience) . '</strong></p></td>' . "\n" .
       '  </tr>' . "\n" .
       '  <tr>' . "\n" .
       '    <td>&nbsp;</td>' . "\n" .
@@ -271,289 +355,108 @@ function selectAll(FormName, SelectBox) {
     return $confirm_string;
   }
 
-// Envoie du mail sans gestion de Fckeditor
-
   /**
-   * Sends a newsletter to the appropriate audience based on the provided newsletter ID.
+   * Sends the product notification newsletter (HTML / CKEditor) to its audience.
+   *
+   * The product notification audience is targeted and small, so the send is done
+   * in a single request; the method always reports completion (true) to the caller.
    *
    * @param int $newsletter_id The ID of the newsletter to be sent.
-   * @return bool Returns false if the newsletter feature is disabled, otherwise none.
+   * @return bool Always true (the send completes within a single request).
    */
-  public function send($newsletter_id)
+  public function sendCkeditor(int $newsletter_id): bool
   {
-    $CLICSHOPPING_Db = Registry::get('Db');
+    if (!$this->checkStatus()) {
+      return true;
+    }
+
     $CLICSHOPPING_Mail = Registry::get('Mail');
+    $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    if (!\defined('CLICSHOPPING_APP_NEWSLETTER_NL_STATUS') || CLICSHOPPING_APP_NEWSLETTER_NL_STATUS == 'False') {
-      return false;
+    $audience = $this->getAudience();
+
+    if (\count($audience) === 0) {
+      return true;
     }
 
-    $audience = [];
+    $template_email_signature = TemplateEmailAdmin::getTemplateEmailSignature();
+    $template_email_newsletter_footer = TemplateEmailAdmin::getTemplateEmailNewsletterTextFooter();
+    $email_footer = '<br />' . $template_email_signature . '<br />' . $template_email_newsletter_footer;
 
-    if (isset($_POST['global']) && ($_POST['global'] == 'true')) {
+    $subject = $this->app->getDef('text_send_newsletter_subject', ['store_name' => STORE_NAME]);
 
-      $Qproducts = $CLICSHOPPING_Db->get([
-        'customers c',
-        'products_notifications pn'
-      ], [
-        'distinct pn.customers_id',
-        'c.customers_firstname',
-        'c.customers_lastname',
-        'c.customers_email_address'
-      ], [
-          'c.customers_id' => [
-            'rel' => 'pn.customers_id'
-          ]
-        ]
-      );
-
-      while ($Qproducts->fetch()) {
-        $audience[$Qproducts->valueInt('customers_id')] = [
-          'firstname' => $Qproducts->value('customers_firstname'),
-          'lastname' => $Qproducts->value('customers_lastname'),
-          'email_address' => $Qproducts->value('customers_email_address')
-        ];
-      }
-
-      $Qcustomers = $CLICSHOPPING_Db->get([
-        'customers c',
-        'customers_info ci'
-      ], [
-        'c.customers_id',
-        'c.customers_firstname',
-        'c.customers_lastname',
-        'c.customers_email_address'
-      ], [
-          'c.customers_id' => [
-            'rel' => 'ci.customers_info_id'
-          ],
-          'ci.global_product_notifications' => '1',
-          'c.customers_email_validation' => '0'
-        ]
-      );
-
-      while ($Qcustomers->fetch()) {
-        $audience[$Qcustomers->valueInt('customers_id')] = [
-          'firstname' => $Qcustomers->value('customers_firstname'),
-          'lastname' => $Qcustomers->value('customers_lastname'),
-          'email_address' => $Qcustomers->value('customers_email_address')
-        ];
-      }
-    } else {
-      $chosen = [];
-
-      foreach ($_POST['chosen'] as $id) {
-        if (is_numeric($id) && !\in_array($id, $chosen)) {
-          $chosen[] = $id;
-        }
-      }
-
-      $ids = array_map(function ($k) {
-        return ':products_id_' . $k;
-      }, array_keys($chosen)
-      );
-
-      $Qproducts = $CLICSHOPPING_Db->prepare('select distinct pn.customers_id,
-                                                         c.customers_firstname,
-                                                         c.customers_lastname,
-                                                         c.customers_email_address
-                                           from :table_customers c,
-                                           :table_products_notifications pn
-                                           where c.customers_id = pn.customers_id
-                                           and pn.products_id in (' . implode(', ', $ids) . ')
-                                         ');
-
-      foreach ($chosen as $k => $v) {
-        $Qproducts->bindInt(':products_id_' . $k, $v);
-      }
-
-      $Qproducts->execute();
-
-      while ($Qproducts->fetch()) {
-        $audience[$Qproducts->valueInt('customers_id')] = [
-          'firstname' => $Qproducts->value('customers_firstname'),
-          'lastname' => $Qproducts->value('customers_lastname'),
-          'email_address' => $Qproducts->value('customers_email_address')
-        ];
-      }
-
-
-      $Qcustomers = $CLICSHOPPING_Db->get([
-        'customers c',
-        'customers_info ci'
-      ], [
-        'c.customers_id',
-        'c.customers_firstname',
-        'c.customers_lastname',
-        'c.customers_email_address'
-      ], [
-          'c.customers_id' => [
-            'rel' => 'ci.customers_info_id'
-          ],
-          'ci.global_product_notifications' => '1',
-          'c.customers_email_validation' => '0'
-        ]
-      );
-
-      while ($Qcustomers->fetch()) {
-        $audience[$Qcustomers->valueInt('customers_id')] = array('firstname' => $Qcustomers->value('customers_firstname'),
-          'lastname' => $Qcustomers->value('customers_lastname'),
-          'email_address' => $Qcustomers->value('customers_email_address'));
-      }
-    } //end else
-
-// Build the text version
-    $text = strip_tags($this->content);
-
-    $CLICSHOPPING_Mail->addText($text . $this->app->getDef('text_unsubscribe') . HTTP::getShopUrlDomain() . 'index.php?Account&Newsletters');
-
-    foreach ($audience as $key => $value) {
-      $CLICSHOPPING_Mail->send($value['email_address'], $value['firstname'] . ' ' . $value['lastname'], null, $this->app->getDef('email_from'), $this->title);
-    }
-
-    $newsletter_id = HTML::sanitize($newsletter_id);
-
-    $CLICSHOPPING_Db->save('newsletters', ['date_sent' => 'now()',
-      'status' => '1'
-    ], [
-        'newsletters_id' => (int)$newsletter_id
-      ]
-    );
-
-  } //end function send
-
-
-// Envoie du mail avec gestion des images pour Fckeditor et Imanager.
-  /**
-   * Sends a newsletter using CKEditor to the specified audience.
-   *
-   * @param int $newsletter_id The ID of the newsletter to be sent.
-   * @return bool Returns false if the newsletter application is not active or if sending fails; otherwise, no return value.
-   */
-  public function sendCkeditor($newsletter_id)
-  {
-    if (!\defined('CLICSHOPPING_APP_NEWSLETTER_NL_STATUS') || CLICSHOPPING_APP_NEWSLETTER_NL_STATUS == 'False') {
-      return false;
-    }
-
-    $CLICSHOPPING_Db = Registry::get('Db');
-
-    $audience = [];
-
-    if (isset($_POST['global']) && ($_POST['global'] == 'true')) {
-      $Qproducts = $CLICSHOPPING_Db->prepare('select distinct pn.customers_id,
-                                                        c.customers_firstname,
-                                                        c.customers_lastname,
-                                                        c.customers_email_address
-                                        from :table_customers c,
-                                             :table_products_notifications pn
-                                        where c.customers_id = pn.customers_id
-                                        and customers_email_validation = 0
-                                        ');
-
-      $Qproducts->execute();
-
-      while ($Qproducts->fetch()) {
-        $audience[$Qproducts->valueInt('customers_id')] = [
-          'firstname' => $Qproducts->value('customers_firstname'),
-          'lastname' => $Qproducts->value('customers_lastname'),
-          'email_address' => $Qproducts->value('customers_email_address')
-        ];
-      }
-
-      $Qcustomers = $CLICSHOPPING_Db->get([
-        'customers c',
-        'customers_info ci'
-      ], [
-        'c.customers_id',
-        'c.customers_firstname',
-        'c.customers_lastname',
-        'c.customers_email_address'
-      ], [
-          'c.customers_id' => [
-            'rel' => 'ci.customers_info_id'
-          ],
-          'ci.global_product_notifications' => '1',
-          'c.customers_email_validation' => '0'
-        ]
-      );
-
-
-      while ($Qcustomers->fetch()) {
-        $audience[$Qcustomers->valueInt('customers_id')] = [
-          'firstname' => $Qcustomers->value('customers_firstname'),
-          'lastname' => $Qcustomers->value('customers_lastname'),
-          'email_address' => $Qcustomers->value('customers_email_address')
-        ];
-      }
-    } else {
-      $chosen = $_POST['chosen'];
-
-      $ids = implode(',', $chosen);
-
-      $Qproducts = $CLICSHOPPING_Db->prepare('select distinct pn.customers_id,
-                                                        c.customers_firstname,
-                                                        c.customers_lastname,
-                                                        c.customers_email_address
-                                         from :table_customers c,
-                                              :table_products_notifications pn
-                                         where c.customers_id = pn.customers_id
-                                         and pn.products_id in ( :products_id )
-                                         and customers_email_validation = 0
-                                        ');
-      $Qproducts->binInt('products_id', $ids);
-      $Qproducts->execute();
-
-      while ($Qproducts->fetch()) {
-        $audience[$Qproducts->valueInt('customers_id')] = array('firstname' => $Qproducts->value('customers_firstname'),
-          'lastname' => $Qproducts->value('customers_lastname'),
-          'email_address' => $Qproducts->value('customers_email_address')
-        );
-      }
-
-      $Qcustomers = $CLICSHOPPING_Db->get([
-        'customers c',
-        'customers_info ci'
-      ], [
-        'c.customers_id',
-        'c.customers_firstname',
-        'c.customers_lastname',
-        'c.customers_email_address'
-      ], [
-          'c.customers_id' => [
-            'rel' => 'ci.customers_info_id'
-          ],
-          'ci.global_product_notifications' => '1',
-          'c.customers_email_validation' => '0'
-        ]
-      );
-
-      while ($Qproducts->fetch()) {
-        $audience[$Qproducts->valueInt('customers_id')] = [
-          'firstname' => $Qproducts->value('customers_firstname'),
-          'lastname' => $Qproducts->value('customers_lastname'),
-          'email_address' => $Qproducts->value('customers_email_address')
-        ];
-      }
-
-    } // end else
-
-    $message = html_entity_decode($this->content . $this->app->getDef('text_unsubscribe') . HTTP::getShopUrlDomain() . 'index.php?Account&Newsletters');
-    $CLICSHOPPING_Mail = str_replace('src="/', 'src="' . HTTP::getShopUrlDomain() . '/', $message);
+    $message = html_entity_decode($this->content . '<br /><br />' . $this->app->getDef('text_unsubscribe') . ' ' . HTTP::getShopUrlDomain() . 'index.php?Account&Newsletters' . $email_footer);
+    $message = str_replace('src="/', 'src="' . HTTP::getShopUrlDomain(), $message);
 
     $CLICSHOPPING_Mail->addHtmlCkeditor($message);
 
-    foreach ($audience as $key => $value) {
-      $CLICSHOPPING_Mail->send($value['email_address'], $value['firstname'] . ' ' . $value['lastname'], null, $this->app->getDef('email_from'), $this->title);
+    foreach ($audience as $value) {
+      $CLICSHOPPING_Mail->send(
+        $value['email_address'],
+        HTML::sanitize(STORE_NAME),
+        $this->emailFrom,
+        $value['firstname'] . ' ' . $value['lastname'],
+        $subject
+      );
     }
 
-    $CLICSHOPPING_Db->save('newsletters', [
-      'date_sent' => 'now()',
-      'status' => '1'
-    ], [
-        'newsletters_id' => (int)$newsletter_id
-      ]
-    );
+    $Qupdate = $this->app->db->prepare('update :table_newsletters
+                                        set date_sent = now(),
+                                            status = 1
+                                        where newsletters_id = :newsletters_id
+                                       ');
+    $Qupdate->bindInt(':newsletters_id', $newsletter_id);
+    $Qupdate->execute();
 
+    $CLICSHOPPING_Hooks->call('Newsletter', 'NewsletterSendCkEditor');
+
+    return true;
   }
-} // end class
+
+  /**
+   * Sends the product notification newsletter as plain text to its audience.
+   *
+   * @param int $newsletter_id The ID of the newsletter to be sent.
+   * @return void
+   */
+  public function send(int $newsletter_id): void
+  {
+    if (!$this->checkStatus()) {
+      return;
+    }
+
+    $CLICSHOPPING_Mail = Registry::get('Mail');
+    $CLICSHOPPING_Hooks = Registry::get('Hooks');
+
+    $audience = $this->getAudience();
+
+    if (\count($audience) === 0) {
+      return;
+    }
+
+    $subject = $this->app->getDef('text_send_newsletter_subject', ['store_name' => STORE_NAME]);
+    $text = strip_tags($this->content) . ' ' . $this->app->getDef('text_unsubscribe') . ' ' . HTTP::getShopUrlDomain() . 'index.php?Account&Newsletters';
+
+    $CLICSHOPPING_Mail->addText($text);
+
+    foreach ($audience as $value) {
+      $CLICSHOPPING_Mail->send(
+        $value['email_address'],
+        HTML::sanitize(STORE_NAME),
+        $this->emailFrom,
+        $value['firstname'] . ' ' . $value['lastname'],
+        $subject
+      );
+    }
+
+    $Qupdate = $this->app->db->prepare('update :table_newsletters
+                                        set date_sent = now(),
+                                            status = 1
+                                        where newsletters_id = :newsletters_id
+                                       ');
+    $Qupdate->bindInt(':newsletters_id', $newsletter_id);
+    $Qupdate->execute();
+
+    $CLICSHOPPING_Hooks->call('Newsletter', 'NewsletterSend');
+  }
+}

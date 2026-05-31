@@ -32,10 +32,20 @@ if (isset($_GET['nID'])) {
 
   $nInfo = new ObjectInfo($Qnewsletter->toArray());
 
-  $module_name = $nInfo->module;
-  $module = new NewsletterModule($nInfo->title, $nInfo->content);
+  // Resolve the newsletter module class declared on the record (defaults to the
+  // standard Newsletter module when the stored value is unknown).
+  $module_name = preg_replace('/[^A-Za-z0-9_]/', '', (string)$nInfo->module);
+  $module_class = 'ClicShopping\\Apps\\Communication\\Newsletter\\Module\\ClicShoppingAdmin\\Newsletter\\' . $module_name;
 
-  if ($module->show_chooseAudience) {
+  if ($module_name === '' || !class_exists($module_class)) {
+    $module_class = NewsletterModule::class;
+  }
+
+  $module = new $module_class($nInfo->title, $nInfo->content);
+
+  if ($action === 'confirm') {
+    echo $module->confirm();
+  } elseif ($module->show_chooseAudience) {
     echo $module->chooseAudience();
   } else {
     echo $module->confirm();

@@ -40,8 +40,17 @@ $Qnewsletter = $CLICSHOPPING_Newsletter->db->get('newsletters', [
 );
 
 $nInfo = new ObjectInfo($Qnewsletter->toArray());
-$module_name = $nInfo->module;
-$module = new NewsletterModule($nInfo->title, $nInfo->content);
+
+// Resolve the newsletter module class declared on the record (defaults to the
+// standard Newsletter module when the stored value is unknown).
+$module_name = preg_replace('/[^A-Za-z0-9_]/', '', (string)$nInfo->module);
+$module_class = 'ClicShopping\\Apps\\Communication\\Newsletter\\Module\\ClicShoppingAdmin\\Newsletter\\' . $module_name;
+
+if ($module_name === '' || !class_exists($module_class)) {
+  $module_class = NewsletterModule::class;
+}
+
+$module = new $module_class($nInfo->title, $nInfo->content);
 ?>
 
 <div class="contentBody">
@@ -67,7 +76,16 @@ $module = new NewsletterModule($nInfo->title, $nInfo->content);
   <?php
   flush();
 
-  $module->sendCkeditor($nInfo->newsletters_id);
+  // Process one batch. When false, recipients remain: re-enter ConfirmSend to
+  // continue the resumable send. When true, the send is complete.
+  $send_complete = $module->sendCkeditor((int)$nInfo->newsletters_id);
+
+  if ($send_complete === false) {
+    $ana = (int)($_GET['ana'] ?? 0);
+    $continue_url = $CLICSHOPPING_Newsletter->link('ConfirmSend&page=' . $page . '&nID=' . $nID . '&nlID=' . $nlID . '&cgID=' . $cgID . '&ac=' . $ac . '&ana=' . $ana);
+    echo '<meta http-equiv="refresh" content="2; URL=' . $continue_url . '">';
+  } else {
+    echo '<meta http-equiv="refresh" content="3; URL=' . $CLICSHOPPING_Newsletter->link('ConfirmSendValid') . '">';
+  }
   ?>
-  <meta http-equiv="refresh" content="5; URL=<?php echo $CLICSHOPPING_Newsletter->link('ConfirmSendValid'); ?>">
 </div>

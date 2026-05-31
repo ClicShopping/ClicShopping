@@ -124,10 +124,24 @@ EOD;
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
 CREATE TABLE :table_newsletters_customers_temp (
+newsletters_id int NOT NULL default 0,
 customers_firstname varchar(255) NOT NULL,
 customers_lastname varchar(255) NOT NULL,
-customers_email_address varchar(255) NOT NULL
+customers_email_address varchar(255) NOT NULL,
+KEY newsletters_id (newsletters_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+EOD;
+      $CLICSHOPPING_Db->exec($sql);
+    }
+
+    // Migration: scope the work queue by newsletter so concurrent sends do not
+    // collide on the shared temporary table (existing installs created the table
+    // without this column).
+    $QcheckTempField = $CLICSHOPPING_Db->query("show columns from :table_newsletters_customers_temp like 'newsletters_id'");
+
+    if ($QcheckTempField->fetch() === false) {
+      $sql = <<<EOD
+ALTER TABLE :table_newsletters_customers_temp ADD newsletters_id int NOT NULL DEFAULT 0 FIRST, ADD KEY newsletters_id (newsletters_id);
 EOD;
       $CLICSHOPPING_Db->exec($sql);
     }

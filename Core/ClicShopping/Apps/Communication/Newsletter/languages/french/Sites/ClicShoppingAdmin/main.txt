@@ -34,6 +34,7 @@ button_submit = envoyer
 
 text_products = Produits
 text_selected_products = Produits sélectionnés
+js_please_select_products = Veuillez sélectionner au moins un produit.
 text_count_customers = Nbre de clients
 text_unsubscribe = Se désabonner
 
