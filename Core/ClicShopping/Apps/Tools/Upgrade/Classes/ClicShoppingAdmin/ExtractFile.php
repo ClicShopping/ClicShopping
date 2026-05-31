@@ -130,10 +130,10 @@ class ExtractFile
       return null;
     }
 
-    // Optional: Whitelist specific domains (e.g., GitHub)
-    // Uncomment and modify as needed:
+    // Active domain whitelist (anti-SSRF): downloads are allowed ONLY from
+    // these hosts. Add a domain here to authorize it.
       $allowed_domains = ['github.com', 'api.github.com'];
-      if (!in_array($parsed_url['host'] ?? '', $allowed_domains)) {
+      if (!in_array($parsed_url['host'] ?? '', $allowed_domains, true)) {
         $this->messageStack->add('Download from unauthorized domain', 'error');
         CLICSHOPPING::redirect('Upgrade&Marketplace');
         return null;

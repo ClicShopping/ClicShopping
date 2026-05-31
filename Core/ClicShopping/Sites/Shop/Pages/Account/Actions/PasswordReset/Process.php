@@ -32,6 +32,8 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $Qcheck = $CLICSHOPPING_Db->prepare('select c.customers_id,
                                                     c.customers_email_address,
+                                                    c.customers_firstname,
+                                                    c.customers_lastname,
                                                     ci.password_reset_key,
                                                     ci.password_reset_date
                                              from :table_customers c,
@@ -48,15 +50,31 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $password_new = HTML::sanitize($_POST['password']);
       $password_confirmation = HTML::sanitize($_POST['confirmation']);
 
-      if ((strlen($password_new) < ENTRY_PASSWORD_MIN_LENGTH) && !isset($key)) {
+      // The account must exist and the reset key/date must match a non-expired request.
+      if ($Qcheck->fetch() === false) {
         $error = true;
 
-        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_password_new_error', ['min_length' => ENTRY_PASSWORD_MIN_LENGTH]), 'error');
+        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_no_reset_link_found'), 'error');
+      } else {
+        $stored_key = (string)$Qcheck->value('password_reset_key');
+        $stored_date = (string)$Qcheck->value('password_reset_date');
 
-      } elseif (($password_new != $password_confirmation) && !isset($key)) {
-        $error = true;
+        if (strlen($stored_key) !== 40
+          || $key === ''
+          || !hash_equals($stored_key, $key)
+          || strtotime($stored_date . ' +1 day') <= time()) {
+          $error = true;
 
-        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_password_new_error_not_matching'), 'error');
+          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_no_reset_link_found'), 'error');
+        } elseif (strlen($password_new) < ENTRY_PASSWORD_MIN_LENGTH) {
+          $error = true;
+
+          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_password_new_error', ['min_length' => ENTRY_PASSWORD_MIN_LENGTH]), 'error');
+        } elseif ($password_new !== $password_confirmation) {
+          $error = true;
+
+          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_password_new_error_not_matching'), 'error');
+        }
       }
 
       if ($error === false) {

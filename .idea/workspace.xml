@@ -4,8 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="language update">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="template improvement">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Backup/Sites/ClicShoppingAdmin/Pages/Home/Actions/Backup/RestoreNow.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Backup/Sites/ClicShoppingAdmin/Pages/Home/Actions/Backup/RestoreNow.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Upgrade/Classes/ClicShoppingAdmin/ExtractFile.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/Upgrade/Classes/ClicShoppingAdmin/ExtractFile.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/OM/HTML.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/OM/HTML.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_info/pi_products_info_also_purchased.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_info/pi_products_info_also_purchased.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,7 +29,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7520" />
+    <option name="cachedIndexableFilesCount" value="7522" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -53,23 +58,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0000707103358957" />
-      <entry key="S2" value="1.2345888893497947" />
-      <entry key="S5" value="2.5380350213681577" />
-      <entry key="S10" value="4.0155998616470745" />
-      <entry key="S30" value="6.0014914661684235" />
-      <entry key="S60" value="7.037375337599576" />
-      <entry key="M2" value="8.305375479274186" />
-      <entry key="M5" value="10.32003662137111" />
-      <entry key="M10" value="11.693486164425545" />
-      <entry key="M15" value="12.322874375808977" />
-      <entry key="M30" value="13.079080417855833" />
-      <entry key="H1" value="13.548943181177744" />
-      <entry key="H2" value="15.90189147852034" />
-      <entry key="H4" value="31.838034898866713" />
-      <entry key="D1" value="120.90844883846773" />
-      <entry key="W1" value="159.3589919701071" />
+      <entry key="MS100" value="1.000003680486653" />
+      <entry key="MS500" value="1.1832685460704613" />
+      <entry key="S2" value="3.2140917421507385" />
+      <entry key="S5" value="5.728397163115575" />
+      <entry key="S10" value="8.017983614028317" />
+      <entry key="S30" value="11.069586627719625" />
+      <entry key="S60" value="12.505697805338137" />
+      <entry key="M2" value="14.002485541966857" />
+      <entry key="M5" value="16.17632281847142" />
+      <entry key="M10" value="17.61404659808955" />
+      <entry key="M15" value="18.26760658041637" />
+      <entry key="M30" value="19.050062167750525" />
+      <entry key="H1" value="19.534004891878418" />
+      <entry key="H2" value="21.89336132991271" />
+      <entry key="H4" value="37.8301813265898" />
+      <entry key="D1" value="126.90379709142" />
+      <entry key="W1" value="165.358121278067" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -91,23 +96,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="7.497223493641603E-20" />
-      <entry key="MS500" value="2.1672177435324067E-4" />
-      <entry key="S2" value="0.3288399416051282" />
-      <entry key="S5" value="1.9041983843130672" />
-      <entry key="S10" value="3.6122473012073613" />
-      <entry key="S30" value="5.840375824512902" />
-      <entry key="S60" value="6.952834507232021" />
-      <entry key="M2" value="8.262033418247585" />
-      <entry key="M5" value="10.30241879150816" />
-      <entry key="M10" value="11.684623928000322" />
-      <entry key="M15" value="12.31695319921824" />
-      <entry key="M30" value="13.076112860868573" />
-      <entry key="H1" value="13.547454601661133" />
-      <entry key="H2" value="15.901025978977762" />
-      <entry key="H4" value="31.83710399112774" />
-      <entry key="D1" value="120.90779600193888" />
-      <entry key="W1" value="159.3588672479783" />
+      <entry key="MS100" value="0.9138345886458514" />
+      <entry key="MS500" value="1.1491828423418602" />
+      <entry key="S2" value="2.9345860282571907" />
+      <entry key="S5" value="5.318560016499545" />
+      <entry key="S10" value="7.677077172684236" />
+      <entry key="S30" value="10.90584673713124" />
+      <entry key="S60" value="12.415665528264435" />
+      <entry key="M2" value="13.955233199147177" />
+      <entry key="M5" value="16.15684461062917" />
+      <entry key="M10" value="17.60420329567118" />
+      <entry key="M15" value="18.26101993285909" />
+      <entry key="M30" value="19.046756129099556" />
+      <entry key="H1" value="19.532345631131" />
+      <entry key="H2" value="21.89241018182987" />
+      <entry key="H4" value="37.82920760244445" />
+      <entry key="D1" value="126.90313710743466" />
+      <entry key="W1" value="165.3579955320182" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -276,14 +281,8 @@
       <workItem from="1780070556565" duration="1101000" />
       <workItem from="1780142461662" duration="652000" />
       <workItem from="1780143125570" duration="602000" />
-    </task>
-    <task id="LOCAL-00040" summary="improve json">
-      <option name="closed" value="true" />
-      <created>1778747602853</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1778747602853</updated>
+      <workItem from="1780158411301" duration="522000" />
+      <workItem from="1780161404348" duration="397000" />
     </task>
     <task id="LOCAL-00041" summary="librairies updated">
       <option name="closed" value="true" />
@@ -669,14 +668,21 @@
       <option name="project" value="LOCAL" />
       <updated>1780143092984</updated>
     </task>
-    <option name="localTasksCounter" value="89" />
+    <task id="LOCAL-00089" summary="template improvement">
+      <option name="closed" value="true" />
+      <created>1780158652325</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1780158652325</updated>
+    </task>
+    <option name="localTasksCounter" value="90" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="code update" />
     <MESSAGE value="refactoring" />
     <MESSAGE value="some update" />
     <MESSAGE value="fix upload" />
@@ -701,7 +707,8 @@
     <MESSAGE value="libraries updated" />
     <MESSAGE value="little improvement" />
     <MESSAGE value="language update" />
-    <option name="LAST_COMMIT_MESSAGE" value="language update" />
+    <MESSAGE value="template improvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="template improvement" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

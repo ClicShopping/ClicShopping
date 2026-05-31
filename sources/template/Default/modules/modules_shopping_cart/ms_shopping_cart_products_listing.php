@@ -118,7 +118,7 @@ class ms_shopping_cart_products_listing
                   </div>
                   <div class="modal-footer">
                      <span class="pull-start" data-bs-dismiss="modal" aria-hidden="true">' . HTML::button(ClicShopping::getDef('button_cancel'), null, null, 'light') . '</span>
-                     <span class="pull-end">' . HTML::button(CLICSHOPPING::getDef('button_delete'), null, CLICSHOPPING::link(null, 'Cart&Delete&products_id=' . $products[$i]['id']), 'danger') . '</span>
+                     <span class="pull-end">' . HTML::button(CLICSHOPPING::getDef('button_delete'), null, CLICSHOPPING::link(null, 'Cart&Delete&products_id=' . $products[$i]['id'] . '&formid=' . ($_SESSION['sessiontoken'] ?? '')), 'danger') . '</span>
                   </div>          
                 </div>
               </div>

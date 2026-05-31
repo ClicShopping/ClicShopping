@@ -28,12 +28,22 @@ $filename_selected = null;
 if (isset($_POST['filename'])) $filename_selected = HTML::sanitize($_POST['filename']);
 if (isset($_GET['filename'])) $filename_selected = HTML::sanitize($_GET['filename']);
 
-$file = CLICSHOPPING::getConfig('dir_root', 'Shop') . $CLICSHOPPING_Template->getDynamicTemplateDirectory() . '/modules/' . $directory_selected . '/template_html/' . $filename_selected;
+// Merge-aware read resolution: active theme then Default. A Default-only listing
+// template can thus be opened; saving it creates an override in the theme.
+$root = CLICSHOPPING::getConfig('dir_root', 'Shop');
 
-if (is_file($file)) {
-  $code = file_get_contents($file);
-} else {
-  $code = null;
+$candidates = [
+  $root . $CLICSHOPPING_Template->getDynamicTemplateDirectory() . '/modules/' . $directory_selected . '/template_html/' . $filename_selected,
+  $root . 'sources/template/Default/modules/' . $directory_selected . '/template_html/' . $filename_selected,
+];
+
+$code = null;
+
+foreach ($candidates as $candidate) {
+  if (is_file($candidate)) {
+    $code = file_get_contents($candidate);
+    break;
+  }
 }
 ?>
 <div class="contentBody">

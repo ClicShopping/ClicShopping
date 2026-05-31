@@ -26,7 +26,7 @@ class securityCheck_download_directory
   {
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    $CLICSHOPPING_Language->loadDefinitions('modules/SecurityCheck/download_directory', null, null, 'Shop');
+    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/download_directory', null, null, 'Shop');
   }
 
   /**

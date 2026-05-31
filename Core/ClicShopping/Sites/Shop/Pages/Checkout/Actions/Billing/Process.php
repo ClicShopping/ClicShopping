@@ -42,7 +42,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         }
       }
 
-      $source_folder = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'includes/Module/Hooks/Shop/CheckoutPayment/';
+      $source_folder = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/Hooks/Shop/CheckoutPayment/';
 
       if (is_dir($source_folder)) {
         $files_get = $CLICSHOPPING_Template->getSpecificFiles($source_folder, 'CheckoutPayment*');

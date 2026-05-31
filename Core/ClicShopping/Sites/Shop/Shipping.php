@@ -207,7 +207,7 @@ class Shipping
           $obj = Registry::get('Shipping_' . str_replace('\\', '_', $value));
         }
 
-        if (!array($obj)) {
+        if (is_object($obj)) {
           if ($obj->enabled) {
             $quotes = $obj->quotes;
 

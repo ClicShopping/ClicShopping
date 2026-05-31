@@ -89,10 +89,10 @@ class CcValidation
   {
     $cardNumber = strrev($this->cc_number);
     $numSum = 0;
-    $cardNumber = strlen($cardNumber);
+    $length = strlen($cardNumber);
 
-    for ($i = 0; $i < $cardNumber; $i++) {
-      $currentNum = substr($cardNumber, $i, 1);
+    for ($i = 0; $i < $length; $i++) {
+      $currentNum = (int)substr($cardNumber, $i, 1);
 
 // Double every second digit
       if ($i % 2 == 1) {

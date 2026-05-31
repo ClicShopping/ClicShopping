@@ -239,12 +239,12 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
           $admin_email_text_admin = CLICSHOPPING::getDef('admin_email_text', $data_array);
 
-          $email_address = STORE_OWNER_EMAIL_ADDRESS;
+          $admin_to = STORE_OWNER_EMAIL_ADDRESS;
           $from = STORE_OWNER_EMAIL_ADDRESS;
-          $admin_email_text_admin .= $admin_email_welcome . $admin_email_text_admin;
+          $admin_email_text_admin = $admin_email_welcome . $admin_email_text_admin;
           $CLICSHOPPING_Mail->addHtmlCkeditor($admin_email_text_admin);
 
-          $CLICSHOPPING_Mail->send($email_address, STORE_NAME, null, $from, $email_subject_admin);
+          $CLICSHOPPING_Mail->send($admin_to, STORE_NAME, null, $from, $email_subject_admin);
         }
 
         $CLICSHOPPING_ActionRecorder->record();

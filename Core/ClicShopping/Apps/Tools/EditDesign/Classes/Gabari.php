@@ -11,45 +11,76 @@ namespace ClicShopping\Apps\Tools\EditDesign\Classes;
 use ClicShopping\OM\CLICSHOPPING;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use function in_array;
 
 class Gabari
 {
   /**
-   * Retrieves the filenames of specific file types (e.g., PHP files) from a designated directory
-   * and organizes them into an array for display or selection purposes.
+   * Returns the active theme and Default `files/` roots, in priority order.
    *
-   * @return array An array of filenames, each with an 'id' and 'text' key. The 'id' represents the
-   *               filename, and the 'text' contains the same filename for display.
-   *               The first element in the array is a default option with 'id' as '0' and
-   *               text from a predefined constant.
+   * @return array<int,string> Absolute directory paths (active theme first).
    */
-  public static function getFilenameGabari(): array
+  private static function fileRoots(): array
   {
-    $filename_selected = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'sources/template/' . SITE_THEMA . '/files/';
+    $root = CLICSHOPPING::getConfig('dir_root', 'Shop');
 
-    $found = []; //initialize an array for matching files
-    $fileTypes = ['php']; // Create an array of file types
-    $found = []; // Traverse the folder, and add filename to $found array if type matches
+    return [
+      $root . 'sources/template/' . SITE_THEMA . '/files/',
+      $root . 'sources/template/Default/files/',
+    ];
+  }
 
-    /* if empty error is produced : Fatal error: Uncaught exception 'RuntimeException'*/
-    $file_array = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($filename_selected));
+  /**
+   * Recursively collects PHP file names (basenames) under a directory.
+   *
+   * @param string $dir Absolute directory path.
+   * @return array<string,string> Map of basename => basename.
+   */
+  private static function scanPhpBasenames(string $dir): array
+  {
+    $names = [];
 
-    foreach ($file_array as $filename => $current) {
-      $fileInfo = pathinfo($current->getFileName());
+    if (!is_dir($dir)) {
+      return $names;
+    }
 
-      if (array_key_exists('extension', $fileInfo) && in_array($fileInfo['extension'], $fileTypes)) {
-        $found[] = $current->getFileName();
+    $iterator = new RecursiveIteratorIterator(
+      new RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+    );
+
+    foreach ($iterator as $current) {
+      if ($current->isFile() && strtolower($current->getExtension()) === 'php') {
+        $names[$current->getFileName()] = $current->getFileName();
       }
     }
 
-    if ($found) { // Check the $found array is not empty
-      natcasesort($found); // Sort in natural, case-insensitive order, and populate menu
+    return $names;
+  }
 
-      $filename_array[0] = [
+  /**
+   * Retrieves the merged list of `files/` template names (active theme ∪ Default).
+   *
+   * A Default-only file is therefore listed even when the active theme does not
+   * ship it; saving it creates an override in the active theme.
+   *
+   * @return array An array of filenames, each with an 'id' and 'text' key.
+   */
+  public static function getFilenameGabari(): array
+  {
+    $found = [];
+
+    foreach (self::fileRoots() as $dir) {
+      $found += self::scanPhpBasenames($dir);
+    }
+
+    $filename_array = [
+      0 => [
         'id' => '0',
         'text' => CLICSHOPPING::getDef('text_selected')
-      ];
+      ]
+    ];
+
+    if ($found) {
+      natcasesort($found);
 
       foreach ($found as $filename) {
         $filename_array[] = [
@@ -58,35 +89,47 @@ class Gabari
         ];
       }
     }
+
     return $filename_array;
   }
 
   /**
-   * Retrieves a list of directories from the specified template directory, excluding certain predefined files or directories.
+   * Retrieves the merged list of `files/` sub directories (active theme ∪ Default).
    *
-   * @return array The array of directories, including an initial default option with predefined text and each directory containing its 'id' and 'text'.
+   * @return array The array of directories, each with an 'id' and 'text' key.
    */
   public static function getDirectoryGabari(): array
   {
-    $directory_array = [];
-    $template_directory = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'sources/template/' . SITE_THEMA . '/files/';
-
     $exclude = ['.', '..', '_notes', 'index.php', '_htaccess', '.htaccess'];
 
-    $directories = array_diff(scandir($template_directory), $exclude);
+    $names = [];
 
-    $directory_array[0] = [
-      'id' => '0',
-      'text' => CLICSHOPPING::getDef('text_selected')
+    foreach (self::fileRoots() as $template_directory) {
+      if (!is_dir($template_directory)) {
+        continue;
+      }
+
+      foreach (array_diff(scandir($template_directory), $exclude) as $directory) {
+        if (is_dir($template_directory . $directory)) {
+          $names[$directory] = $directory;
+        }
+      }
+    }
+
+    natcasesort($names);
+
+    $directory_array = [
+      0 => [
+        'id' => '0',
+        'text' => CLICSHOPPING::getDef('text_selected')
+      ]
     ];
 
-    foreach ($directories as $directory) {
-      if (is_dir($template_directory . $directory)) {
-        $directory_array[] = [
-          'id' => $directory,
-          'text' => $directory
-        ];
-      }
+    foreach ($names as $directory) {
+      $directory_array[] = [
+        'id' => $directory,
+        'text' => $directory
+      ];
     }
 
     return $directory_array;

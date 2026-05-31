@@ -31,10 +31,6 @@ class Add extends \ClicShopping\OM\Domains\PagesActionsAbstract
           $attributes = '';
         }
 
-        if (!isset($_POST['cart_quantity'])) {
-          $_POST['cart_quantity'] = 1;
-        }
-
         $CLICSHOPPING_ShoppingCart->addCart($_POST['products_id'], $CLICSHOPPING_ShoppingCart->getQuantity($CLICSHOPPING_Prod::getProductIDString($_POST['products_id'], $attributes)) + ((int)$_POST['cart_quantity']), $attributes);
 
         if (defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true' && !isset($_SESSION['login_customer_id'])) {

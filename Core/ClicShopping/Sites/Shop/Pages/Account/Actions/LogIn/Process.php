@@ -39,8 +39,6 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $CLICSHOPPING_Mail->addHtml($email_body);
       $CLICSHOPPING_Mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
-
-      $CLICSHOPPING_Mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
     }
   }
 
@@ -87,7 +85,6 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       self::sentEmail();
 
     } else {
-      $this->sentEmail();
       CLICSHOPPING::redirect(null, 'Account&LogIn');
     }
 

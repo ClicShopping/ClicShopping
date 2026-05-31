@@ -22,41 +22,51 @@ class UpdateGabari extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
     $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
-    $filename_selected = HTML::sanitize($_POST['filename']);
-    $directory_selected = $_POST['directory_html'] ?? ''; // variable manquante, ajoutée
-
+    $filename_selected = HTML::sanitize($_POST['filename'] ?? '');
     $code = $_POST['code'] ?? '';
 
-    $baseDir = CLICSHOPPING::getConfig('dir_root', 'Shop') . $CLICSHOPPING_Template->getDynamicTemplateDirectory() . '/files/';
-
-    $filePath = realpath($baseDir . $filename_selected);
-
-    // Sécuriser le chemin pour éviter directory traversal
-    if ($filePath === false || strpos($filePath, realpath($baseDir)) !== 0) {
+    // Strict whitelist: a single *.php/*.css filename — blocks path traversal.
+    if (preg_match('/^[A-Za-z0-9_.\-]+\.(php|css)$/', $filename_selected) !== 1) {
       $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditDesign->getDef('error_file_does_not_exist'), 'error');
-      $CLICSHOPPING_EditDesign->redirect('EditModuleContent&action=directory&directory_html=' . $directory_selected);
+      $CLICSHOPPING_EditDesign->redirect('EditGabari&action=filename');
       return false;
     }
 
-    $extension = pathinfo($filename_selected, PATHINFO_EXTENSION);
-
-    if ($extension === 'css') {
+    if (pathinfo($filename_selected, PATHINFO_EXTENSION) === 'css') {
       if (CodeSecurity::isCssSafe($code) === false) {
         $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditDesign->getDef('error_insert_php_code'), 'error');
-        $CLICSHOPPING_EditDesign->redirect('EditModuleContent&action=directory&directory_html=' . $directory_selected . '&filename=' . $filename_selected);
+        $CLICSHOPPING_EditDesign->redirect('EditGabari&action=filename&filename=' . $filename_selected);
         return false;
       }
-    } else {
-      if (CodeSecurity::isPhpSafe($code) === false) {
-        $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditDesign->getDef('error_insert_php_code'), 'error');
-        $CLICSHOPPING_EditDesign->redirect('EditModuleContent&action=directory&directory_html=' . $directory_selected . '&filename=' . $filename_selected);
-        return false;
-      }
+    } elseif (CodeSecurity::isPhpSafe($code) === false) {
+      $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditDesign->getDef('error_insert_php_code'), 'error');
+      $CLICSHOPPING_EditDesign->redirect('EditGabari&action=filename&filename=' . $filename_selected);
+      return false;
     }
 
-    if (FileSystem::isWritable($filePath)) {
-      $file = new \SplFileObject($filePath, "w");
-      $written = $file->fwrite($code);
+    // The override is always written into the active theme files/ directory.
+    $targetDir = CLICSHOPPING::getConfig('dir_root', 'Shop') . $CLICSHOPPING_Template->getDynamicTemplateDirectory() . '/files/';
+    $targetPath = $targetDir . $filename_selected;
+
+    if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
+      $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditDesign->getDef('error_file_not_writeable'), 'error');
+      $CLICSHOPPING_EditDesign->redirect('EditGabari&action=filename&filename=' . $filename_selected);
+      return false;
+    }
+
+    // Containment check: the resolved directory must stay inside the active theme files/ root.
+    $realTargetDir = realpath($targetDir);
+
+    if ($realTargetDir === false
+      || !str_starts_with($realTargetDir . DIRECTORY_SEPARATOR, realpath(CLICSHOPPING::getConfig('dir_root', 'Shop') . $CLICSHOPPING_Template->getDynamicTemplateDirectory()) . DIRECTORY_SEPARATOR)) {
+      $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditDesign->getDef('error_file_does_not_exist'), 'error');
+      $CLICSHOPPING_EditDesign->redirect('EditGabari&action=filename');
+      return false;
+    }
+
+    if (FileSystem::isWritable($targetPath)) {
+      $file = new \SplFileObject($targetPath, 'w');
+      $file->fwrite($code);
       $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditDesign->getDef('success_file_saved_sucessfully'), 'success');
     } else {
       $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditDesign->getDef('error_file_not_writeable'), 'error');
@@ -65,4 +75,3 @@ class UpdateGabari extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_EditDesign->redirect('EditGabari&action=filename&filename=' . $filename_selected);
   }
 }
-

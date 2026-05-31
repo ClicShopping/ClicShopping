@@ -27,7 +27,7 @@ class securityCheck_session_auto_start
   {
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    $CLICSHOPPING_Language->loadDefinitions('modules/SecurityCheck/session_auto_start', null, null, 'Shop');
+    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/session_auto_start', null, null, 'Shop');
   }
 
   /**

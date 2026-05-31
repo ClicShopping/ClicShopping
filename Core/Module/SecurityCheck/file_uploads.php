@@ -26,7 +26,7 @@ class securityCheck_file_uploads
   {
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    $CLICSHOPPING_Language->loadDefinitions('modules/SecurityCheck/file_uploads', null, null, 'Shop');
+    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/file_uploads', null, null, 'Shop');
 
   }
 

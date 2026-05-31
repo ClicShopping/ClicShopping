@@ -2,7 +2,7 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <base href="<?php echo $_SERVER['HTTP_HOST']; ?>">
+  <base href="<?php echo htmlspecialchars($_SERVER['HTTP_HOST'] ?? '', ENT_QUOTES); ?>">
   <title>Template problem !</title>
 </head>
 <body>

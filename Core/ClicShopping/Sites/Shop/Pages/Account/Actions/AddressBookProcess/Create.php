@@ -12,6 +12,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Shop\AddressBook;
 use function strlen;
 
 class Create extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -29,6 +30,13 @@ class Create extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (isset($_POST['action']) && $_POST['action'] == 'process' && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
       $_SESSION['process'] = true;
       $error = false;
+
+      // Carnet plein : on ne peut plus ajouter d'adresse.
+      if (AddressBook::countCustomerAddressBookEntries() >= (int)MAX_ADDRESS_BOOK_ENTRIES) {
+        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_address_book_full'), 'error');
+
+        CLICSHOPPING::redirect(null, 'Account&AddressBook');
+      }
 
       if (isset($_POST['gender']) && (((ACCOUNT_GENDER == 'true') && ($CLICSHOPPING_Customer->getCustomersGroupID() == 0)) || ((ACCOUNT_GENDER_PRO == 'true') && ($CLICSHOPPING_Customer->getCustomersGroupID() != 0)))) {
         $gender = HTML::sanitize($_POST['gender']);
@@ -208,10 +216,12 @@ class Create extends \ClicShopping\OM\Domains\PagesActionsAbstract
       } else {
         if ((strlen($state) < ENTRY_STATE_MIN_LENGTH) && ($CLICSHOPPING_Customer->getCustomersGroupID() == 0)) {
           $error = true;
+
+          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_state_error', ['min_length' => ENTRY_STATE_MIN_LENGTH]), 'error');
         } elseif ((strlen($state) < ENTRY_STATE_PRO_MIN_LENGTH) && ($CLICSHOPPING_Customer->getCustomersGroupID() != 0)) {
           $error = true;
 
-          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_state_error_select_pro', ['min_length' => entry_state_error_select_pro]), 'error');
+          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_state_error_select_pro', ['min_length' => ENTRY_STATE_PRO_MIN_LENGTH]), 'error');
         }
       } // end else
 

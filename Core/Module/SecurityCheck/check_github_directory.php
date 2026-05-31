@@ -23,7 +23,7 @@ class securityCheck_check_github_directory
   {
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    $CLICSHOPPING_Language->loadDefinitions('modules/SecurityCheck/check_github_directory', null, null, 'Shop');
+    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/check_github_directory', null, null, 'Shop');
 
     $this->title = CLICSHOPPING::getDef('check_github_directory_title');
   }

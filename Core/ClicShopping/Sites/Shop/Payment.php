@@ -24,10 +24,10 @@ use function is_null;
 class Payment
 {
   public array $modules = [];
-  public string $selected_module;
+  public string $selected_module = '';
   public mixed $template;
   public mixed $lang;
-  public string $form_action_url;
+  public string $form_action_url = '';
 
 // class constructor
 

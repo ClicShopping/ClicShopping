@@ -23,7 +23,7 @@ class securityCheck_config_file_catalog
   {
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    $CLICSHOPPING_Language->loadDefinitions('Shop', 'modules/SecurityCheck/config_file_catalog', null, null, 'Shop');
+    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/config_file_catalog', null, null, 'Shop');
 
   }
 

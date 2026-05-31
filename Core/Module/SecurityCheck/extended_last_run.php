@@ -27,7 +27,7 @@ class securityCheck_extended_last_run
   {
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    $CLICSHOPPING_Language->loadDefinitions('modules/SecurityCheck/extended_last_run', null, null, 'Shop');
+    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/extended_last_run', null, null, 'Shop');
   }
 
   /**

@@ -97,7 +97,7 @@ class Address
       if (CLICSHOPPING::getSite() === 'ClicShoppingAdmin') {
         $replace['$country'] = HTML::outputProtected($address['country']);
       } else {
-        $replace['$country'] = $address['country']['title']; // bug possible
+        $replace['$country'] = HTML::outputProtected(is_array($address['country']) ? ($address['country']['title'] ?? '') : $address['country']);
       }
     }
 
@@ -555,7 +555,6 @@ class Address
 
     $Qzone->bindInt(':zone_country_id', $country_id);
     $Qzone->execute();
-    $Qzone->fetch();
 
     $all_zone = $Qzone->fetchAll();
     $count = \count($all_zone);

@@ -1276,10 +1276,10 @@ class ShoppingCart
                                     from :table_products 
                                     where products_id = :products_id
                                    ');
-    $Qstock->bindInt(':products_id', $this->contents[$item_id]['id']);
+    $Qstock->bindInt(':products_id', $this->getPrid($item_id));
     $Qstock->execute();
 
-    if (($Qstock->valueInt('products_quantity') - $this->contents[$item_id]['quantity']) >= 0) {
+    if (($Qstock->valueInt('products_quantity') - $this->getQuantity($item_id)) >= 0) {
       return true;
     } elseif ($this->products_in_stock === true) {
       $this->products_in_stock = false;
@@ -1307,11 +1307,10 @@ class ShoppingCart
    */
   public function unserialize(array $broken)
   {
-    foreach ($broken as $k => $v) {
-      $kv = [$k, $v];
-      $key = $kv['key'];
-      if (gettype($this->$key) != 'user function')
-        $this->$key = $kv['value'];
+    foreach ($broken as $key => $value) {
+      if (property_exists($this, $key)) {
+        $this->$key = $value;
+      }
     }
   }
 
@@ -1413,7 +1412,7 @@ class ShoppingCart
     }
 
     if ($this->getProductsMinOrderQtyShoppingCart($products_id) == 0) {
-      if (AX_MIN_IN_CART > 0 && ((int)$qty < (int)MAX_MIN_IN_CART)) {
+      if (MAX_MIN_IN_CART > 0 && ((int)$qty < (int)MAX_MIN_IN_CART)) {
         $qty = (int)MAX_MIN_IN_CART;
       }
     }

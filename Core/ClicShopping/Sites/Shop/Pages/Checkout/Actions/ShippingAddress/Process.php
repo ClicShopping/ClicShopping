@@ -62,14 +62,14 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
           $entry_telephone = '';
         }
 
+        // Always initialise so the zone validation works even when only ACCOUNT_STATE_PRO is enabled.
+        $zone_id = false;
+        $state = isset($_POST['state']) ? HTML::sanitize($_POST['state']) : '';
+
         if (ACCOUNT_STATE == 'true') {
           if (isset($_POST['zone_id'])) {
             $zone_id = HTML::sanitize($_POST['zone_id']);
-          } else {
-            $zone_id = false;
           }
-
-          $state = HTML::sanitize($_POST['state']);
         }
 
         if ((ACCOUNT_GENDER == 'true') && ($CLICSHOPPING_Customer->getCustomersGroupID() == 0)) {

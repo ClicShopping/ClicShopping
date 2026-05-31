@@ -62,13 +62,15 @@ class Success extends \ClicShopping\OM\Domains\PagesActionsAbstract
             }
           }
         } else {
-          $notify = array_unique($_POST['products_id']);
+          $notify = (isset($_POST['products_id']) && is_array($_POST['products_id'])) ? array_unique($_POST['products_id']) : [];
           foreach ($notify as $n) {
             if (is_numeric($n) && ($n > 0)) {
               $Qdelete = $CLICSHOPPING_Db->prepare('delete from :table_products_notifications
                                                        where products_id = :products_id
+                                                       and customers_id = :customers_id
                                                       ');
-              $Qdelete->bindint(':products_id', $n);
+              $Qdelete->bindInt(':products_id', $n);
+              $Qdelete->bindInt(':customers_id', $CLICSHOPPING_Customer->getID());
               $Qdelete->execute();
             }
           }

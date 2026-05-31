@@ -22,29 +22,23 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Template = Registry::get('Template');
 
     if (isset($_POST['action']) && ($_POST['action'] == 'process') && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
-      $process = false;
+      $source_folder = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/Hooks/Shop/Account/';
 
-      if ($process === false) {
-        $source_folder = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/Hooks/Shop/Account/';
+      if (is_dir($source_folder)) {
+        $files_get = $CLICSHOPPING_Template->getSpecificFiles($source_folder, 'AccountGdprCall*');
 
-        if (is_dir($source_folder)) {
-          $files_get = $CLICSHOPPING_Template->getSpecificFiles($source_folder, 'AccountGdprCall*');
-
-          if (is_array($files_get)) {
-            foreach ($files_get as $value)
-            {
-              $name = Hash::displayDecryptedDataText($value['name']);
-              if (!empty($name)) {
-                $CLICSHOPPING_Hooks->call('Account', $name);
-              }
+        if (is_array($files_get)) {
+          foreach ($files_get as $value)
+          {
+            $name = Hash::displayDecryptedDataText($value['name']);
+            if (!empty($name)) {
+              $CLICSHOPPING_Hooks->call('Account', $name);
             }
           }
         }
-
-        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_success_gdpr'), 'success');
-      } else {
-        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_error_delete'), 'error');
       }
+
+      $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_success_gdpr'), 'success');
     }
 
     CLICSHOPPING::redirect(null, 'Account&Main');

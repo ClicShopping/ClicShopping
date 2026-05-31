@@ -64,17 +64,26 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         }
 
         if (count($products_parsed) > 0) {
+          // Build one named placeholder per kept product so IN() receives the full list.
+          $placeholders = [];
+
+          foreach ($products_parsed as $k => $v) {
+            $placeholders[] = ':products_id_' . $k;
+          }
+
+          $in_clause = implode(', ', $placeholders);
+
           $Qcheck = $CLICSHOPPING_Db->prepare('select products_id
                                                  from :table_products_notifications
                                                  where customers_id = :customers_id
-                                                 and products_id not in (:products_id)
+                                                 and products_id not in (' . $in_clause . ')
                                                  limit 1
                                                  ');
 
           $Qcheck->bindInt(':customers_id', $CLICSHOPPING_Customer->getID());
 
           foreach ($products_parsed as $k => $v) {
-            $Qcheck->bindInt(':products_id', $v);
+            $Qcheck->bindInt(':products_id_' . $k, $v);
           }
 
           $Qcheck->execute();
@@ -83,7 +92,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
             $Qdelete = $CLICSHOPPING_Db->prepare('delete
                                                     from :table_products_notifications
                                                     where customers_id = :customers_id
-                                                    and products_id not in (:products_id)
+                                                    and products_id not in (' . $in_clause . ')
                                                     ');
             $Qdelete->bindInt(':customers_id', $CLICSHOPPING_Customer->getID());
 

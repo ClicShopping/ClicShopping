@@ -85,21 +85,37 @@ class Shop extends \ClicShopping\OM\Domains\SitesAbstract
       // Conserver le cache DB existant
       $Qcfg->setCache('configuration');
 
-      // Vérifier d'abord dans Memcached
+      // Vérifier d'abord dans Redis, puis Memcached
       $cache_key = 'shop_configuration';
       $cached_config = false;
+      $redis = null;
+      $memcached = false;
 
       if (defined('USE_REDIS') && USE_REDIS == 'True') {
         try {
-          $redis = new \Redis();
-          $redis->connect('localhost', 6379, 1);
-          $cached_config = $redis->get($cache_key);
+          $redis_client = new \Redis();
+
+          // N'utiliser $redis qu'en cas de connexion réellement établie
+          if ($redis_client->connect('localhost', 6379, 1)) {
+            $redis = $redis_client;
+            $raw = $redis->get($cache_key);
+
+            // phpredis ne sérialise pas les tableaux : la valeur est stockée via serialize()
+            if ($raw !== false) {
+              $decoded = @unserialize($raw);
+
+              if (is_array($decoded)) {
+                $cached_config = $decoded;
+              }
+            }
+          }
         } catch (\Exception $e) {
+          $redis = null;
           $cached_config = false;
         }
       }
 
-      if (defined('USE_MEMCACHED') && USE_MEMCACHED == 'True') {
+      if ($cached_config === false && defined('USE_MEMCACHED') && USE_MEMCACHED == 'True') {
         $memcached = CacheAdmin::getMemcached();
         if ($memcached !== false) {
           $cached_config = $memcached->get($cache_key);
@@ -128,16 +144,18 @@ class Shop extends \ClicShopping\OM\Domains\SitesAbstract
           $cache_ttl = 3600; // Valeur par défaut si la valeur de la DB est 0 ou invalide
         }
 
-        // Stocker dans le cache
-        if (defined('USE_REDIS') && USE_REDIS == 'True' && isset($redis)) {
-          $redis->setex($cache_key, $cache_ttl, $config_data);
-        } elseif (defined('USE_MEMCACHED') && USE_MEMCACHED == 'True' && isset($memcached)) {
+        // Stocker dans le cache (Redis exige une sérialisation explicite)
+        if ($redis instanceof \Redis) {
+          $redis->setex($cache_key, $cache_ttl, serialize($config_data));
+        } elseif ($memcached !== false) {
           $memcached->set($cache_key, $config_data, $cache_ttl);
         }
-      } else {
+      } elseif (is_array($cached_config)) {
         // Utiliser les données du cache
         foreach ($cached_config as $key => $value) {
-          define($key, $value);
+          if (!defined($key)) {
+            define($key, $value);
+          }
         }
       }
 

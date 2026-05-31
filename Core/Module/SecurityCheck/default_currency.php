@@ -22,7 +22,7 @@ class securityCheck_default_currency
   {
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    $CLICSHOPPING_Language->loadDefinitions('modules/SecurityCheck/default_currency', null, null, 'Shop');
+    $CLICSHOPPING_Language->loadDefinitions('modules/security_check/default_currency', null, null, 'Shop');
   }
 
   /**

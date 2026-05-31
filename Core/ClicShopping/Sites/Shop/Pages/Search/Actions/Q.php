@@ -22,11 +22,11 @@ class Q extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Search = Registry::get('Search');
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    if ($CLICSHOPPING_Search->hasKeywords() && empty($CLICSHOPPING_Search->hasKeywords()) &&
-      ($CLICSHOPPING_Search->getDateFrom() && (empty($CLICSHOPPING_Search->getDateFrom()) || ($CLICSHOPPING_Search->getDateFrom() == CLICSHOPPING::getDef('dob_format_string')))) &&
-      ($CLICSHOPPING_Search->getDateTo() && (empty($CLICSHOPPING_Search->getDateTo()) || ($CLICSHOPPING_Search->getDateTo() == CLICSHOPPING::getDef('dob_format_string')))) &&
-      ($CLICSHOPPING_Search->getPriceFrom() && !is_numeric($CLICSHOPPING_Search->getPriceFrom())) &&
-      ($CLICSHOPPING_Search->getPriceTo() && !is_numeric($CLICSHOPPING_Search->getPriceTo()))) {
+    if (!$CLICSHOPPING_Search->hasKeywords() &&
+      (empty($CLICSHOPPING_Search->getDateFrom()) || ($CLICSHOPPING_Search->getDateFrom() == CLICSHOPPING::getDef('dob_format_string'))) &&
+      (empty($CLICSHOPPING_Search->getDateTo()) || ($CLICSHOPPING_Search->getDateTo() == CLICSHOPPING::getDef('dob_format_string'))) &&
+      !is_numeric($CLICSHOPPING_Search->getPriceFrom()) &&
+      !is_numeric($CLICSHOPPING_Search->getPriceTo())) {
 
       $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_at_least_one_input'), 'danger', 'search');
     } else {

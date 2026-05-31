@@ -28,21 +28,29 @@ $filename_selected = null;
 if (isset($_POST['filename'])) $filename_selected = HTML::sanitize($_POST['filename']);
 if (isset($_GET['filename'])) $filename_selected = HTML::sanitize($_GET['filename']);
 
-$file = CLICSHOPPING::getConfig('dir_root', 'Shop') . $CLICSHOPPING_Template->getDynamicTemplateDirectory() . '/css/' . $CLICSHOPPING_Language->get('directory') . '/' . $directory_selected . '/' . $filename_selected;
+// Merge-aware read resolution: active theme (current language → english),
+// then Default (current language → english). A Default-only file can thus be
+// opened for editing; saving it creates an override in the active theme.
+$root = CLICSHOPPING::getConfig('dir_root', 'Shop');
+$lang = $CLICSHOPPING_Language->get('directory');
+$themeDir = $CLICSHOPPING_Template->getDynamicTemplateDirectory();
 
-if (!is_dir($file)) {
-  $file = CLICSHOPPING::getConfig('dir_root', 'Shop') . $CLICSHOPPING_Template->getDynamicTemplateDirectory() . '/css/english/' . $directory_selected . '/' . $filename_selected;
-} else {
-  $file = CLICSHOPPING::getConfig('dir_root', 'Shop') . $CLICSHOPPING_Template->getDynamicTemplateDirectory() . '/css/' . $CLICSHOPPING_Language->get('directory') . '/' . $directory_selected . '/' . $filename_selected;
-}
+$candidates = [
+  $root . $themeDir . '/css/' . $lang . '/' . $directory_selected . '/' . $filename_selected,
+  $root . $themeDir . '/css/english/' . $directory_selected . '/' . $filename_selected,
+  $root . 'sources/template/Default/css/' . $lang . '/' . $directory_selected . '/' . $filename_selected,
+  $root . 'sources/template/Default/css/english/' . $directory_selected . '/' . $filename_selected,
+];
 
-if (is_file($file)) {
-  $code = file_get_contents($file);
+$code = null;
 
-  $code = preg_replace('@<script[^>]*?>.*?</script>@si', '', $code);
-  $code = preg_replace("/</", "&lt;", $code);
-} else {
-  $code = null;
+foreach ($candidates as $candidate) {
+  if (is_file($candidate)) {
+    $code = file_get_contents($candidate);
+    $code = preg_replace('@<script[^>]*?>.*?</script>@si', '', $code);
+    $code = preg_replace('/</', '&lt;', $code);
+    break;
+  }
 }
 
 if (\is_array(Css::getDirectoryCss())) {

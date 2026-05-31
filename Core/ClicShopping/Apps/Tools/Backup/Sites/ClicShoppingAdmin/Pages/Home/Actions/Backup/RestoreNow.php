@@ -179,13 +179,13 @@ class RestoreNow extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $stmt_type = strtoupper(trim(explode(' ', $sql)[0]));
         
         // Whitelist allowed SQL types
-        if (!in_array($stmt_type, $allowed_statements)) {
+        if (!in_array($stmt_type, $allowed_statements, true)) {
           $CLICSHOPPING_MessageStack->add('Restore skipped: unsupported SQL statement type (' . $stmt_type . ')', 'warning');
           continue;
         }
 
         // Validate DROP TABLE statements to prevent SQL injection
-        if ($stmt_type === 'DROP' || $stmt_type === 'DROP TABLE') {
+        if ($stmt_type === 'DROP') {
           if (!preg_match('/^DROP\s+(TABLE\s+IF\s+EXISTS\s+)?[\w, ]+$/i', $sql)) {
             $CLICSHOPPING_MessageStack->add('Restore skipped: invalid DROP statement structure', 'warning');
             continue;

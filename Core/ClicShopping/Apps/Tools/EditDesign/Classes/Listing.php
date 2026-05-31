@@ -10,61 +10,75 @@ namespace ClicShopping\Apps\Tools\EditDesign\Classes;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use function in_array;
 
 class Listing
 {
   /**
-   * Retrieves a list of template file names within a specified directory, filtered by specific file extensions, and
-   * returns them as an array with additional metadata.
+   * Returns the active theme and Default `modules/` roots, in priority order.
    *
-   * This method scans the directory provided via POST or a fallback default directory for template files.
-   * It identifies files with a '.php' extension, sorts them naturally in a case-insensitive manner,
-   * and formats the resulting array with 'id' and 'text' keys for each file.
-   *
-   * @return array|null Returns an array of template file names formatted with 'id' and 'text' keys if files are found,
-   *                    or null if no files are located or an error occurs.
+   * @param string $suffix Optional path appended to each root.
+   * @return array<int,string> Absolute directory paths (active theme first).
    */
-  public static function getFilenameTemplateProducts(): ?array
+  private static function moduleRoots(string $suffix = ''): array
   {
-    $directory_selected = '';
+    $root = CLICSHOPPING::getConfig('dir_root', 'Shop');
 
-    if (isset($_POST['directory_html'])) {
-      if (file_exists(CLICSHOPPING::getConfig('dir_root', 'Shop') . 'sources/template/' . SITE_THEMA . '/modules/' . $directory_selected . '/template_html/')) {
-        $template_directory = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'sources/template/' . SITE_THEMA . '/modules/' . $directory_selected . '/template_html/';
-      } else {
-        $template_directory = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'sources/template/' . SITE_THEMA . '/modules/';
-      }
-    } else {
-      $template_directory = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'sources/template/' . SITE_THEMA . '/modules/';
+    return [
+      $root . 'sources/template/' . SITE_THEMA . '/modules/' . $suffix,
+      $root . 'sources/template/Default/modules/' . $suffix,
+    ];
+  }
+
+  /**
+   * Collects PHP file names (basenames) directly inside a directory.
+   *
+   * @param string $dir Absolute directory path.
+   * @return array<string,string> Map of basename => basename.
+   */
+  private static function scanPhp(string $dir): array
+  {
+    $names = [];
+
+    if (!is_dir($dir)) {
+      return $names;
     }
 
-
-    $found = []; //initialize an array for matching files
-    $fileTypes = ['php']; // Create an array of file types
-    $found = []; // Traverse the folder, and add filename to $found array if type matches
-    $filename_array = [];
-
-    /* if empty error is produced : Fatal error: Uncaught exception 'RuntimeException'*/
-    $file_array = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($template_directory));
-
-    foreach ($file_array as $filename => $current) {
-      $fileInfo = pathinfo($current->getFileName());
-
-      if (array_key_exists('extension', $fileInfo) && in_array($fileInfo['extension'], $fileTypes)) {
-        $found[] = $current->getFileName();
+    foreach (scandir($dir) as $entry) {
+      if (strtolower(pathinfo($entry, PATHINFO_EXTENSION)) === 'php') {
+        $names[$entry] = $entry;
       }
     }
 
-    if ($found) { // Check the $found array is not empty
-      natcasesort($found); // Sort in natural, case-insensitive order, and populate menu
+    return $names;
+  }
 
-      $filename_array[0] = [
+  /**
+   * Retrieves the merged list of module `template_html/` listing names (active theme ∪ Default).
+   *
+   * A Default-only listing template is therefore listed even when the active theme
+   * does not ship it; saving it creates an override in the active theme.
+   *
+   * @return array An array of template file names, each with an 'id' and 'text' key.
+   */
+  public static function getFilenameTemplateProducts(): array
+  {
+    $directory_selected = HTML::sanitize($_POST['directory_html'] ?? ($_GET['directory_html'] ?? ''));
+
+    $found = [];
+
+    foreach (self::moduleRoots($directory_selected . '/template_html/') as $dir) {
+      $found += self::scanPhp($dir);
+    }
+
+    $filename_array = [
+      0 => [
         'id' => '0',
         'text' => CLICSHOPPING::getDef('text_selected')
-      ];
+      ]
+    ];
+
+    if ($found) {
+      natcasesort($found);
 
       foreach ($found as $filename) {
         $filename_array[] = [
@@ -77,21 +91,14 @@ class Listing
     return $filename_array;
   }
 
-  /*
-    * Template_products Directory list
-    * @param string $filename : name of the file
-    * @return string $directory_array, the directories name in css directory
-    *
-  */
   /**
-   * Retrieves a list of directories within the template modules directory, excluding specified entries.
+   * Retrieves the merged list of module sub directories that can hold a listing
+   * (active theme ∪ Default), excluding modules that never expose a listing.
    *
-   * @return array An array of directories formatted with 'id' and 'text' keys. The first entry is a default selection option.
+   * @return array An array of directories, each with an 'id' and 'text' key.
    */
   public static function getDirectoryTemplateProducts(): array
   {
-    $template_directory = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'sources/template/' . SITE_THEMA . '/modules/';
-
     $exclude = [
       '..',
       '.',
@@ -119,20 +126,34 @@ class Listing
       'modules_tell_a_friend',
     ];
 
-    $directories = array_diff(scandir($template_directory), $exclude);
+    $names = [];
 
-    $directory_array[0] = [
-      'id' => '0',
-      'text' => CLICSHOPPING::getDef('text_selected')
+    foreach (self::moduleRoots() as $template_directory) {
+      if (!is_dir($template_directory)) {
+        continue;
+      }
+
+      foreach (array_diff(scandir($template_directory), $exclude) as $directory) {
+        if (is_dir($template_directory . $directory)) {
+          $names[$directory] = $directory;
+        }
+      }
+    }
+
+    natcasesort($names);
+
+    $directory_array = [
+      0 => [
+        'id' => '0',
+        'text' => CLICSHOPPING::getDef('text_selected')
+      ]
     ];
 
-    foreach ($directories as $directory) {
-      if (is_dir($template_directory . $directory)) {
-        $directory_array[] = [
-          'id' => $directory,
-          'text' => $directory
-        ];
-      }
+    foreach ($names as $directory) {
+      $directory_array[] = [
+        'id' => $directory,
+        'text' => $directory
+      ];
     }
 
     return $directory_array;

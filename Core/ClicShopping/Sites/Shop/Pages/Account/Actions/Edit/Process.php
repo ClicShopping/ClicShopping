@@ -28,6 +28,16 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     if (isset($_POST['action']) && ($_POST['action'] == 'process') && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
 
+      // Safe defaults so the validation below never reads an undefined variable when a field is omitted.
+      $gender = '';
+      $firstname = '';
+      $lastname = '';
+      $company = '';
+      $siret = '';
+      $ape = '';
+      $tva_intracom = '';
+      $iso = '';
+
       if (isset($_POST['gender']) && ((ACCOUNT_GENDER == 'true' && $CLICSHOPPING_Customer->getCustomersGroupID() == 0) || (ACCOUNT_GENDER_PRO == 'true' && $CLICSHOPPING_Customer->getCustomersGroupID() != 0))) {
         $gender = HTML::sanitize($_POST['gender']);
       }
@@ -63,7 +73,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         if (ACCOUNT_SIRET_PRO == 'true' && isset($_POST['siret'])) $siret = HTML::sanitize($_POST['siret']);
         if (ACCOUNT_APE_PRO == 'true' && isset($_POST['ape'])) $ape = HTML::sanitize($_POST['ape']);
         if (ACCOUNT_TVA_INTRACOM_PRO == 'true' && isset($_POST['tva_intracom'])) $tva_intracom = HTML::sanitize($_POST['tva_intracom']);
-        if (ACCOUNT_TVA_INTRACOM_PRO == 'true' && isset($_POST['compisoany'])) $iso = HTML::sanitize($_POST['iso']);
+        if (ACCOUNT_TVA_INTRACOM_PRO == 'true' && isset($_POST['iso'])) $iso = HTML::sanitize($_POST['iso']);
       }
 
       $error = false;
@@ -232,20 +242,22 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         );
 
         $sql_data_array = [
-          'customers_firstname' => Hash::encryptDatatext($firstname),
-          'customers_lastname' => Hash::encryptDatatext($lastname)
+          'entry_firstname' => Hash::encryptDatatext($firstname),
+          'entry_lastname' => Hash::encryptDatatext($lastname)
         ];
 
-        $CLICSHOPPING_Db->save('customers', $sql_data_array, ['customers_id' => (int)$CLICSHOPPING_Customer->getID()],
-          ['address_book_id' => (int)$CLICSHOPPING_Customer->getDefaultAddressID()]
+        $CLICSHOPPING_Db->save('address_book', $sql_data_array,
+          ['customers_id' => (int)$CLICSHOPPING_Customer->getID(),
+            'address_book_id' => (int)$CLICSHOPPING_Customer->getDefaultAddressID()
+          ]
         );
 
 // Clients en mode B2B : Modifier le nom de la societe sur toutes les adresses ce trouvant dans le carnet d'adresse
         if (($CLICSHOPPING_Customer->getCustomersGroupID() != 0) && (ACCOUNT_COMPANY_PRO == 'true')) {
-          $sql_data_array = ['customers_company' => Hash::encryptDatatext($company)];
+          $sql_data_array = ['entry_company' => Hash::encryptDatatext($company)];
           $insert_array = ['customers_id' => (int)$CLICSHOPPING_Customer->getID()];
 
-          $CLICSHOPPING_Db->save('customers', $sql_data_array, $insert_array);
+          $CLICSHOPPING_Db->save('address_book', $sql_data_array, $insert_array);
         }
 
         $CLICSHOPPING_Hooks->call('Edit', 'Process');

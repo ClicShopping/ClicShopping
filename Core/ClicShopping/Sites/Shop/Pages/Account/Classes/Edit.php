@@ -100,9 +100,7 @@ class Edit
     $Qcheck->bindInt(':customers_id', $CLICSHOPPING_Customer->getID());
     $Qcheck->execute();
 
-    $check = $Qcheck->fetch();
-
-    return $check;
+    return $Qcheck->fetch() !== false;
   }
 
   /**

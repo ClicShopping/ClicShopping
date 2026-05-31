@@ -22,7 +22,9 @@ class ReviewsInfo extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Language = Registry::get('Language');
     $CLICSHOPPING_Reviews = Registry::get('Reviews');
 
-    if (!isset($_GET['products_id']) && $CLICSHOPPING_Reviews->getDataReviews($_GET['reviews_id']) === false) {
+    $reviews_id = $_GET['reviews_id'] ?? null;
+
+    if (!isset($_GET['products_id']) && ($reviews_id === null || $CLICSHOPPING_Reviews->getDataReviews($reviews_id) === false)) {
       CLICSHOPPING::redirect();
     }
 

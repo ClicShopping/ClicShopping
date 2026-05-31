@@ -41,6 +41,18 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $_SESSION['process'] = true;
       $zone_id = false;
 
+      // Safe defaults so the validation below never reads an undefined variable when a field is omitted.
+      $firstname = '';
+      $lastname = '';
+      $email_address = '';
+      $email_address_confirmation = '';
+      $postcode = '';
+      $city = '';
+      $street_address = '';
+      $country = '';
+      $telephone = '';
+      $state = null;
+
       $CLICSHOPPING_Hooks->call('CreatePro', 'PreAction');
 
       if (isset($_POST['firstname'])) $firstname = HTML::sanitize($_POST['firstname']);
@@ -90,8 +102,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       if (isset($_POST['tva_intracom']) && ACCOUNT_TVA_INTRACOM_PRO == 'true') {
         $tva_intracom = HTML::sanitize($_POST['tva_intracom']);
 
-        $iso = substr($tva_intracom, 0, 2);
-        $iso = substr(str_replace(' ', '', $iso), 2);
+        $iso = substr(str_replace(' ', '', $tva_intracom), 0, 2);
 
 // webservice check the tva
         if (!empty($iso) && !empty($tva_intracom)) {
@@ -107,7 +118,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $iso = null;
       }
 
-      if (ACCOUNT_SUBURB_PRO == 'true') {
+      if (ACCOUNT_SUBURB_PRO == 'true' && isset($_POST['suburb'])) {
         $suburb = HTML::sanitize($_POST['suburb']);
       } else {
         $suburb = null;
@@ -173,7 +184,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
 
       if (ACCOUNT_SIRET_PRO == 'true') {
-        if (strlen($siret) < ENTRY_SIRET_MIN_LENGTH && strlen($siret) > 14) {
+        if (strlen($siret) < ENTRY_SIRET_MIN_LENGTH) {
           $error = true;
 
           $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_siret_error', ['min_length' => ENTRY_SIRET_MIN_LENGTH]), 'error');
@@ -181,7 +192,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
 
       if (ACCOUNT_APE_PRO == 'true') {
-        if (strlen($ape) < ENTRY_CODE_APE_MIN_LENGTH && strlen($ape) > 4) {
+        if (strlen($ape) < ENTRY_CODE_APE_MIN_LENGTH) {
           $error = true;
 
           $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_code_ape_error', ['min_length' => ENTRY_CODE_APE_MIN_LENGTH]), 'error');
@@ -189,7 +200,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
 
       if (ACCOUNT_TVA_INTRACOM_PRO == 'true') {
-        if (strlen($tva_intracom) < ENTRY_TVA_INTRACOM_MIN_LENGTH && strlen($tva_intracom) > 14) {
+        if (strlen($tva_intracom) < ENTRY_TVA_INTRACOM_MIN_LENGTH) {
           $error = true;
 
           $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_tva_intracom_error', ['min_length' => ENTRY_TVA_INTRACOM_MIN_LENGTH]), 'error');
@@ -292,7 +303,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
         $_SESSION['entry_state_has_zones'] = ($Qcheck->valueInt('total') > 0);
 
-        if (isset($_SESSION['entry_state_has_zones']) === true) {
+        if ($_SESSION['entry_state_has_zones'] === true) {
           if (ACCOUNT_STATE_DROPDOWN == 'true') {
             $Qzone = $CLICSHOPPING_Db->prepare('select distinct zone_id
                                                    from :table_zones
@@ -330,7 +341,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
             }
           }
 
-          if (!empty($Qzone->valueInt('zone_id')) || !is_null($Qzone->valueInt('zone_id'))) {
+          if ($Qzone->valueInt('zone_id') > 0) {
             $zone_id = (int)$Qzone->valueInt('zone_id');
           } else {
             $error = true;
@@ -374,9 +385,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $QcustomersGroup->bindInt(':customers_group_id', (int)ACCOUNT_GROUP_DEFAULT_PRO);
       $QcustomersGroup->execute();
 
-      if ($QcustomersGroup->fetch() !== false) {
-        $customers_group = $QcustomersGroup->fetch();
-      }
+      $customers_group = $QcustomersGroup->fetch();
 
       if (MEMBER == 'false') {
         $member_level_approbation = 1;
@@ -433,8 +442,10 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
         if (ACCOUNT_CELLULAR_PHONE_PRO == 'true') $sql_data_array['customers_cellular_phone'] = Hash::encryptDatatext($cellular_phone);
 
-        if ($QcustomersGroup->fetch() !== false) $sql_data_array['customers_group_id'] = ACCOUNT_GROUP_DEFAULT_PRO;
-        if ($QcustomersGroup->fetch() !== false) $sql_data_array['customers_options_order_taxe'] = $customers_group['group_order_taxe'];
+        if ($customers_group !== false) {
+          $sql_data_array['customers_group_id'] = ACCOUNT_GROUP_DEFAULT_PRO;
+          $sql_data_array['customers_options_order_taxe'] = $customers_group['group_order_taxe'];
+        }
 
         if (ACCOUNT_GENDER_PRO == 'true') $sql_data_array['customers_gender'] = $gender;
         if (ACCOUNT_DOB_PRO == 'true') $sql_data_array['customers_dob'] = $dobDateTime->getRaw(false);
@@ -544,12 +555,12 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
           $admin_email_text_admin = CLICSHOPPING::getDef('admin_email_text', $data_array);
 
-          $email_address = STORE_OWNER_EMAIL_ADDRESS;
+          $admin_to = STORE_OWNER_EMAIL_ADDRESS;
           $from = STORE_OWNER_EMAIL_ADDRESS;
-          $admin_email_text_admin .= $admin_email_welcome . $admin_email_text_admin;
+          $admin_email_text_admin = $admin_email_welcome . $admin_email_text_admin;
           $CLICSHOPPING_Mail->addHtmlCkeditor($admin_email_text_admin);
 
-          $CLICSHOPPING_Mail->send($email_address, STORE_NAME, null, $from, $email_subject_admin);
+          $CLICSHOPPING_Mail->send($admin_to, STORE_NAME, null, $from, $email_subject_admin);
         }
 
         $CLICSHOPPING_ActionRecorder->record();

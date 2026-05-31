@@ -81,12 +81,8 @@ class HeaderTags
       }
     }
 
-    if ($newstring) {
-      $canonical_link = $domain . preg_replace('#' . $search . '#', $replace, $string); // merges the variables and echoing them
-    } else {
-      $canonical_link = $domain . preg_replace('#' . $search . '#', $replace, $string);   // merges the variables and echoing them
-    }
+    $canonical_link = $domain . preg_replace('#' . $search . '#', $replace, $string);
 
-    return $canonical_link;
+    return HTML::outputProtected($canonical_link);
   }
 }

@@ -68,7 +68,7 @@
       }
 
       // Fallback: read the spiders.txt configuration file
-      $spiders_file = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'includes/spiders.txt';
+      $spiders_file = CLICSHOPPING::BASE_DIR . 'Sites/' . CLICSHOPPING::getSite() . '/Assets/spiders.txt';
       $spiders_array = [];
 
       if (file_exists($spiders_file)) {

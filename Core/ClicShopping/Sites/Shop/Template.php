@@ -837,44 +837,32 @@ class Template
   }
 
   /**
-   * Retrieves the URL path to the template CSS file based on current language
-   * Checks multiple locations and falls back to defaults if needed
+   * Retrieves the URL to the shared CSS loader for the current language.
    *
-   * @return string The URL to the appropriate CSS file
+   * The loader always lives in the Default theme. It merges the Default base
+   * layer with the active theme overrides, so a custom theme only needs to ship
+   * the CSS files it actually overrides (no copy of the whole css/ tree).
+   * The active theme is passed via the "theme" query parameter.
+   *
+   * @return string The URL to the compressed CSS loader for the active theme.
    */
   public function getTemplateCSS(): string
   {
     $CLICSHOPPING_Language = Registry::get('Language');
     $langDir = $CLICSHOPPING_Language->get('directory');
 
-    $themePath = $this->getPathRoot() . DIRECTORY_SEPARATOR .
-      $this->getPathDirectoryTemplateThema() .
-      $this->_directoryTemplateCss .
-      $langDir . DIRECTORY_SEPARATOR .
-      'compressed_css.php';
+    // Single, language-agnostic loader living in the Default theme.
+    $loaderPath = $this->getDefaultTemplateDirectory() . DIRECTORY_SEPARATOR . $this->_directoryTemplateCss . 'compressed_css.php';
 
-    // First try theme-specific CSS in current language
-    if (is_file($themePath)) {
-      return CLICSHOPPING::link($this->getPathDirectoryTemplateThema() .
-        $this->_directoryTemplateCss .
-        $langDir . DIRECTORY_SEPARATOR .
-        'compressed_css.php');
-    }
+    // Effective theme name (honours the demo template selection via getPathDirectoryTemplateThema()).
+    $theme = basename(rtrim($this->getPathDirectoryTemplateThema(), '/'));
 
-    // Then try default template CSS in current language
-    $defaultPath = $this->getDefaultTemplateDirectory() . DIRECTORY_SEPARATOR .
-      $this->_directoryTemplateCss .
-      $langDir . DIRECTORY_SEPARATOR .
-      'compressed_css.php';
-
-    if (is_file($this->getPathRoot() . DIRECTORY_SEPARATOR . $defaultPath)) {
-      return CLICSHOPPING::link($defaultPath);
-    }
-
-    // Finally fall back to English CSS in current theme
-    return CLICSHOPPING::link($this->getPathDirectoryTemplateThema() .
-      $this->_directoryTemplateCss .
-      'english/compressed_css.php');
+    // The loader resolves both layers from these parameters:
+    //   theme → override layer ({theme}/css/{lang})    lang → base/override language directory
+    // search_engine_safe = false keeps the query string intact: SEO rewriting would
+    // otherwise turn "?theme=" / "&lang=" into path segments and break the CSS URL.
+    // add_session_id = false avoids leaking a session id into the cacheable CSS URL.
+    return CLICSHOPPING::link($loaderPath, 'theme=' . $theme . '&lang=' . $langDir, false, false);
   }
 
 

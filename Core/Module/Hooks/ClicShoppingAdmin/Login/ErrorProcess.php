@@ -41,8 +41,8 @@ class ErrorProcess
       $ip = HTTP::getIpAddress();
 
       if (Is::IpAddress($ip)) {
-        $host = @gethostbyaddr($ip);
-        $referer = $_SERVER['HTTP_REFERER'];
+        $host = HTML::outputProtected((string)@gethostbyaddr($ip));
+        $referer = HTML::outputProtected($_SERVER['HTTP_REFERER'] ?? '');
         $details = file_get_contents("https://ipinfo.io/{$ip}/geo");
 
         if ($details !== false) {

@@ -13,8 +13,6 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use function is_null;
 
-header('Content-Type: text/xml');
-
 class OpenSearch extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public function execute()
@@ -22,6 +20,8 @@ class OpenSearch extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (!\defined('MODULE_HEADER_TAGS_OPENSEARCH_STATUS') || (MODULE_HEADER_TAGS_OPENSEARCH_STATUS != 'True')) {
       exit;
     }
+
+    header('Content-Type: text/xml');
 
     $output = '<?xml version="1.0"?>' . "\n";
     $output .= '
