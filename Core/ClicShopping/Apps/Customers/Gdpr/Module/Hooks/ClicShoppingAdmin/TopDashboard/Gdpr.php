@@ -52,7 +52,7 @@ class Gdpr implements \ClicShopping\OM\Modules\HooksInterface
       return false;
     }
 
-    $date = date('Y-m-d', strtotime('+ ' . CLICSHOPPING_APP_CUSTOMERS_GDPR_GD_DATE . ' days'));
+    $date = date('Y-m-d', strtotime('- ' . CLICSHOPPING_APP_CUSTOMERS_GDPR_GD_DATE . ' days'));
 
     $QstatGdpr = $this->app->db->prepare('select c.customers_id,
                                             datediff(now(), ci.customers_info_date_of_last_logon) as datediff

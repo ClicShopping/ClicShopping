@@ -590,7 +590,7 @@ class CustomerShop
     } else {
       if (\defined('MODE_MANAGEMENT_B2C_B2B') && (MODE_MANAGEMENT_B2C_B2B == 'B2C_B2B' || MODE_MANAGEMENT_B2C_B2B == 'B2B')) {
         $text_array = [
-          'url_login' => CLICSHOPPING::redirect(null, 'Account&LogIn'),
+          'url_login' => CLICSHOPPING::link(null, 'Account&LogIn'),
           'url_create_account' => CLICSHOPPING::link(null, 'Account&Create'),
           'url_create_account_pro' => CLICSHOPPING::link('Account.php', 'Account&CreatePro')
         ];
@@ -598,7 +598,7 @@ class CustomerShop
         $greeting_string = CLICSHOPPING::getDef('text_greeting_guest', $text_array);
       } else {
         $text_array = [
-          'url_login' => CLICSHOPPING::redirect(null, 'Account&LogIn'),
+          'url_login' => CLICSHOPPING::link(null, 'Account&LogIn'),
           'url_products_new' => CLICSHOPPING::link(null, 'Products&ProductsNew')
         ];
 

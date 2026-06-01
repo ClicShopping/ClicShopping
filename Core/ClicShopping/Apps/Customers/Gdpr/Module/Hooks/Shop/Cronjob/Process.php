@@ -6,7 +6,7 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\Apps\Customers\Gdpr\Module\Hooks\ClicShoppingAdmin\Cronjob;
+namespace ClicShopping\Apps\Customers\Gdpr\Module\Hooks\Shop\Cronjob;
 
 use ClicShopping\Apps\Customers\Gdpr\Gdpr as GdprApp;
 use ClicShopping\Apps\Customers\Gdpr\Classes\ClicShoppingAdmin\Gdpr;
@@ -31,8 +31,8 @@ class Process implements \ClicShopping\OM\Modules\HooksInterface
   }
 
   /**
-   * Runs the GDPR retention purge from the admin (manual launch). The logic lives in
-   * Gdpr::runCron() so the admin and Shop (external) cron entry points stay in sync.
+   * Runs the GDPR retention purge from the Shop external cron URL. The logic lives in
+   * Gdpr::runCron() so the Shop and admin cron entry points stay in sync.
    *
    * @return void
    */

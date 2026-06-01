@@ -12,7 +12,6 @@ use ClicShopping\OM\Domains\ConfigurableAppAbstract;
 
 class EMail extends ConfigurableAppAbstract
 {
-
   protected $api_version = 1;
   protected string $identifier = 'ClicShopping_Email_V1';
 

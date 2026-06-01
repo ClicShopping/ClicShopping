@@ -143,6 +143,11 @@ class Sitemap extends \ClicShopping\OM\Modules\HeaderTagsAbstract
       $description = $this->template->setDescription($description) . ' ' . $this->template->getDescription();
       $keywords = $this->template->setKeywords($keywords) . ', ' . $this->template->getKeywords();
 
+      // Escape for safe output in the <head> (attribute injection / stored XSS).
+      $title = HTML::outputProtected($title);
+      $description = HTML::outputProtected($description);
+      $keywords = HTML::outputProtected($keywords);
+
       $output =
         <<<EOD
     <title>{$title}</title>

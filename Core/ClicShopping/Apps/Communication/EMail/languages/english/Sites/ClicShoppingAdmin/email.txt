@@ -35,3 +35,5 @@ text_message_customer = Hello Mr, Mme .....<br />
 .....<br />
 Regard,<br />
 The team<br />
+
+text_please_wait = Sending in progress, please wait...

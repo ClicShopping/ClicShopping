@@ -262,7 +262,7 @@ class PageManagerShop
 
     while ($QPage->fetch() !== false) {
       if (!empty($QPage->value('externallink'))) {
-        $search = strpos($QPage->value('externallink'), 'index.php');
+        $search = str_contains($QPage->value('externallink'), 'index.php');
 
         if ($search === false) {
           $page_liste_box .= '<span class="InformationFooter">' . HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . ' rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"') . '</span>';
@@ -277,7 +277,7 @@ class PageManagerShop
         }
 
         if (!empty($QPage->value('pages_title'))) {
-          $search = strpos($QPage->value('externallink'), 'index.php');
+          $search = str_contains($QPage->value('externallink'), 'index.php');
 
           if ($search === false) {
             $page_liste_box .= $start_class . $separ . HTML::link($link, $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '" rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"') . $end_class;
@@ -352,7 +352,7 @@ class PageManagerShop
         }
 
         if (!empty($QPageSecondary->value('externallink'))) {
-          $search = strpos($QPageSecondary->value('externallink'), 'index.php');
+          $search = str_contains($QPageSecondary->value('externallink'), 'index.php');
 
           if ($search === false) {
             $page_liste_box_secondary .= '<span class="SecondaryBoxInformation">' . HTML::link($QPageSecondary->value('externallink'), $QPageSecondary->value('pages_title'), 'target="' . $QPageSecondary->value('links_target') . '" rel="noreferrer" title="' . $QPageSecondary->value('pages_title') . '"  id="' . $QPageSecondary->value('pages_title') . '"') . '</span>';
@@ -367,7 +367,7 @@ class PageManagerShop
           }
 
           if (!empty($QPageSecondary->value('pages_title'))) {
-            $search = strpos($QPageSecondary->value('externallink'), 'index.php');
+            $search = str_contains($QPageSecondary->value('externallink'), 'index.php');
 
             if ($search === false) {
               $page_liste_box_secondary .= $start_class . $separ . HTML::link($link_secondary, $QPageSecondary->value('pages_title'), 'target="' . $QPageSecondary->value('links_target') . '" rel="noreferrer" title="' . $QPageSecondary->value('pages_title') . '"  id="' . $QPageSecondary->value('pages_title') . '"') . $end_class;
@@ -519,7 +519,7 @@ class PageManagerShop
       }
 
       if (!empty($QPage->value('externallink'))) {
-        $search = strpos($QPage->value('externallink'), 'index.php');
+        $search = str_contains($QPage->value('externallink'), 'index.php');
 
         if ($search === false) {
           $page_menu_header .= $start_class . $separ . HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . ' class="menuFooterPageManager" rel="noreferrer"  title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"') . $end_class;
@@ -590,7 +590,7 @@ class PageManagerShop
       }
 
       if (!empty($QPage->value('externallink'))) {
-        $search = strpos($QPage->value('externallink'), 'index.php');
+        $search = str_contains($QPage->value('externallink'), 'index.php');
         if ($search === false) {
           $page_liste_footer .= $separation . HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '"', 'class="footerPageManager" rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
         } else {

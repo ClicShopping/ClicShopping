@@ -45,8 +45,6 @@ class Content extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $this->page->setFile('content.php');
 //Content
         $this->page->data['content'] = $CLICSHOPPING_Template->getTemplateFiles('page_manager');
-
-        $this->page->data['content'];
       } else {
         $url = HTTP::redirect(HTTP::getShopUrlDomain() . 'index.php');
         header('Location: ' . $url);

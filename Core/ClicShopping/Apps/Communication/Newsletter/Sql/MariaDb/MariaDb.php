@@ -124,11 +124,13 @@ EOD;
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
 CREATE TABLE :table_newsletters_customers_temp (
+batch_type tinyint NOT NULL DEFAULT 1,
 newsletters_id int NOT NULL default 0,
 customers_firstname varchar(255) NOT NULL,
 customers_lastname varchar(255) NOT NULL,
 customers_email_address varchar(255) NOT NULL,
-KEY newsletters_id (newsletters_id)
+KEY newsletters_id (newsletters_id),
+KEY batch_type (batch_type)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

@@ -34,3 +34,5 @@ text_message_customer = Bonjour Mr, Mme .....<br />
 .....<br />
 Cordialement,<br />
 La direction<br />
+
+text_please_wait = Envoi en cours, veuillez patienter...

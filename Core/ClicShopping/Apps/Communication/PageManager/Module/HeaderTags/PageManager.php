@@ -121,6 +121,11 @@ class PageManager extends \ClicShopping\OM\Modules\HeaderTagsAbstract
         $Qsubmit->value('seo_defaut_language_keywords')
       ]))));
 
+      // Escape for safe output in the <head> (attribute injection / stored XSS).
+      $title = HTML::outputProtected($title);
+      $description = HTML::outputProtected($description);
+      $keywords = HTML::outputProtected($keywords);
+
       return <<<EOD
     <title>{$title}</title>
     <meta name="description" content="{$description}" />

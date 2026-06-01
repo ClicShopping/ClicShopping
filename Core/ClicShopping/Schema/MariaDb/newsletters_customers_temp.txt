@@ -1,9 +1,11 @@
+batch_type tinyint default(1) not_null comment(Source discriminator for this shared work queue: 0 = EMail app send, 1 = Newsletter app send. Lets both apps queue recipients in the same table without colliding on a concurrent send)
 newsletters_id int default(0) not_null comment(FK to newsletters table - scopes the queued recipients to a single newsletter so concurrent mass sends do not collide on this shared work queue)
 customers_firstname varchar(255) not_null comment(First name of temporary newsletter subscriber)
 customers_lastname varchar(255) not_null comment(Last name of temporary newsletter subscriber)
 customers_email_address varchar(255) not_null comment(Email address for newsletter subscription - temporary storage before confirmation)
 --
 idx_newsletters_customers_temp_nid newsletters_id
+idx_newsletters_customers_temp_bt batch_type
 ##
 engine innodb
 character_set utf8mb4

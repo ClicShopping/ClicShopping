@@ -15,7 +15,7 @@
   ],
   "modules": {
     "HeaderTags": {
-      "Categories": "Module\\HeaderTags\\Gdpr"
+      "Gdpr": "Module\\HeaderTags\\Gdpr"
     },
     "Hooks": {
       "Shop/Account": {

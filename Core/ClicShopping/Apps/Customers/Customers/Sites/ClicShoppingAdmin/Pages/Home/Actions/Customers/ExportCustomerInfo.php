@@ -9,7 +9,6 @@
 namespace ClicShopping\Apps\Customers\Customers\Sites\ClicShoppingAdmin\Pages\Home\Actions\Customers;
 
 use ClicShopping\OM\Hash;
-use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 class ExportCustomerInfo extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -20,7 +19,7 @@ class ExportCustomerInfo extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $CLICSHOPPING_Customers = Registry::get('Customers');
 
-    $customer_id = HTML::sanitize($_GET['customers_id']);
+    $customer_id = (isset($_GET['customers_id']) && is_numeric($_GET['customers_id'])) ? (int)$_GET['customers_id'] : 0;
 
     $Qcustomers = $CLICSHOPPING_Customers->db->prepare('select c.*,
                                                                   a.*
@@ -32,35 +31,51 @@ class ExportCustomerInfo extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $customers = $Qcustomers->fetch();
 
-    $head = '"customers_id", "customers_company", "customers_siret", "customers_ape", "customers_tva_intracom", "customers_tva_intracom_code_iso", "customers_gender", "customers_firstname", "customers_lastname", "customers_dob", "customers_email_address", "customers_telephone", "customers_newsletter",  "entry_company", "entry_street_address", "entry_suburb", "entry_postcode", "entry_city", "entry_state", "entry_country_id", "entry_zone_id", "customers_default_address_id"' . "\r\n";
+    if ($customers === false) {
+      $CLICSHOPPING_Customers->redirect('Customers');
+      return;
+    }
 
-    $output = '"' . $customers['customers_id'] . '",';
-    $output .= '"' . Hash::displayDecryptedDataText($customers['customers_company']) . '",';
-    $output .= '"' . $customers['customers_siret'] . '",';
-    $output .= '"' . $customers['customers_ape'] . '",';
-    $output .= '"' . $customers['customers_tva_intracom'] . '",';
-    $output .= '"' . $customers['customers_tva_intracom_code_iso'] . '",';
-    $output .= '"' . $customers['customers_gender'] . '",';
-    $output .= '"' . Hash::displayDecryptedDataText($customers['customers_firstname']) . '",';
-    $output .= '"' . Hash::displayDecryptedDataText($customers['customers_lastname']) . '",';
-    $output .= '"' . $customers['customers_dob'] . '",';
-    $output .= '"' . $customers['customers_email_address'] . '",';
-    $output .= '"' . Hash::displayDecryptedDataText($customers['customers_telephone']) . '",';
-    $output .= '"' . $customers['customers_newsletter'] . '",';
+    // Encode a CSV cell: neutralise formula injection (=,+,-,@,TAB,CR for non-numeric
+    // values), escape embedded double quotes (RFC 4180) and wrap the value in quotes.
+    $cell = static function ($value): string {
+      $value = (string)$value;
 
-    $output .= '"' . Hash::displayDecryptedDataText($customers['entry_company']) . '",';
-    $output .= '"' . Hash::displayDecryptedDataText($customers['entry_street_address']) . '",';
-    $output .= '"' . Hash::displayDecryptedDataText($customers['entry_suburb']) . '",';
-    $output .= '"' . Hash::displayDecryptedDataText($customers['entry_postcode']) . '",';
-    $output .= '"' . Hash::displayDecryptedDataText($customers['entry_city']) . '",';
-    $output .= '"' . $customers['entry_state'] . '",';
-    $output .= '"' . $customers['entry_country_id'] . '",';
-    $output .= '"' . $customers['entry_zone_id'] . '",';
-    $output .= '"' . $customers['customers_default_address_id'] . "\n";
+      if ($value !== '' && !is_numeric($value) && str_contains("=+-@\t\r", $value[0])) {
+        $value = "'" . $value;
+      }
 
-    $foot = '' . "\r\n";
+      return '"' . str_replace('"', '""', $value) . '"';
+    };
 
-    $content = $head . $output . $foot;
+    $columns = [
+      'customers_id', 'customers_company', 'customers_siret', 'customers_ape',
+      'customers_tva_intracom', 'customers_tva_intracom_code_iso', 'customers_gender',
+      'customers_firstname', 'customers_lastname', 'customers_dob', 'customers_email_address',
+      'customers_telephone', 'customers_newsletter', 'entry_company', 'entry_street_address',
+      'entry_suburb', 'entry_postcode', 'entry_city', 'entry_state', 'entry_country_id',
+      'entry_zone_id', 'customers_default_address_id'
+    ];
+
+    // Fields stored AES-encrypted are decrypted for the export.
+    $encrypted = ['customers_company', 'customers_firstname', 'customers_lastname',
+      'customers_telephone', 'entry_company', 'entry_street_address', 'entry_suburb',
+      'entry_postcode', 'entry_city'];
+
+    $head = '"' . implode('", "', $columns) . '"' . "\r\n";
+
+    $cells = [];
+    foreach ($columns as $column) {
+      $value = $customers[$column] ?? '';
+
+      if (\in_array($column, $encrypted, true)) {
+        $value = Hash::displayDecryptedDataText($value);
+      }
+
+      $cells[] = $cell($value);
+    }
+
+    $content = $head . implode(',', $cells) . "\r\n";
 
     header('Content-Type: application/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename=customer.csv');

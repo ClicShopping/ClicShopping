@@ -4,10 +4,33 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little update">
-      <change beforePath="$PROJECT_DIR$/.idea/clicshopping_V3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/clicshopping_V3.iml" afterDir="false" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="libraries updated">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/BannerManager/Sites/ClicShoppingAdmin/Pages/Home/Actions/BannerManager/SetFlag.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/BannerManager/Sites/ClicShoppingAdmin/Pages/Home/Actions/BannerManager/SetFlag.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/EMail.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/EMail.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/Sites/ClicShoppingAdmin/Pages/Home/Actions/SendEmailToUser/Process.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/Sites/ClicShoppingAdmin/Pages/Home/Actions/SendEmailToUser/Process.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/english/Module/ClicShoppingAdmin/Config/EM/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/english/Module/ClicShoppingAdmin/Config/EM/Params/sort_order.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/english/Module/ClicShoppingAdmin/Config/EM/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/english/Module/ClicShoppingAdmin/Config/EM/Params/status.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/english/Sites/ClicShoppingAdmin/email.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/english/Sites/ClicShoppingAdmin/email.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/english/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/english/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/french/Module/ClicShoppingAdmin/Config/EM/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/french/Module/ClicShoppingAdmin/Config/EM/Params/sort_order.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/french/Module/ClicShoppingAdmin/Config/EM/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/french/Module/ClicShoppingAdmin/Config/EM/Params/status.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/french/Sites/ClicShoppingAdmin/email.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/french/Sites/ClicShoppingAdmin/email.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/french/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/languages/french/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/Newsletter/Sql/MariaDb/MariaDb.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/Newsletter/Sql/MariaDb/MariaDb.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Classes/Shop/PageManagerShop.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Classes/Shop/PageManagerShop.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Classes/Shop/RSS.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Classes/Shop/RSS.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Module/HeaderTags/PageManager.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Module/HeaderTags/PageManager.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Module/HeaderTags/RSS.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Module/HeaderTags/RSS.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Module/HeaderTags/Sitemap.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Module/HeaderTags/Sitemap.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Sites/Shop/Pages/Content/Actions/Content.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/PageManager/Sites/Shop/Pages/Content/Actions/Content.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/Classes/Shop/CustomerShop.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/Classes/Shop/CustomerShop.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Customers/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Customers/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Customers/ExportCustomerInfo.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Customers/ExportCustomerInfo.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Customers/PasswordForgotten.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Customers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Customers/PasswordForgotten.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/Module/Hooks/ClicShoppingAdmin/Cronjob/Process.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/Module/Hooks/ClicShoppingAdmin/Cronjob/Process.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/Module/Hooks/ClicShoppingAdmin/TopDashboard/Gdpr.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/Module/Hooks/ClicShoppingAdmin/TopDashboard/Gdpr.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/clicshopping.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/newsletters_customers_temp.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/newsletters_customers_temp.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,23 +78,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0657184911927933" />
-      <entry key="MS500" value="1.8621768680455801" />
-      <entry key="S2" value="3.307654959738423" />
-      <entry key="S5" value="4.411963854207144" />
-      <entry key="S10" value="5.187638063178752" />
-      <entry key="S30" value="6.157904159292363" />
-      <entry key="S60" value="6.534260152215339" />
-      <entry key="M2" value="6.801532055403379" />
-      <entry key="M5" value="7.588837934092245" />
-      <entry key="M10" value="10.171073900488317" />
-      <entry key="M15" value="14.390463451815881" />
-      <entry key="M30" value="28.470740327168976" />
-      <entry key="H1" value="49.344496804066" />
-      <entry key="H2" value="72.1192026543607" />
-      <entry key="H4" value="99.3586258669868" />
-      <entry key="D1" value="206.79880310361042" />
-      <entry key="W1" value="256.77711190618527" />
+      <entry key="MS100" value="1.0000000866635155" />
+      <entry key="MS500" value="1.0389192909827256" />
+      <entry key="S2" value="1.747533346101876" />
+      <entry key="S5" value="3.1288566180731765" />
+      <entry key="S10" value="4.215966515793333" />
+      <entry key="S30" value="5.303122805796419" />
+      <entry key="S60" value="5.636821751981758" />
+      <entry key="M2" value="5.814654682418844" />
+      <entry key="M5" value="6.011712322016765" />
+      <entry key="M10" value="7.050273841086362" />
+      <entry key="M15" value="9.217577038949452" />
+      <entry key="M30" value="19.502475460550013" />
+      <entry key="H1" value="39.99132781249903" />
+      <entry key="H2" value="65.8594918212697" />
+      <entry key="H4" value="96.52124262760915" />
+      <entry key="D1" value="209.6133316003152" />
+      <entry key="W1" value="262.2083092206654" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -93,23 +116,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.0365720318728378" />
-      <entry key="MS500" value="1.8495609535853788" />
-      <entry key="S2" value="3.2998558454802422" />
-      <entry key="S5" value="4.40707547129784" />
-      <entry key="S10" value="5.1845126771798205" />
-      <entry key="S30" value="6.156559688034394" />
-      <entry key="S60" value="6.5335265716289115" />
-      <entry key="M2" value="6.8011223174493" />
-      <entry key="M5" value="7.588521570701884" />
-      <entry key="M10" value="10.170470956574759" />
-      <entry key="M15" value="14.389379753354977" />
-      <entry key="M30" value="28.468713504868955" />
-      <entry key="H1" value="49.342199900657896" />
-      <entry key="H2" value="72.11730512110567" />
-      <entry key="H4" value="99.35708987551438" />
-      <entry key="D1" value="206.7980072335641" />
-      <entry key="W1" value="256.776959333578" />
+      <entry key="MS100" value="0.9726550311237234" />
+      <entry key="MS500" value="1.0331204931012796" />
+      <entry key="S2" value="1.7445774472591002" />
+      <entry key="S5" value="3.126207789397729" />
+      <entry key="S10" value="4.214026387251485" />
+      <entry key="S30" value="5.302265814130749" />
+      <entry key="S60" value="5.636360640250457" />
+      <entry key="M2" value="5.814415407882074" />
+      <entry key="M5" value="6.011610827846526" />
+      <entry key="M10" value="7.050160039787484" />
+      <entry key="M15" value="9.217299885403682" />
+      <entry key="M30" value="19.501496809083875" />
+      <entry key="H1" value="39.98973701071067" />
+      <entry key="H2" value="65.85791263402929" />
+      <entry key="H4" value="96.51984116025598" />
+      <entry key="D1" value="209.61254764366723" />
+      <entry key="W1" value="262.20815693672785" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -290,15 +313,7 @@
       <workItem from="1780161404348" duration="397000" />
       <workItem from="1780224409266" duration="8000" />
       <workItem from="1780245161323" duration="646000" />
-      <workItem from="1780251154059" duration="9048000" />
-    </task>
-    <task id="LOCAL-00051" summary="fix upload">
-      <option name="closed" value="true" />
-      <created>1779349761744</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1779349761744</updated>
+      <workItem from="1780251154059" duration="10318000" />
     </task>
     <task id="LOCAL-00052" summary="Merge branch 'version4.282' into version4.29&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;CHANGELOG.md&#10;#&#9;Core/ClicShopping/version.json">
       <option name="closed" value="true" />
@@ -684,7 +699,15 @@
       <option name="project" value="LOCAL" />
       <updated>1780305938745</updated>
     </task>
-    <option name="localTasksCounter" value="100" />
+    <task id="LOCAL-00100" summary="libraries updated">
+      <option name="closed" value="true" />
+      <created>1780307875724</created>
+      <option name="number" value="00100" />
+      <option name="presentableId" value="LOCAL-00100" />
+      <option name="project" value="LOCAL" />
+      <updated>1780307875724</updated>
+    </task>
+    <option name="localTasksCounter" value="101" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -709,14 +732,14 @@
     <MESSAGE value="little improvement" />
     <MESSAGE value="language update" />
     <MESSAGE value="template improvement" />
-    <MESSAGE value="libraries updated" />
     <MESSAGE value="db updated" />
     <MESSAGE value="newsletter upgraded" />
     <MESSAGE value="some fix" />
     <MESSAGE value="antispam improvement" />
     <MESSAGE value="little refactoring" />
     <MESSAGE value="little update" />
-    <option name="LAST_COMMIT_MESSAGE" value="little update" />
+    <MESSAGE value="libraries updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="libraries updated" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -338,22 +338,22 @@ class RSS
 
       $name = strip_tags($rss_item[$i]['products_name']);
       $description = strip_tags($rss_item[$i]['products_description']);
-
       $description = HTMLOverrideCommon::cleanHtmlOptimized($description);
-      $description = HTMLOverrideCommon::cleanHtmlOptimized($description);
-      $description = str_replace('<', '', $description);
 
-// http://www.w3.org/TR/REC-xml/#dt-chardata
-// The ampersand character (&) and the left angle bracket (<) MUST NOT appear in their literal form
       $url = $this->rewriteUrl->getProductNameUrl($products_id);
 
+// <link>/<guid> are not wrapped in CDATA: escape the ampersands of the URL.
       $link = str_replace('&', '&amp;', $url);
-      $name = preg_replace('/&(?!#?[a-z0-9]+;)/', '&amp;', $name);
+
+// Title and description are emitted inside CDATA so &, < and > are taken literally.
+// Only a stray "]]>" sequence could close the section early, so split it.
+      $name = str_replace(']]>', ']]]]><![CDATA[>', $name);
+      $description = str_replace(']]>', ']]]]><![CDATA[>', $description);
 
       $xml .= '<item>' . "\n";
-      $xml .= '<title>' . $name . '</title>' . "\n";
+      $xml .= '<title><![CDATA[' . $name . ']]></title>' . "\n";
       $xml .= '<link>' . $link . '</link>' . "\n";
-      $xml .= '<description>' . $description . '</description>' . "\n";
+      $xml .= '<description><![CDATA[' . $description . ']]></description>' . "\n";
 
       $xml .= '<pubDate>' . gmdate("D, d M Y H:i:s", strtotime($date_added)) . ' GMT' . '</pubDate>' . "\n";
       $xml .= '<guid>' . $link . '</guid>' . "\n";
