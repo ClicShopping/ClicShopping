@@ -18,8 +18,8 @@
       "Gdpr": "Module\\HeaderTags\\Gdpr"
     },
     "Hooks": {
-      "Shop/Account": {
-        "Process": "Module\\Hooks\\Shop\\Account\\Process"
+      "Shop/Create": {
+        "Process": "Module\\Hooks\\Shop\\Account\\Create\\Process"
       },
       "ClicShoppingAdmin/TopDashboard": {
         "TopDashboard": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\Gdpr"
