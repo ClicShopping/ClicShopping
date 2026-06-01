@@ -9,7 +9,7 @@
 namespace ClicShopping\Apps\Catalog\Categories\Sites\ClicShoppingAdmin\Pages\Home\Actions\Categories;
 
 use ClicShopping\Apps\Catalog\Categories\Classes\ClicShoppingAdmin\Status;
-use ClicShopping\OM\Cache;
+use ClicShopping\Apps\Catalog\Categories\Classes\ClicShoppingAdmin\CategoriesAdmin;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -24,7 +24,7 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
   public function execute()
   {
-    if (($_GET['flag'] == 0) || ($_GET['flag'] == 1)) {
+    if (isset($_GET['flag']) && (($_GET['flag'] == 0) || ($_GET['flag'] == 1))) {
       if (isset($_GET['cPath'])) {
         $cPath = HTML::sanitize($_GET['cPath']);
       } else {
@@ -32,14 +32,10 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
 
       if (isset($_GET['cID'])) {
-        Status::getCategoriesStatus($_GET['cID'], (int)$_GET['flag']);
+        Status::getCategoriesStatus((int)$_GET['cID'], (int)$_GET['flag']);
       }
 
-      Cache::clear('categories');
-      Cache::clear('products-also_purchased');
-      Cache::clear('products_related');
-      Cache::clear('products_cross_sell');
-      Cache::clear('upcoming');
+      CategoriesAdmin::clearCategoryCaches();
     }
 
     if (isset($_GET['cID'])) {

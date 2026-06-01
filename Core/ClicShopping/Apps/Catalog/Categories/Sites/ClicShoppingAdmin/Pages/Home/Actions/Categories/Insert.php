@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\Catalog\Categories\Sites\ClicShoppingAdmin\Pages\Home\Actions\Categories;
 
-use ClicShopping\OM\Cache;
+use ClicShopping\Apps\Catalog\Categories\Classes\ClicShoppingAdmin\CategoriesAdmin;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -94,11 +94,7 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
       );
     }
 
-    Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('products_related');
-    Cache::clear('products_cross_sell');
-    Cache::clear('upcoming');
+    CategoriesAdmin::clearCategoryCaches();
 
     $CLICSHOPPING_Hooks->call('Categories', 'Insert');
 

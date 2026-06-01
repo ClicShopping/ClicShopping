@@ -377,6 +377,17 @@ class CategoriesAdmin
     $this->db->delete('categories_description', ['categories_id' => (int)$category_id]);
     $this->db->delete('products_to_categories', ['categories_id' => (int)$category_id]);
 
+    self::clearCategoryCaches();
+  }
+
+  /**
+   * Clears every cache block that depends on the category tree.
+   * Centralises the invalidation that was duplicated across category actions and hooks.
+   *
+   * @return void
+   */
+  public static function clearCategoryCaches(): void
+  {
     Cache::clear('categories');
     Cache::clear('products-also_purchased');
     Cache::clear('products_related');

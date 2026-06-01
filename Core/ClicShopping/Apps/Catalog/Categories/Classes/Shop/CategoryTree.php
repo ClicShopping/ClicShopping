@@ -27,8 +27,8 @@ class CategoryTree
    * @access protected
    */
 
-  protected $_show_total_products = false;
-  protected $_data = [];
+  protected $show_total_products = false;
+  protected $data = [];
   protected $root_category_id = 0;
   protected $max_level = 0;
   protected $root_start_string = '';
@@ -64,13 +64,13 @@ class CategoryTree
    */
   public function __construct()
   {
-    static $_category_tree_data;
+    static $category_tree_data;
 
     $this->db = Registry::get('Db');
     $this->lang = Registry::get('Language');
 
-    if (isset($_category_tree_data)) {
-      $this->_data = $_category_tree_data;
+    if (isset($category_tree_data)) {
+      $this->data = $category_tree_data;
     } else {
       if (CLICSHOPPING::getSite() === 'Shop') {
         $Qcategories = $this->db->prepare('select c.categories_id,
@@ -109,7 +109,7 @@ class CategoryTree
       $Qcategories->execute();
 
       while ($Qcategories->fetch()) {
-        $this->_data[$Qcategories->valueInt('parent_id')][$Qcategories->valueInt('categories_id')] = [
+        $this->data[$Qcategories->valueInt('parent_id')][$Qcategories->valueInt('categories_id')] = [
           'name' => $Qcategories->value('categories_name'),
           'description' => $Qcategories->value('categories_description'),
           'image' => $Qcategories->value('categories_image'),
@@ -117,11 +117,11 @@ class CategoryTree
         ];
       }
 
-      if ($this->_show_total_products === true) {
-        $this->_calculateProductTotals();
+      if ($this->show_total_products === true) {
+        $this->calculateProductTotals();
       }
 
-      $_category_tree_data = $this->_data;
+      $category_tree_data = $this->data;
     }
 
     if (!Registry::exists('RewriteUrl')) {
@@ -172,7 +172,7 @@ class CategoryTree
     $this->cpath_array = [];
     $this->cpath_start_string = '';
     $this->cpath_end_string = '';
-//      $this->_show_total_products = (SERVICES_CATEGORY_PATH_CALCULATE_PRODUCT_COUNT == '1') ? true : false;
+//      $this->show_total_products = (SERVICES_CATEGORY_PATH_CALCULATE_PRODUCT_COUNT == '1') ? true : false;
     $this->category_product_count_start_string = '&nbsp;(';
     $this->category_product_count_end_string = ')';
   }
@@ -186,12 +186,12 @@ class CategoryTree
    * @param int $level The current depth level in the hierarchy, defaults to 0 for the root level.
    * @return string The constructed string representation of the tree branch.
    */
-  protected function _buildBranch(int|string $parent_id, int $level = 0): string
+  protected function buildBranch(int|string $parent_id, int $level = 0): string
   {
     $result = ((($level === 0) && ($this->parent_group_apply_to_root === true)) || ($level > 0)) ? $this->parent_group_start_string : null;
 
-    if (isset($this->_data[$parent_id])) {
-      foreach ($this->_data[$parent_id] as $category_id => $category) {
+    if (isset($this->data[$parent_id])) {
+      foreach ($this->data[$parent_id] as $category_id => $category) {
         if ($this->breadcrumb_usage === true) {
           $category_link = $this->buildBreadcrumb($category_id);
         } else {
@@ -200,7 +200,7 @@ class CategoryTree
 
         $result .= $this->child_start_string;
 
-        if (isset($this->_data[$category_id])) {
+        if (isset($this->data[$category_id])) {
           $result .= $this->parent_start_string;
         }
 
@@ -222,7 +222,7 @@ class CategoryTree
 
         $result .= HTML::link($categories_url, $link_title);
 
-        if ($this->_show_total_products === true) {
+        if ($this->show_total_products === true) {
           $result .= $this->category_product_count_start_string . $category['count'] . $this->category_product_count_end_string;
         }
 
@@ -230,17 +230,17 @@ class CategoryTree
           $result .= $this->root_end_string;
         }
 
-        if (isset($this->_data[$category_id])) {
+        if (isset($this->data[$category_id])) {
           $result .= $this->parent_end_string;
         }
 
-        if (isset($this->_data[$category_id]) && (($this->max_level == '0') || ($this->max_level > $level + 1))) {
+        if (isset($this->data[$category_id]) && (($this->max_level == '0') || ($this->max_level > $level + 1))) {
           if ($this->follow_cpath === true) {
             if (in_array($category_id, $this->cpath_array)) {
-              $result .= $this->_buildBranch($category_id, $level + 1);
+              $result .= $this->buildBranch($category_id, $level + 1);
             }
 } else {
-            $result .= $this->_buildBranch($category_id, $level + 1);
+            $result .= $this->buildBranch($category_id, $level + 1);
           }
 }
 
@@ -268,8 +268,8 @@ class CategoryTree
       $result = [];
     }
 
-    if (isset($this->_data[$parent_id])) {
-      foreach ($this->_data[$parent_id] as $category_id => $category) {
+    if (isset($this->data[$parent_id])) {
+      foreach ($this->data[$parent_id] as $category_id => $category) {
         if ($this->breadcrumb_usage === true) {
           $category_link = $this->buildBreadcrumb($category_id);
         } else {
@@ -281,7 +281,7 @@ class CategoryTree
           'title' => str_repeat($this->spacer_string, $this->spacer_multiplier * $level) . $category['name']
         ];
 
-        if (isset($this->_data[$category_id]) && (($this->max_level == '0') || ($this->max_level > $level + 1))) {
+        if (isset($this->data[$category_id]) && (($this->max_level == '0') || ($this->max_level > $level + 1))) {
           if ($this->follow_cpath === true) {
             if (in_array($category_id, $this->cpath_array, true)) {
               $result = $this->buildBranchArray($category_id, $level + 1, $result);
@@ -325,7 +325,7 @@ class CategoryTree
     // Mark this category as visited
     $visited[] = $category_id;
 
-    foreach ($this->_data as $parent => $categories) {
+    foreach ($this->data as $parent => $categories) {
       foreach ($categories as $id => $info) {
         if ($id == $category_id) {
           if ($level < 1) {
@@ -358,7 +358,7 @@ class CategoryTree
 
   public function getTree(): string
   {
-    return $this->_buildBranch($this->root_category_id);
+    return $this->buildBranch($this->root_category_id);
   }
 
   /**
@@ -393,7 +393,7 @@ class CategoryTree
    */
   public function exists(string $id): bool
   {
-    foreach ($this->_data as $parent => $categories) {
+    foreach ($this->data as $parent => $categories) {
       foreach ($categories as $category_id => $info) {
         if ($id == $category_id) {
           return true;
@@ -415,7 +415,7 @@ class CategoryTree
    */
   public function getChildren(string $category_id, array &$array = []): array
   {
-    foreach ($this->_data as $parent => $categories) {
+    foreach ($this->data as $parent => $categories) {
       if ($parent == $category_id) {
         foreach ($categories as $id => $info) {
           $array[] = $id;
@@ -439,7 +439,7 @@ class CategoryTree
 
   public function getData(string $id, ?string $key = null): array|bool
   {
-    foreach ($this->_data as $parent => $categories) {
+    foreach ($this->data as $parent => $categories) {
       foreach ($categories as $category_id => $info) {
         if ($id == $category_id) {
           $data = [
@@ -483,7 +483,7 @@ class CategoryTree
    * @return void This method does not return a value but updates the internal category data structure
    *              with the calculated product totals.
    */
-  protected function _calculateProductTotals(bool $filter_active = true): void
+  protected function calculateProductTotals(bool $filter_active = true): void
   {
     $totals = [];
 
@@ -512,18 +512,18 @@ class CategoryTree
       $totals[$Qtotals->valueInt('categories_id')] = $Qtotals->valueInt('total');
     }
 
-    foreach ($this->_data as $parent => $categories) {
+    foreach ($this->data as $parent => $categories) {
       foreach ($categories as $id => $info) {
         if (isset($totals[$id]) && ($totals[$id] > 0)) {
-          $this->_data[$parent][$id]['count'] = $totals[$id];
+          $this->data[$parent][$id]['count'] = $totals[$id];
 
           $parent_category = $parent;
 
           while ($parent_category != $this->root_category_id) {
-            foreach ($this->_data as $parent_parent => $parent_categories) {
+            foreach ($this->data as $parent_parent => $parent_categories) {
               foreach ($parent_categories as $parent_category_id => $parent_category_info) {
                 if ($parent_category_id == $parent_category) {
-                  $this->_data[$parent_parent][$parent_category_id]['count'] += $this->_data[$parent][$id]['count'];
+                  $this->data[$parent_parent][$parent_category_id]['count'] += $this->data[$parent][$id]['count'];
 
                   $parent_category = $parent_parent;
 
@@ -548,7 +548,7 @@ class CategoryTree
    */
   public function getNumberOfProducts(int $id): int|bool
   {
-    foreach ($this->_data as $parent => $categories) {
+    foreach ($this->data as $parent => $categories) {
       foreach ($categories as $category_id => $info) {
         if ($id == $category_id) {
           return $info['count'];
@@ -742,9 +742,9 @@ class CategoryTree
   public function setShowCategoryProductCount(int $show_category_product_count): void
   {
     if ($show_category_product_count === true) {
-      $this->_show_total_products = true;
+      $this->show_total_products = true;
     } else {
-      $this->_show_total_products = false;
+      $this->show_total_products = false;
     }
 }
 

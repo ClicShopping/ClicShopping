@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\Catalog\Categories\Sites\ClicShoppingAdmin\Pages\Home\Actions\Categories;
 
-use ClicShopping\OM\Cache;
+use ClicShopping\Apps\Catalog\Categories\Classes\ClicShoppingAdmin\CategoriesAdmin;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use function count;
@@ -138,11 +138,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $this->app->db->save('categories', $sql_data_array, ['categories_id' => (int)$categories_id]);
       }
 
-      Cache::clear('categories');
-      Cache::clear('products-also_purchased');
-      Cache::clear('products_related');
-      Cache::clear('products_cross_sell');
-      Cache::clear('upcoming');
+      CategoriesAdmin::clearCategoryCaches();
 
       $CLICSHOPPING_Hooks->call('Categories', 'Update');
 

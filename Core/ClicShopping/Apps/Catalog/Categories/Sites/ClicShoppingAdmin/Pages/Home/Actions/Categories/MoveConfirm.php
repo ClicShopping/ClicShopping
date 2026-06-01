@@ -9,7 +9,7 @@
 
 namespace ClicShopping\Apps\Catalog\Categories\Sites\ClicShoppingAdmin\Pages\Home\Actions\Categories;
 
-use ClicShopping\OM\Cache;
+use ClicShopping\Apps\Catalog\Categories\Classes\ClicShoppingAdmin\CategoriesAdmin;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -33,7 +33,7 @@ class MoveConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $this->Id = HTML::sanitize($_POST['categories_id']); // update
     }
 
-    $this->moveToCategoryID = HTML::sanitize($_POST['move_to_category_id']);
+    $this->moveToCategoryID = isset($_POST['move_to_category_id']) ? HTML::sanitize($_POST['move_to_category_id']) : 0;
 
     if (isset($_GET['cPath'])) {
       $this->cPath = HTML::sanitize($_GET['cPath']);
@@ -69,11 +69,7 @@ class MoveConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
         $this->app->db->save('categories', $sql_array, $insert_array);
 
-        Cache::clear('categories');
-        Cache::clear('products-also_purchased');
-        Cache::clear('products_related');
-        Cache::clear('products_cross_sell');
-        Cache::clear('upcoming');
+        CategoriesAdmin::clearCategoryCaches();
 
         $CLICSHOPPING_Hooks->call('Categories', 'MoveConfirm');
 

@@ -18,13 +18,13 @@ use function is_null;
  */
 class Category
 {
-  protected $_id;
-  protected string $_title;
-  protected string $_image;
-  protected $_parent_id;
-  protected string $_description;
-  protected string $_category_depth;
-  protected array $_data = [];
+  protected $id;
+  protected string $title;
+  protected string $image;
+  protected $parent_id;
+  protected string $description;
+  protected string $category_depth;
+  protected array $data = [];
   private mixed $db;
   private mixed $lang;
   protected $categoryTree;
@@ -48,21 +48,21 @@ class Category
       if (!empty($cPath_array)) {
         $id = end($cPath_array);
       }
-}
+    }
 
     if (isset($id) && $this->categoryTree->exists($id)) {
-      $this->_data = $this->categoryTree->getData($id);
+      $this->data = $this->categoryTree->getData($id);
 
-      $this->_id = $this->_data['id'];
-      $this->_title = $this->_data['name'];
-      $this->_description = $this->_data['description'];
-      $this->_image = $this->_data['image'];
-      $this->_parent_id = $this->_data['parent_id'];
+      $this->id = $this->data['id'];
+      $this->title = $this->data['name'];
+      $this->description = $this->data['description'];
+      $this->image = $this->data['image'];
+      $this->parent_id = $this->data['parent_id'];
 
-      if (isset($this->_data['category_depth'])) {
-        $this->_category_depth = $this->_data['category_depth'];
+      if (isset($this->data['category_depth'])) {
+        $this->category_depth = $this->data['category_depth'];
       } else {
-        $this->_category_depth = 0;
+        $this->category_depth = 0;
       }
 }
 
@@ -81,7 +81,7 @@ class Category
 
   public function getID(): int|null
   {
-    return $this->_id;
+    return $this->id;
   }
 
   /**
@@ -92,7 +92,7 @@ class Category
 
   public function getDescription(): string
   {
-    return $this->_description;
+    return $this->description;
   }
 
   /**
@@ -102,7 +102,7 @@ class Category
 
   public function getTitle(): string
   {
-    return $this->_title;
+    return $this->title;
   }
 
   /**
@@ -112,7 +112,7 @@ class Category
    */
   public function hasImage(): bool
   {
-    return (!empty($this->_image));
+    return (!empty($this->image));
   }
 
   /**
@@ -122,7 +122,7 @@ class Category
 
   public function getImage(): string
   {
-    return $this->_image;
+    return $this->image;
   }
 
   /**
@@ -133,7 +133,7 @@ class Category
 
   public function hasParent(): bool
   {
-    return ($this->_parent_id > 0);
+    return ($this->parent_id > 0);
   }
 
   /**
@@ -143,7 +143,7 @@ class Category
 
   public function getParent(): int|null
   {
-    return $this->_parent_id;
+    return $this->parent_id;
   }
 
   /**
@@ -153,7 +153,7 @@ class Category
    */
   public function getPath()
   {
-    return $this->categoryTree->buildBreadcrumb($this->_id);
+    return $this->categoryTree->buildBreadcrumb($this->id);
   }
 
   /**
@@ -235,7 +235,7 @@ class Category
 
   public function getData($keyword)
   {
-    return $this->_data[$keyword];
+    return $this->data[$keyword] ?? null;
   }
 
   /**
@@ -250,7 +250,7 @@ class Category
 
   public function getDepth()
   {
-    $this->_category_depth = 'top';
+    $this->category_depth = 'top';
 
     if (isset($_GET['cPath']) && !is_null($_GET['cPath'])) {
       $Qcheck = $this->db->prepare('select products_id
@@ -258,29 +258,29 @@ class Category
                                       where categories_id = :categories_id
                                       limit 1
                                      ');
-      $Qcheck->bindInt(':categories_id', $this->_id);
+      $Qcheck->bindInt(':categories_id', $this->id);
       $Qcheck->execute();
 
       if ($Qcheck->fetch() === false) {
-        $this->_category_depth = 'products'; // display products
+        $this->category_depth = 'products'; // display products
       } else {
         $Qcheck = $this->db->prepare('select categories_id
                                          from :table_categories
                                          where parent_id = :parent_id
                                          and status = 1
                                         ');
-        $Qcheck->bindInt(':parent_id', $this->_id);
+        $Qcheck->bindInt(':parent_id', $this->id);
         $Qcheck->execute();
 
         if ($Qcheck->fetch() !== false) {
-          $this->_category_depth = 'nested'; // navigate through the categories
+          $this->category_depth = 'nested'; // navigate through the categories
         } else {
-          $this->_category_depth = 'products'; // category has no products, but display the 'no products' message
+          $this->category_depth = 'products'; // category has no products, but display the 'no products' message
         }
 }
     }
 
-    return $this->_category_depth;
+    return $this->category_depth;
   }
 
   /**
@@ -303,7 +303,7 @@ class Category
                                          and cd.categories_id = :categories_id
                                          and status = 1
                                        ');
-    $Qcategories->bindInt(':categories_id', $this->_id);
+    $Qcategories->bindInt(':categories_id', $this->id);
     $Qcategories->execute();
 
     $total = $Qcategories->valueInt('total');

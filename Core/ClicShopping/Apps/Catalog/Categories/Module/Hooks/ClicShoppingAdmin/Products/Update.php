@@ -10,7 +10,7 @@ namespace ClicShopping\Apps\Catalog\Categories\Module\Hooks\ClicShoppingAdmin\Pr
 
 use ClicShopping\Apps\Catalog\Categories\Categories as CategoriesApp;
 use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\ProductsAdmin;
-use ClicShopping\OM\Cache;
+use ClicShopping\Apps\Catalog\Categories\Classes\ClicShoppingAdmin\CategoriesAdmin;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 /**
@@ -153,11 +153,7 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
       }
     }
 
-    Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('products_related');
-    Cache::clear('products_cross_sell');
-    Cache::clear('upcoming');
+    CategoriesAdmin::clearCategoryCaches();
   }
 
   /**
