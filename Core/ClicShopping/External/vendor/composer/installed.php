@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '16f152fd9bbc6be6c0ee972948dd9bf79811e69c',
+        'reference' => 'ebe7da50ec86e94cb2a3a43eea8777ef46ab1e5e',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '16f152fd9bbc6be6c0ee972948dd9bf79811e69c',
+            'reference' => 'ebe7da50ec86e94cb2a3a43eea8777ef46ab1e5e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => 'c35fa6e0ad9ec495efc5bc9d49b98cf233577381',
+            'reference' => 'e87a6b92f5a78dab4061c1c933a8ada5a88d569e',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -367,9 +367,9 @@
             'dev_requirement' => true,
         ),
         'setasign/fpdf' => array(
-            'pretty_version' => '1.8.6',
-            'version' => '1.8.6.0',
-            'reference' => '0838e0ee4925716fcbbc50ad9e1799b5edfae0a0',
+            'pretty_version' => '1.9.0',
+            'version' => '1.9.0.0',
+            'reference' => '051b70e4c57dedc88df41b1eff1c62894e5f9ed0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../setasign/fpdf',
             'aliases' => array(),

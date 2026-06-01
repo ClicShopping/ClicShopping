@@ -14,40 +14,40 @@ Here's a two page example with header, footer and logo:
 
 class </span>PDF <span class="kw">extends </span>FPDF
 <span class="kw">{
-</span><span class="cmt">// Page header
-</span><span class="kw">function </span>Header<span class="kw">()
-{
-    </span><span class="cmt">// Logo
-    </span>$<span class="kw">this-&gt;</span>Image<span class="kw">(</span><span class="str">'logo.png'</span><span class="kw">,</span>10<span class="kw">,</span>6<span class="kw">,</span>30<span class="kw">);
-    </span><span class="cmt">// Arial bold 15
-    </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">'B'</span><span class="kw">,</span>15<span class="kw">);
-    </span><span class="cmt">// Move to the right
-    </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>80<span class="kw">);
-    </span><span class="cmt">// Title
-    </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>30<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Title'</span><span class="kw">,</span>1<span class="kw">,</span>0<span class="kw">,</span><span class="str">'C'</span><span class="kw">);
-    </span><span class="cmt">// Line break
-    </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">(</span>20<span class="kw">);
-}
+    </span><span class="cmt">// Page header
+    </span><span class="kw">function </span>Header<span class="kw">()
+    {
+        </span><span class="cmt">// Logo
+        </span>$<span class="kw">this-&gt;</span>Image<span class="kw">(</span><span class="str">'logo.png'</span><span class="kw">, </span>10<span class="kw">, </span>6<span class="kw">, </span>30<span class="kw">);
+        </span><span class="cmt">// Arial bold 15
+        </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">, </span><span class="str">'B'</span><span class="kw">, </span>15<span class="kw">);
+        </span><span class="cmt">// Move to the right
+        </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>80<span class="kw">);
+        </span><span class="cmt">// Title
+        </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>30<span class="kw">, </span>10<span class="kw">, </span><span class="str">'Title'</span><span class="kw">, </span>1<span class="kw">, </span>0<span class="kw">, </span><span class="str">'C'</span><span class="kw">);
+        </span><span class="cmt">// Line break
+        </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">(</span>20<span class="kw">);
+    }
 
-</span><span class="cmt">// Page footer
-</span><span class="kw">function </span>Footer<span class="kw">()
-{
-    </span><span class="cmt">// Position at 1.5 cm from bottom
-    </span>$<span class="kw">this-&gt;</span>SetY<span class="kw">(-</span>15<span class="kw">);
-    </span><span class="cmt">// Arial italic 8
-    </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">'I'</span><span class="kw">,</span>8<span class="kw">);
-    </span><span class="cmt">// Page number
-    </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Page '</span><span class="kw">.</span>$<span class="kw">this-&gt;</span>PageNo<span class="kw">().</span><span class="str">'/{nb}'</span><span class="kw">,</span>0<span class="kw">,</span>0<span class="kw">,</span><span class="str">'C'</span><span class="kw">);
-}
+    </span><span class="cmt">// Page footer
+    </span><span class="kw">function </span>Footer<span class="kw">()
+    {
+        </span><span class="cmt">// Position at 1.5 cm from bottom
+        </span>$<span class="kw">this-&gt;</span>SetY<span class="kw">(-</span>15<span class="kw">);
+        </span><span class="cmt">// Arial italic 8
+        </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">, </span><span class="str">'I'</span><span class="kw">, </span>8<span class="kw">);
+        </span><span class="cmt">// Page number
+        </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">, </span>10<span class="kw">, </span><span class="str">'Page '</span><span class="kw">.</span>$<span class="kw">this-&gt;</span>PageNo<span class="kw">().</span><span class="str">'/{nb}'</span><span class="kw">, </span>0<span class="kw">, </span>0<span class="kw">, </span><span class="str">'C'</span><span class="kw">);
+    }
 }
 
 </span><span class="cmt">// Instanciation of inherited class
 </span>$pdf <span class="kw">= new </span>PDF<span class="kw">();
 </span>$pdf<span class="kw">-&gt;</span>AliasNbPages<span class="kw">();
 </span>$pdf<span class="kw">-&gt;</span>AddPage<span class="kw">();
-</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Times'</span><span class="kw">,</span><span class="str">''</span><span class="kw">,</span>12<span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Times'</span><span class="kw">, </span><span class="str">''</span><span class="kw">, </span>12<span class="kw">);
 for(</span>$i<span class="kw">=</span>1<span class="kw">;</span>$i<span class="kw">&lt;=</span>40<span class="kw">;</span>$i<span class="kw">++)
-    </span>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Printing line number '</span><span class="kw">.</span>$i<span class="kw">,</span>0<span class="kw">,</span>1<span class="kw">);
+    </span>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">, </span>10<span class="kw">, </span><span class="str">'Printing line number '</span><span class="kw">.</span>$i<span class="kw">, </span>0<span class="kw">, </span>1<span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>Output<span class="kw">();
 </span>?&gt;</code></pre>
 </div>

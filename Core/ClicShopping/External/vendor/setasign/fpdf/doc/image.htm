@@ -15,7 +15,7 @@ Puts an image. The size it will take on the page can be specified in different w
 <li>one explicit dimension, the other being calculated automatically in order to keep the original proportions</li>
 <li>no explicit dimension, in which case the image is put at 96 dpi</li>
 </ul>
-Supported formats are JPEG, PNG and GIF. The GD extension is required for GIF.
+Supported formats are JPEG, PNG, GIF and WebP. The GD extension is required for GIF and WebP.
 <br>
 <br>
 For JPEGs, all flavors are allowed:
@@ -76,7 +76,7 @@ Height of the image in the page. There are three cases:
 </dd>
 <dt><code>type</code></dt>
 <dd>
-Image format. Possible values are (case insensitive): <code>JPG</code>, <code>JPEG</code>, <code>PNG</code> and <code>GIF</code>.
+Image format. Possible values are (case insensitive): <code>JPG</code>, <code>JPEG</code>, <code>PNG</code>, <code>GIF</code> and <code>WebP</code>.
 If not specified, the type is inferred from the file extension.
 </dd>
 <dt><code>link</code></dt>
@@ -89,7 +89,7 @@ URL or identifier returned by AddLink().
 <pre><code>// Insert a logo in the top-left corner at 300 dpi
 $pdf-&gt;Image('logo.png', 10, 10, -300);
 // Insert a dynamic image from a URL
-$pdf-&gt;Image('http://chart.googleapis.com/chart?cht=p3&amp;chd=t:60,40&amp;chs=250x100&amp;chl=Hello|World', 60, 30, 90, 0, 'PNG');</code></pre>
+$pdf-&gt;Image('https://www.server.com/makechart.php', 60, 30, 90, 0, 'PNG');</code></pre>
 </div>
 <h2>See also</h2>
 <a href="addlink.htm">AddLink</a>

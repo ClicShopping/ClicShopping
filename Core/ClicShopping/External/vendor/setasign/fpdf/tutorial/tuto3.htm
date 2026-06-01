@@ -15,80 +15,80 @@ of colors.
 
 class </span>PDF <span class="kw">extends </span>FPDF
 <span class="kw">{
-function </span>Header<span class="kw">()
-{
-    global </span>$title<span class="kw">;
+    function </span>Header<span class="kw">()
+    {
+        global </span>$title<span class="kw">;
 
-    </span><span class="cmt">// Arial bold 15
-    </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">'B'</span><span class="kw">,</span>15<span class="kw">);
-    </span><span class="cmt">// Calculate width of title and position
-    </span>$w <span class="kw">= </span>$<span class="kw">this-&gt;</span>GetStringWidth<span class="kw">(</span>$title<span class="kw">)+</span>6<span class="kw">;
-    </span>$<span class="kw">this-&gt;</span>SetX<span class="kw">((</span>210<span class="kw">-</span>$w<span class="kw">)/</span>2<span class="kw">);
-    </span><span class="cmt">// Colors of frame, background and text
-    </span>$<span class="kw">this-&gt;</span>SetDrawColor<span class="kw">(</span>0<span class="kw">,</span>80<span class="kw">,</span>180<span class="kw">);
-    </span>$<span class="kw">this-&gt;</span>SetFillColor<span class="kw">(</span>230<span class="kw">,</span>230<span class="kw">,</span>0<span class="kw">);
-    </span>$<span class="kw">this-&gt;</span>SetTextColor<span class="kw">(</span>220<span class="kw">,</span>50<span class="kw">,</span>50<span class="kw">);
-    </span><span class="cmt">// Thickness of frame (1 mm)
-    </span>$<span class="kw">this-&gt;</span>SetLineWidth<span class="kw">(</span>1<span class="kw">);
-    </span><span class="cmt">// Title
-    </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>$w<span class="kw">,</span>9<span class="kw">,</span>$title<span class="kw">,</span>1<span class="kw">,</span>1<span class="kw">,</span><span class="str">'C'</span><span class="kw">,</span>true<span class="kw">);
-    </span><span class="cmt">// Line break
-    </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">(</span>10<span class="kw">);
-}
+        </span><span class="cmt">// Arial bold 15
+        </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">, </span><span class="str">'B'</span><span class="kw">, </span>15<span class="kw">);
+        </span><span class="cmt">// Calculate width of title and position
+        </span>$w <span class="kw">= </span>$<span class="kw">this-&gt;</span>GetStringWidth<span class="kw">(</span>$title<span class="kw">)+</span>6<span class="kw">;
+        </span>$<span class="kw">this-&gt;</span>SetX<span class="kw">((</span>210<span class="kw">-</span>$w<span class="kw">)/</span>2<span class="kw">);
+        </span><span class="cmt">// Colors of frame, background and text
+        </span>$<span class="kw">this-&gt;</span>SetDrawColor<span class="kw">(</span>0<span class="kw">, </span>80<span class="kw">, </span>180<span class="kw">);
+        </span>$<span class="kw">this-&gt;</span>SetFillColor<span class="kw">(</span>230<span class="kw">, </span>230<span class="kw">, </span>0<span class="kw">);
+        </span>$<span class="kw">this-&gt;</span>SetTextColor<span class="kw">(</span>220<span class="kw">, </span>50<span class="kw">, </span>50<span class="kw">);
+        </span><span class="cmt">// Thickness of frame (1 mm)
+        </span>$<span class="kw">this-&gt;</span>SetLineWidth<span class="kw">(</span>1<span class="kw">);
+        </span><span class="cmt">// Title
+        </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>$w<span class="kw">, </span>9<span class="kw">, </span>$title<span class="kw">, </span>1<span class="kw">, </span>1<span class="kw">, </span><span class="str">'C'</span><span class="kw">, </span>true<span class="kw">);
+        </span><span class="cmt">// Line break
+        </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">(</span>10<span class="kw">);
+    }
 
-function </span>Footer<span class="kw">()
-{
-    </span><span class="cmt">// Position at 1.5 cm from bottom
-    </span>$<span class="kw">this-&gt;</span>SetY<span class="kw">(-</span>15<span class="kw">);
-    </span><span class="cmt">// Arial italic 8
-    </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">'I'</span><span class="kw">,</span>8<span class="kw">);
-    </span><span class="cmt">// Text color in gray
-    </span>$<span class="kw">this-&gt;</span>SetTextColor<span class="kw">(</span>128<span class="kw">);
-    </span><span class="cmt">// Page number
-    </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Page '</span><span class="kw">.</span>$<span class="kw">this-&gt;</span>PageNo<span class="kw">(),</span>0<span class="kw">,</span>0<span class="kw">,</span><span class="str">'C'</span><span class="kw">);
-}
+    function </span>Footer<span class="kw">()
+    {
+        </span><span class="cmt">// Position at 1.5 cm from bottom
+        </span>$<span class="kw">this-&gt;</span>SetY<span class="kw">(-</span>15<span class="kw">);
+        </span><span class="cmt">// Arial italic 8
+        </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">, </span><span class="str">'I'</span><span class="kw">, </span>8<span class="kw">);
+        </span><span class="cmt">// Text color in gray
+        </span>$<span class="kw">this-&gt;</span>SetTextColor<span class="kw">(</span>128<span class="kw">);
+        </span><span class="cmt">// Page number
+        </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">, </span>10<span class="kw">, </span><span class="str">'Page '</span><span class="kw">.</span>$<span class="kw">this-&gt;</span>PageNo<span class="kw">(), </span>0<span class="kw">, </span>0<span class="kw">, </span><span class="str">'C'</span><span class="kw">);
+    }
 
-function </span>ChapterTitle<span class="kw">(</span>$num<span class="kw">, </span>$label<span class="kw">)
-{
-    </span><span class="cmt">// Arial 12
-    </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">''</span><span class="kw">,</span>12<span class="kw">);
-    </span><span class="cmt">// Background color
-    </span>$<span class="kw">this-&gt;</span>SetFillColor<span class="kw">(</span>200<span class="kw">,</span>220<span class="kw">,</span>255<span class="kw">);
-    </span><span class="cmt">// Title
-    </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">,</span>6<span class="kw">,</span><span class="str">"Chapter </span>$num<span class="str"> : </span>$label<span class="str">"</span><span class="kw">,</span>0<span class="kw">,</span>1<span class="kw">,</span><span class="str">'L'</span><span class="kw">,</span>true<span class="kw">);
-    </span><span class="cmt">// Line break
-    </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">(</span>4<span class="kw">);
-}
+    function </span>ChapterTitle<span class="kw">(</span>$num<span class="kw">, </span>$label<span class="kw">)
+    {
+        </span><span class="cmt">// Arial 12
+        </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">, </span><span class="str">''</span><span class="kw">, </span>12<span class="kw">);
+        </span><span class="cmt">// Background color
+        </span>$<span class="kw">this-&gt;</span>SetFillColor<span class="kw">(</span>200<span class="kw">, </span>220<span class="kw">, </span>255<span class="kw">);
+        </span><span class="cmt">// Title
+        </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">, </span>6<span class="kw">, </span><span class="str">"Chapter </span>$num<span class="str"> : </span>$label<span class="str">"</span><span class="kw">, </span>0<span class="kw">, </span>1<span class="kw">, </span><span class="str">'L'</span><span class="kw">, </span>true<span class="kw">);
+        </span><span class="cmt">// Line break
+        </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">(</span>4<span class="kw">);
+    }
 
-function </span>ChapterBody<span class="kw">(</span>$file<span class="kw">)
-{
-    </span><span class="cmt">// Read text file
-    </span>$txt <span class="kw">= </span>file_get_contents<span class="kw">(</span>$file<span class="kw">);
-    </span><span class="cmt">// Times 12
-    </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Times'</span><span class="kw">,</span><span class="str">''</span><span class="kw">,</span>12<span class="kw">);
-    </span><span class="cmt">// Output justified text
-    </span>$<span class="kw">this-&gt;</span>MultiCell<span class="kw">(</span>0<span class="kw">,</span>5<span class="kw">,</span>$txt<span class="kw">);
-    </span><span class="cmt">// Line break
-    </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">();
-    </span><span class="cmt">// Mention in italics
-    </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">''</span><span class="kw">,</span><span class="str">'I'</span><span class="kw">);
-    </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">,</span>5<span class="kw">,</span><span class="str">'(end of excerpt)'</span><span class="kw">);
-}
+    function </span>ChapterBody<span class="kw">(</span>$file<span class="kw">)
+    {
+        </span><span class="cmt">// Read text file
+        </span>$txt <span class="kw">= </span>file_get_contents<span class="kw">(</span>$file<span class="kw">);
+        </span><span class="cmt">// Times 12
+        </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Times'</span><span class="kw">, </span><span class="str">''</span><span class="kw">, </span>12<span class="kw">);
+        </span><span class="cmt">// Output justified text
+        </span>$<span class="kw">this-&gt;</span>MultiCell<span class="kw">(</span>0<span class="kw">, </span>5<span class="kw">, </span>$txt<span class="kw">);
+        </span><span class="cmt">// Line break
+        </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">();
+        </span><span class="cmt">// Mention in italics
+        </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">''</span><span class="kw">, </span><span class="str">'I'</span><span class="kw">);
+        </span>$<span class="kw">this-&gt;</span>Cell<span class="kw">(</span>0<span class="kw">, </span>5<span class="kw">, </span><span class="str">'(end of excerpt)'</span><span class="kw">);
+    }
 
-function </span>PrintChapter<span class="kw">(</span>$num<span class="kw">, </span>$title<span class="kw">, </span>$file<span class="kw">)
-{
-    </span>$<span class="kw">this-&gt;</span>AddPage<span class="kw">();
-    </span>$<span class="kw">this-&gt;</span>ChapterTitle<span class="kw">(</span>$num<span class="kw">,</span>$title<span class="kw">);
-    </span>$<span class="kw">this-&gt;</span>ChapterBody<span class="kw">(</span>$file<span class="kw">);
-}
+    function </span>PrintChapter<span class="kw">(</span>$num<span class="kw">, </span>$title<span class="kw">, </span>$file<span class="kw">)
+    {
+        </span>$<span class="kw">this-&gt;</span>AddPage<span class="kw">();
+        </span>$<span class="kw">this-&gt;</span>ChapterTitle<span class="kw">(</span>$num<span class="kw">, </span>$title<span class="kw">);
+        </span>$<span class="kw">this-&gt;</span>ChapterBody<span class="kw">(</span>$file<span class="kw">);
+    }
 }
 
 </span>$pdf <span class="kw">= new </span>PDF<span class="kw">();
 </span>$title <span class="kw">= </span><span class="str">'20000 Leagues Under the Seas'</span><span class="kw">;
 </span>$pdf<span class="kw">-&gt;</span>SetTitle<span class="kw">(</span>$title<span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>SetAuthor<span class="kw">(</span><span class="str">'Jules Verne'</span><span class="kw">);
-</span>$pdf<span class="kw">-&gt;</span>PrintChapter<span class="kw">(</span>1<span class="kw">,</span><span class="str">'A RUNAWAY REEF'</span><span class="kw">,</span><span class="str">'20k_c1.txt'</span><span class="kw">);
-</span>$pdf<span class="kw">-&gt;</span>PrintChapter<span class="kw">(</span>2<span class="kw">,</span><span class="str">'THE PROS AND CONS'</span><span class="kw">,</span><span class="str">'20k_c2.txt'</span><span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>PrintChapter<span class="kw">(</span>1<span class="kw">, </span><span class="str">'A RUNAWAY REEF'</span><span class="kw">, </span><span class="str">'20k_c1.txt'</span><span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>PrintChapter<span class="kw">(</span>2<span class="kw">, </span><span class="str">'THE PROS AND CONS'</span><span class="kw">, </span><span class="str">'20k_c2.txt'</span><span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>Output<span class="kw">();
 </span>?&gt;</code></pre>
 </div>

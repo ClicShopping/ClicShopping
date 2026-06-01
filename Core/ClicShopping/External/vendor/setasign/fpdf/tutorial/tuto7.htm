@@ -23,7 +23,7 @@ Adding a new font requires two steps:
 </ul>
 
 <h2>Generation of the font definition file</h2>
-The first step consists in generating a PHP file containing all the information needed by FPDF;
+The first step consists in generating a JSON file containing all the information needed by FPDF;
 in addition, the font file is compressed. To do this, a helper script is provided in the makefont
 directory of the package: makefont.php. It contains the following function:
 <br>
@@ -95,11 +95,11 @@ the characters from the selected encoding should be kept in the embedded font. A
 the size of the PDF file can be greatly reduced, especially if the original font was big.
 <br>
 <br>
-After you have called the function (create a new file for this and include makefont.php), a .php file
+After you have called the function (create a new file for this and include makefont.php), a .json file
 is created, with the same name as the font file. You may rename it if you wish. If the case of embedding,
 the font file is compressed and gives a second file with .z as extension (except if the compression
-function is not available, it requires Zlib). You may rename it too, but in this case you have to change
-the variable <code>$file</code> in the .php file accordingly.
+function is not available, it requires Zlib). You may rename it too, but in this case you will need to
+change the <code>file</code> entry in the JSON file accordingly.
 <br>
 <br>
 Example:
@@ -107,10 +107,10 @@ Example:
 <pre><code>&lt;?php
 <span class="kw">require(</span><span class="str">'makefont/makefont.php'</span><span class="kw">);
 
-</span>MakeFont<span class="kw">(</span><span class="str">'C:\\Windows\\Fonts\\comic.ttf'</span><span class="kw">,</span><span class="str">'cp1252'</span><span class="kw">);
+</span>MakeFont<span class="kw">(</span><span class="str">'C:\\Windows\\Fonts\\comic.ttf'</span><span class="kw">, </span><span class="str">'cp1252'</span><span class="kw">);
 </span>?&gt;</code></pre>
 </div>
-which gives the files comic.php and comic.z.
+which gives files comic.json and comic.z.
 <br>
 <br>
 Then copy the generated files to the font directory. If the font file could not be compressed, copy
@@ -129,13 +129,13 @@ Finally, for TrueType and OpenType fonts, you can also generate the files
 <h2>Declaration of the font in the script</h2>
 The second step is simple. You just need to call the <a href='../doc/addfont.htm'>AddFont()</a> method:
 <div class="source">
-<pre><code>$pdf<span class="kw">-&gt;</span>AddFont<span class="kw">(</span><span class="str">'Comic'</span><span class="kw">,</span><span class="str">''</span><span class="kw">,</span><span class="str">'comic.php'</span><span class="kw">);
+<pre><code>$pdf<span class="kw">-&gt;</span>AddFont<span class="kw">(</span><span class="str">'Comic'</span><span class="kw">, </span><span class="str">''</span><span class="kw">, </span><span class="str">'comic.json'</span><span class="kw">);
 </span></code></pre>
 </div>
 And the font is now available (in regular and underlined styles), usable like the others. If we
 had worked with Comic Sans MS Bold (comicbd.ttf), we would have written:
 <div class="source">
-<pre><code>$pdf<span class="kw">-&gt;</span>AddFont<span class="kw">(</span><span class="str">'Comic'</span><span class="kw">,</span><span class="str">'B'</span><span class="kw">,</span><span class="str">'comicbd.php'</span><span class="kw">);
+<pre><code>$pdf<span class="kw">-&gt;</span>AddFont<span class="kw">(</span><span class="str">'Comic'</span><span class="kw">, </span><span class="str">'B'</span><span class="kw">, </span><span class="str">'comicbd.json'</span><span class="kw">);
 </span></code></pre>
 </div>
 
@@ -146,14 +146,14 @@ The first step is the generation of the font files:
 <pre><code>&lt;?php
 <span class="kw">require(</span><span class="str">'makefont/makefont.php'</span><span class="kw">);
 
-</span>MakeFont<span class="kw">(</span><span class="str">'CevicheOne-Regular.ttf'</span><span class="kw">,</span><span class="str">'cp1252'</span><span class="kw">);
+</span>MakeFont<span class="kw">(</span><span class="str">'CevicheOne-Regular.ttf'</span><span class="kw">, </span><span class="str">'cp1252'</span><span class="kw">);
 </span>?&gt;</code></pre>
 </div>
 The script produces the following output:
 <br>
 <br>
 Font file compressed: CevicheOne-Regular.z<br>
-Font definition file generated: CevicheOne-Regular.php<br>
+Font definition file generated: CevicheOne-Regular.json<br>
 <br>
 Alternatively we could have used the command line:
 <br>
@@ -170,10 +170,10 @@ We can now copy the two generated files to the font directory and write the scri
 <span class="kw">require(</span><span class="str">'fpdf.php'</span><span class="kw">);
 
 </span>$pdf <span class="kw">= new </span>FPDF<span class="kw">();
-</span>$pdf<span class="kw">-&gt;</span>AddFont<span class="kw">(</span><span class="str">'CevicheOne'</span><span class="kw">,</span><span class="str">''</span><span class="kw">,</span><span class="str">'CevicheOne-Regular.php'</span><span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>AddFont<span class="kw">(</span><span class="str">'CevicheOne'</span><span class="kw">, </span><span class="str">''</span><span class="kw">, </span><span class="str">'CevicheOne-Regular.json'</span><span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>AddPage<span class="kw">();
-</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'CevicheOne'</span><span class="kw">,</span><span class="str">''</span><span class="kw">,</span>45<span class="kw">);
-</span>$pdf<span class="kw">-&gt;</span>Write<span class="kw">(</span>10<span class="kw">,</span><span class="str">'Enjoy new fonts with FPDF!'</span><span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'CevicheOne'</span><span class="kw">, </span><span class="str">''</span><span class="kw">, </span>45<span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>Write<span class="kw">(</span>10<span class="kw">, </span><span class="str">'Enjoy new fonts with FPDF!'</span><span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>Output<span class="kw">();
 </span>?&gt;</code></pre>
 </div>

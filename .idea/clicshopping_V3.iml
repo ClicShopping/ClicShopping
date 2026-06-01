@@ -59,6 +59,8 @@
       <excludeFolder url="file://$MODULE_DIR$/Core/ClicShopping/External/vendor/yethee/tiktoken" />
       <excludeFolder url="file://$MODULE_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone" />
       <excludeFolder url="file://$MODULE_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude" />
+      <excludeFolder url="file://$MODULE_DIR$/.github" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

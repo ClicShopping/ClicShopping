@@ -2,9 +2,9 @@
 /*******************************************************************************
 * Utility to generate font definition files                                    *
 *                                                                              *
-* Version: 1.31                                                                *
-* Date:    2019-12-07                                                          *
-* Author:  Olivier PLATHEY                                                     *
+* Version: 1.4                                                                 *
+* Date:    2026-05-31                                                          *
+* Author:  Olivier Plathey                                                     *
 *******************************************************************************/
 
 require('ttfparser.php');
@@ -41,6 +41,31 @@ function Error($txt)
 	exit;
 }
 
+function SaveToFile($file, $contents)
+{
+	if(file_put_contents($file, $contents)===false)
+		Error('Can\'t write to file '.$file);
+}
+
+function ConvertToJSON($phpfile)
+{
+	// Convert a PHP font definition file to the new JSON format
+	require($phpfile);
+	if(!isset($type))
+		Error('Invalid font definition file');
+	$keys = array('type', 'name', 'desc', 'up', 'ut', 'cw', 'enc', 'diff', 'uv', 'file', 'size1', 'size2', 'originalsize', 'subsetted');
+	foreach($keys as $key)
+	{
+		if(isset($$key))
+			$data[$key] = $$key;
+	}
+	if(isset($data['cw']))
+		$data['cw'] = array_values($data['cw']);
+	$jsonfile = substr($phpfile, 0, -3).'json';
+	SaveToFile($jsonfile, json_encode($data));
+	Message('Font definition file converted: '.basename($jsonfile));
+}
+
 function LoadMap($enc)
 {
 	$file = dirname(__FILE__).'/'.strtolower($enc).'.map';
@@ -61,7 +86,7 @@ function LoadMap($enc)
 
 function GetInfoFromTrueType($file, $embed, $subset, $map)
 {
-	// Return information from a TrueType font
+	// Extract information from a TrueType font
 	try
 	{
 		$ttf = new TTFParser($file);
@@ -123,7 +148,7 @@ function GetInfoFromTrueType($file, $embed, $subset, $map)
 
 function GetInfoFromType1($file, $embed, $map)
 {
-	// Return information from a Type1 font
+	// Extract information from a Type1 font
 	if($embed)
 	{
 		$f = fopen($file, 'rb');
@@ -215,17 +240,17 @@ function GetInfoFromType1($file, $embed, $map)
 	return $info;
 }
 
-function MakeFontDescriptor($info)
+function GetFontDescriptor($info)
 {
 	// Ascent
-	$fd = "array('Ascent'=>".$info['Ascender'];
+	$desc['Ascent'] = $info['Ascender'];
 	// Descent
-	$fd .= ",'Descent'=>".$info['Descender'];
+	$desc['Descent'] = $info['Descender'];
 	// CapHeight
 	if(!empty($info['CapHeight']))
-		$fd .= ",'CapHeight'=>".$info['CapHeight'];
+		$desc['CapHeight'] = $info['CapHeight'];
 	else
-		$fd .= ",'CapHeight'=>".$info['Ascender'];
+		$desc['CapHeight'] = $info['Ascender'];
 	// Flags
 	$flags = 0;
 	if($info['IsFixedPitch'])
@@ -233,12 +258,11 @@ function MakeFontDescriptor($info)
 	$flags += 1<<5;
 	if($info['ItalicAngle']!=0)
 		$flags += 1<<6;
-	$fd .= ",'Flags'=>".$flags;
+	$desc['Flags'] = $flags;
 	// FontBBox
-	$fbb = $info['FontBBox'];
-	$fd .= ",'FontBBox'=>'[".$fbb[0].' '.$fbb[1].' '.$fbb[2].' '.$fbb[3]."]'";
+	$desc['FontBBox'] = '['.implode(' ', $info['FontBBox']).']';
 	// ItalicAngle
-	$fd .= ",'ItalicAngle'=>".$info['ItalicAngle'];
+	$desc['ItalicAngle'] = $info['ItalicAngle'];
 	// StemV
 	if(isset($info['StdVW']))
 		$stemv = $info['StdVW'];
@@ -246,38 +270,15 @@ function MakeFontDescriptor($info)
 		$stemv = 120;
 	else
 		$stemv = 70;
-	$fd .= ",'StemV'=>".$stemv;
+	$desc['StemV'] = $stemv;
 	// MissingWidth
-	$fd .= ",'MissingWidth'=>".$info['MissingWidth'].')';
-	return $fd;
+	$desc['MissingWidth'] = $info['MissingWidth'];
+	return $desc;
 }
 
-function MakeWidthArray($widths)
+function GetEncodingDiff($map)
 {
-	$s = "array(\n\t";
-	for($c=0;$c<=255;$c++)
-	{
-		if(chr($c)=="'")
-			$s .= "'\\''";
-		elseif(chr($c)=="\\")
-			$s .= "'\\\\'";
-		elseif($c>=32 && $c<=126)
-			$s .= "'".chr($c)."'";
-		else
-			$s .= "chr($c)";
-		$s .= '=>'.$widths[$c];
-		if($c<255)
-			$s .= ',';
-		if(($c+1)%22==0)
-			$s .= "\n\t";
-	}
-	$s .= ')';
-	return $s;
-}
-
-function MakeFontEncoding($map)
-{
-	// Build differences from reference encoding
+	// Get differences from the reference encoding
 	$ref = LoadMap('cp1252');
 	$s = '';
 	$last = 0;
@@ -294,9 +295,8 @@ function MakeFontEncoding($map)
 	return rtrim($s);
 }
 
-function MakeUnicodeArray($map)
+function GetUnicodeMapping($map)
 {
-	// Build mapping to Unicode values
 	$ranges = array();
 	foreach($map as $c=>$v)
 	{
@@ -322,63 +322,48 @@ function MakeUnicodeArray($map)
 	}
 	$ranges[] = $range;
 
+	$res = array();
 	foreach($ranges as $range)
 	{
-		if(isset($s))
-			$s .= ',';
-		else
-			$s = 'array(';
-		$s .= $range[0].'=>';
 		$nb = $range[1]-$range[0]+1;
 		if($nb>1)
-			$s .= 'array('.$range[2].','.$nb.')';
+			$res[$range[0]] = array($range[2], $nb);
 		else
-			$s .= $range[2];
+			$res[$range[0]] = $range[2];
 	}
-	$s .= ')';
-	return $s;
-}
-
-function SaveToFile($file, $s, $mode)
-{
-	$f = fopen($file, 'w'.$mode);
-	if(!$f)
-		Error('Can\'t write to file '.$file);
-	fwrite($f, $s);
-	fclose($f);
+	return $res;
 }
 
 function MakeDefinitionFile($file, $type, $enc, $embed, $subset, $map, $info)
 {
-	$s = "<?php\n";
-	$s .= '$type = \''.$type."';\n";
-	$s .= '$name = \''.$info['FontName']."';\n";
-	$s .= '$desc = '.MakeFontDescriptor($info).";\n";
-	$s .= '$up = '.$info['UnderlinePosition'].";\n";
-	$s .= '$ut = '.$info['UnderlineThickness'].";\n";
-	$s .= '$cw = '.MakeWidthArray($info['Widths']).";\n";
-	$s .= '$enc = \''.$enc."';\n";
-	$diff = MakeFontEncoding($map);
+	$data['type'] = $type;
+	$data['name'] = $info['FontName'];
+	$data['desc'] = GetFontDescriptor($info);
+	$data['up'] = $info['UnderlinePosition'];
+	$data['ut'] = $info['UnderlineThickness'];
+	$data['cw'] = $info['Widths'];
+	$data['enc'] = $enc;
+	$diff = GetEncodingDiff($map);
 	if($diff)
-		$s .= '$diff = \''.$diff."';\n";
-	$s .= '$uv = '.MakeUnicodeArray($map).";\n";
+		$data['diff'] = $diff;
+	$data['uv'] = GetUnicodeMapping($map);
 	if($embed)
 	{
-		$s .= '$file = \''.$info['File']."';\n";
+		$data['file'] = $info['File'];
 		if($type=='Type1')
 		{
-			$s .= '$size1 = '.$info['Size1'].";\n";
-			$s .= '$size2 = '.$info['Size2'].";\n";
+			$data['size1'] = $info['Size1'];
+			$data['size2'] = $info['Size2'];
 		}
 		else
 		{
-			$s .= '$originalsize = '.$info['OriginalSize'].";\n";
+			$data['originalsize'] = $info['OriginalSize'];
 			if($subset)
-				$s .= "\$subsetted = true;\n";
+				$data['subsetted'] = true;
 		}
 	}
-	$s .= "?>\n";
-	SaveToFile($file, $s, 't');
+	SaveToFile($file, json_encode($data));
+	Message('Font definition file generated: '.$file);
 }
 
 function MakeFont($fontfile, $enc='cp1252', $embed=true, $subset=true)
@@ -386,28 +371,31 @@ function MakeFont($fontfile, $enc='cp1252', $embed=true, $subset=true)
 	// Generate a font definition file
 	if(!file_exists($fontfile))
 		Error('Font file not found: '.$fontfile);
-	$ext = strtolower(substr($fontfile,-3));
+	$ext = strtolower(pathinfo($fontfile, PATHINFO_EXTENSION));
 	if($ext=='ttf' || $ext=='otf')
 		$type = 'TrueType';
 	elseif($ext=='pfb')
 		$type = 'Type1';
+	elseif($ext=='php')
+	{
+		ConvertToJSON($fontfile);
+		return;
+	}
 	else
 		Error('Unrecognized font file extension: '.$ext);
 
 	$map = LoadMap($enc);
-
 	if($type=='TrueType')
 		$info = GetInfoFromTrueType($fontfile, $embed, $subset, $map);
 	else
 		$info = GetInfoFromType1($fontfile, $embed, $map);
-
-	$basename = substr(basename($fontfile), 0, -4);
+	$filename = pathinfo($fontfile, PATHINFO_FILENAME);
 	if($embed)
 	{
 		if(function_exists('gzcompress'))
 		{
-			$file = $basename.'.z';
-			SaveToFile($file, gzcompress($info['Data']), 'b');
+			$file = $filename.'.z';
+			SaveToFile($file, gzcompress($info['Data']));
 			$info['File'] = $file;
 			Message('Font file compressed: '.$file);
 		}
@@ -418,9 +406,7 @@ function MakeFont($fontfile, $enc='cp1252', $embed=true, $subset=true)
 			Notice('Font file could not be compressed (zlib extension not available)');
 		}
 	}
-
-	MakeDefinitionFile($basename.'.php', $type, $enc, $embed, $subset, $map, $info);
-	Message('Font definition file generated: '.$basename.'.php');
+	MakeDefinitionFile($filename.'.json', $type, $enc, $embed, $subset, $map, $info);
 }
 
 if(PHP_SAPI=='cli')

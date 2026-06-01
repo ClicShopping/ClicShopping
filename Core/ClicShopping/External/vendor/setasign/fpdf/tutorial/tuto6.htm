@@ -15,109 +15,109 @@ mode. It also contains a basic HTML parser.
 
 class </span>PDF <span class="kw">extends </span>FPDF
 <span class="kw">{
-protected </span>$B <span class="kw">= </span>0<span class="kw">;
-protected </span>$I <span class="kw">= </span>0<span class="kw">;
-protected </span>$U <span class="kw">= </span>0<span class="kw">;
-protected </span>$HREF <span class="kw">= </span><span class="str">''</span><span class="kw">;
+    protected </span>$B <span class="kw">= </span>0<span class="kw">;
+    protected </span>$I <span class="kw">= </span>0<span class="kw">;
+    protected </span>$U <span class="kw">= </span>0<span class="kw">;
+    protected </span>$HREF <span class="kw">= </span><span class="str">''</span><span class="kw">;
 
-function </span>WriteHTML<span class="kw">(</span>$html<span class="kw">)
-{
-    </span><span class="cmt">// HTML parser
-    </span>$html <span class="kw">= </span>str_replace<span class="kw">(</span><span class="str">"\n"</span><span class="kw">,</span><span class="str">' '</span><span class="kw">,</span>$html<span class="kw">);
-    </span>$a <span class="kw">= </span>preg_split<span class="kw">(</span><span class="str">'/&lt;(.*)&gt;/U'</span><span class="kw">,</span>$html<span class="kw">,-</span>1<span class="kw">,</span>PREG_SPLIT_DELIM_CAPTURE<span class="kw">);
-    foreach(</span>$a <span class="kw">as </span>$i<span class="kw">=&gt;</span>$e<span class="kw">)
+    function </span>WriteHTML<span class="kw">(</span>$html<span class="kw">)
     {
-        if(</span>$i<span class="kw">%</span>2<span class="kw">==</span>0<span class="kw">)
+        </span><span class="cmt">// HTML parser
+        </span>$html <span class="kw">= </span>str_replace<span class="kw">(</span><span class="str">"\n"</span><span class="kw">, </span><span class="str">' '</span><span class="kw">, </span>$html<span class="kw">);
+        </span>$a <span class="kw">= </span>preg_split<span class="kw">(</span><span class="str">'/&lt;(.*)&gt;/U'</span><span class="kw">, </span>$html<span class="kw">, -</span>1<span class="kw">, </span>PREG_SPLIT_DELIM_CAPTURE<span class="kw">);
+        foreach(</span>$a <span class="kw">as </span>$i<span class="kw">=&gt;</span>$e<span class="kw">)
         {
-            </span><span class="cmt">// Text
-            </span><span class="kw">if(</span>$<span class="kw">this-&gt;</span>HREF<span class="kw">)
-                </span>$<span class="kw">this-&gt;</span>PutLink<span class="kw">(</span>$<span class="kw">this-&gt;</span>HREF<span class="kw">,</span>$e<span class="kw">);
-            else
-                </span>$<span class="kw">this-&gt;</span>Write<span class="kw">(</span>5<span class="kw">,</span>$e<span class="kw">);
-        }
-        else
-        {
-            </span><span class="cmt">// Tag
-            </span><span class="kw">if(</span>$e<span class="kw">[</span>0<span class="kw">]==</span><span class="str">'/'</span><span class="kw">)
-                </span>$<span class="kw">this-&gt;</span>CloseTag<span class="kw">(</span>strtoupper<span class="kw">(</span>substr<span class="kw">(</span>$e<span class="kw">,</span>1<span class="kw">)));
+            if(</span>$i<span class="kw">%</span>2<span class="kw">==</span>0<span class="kw">)
+            {
+                </span><span class="cmt">// Text
+                </span><span class="kw">if(</span>$<span class="kw">this-&gt;</span>HREF<span class="kw">)
+                    </span>$<span class="kw">this-&gt;</span>PutLink<span class="kw">(</span>$<span class="kw">this-&gt;</span>HREF<span class="kw">, </span>$e<span class="kw">);
+                else
+                    </span>$<span class="kw">this-&gt;</span>Write<span class="kw">(</span>5<span class="kw">, </span>$e<span class="kw">);
+            }
             else
             {
-                </span><span class="cmt">// Extract attributes
-                </span>$a2 <span class="kw">= </span>explode<span class="kw">(</span><span class="str">' '</span><span class="kw">,</span>$e<span class="kw">);
-                </span>$tag <span class="kw">= </span>strtoupper<span class="kw">(</span>array_shift<span class="kw">(</span>$a2<span class="kw">));
-                </span>$attr <span class="kw">= array();
-                foreach(</span>$a2 <span class="kw">as </span>$v<span class="kw">)
+                </span><span class="cmt">// Tag
+                </span><span class="kw">if(</span>$e<span class="kw">[</span>0<span class="kw">]==</span><span class="str">'/'</span><span class="kw">)
+                    </span>$<span class="kw">this-&gt;</span>CloseTag<span class="kw">(</span>strtoupper<span class="kw">(</span>substr<span class="kw">(</span>$e<span class="kw">, </span>1<span class="kw">)));
+                else
                 {
-                    if(</span>preg_match<span class="kw">(</span><span class="str">'/([^=]*)=["\']?([^"\']*)/'</span><span class="kw">,</span>$v<span class="kw">,</span>$a3<span class="kw">))
-                        </span>$attr<span class="kw">[</span>strtoupper<span class="kw">(</span>$a3<span class="kw">[</span>1<span class="kw">])] = </span>$a3<span class="kw">[</span>2<span class="kw">];
+                    </span><span class="cmt">// Extract attributes
+                    </span>$a2 <span class="kw">= </span>explode<span class="kw">(</span><span class="str">' '</span><span class="kw">, </span>$e<span class="kw">);
+                    </span>$tag <span class="kw">= </span>strtoupper<span class="kw">(</span>array_shift<span class="kw">(</span>$a2<span class="kw">));
+                    </span>$attr <span class="kw">= array();
+                    foreach(</span>$a2 <span class="kw">as </span>$v<span class="kw">)
+                    {
+                        if(</span>preg_match<span class="kw">(</span><span class="str">'/([^=]*)=["\']?([^"\']*)/'</span><span class="kw">, </span>$v<span class="kw">, </span>$a3<span class="kw">))
+                            </span>$attr<span class="kw">[</span>strtoupper<span class="kw">(</span>$a3<span class="kw">[</span>1<span class="kw">])] = </span>$a3<span class="kw">[</span>2<span class="kw">];
+                    }
+                    </span>$<span class="kw">this-&gt;</span>OpenTag<span class="kw">(</span>$tag<span class="kw">, </span>$attr<span class="kw">);
                 }
-                </span>$<span class="kw">this-&gt;</span>OpenTag<span class="kw">(</span>$tag<span class="kw">,</span>$attr<span class="kw">);
             }
         }
     }
-}
 
-function </span>OpenTag<span class="kw">(</span>$tag<span class="kw">, </span>$attr<span class="kw">)
-{
-    </span><span class="cmt">// Opening tag
-    </span><span class="kw">if(</span>$tag<span class="kw">==</span><span class="str">'B' </span><span class="kw">|| </span>$tag<span class="kw">==</span><span class="str">'I' </span><span class="kw">|| </span>$tag<span class="kw">==</span><span class="str">'U'</span><span class="kw">)
-        </span>$<span class="kw">this-&gt;</span>SetStyle<span class="kw">(</span>$tag<span class="kw">,</span>true<span class="kw">);
-    if(</span>$tag<span class="kw">==</span><span class="str">'A'</span><span class="kw">)
-        </span>$<span class="kw">this-&gt;</span>HREF <span class="kw">= </span>$attr<span class="kw">[</span><span class="str">'HREF'</span><span class="kw">];
-    if(</span>$tag<span class="kw">==</span><span class="str">'BR'</span><span class="kw">)
-        </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">(</span>5<span class="kw">);
-}
-
-function </span>CloseTag<span class="kw">(</span>$tag<span class="kw">)
-{
-    </span><span class="cmt">// Closing tag
-    </span><span class="kw">if(</span>$tag<span class="kw">==</span><span class="str">'B' </span><span class="kw">|| </span>$tag<span class="kw">==</span><span class="str">'I' </span><span class="kw">|| </span>$tag<span class="kw">==</span><span class="str">'U'</span><span class="kw">)
-        </span>$<span class="kw">this-&gt;</span>SetStyle<span class="kw">(</span>$tag<span class="kw">,</span>false<span class="kw">);
-    if(</span>$tag<span class="kw">==</span><span class="str">'A'</span><span class="kw">)
-        </span>$<span class="kw">this-&gt;</span>HREF <span class="kw">= </span><span class="str">''</span><span class="kw">;
-}
-
-function </span>SetStyle<span class="kw">(</span>$tag<span class="kw">, </span>$enable<span class="kw">)
-{
-    </span><span class="cmt">// Modify style and select corresponding font
-    </span>$<span class="kw">this-&gt;</span>$tag <span class="kw">+= (</span>$enable <span class="kw">? </span>1 <span class="kw">: -</span>1<span class="kw">);
-    </span>$style <span class="kw">= </span><span class="str">''</span><span class="kw">;
-    foreach(array(</span><span class="str">'B'</span><span class="kw">, </span><span class="str">'I'</span><span class="kw">, </span><span class="str">'U'</span><span class="kw">) as </span>$s<span class="kw">)
+    function </span>OpenTag<span class="kw">(</span>$tag<span class="kw">, </span>$attr<span class="kw">)
     {
-        if(</span>$<span class="kw">this-&gt;</span>$s<span class="kw">&gt;</span>0<span class="kw">)
-            </span>$style <span class="kw">.= </span>$s<span class="kw">;
+        </span><span class="cmt">// Opening tag
+        </span><span class="kw">if(</span>$tag<span class="kw">==</span><span class="str">'B' </span><span class="kw">|| </span>$tag<span class="kw">==</span><span class="str">'I' </span><span class="kw">|| </span>$tag<span class="kw">==</span><span class="str">'U'</span><span class="kw">)
+            </span>$<span class="kw">this-&gt;</span>SetStyle<span class="kw">(</span>$tag<span class="kw">, </span>true<span class="kw">);
+        if(</span>$tag<span class="kw">==</span><span class="str">'A'</span><span class="kw">)
+            </span>$<span class="kw">this-&gt;</span>HREF <span class="kw">= </span>$attr<span class="kw">[</span><span class="str">'HREF'</span><span class="kw">];
+        if(</span>$tag<span class="kw">==</span><span class="str">'BR'</span><span class="kw">)
+            </span>$<span class="kw">this-&gt;</span>Ln<span class="kw">(</span>5<span class="kw">);
     }
-    </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">''</span><span class="kw">,</span>$style<span class="kw">);
-}
 
-function </span>PutLink<span class="kw">(</span>$URL<span class="kw">, </span>$txt<span class="kw">)
-{
-    </span><span class="cmt">// Put a hyperlink
-    </span>$<span class="kw">this-&gt;</span>SetTextColor<span class="kw">(</span>0<span class="kw">,</span>0<span class="kw">,</span>255<span class="kw">);
-    </span>$<span class="kw">this-&gt;</span>SetStyle<span class="kw">(</span><span class="str">'U'</span><span class="kw">,</span>true<span class="kw">);
-    </span>$<span class="kw">this-&gt;</span>Write<span class="kw">(</span>5<span class="kw">,</span>$txt<span class="kw">,</span>$URL<span class="kw">);
-    </span>$<span class="kw">this-&gt;</span>SetStyle<span class="kw">(</span><span class="str">'U'</span><span class="kw">,</span>false<span class="kw">);
-    </span>$<span class="kw">this-&gt;</span>SetTextColor<span class="kw">(</span>0<span class="kw">);
-}
+    function </span>CloseTag<span class="kw">(</span>$tag<span class="kw">)
+    {
+        </span><span class="cmt">// Closing tag
+        </span><span class="kw">if(</span>$tag<span class="kw">==</span><span class="str">'B' </span><span class="kw">|| </span>$tag<span class="kw">==</span><span class="str">'I' </span><span class="kw">|| </span>$tag<span class="kw">==</span><span class="str">'U'</span><span class="kw">)
+            </span>$<span class="kw">this-&gt;</span>SetStyle<span class="kw">(</span>$tag<span class="kw">, </span>false<span class="kw">);
+        if(</span>$tag<span class="kw">==</span><span class="str">'A'</span><span class="kw">)
+            </span>$<span class="kw">this-&gt;</span>HREF <span class="kw">= </span><span class="str">''</span><span class="kw">;
+    }
+
+    function </span>SetStyle<span class="kw">(</span>$tag<span class="kw">, </span>$enable<span class="kw">)
+    {
+        </span><span class="cmt">// Modify style and select corresponding font
+        </span>$<span class="kw">this-&gt;</span>$tag <span class="kw">+= (</span>$enable <span class="kw">? </span>1 <span class="kw">: -</span>1<span class="kw">);
+        </span>$style <span class="kw">= </span><span class="str">''</span><span class="kw">;
+        foreach(array(</span><span class="str">'B'</span><span class="kw">, </span><span class="str">'I'</span><span class="kw">, </span><span class="str">'U'</span><span class="kw">) as </span>$s<span class="kw">)
+        {
+            if(</span>$<span class="kw">this-&gt;</span>$s<span class="kw">&gt;</span>0<span class="kw">)
+                </span>$style <span class="kw">.= </span>$s<span class="kw">;
+        }
+        </span>$<span class="kw">this-&gt;</span>SetFont<span class="kw">(</span><span class="str">''</span><span class="kw">, </span>$style<span class="kw">);
+    }
+
+    function </span>PutLink<span class="kw">(</span>$URL<span class="kw">, </span>$txt<span class="kw">)
+    {
+        </span><span class="cmt">// Put a hyperlink
+        </span>$<span class="kw">this-&gt;</span>SetTextColor<span class="kw">(</span>0<span class="kw">, </span>0<span class="kw">, </span>255<span class="kw">);
+        </span>$<span class="kw">this-&gt;</span>SetStyle<span class="kw">(</span><span class="str">'U'</span><span class="kw">, </span>true<span class="kw">);
+        </span>$<span class="kw">this-&gt;</span>Write<span class="kw">(</span>5<span class="kw">, </span>$txt<span class="kw">, </span>$URL<span class="kw">);
+        </span>$<span class="kw">this-&gt;</span>SetStyle<span class="kw">(</span><span class="str">'U'</span><span class="kw">, </span>false<span class="kw">);
+        </span>$<span class="kw">this-&gt;</span>SetTextColor<span class="kw">(</span>0<span class="kw">);
+    }
 }
 
 </span>$html <span class="kw">= </span><span class="str">'You can now easily print text mixing different styles: &lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;,
 &lt;u&gt;underlined&lt;/u&gt;, or &lt;b&gt;&lt;i&gt;&lt;u&gt;all at once&lt;/u&gt;&lt;/i&gt;&lt;/b&gt;!&lt;br&gt;&lt;br&gt;You can also insert links on
-text, such as &lt;a href="http://www.fpdf.org"&gt;www.fpdf.org&lt;/a&gt;, or on an image: click on the logo.'</span><span class="kw">;
+text, such as &lt;a href="https://www.fpdf.org"&gt;www.fpdf.org&lt;/a&gt;, or on an image: click on the logo.'</span><span class="kw">;
 
 </span>$pdf <span class="kw">= new </span>PDF<span class="kw">();
 </span><span class="cmt">// First page
 </span>$pdf<span class="kw">-&gt;</span>AddPage<span class="kw">();
-</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">''</span><span class="kw">,</span>20<span class="kw">);
-</span>$pdf<span class="kw">-&gt;</span>Write<span class="kw">(</span>5<span class="kw">,</span><span class="str">"To find out what's new in this tutorial, click "</span><span class="kw">);
-</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">''</span><span class="kw">,</span><span class="str">'U'</span><span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">, </span><span class="str">''</span><span class="kw">, </span>20<span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>Write<span class="kw">(</span>5<span class="kw">, </span><span class="str">"To find out what's new in this tutorial, click "</span><span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">''</span><span class="kw">, </span><span class="str">'U'</span><span class="kw">);
 </span>$link <span class="kw">= </span>$pdf<span class="kw">-&gt;</span>AddLink<span class="kw">();
-</span>$pdf<span class="kw">-&gt;</span>Write<span class="kw">(</span>5<span class="kw">,</span><span class="str">'here'</span><span class="kw">,</span>$link<span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>Write<span class="kw">(</span>5<span class="kw">, </span><span class="str">'here'</span><span class="kw">, </span>$link<span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">''</span><span class="kw">);
 </span><span class="cmt">// Second page
 </span>$pdf<span class="kw">-&gt;</span>AddPage<span class="kw">();
 </span>$pdf<span class="kw">-&gt;</span>SetLink<span class="kw">(</span>$link<span class="kw">);
-</span>$pdf<span class="kw">-&gt;</span>Image<span class="kw">(</span><span class="str">'logo.png'</span><span class="kw">,</span>10<span class="kw">,</span>12<span class="kw">,</span>30<span class="kw">,</span>0<span class="kw">,</span><span class="str">''</span><span class="kw">,</span><span class="str">'http://www.fpdf.org'</span><span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>Image<span class="kw">(</span><span class="str">'logo.png'</span><span class="kw">, </span>10<span class="kw">, </span>12<span class="kw">, </span>30<span class="kw">, </span>0<span class="kw">, </span><span class="str">''</span><span class="kw">, </span><span class="str">'https://www.fpdf.org'</span><span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>SetLeftMargin<span class="kw">(</span>45<span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>SetFontSize<span class="kw">(</span>14<span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>WriteHTML<span class="kw">(</span>$html<span class="kw">);

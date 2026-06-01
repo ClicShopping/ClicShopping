@@ -4,15 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little refactoring">
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little update">
+      <change beforePath="$PROJECT_DIR$/.idea/clicshopping_V3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/clicshopping_V3.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/Update.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/AI/Ecommerce/Module/Hooks/ClicShoppingAdmin/Products/Update.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Classes/ClicShoppingAdmin/Image.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Classes/ClicShoppingAdmin/Image.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Classes/ClicShoppingAdmin/ProductsAdmin.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Classes/ClicShoppingAdmin/ProductsAdmin.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Sites/ClicShoppingAdmin/Pages/Home/Actions/DynamicPricingRules/SaveDynamicPricingRules.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Sites/ClicShoppingAdmin/Pages/Home/Actions/DynamicPricingRules/SaveDynamicPricingRules.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Sites/ClicShoppingAdmin/Pages/Home/Actions/Products/Insert.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Sites/ClicShoppingAdmin/Pages/Home/Actions/Products/Insert.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Sites/ClicShoppingAdmin/Pages/Home/Actions/Products/Update.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Sites/ClicShoppingAdmin/Pages/Home/Actions/Products/Update.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/Sites/ClicShoppingAdmin/Pages/Home/Actions/SendEmailToUser/Process.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/EMail/Sites/ClicShoppingAdmin/Pages/Home/Actions/SendEmailToUser/Process.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/BannerManager/Sites/ClicShoppingAdmin/Pages/Home/Actions/BannerManager/SetFlag.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/BannerManager/Sites/ClicShoppingAdmin/Pages/Home/Actions/BannerManager/SetFlag.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,23 +55,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.00000000000009" />
-      <entry key="MS500" value="1.002664091880285" />
-      <entry key="S2" value="1.3424940337285565" />
-      <entry key="S5" value="1.9990664451847868" />
-      <entry key="S10" value="2.5457771461254843" />
-      <entry key="S30" value="3.305463625787197" />
-      <entry key="S60" value="3.613619771294299" />
-      <entry key="M2" value="3.8432391343684023" />
-      <entry key="M5" value="4.608059994037228" />
-      <entry key="M10" value="7.184907325509888" />
-      <entry key="M15" value="11.404290382650881" />
-      <entry key="M30" value="25.485337028396557" />
-      <entry key="H1" value="46.35748992437963" />
-      <entry key="H2" value="69.12880579782687" />
-      <entry key="H4" value="96.36528527375444" />
-      <entry key="D1" value="203.8011343529863" />
-      <entry key="W1" value="253.77752610455912" />
+      <entry key="MS100" value="1.0657184911927933" />
+      <entry key="MS500" value="1.8621768680455801" />
+      <entry key="S2" value="3.307654959738423" />
+      <entry key="S5" value="4.411963854207144" />
+      <entry key="S10" value="5.187638063178752" />
+      <entry key="S30" value="6.157904159292363" />
+      <entry key="S60" value="6.534260152215339" />
+      <entry key="M2" value="6.801532055403379" />
+      <entry key="M5" value="7.588837934092245" />
+      <entry key="M10" value="10.171073900488317" />
+      <entry key="M15" value="14.390463451815881" />
+      <entry key="M30" value="28.470740327168976" />
+      <entry key="H1" value="49.344496804066" />
+      <entry key="H2" value="72.1192026543607" />
+      <entry key="H4" value="99.3586258669868" />
+      <entry key="D1" value="206.79880310361042" />
+      <entry key="W1" value="256.77711190618527" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -98,23 +93,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9138314502294826" />
-      <entry key="MS500" value="0.9847558256716686" />
-      <entry key="S2" value="1.336417730222981" />
-      <entry key="S5" value="1.9954014815537997" />
-      <entry key="S10" value="2.5434179705499904" />
-      <entry key="S30" value="3.304426274935238" />
-      <entry key="S60" value="3.6130486837598013" />
-      <entry key="M2" value="3.842912999614824" />
-      <entry key="M5" value="4.607777302790216" />
-      <entry key="M10" value="7.1843207355105525" />
-      <entry key="M15" value="11.403217059133102" />
-      <entry key="M30" value="25.48331487751313" />
-      <entry key="H1" value="46.355195282696464" />
-      <entry key="H2" value="69.12690944984898" />
-      <entry key="H4" value="96.36374989956309" />
-      <entry key="D1" value="203.80033859423122" />
-      <entry key="W1" value="253.77737354889524" />
+      <entry key="MS100" value="1.0365720318728378" />
+      <entry key="MS500" value="1.8495609535853788" />
+      <entry key="S2" value="3.2998558454802422" />
+      <entry key="S5" value="4.40707547129784" />
+      <entry key="S10" value="5.1845126771798205" />
+      <entry key="S30" value="6.156559688034394" />
+      <entry key="S60" value="6.5335265716289115" />
+      <entry key="M2" value="6.8011223174493" />
+      <entry key="M5" value="7.588521570701884" />
+      <entry key="M10" value="10.170470956574759" />
+      <entry key="M15" value="14.389379753354977" />
+      <entry key="M30" value="28.468713504868955" />
+      <entry key="H1" value="49.342199900657896" />
+      <entry key="H2" value="72.11730512110567" />
+      <entry key="H4" value="99.35708987551438" />
+      <entry key="D1" value="206.7980072335641" />
+      <entry key="W1" value="256.776959333578" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -295,23 +290,7 @@
       <workItem from="1780161404348" duration="397000" />
       <workItem from="1780224409266" duration="8000" />
       <workItem from="1780245161323" duration="646000" />
-      <workItem from="1780251154059" duration="7420000" />
-    </task>
-    <task id="LOCAL-00049" summary="fix">
-      <option name="closed" value="true" />
-      <created>1778767250688</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1778767250688</updated>
-    </task>
-    <task id="LOCAL-00050" summary="some update">
-      <option name="closed" value="true" />
-      <created>1778775292505</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1778775292506</updated>
+      <workItem from="1780251154059" duration="9048000" />
     </task>
     <task id="LOCAL-00051" summary="fix upload">
       <option name="closed" value="true" />
@@ -689,7 +668,23 @@
       <option name="project" value="LOCAL" />
       <updated>1780301124171</updated>
     </task>
-    <option name="localTasksCounter" value="98" />
+    <task id="LOCAL-00098" summary="little refactoring">
+      <option name="closed" value="true" />
+      <created>1780305065656</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1780305065656</updated>
+    </task>
+    <task id="LOCAL-00099" summary="little update">
+      <option name="closed" value="true" />
+      <created>1780305938745</created>
+      <option name="number" value="00099" />
+      <option name="presentableId" value="LOCAL-00099" />
+      <option name="project" value="LOCAL" />
+      <updated>1780305938745</updated>
+    </task>
+    <option name="localTasksCounter" value="100" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -708,7 +703,6 @@
     <MESSAGE value="update" />
     <MESSAGE value="pdf refactoring" />
     <MESSAGE value="improvement" />
-    <MESSAGE value="little update" />
     <MESSAGE value="license" />
     <MESSAGE value="some improvement" />
     <MESSAGE value="api update" />
@@ -721,7 +715,8 @@
     <MESSAGE value="some fix" />
     <MESSAGE value="antispam improvement" />
     <MESSAGE value="little refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="little refactoring" />
+    <MESSAGE value="little update" />
+    <option name="LAST_COMMIT_MESSAGE" value="little update" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

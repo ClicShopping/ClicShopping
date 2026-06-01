@@ -14,8 +14,8 @@ Let's start with the classic example:
 
 </span>$pdf <span class="kw">= new </span>FPDF<span class="kw">();
 </span>$pdf<span class="kw">-&gt;</span>AddPage<span class="kw">();
-</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">'B'</span><span class="kw">,</span>16<span class="kw">);
-</span>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>40<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Hello World!'</span><span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">, </span><span class="str">'B'</span><span class="kw">, </span>16<span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>40<span class="kw">, </span>10<span class="kw">, </span><span class="str">'Hello World!'</span><span class="kw">);
 </span>$pdf<span class="kw">-&gt;</span>Output<span class="kw">();
 </span>?&gt;</code></pre>
 </div>
@@ -24,7 +24,7 @@ After including the library file, we create an FPDF object.
 The <a href='../doc/__construct.htm'>constructor</a> is used here with the default values: pages are in A4 portrait and
 the unit of measure is millimeter. It could have been specified explicitly with:
 <div class="source">
-<pre><code>$pdf <span class="kw">= new </span>FPDF<span class="kw">(</span><span class="str">'P'</span><span class="kw">,</span><span class="str">'mm'</span><span class="kw">,</span><span class="str">'A4'</span><span class="kw">);
+<pre><code>$pdf <span class="kw">= new </span>FPDF<span class="kw">(</span><span class="str">'P'</span><span class="kw">, </span><span class="str">'mm'</span><span class="kw">, </span><span class="str">'A4'</span><span class="kw">);
 </span></code></pre>
 </div>
 It's possible to use landscape (<code>L</code>), other page sizes (such as <code>Letter</code> and
@@ -39,7 +39,7 @@ borders; the margins can be changed with <a href='../doc/setmargins.htm'>SetMarg
 Before we can print text, it's mandatory to select a font with <a href='../doc/setfont.htm'>SetFont()</a>.
 We choose Arial bold 16:
 <div class="source">
-<pre><code>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">'B'</span><span class="kw">,</span>16<span class="kw">);
+<pre><code>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">, </span><span class="str">'B'</span><span class="kw">, </span>16<span class="kw">);
 </span></code></pre>
 </div>
 We could have specified italics with I, underlined with U or a regular font with an empty string
@@ -52,12 +52,12 @@ which contains a line of text. It is output at the current position. We specify 
 its text (centered or aligned), if borders should be drawn, and where the current position
 moves after it (to the right, below or to the beginning of the next line). To add a frame, we would do this:
 <div class="source">
-<pre><code>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>40<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Hello World !'</span><span class="kw">,</span>1<span class="kw">);
+<pre><code>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>40<span class="kw">, </span>10<span class="kw">, </span><span class="str">'Hello World !'</span><span class="kw">, </span>1<span class="kw">);
 </span></code></pre>
 </div>
 To add a new cell next to it with centered text and go to the next line, we would do:
 <div class="source">
-<pre><code>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>60<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Powered by FPDF.'</span><span class="kw">,</span>0<span class="kw">,</span>1<span class="kw">,</span><span class="str">'C'</span><span class="kw">);
+<pre><code>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>60<span class="kw">, </span>10<span class="kw">, </span><span class="str">'Powered by FPDF.'</span><span class="kw">, </span>0<span class="kw">, </span>1<span class="kw">, </span><span class="str">'C'</span><span class="kw">);
 </span></code></pre>
 </div>
 Remark: the line break can also be done with <a href='../doc/ln.htm'>Ln()</a>. This method additionnaly allows to specify
