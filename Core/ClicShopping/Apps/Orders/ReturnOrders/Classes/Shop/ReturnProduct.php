@@ -102,9 +102,9 @@ class ReturnProduct
    * Retrieves detailed customer information for a specific order.
    *
    * @param int $order_id The ID of the order for which customer information is retrieved.
-   * @return array Returns an associative array containing customer and order details.
+   * @return array|bool Returns an associative array of customer/order details, or false if the order does not exist.
    */
-  public static function getInfoCustomer(int $order_id): array
+  public static function getInfoCustomer(int $order_id): array|bool
   {
     $CLICSHOPPING_Db = Registry::get('Db');
 
@@ -182,17 +182,16 @@ class ReturnProduct
   public static function removeButtonHistoryInfo(int $order_id, int $product_id): array
   {
     $CLICSHOPPING_Db = Registry::get('Db');
-    $order_id = HTML::sanitize($_GET['order_id']);
 
     $Qremove = $CLICSHOPPING_Db->prepare('select return_id,
                                                   opened,
-                                                  return_status_id  
+                                                  return_status_id
                                            from :table_return_orders
                                            where order_id = :order_id
                                            and product_id = :product_id
                                           ');
-    $Qremove->bindInt(':order_id', $order_id);
-    $Qremove->bindInt(':product_id', $product_id);
+    $Qremove->bindInt(':order_id', (int)$order_id);
+    $Qremove->bindInt(':product_id', (int)$product_id);
 
     $Qremove->execute();
 

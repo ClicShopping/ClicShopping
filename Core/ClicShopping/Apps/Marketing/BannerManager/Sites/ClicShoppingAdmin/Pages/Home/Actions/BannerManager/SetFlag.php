@@ -22,8 +22,8 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-    if (isset($_GET['flag']) && ($_GET['flag'] == 0 || ($_GET['flag'] == 1))) {
-      Status::setBannerStatus($_GET['bID'], $_GET['flag']);
+    if (isset($_GET['bID'], $_GET['flag']) && ($_GET['flag'] == 0 || ($_GET['flag'] == 1))) {
+      Status::setBannerStatus((int)$_GET['bID'], (int)$_GET['flag']);
     } else {
       $CLICSHOPPING_MessageStack->add($CLICSHOPPING_BannerManager->getDef('error_unknown_status_flag'), 'error');
     }

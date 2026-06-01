@@ -25,15 +25,32 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Mail = Registry::get('Mail');
 
     if (isset($_POST['action']) && ($_POST['action'] == 'process') && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
-      $rId = HTML::sanitize($_GET['rId']);
-      $oID = HTML::sanitize($_GET['oId']);
-      $comment = HTML::sanitize($_POST['comment']);
+      if (!isset($_GET['rId'], $_GET['oId']) || !is_numeric($_GET['rId']) || !is_numeric($_GET['oId'])) {
+        CLICSHOPPING::redirect(null, 'Account&History');
+      }
+
+      $rId = (int)HTML::sanitize($_GET['rId']);
+      $oID = (int)HTML::sanitize($_GET['oId']);
+      $comment = HTML::sanitize($_POST['comment'] ?? '');
+
+      // Access control: the return must belong to the logged-in customer (prevents IDOR
+      // where a customer appends history to someone else's return and emails the victim).
+      $Qowner = $CLICSHOPPING_Db->prepare('select customer_id
+                                             from :table_return_orders
+                                             where return_id = :return_id
+                                            ');
+      $Qowner->bindInt(':return_id', $rId);
+      $Qowner->execute();
+
+      if ((int)$Qowner->valueInt('customer_id') !== (int)$CLICSHOPPING_Customer->getID()) {
+        CLICSHOPPING::redirect(null, 'Account&History');
+      }
 
       $info_customer = ReturnProduct::getInfoCustomer($oID);
 
       $Qreturn = $CLICSHOPPING_Db->prepare('select return_id,
                                                      return_status_id
-                                              from :table_return_orders_history 
+                                              from :table_return_orders_history
                                               where return_id = :return_id
                                               order by return_status_id asc
                                               limit 1
@@ -45,7 +62,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $return_status_id = $Qreturn->valueInt('return_status_id');
 
       $sql_data_array = [
-        'return_id' => $rId,
+        'return_id' => (int)$rId,
         'return_status_id' => $return_status_id,
         'notify' => 0,
         'comment' => $comment,
@@ -78,7 +95,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $to_name = $CLICSHOPPING_Customer->getName();
       $subject = $email_text_subject_customer;
 
-      $CLICSHOPPING_Mail->addHtml($email_text_content_customer . '<br />' . $templateEmailSignature . '<br />>' . $templateEmailFooter);
+      $CLICSHOPPING_Mail->addHtml($email_text_content_customer . '<br />' . $templateEmailSignature . '<br />' . $templateEmailFooter);
       $CLICSHOPPING_Mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
 
       $CLICSHOPPING_Hooks->call('ProductReturnInfoHistory', 'Process');

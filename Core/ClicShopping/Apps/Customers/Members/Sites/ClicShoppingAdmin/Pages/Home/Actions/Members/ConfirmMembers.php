@@ -27,7 +27,11 @@ class ConfirmMembers extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-    if (isset($_GET['cID'])) $customers_id = HTML::sanitize($_GET['cID']);
+    if (!isset($_GET['cID'])) {
+      $CLICSHOPPING_Members->redirect('Members&page=' . $page);
+    }
+
+    $customers_id = (int)HTML::sanitize($_GET['cID']);
 
     $QdefaultCustomerGroup = $CLICSHOPPING_Members->db->prepare('select customers_group_id,
                                                                            group_order_taxe,
@@ -59,7 +63,7 @@ class ConfirmMembers extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $QcheckCustomer->execute();
 
 // Cryptage du mot de passe
-    $newpass = Hash::getRandomString(ENTRY_PASSWORD_MIN_LENGTH);
+    $newpass = Hash::getRandomString(max(16, (int)ENTRY_PASSWORD_MIN_LENGTH));
 
     $crypted_password = Hash::encrypt($newpass);
 
@@ -119,7 +123,7 @@ class ConfirmMembers extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $to_name = Hash::displayDecryptedDataText($QcheckCustomer->value('customers_firstname')) . ' ' . Hash::displayDecryptedDataText($QcheckCustomer->value('customers_lastname'));
     $subject = $email_text_subject;
 
-    $CLICSHOPPING_Mail->addHtml('<br />' . nl2br(sprintf($text_password_body, $QcheckCustomer->value('customers_email_address'), $newpass)));
+    $CLICSHOPPING_Mail->addHtml('<br />' . nl2br($text_password_body));
     $CLICSHOPPING_Mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
 
     $CLICSHOPPING_Members->redirect('Members&page=' . $page);

@@ -221,3 +221,6 @@ INSERT INTO `clic_configuration` VALUES(2696, 'Do you want to display the quanti
 #products info recommendation (inline module, not renderer-based)
 DELETE FROM `clic_configuration` WHERE configuration_key = 'MODULE_PRODUCTS_INFO_RECOMMENDATION_SHORT_DESCRIPTION_DELETE_WORLDS';
 INSERT INTO `clic_configuration` VALUES(2697, 'Do you want to display the quantity input field ?', 'MODULE_PRODUCTS_INFO_RECOMMENDATION_DISPLAY_QUANTITY_INPUT', 'False', 'Show the editable quantity field next to the cart button. When disabled, the quantity is submitted automatically (and products with a minimum order quantity greater than 1 link to their product page).', 6, 8, NULL, '2026-05-30 14:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+#email batch
+ALTER TABLE :table_newsletters_customers_temp ADD batch_type tinyint NOT NULL DEFAULT 1 FIRST, ADD KEY batch_type (batch_type);

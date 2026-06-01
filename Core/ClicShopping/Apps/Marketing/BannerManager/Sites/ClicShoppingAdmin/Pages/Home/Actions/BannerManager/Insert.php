@@ -11,7 +11,7 @@ namespace ClicShopping\Apps\Marketing\BannerManager\Sites\ClicShoppingAdmin\Page
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
-class insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
+class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public function execute()
   {
@@ -22,20 +22,20 @@ class insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-    $banners_title = HTML::sanitize($_POST['banners_title']);
-    $banners_title_admin = HTML::sanitize($_POST['banners_title_admin']);
-    $banners_url = HTML::sanitize($_POST['banners_url']);
-    $new_banners_group = HTML::sanitize($_POST['new_banners_group']);
-    $banners_group = (empty($new_banners_group)) ? HTML::sanitize($_POST['banners_group']) : $new_banners_group;
-    $banners_target = $_POST['banners_target'];
-    $banners_html_text = $_POST['banners_html_text'];
-    $customers_group_id = HTML::sanitize($_POST['customers_group_id']);
-    $banners_image_local = $_POST['banners_image_local'];
-    $banners_image_show = $_POST['banners_image_show'];
-    $expires_date = HTML::sanitize($_POST['expires_date']);
-    $expires_impressions = HTML::sanitize($_POST['expires_impressions']);
-    $date_scheduled = HTML::sanitize($_POST['date_scheduled']);
-    $language_id = HTML::sanitize($_POST['languages_id']);
+    $banners_title = HTML::sanitize($_POST['banners_title'] ?? '');
+    $banners_title_admin = HTML::sanitize($_POST['banners_title_admin'] ?? '');
+    $banners_url = HTML::sanitize($_POST['banners_url'] ?? '');
+    $new_banners_group = HTML::sanitize($_POST['new_banners_group'] ?? '');
+    $banners_group = (empty($new_banners_group)) ? HTML::sanitize($_POST['banners_group'] ?? '') : $new_banners_group;
+    $banners_target = $_POST['banners_target'] ?? '';
+    $banners_html_text = $_POST['banners_html_text'] ?? '';
+    $customers_group_id = HTML::sanitize($_POST['customers_group_id'] ?? '');
+    $banners_image_local = $_POST['banners_image_local'] ?? '';
+    $banners_image_show = $_POST['banners_image_show'] ?? null;
+    $expires_date = HTML::sanitize($_POST['expires_date'] ?? '');
+    $expires_impressions = HTML::sanitize($_POST['expires_impressions'] ?? '');
+    $date_scheduled = HTML::sanitize($_POST['date_scheduled'] ?? '');
+    $language_id = HTML::sanitize($_POST['languages_id'] ?? '');
     $banners_theme = (empty($_POST['banners_theme'])) ? NULL : HTML::sanitize($_POST['banners_theme']);
 
     if (empty($banners_theme)) {
@@ -50,7 +50,7 @@ class insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
     }
 
 // Insertion de l'image de la banniere
-    if (!empty($banners_image_local) && !\is_null($_POST['banners_image_local'])) {
+    if (!empty($banners_image_local)) {
       $banners_image_local = $CLICSHOPPING_Wysiwyg::getWysiwygImageAlone($banners_image_local);
     } else {
       if (!\is_null($banners_image_show)) {

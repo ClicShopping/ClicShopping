@@ -237,7 +237,7 @@ class ReviewsClass
         'products_id' => (int)$this->productsCommon->getID(),
         'customers_id' => (int)$this->customer->getID(),
         'customers_name' => Hash::encryptDatatext($this->customer->getName()),
-        'reviews_rating' => (int)HTML::sanitize($_POST['rating']),
+        'reviews_rating' => (int)($_POST['rating'] ?? 0),
         'date_added' => 'now()',
         'last_modified' => 'now()',
         'status' => 0,
@@ -250,7 +250,7 @@ class ReviewsClass
         'products_id' => (int)$this->productsCommon->getID(),
         'customers_id' => (int)$this->customer->getID(),
         'customers_name' => Hash::encryptDatatext($this->customer->getName()),
-        'reviews_rating' => (int)HTML::sanitize($_POST['rating']),
+        'reviews_rating' => (int)($_POST['rating'] ?? 0),
         'date_added' => 'now()',
         'last_modified' => 'now()',
         'status' => 0,
@@ -265,7 +265,7 @@ class ReviewsClass
     $array_sql = [
       'reviews_id' => (int)$insert_id,
       'languages_id' => (int)$this->lang->getId(),
-      'reviews_text' => HTML::sanitize($_POST['review'])
+      'reviews_text' => HTML::sanitize($_POST['review'] ?? '')
     ];
 
     $this->db->save('reviews_description', $array_sql);

@@ -22,12 +22,12 @@ class Delete extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_ProductsCommon = Registry::get('ProductsCommon');
     $CLICSHOPPING_Reviews = Registry::get('Reviews');
 
-    if (!isset($_GET['products_id']) && !is_numeric($CLICSHOPPING_ProductsCommon->getId())) {
+    if (!is_numeric($CLICSHOPPING_ProductsCommon->getId())) {
       CLICSHOPPING::redirect();
     }
 
-    if (isset($_POST['action']) && ($_POST['action'] == 'process') && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
-      $review_id = HTML::sanitize($_GET['reviews_id']);
+    if (isset($_POST['action'], $_POST['formid'], $_GET['reviews_id']) && ($_POST['action'] == 'process') && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
+      $review_id = (int)HTML::sanitize($_GET['reviews_id']);
       $products_id = $CLICSHOPPING_ProductsCommon->getId();
 
       $Ocheck = $CLICSHOPPING_Db->prepare('select reviews_id

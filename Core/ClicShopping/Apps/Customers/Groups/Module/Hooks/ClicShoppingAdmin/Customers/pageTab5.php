@@ -54,11 +54,15 @@ class pageTab5 implements \ClicShopping\OM\Modules\HooksInterface
 
     $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Customers/page_tab_5');
 
+    if (!isset($_GET['cID'])) {
+      return false;
+    }
+
     $Qcustomers = $this->app->db->prepare('select customers_group_id
                                               from :table_customers
                                               where customers_id = :customers_id
                                             ');
-    $Qcustomers->bindInt(':customers_id', $_GET['cID']);
+    $Qcustomers->bindInt(':customers_id', (int)$_GET['cID']);
     $Qcustomers->execute();
 
     $cInfo = new ObjectInfo($Qcustomers->toArray());

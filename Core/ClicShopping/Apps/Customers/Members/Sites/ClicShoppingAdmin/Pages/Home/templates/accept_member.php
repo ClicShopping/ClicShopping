@@ -23,7 +23,9 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
 // Permettre l'utilisation de l'approbation des comptes en mode B2B
 if (MODE_B2B_B2C == 'False') CLICSHOPPING::redirect();
 
-if (isset($_GET['cID'])) $cID = HTML::sanitize($_GET['cID']);
+if (!isset($_GET['cID'])) $CLICSHOPPING_Members->redirect('Members');
+
+$cID = (int)HTML::sanitize($_GET['cID']);
 
 $Qcustomers = $CLICSHOPPING_Members->db->prepare('select customers_id,
                                                           customers_lastname,

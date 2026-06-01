@@ -21,19 +21,11 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
     if (isset($_GET['rID'])) {
-      $reviews_id = HTML::sanitize($_GET['rID']);
+      $reviews_id = (int)HTML::sanitize($_GET['rID']);
 
-      if (isset($_POST['reviews_text'])) {
-        $reviews_text = HTML::sanitize($_POST['reviews_text']);
-      }
-
-      if (isset($_POST['status'])) {
-        $reviews_status = HTML::sanitize($_POST['status']);
-      }
-
-      if (isset($_POST['languages_id'])) {
-        $languages_id = HTML::sanitize($_POST['languages_id']);
-      }
+      $reviews_text = isset($_POST['reviews_text']) ? HTML::sanitize($_POST['reviews_text']) : '';
+      $reviews_status = isset($_POST['status']) ? (int)HTML::sanitize($_POST['status']) : 0;
+      $languages_id = isset($_POST['languages_id']) ? (int)HTML::sanitize($_POST['languages_id']) : (int)Registry::get('Language')->getId();
 
       $sql_array = [
         'status' => (int)$reviews_status,

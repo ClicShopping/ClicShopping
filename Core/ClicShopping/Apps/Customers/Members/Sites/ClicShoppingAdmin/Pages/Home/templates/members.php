@@ -174,9 +174,9 @@ if (\defined('B2C') && B2C == 'true') {
         }
         ?>
         <tr>
-          <td scope="row"><?php echo Hash::displayDecryptedDataText($Qcustomers->value('customers_lastname')); ?></td>
-          <td><?php echo Hash::displayDecryptedDataText($Qcustomers->value('customers_firstname')); ?></td>
-          <td><?php echo Hash::displayDecryptedDataText($Qcustomers->value('entry_company')); ?></td>
+          <td scope="row"><?php echo HTML::outputProtected(Hash::displayDecryptedDataText($Qcustomers->value('customers_lastname'))); ?></td>
+          <td><?php echo HTML::outputProtected(Hash::displayDecryptedDataText($Qcustomers->value('customers_firstname'))); ?></td>
+          <td><?php echo HTML::outputProtected(Hash::displayDecryptedDataText($Qcustomers->value('entry_company'))); ?></td>
           <td class="text-end"><?php echo DateTime::toShort($Qinfo->value('date_account_created')); ?></td>
           <td class="text-end">
             <div class="btn-group d-flex justify-content-end" role="group" aria-label="buttonGroup">
@@ -185,7 +185,7 @@ if (\defined('B2C') && B2C == 'true') {
               echo '&nbsp;';
               echo HTML::link(CLICSHOPPING::link(null, 'A&Customers\Customers&Edit&cID=' . $Qcustomers->valueInt('customers_id')), '<h4><i class="bi bi-person" title="' . $CLICSHOPPING_Members->getDef('icon_edit_customer') . '"></i></h4>');
               echo '&nbsp;';
-              echo HTML::link(CLICSHOPPING::link(null, 'A&Communication\EMail&EMail&customer=' . Hash::displayDecryptedDataText($Qcustomers->value('customers_email_address'))), '<h4><i class="bi bi-send" title="' . $CLICSHOPPING_Members->getDef('icon_email') . '"></i></h4>');
+              echo HTML::link(CLICSHOPPING::link(null, 'A&Communication\EMail&EMail&customer=' . urlencode(Hash::displayDecryptedDataText($Qcustomers->value('customers_email_address')))), '<h4><i class="bi bi-send" title="' . $CLICSHOPPING_Members->getDef('icon_email') . '"></i></h4>');
               echo '&nbsp;';
               echo HTML::link($CLICSHOPPING_Members->link('Delete&cID=' . $Qcustomers->valueInt('customers_id')), '<h4><i class="bi bi-trash2" title="' . $CLICSHOPPING_Members->getDef('icon_delete') . '"></i></h4>');
               echo '&nbsp;';

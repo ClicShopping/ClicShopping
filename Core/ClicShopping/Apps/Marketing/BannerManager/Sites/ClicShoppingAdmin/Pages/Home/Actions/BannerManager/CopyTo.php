@@ -28,8 +28,8 @@ class CopyTo extends \ClicShopping\OM\Domains\PagesActionsAbstract
                                                                  banners_target,
                                                                  banners_html_text,
                                                                  expires_impressions,
-                                                                 date_format(date_scheduled, "%Y/%m/%d") as date_scheduled,
-                                                                 date_format(expires_date, "%Y/%m/%d") as expires_date,
+                                                                 date_format(date_scheduled, "%Y-%m-%d") as date_scheduled,
+                                                                 date_format(expires_date, "%Y-%m-%d") as expires_date,
                                                                  date_added,
                                                                  date_status_change,
                                                                  status,
@@ -40,7 +40,7 @@ class CopyTo extends \ClicShopping\OM\Domains\PagesActionsAbstract
                                                           from :table_banners
                                                           where banners_id = :banners_id
                                                           ');
-      $QbannersCopy->bindInt(':banners_id', $_GET['bID']);
+      $QbannersCopy->bindInt(':banners_id', (int)$_GET['bID']);
       $QbannersCopy->execute();
 
       $CLICSHOPPING_BannerManager->db->save('banners', [
@@ -51,15 +51,15 @@ class CopyTo extends \ClicShopping\OM\Domains\PagesActionsAbstract
           'banners_target' => $QbannersCopy->value('banners_target'),
           'banners_html_text' => $QbannersCopy->value('banners_html_text'),
           'expires_impressions' => $QbannersCopy->value('expires_impressions'),
-          'date_scheduled' => (empty($QbannersCopy->value('date_scheduled')) ? "null" : "'" . $QbannersCopy->value('date_scheduled') . "'"),
-          'expires_date' => (empty($QbannersCopy->value('expires_date')) ? "null" : "'" . ($QbannersCopy->value('expires_date')) . "'"),
+          'date_scheduled' => (empty($QbannersCopy->value('date_scheduled')) ? 'null' : $QbannersCopy->value('date_scheduled')),
+          'expires_date' => (empty($QbannersCopy->value('expires_date')) ? 'null' : $QbannersCopy->value('expires_date')),
           'date_added' => 'now()',
-          'date_status_change' => (empty($QbannersCopy->value('date_status_change')) ? "null" : "'" . $QbannersCopy->value('date_status_change') . "'"),
+          'date_status_change' => (empty($QbannersCopy->value('date_status_change')) ? 'null' : $QbannersCopy->value('date_status_change')),
           'status' => 0,
           'customers_group_id' => (int)$QbannersCopy->valueInt('customers_group_id'),
           'languages_id' => (int)$QbannersCopy->valueInt('languages_id'),
           'banners_title_admin' => $QbannersCopy->value('banners_title_admin'),
-          'banners_theme' => $QbannersCopy->value('$banners_theme')
+          'banners_theme' => $QbannersCopy->value('banners_theme')
         ]
       );
     }

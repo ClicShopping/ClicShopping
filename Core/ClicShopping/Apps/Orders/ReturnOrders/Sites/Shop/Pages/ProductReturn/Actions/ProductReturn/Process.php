@@ -26,19 +26,29 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Mail = Registry::get('Mail');
 
     if (isset($_POST['action']) && ($_POST['action'] == 'process') && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
-      $order_id = HTML::sanitize($_GET['order_id']);
-      $products_id = HTML::sanitize($_GET['product_id']);
+      if (!isset($_GET['order_id'], $_GET['product_id']) || !is_numeric($_GET['order_id']) || !is_numeric($_GET['product_id'])) {
+        CLICSHOPPING::redirect(null, 'Account&History');
+      }
+
+      $order_id = (int)HTML::sanitize($_GET['order_id']);
+      $products_id = (int)HTML::sanitize($_GET['product_id']);
       $info_customer = ReturnProduct::getInfoCustomer($order_id);
 
-      $product_quantity = HTML::sanitize($_POST['product_quantity']);
-      $return_reason_id = HTML::sanitize($_POST['return_reason']);
-      $comment = HTML::sanitize($_POST['comment']);
-      $return_reason_opened = HTML::sanitize($_POST['return_reason_opened']);
+      // Access control: the order must belong to the logged-in customer (prevents IDOR
+      // where a customer files a return against someone else's order and leaks their PII).
+      if ($info_customer === false || (int)$info_customer['customers_id'] !== (int)$CLICSHOPPING_Customer->getID()) {
+        CLICSHOPPING::redirect(null, 'Account&History');
+      }
+
+      $product_quantity = HTML::sanitize($_POST['product_quantity'] ?? '');
+      $return_reason_id = HTML::sanitize($_POST['return_reason'] ?? '');
+      $comment = HTML::sanitize($_POST['comment'] ?? '');
+      $return_reason_opened = HTML::sanitize($_POST['return_reason_opened'] ?? '');
       $products_model = $CLICSHOPPING_ProductsCommon->getProductsModel($products_id);
 
       $sql_data_array = [
         'return_ref' => 'RMA/' . $products_model . '/' . $order_id,
-        'order_id' => $order_id,
+        'order_id' => (int)$order_id,
         'product_id' => (int)$products_id,
         'customer_id' => $CLICSHOPPING_Customer->getID(),
         'customer_firstname' => $CLICSHOPPING_Customer->getFirstName(),
@@ -83,7 +93,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $to_name = $CLICSHOPPING_Customer->getName();
       $subject = $email_text_subject_customer;
 
-      $CLICSHOPPING_Mail->addHtml($email_text_content_customer . '<br />' . $templateEmailSignature . '<br />>' . $templateEmailFooter);
+      $CLICSHOPPING_Mail->addHtml($email_text_content_customer . '<br />' . $templateEmailSignature . '<br />' . $templateEmailFooter);
       $CLICSHOPPING_Mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
 
       $CLICSHOPPING_Hooks->call('ProductReturn', 'Process');

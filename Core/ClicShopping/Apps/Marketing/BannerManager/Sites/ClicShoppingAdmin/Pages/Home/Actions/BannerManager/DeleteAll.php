@@ -28,6 +28,6 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
     }
 
-    $CLICSHOPPING_BannerManager->redirect('BannerManager', 'page=' . $page);
+    $CLICSHOPPING_BannerManager->redirect('BannerManager&page=' . $page);
   }
 }

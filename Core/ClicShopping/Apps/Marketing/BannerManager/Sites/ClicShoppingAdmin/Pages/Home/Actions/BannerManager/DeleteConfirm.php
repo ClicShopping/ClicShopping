@@ -23,14 +23,19 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
-    $banners_id = HTML::sanitize($_GET['bID']);
+
+    if (!isset($_GET['bID'])) {
+      $CLICSHOPPING_BannerManager->redirect('BannerManager&page=' . $page);
+    }
+
+    $banners_id = (int)HTML::sanitize($_GET['bID']);
 
     if (isset($_POST['delete_image']) && ($_POST['delete_image'] == 'on')) {
 
       $Qbanner = $CLICSHOPPING_BannerManager->db->get('banners', 'banners_image', ['banners_id' => (int)$banners_id]);
 
 // delete image
-      if (!empty($Qbanner->value('banners_image')) && is_file($CLICSHOPPING_Template->getDirectoryPathTemplateShopImages() . $Qbanner->value('banners_image')) && is_file($CLICSHOPPING_Template->getDirectoryPathTemplateShopImages() . $Qbanner->value('banners_image'))) {
+      if (!empty($Qbanner->value('banners_image')) && is_file($CLICSHOPPING_Template->getDirectoryPathTemplateShopImages() . $Qbanner->value('banners_image'))) {
         if (FileSystem::isWritable($CLICSHOPPING_Template->getDirectoryPathTemplateShopImages() . $Qbanner->value('banners_image'))) {
           unlink($CLICSHOPPING_Template->getDirectoryPathTemplateShopImages() . $Qbanner->value('banners_image'));
         } else {

@@ -21,10 +21,10 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Members = Registry::get('Members');
 
     if (isset($_GET['cID'])) {
-      $customers_id = HTML::sanitize($_GET['cID']);
+      $customers_id = (int)HTML::sanitize($_GET['cID']);
 
 
-      if ($_POST['delete_reviews'] == 'on') {
+      if (isset($_POST['delete_reviews']) && $_POST['delete_reviews'] == 'on') {
 
         $Qreviews = $CLICSHOPPING_Members->db->prepare('select reviews_id
                                                            from :table_reviews

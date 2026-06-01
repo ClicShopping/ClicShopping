@@ -92,8 +92,9 @@ class Save implements \ClicShopping\OM\Modules\HooksInterface
           $group_discount = $Qdiscount->value('discount');
         }
 
-        $group_customer_price = @$_POST['price' . $QcustomersGroup->valueInt('customers_group_id')];
-        
+        $price_field = 'price' . $QcustomersGroup->valueInt('customers_group_id');
+        $group_customer_price = $_POST[$price_field] ?? null;
+
         // Sanitize and validate the price input - convert empty strings to null
         if ($group_customer_price === '' || $group_customer_price === null) {
           $group_customer_price = null;
@@ -107,7 +108,9 @@ class Save implements \ClicShopping\OM\Modules\HooksInterface
               if (B2B == 'true') {
                 if ($group_discount > 0) {
                   $newprice = $products_price + ($products_price / 100) * $group_discount;
-                } elseif ($group_discount == 0) {
+                }
+
+                if ($group_discount == 0) {
                   $newprice = $products_price;
                 }
               }
@@ -120,9 +123,9 @@ class Save implements \ClicShopping\OM\Modules\HooksInterface
                 if ($group_discount == 0) {
                   $newprice = $products_price;
                 }
-
-                $group_customer_price = $newprice;
               }
+              // Prix TTC — applique le prix calculé pour les deux modes (B2B et B2C)
+              $group_customer_price = $newprice;
             } else {
               $group_customer_price = $products_price;
             }
@@ -220,8 +223,9 @@ class Save implements \ClicShopping\OM\Modules\HooksInterface
           $group_discount = $Qdiscount->value('discount');
         }
 
-        $group_customer_price = @$_POST['price' . $QcustomersGroup->valueInt('customers_group_id')];
-        
+        $price_field = 'price' . $QcustomersGroup->valueInt('customers_group_id');
+        $group_customer_price = $_POST[$price_field] ?? null;
+
         // Sanitize and validate the price input - convert empty strings to null
         if ($group_customer_price === '' || $group_customer_price === null) {
           $group_customer_price = null;

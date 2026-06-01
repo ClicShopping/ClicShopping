@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\Customers\Reviews\Sites\Shop\Pages\ReviewsWrite\Acti
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\RateLimiter;
 use ClicShopping\OM\Registry;
 
 class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -24,10 +25,19 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (isset($_POST['action']) && ($_POST['action'] == 'process') && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
       $error = false;
 
+      // Throttle review submissions: one every 60s per session (anti-spam / flood).
+      $rate_limiter = new RateLimiter(['reviews_write' => 60]);
+      $rate_check = $rate_limiter->check('reviews_write');
+
+      if ($rate_check['allowed'] === false) {
+        $CLICSHOPPING_MessageStack->add($rate_check['message'], 'error', 'reviews_write');
+        CLICSHOPPING::redirect(null, 'Products&ReviewsWrite&products_id=' . $CLICSHOPPING_ProductsCommon->getID());
+      }
+
       $CLICSHOPPING_Hooks->call('ReviewsWrite', 'PreAction');
 
-      $rating = HTML::sanitize((int)$_POST['rating']);
-      $review = HTML::sanitize($_POST['review']);
+      $rating = (int)($_POST['rating'] ?? 0);
+      $review = HTML::sanitize($_POST['review'] ?? '');
 
       if (isset($_POST['customer_agree_privacy'])) {
         $customer_agree_privacy = HTML::sanitize($_POST['customer_agree_privacy']);
@@ -50,6 +60,9 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       if ($error === false) {
         $CLICSHOPPING_Reviews->saveEntry();
         $CLICSHOPPING_Reviews->sendEmail();
+
+        // Start the rate-limit window only on a successful submission.
+        $rate_limiter->record('reviews_write');
 
         $CLICSHOPPING_Hooks->call('ReviewsWrite', 'Process');
 

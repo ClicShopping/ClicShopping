@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Orders\ReturnOrders\Sites\Shop\Pages\ProductReturnHistoryInfo\Actions;
 
+use ClicShopping\Apps\Orders\ReturnOrders\Classes\Shop\HistoryInfo;
 use ClicShopping\Apps\Orders\ReturnOrders\ReturnOrders as ReturnOrdersApp;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
@@ -38,11 +39,17 @@ class ProductReturnHistoryInfo extends \ClicShopping\OM\Domains\PagesActionsAbst
     $CLICSHOPPING_ReturnOrders = Registry::get('ReturnOrders');
     $this->app = $CLICSHOPPING_ReturnOrders;
 
-    $rId = null;
+    if (!isset($_GET['rId']) || !is_numeric($_GET['rId'])) {
+      CLICSHOPPING::redirect(null, 'Account&History');
+    }
 
-    if (isset($_GET['rId'])) {
-      $rId = HTML::sanitize($_GET['rId']);
-    } else {
+    $rId = (int)HTML::sanitize($_GET['rId']);
+
+    // Access control: the return must belong to the logged-in customer (getHistoryInfoListing
+    // filters by customer_id), otherwise a customer could view another customer's return.
+    $check_return = HistoryInfo::getHistoryInfoListing(true, $rId);
+
+    if (empty($check_return)) {
       CLICSHOPPING::redirect(null, 'Account&History');
     }
 

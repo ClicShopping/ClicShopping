@@ -20,28 +20,14 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 
-    if (isset($_POST['customers_group_name'])) {
-      $customers_groups_name = HTML::sanitize($_POST['customers_group_name']);
-    }
-
-    if (isset($_POST['customers_group_discount'])) {
-      $customers_groups_discount = HTML::sanitize($_POST['customers_group_discount']);
-    }
-
-    if (isset($_POST['color_bar'])) {
-      $color_bar = HTML::sanitize($_POST['color_bar']); //ok
-    }
-
-    if (isset($_POST['customers_group_quantity_default'])) {
-      $customers_group_quantity_default = HTML::sanitize($_POST['customers_group_quantity_default']);
-    }
-
-    if (isset($_POST['group_order_taxe'])) {
-      $group_order_taxe = HTML::sanitize($_POST['group_order_taxe']);
-    }
+    $customers_groups_name = isset($_POST['customers_group_name']) ? HTML::sanitize($_POST['customers_group_name']) : '';
+    $customers_groups_discount = isset($_POST['customers_group_discount']) ? HTML::sanitize($_POST['customers_group_discount']) : '';
+    $color_bar = isset($_POST['color_bar']) ? HTML::sanitize($_POST['color_bar']) : '';
+    $customers_group_quantity_default = isset($_POST['customers_group_quantity_default']) ? HTML::sanitize($_POST['customers_group_quantity_default']) : 0;
+    $group_order_taxe = isset($_POST['group_order_taxe']) ? HTML::sanitize($_POST['group_order_taxe']) : 0;
 
 // Supprimer (|| $customers_group_discount ==  0) dans la condition IF pour pouvoir cree un groupe a 0% par defaut
-    if (\strlen($customers_groups_name) == '') {
+    if (\strlen($customers_groups_name) === 0) {
       $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Groups->getDef('entry_groups_name_error'), 'warning');
       $CLICSHOPPING_Groups->redirect('Groups&error=name');
     } else {
@@ -54,7 +40,7 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
       if ($group_order_taxe == 1) {
         $group_tax = 'false';
       } else {
-        $group_tax = HTML::sanitize($_POST['group_tax']);
+        $group_tax = isset($_POST['group_tax']) ? HTML::sanitize($_POST['group_tax']) : 'true';
       }
 
 // Module de paiement autorise

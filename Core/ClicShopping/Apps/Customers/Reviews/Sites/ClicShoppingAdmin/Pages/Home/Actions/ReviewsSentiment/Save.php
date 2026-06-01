@@ -39,9 +39,11 @@ class Save extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $CLICSHOPPING_Reviews->db->save('reviews_sentiment', $sql_data_array, ['id' => $id]);
 
+      // Rich-text (CKEditor) content authored by the admin: stored as-is, not sanitized.
+      $sentiment_description = $_POST['reviews_sentiment_description'] ?? '';
+
       for ($i = 0, $n = count($languages); $i < $n; $i++) {
         $language_id = $languages[$i]['id'];
-        $sentiment_description_array = $_POST['reviews_sentiment_description'];
 
         $insert_sql_data = [
           'id' => (int)$id,
@@ -49,10 +51,10 @@ class Save extends \ClicShopping\OM\Domains\PagesActionsAbstract
         ];
 
         $sql_data_array = [
-          'description' => $sentiment_description_array
+          'description' => $sentiment_description
         ];
 
-        $CLICSHOPPING_Reviews->db->save('reviews_sentiment_description ', $sql_data_array, $insert_sql_data);
+        $CLICSHOPPING_Reviews->db->save('reviews_sentiment_description', $sql_data_array, $insert_sql_data);
 
         $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Reviews->getDef('text_success'), 'success', 'main');
       }

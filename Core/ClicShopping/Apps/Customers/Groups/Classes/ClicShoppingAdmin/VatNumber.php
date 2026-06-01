@@ -97,7 +97,7 @@ class VatNumber
    * @param string $country_iso The ISO country code to be checked.
    * @return bool Returns true if the country ISO is invalid or not found in the list; otherwise, false.
    */
-  public static function checkIsoCountry(string $country_iso)
+  public static function checkIsoCountry(string $country_iso): bool
   {
     if (strlen($country_iso) != 2) {
       return true;
@@ -108,6 +108,9 @@ class VatNumber
         return false;
       }
     }
+
+    // 2-char code but not in the EU intracom list: treat as invalid.
+    return true;
   }
 
   /**
@@ -203,12 +206,6 @@ class VatNumber
 
     foreach ($response as $key => $prop) {
       $result .= ",\n  \"" . $key . "\": \"" . str_replace('"', '\"', $prop) . "\"";
-
-      if ($key == 'name') {
-        $name = $prop;
-      } elseif ($key == 'address') {
-        $address = $prop;
-      }
     }
 
     $result .= "\n}";

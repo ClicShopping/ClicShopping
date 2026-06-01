@@ -25,7 +25,7 @@ class InsertCategories extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (isset($_POST['cID'])) {
       $group_id = HTML::sanitize($_POST['cID']);
 
-      if ((empty($_POST['discount'])) || ($_POST['categories_id']) == 0) {
+      if (empty($_POST['discount']) || empty($_POST['categories_id'])) {
         $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Groups->getDef('entry_groups_categorie_error'), 'error');
 
         $CLICSHOPPING_Groups->redirect('Edit&cID=' . $group_id);

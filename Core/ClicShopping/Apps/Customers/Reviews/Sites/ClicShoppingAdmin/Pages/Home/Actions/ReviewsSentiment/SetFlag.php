@@ -18,11 +18,13 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Reviews = Registry::get('Reviews');
 
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    $flag = isset($_GET['flag']) ? (int)$_GET['flag'] : 0;
 
-    if (isset($_GET['id'], $_GET['flag'])) {
-      ReviewsAdmin::getReviewsSentimentApprovedStatus((int)$_GET['id'], (int)$_GET['flag']);
+    if ($id > 0) {
+      ReviewsAdmin::getReviewsSentimentApprovedStatus($id, $flag);
     }
 
-    $CLICSHOPPING_Reviews->redirect('ReviewsSentiment&page=' . $page . '&rID=' . (int)$_GET['id']);
+    $CLICSHOPPING_Reviews->redirect('ReviewsSentiment&page=' . $page . '&rID=' . $id);
   }
 }

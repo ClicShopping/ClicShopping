@@ -19,20 +19,14 @@ class Save extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_ReturnOrders = Registry::get('ReturnOrders');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    $return_id = HTML::sanitize($_POST['rId']);
-    $return_status_id = HTML::sanitize($_POST['return_status']);
+    $return_id = isset($_POST['rId']) ? (int)HTML::sanitize($_POST['rId']) : 0;
+    $return_status_id = isset($_POST['return_status']) ? (int)HTML::sanitize($_POST['return_status']) : 0;
+    $notify = isset($_POST['notify']) ? (int)HTML::sanitize($_POST['notify']) : 0;
+    $comment = HTML::sanitize($_POST['comment'] ?? '');
 
-    if (isset($_POST['notify'])) {
-      $notify = HTML::sanitize($_POST['notify']);
-    } else {
-      $notify = 0;
-    }
-
-    $comment = HTML::sanitize($_POST['comment']);
-
-    $return_reason = HTML::sanitize($_POST['return_reason']);
-    $return_action = HTML::sanitize($_POST['return_action']);
-    $return_reason_opened = HTML::sanitize($_POST['return_reason_opened']);
+    $return_reason = isset($_POST['return_reason']) ? (int)HTML::sanitize($_POST['return_reason']) : 0;
+    $return_action = isset($_POST['return_action']) ? (int)HTML::sanitize($_POST['return_action']) : 0;
+    $return_reason_opened = isset($_POST['return_reason_opened']) ? (int)HTML::sanitize($_POST['return_reason_opened']) : 0;
 
     $sql_data_array = [
       'return_id' => $return_id,
@@ -43,7 +37,7 @@ class Save extends \ClicShopping\OM\Domains\PagesActionsAbstract
       'admin_user_name' => AdministratorAdmin::getUserAdmin()
     ];
 
-    $CLICSHOPPING_ReturnOrders->db->save('return_orders_history ', $sql_data_array);
+    $CLICSHOPPING_ReturnOrders->db->save('return_orders_history', $sql_data_array);
 
     $Qupdate = $CLICSHOPPING_ReturnOrders->db->prepare('update :table_return_orders
                                                           set return_reason_id  = :return_reason,

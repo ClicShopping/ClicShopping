@@ -46,6 +46,15 @@ class Delete extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $Qdelete->bindInt(':customers_group_id', (int)$group_id);
       $Qdelete->execute();
 
+// Réassigne les clients du groupe supprimé vers le groupe par défaut (0) pour éviter
+// qu'ils pointent vers un groupe inexistant (intégrité référentielle).
+      $Qreset = $CLICSHOPPING_Groups->db->prepare('update :table_customers
+                                                     set customers_group_id = 0
+                                                     where customers_group_id = :customers_group_id
+                                                   ');
+      $Qreset->bindInt(':customers_group_id', (int)$group_id);
+      $Qreset->execute();
+
       $CLICSHOPPING_Hooks->call('CustomersGroup', 'Delete');
     }
 

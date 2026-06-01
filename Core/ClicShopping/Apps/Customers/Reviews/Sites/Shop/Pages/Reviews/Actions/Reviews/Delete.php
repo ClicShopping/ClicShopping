@@ -24,7 +24,11 @@ class Delete extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Customer = Registry::get('Customer');
     $CLICSHOPPING_Reviews = Registry::get('Reviews');
 
-    $review_id = HTML::sanitize($_GET['reviews_id']);
+    if (!isset($_GET['reviews_id'])) {
+      return;
+    }
+
+    $review_id = (int)HTML::sanitize($_GET['reviews_id']);
 
     $Ocheck = $CLICSHOPPING_Db->prepare('select reviews_id
                                           from :table_reviews
@@ -38,8 +42,9 @@ class Delete extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $Ocheck->execute();
 
     if ($Ocheck->rowCount() > 0) {
-      $CLICSHOPPING_Reviews->delete('reviews', ['customers_id' => (int)$CLICSHOPPING_Customer->getID()]);
-      $CLICSHOPPING_Reviews->delete('reviews_description', ['reviews_id' => (int)$review_id]);
+      // Delete only the targeted review (both tables), once ownership is verified.
+      // NB: Registry 'Reviews' is the Shop ReviewsClass instance here.
+      $CLICSHOPPING_Reviews->deleteReviews($review_id);
     }
   }
 
@@ -48,7 +53,7 @@ class Delete extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_ProductsCommon = Registry::get('ProductsCommon');
     $products_id = $CLICSHOPPING_ProductsCommon->getId();
 
-    if (!$CLICSHOPPING_ProductsCommon->getId() !== null && !is_numeric($CLICSHOPPING_ProductsCommon->getId())) {
+    if ($products_id === null || !is_numeric($products_id)) {
       CLICSHOPPING::redirect();
     }
 

@@ -20,7 +20,11 @@ class UpdateAllPrice extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 
-    if (isset($_GET['cID'])) $groups_id = HTML::sanitize($_GET['cID']);
+    if (!isset($_GET['cID'])) {
+      return false;
+    }
+
+    $groups_id = (int)HTML::sanitize($_GET['cID']);
 
     $Qpricek = $CLICSHOPPING_Groups->db->prepare('select p.products_price,
                                                            p.products_id,
@@ -37,6 +41,10 @@ class UpdateAllPrice extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
 // if products is not manual update all price
         if ($Qpricek->valueInt('products_percentage') != 0) {
+
+          // Default discount: 0 so a missing/deleted group leaves the base price unchanged
+          // instead of triggering an undefined-variable warning further down.
+          $ricarico = 0;
 
           $QcustomersGroup = $CLICSHOPPING_Groups->db->prepare('select distinct customers_group_id,
                                                                                   customers_group_name,
