@@ -239,6 +239,8 @@ class Update implements \ClicShopping\OM\Modules\HooksInterface
                 $embedding_data .= $this->app->getDef('text_product_seo_tag') . ': ' . HTMLOverrideCommon::cleanHtmlForSEO($seo_product_tag) . "\n";
               }
 
+              $taxonomy = '';
+
               if (!empty($products_description)) {
                 $taxonomy = $this->semantics->createTaxonomy(HTMLOverrideCommon::cleanHtmlForEmbedding($products_description), $language_code, null);
 

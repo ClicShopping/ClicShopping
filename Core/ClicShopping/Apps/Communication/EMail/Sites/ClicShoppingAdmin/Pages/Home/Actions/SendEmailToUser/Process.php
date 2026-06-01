@@ -28,9 +28,9 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
   public function __construct()
   {
 
-    $this->from = HTML::sanitize($_POST['from']);
-    $this->subject = HTML::sanitize($_POST['subject']);
-    $this->messageMail = $_POST['message'];
+    $this->from = HTML::sanitize($_POST['from'] ?? '');
+    $this->subject = HTML::sanitize($_POST['subject'] ?? '');
+    $this->messageMail = $_POST['message'] ?? '';
 
     $this->templateEmailSignature = TemplateEmailAdmin::getTemplateEmailSignature();
     $this->templateEmailFooter = TemplateEmailAdmin::getTemplateEmailTextFooter();
@@ -65,31 +65,15 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
           break;
 // B2B
         case 'group':
-          $QCustomersGroup = $this->app->db->prepare('select distinct customers_group_name,
-                                                                          customers_group_id
-                                                          from :table_customers_groups
-                                                          where customers_group_id != 0
-                                                          order by customers_group_id
-                                                        ');
-          $QCustomersGroup->execute();
-
-// A analyse pb avec la B2B
-          if ($QCustomersGroup->rowCount() > 0) {
-            while ($QCustomersGroup->fetch()) {
-              $Qmail = $this->app->db->prepare('select customers_firstname,
-                                                            customers_lastname,
-                                                            customers_email_address,
-                                                            customers_group_id
-                                                       from :table_customers
-                                                       where customers_group_id = :customers_group_id
-                                                       and customers_email_validation = 0
-                                                    ');
-
-              $Qmail->bindInt(':customers_group_id', (int)$QCustomersGroup->valueInt('customers_group_id'));
-
-              $Qmail->execute();
-            }
-          }
+// All customers belonging to a B2B group (group id != 0).
+          $Qmail = $this->app->db->prepare('select customers_firstname,
+                                                       customers_lastname,
+                                                       customers_email_address
+                                                from :table_customers
+                                                where customers_group_id != 0
+                                                and customers_email_validation = 0
+                                               ');
+          $Qmail->execute();
           break;
 
         default:
@@ -147,8 +131,10 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $this->mail->addHtmlCkeditor($message);
 
-      while ($Qmail->fetch()) {
-        $this->mail->send($Qmail->value('customers_email_address'), Hash::displayDecryptedDataText($Qmail->value('customers_firstname')) . ' ' . Hash::displayDecryptedDataText($Qmail->value('customers_lastname')), $this->from, null, $this->subject);
+      if (isset($Qmail)) {
+        while ($Qmail->fetch()) {
+          $this->mail->send($Qmail->value('customers_email_address'), Hash::displayDecryptedDataText($Qmail->value('customers_firstname')) . ' ' . Hash::displayDecryptedDataText($Qmail->value('customers_lastname')), $this->from, null, $this->subject);
+        }
       }
 
       $CLICSHOPPING_MessageStack->add($this->app->getDef('success_email_sent'), 'success', 'email');

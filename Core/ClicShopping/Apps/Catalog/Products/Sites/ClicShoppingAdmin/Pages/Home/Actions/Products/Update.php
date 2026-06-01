@@ -27,7 +27,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $this->ID = HTML::sanitize($_POST['pID']); // update
     }
 
-    $current_category = HTML::sanitize($_POST['cPath']);
+    $current_category = HTML::sanitize($_POST['cPath'] ?? 0);
 
     if (isset($_POST['move_to_category_id'][0])) {
       $move_to_category_id = HTML::sanitize($_POST['move_to_category_id'][0]);
@@ -50,7 +50,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (isset($_GET['Update'], $_GET['Products'])) {
       $CLICSHOPPING_ProductsAdmin->save($this->ID, 'Update');
 
-      $CLICSHOPPING_Hooks->call('Products', 'Update', ['products_id', $this->ID]);
+      $CLICSHOPPING_Hooks->call('Products', 'Update', ['products_id' => $this->ID]);
     }
 
     $this->app->redirect('Products&cPath=' . $this->currentCategoryId . '&pID=' . $this->ID);

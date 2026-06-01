@@ -97,21 +97,22 @@ class Image
    */
   private function createDirectory(): string
   {
-    if (isset($_POST['new_directory_products_image']) && !empty($_POST['new_directory_products_image'])) {
-      $new_dir_products_image_without_accents = HTML::removeFileAccents($_POST['new_directory_products_image']);
-      $new_dir_products_image = mb_strtolower($new_dir_products_image_without_accents);
-      $new_dir_products_image = HTML::replaceString(' ', '_', $new_dir_products_image);
+    $new_directory_post = isset($_POST['new_directory_products_image']) ? $this->sanitizeImageDirectory((string)$_POST['new_directory_products_image']) : '';
+    $directory_post = isset($_POST['directory_products_image']) ? $this->sanitizeImageDirectory((string)$_POST['directory_products_image']) : '';
 
-      if (!is_dir($new_dir_products_image)) {
+    if (!empty($new_directory_post)) {
+      $new_dir_products_image = mb_strtolower($new_directory_post);
+
+      if (!is_dir($this->rootImagesDir . $new_dir_products_image)) {
         @mkdir($this->rootImagesDir . $new_dir_products_image, 0755, true);
         @chmod($this->rootImagesDir . $new_dir_products_image, 0755);
       }
-      if (isset($_POST['directory_products_image']) && !empty($_POST['directory_products_image'])) {
-        $new_dir_products_image = $new_dir_products_image . '/' . HTML::sanitize($_POST['directory_products_image']);
-      }
 
+      if (!empty($directory_post)) {
+        $new_dir_products_image = $new_dir_products_image . '/' . $directory_post;
+      }
     } else {
-      $new_dir_products_image = HTML::sanitize($_POST['directory_products_image']);
+      $new_dir_products_image = $directory_post;
     }
 
     if (empty($new_dir_products_image)) {
@@ -121,6 +122,31 @@ class Image
     }
 
     return $dir_products_image;
+  }
+
+  /**
+   * Normalises a user-supplied image sub-directory name to keep writes inside the
+   * products images folder. Transliterates accents, then strips anything that could
+   * escape the directory: backslashes, path-traversal ("..") sequences, unsafe
+   * characters and leading/trailing slashes (so no absolute path is possible).
+   *
+   * @param string $dir The raw directory name from the request.
+   * @return string The sanitised, traversal-safe relative directory name.
+   */
+  private function sanitizeImageDirectory(string $dir): string
+  {
+    $dir = HTML::removeFileAccents($dir);
+    $dir = str_replace('\\', '/', $dir);
+    $dir = preg_replace('#\s+#', '_', $dir);
+    $dir = preg_replace('#[^a-zA-Z0-9._/-]#', '', $dir);
+
+    while (str_contains($dir, '..')) {
+      $dir = str_replace('..', '', $dir);
+    }
+
+    $dir = preg_replace('#/+#', '/', $dir);
+
+    return trim($dir, '/');
   }
 
   /**
@@ -487,14 +513,14 @@ class Image
           'sort_order' => (int)$pi_sort_order
         ];
 
-        $image = new Upload($key, $this->template->getDirectoryPathTemplateShopImages() . $dir, null, ['gif', 'jpg', 'png', 'webp']);
+        $image = new Upload($key, $this->template->getDirectoryPathTemplateShopImages() . $dir, null, ['gif', 'jpg', 'jpeg', 'png', 'webp']);
 
         if ($image->check() && $image->save()) {
           $error = false;
         }
 
         if ($error === false) {
-          $sql_data_array['image'] = $dir . $separator . $image->getFilename();
+          $sql_data_array['image'] = rtrim($dir, '/') . '/' . $image->getFilename();
         }
 
         $this->db->save('products_images', $sql_data_array, [
@@ -512,7 +538,7 @@ class Image
           'htmlcontent' => $_POST['products_image_htmlcontent_new_' . $matches[1]]
         ];
 
-        $image = new Upload($key, $this->template->getDirectoryPathTemplateShopImages() . $dir, null, ['gif', 'jpg', 'jepg', 'png', 'webp']);
+        $image = new Upload($key, $this->template->getDirectoryPathTemplateShopImages() . $dir, null, ['gif', 'jpg', 'jpeg', 'png', 'webp']);
 
         if ($image->check() && $image->save()) {
           $error = false;
@@ -521,7 +547,7 @@ class Image
         $pi_sort_order++;
 
         if ($error === false) {
-          $sql_data_array['image'] = $dir . $separator . $image->getFilename();
+          $sql_data_array['image'] = rtrim($dir, '/') . '/' . $image->getFilename();
         }
 
         $sql_data_array['sort_order'] = (int)$pi_sort_order;

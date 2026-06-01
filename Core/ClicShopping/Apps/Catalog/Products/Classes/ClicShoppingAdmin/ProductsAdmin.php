@@ -1251,9 +1251,8 @@ class ProductsAdmin
    */
   public function save(string|int|null $id, $action)
   {
-    $products_date_available = HTML::sanitize($_POST['products_date_available']);
-
-    if (isset($products_date_available)) {
+    if (isset($_POST['products_date_available']) && !empty($_POST['products_date_available'])) {
+      $products_date_available = HTML::sanitize($_POST['products_date_available']);
       $products_date_available = (date('Y-m-d') < $products_date_available) ? $products_date_available : 'null';
     } else {
       $products_date_available = null;
@@ -1324,34 +1323,34 @@ class ProductsAdmin
     }
 
     $sql_data_array = [
-      'products_quantity' => (int)HTML::sanitize($_POST['products_quantity']),
+      'products_quantity' => (int)HTML::sanitize($_POST['products_quantity'] ?? ''),
       'products_ean' => HTML::sanitize($products_ean),
       'products_model' => HTML::sanitize($products_model),
       'products_sku' => HTML::sanitize($products_sku),
-      'products_price' => (float)HTML::sanitize($_POST['products_price']),
+      'products_price' => (float)HTML::sanitize($_POST['products_price'] ?? ''),
       'products_date_available' => $products_date_available,
-      'products_weight' => (float)HTML::sanitize($_POST['products_weight']),
+      'products_weight' => (float)HTML::sanitize($_POST['products_weight'] ?? ''),
       'products_price_kilo' => HTML::sanitize($products_price_kilo),
       'products_status' => (int)HTML::sanitize($products_status),
       'products_percentage' => (int)$products_percentage,
       'products_view' => (int)$products_view,
       'orders_view' => (int)$orders_view,
-      'products_tax_class_id' => (int)HTML::sanitize($_POST['products_tax_class_id']),
-      'products_min_qty_order' => (int)$_POST['products_min_qty_order'],
+      'products_tax_class_id' => (int)HTML::sanitize($_POST['products_tax_class_id'] ?? ''),
+      'products_min_qty_order' => (int)($_POST['products_min_qty_order'] ?? ''),
       'admin_user_name' => AdministratorAdmin::getUserAdmin(),
       'products_only_online' => (int)HTML::sanitize($products_only_online),
-      'products_cost' => (float)HTML::sanitize($_POST['products_cost']),
-      'products_handling' => (float)HTML::sanitize($_POST['products_handling']),
-      'products_packaging' => (int)HTML::sanitize($_POST['products_packaging']),
-      'products_sort_order' => (int)HTML::sanitize($_POST['products_sort_order']),
-      'products_quantity_alert' => (int)HTML::sanitize($_POST['products_quantity_alert']),
+      'products_cost' => (float)HTML::sanitize($_POST['products_cost'] ?? ''),
+      'products_handling' => (float)HTML::sanitize($_POST['products_handling'] ?? ''),
+      'products_packaging' => (int)HTML::sanitize($_POST['products_packaging'] ?? ''),
+      'products_sort_order' => (int)HTML::sanitize($_POST['products_sort_order'] ?? ''),
+      'products_quantity_alert' => (int)HTML::sanitize($_POST['products_quantity_alert'] ?? ''),
       'products_only_shop' => (int)HTML::sanitize($products_only_shop),
       'products_download_public' => (int)HTML::sanitize($products_download_public),
-      'products_type' => HTML::sanitize($_POST['products_type']),
-      'products_jan' => HTML::sanitize($_POST['products_jan']),
-      'products_isbn' => HTML::sanitize($_POST['products_isbn']),
-      'products_mpn' => HTML::sanitize($_POST['products_mpn']),
-      'products_upc' => HTML::sanitize($_POST['products_upc'])
+      'products_type' => HTML::sanitize($_POST['products_type'] ?? ''),
+      'products_jan' => HTML::sanitize($_POST['products_jan'] ?? ''),
+      'products_isbn' => HTML::sanitize($_POST['products_isbn'] ?? ''),
+      'products_mpn' => HTML::sanitize($_POST['products_mpn'] ?? ''),
+      'products_upc' => HTML::sanitize($_POST['products_upc'] ?? '')
     ];
 
 // Download file
@@ -1434,7 +1433,7 @@ class ProductsAdmin
 
     $products_count = $Qproducts->valueInt('total');
 
-    $Qchildren = $this->db->prepare->get('products', 'products_id', ['parent_id' => $products_id]);
+    $Qchildren = $this->db->get('products', 'products_id', ['parent_id' => $products_id]);
 
     while ($Qchildren->fetch() !== false) {
       $products_count += call_user_func(__METHOD__, $Qchildren->valueInt('products_id'), $include_deactivated);

@@ -71,11 +71,11 @@ class SaveDynamicPricingRules extends \ClicShopping\OM\Domains\PagesActionsAbstr
       $rID = HTML::sanitize($_GET['rID']);
 
       $update_array = [
-        'rules_name' => HTML::sanitize($_POST['rules_name']),
-        'rules_condition' => $_POST['rules_condition'],
-        'rules_type' => HTML::sanitize($_POST['rules_type']),
-        'rules_value' => HTML::sanitize($_POST['rules_value']),
-        'rules_priority' => HTML::sanitize($_POST['rules_priority']),
+        'rules_name' => HTML::sanitize($_POST['rules_name'] ?? ''),
+        'rules_condition' => $_POST['rules_condition'] ?? '',
+        'rules_type' => HTML::sanitize($_POST['rules_type'] ?? ''),
+        'rules_value' => HTML::sanitize($_POST['rules_value'] ?? ''),
+        'rules_priority' => HTML::sanitize($_POST['rules_priority'] ?? ''),
         'rules_status' => $rules_status,
         'date_modified' => 'now()',
         'rules_status_special' => $rules_status_special,
@@ -88,11 +88,11 @@ class SaveDynamicPricingRules extends \ClicShopping\OM\Domains\PagesActionsAbstr
       $CLICSHOPPING_Hooks->call('Products', 'SaveDynamicPricingRules', ['rules_id' => $rID]);
     } else {
       $insert_array = [
-        'rules_name' => HTML::sanitize($_POST['rules_name']),
-        'rules_condition' => $_POST['rules_condition'],
-        'rules_type' => HTML::sanitize($_POST['rules_type']),
-        'rules_value' => HTML::sanitize($_POST['rules_value']),
-        'rules_priority' => HTML::sanitize($_POST['rules_priority']),
+        'rules_name' => HTML::sanitize($_POST['rules_name'] ?? ''),
+        'rules_condition' => $_POST['rules_condition'] ?? '',
+        'rules_type' => HTML::sanitize($_POST['rules_type'] ?? ''),
+        'rules_value' => HTML::sanitize($_POST['rules_value'] ?? ''),
+        'rules_priority' => HTML::sanitize($_POST['rules_priority'] ?? ''),
         'rules_status' => $rules_status,
         'date_added' => 'now()',
         'rules_status_special' => $rules_status_special,

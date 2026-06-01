@@ -21,8 +21,8 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $this->app = Registry::get('Products');
 
-    $this->currentCategoryId = HTML::sanitize($_POST['cPath']);
-    $this->moveToCategoryId = $_POST['move_to_category_id'];
+    $this->currentCategoryId = HTML::sanitize($_POST['cPath'] ?? '');
+    $this->moveToCategoryId = (isset($_POST['move_to_category_id']) && \is_array($_POST['move_to_category_id'])) ? $_POST['move_to_category_id'] : null;
   }
 
   public function execute()
@@ -51,7 +51,7 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $CLICSHOPPING_ProductsAdmin->save(null, 'Insert');
 
-      $CLICSHOPPING_Hooks->call('Products', 'Insert', ['categories_id ' => $categories_id]);
+      $CLICSHOPPING_Hooks->call('Products', 'Insert', ['categories_id' => $categories_id]);
 
       $this->app->redirect('Products&cPath=' . (int)$cpath);
     } else {
