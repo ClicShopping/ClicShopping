@@ -46,9 +46,9 @@ class Composer
    */
   public static function checkExecEnabled(): bool
   {
-    $disabled = explode(', ', ini_get('disable_functions'));
+    $disabled = array_map('trim', explode(',', (string)ini_get('disable_functions')));
 
-    return !in_array('exec', $disabled);
+    return !in_array('exec', $disabled, true);
   }
 
   /**

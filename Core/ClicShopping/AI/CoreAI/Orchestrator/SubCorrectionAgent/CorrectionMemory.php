@@ -304,16 +304,10 @@ class CorrectionMemory
     $prefix = CLICSHOPPING::getConfig('db_table_prefix');
 
     // Build a mapping of table names (without prefix) to entity types
-    $tableToEntityType = [];
-    foreach ($allTables as $fullTableName) {
-      $entityType = $registry->getEntityTypeForTable($fullTableName);
-      // Remove prefix and _embedding suffix to get base table name
-// Build a mapping of table names (without prefix) to entity types
-      $tableToEntityType = array_combine(
-        array_map($this->normalizeTableName(...), $allTables),
-        array_map($registry->getEntityTypeForTable(...), $allTables)
-      );
-    }
+    $tableToEntityType = array_combine(
+      array_map($this->normalizeTableName(...), $allTables),
+      array_map($registry->getEntityTypeForTable(...), $allTables)
+    );
 
     // Pattern 1: FROM {table_name}
     if (preg_match('/FROM\s+(?:\w+\.)?(\w+)/i', $query, $matches)) {
