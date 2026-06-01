@@ -22,9 +22,9 @@ use function is_null;
  */
 class CustomerShop
 {
-  protected bool $_is_logged_on = false;
-  protected array $_data = [];
-  protected array $_data1 = [];
+  protected bool $is_logged_on = false;
+  protected array $data = [];
+  protected array $data1 = [];
 
   private mixed $db;
 
@@ -37,14 +37,14 @@ class CustomerShop
   public function __construct()
   {
     if (isset($_SESSION['customer'])) {
-      $this->_data =& $_SESSION['customer'];
+      $this->data =& $_SESSION['customer'];
     }
 
     if (isset($_SESSION['customer_group_id'])) {
-      $this->_data1 =& $_SESSION['customer_group_id'];
+      $this->data1 =& $_SESSION['customer_group_id'];
     }
 
-    if (isset($this->_data['id']) && is_numeric($this->_data['id']) && ($this->_data['id'] > 0)) {
+    if (isset($this->data['id']) && is_numeric($this->data['id']) && ($this->data['id'] > 0)) {
       $this->setIsLoggedOn(true);
     }
 
@@ -60,9 +60,9 @@ class CustomerShop
   public function setIsLoggedOn(bool $state)
   {
     if ($state === true) {
-      $this->_is_logged_on = true;
+      $this->is_logged_on = true;
     } else {
-      $this->_is_logged_on = false;
+      $this->is_logged_on = false;
     }
   }
 
@@ -73,7 +73,7 @@ class CustomerShop
    */
   public function isLoggedOn(): bool
   {
-    if ($this->_is_logged_on === true) {
+    if ($this->is_logged_on === true) {
       return true;
     }
 
@@ -89,9 +89,9 @@ class CustomerShop
   public function get(?string $key = null)
   {
     if (isset($key)) {
-      return $this->_data[$key];
+      return $this->data[$key];
     } else {
-      return $this->_data;
+      return $this->data;
     }
   }
 
@@ -102,8 +102,8 @@ class CustomerShop
    */
   public function getID(): int
   {
-    if (isset($this->_data['id']) && is_numeric($this->_data['id'])) {
-      return (int)$this->_data['id'];
+    if (isset($this->data['id']) && is_numeric($this->data['id'])) {
+      return (int)$this->data['id'];
     }
 
     return 0;
@@ -116,8 +116,8 @@ class CustomerShop
    */
   public function getFirstName(): string|bool
   {
-    if (isset($this->_data['first_name'])) {
-      return Hash::displayDecryptedDataText($this->_data['first_name']);
+    if (isset($this->data['first_name'])) {
+      return Hash::displayDecryptedDataText($this->data['first_name']);
     }
 
     return false;
@@ -130,8 +130,8 @@ class CustomerShop
    */
   public function getLastName(): string|bool
   {
-    if (isset($this->_data['last_name'])) {
-      return Hash::displayDecryptedDataText($this->_data['last_name']);
+    if (isset($this->data['last_name'])) {
+      return Hash::displayDecryptedDataText($this->data['last_name']);
     }
 
     return false;
@@ -146,16 +146,16 @@ class CustomerShop
   {
     $name = '';
 
-    if (isset($this->_data['first_name'])) {
-      $name .= Hash::displayDecryptedDataText($this->_data['first_name']);
+    if (isset($this->data['first_name'])) {
+      $name .= Hash::displayDecryptedDataText($this->data['first_name']);
     }
 
-    if (isset($this->_data['last_name'])) {
+    if (isset($this->data['last_name'])) {
       if (!empty($name)) {
         $name .= ' ';
       }
 
-      $name .= Hash::displayDecryptedDataText($this->_data['last_name']);
+      $name .= Hash::displayDecryptedDataText($this->data['last_name']);
     }
 
     return $name;
@@ -168,8 +168,8 @@ class CustomerShop
    */
   public function getGender(): string|bool
   {
-    if (isset($this->_data['gender'])) {
-      return $this->_data['gender'];
+    if (isset($this->data['gender'])) {
+      return $this->data['gender'];
     }
 
     return false;
@@ -182,7 +182,7 @@ class CustomerShop
    */
   public function hasEmailAddress(): bool
   {
-    return isset($this->_data['email_address']);
+    return isset($this->data['email_address']);
   }
 
   /**
@@ -192,8 +192,8 @@ class CustomerShop
    */
   public function getEmailAddress(): string|bool
   {
-    if (isset($this->_data['email_address']) && !empty($this->_data['email_address'])) {
-      return Hash::displayDecryptedEmail($this->_data['email_address']);
+    if (isset($this->data['email_address']) && !empty($this->data['email_address'])) {
+      return Hash::displayDecryptedEmail($this->data['email_address']);
     }
 
     return false;
@@ -207,7 +207,7 @@ class CustomerShop
    */
   public function setTelephone(?string $telephone): void
   {
-    $this->_data['customers_telephone'] = $telephone;
+    $this->data['customers_telephone'] = $telephone;
   }
 
   /**
@@ -217,8 +217,8 @@ class CustomerShop
    */
   public function getTelephone(): string|bool
   {
-    if (isset($this->_data['customers_telephone'])) {
-      return Hash::displayDecryptedDataText($this->_data['customers_telephone']);
+    if (isset($this->data['customers_telephone'])) {
+      return Hash::displayDecryptedDataText($this->data['customers_telephone']);
     }
 
     return false;
@@ -232,7 +232,7 @@ class CustomerShop
    */
   public function setCellularPhone(?string $telephone): void
   {
-    $this->_data['customers_cellular_phone'] = $telephone;
+    $this->data['customers_cellular_phone'] = $telephone;
   }
 
   /**
@@ -242,8 +242,8 @@ class CustomerShop
    */
   public function getCellularPhone(): string|bool
   {
-    if (isset($this->_data['customers_cellular_phone'])) {
-      return Hash::displayDecryptedDataText($this->_data['customers_cellular_phone']);
+    if (isset($this->data['customers_cellular_phone'])) {
+      return Hash::displayDecryptedDataText($this->data['customers_cellular_phone']);
     }
 
     return false;
@@ -259,8 +259,8 @@ class CustomerShop
     static $country_id = null;
 
     if (is_null($country_id)) {
-      if (isset($this->_data['country_id'])) {
-        $country_id = $this->_data['country_id'];
+      if (isset($this->data['country_id'])) {
+        $country_id = $this->data['country_id'];
       }
     }
 
@@ -277,8 +277,8 @@ class CustomerShop
     static $zone_id = null;
 
     if (is_null($zone_id)) {
-      if (isset($this->_data['zone_id'])) {
-        $zone_id = $this->_data['zone_id'];
+      if (isset($this->data['zone_id'])) {
+        $zone_id = $this->data['zone_id'];
       }
     }
 
@@ -295,8 +295,8 @@ class CustomerShop
     static $id = null;
 
     if (is_null($id)) {
-      if (isset($this->_data['default_address_id'])) {
-        $id = $this->_data['default_address_id'];
+      if (isset($this->data['default_address_id'])) {
+        $id = $this->data['default_address_id'];
       }
     }
 
@@ -312,8 +312,8 @@ class CustomerShop
   {
     $customersGroupId = 0;
 
-    if (isset($this->_data1['customers_group_id'])) {
-      $customersGroupId = $this->_data1['customers_group_id'];
+    if (isset($this->data1['customers_group_id'])) {
+      $customersGroupId = $this->data1['customers_group_id'];
     }
 
     return $customersGroupId;
@@ -327,7 +327,7 @@ class CustomerShop
    */
   public function setData(int $id): bool
   {
-    $this->_data = [];
+    $this->data = [];
 
     if (is_numeric($id) && ($id > 0)) {
       $Qcustomer = $this->db->prepare('select customers_gender,
@@ -354,7 +354,7 @@ class CustomerShop
       
       if ($customer_group_data !== false) {
         $this->setCustomersGroupID($customer_group_data['customers_group_id']);
-        $_SESSION['customer_group_id'] = $this->_data1;
+        $_SESSION['customer_group_id'] = $this->data1;
       }
 
       if ($Qcustomer->fetch() !== false) {
@@ -384,11 +384,11 @@ class CustomerShop
           }
         }
 
-        $_SESSION['customer'] = $this->_data;
+        $_SESSION['customer'] = $this->data;
       }
     }
 
-    return !empty($this->_data);
+    return !empty($this->data);
   }
 
   /**
@@ -400,9 +400,9 @@ class CustomerShop
   public function setID(int $id): void
   {
     if (is_numeric($id) && ($id > 0)) {
-      $this->_data['id'] = $id;
+      $this->data['id'] = $id;
     } else {
-      $this->_data['id'] = false;
+      $this->data['id'] = false;
     }
   }
 
@@ -416,7 +416,7 @@ class CustomerShop
   public function setDefaultAddressID(int $id): void
   {
     if (is_numeric($id) && ($id > 0)) {
-      if (!isset($this->_data['default_address_id']) || ($this->_data['default_address_id'] != $id)) {
+      if (!isset($this->data['default_address_id']) || ($this->data['default_address_id'] != $id)) {
         $update_sql = [
           'customers_default_address_id' => $id
         ];
@@ -424,9 +424,9 @@ class CustomerShop
         $this->db->save('customers', $update_sql, ['customers_id' => $this->getID()]);
       }
 
-      $this->_data['default_address_id'] = $id;
+      $this->data['default_address_id'] = $id;
     } else {
-      $this->_data['default_address_id'] = false;
+      $this->data['default_address_id'] = false;
     }
   }
 
@@ -437,7 +437,7 @@ class CustomerShop
    */
   public function hasDefaultAddress(): bool
   {
-    if (isset($this->_data['default_address_id']) && is_numeric($this->_data['default_address_id'])) {
+    if (isset($this->data['default_address_id']) && is_numeric($this->data['default_address_id'])) {
       return true;
     }
 
@@ -453,9 +453,9 @@ class CustomerShop
   public function setGender(?string $gender): void
   {
     if ((mb_strtolower($gender) == 'm') || (mb_strtolower($gender) == 'f')) {
-      $this->_data['gender'] = mb_strtolower($gender);
+      $this->data['gender'] = mb_strtolower($gender);
     } else {
-      $this->_data['gender'] = false;
+      $this->data['gender'] = false;
     }
   }
 
@@ -467,7 +467,7 @@ class CustomerShop
    */
   public function setFirstName(?string $first_name): void
   {
-    $this->_data['first_name'] = Hash::displayDecryptedDataText($first_name);
+    $this->data['first_name'] = Hash::displayDecryptedDataText($first_name);
   }
 
   /**
@@ -478,7 +478,7 @@ class CustomerShop
    */
   public function setLastName(?string $last_name): void
   {
-    $this->_data['last_name'] = Hash::displayDecryptedDataText($last_name);
+    $this->data['last_name'] = Hash::displayDecryptedDataText($last_name);
   }
 
   /**
@@ -489,7 +489,7 @@ class CustomerShop
    */
   public function setEmailAddress(string $email_address): void
   {
-    $this->_data['email_address'] = $email_address;
+    $this->data['email_address'] = $email_address;
   }
 
   /**
@@ -525,7 +525,7 @@ class CustomerShop
    */
   public function setCountryID(int $id): void
   {
-    $this->_data['country_id'] = $id;
+    $this->data['country_id'] = $id;
   }
 
   /**
@@ -536,7 +536,7 @@ class CustomerShop
    */
   public function setZoneID(int $id): void
   {
-    $this->_data['zone_id'] = $id;
+    $this->data['zone_id'] = $id;
   }
 
   /**
@@ -547,7 +547,7 @@ class CustomerShop
    */
   public function setCustomersgroupID(int $id): void
   {
-    $this->_data1['customers_group_id'] = $id;
+    $this->data1['customers_group_id'] = $id;
   }
 
   /**
@@ -557,8 +557,8 @@ class CustomerShop
    */
   public function reset(): void
   {
-    $this->_is_logged_on = false;
-    $this->_data = [];
+    $this->is_logged_on = false;
+    $this->data = [];
 
     if (isset($_SESSION['customer'])) {
       unset($_SESSION['customer']);
@@ -621,7 +621,7 @@ class CustomerShop
                                     where customers_id = :customers_id
                                     limit 1
                                     ');
-    $Qcheck->bindInt(':customers_id', $this->_data['id']);
+    $Qcheck->bindInt(':customers_id', $this->data['id']);
     $Qcheck->execute();
 
     return ($Qcheck->fetch() !== false);
@@ -646,7 +646,7 @@ class CustomerShop
                                         and pd.language_id = :language_id
                                       order by pd.products_name
                                       ');
-    $Qproducts->bindInt(':customers_id', $this->_data['id']);
+    $Qproducts->bindInt(':customers_id', $this->data['id']);
     $Qproducts->bindInt(':language_id', $CLICSHOPPING_Language->getID());
     $Qproducts->execute();
 

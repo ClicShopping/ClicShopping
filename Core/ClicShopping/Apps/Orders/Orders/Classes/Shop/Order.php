@@ -36,7 +36,7 @@ class Order
   public array $billing;
   public int $order_id;
   public string $comment;
-  protected int $_id;
+  protected int $id;
   protected int $insertID;
   public $coupon;
   public $content_type;
@@ -59,8 +59,8 @@ class Order
     $this->billing = [];
 
     if (isset($_GET['order_id']) && is_numeric($_GET['order_id'])) {
-      $this->_id = (int)$_GET['order_id'];
-      $this->query($this->_id);
+      $this->id = (int)$_GET['order_id'];
+      $this->query($this->id);
     } elseif (!is_null($order_id)) {
       $this->query((int)$order_id);
     } else {

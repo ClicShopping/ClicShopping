@@ -23,7 +23,7 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
   public function execute()
   {
-    if (($_GET['flag'] == 0) || ($_GET['flag'] == 1)) {
+    if (isset($_GET['flag']) && ($_GET['flag'] == 0 || ($_GET['flag'] == 1))) {
       if (isset($_GET['cPath'])) {
         $cPath = HTML::sanitize($_GET['cPath']);
       } else {

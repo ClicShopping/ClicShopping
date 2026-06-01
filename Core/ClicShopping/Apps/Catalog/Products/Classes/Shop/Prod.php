@@ -17,6 +17,9 @@ use function is_array;
  */
 class Prod
 {
+  protected string $sort_by = '';
+  protected string $sort_by_direction = '';
+
   /**
    * Retrieves the ID from GET or POST request parameters. The method sanitizes the input to ensure safety
    * and checks various conditions to determine the appropriate ID value to return based on availability.
@@ -113,26 +116,26 @@ class Prod
   {
     switch ($field) {
       case 'model':
-        $this->_sort_by = 'p.products_model';
+        $this->sort_by = 'p.products_model';
         break;
       case 'manufacturer':
-        $this->_sort_by = 'm.manufacturers_name';
+        $this->sort_by = 'm.manufacturers_name';
         break;
       case 'quantity':
-        $this->_sort_by = 'p.products_quantity';
+        $this->sort_by = 'p.products_quantity';
         break;
       case 'weight':
-        $this->_sort_by = 'p.products_weight';
+        $this->sort_by = 'p.products_weight';
         break;
       case 'price':
-        $this->_sort_by = 'p.products_price';
+        $this->sort_by = 'p.products_price';
         break;
       case 'date_added':
-        $this->_sort_by = 'p.products_date_added';
+        $this->sort_by = 'p.products_date_added';
         break;
     }
 
-    $this->_sort_by_direction = ($direction == '-') ? '-' : '+';
+    $this->sort_by_direction = ($direction == '-') ? '-' : '+';
   }
 
   /**
@@ -143,6 +146,6 @@ class Prod
    */
   public function setSortByDirection(string $direction): void
   {
-    $this->_sort_by_direction = ($direction == '-') ? '-' : '+';
+    $this->sort_by_direction = ($direction == '-') ? '-' : '+';
   }
 }
