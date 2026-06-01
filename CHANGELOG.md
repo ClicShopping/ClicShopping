@@ -6,7 +6,7 @@ version4.30
 - AI Speed response and improvement
 - products attributes improvement
 - product templating improvement
-- template refactoring
+- some little app refactoring
 
 ---------------
 version4.281 et 4.282
