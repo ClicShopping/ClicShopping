@@ -7,7 +7,7 @@
  */
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTML;
+use ClicShopping\Apps\Configuration\Antispam\Classes\Shop\AntiSpam;
 use ClicShopping\OM\Registry;
 
 class pr_products_reviews_write_invisible_antispam
@@ -47,7 +47,7 @@ class pr_products_reviews_write_invisible_antispam
 
     if (isset($_GET['Products'], $_GET['ReviewsWrite']) && !isset($_GET['Success'])) {
       $products_reviews_write_invisible_antispam = '<!--  products_reviews_write_invisible_invisible_antispam start -->' . "\n";
-      $products_reviews_write_invisible_antispam .= HTML::inputField('invisible_clicshopping', '', 'id="hiddenRecaptcha"', null, null, 'hiddenRecaptcha');
+      $products_reviews_write_invisible_antispam .= AntiSpam::getInvisibleAntiSpamFields();
       $products_reviews_write_invisible_antispam .= '<!-- products_reviews_write_invisible_invisible_antispam end -->' . "\n";
 
       $CLICSHOPPING_Template->addBlock($products_reviews_write_invisible_antispam, $this->group);

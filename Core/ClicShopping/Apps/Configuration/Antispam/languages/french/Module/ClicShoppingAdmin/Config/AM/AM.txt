@@ -2,4 +2,4 @@ module_am_title = Anti spam Numérique
 module_am_short_title = Anti spam Numérique
 module_am_public_title = Anti spam Numérique
 
-module_am_introduction = Ce module vous permet d'installer l'anti spam numérique
+module_am_introduction = L'<strong>anti-spam numérique</strong> ajoute une petite question mathématique au formulaire.<br><br><strong>Avantages :</strong> très simple à mettre en place et bloque les bots grossiers qui postent à l'aveugle sans lire la page.<br><strong>Inconvénients :</strong> la question est écrite en clair dans la page, donc un bot qui lit la page sait la résoudre ; il ajoute aussi une gêne pour vos clients. À utiliser en complément de l'anti-spam invisible, pas seul.<br><br><strong>Important :</strong> l'activer ici ne suffit pas. Vous devez aussi activer le module anti-spam numérique correspondant côté template (Design &gt; Modules) pour chaque formulaire (contact, création de compte, avis, etc.).

@@ -2,4 +2,4 @@ module_ge_title = Général
 module_ge_short_title = Général
 module_ge_public_title = Général
 
-module_ge_introduction = Ce module vous permet d'installer des anti spams
+module_ge_introduction = Les <strong>réglages généraux</strong> sont l'interrupteur principal de l'application anti-spam. Vous activez ici l'application et choisissez les protections à utiliser : Invisible, Numérique ou Google reCAPTCHA.<br><br><strong>Invisible :</strong> aucune gêne pour le visiteur, bloque la plupart des bots &mdash; recommandé.<br><strong>Numérique :</strong> une question mathématique simple, faible seule, utile en complément.<br><strong>reCAPTCHA :</strong> l'option la plus robuste, mais dépend d'un tiers et ajoute de la friction.<br><br><strong>Important :</strong> activer une protection ici ne fait que la moitié du travail. Chaque protection doit aussi être activée côté template (Design &gt; Modules) pour chaque formulaire à protéger (contact, création de compte, compte invité, newsletter, avis, recommander à un ami).

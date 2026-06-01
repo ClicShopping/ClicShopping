@@ -6,8 +6,8 @@
  * See LICENSE file.
  */
 
+use ClicShopping\Apps\Configuration\Antispam\Classes\Shop\AntiSpam;
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 class co_contact_us_invisible_antispam
@@ -47,7 +47,7 @@ class co_contact_us_invisible_antispam
 
     if (isset($_GET['Info'], $_GET['Contact']) && !isset($_GET['Success'])) {
       $contact_us_invisible_antispam = '<!--  contact_us_invisible_antispam start -->' . "\n";
-      $contact_us_invisible_antispam .= HTML::inputField('invisible_clicshopping', '', 'id="hiddenRecaptcha"', null, null, 'hiddenRecaptcha');
+      $contact_us_invisible_antispam .= AntiSpam::getInvisibleAntiSpamFields();
       $contact_us_invisible_antispam .= '<!-- contact_us_invisible_antispam end -->' . "\n";
 
       $CLICSHOPPING_Template->addBlock($contact_us_invisible_antispam, $this->group);

@@ -2,4 +2,4 @@ module_in_title = Invisible anti spam
 module_in_short_title = Invisible anti spam
 module_in_public_title = Invisible anti spam
 
-module_in_introduction = This module allows you to install the invisible anti spam
+module_in_introduction = <strong>Invisible anti-spam</strong> protects the form without bothering the visitor. It combines three layers: detection of known-bot User-Agents, a hidden honeypot field, and a server-side time-trap that rejects forms submitted faster than a human could.<br><br><strong>Advantages:</strong> invisible to real customers (no friction) and blocks the large majority of real-world spam bots.<br><strong>Drawbacks:</strong> a sophisticated bot driving a real browser can still get through, and visitors that send no User-Agent are rejected. For that residual risk, combine it with the numeric challenge or an e-mail confirmation.<br><br><strong>Important:</strong> turning it on here is not enough. You must also activate the matching invisible anti-spam module on the template side (Design &gt; Modules) for each form.

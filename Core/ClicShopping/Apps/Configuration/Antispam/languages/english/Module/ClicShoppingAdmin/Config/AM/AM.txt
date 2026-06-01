@@ -2,4 +2,4 @@ module_am_title = Numeric Antispam
 module_am_short_title = Numeric Antispam
 module_am_public_title = Numeric Antispam
 
-module_am_introduction = This moduloe allows you to install a numeric antispam
+module_am_introduction = <strong>Numeric anti-spam</strong> adds a small math question to the form.<br><br><strong>Advantages:</strong> very easy to set up and stops crude bots that submit blindly without reading the page.<br><strong>Drawbacks:</strong> the challenge is written in clear text in the page, so a bot that parses the page can solve it; it also adds friction for real customers. Use it as a complement to the Invisible anti-spam rather than on its own.<br><br><strong>Important:</strong> turning it on here is not enough. You must also activate the matching numeric anti-spam module on the template side (Design &gt; Modules) for each form (contact, account creation, reviews, etc.).

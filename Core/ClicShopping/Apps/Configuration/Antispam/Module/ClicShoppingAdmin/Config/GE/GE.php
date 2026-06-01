@@ -30,6 +30,7 @@ class GE extends \ClicShopping\Apps\Configuration\Antispam\Module\ClicShoppingAd
   {
     $this->title = $this->app->getDef('module_ge_title');
     $this->short_title = $this->app->getDef('module_ge_short_title');
+    $this->introduction = $this->app->getDef('module_ge_introduction');
   }
 
   /**

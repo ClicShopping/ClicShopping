@@ -36,7 +36,9 @@ class PreAction implements \ClicShopping\OM\Modules\HooksInterface
   }
 
   /**
-   * Checks the configuration and validates the presence of an invisible antispam token in the request.
+   * Honeypot check: the CSS-hidden field "invisible_clicshopping" must stay empty.
+   * A real user never sees it (display:none) and leaves it blank; a bot that fills
+   * every field populates it, which flags the submission as spam.
    *
    * @return bool Returns true if a violation is detected or conditions require it, otherwise false.
    */
@@ -52,7 +54,8 @@ class PreAction implements \ClicShopping\OM\Modules\HooksInterface
       return false;
     }
 
-    if (CLICSHOPPING_APP_ANTISPAM_IN_CONTACT == 'True' && !isset($_POST['invisible_clicshopping'])) {
+    // Layered invisible check: bot User-Agent, honeypot filled, or submitted too fast.
+    if (CLICSHOPPING_APP_ANTISPAM_IN_CONTACT == 'True' && AntiSpam::checkInvisibleAntiSpam() === true) {
       $error = true;
     }
 
@@ -78,6 +81,23 @@ class PreAction implements \ClicShopping\OM\Modules\HooksInterface
 
     return $error;
   }
+/**
+   * Server-side Google reCAPTCHA validation (v2/v3) for this form.
+   *
+   * @return bool Returns true if the reCAPTCHA verification fails, otherwise false.
+   */
+  private static function checkGoogleRecaptcha(): bool
+  {
+    if (!\defined('CLICSHOPPING_APP_ANTISPAM_GG_STATUS') || CLICSHOPPING_APP_ANTISPAM_GG_STATUS == 'False') {
+      return false;
+    }
+
+    if (!\defined('CLICSHOPPING_APP_ANTISPAM_GG_CONTACT') || CLICSHOPPING_APP_ANTISPAM_GG_CONTACT == 'False') {
+      return false;
+    }
+
+    return AntiSpam::checkRecaptcha('contact');
+  }
 
   /**
    * Executes the antispam process by validating requests against invisible and numeric antispam checks.
@@ -96,8 +116,9 @@ class PreAction implements \ClicShopping\OM\Modules\HooksInterface
 
       $error_invisible = static::checkInvisibleAntispam();
       $error_numeric = static::checkNumericAntispam();
+      $error_recaptcha = static::checkGoogleRecaptcha();
 
-      if ($error_invisible === true || $error_numeric === true) {
+      if ($error_invisible === true || $error_numeric === true || $error_recaptcha === true) {
 
         $error = true;
       }

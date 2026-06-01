@@ -1,0 +1,2 @@
+modules_contact_us_invisible_antispam_title = Souhaitez-vous afficher un antispam caché ?
+modules_contact_us_invisible_antispam_description = Affiche un antispam caché

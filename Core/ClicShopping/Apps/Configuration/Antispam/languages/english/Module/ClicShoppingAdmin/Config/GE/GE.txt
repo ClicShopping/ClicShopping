@@ -2,4 +2,4 @@ module_ge_title = General
 module_ge_short_title = General
 module_ge_public_title = General
 
-module_ge_introduction = This module allows you to install some different antispam
+module_ge_introduction = <strong>General settings</strong> are the master switch of the anti-spam app. From here you enable the app and choose which protections to use: Invisible, Numeric or Google reCAPTCHA.<br><br><strong>Invisible:</strong> no friction for the visitor, stops most bots &mdash; recommended.<br><strong>Numeric:</strong> a simple math challenge, weak on its own, useful as a complement.<br><strong>reCAPTCHA:</strong> the strongest option, but relies on a third party and adds friction.<br><br><strong>Important:</strong> enabling a protection here is only half the job. Each protection must also be activated on the template side (Design &gt; Modules) for every form you want to protect (contact, account creation, guest account, newsletter, reviews, tell a friend).

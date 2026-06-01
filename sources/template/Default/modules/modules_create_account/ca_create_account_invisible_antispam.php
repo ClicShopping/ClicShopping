@@ -7,7 +7,7 @@
  */
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTML;
+use ClicShopping\Apps\Configuration\Antispam\Classes\Shop\AntiSpam;
 use ClicShopping\OM\Registry;
 
 class ca_create_account_invisible_antispam
@@ -47,7 +47,7 @@ class ca_create_account_invisible_antispam
 
     if (isset($_GET['Account'], $_GET['Create']) && !isset($_GET['Success'])) {
       $create_account_invisible_antispam = '<!--  create_account_invisible_invisible_antispam start -->' . "\n";
-      $create_account_invisible_antispam .= HTML::inputField('invisible_clicshopping', '', 'id="hiddenRecaptcha"', null, null, 'hiddenRecaptcha');
+      $create_account_invisible_antispam .= AntiSpam::getInvisibleAntiSpamFields();
       $create_account_invisible_antispam .= '<!-- create_account_invisible_invisible_antispam end -->' . "\n";
 
       $CLICSHOPPING_Template->addBlock($create_account_invisible_antispam, $this->group);

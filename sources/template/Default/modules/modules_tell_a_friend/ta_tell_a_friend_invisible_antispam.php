@@ -7,7 +7,7 @@
  */
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTML;
+use ClicShopping\Apps\Configuration\Antispam\Classes\Shop\AntiSpam;
 use ClicShopping\OM\Registry;
 
 class ta_tell_a_friend_invisible_antispam
@@ -47,7 +47,7 @@ class ta_tell_a_friend_invisible_antispam
 
     if (isset($_GET['Products'], $_GET['TellAFriend'])) {
       $tell_a_friend_invisible_antispam = '<!--  tell_a_friend_invisible_invisible_antispam start -->' . "\n";
-      $tell_a_friend_invisible_antispam .= HTML::inputField('invisible_clicshopping', '', 'id="hiddenRecaptcha"', null, null, 'hiddenRecaptcha');
+      $tell_a_friend_invisible_antispam .= AntiSpam::getInvisibleAntiSpamFields();
       $tell_a_friend_invisible_antispam .= '<!-- tell_a_friend_invisible_invisible_antispam end -->' . "\n";
 
       $CLICSHOPPING_Template->addBlock($tell_a_friend_invisible_antispam, $this->group);

@@ -55,7 +55,7 @@ class PreAction implements \ClicShopping\OM\Modules\HooksInterface
       return false;
     }
 
-    if (CLICSHOPPING_APP_ANTISPAM_IN_CREATE_ACCOUNT_PRO == 'True' && !isset($_POST['invisible_clicshopping'])) {
+    if (CLICSHOPPING_APP_ANTISPAM_IN_CREATE_ACCOUNT_PRO == 'True' && AntiSpam::checkInvisibleAntiSpam() === true) {
       $error = true;
     }
 
@@ -84,6 +84,23 @@ class PreAction implements \ClicShopping\OM\Modules\HooksInterface
 
     return $error;
   }
+/**
+   * Server-side Google reCAPTCHA validation (v2/v3) for this form.
+   *
+   * @return bool Returns true if the reCAPTCHA verification fails, otherwise false.
+   */
+  private static function checkGoogleRecaptcha(): bool
+  {
+    if (!\defined('CLICSHOPPING_APP_ANTISPAM_GG_STATUS') || CLICSHOPPING_APP_ANTISPAM_GG_STATUS == 'False') {
+      return false;
+    }
+
+    if (!\defined('CLICSHOPPING_APP_ANTISPAM_GG_CREATE_ACCOUNT_PRO') || CLICSHOPPING_APP_ANTISPAM_GG_CREATE_ACCOUNT_PRO == 'False') {
+      return false;
+    }
+
+    return AntiSpam::checkRecaptcha('create_account_pro');
+  }
 
   /**
    * Executes the antispam checks on the account creation process.
@@ -106,8 +123,9 @@ class PreAction implements \ClicShopping\OM\Modules\HooksInterface
 
       $error_invisible = static::checkInvisibleAntispam();
       $error_numeric = static::checkNumericAntispam();
+      $error_recaptcha = static::checkGoogleRecaptcha();
 
-      if ($error_invisible === true || $error_numeric === true) {
+      if ($error_invisible === true || $error_numeric === true || $error_recaptcha === true) {
         $error = true;
       }
 

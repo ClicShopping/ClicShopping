@@ -1,0 +1,4 @@
+modules_create_account_numeric_antispam_title = Souhaitez-vous activer le système antispam (numérique) ?
+modules_create_account_numeric_antispam_description = activer le système antispam (numérique)
+
+entry_numeric_antispam = Combien font :
