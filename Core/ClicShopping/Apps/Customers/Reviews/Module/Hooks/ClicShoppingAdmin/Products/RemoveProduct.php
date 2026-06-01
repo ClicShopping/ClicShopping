@@ -82,7 +82,7 @@ class RemoveProduct implements \ClicShopping\OM\Modules\HooksInterface
    */
   public function execute()
   {
-    if (isset($_POST['selected'])) {
+    if (isset($_POST['selected']) && \is_array($_POST['selected']) && !empty($_POST['selected'])) {
       foreach ($_POST['selected'] as $id) {
         $this->removeReviews($id);
         $this->removeReviewsSentiment($id);

@@ -26,7 +26,7 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
     if (isset($_GET['id'], $_GET['flag'])) {
-      Status::getSuppliersStatus($_GET['id'], $_GET['flag']);
+      Status::getSuppliersStatus((int)$_GET['id'], (int)$_GET['flag']);
 
       $this->app->redirect('Suppliers&page=' . $page . '&mID=' . (int)$_GET['id']);
     } else {

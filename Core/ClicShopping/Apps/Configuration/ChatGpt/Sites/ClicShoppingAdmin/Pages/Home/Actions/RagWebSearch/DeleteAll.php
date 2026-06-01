@@ -23,7 +23,7 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-    if (isset($_POST['selected'])) {
+    if (isset($_POST['selected']) && \is_array($_POST['selected']) && !empty($_POST['selected'])) {
       foreach ($_POST['selected'] as $id) {
         $this->app->db->delete('rag_websearch', ['id' => (int)$id]);
       }

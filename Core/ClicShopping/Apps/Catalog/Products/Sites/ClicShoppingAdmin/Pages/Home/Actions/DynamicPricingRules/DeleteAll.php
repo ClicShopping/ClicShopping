@@ -41,7 +41,7 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
    */
   public function execute()
   {
-    if (isset($_POST['selected'])) {
+    if (isset($_POST['selected']) && \is_array($_POST['selected']) && !empty($_POST['selected'])) {
       foreach ($_POST['selected'] as $id) {
         $Qdelete = $this->app->db->prepare('delete
                                             from :table_dynamic_pricing_rules

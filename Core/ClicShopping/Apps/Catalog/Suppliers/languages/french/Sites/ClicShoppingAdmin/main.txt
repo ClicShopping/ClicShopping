@@ -92,3 +92,4 @@ text_suppliers_notes = Notes complémentaires
 text_delete_intro = Etes vous s&ucirc;r de vouloir supprimer ce fournisseur ?
 text_delete_image = Suppprimer l'image du fournisseur ?
 text_delete_products = Supprimer tous les produits de ce fournisseur ? (en incluant les critiques, produits en promotion, produits à venir)
+text_products_deactivated_supplier_delete = Les produits liés au(x) fournisseur(s) supprimé(s) ont été désactivés.

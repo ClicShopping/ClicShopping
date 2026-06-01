@@ -22,7 +22,9 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
   public function execute()
   {
-    if (isset($_POST['selected'])) {
+    $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
+
+    if (isset($_POST['selected']) && \is_array($_POST['selected']) && !empty($_POST['selected'])) {
       foreach ($_POST['selected'] as $id) {
         $Qdelete = $this->app->db->prepare('delete
                                               from :table_suppliers
@@ -43,13 +45,16 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
                                                   products_status = 0
                                               where suppliers_id = :suppliers_id1
                                             ');
-        $Qupdate->bindInt(':suppliers_id', '');
+        $Qupdate->bindInt(':suppliers_id', 0);
         $Qupdate->bindInt(':suppliers_id1', $id);
 
         $Qupdate->execute();
 
         $this->Hooks->call('Suppliers', 'DeleteAll');
       }
+
+      $this->app->loadDefinitions('Sites/ClicShoppingAdmin/main');
+      $CLICSHOPPING_MessageStack->add($this->app->getDef('text_products_deactivated_supplier_delete'), 'warning');
     }
 
     $this->app->redirect('Suppliers');

@@ -114,7 +114,7 @@ class Manufacturers
     $Qmanufacturer->execute();
 
     if ($Qmanufacturer->fetch()) {
-      $image = $Qmanufacturer->valueInt('image');
+      $image = $Qmanufacturer->value('image');
     }
 
     return $image;
@@ -143,7 +143,7 @@ class Manufacturers
     $Qmanufacturer->execute();
 
     if ($Qmanufacturer->fetch()) {
-      $description = $Qmanufacturer->valueInt('description');
+      $description = $Qmanufacturer->value('description');
     }
 
     return $description;
@@ -173,7 +173,7 @@ class Manufacturers
     $Qmanufacturer->execute();
 
     if ($Qmanufacturer->fetch()) {
-      $url = $Qmanufacturer->valueInt('url');
+      $url = $Qmanufacturer->value('url');
     }
 
     return $url;

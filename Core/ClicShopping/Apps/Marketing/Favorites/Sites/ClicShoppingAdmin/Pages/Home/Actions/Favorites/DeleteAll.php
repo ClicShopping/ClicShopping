@@ -19,7 +19,7 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-    if (isset($_POST['selected'])) {
+    if (isset($_POST['selected']) && \is_array($_POST['selected']) && !empty($_POST['selected'])) {
       foreach ($_POST['selected'] as $id) {
         $Qdelete = $CLICSHOPPING_Favorites->db->prepare('delete
                                                             from :table_products_favorites

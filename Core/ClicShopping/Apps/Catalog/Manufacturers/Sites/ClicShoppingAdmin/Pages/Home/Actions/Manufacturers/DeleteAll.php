@@ -25,7 +25,7 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $this->app->db->delete('manufacturers_info', ['manufacturers_id' => (int)$id]);
 
         $Qupdate = $this->app->db->prepare('update :table_products
-                                              set  manufacturers_id = :manufacturers_id
+                                              set manufacturers_id = 0
                                               where manufacturers_id = :manufacturers_id
                                             ');
         $Qupdate->bindInt(':manufacturers_id', $id);

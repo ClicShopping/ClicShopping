@@ -27,7 +27,7 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     $CLICSHOPPING_Wysiwyg = Registry::get('Wysiwyg');
 
-    $suppliers_name = HTML::sanitize($_POST['suppliers_name']);
+    $suppliers_name = HTML::sanitize($_POST['suppliers_name'] ?? '');
 
     if (isset($_POST['suppliers_manager'])) {
       $suppliers_manager = HTML::sanitize($_POST['suppliers_manager']);
@@ -77,8 +77,8 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $suppliers_city = '';
     }
 
-    $suppliers_states = HTML::sanitize($_POST['suppliers_states']);
-    $suppliers_country_id = HTML::sanitize($_POST['suppliers_country_id']);
+    $suppliers_states = HTML::sanitize($_POST['suppliers_states'] ?? '');
+    $suppliers_country_id = HTML::sanitize($_POST['suppliers_country_id'] ?? '');
 
     if (isset($_POST['suppliers_image'])) {
       $suppliers_image = $_POST['suppliers_image'];
@@ -130,11 +130,12 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $languages = $CLICSHOPPING_Language->getLanguages();
 
+    $suppliers_url_array = (isset($_POST['suppliers_url']) && \is_array($_POST['suppliers_url'])) ? $_POST['suppliers_url'] : [];
+
     for ($i = 0, $n = \count($languages); $i < $n; $i++) {
-      $suppliers_url_array = $_POST['suppliers_url'];
       $language_id = $languages[$i]['id'];
 
-      $sql_data_array = ['suppliers_url' => HTML::sanitize($suppliers_url_array[$language_id])];
+      $sql_data_array = ['suppliers_url' => HTML::sanitize($suppliers_url_array[$language_id] ?? '')];
 
       $insert_sql_data = [
         'suppliers_id' => (int)$suppliers_id,

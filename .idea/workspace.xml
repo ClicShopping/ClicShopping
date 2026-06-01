@@ -4,79 +4,46 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="some fix">
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/create_guest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/newsletter_no_account.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/create_guest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/login_admin.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/newsletter_no_account.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/create_guest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/newsletter_no_account.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/create_guest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/login_admin.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/newsletter_no_account.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/english/modules/modules_contact_us/co_contact_us_invisible_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/english/modules/modules_contact_us/co_contact_us_numeric_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/english/modules/modules_create_account/ca_create_account_invisible_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/english/modules/modules_create_account/ca_create_account_numeric_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/english/modules/modules_create_account_pro/cap_create_account_pro_invisible_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/english/modules/modules_create_account_pro/cap_create_account_pro_numeric_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/french/modules/modules_contact_us/co_contact_us_invisible_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/french/modules/modules_contact_us/co_contact_us_numeric_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/french/modules/modules_create_account/ca_create_account_invisible_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/french/modules/modules_create_account/ca_create_account_numeric_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/french/modules/modules_create_account_pro/cap_create_account_pro_invisible_antispam.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sources/languages/french/modules/modules_create_account_pro/cap_create_account_pro_numeric_antispam.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Classes/Shop/AntiSpam.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Classes/Shop/AntiSpam.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/ClicShoppingAdmin/Config/GE/GE.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/ClicShoppingAdmin/Config/GE/GE.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Account/Create/PreAction.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Account/Create/PreAction.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Account/CreatePro/PreAction.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Account/CreatePro/PreAction.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Customers/ReviewsWrite/PreAction.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Customers/ReviewsWrite/PreAction.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Info/Contact/PreAction.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Info/Contact/PreAction.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Products/TellAFriend/PreAction.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/Module/Hooks/Shop/Products/TellAFriend/PreAction.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/AM.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/AM.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/contact.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/contact.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/create_account.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/create_account.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/create_account_pro.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/create_account_pro.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/reviews_write.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/reviews_write.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/sort_order.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/status.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/tell_a_friend.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/AM/Params/tell_a_friend.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/GE/GE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/GE/GE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/GE/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/GE/Params/status.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/IN.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/IN.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/contact.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/contact.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/create_account.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/create_account.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/create_account_pro.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/create_account_pro.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/reviews_write.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/reviews_write.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/sort_order.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/status.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/tell_a_friend.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/english/Module/ClicShoppingAdmin/Config/IN/Params/tell_a_friend.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/AM.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/AM.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/contact.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/contact.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/create_account.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/create_account.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/create_account_pro.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/create_account_pro.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/reviews_write.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/reviews_write.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/sort_order.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/status.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/tell_a_friend.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/AM/Params/tell_a_friend.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/GE/GE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/GE/GE.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/GE/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/GE/Params/sort_order.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/GE/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/GE/Params/status.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/IN.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/IN.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/contact.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/contact.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/create_account.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/create_account.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/create_account_pro.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/create_account_pro.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/reviews_write.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/reviews_write.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/sort_order.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/status.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/tell_a_friend.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Module/ClicShoppingAdmin/Config/IN/Params/tell_a_friend.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Antispam/languages/french/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_contact_us/co_contact_us_invisible_antispam.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_contact_us/co_contact_us_invisible_antispam.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_create_account/ca_create_account_invisible_antispam.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_create_account/ca_create_account_invisible_antispam.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_create_account_pro/cap_create_account_pro_invisible_antispam.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_create_account_pro/cap_create_account_pro_invisible_antispam.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_reviews/pr_products_reviews_write_invisible_antispam.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_products_reviews/pr_products_reviews_write_invisible_antispam.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_tell_a_friend/ta_tell_a_friend_invisible_antispam.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_tell_a_friend/ta_tell_a_friend_invisible_antispam.php" afterDir="false" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="little refactoring">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Archive/Sites/ClicShoppingAdmin/Pages/Home/Actions/Archive/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Archive/Sites/ClicShoppingAdmin/Pages/Home/Actions/Archive/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Manufacturers/Classes/ClicShoppingAdmin/Status.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Manufacturers/Classes/ClicShoppingAdmin/Status.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Manufacturers/Classes/Shop/Manufacturers.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Manufacturers/Classes/Shop/Manufacturers.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Manufacturers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Manufacturers/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Manufacturers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Manufacturers/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Sites/ClicShoppingAdmin/Pages/Home/Actions/DynamicPricingRules/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Products/Sites/ClicShoppingAdmin/Pages/Home/Actions/DynamicPricingRules/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/Classes/ClicShoppingAdmin/Status.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/Classes/ClicShoppingAdmin/Status.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Suppliers/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Suppliers/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Suppliers/Insert.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Suppliers/Insert.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Suppliers/SetFlag.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/Sites/ClicShoppingAdmin/Pages/Home/Actions/Suppliers/SetFlag.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Module/ClicShoppingAdmin/Config/CS/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Module/ClicShoppingAdmin/Config/CS/Params/sort_order.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Module/ClicShoppingAdmin/Config/CS/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Module/ClicShoppingAdmin/Config/CS/Params/status.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Module/Hooks/ClicShoppingAdmin/Manufacturers/page_content_tab_1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Module/Hooks/ClicShoppingAdmin/Manufacturers/page_content_tab_1.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Module/Hooks/ClicShoppingAdmin/Products/page_content_tab_1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Module/Hooks/ClicShoppingAdmin/Products/page_content_tab_1.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Sites/ClicShoppingAdmin/install.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Sites/ClicShoppingAdmin/install.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Sites/ClicShoppingAdmin/suppliers_popup.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/english/Sites/ClicShoppingAdmin/suppliers_popup.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Module/ClicShoppingAdmin/Config/CS/Params/sort_order.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Module/ClicShoppingAdmin/Config/CS/Params/sort_order.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Module/ClicShoppingAdmin/Config/CS/Params/status.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Module/ClicShoppingAdmin/Config/CS/Params/status.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Module/Hooks/ClicShoppingAdmin/Manufacturers/page_content_tab_1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Module/Hooks/ClicShoppingAdmin/Manufacturers/page_content_tab_1.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Module/Hooks/ClicShoppingAdmin/Products/page_content_tab_1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Module/Hooks/ClicShoppingAdmin/Products/page_content_tab_1.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Sites/ClicShoppingAdmin/install.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Sites/ClicShoppingAdmin/install.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Sites/ClicShoppingAdmin/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Sites/ClicShoppingAdmin/main.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Sites/ClicShoppingAdmin/suppliers_popup.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Catalog/Suppliers/languages/french/Sites/ClicShoppingAdmin/suppliers_popup.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/Newsletter/Sites/ClicShoppingAdmin/Pages/Home/Actions/Newsletter/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Communication/Newsletter/Sites/ClicShoppingAdmin/Pages/Home/Actions/Newsletter/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/Actions/RagWebSearch/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/Actions/RagWebSearch/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Zones/Sites/ClicShoppingAdmin/Pages/Home/Actions/Zones/AllFlag.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/Zones/Sites/ClicShoppingAdmin/Pages/Home/Actions/Zones/AllFlag.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/Sites/ClicShoppingAdmin/Pages/Home/Actions/Gdpr/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/Sites/ClicShoppingAdmin/Pages/Home/Actions/Gdpr/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Module/Hooks/ClicShoppingAdmin/Customers/DeleteCustomers.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Module/Hooks/ClicShoppingAdmin/Customers/DeleteCustomers.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Module/Hooks/ClicShoppingAdmin/Products/RemoveProduct.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Module/Hooks/ClicShoppingAdmin/Products/RemoveProduct.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Sites/ClicShoppingAdmin/Pages/Home/Actions/Reviews/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Sites/ClicShoppingAdmin/Pages/Home/Actions/Reviews/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Sites/ClicShoppingAdmin/Pages/Home/Actions/Reviews/DeleteAllVote.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Sites/ClicShoppingAdmin/Pages/Home/Actions/Reviews/DeleteAllVote.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Sites/ClicShoppingAdmin/Pages/Home/Actions/ReviewsSentiment/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Reviews/Sites/ClicShoppingAdmin/Pages/Home/Actions/ReviewsSentiment/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/BannerManager/Sites/ClicShoppingAdmin/Pages/Home/Actions/BannerManager/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/BannerManager/Sites/ClicShoppingAdmin/Pages/Home/Actions/BannerManager/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Favorites/Sites/ClicShoppingAdmin/Pages/Home/Actions/Favorites/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Favorites/Sites/ClicShoppingAdmin/Pages/Home/Actions/Favorites/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Featured/Sites/ClicShoppingAdmin/Pages/Home/Actions/Featured/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Featured/Sites/ClicShoppingAdmin/Pages/Home/Actions/Featured/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Specials/Sites/ClicShoppingAdmin/Pages/Home/Actions/Specials/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/Specials/Sites/ClicShoppingAdmin/Pages/Home/Actions/Specials/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/SecurityCheck/Sites/ClicShoppingAdmin/Pages/Home/Actions/IpRestriction/DeleteAll.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/SecurityCheck/Sites/ClicShoppingAdmin/Pages/Home/Actions/IpRestriction/DeleteAll.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/WhosOnline/Module/Hooks/ClicShoppingAdmin/Customers/DeleteCustomers.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/WhosOnline/Module/Hooks/ClicShoppingAdmin/Customers/DeleteCustomers.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -359,39 +326,7 @@
       <workItem from="1780161404348" duration="397000" />
       <workItem from="1780224409266" duration="8000" />
       <workItem from="1780245161323" duration="646000" />
-      <workItem from="1780251154059" duration="2651000" />
-    </task>
-    <task id="LOCAL-00044" summary="little update">
-      <option name="closed" value="true" />
-      <created>1778759025956</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1778759025956</updated>
-    </task>
-    <task id="LOCAL-00045" summary="code update">
-      <option name="closed" value="true" />
-      <created>1778765627691</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1778765627691</updated>
-    </task>
-    <task id="LOCAL-00046" summary="refactoring">
-      <option name="closed" value="true" />
-      <created>1778766014427</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1778766014427</updated>
-    </task>
-    <task id="LOCAL-00047" summary="refactoring">
-      <option name="closed" value="true" />
-      <created>1778766373758</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1778766373758</updated>
+      <workItem from="1780251154059" duration="6073000" />
     </task>
     <task id="LOCAL-00048" summary="refactoring">
       <option name="closed" value="true" />
@@ -753,15 +688,45 @@
       <option name="project" value="LOCAL" />
       <updated>1780251177550</updated>
     </task>
-    <option name="localTasksCounter" value="93" />
+    <task id="LOCAL-00093" summary="antispam improvement">
+      <option name="closed" value="true" />
+      <created>1780296341813</created>
+      <option name="number" value="00093" />
+      <option name="presentableId" value="LOCAL-00093" />
+      <option name="project" value="LOCAL" />
+      <updated>1780296341813</updated>
+    </task>
+    <task id="LOCAL-00094" summary="antispam improvement">
+      <option name="closed" value="true" />
+      <created>1780296350898</created>
+      <option name="number" value="00094" />
+      <option name="presentableId" value="LOCAL-00094" />
+      <option name="project" value="LOCAL" />
+      <updated>1780296350898</updated>
+    </task>
+    <task id="LOCAL-00095" summary="little refactoring">
+      <option name="closed" value="true" />
+      <created>1780297796851</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1780297796851</updated>
+    </task>
+    <task id="LOCAL-00096" summary="little refactoring">
+      <option name="closed" value="true" />
+      <created>1780298421883</created>
+      <option name="number" value="00096" />
+      <option name="presentableId" value="LOCAL-00096" />
+      <option name="project" value="LOCAL" />
+      <updated>1780298421883</updated>
+    </task>
+    <option name="localTasksCounter" value="97" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix upload" />
-    <MESSAGE value="DOM text reinterpreted as HTML" />
     <MESSAGE value="some improvment" />
     <MESSAGE value="librairies updated" />
     <MESSAGE value="ratelimiter improvment" />
@@ -785,7 +750,9 @@
     <MESSAGE value="db updated" />
     <MESSAGE value="newsletter upgraded" />
     <MESSAGE value="some fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="some fix" />
+    <MESSAGE value="antispam improvement" />
+    <MESSAGE value="little refactoring" />
+    <option name="LAST_COMMIT_MESSAGE" value="little refactoring" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
