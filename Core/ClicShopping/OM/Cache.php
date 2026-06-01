@@ -488,7 +488,7 @@ class Cache
       $d = dir($searchPath);
 
       while (($entry = $d->read()) !== false) {
-        if ((strlen($entry) >= $key_length) && (substr($entry, 0, $key_length) == $key)) {
+        if ((strlen($entry) >= $key_length) && str_starts_with($entry, $key)) {
           $d->close();
           return true;
         }
@@ -564,7 +564,7 @@ class Cache
     $DLcache->setIncludeDirectories(false);
 
     foreach ($DLcache->getFiles() as $file) {
-      if ((strlen($file['name']) >= $key_length) && (substr($file['name'], 0, $key_length) == $key)) {
+      if ((strlen($file['name']) >= $key_length) && str_starts_with($file['name'], $key)) {
         unlink($searchPath . $file['name']);
       }
     }

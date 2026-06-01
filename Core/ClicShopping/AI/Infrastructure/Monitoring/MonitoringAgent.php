@@ -201,13 +201,13 @@ class MonitoringAgent
 
     // Méthodes spécifiques par type de composant
     switch (true) {
-      case strpos($name, 'Planner') !== false:
+      case str_contains($name, 'Planner'):
         $metrics['type'] = 'planner';
         $metrics['total_plans'] = $componentStats['total_plans_created'] ?? 0;
         $metrics['avg_steps'] = $componentStats['avg_steps_per_plan'] ?? 0;
         break;
 
-      case strpos($name, 'Memory') !== false:
+      case str_contains($name, 'Memory'):
         $metrics['type'] = 'memory';
         if (method_exists($component, 'getStats')) {
           $memStats = $component->getStats();
@@ -216,7 +216,7 @@ class MonitoringAgent
         }
         break;
 
-      case strpos($name, 'Correction') !== false:
+      case str_contains($name, 'Correction'):
         $metrics['type'] = 'correction';
         if (method_exists($component, 'getLearningStats')) {
           $learnStats = $component->getLearningStats();
@@ -225,7 +225,7 @@ class MonitoringAgent
         }
         break;
 
-      case strpos($name, 'WebSearch') !== false:
+      case str_contains($name, 'WebSearch'):
         $metrics['type'] = 'web_search';
         $metrics['cache_hit_rate'] = $this->extractCacheHitRate($componentStats);
         break;

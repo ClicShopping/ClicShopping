@@ -354,7 +354,7 @@ class InputValidator
     $isAllowed = false;
     foreach ($allowedDirs as $allowedDir) {
       $normalizedAllowedDir = str_replace('\\', '/', realpath($allowedDir));
-      if ($normalizedAllowedDir && strpos($realPath, $normalizedAllowedDir) === 0) {
+      if ($normalizedAllowedDir && str_starts_with($realPath, $normalizedAllowedDir)) {
         $isAllowed = true;
         break;
       }

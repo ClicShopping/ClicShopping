@@ -51,7 +51,7 @@ class EntityHelper
     }
     
     // Handle compound words with underscores (e.g., "return_orders" -> "return_order")
-    if (strpos($entityType, '_') !== false) {
+    if (str_contains($entityType, '_')) {
       $parts = explode('_', $entityType);
       $lastPart = array_pop($parts);
       
@@ -80,17 +80,17 @@ class EntityHelper
     }
     
     // Words ending in "ies" -> "y" (e.g., "categories" -> "category")
-    if (substr($word, -3) === 'ies') {
+    if (str_ends_with($word, 'ies')) {
       return substr($word, 0, -3) . 'y';
     }
     
     // Words ending in "es" -> remove "es" (e.g., "boxes" -> "box")
-    if (substr($word, -2) === 'es') {
+    if (str_ends_with($word, 'es')) {
       return substr($word, 0, -2);
     }
     
     // Words ending in "s" -> remove "s" (e.g., "products" -> "product")
-    if (substr($word, -1) === 's') {
+    if (str_ends_with($word, 's')) {
       return substr($word, 0, -1);
     }
     
@@ -125,7 +125,7 @@ class EntityHelper
     }
     
     // Handle compound words with underscores
-    if (strpos($entityType, '_') !== false) {
+    if (str_contains($entityType, '_')) {
       $parts = explode('_', $entityType);
       $lastPart = array_pop($parts);
       
@@ -154,7 +154,7 @@ class EntityHelper
     }
     
     // Words ending in "y" -> "ies" (e.g., "category" -> "categories")
-    if (substr($word, -1) === 'y') {
+    if (str_ends_with($word, 'y')) {
       return substr($word, 0, -1) . 'ies';
     }
     

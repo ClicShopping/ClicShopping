@@ -75,7 +75,7 @@ class SuperlativePostFilter
     $query = strtolower($query);
     
     foreach (SuperlativePatterns::$entityKeywords as $entity) {
-      if (strpos($query, $entity) !== false) {
+      if (str_contains($query, $entity)) {
         return true;
       }
     }
@@ -140,7 +140,7 @@ class SuperlativePostFilter
     $detected = [];
     
     foreach (SuperlativePatterns::$entityKeywords as $entity) {
-      if (strpos($query, $entity) !== false) {
+      if (str_contains($query, $entity)) {
         $detected[] = $entity;
       }
     }

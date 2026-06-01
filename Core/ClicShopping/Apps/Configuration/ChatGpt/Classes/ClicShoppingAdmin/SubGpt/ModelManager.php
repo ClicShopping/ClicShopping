@@ -217,9 +217,9 @@ class ModelManager
 
     // Model-specific parameter mapping
     // GPT-4o-mini, GPT-4.1 series, GPT-5 series use max_completion_tokens
-    if (strpos($model, 'gpt-4.1-mini') === 0 || 
-        strpos($model, 'gpt-4.1') === 0 ||
-        strpos($model, 'gpt-5') === 0) {
+    if (str_starts_with($model, 'gpt-4.1-mini') || 
+        str_starts_with($model, 'gpt-4.1') ||
+        str_starts_with($model, 'gpt-5')) {
       $params['max_completion_tokens'] = $maxtoken;
     } else {
       // Default for GPT-4o, Anthropic, Mistral, LM Studio, and other models
@@ -246,7 +246,7 @@ class ModelManager
     foreach ($models as $modelInfo) {
       if ($modelInfo['id'] === $model) {
         // Check if this is a GPT-5 series model (uses reasoning API)
-        if (strpos($modelInfo['id'], 'gpt-5') === 0) {
+        if (str_starts_with($modelInfo['id'], 'gpt-5')) {
           return true;
         }
         
@@ -255,7 +255,7 @@ class ModelManager
     }
     
     // Model not found in list - check by prefix as fallback
-    return strpos($model, 'gpt-5') === 0;
+    return str_starts_with($model, 'gpt-5');
   }
 
   /**

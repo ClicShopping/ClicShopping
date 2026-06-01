@@ -201,10 +201,10 @@ class QueryPerformanceMonitor
   {
     $sql = trim(strtoupper($sql));
     
-    if (strpos($sql, 'SELECT') === 0) return 'SELECT';
-    if (strpos($sql, 'INSERT') === 0) return 'INSERT';
-    if (strpos($sql, 'UPDATE') === 0) return 'UPDATE';
-    if (strpos($sql, 'DELETE') === 0) return 'DELETE';
+    if (str_starts_with($sql, 'SELECT')) return 'SELECT';
+    if (str_starts_with($sql, 'INSERT')) return 'INSERT';
+    if (str_starts_with($sql, 'UPDATE')) return 'UPDATE';
+    if (str_starts_with($sql, 'DELETE')) return 'DELETE';
     
     return 'UNKNOWN';
   }

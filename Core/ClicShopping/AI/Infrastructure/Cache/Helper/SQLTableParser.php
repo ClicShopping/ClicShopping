@@ -188,7 +188,7 @@ class SQLTableParser
     $tableName = str_replace(['`', '"', "'"], '', $tableName);
 
     // Remove database prefix (e.g., database.table -> table)
-    if (strpos($tableName, '.') !== false) {
+    if (str_contains($tableName, '.')) {
       $parts = explode('.', $tableName);
       $tableName = end($parts);
     }

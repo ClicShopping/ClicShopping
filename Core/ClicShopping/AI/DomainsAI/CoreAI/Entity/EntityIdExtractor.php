@@ -166,10 +166,10 @@ class EntityIdExtractor
       $tableName = str_replace('_id', '', $columnName);
 
       // Check if table name appears in query
-      if (strpos($sqlLower, "from {$tableName}") !== false ||
-          strpos($sqlLower, "from clic_{$tableName}") !== false ||
-          strpos($sqlLower, "join {$tableName}") !== false ||
-          strpos($sqlLower, "join clic_{$tableName}") !== false) {
+      if (str_contains($sqlLower, "from {$tableName}") ||
+          str_contains($sqlLower, "from clic_{$tableName}") ||
+          str_contains($sqlLower, "join {$tableName}") ||
+          str_contains($sqlLower, "join clic_{$tableName}")) {
 
         return [
           'entity_id' => null, // Can't extract ID from query alone

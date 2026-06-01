@@ -168,15 +168,15 @@ class AnalyticsErrorHandler
     DomainConfig::loadLanguageFile('rag_error_handler');
     
     // Suggestions based on the type of error
-    if (strpos($errorMessage, 'Unknown column') !== false) {
+    if (str_contains($errorMessage, 'Unknown column')) {
       return CLICSHOPPING::getDef('text_column_reference_does_not_exist');
     }
 
-    if (strpos($errorMessage, 'syntax error') !== false) {
+    if (str_contains($errorMessage, 'syntax error')) {
       return CLICSHOPPING::getDef('text_sql_query_generated_error');
     }
 
-    if (strpos($errorMessage, 'Table') !== false && strpos($errorMessage, 'doesn\'t exist') !== false) {
+    if (str_contains($errorMessage, 'Table') && str_contains($errorMessage, 'doesn\'t exist')) {
       return CLICSHOPPING::getDef('text_table_referenced_does_not_exist');
     }
 

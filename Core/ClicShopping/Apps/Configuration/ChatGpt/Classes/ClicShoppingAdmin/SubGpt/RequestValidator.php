@@ -190,7 +190,7 @@ class RequestValidator
     register_shutdown_function(function() use ($seconds) {
       $error = error_get_last();
       if ($error && ($error['type'] === E_ERROR || $error['type'] === E_USER_ERROR)) {
-        if (strpos($error['message'], 'Maximum execution time') !== false) {
+        if (str_contains($error['message'], 'Maximum execution time')) {
           error_log('[INFO : TIME] TIMEOUT ERROR: Query exceeded ' . $seconds . ' seconds');
           
           if (ob_get_length()) ob_clean();

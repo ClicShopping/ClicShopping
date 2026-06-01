@@ -97,7 +97,7 @@ class ComplexQueryFormatter extends AbstractFormatter
     if (isset($results['text_response']) && !empty($results['text_response'])) {
       $interpretationText = $results['text_response'];
       // Check if text_response contains HTML
-      $isHtmlContent = (strpos($interpretationText, '<div') !== false || strpos($interpretationText, '<p>') !== false);
+      $isHtmlContent = (str_contains($interpretationText, '<div') || str_contains($interpretationText, '<p>'));
     } elseif (isset($results['response']) && !empty($results['response'])) {
       $interpretationText = $results['response'];
     } elseif (isset($results['interpretation']) && $results['interpretation'] !== 'Array') {

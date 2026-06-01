@@ -78,7 +78,7 @@ class GptShop
       $temperature = 0.5;
     }
 
-    if (strpos(CLICSHOPPING_APP_CHATGPT_CH_MODEL, 'gpt') === 0) {
+    if (str_starts_with(CLICSHOPPING_APP_CHATGPT_CH_MODEL, 'gpt')) {
       $engine = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
       $response = Gpt::getGptResponse($question, $maxtoken, $temperature, $engine);
     } else {

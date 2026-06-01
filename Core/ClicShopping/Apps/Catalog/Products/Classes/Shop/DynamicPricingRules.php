@@ -441,7 +441,7 @@
     private function isComparisonClause(string $clause): bool
     {
       foreach (self::ALLOWED_OPERATORS as $operator) {
-        if (strpos($clause, $operator) !== false) {
+        if (str_contains($clause, $operator)) {
           return true;
         }
       }

@@ -163,7 +163,7 @@ class ObfuscationPreprocessor
   {
     $lowerText = strtolower($text);
     foreach (ObfuscationPatterns::$maliciousKeywords as $keyword) {
-      if (strpos($lowerText, $keyword) !== false) {
+      if (str_contains($lowerText, $keyword)) {
         return true;
       }
     }

@@ -264,7 +264,7 @@ class AmbiguousQueryDetector
       }
       
       // Generate default interpretations based on ambiguity type
-      if (strpos($ambiguityType, 'quantification') !== false) {
+      if (str_contains($ambiguityType, 'quantification')) {
         // For quantification queries: count vs sum
         $interpretations = [
           [
@@ -280,7 +280,7 @@ class AmbiguousQueryDetector
             'sql_hint' => 'Use SUM(quantity_field)'
           ]
         ];
-      } else if (strpos($ambiguityType, 'scope') !== false) {
+      } else if (str_contains($ambiguityType, 'scope')) {
         // For scope queries: all vs recent
         $interpretations = [
           [

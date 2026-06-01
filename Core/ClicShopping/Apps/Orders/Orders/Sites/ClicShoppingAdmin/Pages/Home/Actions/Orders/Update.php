@@ -39,11 +39,12 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $this->lang = Registry::get('Language');
     $this->db = Registry::get('Db');
 
-    if (isset($_GET['oID'])) $this->oID = HTML::sanitize($_GET['oID']);
-    if (isset($_POST['status'])) $this->status = HTML::sanitize($_POST['status']);
-
-    if (isset($_POST['status_invoice'])) $this->statusInvoice = HTML::sanitize($_POST['status_invoice']);
-    if (isset($_POST['comments'])) $this->comments = HTML::sanitize($_POST['comments']);
+    // Typed properties must always be initialized: reading an uninitialized typed
+    // property is a fatal Error in PHP 8 (not just a warning).
+    $this->oID = isset($_GET['oID']) ? (int)HTML::sanitize($_GET['oID']) : 0;
+    $this->status = isset($_POST['status']) ? (int)HTML::sanitize($_POST['status']) : 0;
+    $this->statusInvoice = isset($_POST['status_invoice']) ? (int)HTML::sanitize($_POST['status_invoice']) : 0;
+    $this->comments = isset($_POST['comments']) ? HTML::sanitize($_POST['comments']) : '';
 
     if (isset($_POST['notify_comments'])) $this->notifyComments = HTML::sanitize($_POST['notify_comments']);
     if (isset($_POST['notify'])) $this->notify = HTML::sanitize($_POST['notify']);
@@ -233,7 +234,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
       if ($this->oID != 0) {
         $check = $this->getCheckStatus();
 // verify and update the status if changed
-        if (($check['orders_status'] != $this->status) || ($check['orders_status_invoice'] != $this->statusInvoice) || !\is_null($this->comments)) {
+        if (($check['orders_status'] != $this->status) || ($check['orders_status_invoice'] != $this->statusInvoice) || ($this->comments !== '')) {
           $data_array = [
             'orders_status' => (int)$this->status,
             'orders_status_invoice' => (int)$this->statusInvoice,

@@ -204,7 +204,7 @@ class AnalyticsPatterns
     $query = strtolower($query);
     
     foreach (self::$timePeriods as $period) {
-      if (strpos($query, $period) !== false) {
+      if (str_contains($query, $period)) {
         return true;
       }
     }
@@ -281,7 +281,7 @@ class AnalyticsPatterns
     $detected = [];
     
     foreach (self::$financialMetrics as $metric) {
-      if (strpos($query, $metric) !== false) {
+      if (str_contains($query, $metric)) {
         $detected[] = $metric;
       }
     }
@@ -301,7 +301,7 @@ class AnalyticsPatterns
     $detected = [];
     
     foreach (self::$timePeriods as $period) {
-      if (strpos($query, $period) !== false) {
+      if (str_contains($query, $period)) {
         $detected[] = $period;
       }
     }

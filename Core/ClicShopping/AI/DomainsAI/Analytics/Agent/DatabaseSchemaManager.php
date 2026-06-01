@@ -240,7 +240,7 @@ class DatabaseSchemaManager
           $type = is_array($columnInfo) ? $columnInfo['type'] : $columnInfo;
 
           // Detect ID columns that could be foreign keys
-          if (preg_match('/_id$/', $column) && strpos($type, 'int') !== false) {
+          if (preg_match('/_id$/', $column) && str_contains($type, 'int')) {
             $relatedTable = str_replace('_id', '', $column);
 
             // Validate related table name

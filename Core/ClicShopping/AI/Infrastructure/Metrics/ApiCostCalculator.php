@@ -118,22 +118,22 @@ class ApiCostCalculator
     
     // Match partiel (ex: "gpt-4-0613" match "gpt-4")
     foreach (self::PRICING as $knownModel => $pricing) {
-      if (strpos($model, $knownModel) !== false) {
+      if (str_contains($model, $knownModel)) {
         return $pricing;
       }
     }
     
     // Détection par provider
-    if (strpos($model, 'gpt') !== false) {
+    if (str_contains($model, 'gpt')) {
       return self::PRICING['gpt-3.5-turbo']; // Défaut OpenAI
     }
-    if (strpos($model, 'claude') !== false) {
+    if (str_contains($model, 'claude')) {
       return self::PRICING['claude-3-haiku']; // Défaut Anthropic (le moins cher)
     }
-    if (strpos($model, 'mistral') !== false) {
+    if (str_contains($model, 'mistral')) {
       return self::PRICING['mistral-small']; // Défaut Mistral
     }
-    if (strpos($model, 'llama') !== false || strpos($model, 'ollama') !== false) {
+    if (str_contains($model, 'llama') || str_contains($model, 'ollama')) {
       return [0.0, 0.0]; // Local, gratuit
     }
     

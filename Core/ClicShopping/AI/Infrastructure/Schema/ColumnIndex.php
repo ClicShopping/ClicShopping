@@ -78,7 +78,7 @@ class ColumnIndex
     
     foreach ($tablesList as $tableName) {
       // Skip technical tables
-      if (strpos($tableName, '_embedding') !== false || strpos($tableName, $prefix . 'rag_') === 0) {
+      if (str_contains($tableName, '_embedding') || str_starts_with($tableName, $prefix . 'rag_')) {
         continue;
       }
       

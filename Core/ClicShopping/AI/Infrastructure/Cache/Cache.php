@@ -1035,7 +1035,7 @@ class Cache
 
     // Clear from file cache
     foreach ($this->promptCache as $key => $data) {
-      if (strpos($key, $prefix) === 0) {
+      if (str_starts_with($key, $prefix)) {
         unset($this->promptCache[$key]);
         $cleared++;
       }
@@ -1098,7 +1098,7 @@ class Cache
 
     // Invalidate from file cache
     foreach ($this->promptCache as $key => $data) {
-      if (strpos($key, self::CACHE_TYPE_SQL) === 0) {
+      if (str_starts_with($key, self::CACHE_TYPE_SQL)) {
         if (isset($data['tables_used']) && in_array($cleanTableName, $data['tables_used'], true)) {
           unset($this->promptCache[$key]);
           $invalidated++;
@@ -1152,7 +1152,7 @@ class Cache
 
     // Invalidate from file cache
     foreach ($this->promptCache as $key => $data) {
-      if (strpos($key, self::CACHE_TYPE_SQL) === 0) {
+      if (str_starts_with($key, self::CACHE_TYPE_SQL)) {
         if (isset($data['tables_used'])) {
           $intersection = array_intersect($cleanTableNames, $data['tables_used']);
           if (!empty($intersection)) {

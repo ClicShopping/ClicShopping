@@ -154,7 +154,7 @@ class SchemaEmbedder
       $tableName = $Qembeddings->value('table_name');
       
       // Skip technical tables (should not be in embeddings, but filter just in case)
-      if (strpos($tableName, '_embedding') !== false || strpos($tableName, 'clic_rag_') === 0) {
+      if (str_contains($tableName, '_embedding') || str_starts_with($tableName, 'clic_rag_')) {
         continue;
       }
       

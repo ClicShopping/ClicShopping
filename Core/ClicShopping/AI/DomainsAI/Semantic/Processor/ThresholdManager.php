@@ -160,16 +160,16 @@ class ThresholdManager
       $errorType = 'unknown';
       
       // Detect classification errors
-      if (strpos($comment, 'wrong type') !== false || 
-          strpos($comment, 'misclassified') !== false ||
-          strpos($comment, 'should be analytics') !== false ||
-          strpos($comment, 'should be semantic') !== false) {
+      if (str_contains($comment, 'wrong type') || 
+          str_contains($comment, 'misclassified') ||
+          str_contains($comment, 'should be analytics') ||
+          str_contains($comment, 'should be semantic')) {
         $isClassificationError = true;
         $errorType = 'misclassification';
-      } elseif ($reason === 'irrelevant' || strpos($comment, 'irrelevant') !== false) {
+      } elseif ($reason === 'irrelevant' || str_contains($comment, 'irrelevant')) {
         $isClassificationError = true;
         $errorType = 'irrelevant_result';
-      } elseif ($reason === 'incomplete' && strpos($comment, 'wrong') !== false) {
+      } elseif ($reason === 'incomplete' && str_contains($comment, 'wrong')) {
         $isClassificationError = true;
         $errorType = 'partial_misclassification';
       }

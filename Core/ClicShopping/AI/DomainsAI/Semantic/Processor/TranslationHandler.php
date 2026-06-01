@@ -218,8 +218,8 @@ class TranslationHandler
     }
     
     // STEP 4: Remove leading/trailing quotes if they wrap the entire string
-    if ((substr($cleaned, 0, 1) === '"' && substr($cleaned, -1) === '"') ||
-        (substr($cleaned, 0, 1) === "'" && substr($cleaned, -1) === "'")) {
+    if ((str_starts_with($cleaned, '"') && str_ends_with($cleaned, '"')) ||
+        (str_starts_with($cleaned, "'") && str_ends_with($cleaned, "'"))) {
       $cleaned = substr($cleaned, 1, -1);
     }
     

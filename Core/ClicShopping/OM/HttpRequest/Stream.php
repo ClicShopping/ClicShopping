@@ -202,7 +202,7 @@ class Stream
 
     if (!empty($parameters['header'])) {
       foreach ($parameters['header'] as $header) {
-        if (strpos($header, ':') !== false) {
+        if (str_contains($header, ':')) {
           [$name, $value] = explode(':', $header, 2);
           $headers[trim($name)] = trim($value);
         }
@@ -272,7 +272,7 @@ class Stream
     while (($line = fgets($socket)) !== false) {
       $line = trim($line);
       if ($line === '') break;
-      if (strpos($line, ':') !== false) {
+      if (str_contains($line, ':')) {
         [$name, $value] = explode(':', $line, 2);
         $headers[strtolower(trim($name))] = trim($value);
       }

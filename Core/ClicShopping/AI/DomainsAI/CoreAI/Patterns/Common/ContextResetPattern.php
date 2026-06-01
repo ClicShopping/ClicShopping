@@ -109,7 +109,7 @@ class ContextResetPattern
     $queryLower = mb_strtolower($query);
     
     foreach ($markers as $marker) {
-      if (strpos($queryLower, $marker) !== false) {
+      if (str_contains($queryLower, $marker)) {
         return true;
       }
     }
@@ -133,7 +133,7 @@ class ContextResetPattern
     $foundMarkers = [];
     
     foreach ($markers as $marker) {
-      if (strpos($queryLower, $marker) !== false) {
+      if (str_contains($queryLower, $marker)) {
         $foundMarkers[] = $marker;
       }
     }

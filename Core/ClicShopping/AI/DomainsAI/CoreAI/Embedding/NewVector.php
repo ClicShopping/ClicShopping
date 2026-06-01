@@ -41,9 +41,9 @@ class NewVector
   {
     $api_key = CLICSHOPPING_APP_CHATGPT_CH_API_KEY;
 
-    if (strpos(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'mistral') === 0) {
+    if (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'mistral')) {
       $api_key = CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL;
-    } elseif (strpos(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage') === 0) {
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage')) {
       $api_key = CLICSHOPPING_APP_CHATGPT_RA_API_KEY_VOYAGE_AI;
     }
 
@@ -58,13 +58,13 @@ class NewVector
    */
   private static function checkApiKeys(string $model): bool
   {
-    if (strpos($model, 'gpt') === 0) {
+    if (str_starts_with($model, 'gpt')) {
       return !empty(CLICSHOPPING_APP_CHATGPT_CH_API_KEY);
-    } elseif (strpos($model, 'mistral') === 0) {
+    } elseif (str_starts_with($model, 'mistral')) {
       return !empty(CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL);
-    } elseif (strpos($model, 'voyage') === 0) {
+    } elseif (str_starts_with($model, 'voyage')) {
       return !empty(CLICSHOPPING_APP_CHATGPT_RA_API_KEY_VOYAGE_AI);
-    } elseif (strpos($model, 'ollama') === 0) {
+    } elseif (str_starts_with($model, 'ollama')) {
       return true;
     }
 
@@ -112,27 +112,27 @@ class NewVector
 
     $api_key = self::getApiKey();
 
-    if (strpos($model, 'gpt-large') === 0) {
+    if (str_starts_with($model, 'gpt-large')) {
       $config = new OpenAIConfig();
       $config->apiKey = $api_key;
       return new OpenAI3LargeEmbeddingGenerator($config);
-    } elseif (strpos($model, 'gpt-medium') === 0) {
+    } elseif (str_starts_with($model, 'gpt-medium')) {
       $config = new OpenAIConfig();
       $config->apiKey = $api_key;
       return new OpenAI3SmallEmbeddingGenerator($config);
-    } elseif (strpos($model, 'mistral') === 0) {
+    } elseif (str_starts_with($model, 'mistral')) {
       $config = new OpenAIConfig();
       $config->apiKey = $api_key;
       return new MistralEmbeddingGenerator($config);
-    } elseif (strpos($model, 'voyage3-large') === 0) {
+    } elseif (str_starts_with($model, 'voyage3-large')) {
       $config = new VoyageAIConfig();
       $config->apiKey = $api_key;
       return new Voyage3LargeEmbeddingGenerator($config);
-    } elseif (strpos($model, 'voyage3-lite') === 0) {
+    } elseif (str_starts_with($model, 'voyage3-lite')) {
       $config = new VoyageAIConfig();
       $config->apiKey = $api_key;
       return new Voyage3LiteEmbeddingGenerator($config);
-    } elseif (strpos($model, 'voyage3') === 0) {
+    } elseif (str_starts_with($model, 'voyage3')) {
       $config = new VoyageAIConfig();
       $config->apiKey = $api_key;
       return new Voyage3EmbeddingGenerator($config);
@@ -335,7 +335,7 @@ class NewVector
 
       error_log($errorMessage);
 
-      if (strpos($e->getMessage(), 'maximum context length') !== false && $token_length > 200) {
+      if (str_contains($e->getMessage(), 'maximum context length') && $token_length > 200) {
         error_log("Retrying with smaller chunk size...");
         return self::createEmbedding($path_file_upload, $text_description, (int)($token_length / 2));
       }
@@ -426,7 +426,7 @@ class NewVector
   {
     $model = CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
 
-    if (strpos($model, 'gpt') === 0 || strpos($model, 'voyage') === 0) {
+    if (str_starts_with($model, 'gpt') || str_starts_with($model, 'voyage')) {
       $avgCharsPerToken = 3.5;
       return (int)ceil(strlen($text) / $avgCharsPerToken);
     }
@@ -774,17 +774,17 @@ class NewVector
    */
   public static function getEmbeddingLength(): int
   {
-    if (strpos(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'gpt-large') === 0) {
+    if (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'gpt-large')) {
       return 3072;
-    } elseif (strpos(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'gpt-medium') === 0) {
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'gpt-medium')) {
       return 1536;
-    } elseif (strpos(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'mistral') === 0) {
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'mistral')) {
       return 1024;
-    } elseif (strpos(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage3-large') === 0) {
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage3-large')) {
       return 4096;
-    } elseif (strpos(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage3-lite') === 0) {
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage3-lite')) {
       return 384;
-    } elseif (strpos(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage3') === 0) {
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage3')) {
       return 1024;
     } else {
       return 1536;
@@ -811,7 +811,7 @@ class NewVector
     ];
 
     foreach ($contextLengths as $modelPrefix => $length) {
-      if (strpos($model, $modelPrefix) === 0) {
+      if (str_starts_with($model, $modelPrefix)) {
         return $length;
       }
     }
@@ -839,7 +839,7 @@ class NewVector
     ];
 
     foreach ($chunkSizes as $modelPrefix => $size) {
-      if (strpos($model, $modelPrefix) === 0) {
+      if (str_starts_with($model, $modelPrefix)) {
         return $size;
       }
     }
@@ -854,10 +854,10 @@ class NewVector
    */
   private static function getModelProvider(string $model): string
   {
-    if (strpos($model, 'gpt') === 0) return 'openai';
-    if (strpos($model, 'mistral') === 0) return 'mistral';
-    if (strpos($model, 'voyage') === 0) return 'voyageai';
-    if (strpos($model, 'nomic') === 0) return 'ollama';
+    if (str_starts_with($model, 'gpt')) return 'openai';
+    if (str_starts_with($model, 'mistral')) return 'mistral';
+    if (str_starts_with($model, 'voyage')) return 'voyageai';
+    if (str_starts_with($model, 'nomic')) return 'ollama';
 
     return 'unknown';
   }

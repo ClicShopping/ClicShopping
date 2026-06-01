@@ -79,7 +79,7 @@ class ModificationKeywordsPattern
     $queryLower = mb_strtolower($query);
 
     foreach ($keywords as $keyword) {
-      if (strpos($queryLower, $keyword) !== false) {
+      if (str_contains($queryLower, $keyword)) {
         return true;
       }
     }
@@ -99,7 +99,7 @@ class ModificationKeywordsPattern
     $queryLower = mb_strtolower($query);
 
     foreach ($keywords as $keyword) {
-      if (strpos($queryLower, $keyword) !== false) {
+      if (str_contains($queryLower, $keyword)) {
         return $keyword;
       }
     }

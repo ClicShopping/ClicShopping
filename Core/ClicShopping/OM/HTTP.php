@@ -386,7 +386,7 @@ class HTTP
       return $systemroot;
     }
 
-    if (substr($path, 0, 3) === '..' . $separator) {
+    if (str_starts_with($path, '..' . $separator)) {
       $path = $systemroot . $path;
     }
 
@@ -394,12 +394,12 @@ class HTTP
     $path = rtrim($path, $separator) . $separator;
 
     // Absolute path
-    if ($path[0] === $separator || strpos($path, $systemroot) === 0) {
+    if ($path[0] === $separator || str_starts_with($path, $systemroot)) {
       return $path;
     }
 
     // Relative path from 'Here'
-    if (substr($path, 0, 2) === '.' . $separator || $path[0] !== '.') {
+    if (str_starts_with($path, '.' . $separator) || $path[0] !== '.') {
       $arrn = preg_split('/\\' . $separator . '/', $path, -1, PREG_SPLIT_NO_EMPTY);
       if ($arrn[0] !== '.') {
         array_unshift($arrn, '.');

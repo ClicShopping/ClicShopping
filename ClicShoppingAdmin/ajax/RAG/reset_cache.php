@@ -492,7 +492,7 @@ try {
         );
         // Exclude embedding_search files
         $oldFiles = array_filter($oldFiles, function($file) {
-          return strpos(basename($file), 'embedding_search_') !== 0;
+          return !str_starts_with(basename($file), 'embedding_search_');
         });
         $filesBefore += count($oldFiles);
         
@@ -514,7 +514,7 @@ try {
           glob($oldCacheDir . 'embedding_*.cache')
         );
         $oldFiles = array_filter($oldFiles, function($file) {
-          return strpos(basename($file), 'embedding_search_') !== 0;
+          return !str_starts_with(basename($file), 'embedding_search_');
         });
         $filesAfter += count($oldFiles);
       }
@@ -722,7 +722,7 @@ try {
             glob($oldCacheDir . 'embedding_*.cache')
           );
           $oldFiles = array_filter($oldFiles, function($file) {
-            return strpos(basename($file), 'embedding_search_') !== 0;
+            return !str_starts_with(basename($file), 'embedding_search_');
           });
           $filesBefore += count($oldFiles);
           foreach ($oldFiles as $file) {
@@ -738,7 +738,7 @@ try {
             glob($oldCacheDir . 'embedding_*.cache')
           );
           $oldFilesAfter = array_filter($oldFilesAfter, function($file) {
-            return strpos(basename($file), 'embedding_search_') !== 0;
+            return !str_starts_with(basename($file), 'embedding_search_');
           });
           $filesAfter += count($oldFilesAfter);
         }

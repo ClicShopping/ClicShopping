@@ -149,7 +149,7 @@ class MultiTemporalPostFilter
     $query = strtolower($query);
     
     foreach (self::$temporalConnectors as $connector) {
-      if (strpos($query, $connector) !== false) {
+      if (str_contains($query, $connector)) {
         return true;
       }
     }
@@ -169,7 +169,7 @@ class MultiTemporalPostFilter
     $detected = [];
     
     foreach (self::$temporalConnectors as $connector) {
-      if (strpos($query, $connector) !== false) {
+      if (str_contains($query, $connector)) {
         $detected[] = $connector;
       }
     }
@@ -188,7 +188,7 @@ class MultiTemporalPostFilter
     $query = strtolower($query);
     
     foreach (self::$financialMetrics as $metric) {
-      if (strpos($query, $metric) !== false) {
+      if (str_contains($query, $metric)) {
         return true;
       }
     }

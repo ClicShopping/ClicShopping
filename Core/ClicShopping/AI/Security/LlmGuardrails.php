@@ -339,7 +339,7 @@ class LlmGuardrails
   private static function validateJsonStructure(string $text): bool
   {
     // If the text contains JSON, check its validity
-    if (strpos($text, '{') !== false || strpos($text, '[') !== false) {
+    if (str_contains($text, '{') || str_contains($text, '[')) {
       return json_last_error() === JSON_ERROR_NONE;
     }
 

@@ -16,13 +16,12 @@ use ClicShopping\OM\Registry;
 class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public mixed $app;
-  protected bool $restock;
   protected int $oID;
 
   public function __construct()
   {
     $this->app = Registry::get('Orders');
-    $this->oID = HTML::sanitize($_GET['oID']);
+    $this->oID = isset($_GET['oID']) ? (int)HTML::sanitize($_GET['oID']) : 0;
   }
 
   public function execute()

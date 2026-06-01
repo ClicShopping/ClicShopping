@@ -60,7 +60,7 @@ class Service
     }
 
     foreach ($result['file'] as &$module) {
-      if (strpos($module['files_name'], '.') !== false) {
+      if (str_contains($module['files_name'], '.')) {
         $class = substr($module['files_name'], 0, strrpos($module['files_name'], '.'));
         $this->startService($class);
       }

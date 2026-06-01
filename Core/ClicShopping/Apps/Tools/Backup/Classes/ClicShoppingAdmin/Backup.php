@@ -149,8 +149,8 @@ class Backup
           
           // Check if default value is already quoted (starts and ends with single quote)
           $is_already_quoted = (strlen($default_value) >= 2 && 
-                                substr($default_value, 0, 1) === "'" && 
-                                substr($default_value, -1) === "'");
+                                str_starts_with($default_value, "'") &&
+                                str_ends_with($default_value, "'"));
           
           // Skip empty string defaults for numeric types (invalid SQL)
           if ($is_numeric_type && $default_value === '') {
@@ -270,7 +270,7 @@ class Backup
               $row = $Qrows->value($i);
               
               // Check if this is a VECTOR column
-              if (isset($columnTypes[$i]) && strpos(strtolower($columnTypes[$i]), 'vector') !== false) {
+              if (isset($columnTypes[$i]) && str_contains(strtolower($columnTypes[$i]), 'vector')) {
                 // VECTOR data is already in the correct format from MariaDB
                 // Just escape it properly
                 $row = addslashes($row);

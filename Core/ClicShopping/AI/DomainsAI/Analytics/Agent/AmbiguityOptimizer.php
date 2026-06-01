@@ -190,7 +190,7 @@ class AmbiguityOptimizer
       $ambiguityType = $ambiguityAnalysis['ambiguity_type'] ?? '';
       
       // For quantification queries, default to count and sum
-      if (strpos($ambiguityType, 'quantification') !== false) {
+      if (str_contains($ambiguityType, 'quantification')) {
         $availableInterpretations = ['count', 'sum'];
         
         if ($this->debug) {

@@ -269,8 +269,8 @@ class PromptBuilder
       error_log("sqlFormatInstructions length: " . strlen($sqlFormatInstructions) . " chars");
       error_log("text_response_format length: " . strlen($responseFormat) . " chars");
       error_log("text_multi_token_rules length: " . strlen($multiTokenRules) . " chars");
-      error_log("Contains 'MULTI-TOKEN' in multiTokenRules: " . (strpos($multiTokenRules, 'MULTI-TOKEN') !== false ? 'YES' : 'NO'));
-      error_log("Contains 'ABSOLUTE RULE' in aggregationRules: " . (strpos($aggregationRules, 'ABSOLUTE RULE') !== false ? 'YES' : 'NO'));
+      error_log("Contains 'MULTI-TOKEN' in multiTokenRules: " . (str_contains($multiTokenRules, 'MULTI-TOKEN') ? 'YES' : 'NO'));
+      error_log("Contains 'ABSOLUTE RULE' in aggregationRules: " . (str_contains($aggregationRules, 'ABSOLUTE RULE') ? 'YES' : 'NO'));
       error_log("First 200 chars of multiTokenRules: " . substr($multiTokenRules, 0, 200));
       error_log("================================================================================");
     }
@@ -305,8 +305,8 @@ class PromptBuilder
       error_log("================================================================================");
       error_log("Language ID: " . $this->languageId);
       error_log("Final message length: " . strlen($finalMessage));
-      error_log("Contains 'CRITICAL RULES': " . (strpos($finalMessage, 'CRITICAL RULES') !== false ? 'YES' : 'NO'));
-      error_log("Contains 'products_quantity': " . (strpos($finalMessage, 'products_quantity') !== false ? 'YES' : 'NO'));
+      error_log("Contains 'CRITICAL RULES': " . (str_contains($finalMessage, 'CRITICAL RULES') ? 'YES' : 'NO'));
+      error_log("Contains 'products_quantity': " . (str_contains($finalMessage, 'products_quantity') ? 'YES' : 'NO'));
       error_log("First 500 chars: " . substr($finalMessage, 0, 500));
       error_log("================================================================================");
     }
@@ -484,7 +484,7 @@ class PromptBuilder
       $tableName = array_values($tableRow)[0];
 
       // Skip non-clic tables
-      if (strpos($tableName, 'clic_') !== 0) {
+      if (!str_starts_with($tableName, 'clic_')) {
         continue;
       }
 

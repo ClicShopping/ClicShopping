@@ -114,7 +114,7 @@ class DoctrineOrm
         $serverVersionLower = strtolower($serverVersion);
 
         // Extract and properly format the version
-        if (strpos($serverVersionLower, 'mariadb') !== false) {
+        if (str_contains($serverVersionLower, 'mariadb')) {
           // Typical format: "10.11.8-MariaDB" or "11.7.0-mariadb"
           preg_match('/(\d+\.\d+\.\d+)/', $serverVersion, $matches);
 
@@ -758,7 +758,7 @@ class DoctrineOrm
     
     // Fuzzy match
     foreach ($allFields as $field) {
-      if (strpos($field, $word) !== false || strpos($word, $field) !== false) {
+      if (str_contains($field, $word) || str_contains($word, $field)) {
         return true;
       }
     }
@@ -1078,7 +1078,7 @@ class DoctrineOrm
       }
       
       // Add prefix if not already present
-      if (strpos($tableName, self::$prefixDb) !== 0) {
+      if (!str_starts_with($tableName, self::$prefixDb)) {
         $tableName = self::$prefixDb . $tableName;
       }
       
@@ -1113,7 +1113,7 @@ class DoctrineOrm
       }
       
       // Add prefix if not already present
-      if (strpos($tableName, self::$prefixDb) !== 0) {
+      if (!str_starts_with($tableName, self::$prefixDb)) {
         $tableName = self::$prefixDb . $tableName;
       }
       
@@ -1144,7 +1144,7 @@ class DoctrineOrm
       }
       
       // Add prefix if not already present
-      if (strpos($tableName, self::$prefixDb) !== 0) {
+      if (!str_starts_with($tableName, self::$prefixDb)) {
         $tableName = self::$prefixDb . $tableName;
       }
       

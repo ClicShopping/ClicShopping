@@ -310,7 +310,7 @@ class Db extends PDO
 
     if (!isset($options['prefix_tables']) || ($options['prefix_tables'] === true)) {
       array_walk($table, function (&$v) {
-        if ((strlen($v) < 7) || (substr($v, 0, 7) != ':table_')) {
+        if ((strlen($v) < 7) || (!str_starts_with($v, ':table_'))) {
           $v = ':table_' . $v;
         }
       }
@@ -446,7 +446,7 @@ class Db extends PDO
     }
 
     if (!isset($options['prefix_tables']) || ($options['prefix_tables'] === true)) {
-      if ((strlen($table) < 7) || (substr($table, 0, 7) != ':table_')) {
+      if ((strlen($table) < 7) || (!str_starts_with($table, ':table_'))) {
         $table = ':table_' . $table;
       }
     }
@@ -455,7 +455,7 @@ class Db extends PDO
     $vector_fields = [];
     foreach ($data as $field => $value) {
       // Check if the field is meant to be a vector and starts with 'vec_'
-      if (substr($field, 0, 4) === 'vec_') {
+      if (str_starts_with($field, 'vec_')) {
         $actual_field = substr($field, 4); // Get the actual field name without 'vec_' prefix
         $vector_fields[$actual_field] = $value; // Store the vector value
         unset($data[$field]); // Remove the special prefixed field
@@ -586,7 +586,7 @@ class Db extends PDO
   public function delete(string $table, array $where_condition = [], ?array $options = null): int
   {
     if (!isset($options['prefix_tables']) || ($options['prefix_tables'] === true)) {
-      if ((strlen($table) < 7) || (substr($table, 0, 7) != ':table_')) {
+      if ((strlen($table) < 7) || (!str_starts_with($table, ':table_'))) {
         $table = ':table_' . $table;
       }
     }
@@ -649,7 +649,7 @@ class Db extends PDO
 
     for ($i = $pos; $i < $sql_length; $i++) {
 // remove comments
-      if ((substr($import_queries, 0, 1) == '#') || (substr($import_queries, 0, 2) == '--')) {
+      if (str_starts_with($import_queries, '#') || str_starts_with($import_queries, '--')) {
         $import_queries = ltrim(substr($import_queries, strpos($import_queries, "\n")));
         $sql_length = strlen($import_queries);
         $i = strpos($import_queries, ';') - 1;
@@ -663,7 +663,7 @@ class Db extends PDO
           if (!empty(substr($import_queries, $j, 1))) {
             $next = substr($import_queries, $j, 6);
 
-            if ((substr($next, 0, 1) == '#') || (substr($next, 0, 2) == '--')) {
+            if (str_starts_with($next, '#') || str_starts_with($next, '--')) {
 // find out where the break position is so we can remove this line (#comment line)
               for ($k = $j; $k < $sql_length; $k++) {
                 if (substr($import_queries, $k, 1) == "\n") {
@@ -1230,7 +1230,7 @@ class Db extends PDO
     }
 
     // Ajout d'un underscore terminal si le préfixe est non vide et ne se termine pas déjà par un underscore
-    if ($prefix !== '' && substr($prefix, -1) !== '_') {
+    if ($prefix !== '' && !str_ends_with($prefix, '_')) {
       $prefix .= '_';
     }
 

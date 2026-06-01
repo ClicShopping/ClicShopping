@@ -60,7 +60,7 @@ class SemanticDomainDetector
         $weight = $this->termWeights[$groupType] ?? 0.5;
 
         foreach ($terms as $term) {
-          if (strpos($query, $term) !== false) {
+          if (str_contains($query, $term)) {
             $domainScore += $weight;
             $matchedTerms[] = [
               'term' => $term,
@@ -156,13 +156,13 @@ class SemanticDomainDetector
         $manufacturerBonus = 0;
         
         foreach ($supplierIndicators as $indicator) {
-          if (strpos($query, $indicator) !== false) {
+          if (str_contains($query, $indicator)) {
             $supplierBonus += 1.0;
           }
         }
         
         foreach ($manufacturerIndicators as $indicator) {
-          if (strpos($query, $indicator) !== false) {
+          if (str_contains($query, $indicator)) {
             $manufacturerBonus += 1.0;
           }
         }
@@ -185,7 +185,7 @@ class SemanticDomainDetector
         
         $sentimentBonus = 0;
         foreach ($sentimentIndicators as $indicator) {
-          if (strpos($query, $indicator) !== false) {
+          if (str_contains($query, $indicator)) {
             $sentimentBonus += 0.5;
           }
         }

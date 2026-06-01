@@ -103,7 +103,7 @@ class WebSearchPostFilter
     // 🔧 MIGRATION: Use centralized EntityKeywordsPattern instead of WebSearchPatterns
     $hasEntityKeyword = false;
     foreach (WebSearchPatterns::getEntityKeywords() as $entity) {
-      if (strpos($query, $entity) !== false) {
+      if (str_contains($query, $entity)) {
         $hasEntityKeyword = true;
         break;
       }
@@ -112,7 +112,7 @@ class WebSearchPostFilter
     // Check if query has financial metric keywords (analytics query, not web search)
     $hasFinancialKeyword = false;
     foreach ($financialMetricKeywords as $keyword) {
-      if (strpos($query, $keyword) !== false) {
+      if (str_contains($query, $keyword)) {
         $hasFinancialKeyword = true;
         break;
       }
@@ -121,7 +121,7 @@ class WebSearchPostFilter
     // Only apply trends/news override if NO entity keywords AND NO financial keywords present
     if (!$hasEntityKeyword && !$hasFinancialKeyword) {
       foreach (WebSearchPatterns::$trendsNewsKeywords as $keyword) {
-        if (strpos($query, $keyword) !== false) {
+        if (str_contains($query, $keyword)) {
           $analysis['intent_type'] = 'web_search';
           $analysis['confidence'] = 0.95;
           $analysis['override_reason'] = "Trends/news keyword detected: $keyword (no entity/financial keywords)";
@@ -136,7 +136,7 @@ class WebSearchPostFilter
     // ========================================================================
     
     foreach (WebSearchPatterns::$competitorKeywords as $keyword) {
-      if (strpos($query, $keyword) !== false) {
+      if (str_contains($query, $keyword)) {
         $analysis['intent_type'] = 'web_search';
         $analysis['confidence'] = 0.95;
         $analysis['override_reason'] = "Competitor keyword detected: $keyword";
@@ -167,7 +167,7 @@ class WebSearchPostFilter
       
       // Check if query mentions any configured external site
       foreach ($externalSites as $site) {
-        if (strpos($query, $site) !== false) {
+        if (str_contains($query, $site)) {
           $analysis['intent_type'] = 'web_search';
           $analysis['confidence'] = 0.95;
           $analysis['override_reason'] = "External site detected: $site (from database)";
@@ -189,7 +189,7 @@ class WebSearchPostFilter
     $hasPriceKeyword = false;
     
     foreach (WebSearchPatterns::$priceKeywords as $priceWord) {
-      if (strpos($query, $priceWord) !== false) {
+      if (str_contains($query, $priceWord)) {
         $hasPriceKeyword = true;
         break;
       }
@@ -197,10 +197,10 @@ class WebSearchPostFilter
     
     if ($hasPriceKeyword) {
       foreach (WebSearchPatterns::$comparisonKeywords as $keyword) {
-        if (strpos($query, $keyword) !== false) {
+        if (str_contains($query, $keyword)) {
           // Additional check: ensure it's not just internal comparison
           // If query contains "database" or "internal", it's likely hybrid, not pure web_search
-          if (strpos($query, 'database') === false && strpos($query, 'internal') === false) {
+          if (!str_contains($query, 'database') && !str_contains($query, 'internal')) {
             $analysis['intent_type'] = 'web_search';
             $analysis['confidence'] = 0.90;
             $analysis['override_reason'] = "Price comparison detected: $keyword";

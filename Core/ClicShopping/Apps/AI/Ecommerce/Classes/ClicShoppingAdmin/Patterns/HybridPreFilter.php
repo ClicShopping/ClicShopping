@@ -86,7 +86,7 @@ class HybridPreFilter
     $conjunctionUsed = '';
     
     foreach ($conjunctions as $conj) {
-      if (strpos($query, $conj) !== false) {
+      if (str_contains($query, $conj)) {
         $hasConjunction = true;
         $conjunctionUsed = trim($conj);
         break;
@@ -170,7 +170,7 @@ class HybridPreFilter
       
       // Check analytics
       foreach ($analyticsKeywords as $keyword) {
-        if (strpos($part, $keyword) !== false) {
+        if (str_contains($part, $keyword)) {
           $partIntent = 'analytics';
           break;
         }
@@ -179,7 +179,7 @@ class HybridPreFilter
       // Check semantic
       if ($partIntent === null) {
         foreach ($semanticKeywords as $keyword) {
-          if (strpos($part, $keyword) !== false) {
+          if (str_contains($part, $keyword)) {
             $partIntent = 'semantic';
             break;
           }
@@ -189,7 +189,7 @@ class HybridPreFilter
       // Check web_search
       if ($partIntent === null) {
         foreach ($webSearchKeywords as $keyword) {
-          if (strpos($part, $keyword) !== false) {
+          if (str_contains($part, $keyword)) {
             $partIntent = 'web_search';
             break;
           }

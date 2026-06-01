@@ -104,7 +104,7 @@ class VectorType extends Type
     }
 
     // Si la valeur est déjà une chaîne formatée correctement, la retourner telle quelle
-    if (is_string($value) && strpos($value, '[') === 0) {
+    if (is_string($value) && str_starts_with($value, '[')) {
       return $value;
     }
 

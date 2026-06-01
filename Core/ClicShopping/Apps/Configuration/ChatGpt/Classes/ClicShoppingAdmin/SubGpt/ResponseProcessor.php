@@ -241,7 +241,7 @@ class ResponseProcessor
 
     $model = $engine ?? CLICSHOPPING_APP_CHATGPT_CH_MODEL;
 
-    if (strpos($model, 'gpt') === 0) {
+    if (str_starts_with($model, 'gpt')) {
       $maxtoken = self::getMaxTokens($maxtoken);
       $temperature = $temperature ?? (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE;
       
@@ -281,13 +281,13 @@ class ResponseProcessor
       }
       
       $client = ProviderManager::getOpenAiGpt($parameters);
-    } elseif (strpos($model, 'anth') === 0) {
+    } elseif (str_starts_with($model, 'anth')) {
       $client = ProviderManager::getAnthropicChat($model, $maxtoken);
-    } elseif (strpos($model, 'mistral') === 0) {
+    } elseif (str_starts_with($model, 'mistral')) {
       $client = ProviderManager::getMistralChat($model, $maxtoken);
-    } elseif (strpos($model, 'ollama') === 0 || str_contains($model, ':latest')) {
+    } elseif (str_starts_with($model, 'ollama') || str_contains($model, ':latest')) {
       $client = ProviderManager::getOllamaChat($model);
-    } elseif (strpos($model, 'openai/') === 0) {
+    } elseif (str_starts_with($model, 'openai/')) {
       $client = ProviderManager::getLmStudioChat($model);
     } else {
       $client = ProviderManager::getLmStudioChat($model);
