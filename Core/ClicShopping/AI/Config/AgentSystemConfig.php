@@ -56,6 +56,7 @@ class AgentSystemConfig
     private const CONST_WEBSEARCH_GLOBAL_STATUS = 'CLICSHOPPING_APP_CHATGPT_ASY_WEBSEARCH_GLOBAL_STATUS';
     private const CONST_ADAPTIVE_WEIGHTING_STATUS = 'CLICSHOPPING_APP_CHATGPT_ASY_ADAPTIVE_WEIGHTING_STATUS';
     private const CONST_REPUTATION_SYSTEM_STATUS = 'CLICSHOPPING_APP_CHATGPT_ASY_REPUTATION_SYSTEM_STATUS';
+    private const CONST_VALIDATION_GATE_STATUS = 'CLICSHOPPING_APP_CHATGPT_ASY_VALIDATION_GATE_STATUS';
     private const CONST_SORT_ORDER = 'CLICSHOPPING_APP_CHATGPT_ASY_SORT_ORDER';
     
     /**
@@ -66,6 +67,7 @@ class AgentSystemConfig
         'websearch_global_status' => false, // WebSearch disabled by default
         'adaptive_weighting_status' => true, // Adaptive weighting enabled by default
         'reputation_system_status' => true, // Reputation system enabled by default
+        'validation_gate_status' => false, // Analytics validation gate OFF by default (improvement/verification toggle)
         'sort_order' => 200
     ];
     
@@ -115,7 +117,11 @@ class AgentSystemConfig
         if (\defined(self::CONST_REPUTATION_SYSTEM_STATUS)) {
             $config['reputation_system_status'] = self::parseBool(constant(self::CONST_REPUTATION_SYSTEM_STATUS));
         }
-        
+
+        if (\defined(self::CONST_VALIDATION_GATE_STATUS)) {
+            $config['validation_gate_status'] = self::parseBool(constant(self::CONST_VALIDATION_GATE_STATUS));
+        }
+
         if (\defined(self::CONST_SORT_ORDER)) {
             $config['sort_order'] = (int)constant(self::CONST_SORT_ORDER);
         }
@@ -192,6 +198,21 @@ class AgentSystemConfig
     {
         self::initialize();
         return self::$config['reputation_system_status'] ?? true;
+    }
+
+    /**
+     * Check if the analytics Validation Gate is enabled.
+     *
+     * Internal improvement/verification toggle (OFF by default). When enabled, an LLM evaluates
+     * each analytics answer and may regenerate it once (keeping the new answer only if strictly
+     * better). Define CLICSHOPPING_APP_CHATGPT_ASY_VALIDATION_GATE_STATUS = 'True' to turn it on.
+     *
+     * @return bool True if the validation gate is enabled
+     */
+    public static function isValidationGateEnabled(): bool
+    {
+        self::initialize();
+        return self::$config['validation_gate_status'] ?? false;
     }
     
     /**

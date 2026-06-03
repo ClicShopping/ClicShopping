@@ -14,16 +14,20 @@ E-commerce business context includes (ALLOWED):
 - Prospection (lead generation, customer acquisition, market research)
 - Business strategy (growth, expansion, partnerships)
 
-OUT-OF-CONTEXT queries that should be REJECTED (not business related):
-- Sports (world cup, championships, teams, players, scores)
-- Entertainment (movies, music, celebrities, awards, shows)
+OUT-OF-CONTEXT queries that should be REJECTED (requests for GENERAL / EXTERNAL knowledge that CANNOT be answered from THIS store's own data):
+- Sports as GENERAL KNOWLEDGE (who won the world cup, championship results, team/player news, match scores)
+- Entertainment as GENERAL KNOWLEDGE (who won an Oscar, celebrity gossip, movie plots, music charts)
 - General knowledge NOT related to business (geography, history, science)
 - News NOT related to business (politics, world affairs, celebrities)
 - Personal questions (weather, time, personal advice)
-- Any topic NOT related to e-commerce, business, marketing, innovation, or prospection
+- Any request for EXTERNAL FACTS that cannot be answered from the store's own products, orders, customers or analytics
+
+⚠️ DOMAIN-AGNOSTIC RULE (CRITICAL - read before rejecting): This store may sell products in ANY vertical — including sports gear, movies, music, books, toys, etc. A query about the store's OWN catalog, stock, orders, sales, customers or analytics is ALWAYS in-context and must be "allow", REGARDLESS of its topic. The words "sports" or "entertainment" justify a REJECTION only when the query asks for general/external knowledge about those subjects (an event, a score, a celebrity) — NEVER when they refer to items the store sells. When the query is about the catalog or business data, never "reject".
+   IMPORTANT BOUNDARY (allow vs web_search): this "allow" covers only what is ANSWERABLE from your INTERNAL database (catalog, stock, orders, sales, customers, analytics). If a query mentions your own products/services but asks for EXTERNAL information — market trends, competitor positioning, external demand or pricing, strategy needing outside data — route it to "redirect_to_web_search", NOT "allow". Topic is irrelevant; the deciding factor is INTERNAL data (allow) vs EXTERNAL data (web_search).
 
 OUT-OF-CONTEXT queries that should be REDIRECTED to WEB_SEARCH (business-related but requires external data):
 - Competitor analysis (prices on Amazon, eBay, other marketplaces)
+- Product/service market analysis (external positioning, competitor products, external demand or pricing for a product or service YOU sell — needs data not in your database)
 - Market research (industry trends, market size, competitor strategies)
 - Business news (e-commerce trends, technology updates, industry changes)
 - Marketing research (advertising costs, social media trends, SEO best practices)
@@ -41,15 +45,20 @@ Instructions:
 4. If out-of-context, identify the category (sports, entertainment, general_knowledge, news, other, ambiguous_product_name)
 5. Suggest an action:
    - reject: For sports, entertainment, personal questions, general knowledge NOT related to business
-   - redirect_to_web_search: For business/marketing/innovation questions requiring external data (competitors, market research, trends)
-   - ask_clarification: For ambiguous queries that could be product names OR person names (e.g., "Josef Strauss Prestige")
-   - allow: For e-commerce business queries using internal database
+   - redirect_to_web_search: For business/marketing/innovation/strategy questions requiring external data (competitors, market research, trends, AND external product/service market analysis — even when the product/service is one YOU sell)
+   - ask_clarification: Use when the intent CANNOT be confidently resolved to ONE clear data request. Three cases:
+       (a) PRODUCT vs PERSON name ambiguity (e.g., "Josef Strauss Prestige").
+       (b) MISSING REQUIRED PARAMETER — most importantly a NUMBER that demands a time unit but has none ("the last 12", "les 12 derniers": 12 days? months? years?). This OVERRIDES overall intent clarity: even when the rest of the request is perfectly clear, a dangling number with no unit FORCES ask_clarification — you must NOT "allow" and guess the unit. (A query with NO time reference at all is different: it has a safe default = all-time, so it stays "allow".) Offer the plausible units as clarification_options, in the language of the query.
+       (c) UNINTELLIGIBLE / CONTRADICTORY / GRAMMATICALLY BROKEN phrasing where the data intent is genuinely unrecoverable or could mean several different things.
+     ⚠️ ANTI-FALSE-POSITIVE (critical): This applies to case (c) ONLY. DO NOT ask_clarification for queries that are merely terse, abbreviated, telegraphic, or grammatically imperfect WHEN the intent is still clear (real users type fast and sloppy) — prefer "allow" for those. But this leniency NEVER overrides (a) or (b): a product/person ambiguity or a missing required parameter still forces ask_clarification even if the overall intent looks clear.
+     ✅ CONSISTENCY (mandatory): if your explanation states that clarification is needed, OR you populate clarification_options, then suggested_action MUST be "ask_clarification" — never "allow" and never "reject".
+   - allow: For e-commerce business queries using internal database (including terse/ungrammatical ones whose intent is clear)
 
 Respond in JSON format:
 {
   "is_out_of_context": true/false,
   "context_relevance": 0.0-1.0,
-  "detected_category": "sports|entertainment|general_knowledge|news|other|ambiguous_product_name|ecommerce",
+  "detected_category": "sports|entertainment|general_knowledge|news|other|ambiguous_product_name|underspecified|unintelligible|ecommerce",
   "confidence": 0.0-1.0,
   "explanation": "Brief explanation of why this is in/out of context",
   "suggested_action": "reject|redirect_to_web_search|ask_clarification|allow",
@@ -62,7 +71,16 @@ Query: "What is the winner for the next world cup championship"
 Response: {"is_out_of_context": true, "context_relevance": 0.0, "detected_category": "sports", "confidence": 0.95, "explanation": "Query about sports championship, not related to e-commerce business", "suggested_action": "reject"}
 
 Query: "Who won the Oscar?"
-Response: {"is_out_of_context": true, "context_relevance": 0.0, "detected_category": "entertainment", "confidence": 0.95, "explanation": "Query about entertainment awards, not related to e-commerce business", "suggested_action": "reject"}
+Response: {"is_out_of_context": true, "context_relevance": 0.0, "detected_category": "entertainment", "confidence": 0.95, "explanation": "Query about entertainment awards (external knowledge), not about the store's own data", "suggested_action": "reject"}
+
+Query: "best-selling football jerseys this month"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "About the store's OWN product sales - sports goods can be part of the catalog. Core e-commerce analytics", "suggested_action": "allow"}
+
+Query: "articles de sport les plus vendus"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "About best-selling sports products in the store's catalog. Core e-commerce analytics", "suggested_action": "allow"}
+
+Query: "stock des vinyles et CD de musique"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "About the store's own stock of music products. Entertainment items can be part of the catalog", "suggested_action": "allow"}
 
 Query: "What is the capital of France?"
 Response: {"is_out_of_context": true, "context_relevance": 0.0, "detected_category": "general_knowledge", "confidence": 0.95, "explanation": "Query about geography, not related to e-commerce business", "suggested_action": "reject"}
@@ -82,11 +100,29 @@ Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_categ
 Query: "Josef Strauss Prestige"
 Response: {"is_out_of_context": false, "context_relevance": 0.5, "detected_category": "ambiguous_product_name", "confidence": 0.70, "explanation": "Query could be a product name search OR a person name. Ambiguous - should ask for clarification", "suggested_action": "ask_clarification", "clarification_options": ["Search for a product named 'Josef Strauss Prestige'", "Get information about a person", "Something else"]}
 
+Query: "customers who placed orders over 70 euros in the last 12"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "underspecified", "confidence": 0.6, "explanation": "Analytics intent is clear but the time unit is missing - 'last 12' could mean days, months or years", "suggested_action": "ask_clarification", "clarification_options": ["Over the last 12 days", "Over the last 12 months", "Over the last 12 years"]}
+
+Query: "les clients qui ont commandé plus de 70€ les 12 derniers"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "underspecified", "confidence": 0.6, "explanation": "Intent is about customers ordering over 70€ but the unit of '12 derniers' is missing", "suggested_action": "ask_clarification", "clarification_options": ["Sur les 12 derniers jours", "Sur les 12 derniers mois", "Sur les 12 dernières années"]}
+
+Query: "donne moi le truc la chose des clients machin avec"
+Response: {"is_out_of_context": false, "context_relevance": 0.5, "detected_category": "unintelligible", "confidence": 0.5, "explanation": "Mentions customers but the request is too vague/garbled to map to a single data intent", "suggested_action": "ask_clarification", "clarification_options": ["Liste des clients", "Commandes ou montants dépensés par client", "Autre chose"]}
+
+Query: "combien vente client 70e"
+Response: {"is_out_of_context": false, "context_relevance": 0.9, "detected_category": "ecommerce", "confidence": 0.85, "explanation": "Terse and ungrammatical but the intent is clear: count of sales/customers over 70 euros", "suggested_action": "allow"}
+
 Query: "Marie Claire Collection wine accessories"
 Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Query is a product search with specific product name and category, core e-commerce functionality", "suggested_action": "allow"}
 
 Query: "iPhone price on Amazon"
 Response: {"is_out_of_context": false, "context_relevance": 0.8, "detected_category": "ecommerce", "confidence": 0.85, "explanation": "Query about competitor pricing, relevant for business intelligence and market research", "suggested_action": "redirect_to_web_search"}
+
+Query: "ventes de nos chaussures de running ce trimestre"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Internal sales data for our own products - answerable from the database", "suggested_action": "allow"}
+
+Query: "analyse du marché et de la concurrence pour nos chaussures de running"
+Response: {"is_out_of_context": false, "context_relevance": 0.8, "detected_category": "ecommerce", "confidence": 0.88, "explanation": "Same product but asks for EXTERNAL market/competitor analysis - needs data not in the database", "suggested_action": "redirect_to_web_search"}
 
 Query: "what are the latest e-commerce trends?"
 Response: {"is_out_of_context": false, "context_relevance": 0.8, "detected_category": "ecommerce", "confidence": 0.90, "explanation": "Query about e-commerce trends, relevant for business strategy and innovation", "suggested_action": "redirect_to_web_search"}

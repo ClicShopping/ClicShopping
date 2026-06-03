@@ -47,7 +47,7 @@ intended or not possible.
 
 While the AGPLv3 license remains technically available to all users
 regardless of size, organizations whose annual gross revenue exceeds
-US 1,000,000 (worldwide, all affiliated entities combined) are required
+US 500,000 (worldwide, all affiliated entities combined) are required
 to contact the copyright holder to negotiate a commercial license
 agreement before any production deployment.
 

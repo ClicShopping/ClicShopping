@@ -17,11 +17,13 @@ VERBES D'AFFICHAGE = TOUJOURS ANALYTICS (PAS SEMANTIC):
 
 Ce sont des REQUÊTES BASE DE DONNÉES, pas des instructions UI!
 
-MÊME TYPE + "et"/"and" = PAS HYBRID:
+MÊME TYPE + "et"/"and"/"puis" = PAS HYBRID:
 "affiche les produits et compte produits" = analytics (les deux sont des requêtes base de données)
 "show products and count products" = analytics (les deux sont des requêtes base de données)
 "article 5 et article 6" = semantic (les deux sont du contenu de document)
 "policy A and policy B" = semantic (les deux sont du contenu de document)
+"prix du Samsung S25 puis son SKU et EAN" = analytics (UNE entité, plusieurs attributs structurés — PAS hybrid, PAS semantic)
+🚨 ATTRIBUTS CATALOGUE STRUCTURÉS = TOUJOURS analytics (jamais semantic) : prix, SKU, EAN, modèle/référence, stock/quantité, poids, statut, dates. Demander plusieurs de ces attributs d'un même produit = UNE requête analytics multi-colonnes — PAS hybrid, PAS semantic. (Semantic = contenu libre/document : descriptions, politiques, avis.)
 
 TYPES DIFFÉRENTS + "et"/"and" = HYBRID:
 "prix et politique" = hybrid (analytics + semantic)

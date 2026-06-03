@@ -46,6 +46,11 @@ class QueryProcessor
       throw new \Exception('Erreur orchestrateur: Invalid response format');
     }
     
+    if (($aiResponse['type'] ?? null) === 'clarification_needed' || !empty($aiResponse['clarification_needed'])) {
+      $statsTracker->setClassificationType('clarification_needed');
+      return $aiResponse;
+    }
+
     if (!isset($aiResponse['success']) || !$aiResponse['success']) {
       $statsTracker->setError('orchestrator_error', $aiResponse['error'] ?? 'Unknown error');
       throw new \Exception($aiResponse['error'] ?? 'Erreur orchestrateur');

@@ -16,7 +16,6 @@ use ClicShopping\AI\Security\SecurityLogger;
  * Manages web search query logging and results storage.
  * Separates web_search data from internal RAG data (gpt table).
  */
-
 class WebSearchLogger
 {
     private SecurityLogger $logger;

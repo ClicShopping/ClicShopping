@@ -85,10 +85,12 @@ If the query contains conjunctions connecting TWO DISTINCT QUESTIONS/REQUESTS, c
 - Example: "pending orders AND monthly revenue" → hybrid (analytics + analytics) - TWO SEPARATE QUESTIONS
 
 🚨 EXCEPTION TO RULE #0 - SAME TYPE, SAME ENTITY (SINGLE QUERY):
-If the query uses "and" to connect attributes or details of a SINGLE entity, classify as the SINGLE TYPE (not hybrid):
+If the query uses "and" / "then" / "puis" / commas to connect ATTRIBUTES or DETAILS of a SINGLE entity, classify as the SINGLE TYPE (not hybrid):
 - "product price and stock" → ANALYTICS (not hybrid) - single product, multiple attributes
 - "category name and description" → ANALYTICS (not hybrid) - single category, multiple attributes
-- RULE: "and" connecting attributes of ONE entity = single type
+- "price of the Samsung S25 then its SKU and EAN" → ANALYTICS (not hybrid, not semantic) - ONE product, multiple STRUCTURED attributes
+- RULE: connecting attributes of ONE entity = single type, even with "then" / "puis".
+🚨 STRUCTURED CATALOG ATTRIBUTES ARE ALWAYS ANALYTICS (never semantic): price, SKU, EAN, model/reference, stock/quantity, weight, status, dates. Asking several of these about one product = a SINGLE analytics query returning multiple columns — NOT hybrid, NOT semantic. (Semantic = document/free-text content like descriptions, policies, reviews.)
 
 🚨 MULTI-ENTITY QUERIES STAY HYBRID:
 If the query requests MULTIPLE DISTINCT ENTITIES (even of the same type), classify as HYBRID:
@@ -178,11 +180,21 @@ CRITICAL RULES:
    "what is" → semantic
    "how it works" → semantic
 
+6. Underspecified TIME SCOPE = analytics BUT lower confidence (0.8)
+   A number followed by "last"/"past"/"previous"/"derniers"/"dernières" WITHOUT a time unit
+   (day/week/month/year, jour/semaine/mois/an/année) leaves the period unit unknown.
+   Still classify as analytics, but set "confidence":0.8 (NOT 0.9 or higher) so the downstream
+   ambiguity check can ask the user which unit is meant. Do NOT guess the unit here.
+   "orders over 70 in the last 12" → analytics, confidence 0.8 (12 of days/months/years?)
+   "les 12 derniers" (no unit) → analytics, confidence 0.8
+   "in the last 12 months" / "les 12 derniers mois" → analytics, confidence 0.95 (unit explicit)
+
 EXAMPLES:
 
 HYBRID (different types): {"type":"hybrid","confidence":0.90,"reasoning":"Contains price AND T&C article","sub_types":["analytics","semantic"]}
 HYBRID (multi-entity same type): {"type":"hybrid","confidence":0.90,"reasoning":"Requests articles 5 and 6 - two distinct entities requiring separate retrieval","sub_types":["semantic","semantic"]}
 ANALYTICS: {"type":"analytics","confidence":0.95,"reasoning":"Requests field value price","sub_types":[]}
+ANALYTICS (underspecified time unit): {"type":"analytics","confidence":0.8,"reasoning":"Orders over 70 but time unit missing - 12 of days/months/years?","sub_types":[]}
 SEMANTIC: {"type":"semantic","confidence":0.95,"reasoning":"Requests content of T&C article","sub_types":[]}
 WEB_SEARCH: {"type":"web_search","confidence":0.95,"reasoning":"Requests external trends","sub_types":[]}
 

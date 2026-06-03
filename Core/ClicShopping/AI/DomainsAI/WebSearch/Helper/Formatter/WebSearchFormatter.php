@@ -86,7 +86,7 @@ class WebSearchFormatter extends AbstractFormatter
       error_log('[WebSearchFormatter] Has text_response: ' . (isset($results['text_response']) ? 'YES' : 'NO') . "\n");
 
       if (isset($results['text_response'])) {
-        $isHtml = (strpos($results['text_response'], '<') !== false);
+        $isHtml = (str_contains($results['text_response'], '<'));
         error_log('[WebSearchFormatter] text_response is HTML: ' . ($isHtml ? 'YES' : 'NO') . "\n");
         error_log('[WebSearchFormatter] text_response length: ' . strlen($results['text_response']) . "\n");
       }
@@ -151,7 +151,7 @@ class WebSearchFormatter extends AbstractFormatter
     if (isset($results['text_response']) && !empty($results['text_response'])) {
       $interpretationText = $results['text_response'];
       // Check if text_response contains HTML (from ResultSynthesizer)
-      $isHtmlContent = (strpos($interpretationText, '<div') !== false || strpos($interpretationText, '<p>') !== false);
+      $isHtmlContent = (str_contains($interpretationText, '<div') || str_contains($interpretationText, '<p>'));
     } elseif (isset($results['interpretation']) && $results['interpretation'] !== 'Array') {
       $interpretationText = $results['interpretation'];
     } elseif (isset($results['response']) && !empty($results['response'])) {

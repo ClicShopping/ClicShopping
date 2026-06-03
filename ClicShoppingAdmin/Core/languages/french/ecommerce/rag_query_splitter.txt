@@ -4,7 +4,8 @@ INSTRUCTIONS :
     1. Identifiez TOUTES les questions ou demandes distinctes dans la requête
     2. Divisez-les en sous-requêtes séparées
     3. Chaque sous-requête doit être complète et pouvoir être répondue seule
-    4. Classez chacune comme 'analytics' (données/chiffres), 'semantic' (information/explication), ou 'web_search' (info externe)
+    4. Classez chacune comme 'analytics' (données base : chiffres, prix, listes ET attributs catalogue structurés), 'semantic' (contenu libre/document : descriptions, politiques, avis), ou 'web_search' (info externe)
+    5. Les ATTRIBUTS CATALOGUE STRUCTURÉS sont TOUJOURS 'analytics', JAMAIS 'semantic' : prix, SKU, EAN, modèle/référence, stock/quantité, poids, statut, dates.
 EXEMPLES :
 Requête : "Quel est le prix de l'iPhone 17 Pro et quelle est la politique de retour"
 Résultat : 

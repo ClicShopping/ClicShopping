@@ -8,8 +8,12 @@
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
+use ClicShopping\OM\Cache as OMCache;
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 use ClicShopping\AI\Config\AutonomousConfig;
 use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\CoreAI\Orchestrator\CorrectionAgent;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
@@ -17,6 +21,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveRegistry;
 use ClicShopping\AI\CoreAI\Query\QueryClassifier;
+use ClicShopping\AI\CoreAI\Orchestrator\SubValidation\ValidationGate;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
@@ -30,12 +35,10 @@ use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\AI\Utils\TypeSafetyGuard;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\OM\Cache as OMCache;
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Registry;
 
 /**
  * Class AnalyticsAgent
@@ -420,6 +423,76 @@ class AnalyticsAgent
         $response['original_sql_query'] = $results['original_sql_query'] ?? $results['sql_query'] ?? 'N/A';
         if (!empty($results['corrections'])) {
           $response['corrections'] = $results['corrections'];
+        }
+      }
+
+      // Validation gate (Volet B) — closes the agentic critique loop.
+      if (AgentSystemConfig::isValidationGateEnabled()
+          && is_string($interpretation) && $interpretation !== '') {
+        try {
+          $evaluation = LlmGuardrails::checkGuardrails($question, $interpretation);
+
+          if (is_array($evaluation)) {
+            $score = isset($evaluation['overall_score']) ? (float) $evaluation['overall_score'] : null;
+            $issues = $evaluation['llm_evaluation']['detected_issues'] ?? [];
+            $decision = ValidationGate::decide($score, $issues);
+
+            // Bounded regeneration (one attempt), non-regressive (keep only if strictly better).
+            if ($decision['action'] === 'regenerate' && $score !== null && !empty($results['results'])) {
+              $feedback = [[
+                'feedback_type' => 'correction',
+                'original_query' => $question,
+                'sql_query' => $results['sql_query'] ?? '',
+                'corrected_response' => '',
+                'correction_comment' => 'The previous SQL was judged low quality (score ' . round($score, 2)
+                  . '). Do NOT reproduce it. Issues: ' . implode('; ', array_slice($issues, 0, 5))
+                  . '. Regenerate a corrected SQL that preserves ALL constraints of the question.',
+                'interaction_id' => 'validation_gate_' . uniqid(),
+              ]];
+
+              $regen = $this->executeQuery($question, $feedback);
+
+              if (($regen['type'] ?? 'error') !== 'error' && !empty($regen['results'])) {
+                $regenInterp = $this->resultInterpreter->interpretResults($question, $regen['results']);
+
+                if (is_string($regenInterp) && $regenInterp !== '') {
+                  $regenEval = LlmGuardrails::checkGuardrails($question, $regenInterp);
+                  $regenScore = is_array($regenEval) && isset($regenEval['overall_score']) ? (float) $regenEval['overall_score'] : null;
+
+                  if ($regenScore !== null && $regenScore > $score) {
+                    // Adopt the strictly-better regenerated answer.
+                    $interpretation = $regenInterp;
+                    $results = $regen;
+                    $evaluation = $regenEval;
+                    $score = $regenScore;
+                    $issues = $regenEval['llm_evaluation']['detected_issues'] ?? [];
+                    $decision = ValidationGate::decide($score, $issues);
+
+                    $response['interpretation'] = $regenInterp;
+                    $response['results'] = $regen['results'];
+                    $response['count'] = $regen['count'] ?? count($regen['results']);
+                    if ($includeSQL) {
+                      $response['sql_query'] = $regen['sql_query'] ?? ($response['sql_query'] ?? 'N/A');
+                    }
+                    error_log("Validation gate: regenerated (improved to " . round($regenScore, 2) . ")");
+                  } else {
+                    error_log("Validation gate: regeneration not better, kept original");
+                  }
+                }
+              }
+            }
+
+            $response['validation'] = [
+              'action' => $decision['action'],
+              'reason' => $decision['reason'],
+              'score' => $decision['score'],
+            ];
+            // Pass the computed evaluation to the formatter to avoid a second LLM call.
+            $response['validation_evaluation'] = $evaluation;
+            error_log("Validation gate: {$decision['action']} ({$decision['reason']})");
+          }
+        } catch (\Exception $e) {
+          error_log("Validation gate error: " . $e->getMessage());
         }
       }
 
@@ -963,6 +1036,8 @@ class AnalyticsAgent
 
         $finalQuery = $validation['valid'] ? $resolvedQuery : $sqlQuery;
         $finalQuery = $this->queryProcessor->fixDateFilters($finalQuery);
+        // Schema-level guard: never GROUP BY a GDPR-encrypted column (shatters aggregation).
+        $finalQuery = $this->queryProcessor->fixEncryptedGroupBy($finalQuery);
 
         error_log("  Final query to execute: " . substr($finalQuery, 0, 150) . "...");
 

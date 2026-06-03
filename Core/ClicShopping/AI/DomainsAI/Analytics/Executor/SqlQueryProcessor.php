@@ -10,6 +10,7 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Executor;
 
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\DomainsAI\Analytics\Patterns\EncryptedColumnPattern;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
@@ -550,6 +551,39 @@ class SqlQueryProcessor
       );
       
       // Return original SQL on error
+      return $sql;
+    }
+  }
+
+  /**
+   * Removes GDPR-encrypted columns from GROUP BY before execution (schema-level guard).
+   *
+   * Thin wrapper: the detection/rewrite lives in
+   * DomainsAI\Analytics\Patterns\EncryptedColumnPattern (schema-based, portable across LLMs —
+   * not an LLM-output heuristic). See that class + rag_analytics_agent RULE -2 for the rationale.
+   *
+   * @param string $sql SQL query to fix
+   * @return string SQL with encrypted columns removed from GROUP BY
+   */
+  public function fixEncryptedGroupBy(string $sql): string
+  {
+    try {
+      $fixed = EncryptedColumnPattern::removeFromGroupBy($sql);
+
+      if ($fixed !== $sql) {
+        $this->securityLogger->logSecurityEvent(
+          "Auto-corrected GROUP BY: removed GDPR-encrypted column(s) to prevent shattered aggregation (RULE -2)",
+          'warning'
+        );
+      }
+
+      return $fixed;
+    } catch (\Exception $e) {
+      $this->securityLogger->logSecurityEvent(
+        "Error in fixEncryptedGroupBy: " . $e->getMessage(),
+        'error'
+      );
+
       return $sql;
     }
   }

@@ -594,13 +594,6 @@ llm_guardrails_reliability = Fiabilité
 llm_guardrails_overall_score = Score global
 
 
-text_interpret_results = Tu es un expert en analyse de données e-commerce.
-Interprète ces résultats de requête SQL et fournis une explication claire et concise en français.
-Question : {{question}}
-
-Résultats : {{results}} 
-
-Interprétation :
 
 
 column_entity_id = ID

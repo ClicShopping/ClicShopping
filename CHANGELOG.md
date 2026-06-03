@@ -7,6 +7,8 @@ version4.30
 - products attributes improvement
 - product templating improvement
 - some little app refactoring
+- Security improvement
+- AI framework improvement
 
 ---------------
 version4.281 et 4.282

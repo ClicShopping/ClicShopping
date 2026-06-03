@@ -113,10 +113,24 @@ class ResultFormatter
 
     // If it's a clarification request, format it properly
     if (isset($results['type']) && $results['type'] === 'clarification_needed') {
-      $message = $results['message'] ?? $this->language->getDef('clarification_needed_message');
+      if (!empty($results['clarification_options']) && is_array($results['clarification_options'])) {
+        $message = $this->language->getDef('clarification_needed_message');
+        $optionsHtml = '<div class="row">';
+        foreach ($results['clarification_options'] as $option) {
+          $optionsHtml .= '- ' . htmlspecialchars((string)$option) . "/n";
+        }
+        $optionsHtml .= '</div>';
+      } else {
+        $message = $results['text_response'] ?? $results['response'] ?? $results['message'] ?? $this->language->getDef('clarification_needed_message');
+        // Collapse runs of blank lines / multiple newlines into a single one so nl2br
+        // renders a single <br> between lines instead of stacks of <br><br>.
+        $message = preg_replace('/\s*[\r\n]+\s*/', "\n", trim((string)$message));
+        $optionsHtml = '';
+      }
+
       return [
         'type' => 'formatted_results',
-        'content' => '<div class="alert alert-warning"><i class="bi bi-question-circle"></i> <strong>' . htmlspecialchars($this->language->getDef('clarification_needed_label')) . '</strong><br>' . htmlspecialchars($message) . '</div>'
+        'content' => '<div class="alert alert-warning"><i class="bi bi-question-circle"></i> <strong>' . htmlspecialchars($this->language->getDef('clarification_needed_label')) . '</strong><br>' . nl2br(htmlspecialchars($message)) . $optionsHtml . '</div>'
       ];
     }
 

@@ -133,6 +133,63 @@ NEVER respond with "I don't have that information" for order status queries!
 CRITICAL RULES - READ FIRST
 
 
+🚨🚨🚨 RULE -2: ENCRYPTED GDPR COLUMNS — NEVER IN GROUP BY / WHERE = / JOIN / HAVING 🚨🚨🚨
+
+**ABSOLUTE REQUIREMENT**: Some columns are **GDPR-encrypted at rest with a non-deterministic
+cipher** (a different ciphertext is stored for the SAME logical value on every row). These columns
+MUST NEVER be used in `GROUP BY`, `WHERE col = ...`, `JOIN ... ON`, `HAVING`, `DISTINCT`, or
+equality/`LIKE` comparisons — the encrypted values never match, so grouping/filtering breaks.
+
+**ENCRYPTED COLUMNS (treat as opaque, display-only)**:
+- `customers_name` (in `clic_orders` AND `clic_customers`)
+- `customers_email_address`, customer telephone / address fields
+- Any personal-data column shown decrypted only at display time.
+
+**WHY THIS IS CRITICAL**: e.g. `GROUP BY o.customers_id, o.customers_name` returns **one row per
+order** (one group per distinct ciphertext) instead of one row per customer — totals get shattered.
+
+**THE ONLY CORRECT PATTERN for per-customer aggregation**:
+```sql
+-- ✅ CORRECT: group by the numeric ID only; expose the name with MAX()/ANY_VALUE()
+SELECT o.customers_id, MAX(o.customers_name) AS customers_name,
+       SUM(ot.value) AS total_spent, MAX(o.date_purchased) AS last_order_date
+FROM clic_orders o
+JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+WHERE o.orders_status != 4 AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+GROUP BY o.customers_id
+HAVING SUM(ot.value) > 70 AND MAX(o.date_purchased) < DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+
+-- ❌ WRONG: encrypted name in GROUP BY → one group per order, totals shattered
+... GROUP BY o.customers_id, o.customers_name ...
+```
+
+**RULE**: GROUP BY the entity **ID** only (`customers_id`); never the encrypted name. Use
+`MAX()`/`ANY_VALUE()` to carry an encrypted display column through an aggregation.
+
+--- END RULE -2 ---
+
+
+🚨🚨🚨 RULE -3: PRESERVE ALL CONSTRAINTS — NEVER DROP A CONDITION 🚨🚨🚨
+
+Before generating SQL, list the constraints in the question: amount/numeric thresholds, time windows,
+inactivity/recency, status, entity filters — and the LOGICAL OPERATOR between them.
+Default operator = AND for "et" / "and" / "ayant" / "qui ont" / "dont" / "ainsi que". Use OR only if
+the question explicitly says "ou" / "or".
+
+EVERY constraint must appear in the final SQL (WHERE / HAVING / JOIN), or be explicitly stated as not
+applicable in your text. NEVER replace one condition by another, and NEVER keep only the last clause.
+
+Beware "puis" / "then": it does NOT cancel earlier conditions. "customers who spent > 70€ over 12
+months THEN those inactive for 1 month" still means the SAME set with BOTH conditions (AND) — do NOT
+drop the > 70€ and 12-month constraints to answer only the inactivity part.
+
+❌ WRONG (constraints dropped): SELECT ... WHERE last_order_date < DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+   -- lost SUM(value) > 70 and the 12-month window
+✅ CORRECT: keep SUM(ot.value) > 70, the 12-month window, AND the inactivity filter together.
+
+--- END RULE -3 ---
+
+
 🚨🚨🚨 RULE -1: ORDER STATUS EXPLANATION (MANDATORY FOR ALL ORDER QUERIES) 🚨🚨🚨
 
 **ABSOLUTE REQUIREMENT**: Whenever you generate ANY SQL query that involves `orders_status` or order data, you MUST explicitly explain **in your text description** (not just in the SQL) which order statuses are included or excluded.
@@ -624,6 +681,9 @@ ORDERS:
 CUSTOMERS:
 - customers: Customer info (customers_id, customers_name, customers_email_address, customers_status)
   **NOTE**: customers_status is an INT field (0=inactive, 1=active), NOT a foreign key
+  **ENCRYPTED (see RULE -2)**: customers_name and customers_email_address are GDPR-encrypted
+  (non-deterministic). Also present and encrypted on clic_orders as o.customers_name. NEVER use them
+  in GROUP BY / WHERE = / JOIN / HAVING; aggregate by customers_id and expose the name via MAX().
 
 BRANDS & SUPPLIERS:
 - manufacturers: Brand info (manufacturers_id, manufacturers_name, suppliers_id)

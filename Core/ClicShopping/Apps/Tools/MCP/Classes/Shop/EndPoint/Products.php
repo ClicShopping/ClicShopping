@@ -506,7 +506,7 @@ class Products
     $categories_array = $Qcategories->fetchAll();
     foreach ($categories_array as $cat) {
       $catLower = strtolower($cat['categories_name'] ?? '');
-      if (strpos($translated, $catLower) !== false) {
+      if (str_contains($translated, $catLower)) {
         $intent['entities']['category'] = $catLower;
         $matchWeight += 0.8;
         $totalWeight += 1;

@@ -696,7 +696,7 @@ class McpSecurity
    */
   public static function ipInRange(string $ip, string $range): bool
   {
-    if (strpos($range, '/') === false) {
+    if (!str_contains($range, '/')) {
       return $ip === $range;
     }
 

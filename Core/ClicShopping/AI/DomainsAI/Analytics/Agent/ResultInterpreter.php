@@ -8,14 +8,14 @@
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
-
-use ClicShopping\AI\Security\InputValidator;
-use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\Infrastructure\Cache\Cache;
-use ClicShopping\AI\DomainsAI\Analytics\Agent\EmptyResultFormatter;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\Hash;
+use ClicShopping\AI\Security\InputValidator;
+use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\Infrastructure\Cache\Cache;
+use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\AI\DomainsAI\Analytics\Agent\EmptyResultFormatter;
 
 /**
  * Class ResultInterpreter
@@ -133,11 +133,12 @@ class ResultInterpreter
     }
 
     // Load the prompt in English for consistency with AI training
-    $this->language->loadDefinitions('main', 'en', null, 'ClicShoppingAdmin');
+    DomainConfig::loadLanguageFile('rag_result_interpreter');
     
     $array = [
       'question' => $question,
       'results' => json_encode($cleanResults, JSON_PRETTY_PRINT)
+      'currentDate' => date('Y-m-d')
     ];
 
     $prompt = $this->language->getDef('text_interpret_results', $array);

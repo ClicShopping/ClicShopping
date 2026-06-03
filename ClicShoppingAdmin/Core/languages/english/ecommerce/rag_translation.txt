@@ -103,6 +103,11 @@ This is an e-commerce system. Use e-commerce terminology:
 - Product provider → "supplier"
 
 ## TEMPORAL TERMS (CRITICAL - DO NOT CONFUSE)
+- ⚠️ MISSING UNIT (HIGHEST TEMPORAL PRIORITY): If a number has NO time unit attached, DO NOT infer, complete, or add one. Translate the number literally and keep the unit absent.
+  * "les 12 derniers" / "les 12 dernières" → "the last 12" (NEVER "last year", "12 months", "12 days", or "12 weeks")
+  * "sur les 6 derniers" → "over the last 6" (NEVER "6 months")
+  * Preserving the absent unit is MANDATORY — a downstream step resolves the ambiguity. Inventing a unit here is a failure.
+  * The mappings below apply ONLY when the unit is EXPLICITLY present in the input.
 - 6-month period → "semester" (NOT "quarter")
 - 3-month period → "quarter" (NOT "semester")
 - 1-month period → "month"

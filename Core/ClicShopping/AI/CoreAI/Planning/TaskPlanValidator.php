@@ -12,6 +12,7 @@
 namespace ClicShopping\AI\CoreAI\Planning;
 
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\Config\SystemConfig;
 
 class TaskPlanValidator
 {
@@ -33,6 +34,13 @@ class TaskPlanValidator
     {
         $this->debug = $debug;
         $this->securityLogger = $securityLogger;
+
+        // Maximum plan steps is configurable (defaults <- base <- Custom/Conf override).
+        $orchestratorConfig = SystemConfig::getSection('OrchestratorAgent', [
+            'max_plan_steps' => $this->validationPolicies['max_steps'],
+        ]);
+	
+        $this->validationPolicies['max_steps'] = (int) $orchestratorConfig['max_plan_steps'];
     }
     
     /**

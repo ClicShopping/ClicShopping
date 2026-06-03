@@ -26,6 +26,7 @@ use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\EntityTracker;
 use ClicShopping\AI\Infrastructure\Metrics\MemoryStatistics;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\FeedbackManager;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
+use ClicShopping\AI\Config\SystemConfig;
 
 /**
  * ConversationMemory Class
@@ -143,9 +144,20 @@ class ConversationMemory
     $this->languageId = $languageId ?? Registry::get('Language')->getId();
     $this->entityId = $entityId;
     
-    // 🔧 PHASE 5: Initialize entity tracking properties
+    //Initialize entity tracking properties
     $this->lastEntityId = null;
     $this->lastEntityType = null;
+
+    // Apply system configuration (defaults <- base <- Custom/Conf override).
+    $memoryConfig = SystemConfig::getSection('ConversationMemory', [
+      'max_history_size' => $this->maxHistorySize,
+      'max_context_window' => $this->maxContextWindow,
+      'similarity_threshold' => $this->similarityThreshold,
+    ]);
+    
+    $this->maxHistorySize = (int) $memoryConfig['max_history_size'];
+    $this->maxContextWindow = (int) $memoryConfig['max_context_window'];
+    $this->similarityThreshold = (float) $memoryConfig['similarity_threshold'];
 
     // Initialize the LLPhant-compatible embedding generator
     $this->embeddingGenerator = $this->createEmbeddingGenerator();

@@ -530,13 +530,6 @@ llm_guardrails_overall_score = Overall Score
 
 
 
-text_interpret_results = You are an expert in e-commerce data analysis.
-Interpret these SQL query results and provide a clear and concise explanation in English.
-Question: {{question}}
-Results: {{results}} 
-
-
-Interpretation:
 # Column names for table display
 
 column_entity_id = ID

@@ -6,8 +6,44 @@
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="some improvement">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Orchestrator/SubCorrectionAgent/CorrectionMemory.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Orchestrator/SubCorrectionAgent/CorrectionMemory.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Sites/ClicShoppingAdmin/Composer.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Sites/ClicShoppingAdmin/Composer.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/COMMERCIAL.md" beforeDir="false" afterPath="$PROJECT_DIR$/COMMERCIAL.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_ambiguity.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_ambiguity.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_analytics_agent.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_analytics_agent.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_classification.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_classification.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_compound_query.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_compound_query.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_out_of_context_detection.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_out_of_context_detection.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_query_splitter.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_query_splitter.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_translation.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/ecommerce/rag_translation.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/english/main.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_ambiguity.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_ambiguity.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_analytics_agent.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_analytics_agent.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_classification.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_classification.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_compound_query.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_compound_query.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_query_splitter.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/ecommerce/rag_query_splitter.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/main.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/Core/languages/french/main.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/ajax/RAG/export.php" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/ajax/RAG/export.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/Config/AgentSystemConfig.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/Config/AgentSystemConfig.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Memory/ConversationMemory.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Memory/ConversationMemory.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Orchestrator/SubIntentAnalyzer/UnifiedQueryAnalyzer.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Orchestrator/SubIntentAnalyzer/UnifiedQueryAnalyzer.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubPlanExecutor/ResultSynthesizer.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/SubPlanExecutor/ResultSynthesizer.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/TaskPlanValidator.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/TaskPlanValidator.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/AnalyticsAgent.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/AnalyticsAgent.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/ResultInterpreter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/ResultInterpreter.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Executor/SqlQueryProcessor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Executor/SqlQueryProcessor.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Helper/Formatter/AnalyticsFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Helper/Formatter/AnalyticsFormatter.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/ResultFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/ResultFormatter.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/SubResultFormatters/HybridFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/SubResultFormatters/HybridFormatter.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Semantic/Agent/SemanticAgent.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Semantic/Agent/SemanticAgent.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Helper/Formatter/WebSearchFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Helper/Formatter/WebSearchFormatter.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Logger/WebSearchLogger.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Logger/WebSearchLogger.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/Security/Validation/HallucinationDetector.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/Security/Validation/HallucinationDetector.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Classes/ClicShoppingAdmin/SubGpt/QueryProcessor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Classes/ClicShoppingAdmin/SubGpt/QueryProcessor.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/config/chat_system_config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/EndPoint/Products.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/EndPoint/Products.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/Security/McpSecurity.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/Classes/Shop/Security/McpSecurity.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/rag_security_events.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb/rag_security_events.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,23 +91,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.3415100643764202" />
-      <entry key="MS500" value="1.8195871873430112" />
-      <entry key="S2" value="2.505824584118785" />
-      <entry key="S5" value="3.604547067245964" />
-      <entry key="S10" value="4.677616463655107" />
-      <entry key="S30" value="6.005388515273928" />
-      <entry key="S60" value="6.467389426986991" />
-      <entry key="M2" value="6.724145104012561" />
-      <entry key="M5" value="6.887266297990398" />
-      <entry key="M10" value="6.943309666643721" />
-      <entry key="M15" value="6.9668595793742005" />
-      <entry key="M30" value="7.426033774809698" />
-      <entry key="H1" value="13.031708976002683" />
-      <entry key="H2" value="32.592769294492925" />
-      <entry key="H4" value="67.1721557925151" />
-      <entry key="D1" value="200.73867282806543" />
-      <entry key="W1" value="266.2748545668544" />
+      <entry key="MS100" value="1.0000000000001383" />
+      <entry key="MS500" value="1.003427436662096" />
+      <entry key="S2" value="1.434443186032764" />
+      <entry key="S5" value="2.3203625369708476" />
+      <entry key="S10" value="2.9710366484809416" />
+      <entry key="S30" value="3.6020288886852656" />
+      <entry key="S60" value="3.7931097515621492" />
+      <entry key="M2" value="3.894490982189968" />
+      <entry key="M5" value="3.9572893460595964" />
+      <entry key="M10" value="3.978559168255712" />
+      <entry key="M15" value="3.9856870378549227" />
+      <entry key="M30" value="3.992937560787918" />
+      <entry key="H1" value="4.045089021640996" />
+      <entry key="H2" value="5.990122735434454" />
+      <entry key="H4" value="20.60507016590971" />
+      <entry key="D1" value="163.02904617026857" />
+      <entry key="W1" value="261.5606557432492" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -93,23 +129,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.2914355730308158" />
-      <entry key="MS500" value="1.806756111271772" />
-      <entry key="S2" value="2.5015255522159894" />
-      <entry key="S5" value="3.602064988417644" />
-      <entry key="S10" value="4.67598373305195" />
-      <entry key="S30" value="6.004680239217854" />
-      <entry key="S60" value="6.467006624438521" />
-      <entry key="M2" value="6.723945730084318" />
-      <entry key="M5" value="6.887184521486976" />
-      <entry key="M10" value="6.9432684292971505" />
-      <entry key="M15" value="6.966831866352792" />
-      <entry key="M30" value="7.425997618267941" />
-      <entry key="H1" value="13.0314617423649" />
-      <entry key="H2" value="32.592152050360006" />
-      <entry key="H4" value="67.17128033912299" />
-      <entry key="D1" value="200.73794795257305" />
-      <entry key="W1" value="266.27470394530155" />
+      <entry key="MS100" value="0.9138314502295243" />
+      <entry key="MS500" value="0.9854897308810283" />
+      <entry key="S2" value="1.4270880382064104" />
+      <entry key="S5" value="2.31457197240427" />
+      <entry key="S10" value="2.9669751214771596" />
+      <entry key="S30" value="3.6002774829173365" />
+      <entry key="S60" value="3.792172280162321" />
+      <entry key="M2" value="3.8940057302064166" />
+      <entry key="M5" value="3.9570911357283953" />
+      <entry key="M10" value="3.9784593656757945" />
+      <entry key="M15" value="3.985620346882414" />
+      <entry key="M30" value="3.992904136601811" />
+      <entry key="H1" value="4.045071366770333" />
+      <entry key="H2" value="5.9900766417690035" />
+      <entry key="H4" value="20.604849554130038" />
+      <entry key="D1" value="163.028471211464" />
+      <entry key="W1" value="261.5605099512669" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -179,34 +215,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;version4.30&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3/Core/ClicShopping/Schema/MariaDb&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;copyright&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "version4.30",
+    "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "copyright",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;mariadb&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mariadb"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb" />
       <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb" />
       <recent name="$PROJECT_DIR$/sql_upgrade/history" />
     </key>
   </component>

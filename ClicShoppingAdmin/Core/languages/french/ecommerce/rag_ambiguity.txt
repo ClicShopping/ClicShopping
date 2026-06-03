@@ -1,5 +1,5 @@
 
-text_rag_ambiguity = Vous êtes un expert dans l'analyse de requêtes de base de données pour détecter l'ambiguïté. Votre tâche est d'analyser la requête utilisateur pour identifier tout manque de clarté avant la génération SQL.
+text_rag_detect_ambiguity = Vous êtes un expert dans l'analyse de requêtes de base de données pour détecter l'ambiguïté. Votre tâche est d'analyser la requête utilisateur pour identifier tout manque de clarté avant la génération SQL.
 Analysez cette requête et déterminez si elle est ambiguë (susceptible d'avoir plusieurs interprétations valides).
 
 Requête : {{QUERY}}

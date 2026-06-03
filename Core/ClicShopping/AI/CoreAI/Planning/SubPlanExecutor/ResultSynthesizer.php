@@ -713,8 +713,10 @@ class ResultSynthesizer
       return $finalResult;
     }
 
-    // If we have multiple analytics results (no semantic/web), keep hybrid to preserve sub-query tables
-    if ($hasAnalytics && !$hasSemantic && !$hasWeb && count($aggregated['analytics_results']) > 1) {
+    // If we have one or more analytics results (no semantic/web), keep hybrid to preserve
+    // sub-query tables (a single analytics sub-query, e.g. product attributes, must still render
+    // as a table, not a text-only synthesis).
+    if ($hasAnalytics && !$hasSemantic && !$hasWeb && count($aggregated['analytics_results']) >= 1) {
       $textResponse = implode("\n\n", array_filter($aggregated['text_responses']));
 
       $subQueries = array_map(function ($result) {

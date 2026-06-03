@@ -25,6 +25,7 @@ use ClicShopping\AI\Infrastructure\Cache\TranslationCache;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\ThresholdManager;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\Config\DomainFields;
+use ClicShopping\AI\Config\SystemConfig;
 use ClicShopping\AI\InterfacesAI\SemanticConfigInterface;
 
 /*
@@ -66,20 +67,11 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
    */
   private static function loadConfig(): void
   {
-    $configFile = __DIR__ . '/../../config/chat_system_config.json';
-    
-    if (file_exists($configFile)) {
-      $json = file_get_contents($configFile);
-      $config = json_decode($json, true);
-      
-      if (isset($config['Semantics']) && is_array($config['Semantics'])) {
-        // Merge loaded config with defaults
-        self::$config = array_merge(self::$config, $config['Semantics']);
+    // Merge defaults <- base (AI/Config) <- optional Custom/Conf override.
+    self::$config = SystemConfig::getSection('Semantics', self::$config);
 
-        if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
-          error_log("SemanticAgent configuration loaded from file");
-        }
-      }
+    if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
+      error_log("SemanticAgent configuration loaded via SystemConfig");
     }
   }
 
@@ -90,27 +82,13 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
    */
   private static function saveConfig(): bool
   {
-    $configFile = __DIR__ . '/../../config/chat_system_config.json';
-    
-    // Load existing config
-    $fullConfig = [];
-    if (file_exists($configFile)) {
-      $json = file_get_contents($configFile);
-      $fullConfig = json_decode($json, true) ?? [];
+    $result = SystemConfig::saveSection('Semantics', self::$config);
+
+    if ($result && defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
+      error_log("SemanticAgent configuration saved to Custom override");
     }
-    
-    // Update Semantics section
-    $fullConfig['Semantics'] = self::$config;
-    
-    // Save to file
-    $json = json_encode($fullConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    $result = file_put_contents($configFile, $json, LOCK_EX);
-    
-    if ($result !== false && defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
-      error_log("SemanticAgent configuration saved to file");
-    }
-    
-    return $result !== false;
+
+    return $result;
   }
 
   /**

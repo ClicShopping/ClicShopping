@@ -121,7 +121,8 @@ class AnalyticsFormatter extends AbstractFormatter
 
     // Guardrails
     $output .= "<div class='mt-2'></div>";
-    $lmGuardrails = LlmGuardrails::checkGuardrails($question, Hash::displayDecryptedDataText($interpretationText));
+    $lmGuardrails = $results['validation_evaluation']
+      ?? LlmGuardrails::checkGuardrails($question, Hash::displayDecryptedDataText($interpretationText));
 
     if (is_array($lmGuardrails)) {
       $output .= $this->formatGuardrailsMetrics($lmGuardrails);
@@ -309,9 +310,35 @@ class AnalyticsFormatter extends AbstractFormatter
 
   private function formatGuardrailsMetrics(array $guardrails): string
   {
-    // Implementation similar to original ResultFormatter
-    $output = "<div class='guardrails-metrics'>";
-    // Add guardrails display logic here
+    // Surface the semantic quality signal already computed by LlmGuardrails::checkGuardrails()
+    $overall = isset($guardrails['overall_score']) ? (float) $guardrails['overall_score'] : null;
+    $issues = $guardrails['llm_evaluation']['detected_issues'] ?? [];
+    $recommendations = $guardrails['recommendations'] ?? ($guardrails['llm_evaluation']['recommendations'] ?? []);
+
+    // No concern → render nothing (keep the UI clean).
+    if ($overall === null || $overall >= 0.7) {
+      return '';
+    }
+
+    $score = (int) round($overall * 100);
+    $cls = $score >= 60 ? 'text-warning' : 'text-danger';
+
+    $output = "<div class='guardrails-metrics mt-2'>";
+    $output .= '<h6>🔍 ' . htmlspecialchars($this->language->getDef('text_rag_semantic_quality_metrics')) . '</h6>';
+    $output .= '<p class="' . $cls . ' mb-1"><strong>🎯 ' . htmlspecialchars($this->language->getDef('text_rag_semantic_reliability_score')) . ' ' . $score . '%</strong></p>';
+
+    if (!empty($issues) && \is_array($issues)) {
+      $output .= '<ul class="mb-1">';
+      foreach (\array_slice($issues, 0, 5) as $issue) {
+        $output .= '<li>⚠️ ' . htmlspecialchars((string) $issue) . '</li>';
+      }
+      $output .= '</ul>';
+    }
+
+    if (!empty($recommendations) && \is_array($recommendations)) {
+      $output .= '<p class="mb-0"><strong>' . htmlspecialchars($this->language->getDef('text_rag_ambiguous_recommendation')) . '</strong> ' . htmlspecialchars((string) reset($recommendations)) . '</p>';
+    }
+
     $output .= "</div>";
     return $output;
   }

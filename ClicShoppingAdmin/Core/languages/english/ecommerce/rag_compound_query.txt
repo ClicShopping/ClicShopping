@@ -10,6 +10,10 @@ Examples of NON-compound queries:
 - "revenue by product and category" → 1 query (grouping, not separate questions)
 - "orders with status pending and shipped" → 1 query (filter conditions)
 - "customers who bought product A and product B" → 1 query (combined filter)
+- "price of the Samsung S25 then its SKU and EAN" → 1 query (multiple ATTRIBUTES of ONE entity = columns, NOT separate questions)
+- "name, price and stock of product X" → 1 query (several attributes of one entity)
+- "total revenue and average order value this month" → 1 query (several METRICS over the same scope)
+KEY RULE: multiple ATTRIBUTES/COLUMNS or METRICS of the SAME entity are NOT compound — they are a single query returning several columns. A query is compound ONLY when it asks separate questions about different entities or different topics (e.g. "revenue AND out-of-stock products"). Conditions/filters on the same set are also NOT compound.
 Respond in JSON format:
 ```json
 {

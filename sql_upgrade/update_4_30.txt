@@ -224,3 +224,6 @@ INSERT INTO `clic_configuration` VALUES(2697, 'Do you want to display the quanti
 
 #email batch
 ALTER TABLE :table_newsletters_customers_temp ADD batch_type tinyint NOT NULL DEFAULT 1 FIRST, ADD KEY batch_type (batch_type);
+
+#add enum
+ALTER TABLE `clic_rag_security_events` CHANGE `action_taken` `action_taken` ENUM('blocked','allowed','flagged','logged_only','fallback_triggered','layer_executed','layer_failed','test','obfuscation_detected') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'logged_only' COMMENT 'Action taken on the event';

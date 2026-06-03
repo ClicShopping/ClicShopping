@@ -446,7 +446,7 @@ class HallucinationDetector
     $activeDomain = DomainConfig::getActivities();
     $defaultCategory = !empty($activeDomain) ? $activeDomain : 'generic';
     
-    $validCategories = ['sports', 'entertainment', 'general_knowledge', 'news', 'other', $defaultCategory];
+    $validCategories = ['sports', 'entertainment', 'general_knowledge', 'news', 'other', 'ambiguous_product_name', 'underspecified', 'unintelligible', $defaultCategory];
     $result['detected_category'] = isset($result['detected_category']) && in_array($result['detected_category'], $validCategories, true)
       ? $result['detected_category']
       : $defaultCategory;
@@ -462,10 +462,14 @@ class HallucinationDetector
       : 'No explanation provided';
 
     // Validate suggested_action
-    $validActions = ['reject', 'redirect_to_web_search', 'allow'];
+    $validActions = ['reject', 'redirect_to_web_search', 'ask_clarification', 'allow'];
     $result['suggested_action'] = isset($result['suggested_action']) && in_array($result['suggested_action'], $validActions, true)
       ? $result['suggested_action']
       : 'allow';
+    if (!empty($result['clarification_options']) && is_array($result['clarification_options'])
+        && $result['suggested_action'] === 'allow' && $result['is_out_of_context'] === false) {
+      $result['suggested_action'] = 'ask_clarification';
+    }
 
     // Add detection method
     $result['detection_method'] = 'llm';

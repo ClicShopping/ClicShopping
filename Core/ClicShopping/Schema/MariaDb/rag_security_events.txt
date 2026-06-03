@@ -12,7 +12,7 @@ detection_method enum('llm_semantic','pattern_based','response_validation','hybr
 detection_layer varchar(50) comment(Security layer that detected: SemanticSecurityAnalyzer, PatternSecurityDetector, etc.)
 matched_patterns longtext comment(Patterns that matched (if pattern-based) - JSON format)
 llm_reasoning text comment(LLM reasoning for the detection (if LLM-based))
-action_taken enum('blocked','allowed','flagged','logged_only','fallback_triggered','layer_executed','layer_failed','test') not_null default('logged_only') comment(Action taken on the event)
+action_taken enum('blocked','allowed','flagged','logged_only','fallback_triggered','layer_executed','layer_failed','test', 'obfuscation_detected') not_null default('logged_only') comment(Action taken on the event)
 blocked tinyint(1) not_null default(0) comment(1 if query was blocked, 0 if allowed)
 response_generated text comment(Response that was generated (if any))
 response_blocked tinyint(1) default(0) comment(1 if response was blocked due to validation failure)

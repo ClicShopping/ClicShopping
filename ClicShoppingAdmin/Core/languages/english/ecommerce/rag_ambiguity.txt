@@ -16,6 +16,13 @@ If the query contains EXPLICIT time references, IMMEDIATELY return is_ambiguous:
 
 These are EXPLICIT time specifications pointing to a SPECIFIC period. Return is_ambiguous: false immediately.
 
+**CRITICAL RULE - MISSING TEMPORAL UNIT (temporal_unit_missing)**:
+A NUMBER followed by "last"/"past"/"previous"/"derniers"/"dernières" WITHOUT a following time UNIT (day/week/month/year, jour/semaine/mois/an/année) is AMBIGUOUS — the unit is missing and MUST NOT be guessed:
+    * "the last 12", "over the past 6", "for the previous 3" → AMBIGUOUS (12/6/3 of WHAT? days? weeks? months? years?)
+    * "les 12 derniers", "sur les 6 dernières", "les 3 derniers" → AMBIGUOUS (12/6/3 quoi ? jours ? semaines ? mois ? années ?)
+By contrast, when the unit IS present the reference is EXPLICIT and NOT ambiguous: "last 12 months", "last 30 days", "les 12 derniers mois", "les 30 derniers jours".
+For temporal_unit_missing set "recommendation": "clarify" and provide interpretations naming the plausible units (months / days / years). DO NOT silently default the unit — the user must confirm which period unit they mean.
+
 **NEW CRITICAL RULE - TEMPORAL PERIOD SCOPE AMBIGUITY**:
 If the query contains PERIODIC terms WITHOUT explicit time reference, this IS AMBIGUOUS (temporal_period_scope):
     * "monthly", "mensuel", "mensuellement" → AMBIGUOUS: could mean "current month" OR "breakdown by month"
@@ -83,7 +90,7 @@ Default interpretation: SUM for financial metrics (sales, revenue, turnover), CO
 Respond ONLY with valid JSON in this exact format:
 {
 "is_ambiguous": true/false,
-"ambiguity_type": "temporal_period_scope|quantification|scope|metric|time|null",
+"ambiguity_type": "temporal_period_scope|temporal_unit_missing|quantification|scope|metric|time|null",
 "confidence": 0.0-1.0,
 "interpretations": [
  {
@@ -109,7 +116,8 @@ Rules:
     - Recommend "generate_both" for temporal_period_scope ambiguity (current period vs breakdown).
     - Recommend "generate_both" for quantification ambiguity (COUNT vs SUM).
     - Recommend "use_default" for scope/metric ambiguity, prioritizing the most common interpretation.
-    - Recommend "clarify" ONLY for queries with COMPLETE absence of time reference (e.g., "show sales" with no time indicator).
+    - Recommend "clarify" for queries with COMPLETE absence of time reference (e.g., "show sales" with no time indicator).
+    - Recommend "clarify" for temporal_unit_missing (a number + last/past/derniers WITHOUT a unit) — never guess the unit.
     - IMPORTANT: All queries are translated to English before analysis. Focus on English quantitative language.
     - CRITICAL: Financial terms that mean "revenue" are NEVER ambiguous - they always mean SUM of monetary values, NOT COUNT of transactions.
 
@@ -151,6 +159,9 @@ Examples:
     - "Show orders" -> AMBIGUOUS (all vs recent vs active, NO time reference).
     - "Show all orders" -> NOT ambiguous (explicit scope "all").
     - "Show sales" -> AMBIGUOUS (no time reference, no quantification, no scope).
+    - "customers who spent over 70 in the last 12" -> AMBIGUOUS (temporal_unit_missing: 12 days? months? years? -> clarify).
+    - "clients ayant acheté pour plus de 70 sur les 12 derniers" -> AMBIGUOUS (temporal_unit_missing: 12 jours ? mois ? années ? -> clarify).
+    - "customers who spent over 70 in the last 12 months" -> NOT ambiguous (explicit unit "months").
 
 
 text_rag_clarify_query_for_interpretation = Rewrite this ambiguous query to be explicit about the intent.
@@ -159,21 +170,6 @@ text_rag_clarify_query_for_interpretation = Rewrite this ambiguous query to be e
     SQL hint: {{sql_hint}}
 Rewrite the query to clearly indicate this specific interpretation.
 If the query contains multiple words, rewrite the query for each word like that %word%.
-Use explicit keywords like COUNT, SUM, AVG, DISTINCT, ALL, RECENT, etc.
-Respond with ONLY the rewritten query, nothing else.
-
-Examples:
-    - "How many products?" + COUNT -> "Count the number of distinct products"
-    - "How many products?" + SUM -> "Sum the total quantity of all products"
-    - "Show orders" + RECENT -> "Show orders from the last 30 days"
-
-
-
-text_rag_clarify_query_for_interpretation = Rewrite this ambiguous query to be explicit about the intent.
-    Original query: {{original_query}}
-    Interpretation: {{interpretation}}
-    SQL hint: {{sql_hint}}
-Rewrite the query to clearly indicate this specific interpretation.
 Use explicit keywords like COUNT, SUM, AVG, DISTINCT, ALL, RECENT, etc.
 Respond with ONLY the rewritten query, nothing else.
 

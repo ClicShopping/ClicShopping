@@ -237,7 +237,7 @@ if (isset($_GET['export'])) {
     header('Content-Type: ' . $mimeType);
 
     // Détermine l'extension et encode si c'est du JSON
-    if (strpos($mimeType, 'json') !== false) {
+    if (str_contains($mimeType, 'json')) {
       // S'assurer que la sortie est un tableau/objet avant d'encoder
       if (is_array($output) || is_object($output)) {
         $output = json_encode($output, JSON_PRETTY_PRINT);

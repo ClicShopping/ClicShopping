@@ -233,7 +233,7 @@ class HybridFormatter extends AbstractFormatter
 
         if (!empty($analyticsSub['sql_query'])) {
             $output .= "<div class='mb-3'>";
-            $output .= "<a href='#' class='btn btn-outline-primary btn-sm' data-sql-toggle='{$collapseId}'>";
+            $output .= "<a href='#' class='btn btn-primary btn-sm' data-sql-toggle='{$collapseId}'>";
             $output .= htmlspecialchars($this->language->getDef('toggle_sql_query'));
             $output .= "</a>";
 
