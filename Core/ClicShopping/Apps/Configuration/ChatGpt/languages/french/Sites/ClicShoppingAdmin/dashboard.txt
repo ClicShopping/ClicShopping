@@ -847,3 +847,13 @@ decomposition_why = Pourquoi
 decomposition_why_description = Permet le traitement parallèle et la gestion spécialisée de chaque type de requête
 decomposition_performance = Performance
 decomposition_performance_description = Objectif : <500ms par décomposition avec >60% de taux de cache
+
+# Dashboards metier (decoupage de l'ancien dashboard unique)
+dashboard_manager_title = Manager
+dashboard_developper_title = Developpeur
+dashboard_data_scientist_title = Data Scientist
+dashboard_manager_desc = Vue business : sante generale, alertes, tendances, cout des tokens et retours clients.
+dashboard_developper_desc = Vue technique : composants, latence & fast-lane, securite, performance & cache, exports.
+dashboard_data_scientist_desc = Analytique & ML : performance de classification et supervision des agents.
+dashboard_open = Ouvrir
+tab_latency_fastlane = Latence & Fast-Lane

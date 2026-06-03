@@ -137,7 +137,7 @@ class ResultInterpreter
     
     $array = [
       'question' => $question,
-      'results' => json_encode($cleanResults, JSON_PRETTY_PRINT)
+      'results' => json_encode($cleanResults, JSON_PRETTY_PRINT),
       'currentDate' => date('Y-m-d')
     ];
 
@@ -258,24 +258,32 @@ class ResultInterpreter
    */
   public function extractCleanTranslation(string $response): string
   {
-    error_log("Extracting clean translation...");
+    if ($this->debug) {
+      error_log("Extracting clean translation...");
+    }
 
     // Pattern 1: Extract text between quotes after "is:"
     if (preg_match('/is:\s*"([^"]+)"|is:\s*\'([^\']+)\'/', $response, $matches)) {
       $clean = $matches[1] ?? $matches[2];
-      error_log("Extracted via pattern 1: '{$clean}'");
+      if ($this->debug) {
+        error_log("Extracted via pattern 1: '{$clean}'");
+      }
       return $clean;
     }
 
     // Pattern 2: Extract quoted text
     if (preg_match('/["\']([^"\']+)["\']/', $response, $matches)) {
       $clean = $matches[1];
-      error_log("Extracted via pattern 2: '{$clean}'");
+      if ($this->debug) {
+        error_log("Extracted via pattern 2: '{$clean}'");
+      }
       return $clean;
     }
 
     // Fallback
-    error_log("No pattern matched, returning as-is: '{$response}'");
+    if ($this->debug) {
+      error_log("No pattern matched, returning as-is: '{$response}'");
+    }
     return $response;
   }
 }

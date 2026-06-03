@@ -9,6 +9,7 @@ version4.30
 - some little app refactoring
 - Security improvement
 - AI framework improvement
+- New AI dashboard
 
 ---------------
 version4.281 et 4.282

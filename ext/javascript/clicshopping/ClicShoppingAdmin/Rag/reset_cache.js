@@ -41,12 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (data.details) {
           message += '<ul class="mb-0">';
-          var detailKeys = [
-            'files', 'translations', 'database', 'prompts', 'semantic',
-            'schema', 'intent', 'ambiguity', 'translation_ambiguity',
-            'context', 'embeddings', 'embedding_search', 'classification',
-            'hybrid', 'sql', 'memory', 'security', 'reputation', 'config'
-          ];
+          var detailKeys = ['db', 'disk', 'logs'];
 
           detailKeys.forEach(function(key) {
             if (data.details[key] !== undefined && config.labels.details[key]) {

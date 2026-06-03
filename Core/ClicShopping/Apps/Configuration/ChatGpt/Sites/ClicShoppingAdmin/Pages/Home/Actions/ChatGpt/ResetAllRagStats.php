@@ -36,6 +36,6 @@ class ResetAllRagStats extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
     }
 
-    $CLICSHOPPING_ChatGpt->redirect('DashBoard');
+    $CLICSHOPPING_ChatGpt->redirect('Dashboard');
   }
 }

@@ -4,7 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="ai improvement" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="ai improvement">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/ajax/RAG/reset_cache.php" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/ajax/RAG/reset_cache.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/ResultInterpreter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/ResultInterpreter.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/ResultFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/ResultFormatter.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/Actions/ChatGpt/ResetAllRagStats.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/Actions/ChatGpt/ResetAllRagStats.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/Actions/DashBoard.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_actor_critic.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_actor_critic.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_alerts.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_alerts.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_evaluations.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_evaluations.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_objectives.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_objectives.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/chatgpt.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/chatgpt.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/configure.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/configure.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/dashboard.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/dashboard.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/help.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/help.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/rag_websearch.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/rag_websearch.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/english/Sites/ClicShoppingAdmin/dashboard.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/english/Sites/ClicShoppingAdmin/dashboard.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/french/Sites/ClicShoppingAdmin/dashboard.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/french/Sites/ClicShoppingAdmin/dashboard.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ext/javascript/clicshopping/ClicShoppingAdmin/Rag/reset_cache.js" beforeDir="false" afterPath="$PROJECT_DIR$/ext/javascript/clicshopping/ClicShoppingAdmin/Rag/reset_cache.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,7 +42,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7535" />
+    <option name="cachedIndexableFilesCount" value="7561" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -51,23 +71,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0052992356540924" />
-      <entry key="MS500" value="1.3506248303321033" />
-      <entry key="S2" value="1.7810333197894241" />
-      <entry key="S5" value="2.0682761745100815" />
-      <entry key="S10" value="2.3585508974821527" />
-      <entry key="S30" value="2.725340697705923" />
-      <entry key="S60" value="2.8530794815704352" />
-      <entry key="M2" value="2.9239611240247725" />
-      <entry key="M5" value="2.968940845653524" />
-      <entry key="M10" value="2.984361024526563" />
-      <entry key="M15" value="2.989549545214297" />
-      <entry key="M30" value="2.994762496688991" />
-      <entry key="H1" value="2.997378171892606" />
-      <entry key="H2" value="2.998720489984835" />
-      <entry key="H4" value="3.0470979972910364" />
-      <entry key="D1" value="62.3066661706423" />
-      <entry key="W1" value="229.37848450113077" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0000167782212457" />
+      <entry key="S2" value="1.177291035759671" />
+      <entry key="S5" value="2.332014905699941" />
+      <entry key="S10" value="3.734608963193575" />
+      <entry key="S30" value="5.56903191672116" />
+      <entry key="S60" value="6.227678377946315" />
+      <entry key="M2" value="6.598241276511366" />
+      <entry key="M5" value="6.835356959298545" />
+      <entry key="M10" value="6.91700471381099" />
+      <entry key="M15" value="6.9445187801111485" />
+      <entry key="M30" value="6.972183546598642" />
+      <entry key="H1" value="6.986072750590704" />
+      <entry key="H2" value="6.993063753858056" />
+      <entry key="H4" value="7.044244824202276" />
+      <entry key="D1" value="66.30126263100003" />
+      <entry key="W1" value="233.37572769950214" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -89,23 +109,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9710906567013022" />
-      <entry key="MS500" value="1.34177842959842" />
-      <entry key="S2" value="1.7782199604526863" />
-      <entry key="S5" value="2.0669910536175253" />
-      <entry key="S10" value="2.357827765864631" />
-      <entry key="S30" value="2.7250657318780225" />
-      <entry key="S60" value="2.852936092497516" />
-      <entry key="M2" value="2.9238877908818877" />
-      <entry key="M5" value="2.968911096474054" />
-      <entry key="M10" value="2.9843460786429317" />
-      <entry key="M15" value="2.989539565299448" />
-      <entry key="M30" value="2.994757498697708" />
-      <entry key="H1" value="2.997375670881412" />
-      <entry key="H2" value="2.9987192387268835" />
-      <entry key="H4" value="3.0470968603726667" />
-      <entry key="D1" value="62.30645690759512" />
-      <entry key="W1" value="229.37835830452389" />
+      <entry key="MS100" value="0.9201876506248751" />
+      <entry key="MS500" value="0.98351859535833" />
+      <entry key="S2" value="1.1724605723193737" />
+      <entry key="S5" value="2.3283709452657346" />
+      <entry key="S10" value="3.7318114390751607" />
+      <entry key="S30" value="5.5677040286652995" />
+      <entry key="S60" value="6.226946905979583" />
+      <entry key="M2" value="6.597856893051268" />
+      <entry key="M5" value="6.835198482643717" />
+      <entry key="M10" value="6.916924666619712" />
+      <entry key="M15" value="6.944465233928478" />
+      <entry key="M30" value="6.972156682399178" />
+      <entry key="H1" value="6.986059295635992" />
+      <entry key="H2" value="6.993057020409849" />
+      <entry key="H4" value="7.04424094513791" />
+      <entry key="D1" value="66.3010529280978" />
+      <entry key="W1" value="233.3756014390687" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -175,30 +195,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "version4.30",
-    "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "copyright",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;version4.30&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;copyright&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mariadb"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mariadb&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />

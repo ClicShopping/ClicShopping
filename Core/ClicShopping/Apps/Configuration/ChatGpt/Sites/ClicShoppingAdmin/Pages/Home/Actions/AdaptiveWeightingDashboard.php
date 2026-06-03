@@ -5,19 +5,20 @@
  * Licensed under AGPLv3 or commercial license.
  * See LICENSE file.
  */
+
 namespace ClicShopping\Apps\Configuration\ChatGpt\Sites\ClicShoppingAdmin\Pages\Home\Actions;
 
 use ClicShopping\OM\Registry;
 
-class DashBoard extends \ClicShopping\OM\Domains\PagesActionsAbstract
+class AdaptiveWeightingDashboard extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public function execute()
   {
     $CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
 
-    $this->page->setFile('dashboard.php');
-    $this->page->data['action'] = 'RAG';
+    $this->page->setFile('adaptive_weighting_dashboard.php');
+    $this->page->data['action'] = 'AdaptiveWeightingDashboard';
 
-    $CLICSHOPPING_ChatGpt->loadDefinitions('Sites/ClicShoppingAdmin/dashboard');
+    $CLICSHOPPING_ChatGpt->loadDefinitions('Sites/ClicShoppingAdmin/adaptive_weighting_dashboard');
   }
 }

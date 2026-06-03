@@ -117,7 +117,7 @@ class ResultFormatter
         $message = $this->language->getDef('clarification_needed_message');
         $optionsHtml = '<div class="row">';
         foreach ($results['clarification_options'] as $option) {
-          $optionsHtml .= '- ' . htmlspecialchars((string)$option) . "/n";
+          $optionsHtml .= '- ' . htmlspecialchars((string)$option) . "\n";
         }
         $optionsHtml .= '</div>';
       } else {

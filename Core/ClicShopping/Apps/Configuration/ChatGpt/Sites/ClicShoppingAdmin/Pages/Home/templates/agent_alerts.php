@@ -35,7 +35,7 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
           </span>
           <span class="col-md-4 text-end">
             <?php echo HTML::button('Refresh', null, null, 'primary', ['params' => 'onclick="refreshAlerts()"']); ?>
-            <?php echo HTML::button('Back to Dashboard', null, $CLICSHOPPING_ChatGpt->link('DashBoard'), 'warning'); ?>
+            <?php echo HTML::button('Back to Dashboard', null, $CLICSHOPPING_ChatGpt->link('Dashboard'), 'warning'); ?>
           </span>
         </div>
       </div>

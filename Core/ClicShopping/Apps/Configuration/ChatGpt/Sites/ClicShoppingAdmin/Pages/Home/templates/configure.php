@@ -48,7 +48,7 @@ if ($CLICSHOPPING_MessageStack->exists('ChatGpt')) {
               }
             }
 
-            echo HTML::button($CLICSHOPPING_ChatGpt->getDef('module_ch_short_title'), null, $CLICSHOPPING_ChatGpt->link('DashBoard'), 'primary');
+            echo HTML::button($CLICSHOPPING_ChatGpt->getDef('module_ch_short_title'), null, $CLICSHOPPING_ChatGpt->link('Dashboard'), 'primary');
           ?>
           </span>
         </div>

@@ -36,7 +36,7 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
           </span>
           <span class="col-md-4 text-end">
             <?php echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_refresh'), null, null, 'primary', ['params' => 'onclick="refreshObjectives()"']); ?>
-            <?php echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_back_dashboard'), null, $CLICSHOPPING_ChatGpt->link('DashBoard'), 'warning'); ?>
+            <?php echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_back_dashboard'), null, $CLICSHOPPING_ChatGpt->link('Dashboard'), 'warning'); ?>
           </span>
         </div>
       </div>

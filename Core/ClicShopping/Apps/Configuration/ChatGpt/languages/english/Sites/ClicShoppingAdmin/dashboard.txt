@@ -839,3 +839,13 @@ decomposition_why = Why
 decomposition_why_description = Enables parallel processing and specialized handling of each query type
 decomposition_performance = Performance
 decomposition_performance_description = Target: <500ms per decomposition with >60% cache hit rate
+
+# Metier dashboards (split of the legacy single dashboard)
+dashboard_manager_title = Manager
+dashboard_developper_title = Developer
+dashboard_data_scientist_title = Data Scientist
+dashboard_manager_desc = Business overview: general health, alerts, trends, token cost and customer feedback.
+dashboard_developper_desc = Technical view: components, latency & fast-lane, security, performance & cache, exports.
+dashboard_data_scientist_desc = Analytics & ML: classification performance and agent monitoring.
+dashboard_open = Open
+tab_latency_fastlane = Latency & Fast-Lane
