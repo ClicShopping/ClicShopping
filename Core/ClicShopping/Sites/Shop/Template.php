@@ -360,10 +360,19 @@ class Template
       foreach ($header_tags_array as $header) {
         if (str_contains($header, '\\')) {
           $class = Apps::getModuleClass($header, 'HeaderTags');
-          $ad = new $class();
 
-          if ($ad->isEnabled()) {
-            echo $ad->getOutput();
+          if (empty($class) || !class_exists($class)) {
+            continue;
+          }
+
+          try {
+            $ad = new $class();
+
+            if ($ad->isEnabled()) {
+              echo $ad->getOutput();
+            }
+          } catch (\Throwable $e) {
+            trigger_error('ClicShopping: HeaderTags module "' . $header . '" failed at runtime: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
           }
         }
       }

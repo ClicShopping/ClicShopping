@@ -76,14 +76,24 @@ if (\defined('MODULE_ADMIN_DASHBOARD_INSTALLED') && !\is_null(MODULE_ADMIN_DASHB
     $col = 0;
 
     foreach ($adm_array as $adm) {
-      if (str_contains($adm, '\\')) {
-        $class = Apps::getModuleClass($adm, 'AdminDashboard');
+      if (!str_contains($adm, '\\')) {
+        continue;
       }
 
-      $ad = new $class();
+      $class = Apps::getModuleClass($adm, 'AdminDashboard');
 
-      if ($ad->isEnabled()) {
-        echo $ad->getOutput();
+      if (empty($class) || !class_exists($class)) {
+        continue;
+      }
+
+      try {
+        $ad = new $class();
+
+        if ($ad->isEnabled()) {
+          echo $ad->getOutput();
+        }
+      } catch (\Throwable $e) {
+        trigger_error('ClicShopping: AdminDashboard module "' . $adm . '" failed at runtime: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
       }
     }
   } else {

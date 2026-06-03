@@ -20,6 +20,7 @@ $config = [
     'chatgpt_enabled' => defined('CLICSHOPPING_APP_CHATGPT_CH_STATUS') && CLICSHOPPING_APP_CHATGPT_CH_STATUS == 'True',
     'rag_installed' => defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS'),
     'rag_enabled' => defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA_STATUS == 'True',
+    'rag_cache_enabled' => defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER == 'True',
 ];
 ?>
    <div class="contentBody">

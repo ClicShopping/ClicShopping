@@ -849,3 +849,19 @@ dashboard_developper_desc = Technical view: components, latency & fast-lane, sec
 dashboard_data_scientist_desc = Analytics & ML: classification performance and agent monitoring.
 dashboard_open = Open
 tab_latency_fastlane = Latency & Fast-Lane
+
+# Reset cache modal - simplified 3-scope selection
+cache_type_db = Database cache
+cache_type_db_desc = Clears all AI / RAG caches stored in the database (query cache, web search embedding cache).
+cache_type_disk = AI disk cache (Rag)
+cache_type_disk_desc = Clears all AI / RAG file caches stored on disk (Work/Cache/Rag).
+cache_type_logs = Logs
+cache_type_logs_desc = Deletes the application log files (Work/Log).
+cache_reset_logs_deleted = Log files deleted
+
+# Developper dashboard: Performance & Cache tab split into two tabs
+tab_cache = Cache
+
+# Data Scientist: entry point to the Adaptive Weighting dashboard (was orphaned)
+button_adaptive_weighting = ⚖️ Adaptive Weighting
+text_adaptive_weighting_help = Actor-Critic adaptive weight tuning & metrics

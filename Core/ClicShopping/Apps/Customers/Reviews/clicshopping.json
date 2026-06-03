@@ -15,7 +15,7 @@
   ],
   "modules": {
     "HeaderTags": {
-      "Featured": "Module\\HeaderTags\\Reviews"
+      "Reviews": "Module\\HeaderTags\\Reviews"
     },
     "AdminDashboard": {
       "Reviews": "Module\\ClicShoppingAdmin\\Dashboard\\Reviews"

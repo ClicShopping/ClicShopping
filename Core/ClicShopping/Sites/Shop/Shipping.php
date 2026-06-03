@@ -71,8 +71,26 @@ class Shipping
       }
 
       for ($i = 0, $n = count($include_modules); $i < $n; $i++) {
-        if (str_contains($include_modules[$i]['class'], '\\')) {
-          Registry::set('Shipping_' . str_replace('\\', '_', $include_modules[$i]['class']), new $include_modules[$i]['file']);
+        if (!str_contains($include_modules[$i]['class'], '\\')) {
+          continue;
+        }
+
+        $class = $include_modules[$i]['file'];
+        $moduleId = $include_modules[$i]['class'];
+
+        // Drop a module that cannot be loaded or instantiated from the active
+        // list, so the downstream getQuote()/getFirst()/getCheapest() loops
+        // never look up an unregistered Registry key.
+        if (empty($class) || !class_exists($class)) {
+          $this->modules = array_values(array_filter($this->modules, static fn($m) => $m !== $moduleId));
+          continue;
+        }
+
+        try {
+          Registry::set('Shipping_' . str_replace('\\', '_', $moduleId), new $class());
+        } catch (\Throwable $e) {
+          trigger_error('ClicShopping: Shipping module "' . $moduleId . '" failed to instantiate: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
+          $this->modules = array_values(array_filter($this->modules, static fn($m) => $m !== $moduleId));
         }
       }
     }
@@ -168,7 +186,7 @@ class Shipping
       if (str_contains($value, '\\')) {
         $obj = Registry::get('Shipping_' . str_replace('\\', '_', $value));
 
-        if ($obj->enabled) {
+        if ($obj->enabled && is_array($obj->quotes) && !empty($obj->quotes['methods']) && is_array($obj->quotes['methods'])) {
           foreach ($obj->quotes['methods'] as $method) {
             if (isset($method['cost']) && !is_null($method['cost'])) {
               return [
@@ -211,7 +229,14 @@ class Shipping
           if ($obj->enabled) {
             $quotes = $obj->quotes;
 
-            for ($i = 0, $n = count($quotes['methods'] ?: []); $i < $n; $i++) {
+            // A module can be enabled while its quotes were never computed
+            // (getQuote() not run, or the module returned nothing), leaving
+            // $obj->quotes at its default null. Skip it instead of indexing null.
+            if (!is_array($quotes) || empty($quotes['methods']) || !is_array($quotes['methods'])) {
+              continue;
+            }
+
+            for ($i = 0, $n = count($quotes['methods']); $i < $n; $i++) {
               if (isset($quotes['methods'][$i]['cost']) && !is_null($quotes['methods'][$i]['cost'])) {
                 $rates[] = [
                   'id' => $quotes['id'] . '_' . $quotes['methods'][$i]['id'],

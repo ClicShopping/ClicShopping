@@ -54,7 +54,7 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 
 #Analyse
 -  [![SymfonyInsight](https://insight.symfony.com/projects/417b7cb7-2fd4-44eb-b0cd-e97c4b96fcc1/mini.svg)](https://insight.symfony.com/projects/417b7cb7-2fd4-44eb-b0cd-e97c4b96fcc1)
--  [![php](https://img.shields.io/badge/Php-%3E%3D8.3-green])](https://img.shields.io/badge/Php-%3E%3D8.4-green)
+-  [![php](https://img.shields.io/badge/Php-%5E%3D8.5-green])](https://img.shields.io/badge/Php-%3E%3D8.4-green)
 -  ![GitHub repo size](https://img.shields.io/github/repo-size/ClicShopping/ClicShopping_v3)
 -  ![GitHub top language](https://img.shields.io/github/languages/top/ClicShopping/ClicShopping_v3)
 -  [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ClicShopping/ClicShopping)
@@ -192,7 +192,7 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 # Requirement (more information in the wiki)
  - Apache 2.x <br>
  - MYSQL 9.x / MariaDb 11.x but 11.7 (recommended for embeddings and vectors)<br>
- - PHP >= 8.4
+ - PHP >= 8.4, 8.5, 8.6
  - More information in the Github Wiki
 
 # Installation

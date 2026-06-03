@@ -857,3 +857,19 @@ dashboard_developper_desc = Vue technique : composants, latence & fast-lane, sec
 dashboard_data_scientist_desc = Analytique & ML : performance de classification et supervision des agents.
 dashboard_open = Ouvrir
 tab_latency_fastlane = Latence & Fast-Lane
+
+# Modal réinitialisation cache - sélection simplifiée en 3 périmètres
+cache_type_db = Cache base de données
+cache_type_db_desc = Réinitialise tous les caches AI / RAG stockés en base (cache de requêtes, cache d'embedding de recherche web).
+cache_type_disk = Cache disque AI (Rag)
+cache_type_disk_desc = Réinitialise tous les caches fichiers AI / RAG stockés sur disque (Work/Cache/Rag).
+cache_type_logs = Logs
+cache_type_logs_desc = Supprime les fichiers de logs de l'application (Work/Log).
+cache_reset_logs_deleted = Fichiers de logs supprimés
+
+# Dashboard Developpeur : onglet Performance & Cache scindé en deux onglets
+tab_cache = Cache
+
+# Data Scientist : point d'entrée vers le dashboard Pondération adaptative (orphelin auparavant)
+button_adaptive_weighting = ⚖️ Pondération adaptative
+text_adaptive_weighting_help = Réglage & métriques des poids adaptatifs Actor-Critic

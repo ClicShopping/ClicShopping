@@ -167,7 +167,37 @@ class Apps
 
     $CLICSHOPPING_Type = Registry::get('ModuleType' . $type);
 
-    return $CLICSHOPPING_Type->getClass($module);
+    $class = $CLICSHOPPING_Type->getClass($module);
+
+    // A stale entry in MODULE_..._INSTALLED that is no longer declared in its App
+    // clicshopping.json resolves to false. Report it instead of letting callers
+    // fatal on "new false()", so the orphaned module stays discoverable in the log.
+    if (empty($class)) {
+      trigger_error('ClicShopping\OM\Apps::getModuleClass(): module "' . $module . '" (type ' . $type . ') is not declared in its App clicshopping.json — skipped. Likely a stale entry in the MODULE_' . strtoupper($type) . '_INSTALLED configuration.', E_USER_WARNING);
+
+      return false;
+    }
+
+    // The App declares the module but the resolved class is missing on disk
+    // (renamed/deleted file, or a typo in clicshopping.json). The class_exists()
+    // call triggers autoloading, so a module file with a parse/compile error
+    // surfaces here as a ParseError — caught and reported instead of taking the
+    // whole page down, which is the common case while developing a module.
+    try {
+      $exists = class_exists($class);
+    } catch (\Throwable $e) {
+      trigger_error('ClicShopping\OM\Apps::getModuleClass(): class "' . $class . '" for module "' . $module . '" (type ' . $type . ') failed to load (parse or compile error): ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
+
+      return false;
+    }
+
+    if (!$exists) {
+      trigger_error('ClicShopping\OM\Apps::getModuleClass(): resolved class "' . $class . '" for module "' . $module . '" (type ' . $type . ') does not exist — skipped. Check the clicshopping.json mapping against the actual class file.', E_USER_WARNING);
+
+      return false;
+    }
+
+    return $class;
   }
 
   /**

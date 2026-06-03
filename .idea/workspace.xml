@@ -4,27 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="ai improvement">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ClicShoppingAdmin/ajax/RAG/reset_cache.php" beforeDir="false" afterPath="$PROJECT_DIR$/ClicShoppingAdmin/ajax/RAG/reset_cache.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/ResultInterpreter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/ResultInterpreter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/ResultFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Hybrid/Helper/Formatter/ResultFormatter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/Actions/ChatGpt/ResetAllRagStats.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/Actions/ChatGpt/ResetAllRagStats.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/Actions/DashBoard.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_actor_critic.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_actor_critic.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_alerts.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_alerts.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_evaluations.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_evaluations.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_objectives.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/agent_objectives.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/chatgpt.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/chatgpt.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/configure.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/configure.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/dashboard.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/dashboard.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/help.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/help.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/rag_websearch.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/Sites/ClicShoppingAdmin/Pages/Home/templates/rag_websearch.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/english/Sites/ClicShoppingAdmin/dashboard.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/english/Sites/ClicShoppingAdmin/dashboard.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/french/Sites/ClicShoppingAdmin/dashboard.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Configuration/ChatGpt/languages/french/Sites/ClicShoppingAdmin/dashboard.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ext/javascript/clicshopping/ClicShoppingAdmin/Rag/reset_cache.js" beforeDir="false" afterPath="$PROJECT_DIR$/ext/javascript/clicshopping/ClicShoppingAdmin/Rag/reset_cache.js" afterDir="false" />
-    </list>
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="update ai dashboard" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -307,14 +287,6 @@
       <workItem from="1780224409266" duration="8000" />
       <workItem from="1780245161323" duration="646000" />
       <workItem from="1780251154059" duration="10957000" />
-    </task>
-    <task id="LOCAL-00056" summary="some improvment">
-      <option name="closed" value="true" />
-      <created>1779374017521</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1779374017521</updated>
     </task>
     <task id="LOCAL-00057" summary="librairies updated">
       <option name="closed" value="true" />
@@ -700,14 +672,21 @@
       <option name="project" value="LOCAL" />
       <updated>1780476965371</updated>
     </task>
-    <option name="localTasksCounter" value="105" />
+    <task id="LOCAL-00105" summary="update ai dashboard">
+      <option name="closed" value="true" />
+      <created>1780499868561</created>
+      <option name="number" value="00105" />
+      <option name="presentableId" value="LOCAL-00105" />
+      <option name="project" value="LOCAL" />
+      <updated>1780499868561</updated>
+    </task>
+    <option name="localTasksCounter" value="106" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="librairies updated" />
     <MESSAGE value="ratelimiter improvment" />
     <MESSAGE value="fix date" />
     <MESSAGE value="&#10;little improvement" />
@@ -732,7 +711,8 @@
     <MESSAGE value="libraries updated" />
     <MESSAGE value="some improvement" />
     <MESSAGE value="ai improvement" />
-    <option name="LAST_COMMIT_MESSAGE" value="ai improvement" />
+    <MESSAGE value="update ai dashboard" />
+    <option name="LAST_COMMIT_MESSAGE" value="update ai dashboard" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -77,7 +77,23 @@ class Payment
 
       for ($i = 0, $n = count($include_modules); $i < $n; $i++) {
         if (str_contains($include_modules[$i]['class'], '\\')) {
-          Registry::set('Payment_' . str_replace('\\', '_', $include_modules[$i]['class']), new $include_modules[$i]['file']);
+          $class = $include_modules[$i]['file'];
+          $moduleId = $include_modules[$i]['class'];
+
+          // Drop a module that cannot be loaded or instantiated from the active
+          // list, so the downstream loops over $this->modules never look up an
+          // unregistered Registry key.
+          if (empty($class) || !class_exists($class)) {
+            $this->modules = array_values(array_filter($this->modules, static fn($m) => $m !== $moduleId));
+            continue;
+          }
+
+          try {
+            Registry::set('Payment_' . str_replace('\\', '_', $moduleId), new $class());
+          } catch (\Throwable $e) {
+            trigger_error('ClicShopping: Payment module "' . $moduleId . '" failed to instantiate: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
+            $this->modules = array_values(array_filter($this->modules, static fn($m) => $m !== $moduleId));
+          }
         }
       }
 
@@ -90,7 +106,7 @@ class Payment
       }
 
       if ((!is_null($module)) && (in_array($module . '.' . substr(CLICSHOPPING::getIndex(), (strrpos(CLICSHOPPING::getIndex(), '.') + 1)), $this->modules, true) || in_array($module, $this->modules))) {
-        if (str_contains($module, '\\')) {
+        if (str_contains($module, '\\') && Registry::exists('Payment_' . str_replace('\\', '_', $module))) {
           $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $module));
 
           if (isset($CLICSHOPPING_PM->form_action_url)) {
@@ -164,8 +180,10 @@ class Payment
         '  }' . "\n\n";
 
       foreach ($this->modules as $value) {
-        if (str_contains($value, '\\')) {
-          $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $value));
+        $code = 'Payment_' . str_replace('\\', '_', $value);
+
+        if (str_contains($value, '\\') && Registry::exists($code)) {
+          $CLICSHOPPING_PM = Registry::get($code);
 
           if ($CLICSHOPPING_PM->enabled) {
             $js .= $CLICSHOPPING_PM->javascript_validation();
@@ -201,8 +219,10 @@ class Payment
 
     if (is_array($this->modules)) {
       foreach ($this->modules as $value) {
-        if (str_contains($value, '\\')) {
-          $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $value));
+        $code = 'Payment_' . str_replace('\\', '_', $value);
+
+        if (str_contains($value, '\\') && Registry::exists($code)) {
+          $CLICSHOPPING_PM = Registry::get($code);
 
           if ($CLICSHOPPING_PM->enabled && method_exists($CLICSHOPPING_PM, 'checkout_initialization_method')) {
             $initialize_array[] = $CLICSHOPPING_PM->checkout_initialization_method();
@@ -225,8 +245,10 @@ class Payment
 
     if (is_array($this->modules)) {
       foreach ($this->modules as $value) {
-        if (str_contains($value, '\\')) {
-          $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $value));
+        $code = 'Payment_' . str_replace('\\', '_', $value);
+
+        if (str_contains($value, '\\') && Registry::exists($code)) {
+          $CLICSHOPPING_PM = Registry::get($code);
 
           if ($CLICSHOPPING_PM->enabled) {
             $selection = $CLICSHOPPING_PM->selection();
@@ -248,8 +270,10 @@ class Payment
   public function pre_confirmation_check()
   {
     if (is_array($this->modules)) {
-      if (str_contains($this->selected_module, '\\')) {
-        $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $this->selected_module));
+      $code = 'Payment_' . str_replace('\\', '_', $this->selected_module);
+
+      if (str_contains($this->selected_module, '\\') && Registry::exists($code)) {
+        $CLICSHOPPING_PM = Registry::get($code);
 
         if ($CLICSHOPPING_PM->enabled) {
           $CLICSHOPPING_PM->pre_confirmation_check();
@@ -264,8 +288,10 @@ class Payment
   public function confirmation()
   {
     if (is_array($this->modules)) {
-      if (str_contains($this->selected_module, '\\')) {
-        $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $this->selected_module));
+      $code = 'Payment_' . str_replace('\\', '_', $this->selected_module);
+
+      if (str_contains($this->selected_module, '\\') && Registry::exists($code)) {
+        $CLICSHOPPING_PM = Registry::get($code);
 
         if ($CLICSHOPPING_PM->enabled) {
           return $CLICSHOPPING_PM->confirmation();
@@ -284,8 +310,10 @@ class Payment
   public function process_button()
   {
     if (is_array($this->modules)) {
-      if (str_contains($this->selected_module, '\\')) {
-        $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $this->selected_module));
+      $code = 'Payment_' . str_replace('\\', '_', $this->selected_module);
+
+      if (str_contains($this->selected_module, '\\') && Registry::exists($code)) {
+        $CLICSHOPPING_PM = Registry::get($code);
 
         if ($CLICSHOPPING_PM->enabled) {
           return $CLICSHOPPING_PM->process_button();
@@ -307,8 +335,10 @@ class Payment
   public function before_process()
   {
     if (is_array($this->modules)) {
-      if (str_contains($this->selected_module, '\\')) {
-        $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $this->selected_module));
+      $code = 'Payment_' . str_replace('\\', '_', $this->selected_module);
+
+      if (str_contains($this->selected_module, '\\') && Registry::exists($code)) {
+        $CLICSHOPPING_PM = Registry::get($code);
 
         if ($CLICSHOPPING_PM->enabled) {
           return $CLICSHOPPING_PM->before_process();
@@ -332,8 +362,10 @@ class Payment
   public function after_process()
   {
     if (is_array($this->modules)) {
-      if (str_contains($this->selected_module, '\\')) {
-        $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $this->selected_module));
+      $code = 'Payment_' . str_replace('\\', '_', $this->selected_module);
+
+      if (str_contains($this->selected_module, '\\') && Registry::exists($code)) {
+        $CLICSHOPPING_PM = Registry::get($code);
 
         if ($CLICSHOPPING_PM->enabled) {
           return $CLICSHOPPING_PM->after_process();
@@ -354,8 +386,10 @@ class Payment
   public function get_error()
   {
     if (is_array($this->modules)) {
-      if (str_contains($this->selected_module, '\\')) {
-        $CLICSHOPPING_PM = Registry::get('Payment_' . str_replace('\\', '_', $this->selected_module));
+      $code = 'Payment_' . str_replace('\\', '_', $this->selected_module);
+
+      if (str_contains($this->selected_module, '\\') && Registry::exists($code)) {
+        $CLICSHOPPING_PM = Registry::get($code);
 
         if ($CLICSHOPPING_PM->enabled) {
           return $CLICSHOPPING_PM->get_error();

@@ -98,20 +98,30 @@ class Hooks
 
         if (is_string($code)) {
           $class = Apps::getModuleClass($code, 'Hooks');
-          $obj = new $class();
 
-          // Passer le contexte à l'objet s'il supporte cette méthode
-          if (method_exists($obj, 'setContext') && $context !== null) {
-            $obj->setContext($context);
+          if (empty($class) || !class_exists($class)) {
+            continue;
           }
 
-          // Ajouter le contexte aux paramètres
-          $contextualParameters = $parameters ?? [];
-          if ($context !== null) {
-            $contextualParameters['_context'] = $context;
-          }
+          try {
+            $obj = new $class();
 
-          $bait = $obj->$action($contextualParameters);
+            // Passer le contexte à l'objet s'il supporte cette méthode
+            if (method_exists($obj, 'setContext') && $context !== null) {
+              $obj->setContext($context);
+            }
+
+            // Ajouter le contexte aux paramètres
+            $contextualParameters = $parameters ?? [];
+            if ($context !== null) {
+              $contextualParameters['_context'] = $context;
+            }
+
+            $bait = $obj->$action($contextualParameters);
+          } catch (\Throwable $e) {
+            trigger_error('ClicShopping: Hook "' . $code . '"::' . $action . '() failed at runtime: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
+            continue;
+          }
         } else {
           $ref = new ReflectionFunction($code);
 

@@ -42,7 +42,15 @@ class OrderTotal
         if (str_contains($value, '\\')) {
           $class = Apps::getModuleClass($value, 'OrderTotal');
 
-          Registry::set('OrderTotal_' . str_replace('\\', '_', $value), new $class);
+          if (empty($class) || !class_exists($class)) {
+            continue;
+          }
+
+          try {
+            Registry::set('OrderTotal_' . str_replace('\\', '_', $value), new $class());
+          } catch (\Throwable $e) {
+            trigger_error('ClicShopping: OrderTotal module "' . $value . '" failed to instantiate: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
+          }
         }
       }
     }
@@ -68,25 +76,41 @@ class OrderTotal
 
     if (is_array($this->modules)) {
       foreach ($this->modules as $value) {
-
-        if (str_contains($value, '\\')) {
-          $CLICSHOPPING_OTM = Registry::get('OrderTotal_' . str_replace('\\', '_', $value));
+        if (!str_contains($value, '\\')) {
+          continue;
         }
-        if ($CLICSHOPPING_OTM->enabled) {
-          $CLICSHOPPING_OTM->output = [];
-          $CLICSHOPPING_OTM->process();
 
-          for ($i = 0, $n = count($CLICSHOPPING_OTM->output); $i < $n; $i++) {
-            if (!is_null($CLICSHOPPING_OTM->output[$i]['title']) && !is_null($CLICSHOPPING_OTM->output[$i]['text'])) {
-              $order_total_array[] = [
-                'code' => $CLICSHOPPING_OTM->code,
-                'title' => $CLICSHOPPING_OTM->output[$i]['title'],
-                'text' => $CLICSHOPPING_OTM->output[$i]['text'],
-                'value' => $CLICSHOPPING_OTM->output[$i]['value'],
-                'sort_order' => $CLICSHOPPING_OTM->sort_order
-              ];
+        // Skip entries that were not registered in the constructor (orphaned
+        // install entry or a module that failed to instantiate). Reading an
+        // unregistered key would otherwise fall through to the previous
+        // iteration's stale module object.
+        $registryKey = 'OrderTotal_' . str_replace('\\', '_', $value);
+
+        if (!Registry::exists($registryKey)) {
+          continue;
+        }
+
+        $CLICSHOPPING_OTM = Registry::get($registryKey);
+
+        try {
+          if ($CLICSHOPPING_OTM->enabled) {
+            $CLICSHOPPING_OTM->output = [];
+            $CLICSHOPPING_OTM->process();
+
+            for ($i = 0, $n = count($CLICSHOPPING_OTM->output); $i < $n; $i++) {
+              if (!is_null($CLICSHOPPING_OTM->output[$i]['title']) && !is_null($CLICSHOPPING_OTM->output[$i]['text'])) {
+                $order_total_array[] = [
+                  'code' => $CLICSHOPPING_OTM->code,
+                  'title' => $CLICSHOPPING_OTM->output[$i]['title'],
+                  'text' => $CLICSHOPPING_OTM->output[$i]['text'],
+                  'value' => $CLICSHOPPING_OTM->output[$i]['value'],
+                  'sort_order' => $CLICSHOPPING_OTM->sort_order
+                ];
+              }
             }
           }
+        } catch (\Throwable $e) {
+          trigger_error('ClicShopping: OrderTotal module "' . $value . '" failed during process(): ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
         }
       }
     }
@@ -105,9 +129,17 @@ class OrderTotal
     $output_string = '';
     if (is_array($this->modules)) {
       foreach ($this->modules as $value) {
-        if (str_contains($value, '\\')) {
-          $CLICSHOPPING_OTM = Registry::get('OrderTotal_' . str_replace('\\', '_', $value));
+        if (!str_contains($value, '\\')) {
+          continue;
         }
+
+        $registryKey = 'OrderTotal_' . str_replace('\\', '_', $value);
+
+        if (!Registry::exists($registryKey)) {
+          continue;
+        }
+
+        $CLICSHOPPING_OTM = Registry::get($registryKey);
 
         if ($CLICSHOPPING_OTM->enabled) {
           $size = count($CLICSHOPPING_OTM->output);
