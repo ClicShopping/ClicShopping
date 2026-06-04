@@ -5,17 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="api improvement">
+      <change afterPath="$PROJECT_DIR$/sql_upgrade/update_4_31" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Orchestrator/SubIntentAnalyzer/UnifiedQueryAnalyzer.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Orchestrator/SubIntentAnalyzer/UnifiedQueryAnalyzer.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/PlanExecutor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/CoreAI/Planning/PlanExecutor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/AnalyticsAgent.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Agent/AnalyticsAgent.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Helper/Formatter/AnalyticsFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/Analytics/Helper/Formatter/AnalyticsFormatter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Executor/WebSearchExecutor.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Executor/WebSearchExecutor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Helper/Formatter/WebSearchFormatter.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Helper/Formatter/WebSearchFormatter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Tools/RagWebSearchEngine.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/Tools/RagWebSearchEngine.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/WebSearchFacade.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/DomainsAI/WebSearch/WebSearchFacade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/AI/Security/LlmGuardrails.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/AI/Security/LlmGuardrails.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/clicshopping.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Tools/MCP/clicshopping.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/version.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/version.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sql_upgrade/history/update_4_30.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,7 +34,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="version4.28" />
+        <entry key="$PROJECT_DIR$" value="version4.30" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -63,23 +57,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0" />
-      <entry key="S10" value="1.0" />
-      <entry key="S30" value="1.0" />
-      <entry key="S60" value="1.0000000000000007" />
-      <entry key="M2" value="1.0000000743603734" />
-      <entry key="M5" value="1.0052601063111901" />
-      <entry key="M10" value="1.21757240725778" />
-      <entry key="M15" value="1.7524542638181844" />
-      <entry key="M30" value="3.6023138305385007" />
-      <entry key="H1" value="5.83950206694313" />
-      <entry key="H2" value="7.599682520951722" />
-      <entry key="H4" value="8.7478282777589" />
-      <entry key="D1" value="67.56252225302707" />
-      <entry key="W1" value="235.5102449357988" />
+      <entry key="MS100" value="1.0000004542531957" />
+      <entry key="MS500" value="1.0538839715635997" />
+      <entry key="S2" value="1.4817987727927107" />
+      <entry key="S5" value="1.7506728991596594" />
+      <entry key="S10" value="1.9396305327201397" />
+      <entry key="S30" value="2.588496537176691" />
+      <entry key="S60" value="3.0954682679634953" />
+      <entry key="M2" value="3.483910596760606" />
+      <entry key="M5" value="3.8650717211193983" />
+      <entry key="M10" value="4.250300443749957" />
+      <entry key="M15" value="4.709061850882517" />
+      <entry key="M30" value="6.375174562216581" />
+      <entry key="H1" value="8.76115079905508" />
+      <entry key="H2" value="10.86655283558635" />
+      <entry key="H4" value="12.316228517841967" />
+      <entry key="D1" value="71.00104810267084" />
+      <entry key="W1" value="239.2299437171957" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -101,23 +95,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9330329915368074" />
-      <entry key="MS500" value="0.9862327044933592" />
-      <entry key="S2" value="0.9965402628278678" />
-      <entry key="S5" value="0.9986146661010289" />
-      <entry key="S10" value="0.9993070929904525" />
-      <entry key="S30" value="0.9997689776295918" />
-      <entry key="S60" value="0.9998844821426089" />
-      <entry key="M2" value="0.9999423137592116" />
-      <entry key="M5" value="1.0052368798195912" />
-      <entry key="M10" value="1.2175583380612176" />
-      <entry key="M15" value="1.752440761975758" />
-      <entry key="M30" value="3.6022999542645042" />
-      <entry key="H1" value="5.8394908214550565" />
-      <entry key="H2" value="7.599675203842354" />
-      <entry key="H4" value="8.74782364867089" />
-      <entry key="D1" value="67.56231765194221" />
-      <entry key="W1" value="235.51011910533072" />
+      <entry key="MS100" value="0.9265884492024953" />
+      <entry key="MS500" value="1.0370594378598237" />
+      <entry key="S2" value="1.474168476562781" />
+      <entry key="S5" value="1.7467601592397344" />
+      <entry key="S10" value="1.9373826292453153" />
+      <entry key="S30" value="2.5874466317409137" />
+      <entry key="S60" value="3.094831473664856" />
+      <entry key="M2" value="3.4835501892875254" />
+      <entry key="M5" value="3.8649129312633717" />
+      <entry key="M10" value="4.250215516200996" />
+      <entry key="M15" value="4.709001448412402" />
+      <entry key="M30" value="6.375137816314842" />
+      <entry key="H1" value="8.761127799741123" />
+      <entry key="H2" value="10.866539301012438" />
+      <entry key="H4" value="12.316220653205791" />
+      <entry key="D1" value="71.00084462188856" />
+      <entry key="W1" value="239.2298179539108" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -187,35 +181,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;version4.30&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;copyright&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "version4.31",
+    "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "copyright",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;mariadb&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mariadb"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/sql_upgrade/history" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/Core/ClicShopping/Schema/MariaDb" />
-      <recent name="$PROJECT_DIR$/sql_upgrade/history" />
     </key>
   </component>
   <component name="SharedIndexes">
