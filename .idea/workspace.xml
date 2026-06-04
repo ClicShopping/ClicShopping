@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="version4.31">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/ClicShopping/version.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/version.json" afterDir="false" />
     </list>
@@ -55,23 +54,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000000000000904" />
-      <entry key="MS500" value="1.0024619206904135" />
-      <entry key="S2" value="1.224759329265398" />
-      <entry key="S5" value="1.7345926881019489" />
-      <entry key="S10" value="3.05590149335823" />
-      <entry key="S30" value="8.247504928390809" />
-      <entry key="S60" value="11.65341995595875" />
-      <entry key="M2" value="14.02386929367819" />
-      <entry key="M5" value="15.727373547342147" />
-      <entry key="M10" value="16.349111455167694" />
-      <entry key="M15" value="16.562766732764857" />
-      <entry key="M30" value="16.779794082594062" />
-      <entry key="H1" value="16.92421134101474" />
-      <entry key="H2" value="17.698591630888078" />
-      <entry key="H4" value="20.543695811290156" />
-      <entry key="D1" value="75.05094193544554" />
-      <entry key="W1" value="250.9753402780172" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0001190221081016" />
+      <entry key="S5" value="1.038103496215446" />
+      <entry key="S10" value="1.2917887921145637" />
+      <entry key="S30" value="3.559952006619415" />
+      <entry key="S60" value="7.45811557950831" />
+      <entry key="M2" value="11.90226207745598" />
+      <entry key="M5" value="16.163397406792992" />
+      <entry key="M10" value="17.964743363937306" />
+      <entry key="M15" value="18.6157011839443" />
+      <entry key="M30" value="19.293812134058204" />
+      <entry key="H1" value="19.677554469312117" />
+      <entry key="H2" value="20.56943548152262" />
+      <entry key="H4" value="23.469056814957547" />
+      <entry key="D1" value="78.00666486889573" />
+      <entry key="W1" value="253.95433849927528" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -93,23 +92,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9395227492140951" />
-      <entry key="MS500" value="0.9900221655504773" />
-      <entry key="S2" value="1.2207085372071442" />
-      <entry key="S5" value="1.7319275853130067" />
-      <entry key="S10" value="3.0532422996097615" />
-      <entry key="S30" value="8.245340556136826" />
-      <entry key="S60" value="11.651979532524509" />
-      <entry key="M2" value="14.023030795418627" />
-      <entry key="M5" value="15.727005066107157" />
-      <entry key="M10" value="16.34892125783368" />
-      <entry key="M15" value="16.56263857595399" />
-      <entry key="M30" value="16.779729313611213" />
-      <entry key="H1" value="16.92417837247801" />
-      <entry key="H2" value="17.698571417967084" />
-      <entry key="H4" value="20.543679044558015" />
-      <entry key="D1" value="75.0507771479145" />
-      <entry key="W1" value="250.9752179388546" />
+      <entry key="MS100" value="0.8827029962906549" />
+      <entry key="MS500" value="0.9753554615276419" />
+      <entry key="S2" value="0.9938997728263634" />
+      <entry key="S5" value="1.0355654392242235" />
+      <entry key="S10" value="1.2903581966454076" />
+      <entry key="S30" value="3.5589216129987253" />
+      <entry key="S60" value="7.4571379737652395" />
+      <entry key="M2" value="11.901519599001674" />
+      <entry key="M5" value="16.16300550414359" />
+      <entry key="M10" value="17.964527607952505" />
+      <entry key="M15" value="18.615552596655508" />
+      <entry key="M30" value="19.29373536998564" />
+      <entry key="H1" value="19.677515047586102" />
+      <entry key="H2" value="20.569411948881356" />
+      <entry key="H4" value="23.469038375218254" />
+      <entry key="D1" value="78.00649988878463" />
+      <entry key="W1" value="253.95421612905972" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -169,6 +168,7 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpmailer/phpmailer" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php80" />
     </include_path>
   </component>
   <component name="ProjectColorInfo">{
@@ -187,7 +187,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "version4.301",
+    "git-widget-placeholder": "version4.31",
     "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
