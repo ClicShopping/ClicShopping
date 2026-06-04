@@ -72,6 +72,7 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpmailer/phpmailer" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php80" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.5">
