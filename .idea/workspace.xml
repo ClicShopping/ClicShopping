@@ -4,30 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="check error improvment">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/SEO/Sites/Shop/Pages/GoogleSitemap/Actions/GoogleSitemapBlogCategories.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/SEO/Sites/Shop/Pages/GoogleSitemap/Actions/GoogleSitemapBlogContent.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Dashboard/ActionInformation.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Dashboard/ActionInformation.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Dashboard/ActionStatsCountStatus.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Dashboard/ActionStatsCountStatus.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapCopyText.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapCopyText.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapLinkTab.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapLinkTab.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapTab.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapTab.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputClipBoardCopyText.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputClipBoardCopyText.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputGpt.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputGpt.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputJqvMap.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputJqvMap.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputSideBar.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputSideBar.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderMenu.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderMenu.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderMenuSideBar.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderMenuSideBar.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputBootstrap.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputBootstrap.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputBootstrapTable.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputBootstrapTable.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputCodeMirror.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputCodeMirror.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputJquery.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputJquery.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputJqvMap.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputJqvMap.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputRag.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputRag.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputSmartMenus.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputSmartMenus.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputSortable.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputSortable.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputStyleSheet.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputStyleSheet.php" afterDir="false" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="improvement">
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/Classes/ClicShoppingAdmin/Gdpr.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/Apps/Customers/Gdpr/Classes/ClicShoppingAdmin/Gdpr.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,23 +53,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0000167782212457" />
-      <entry key="S2" value="1.177291035759671" />
-      <entry key="S5" value="2.332014905699941" />
-      <entry key="S10" value="3.734608963193575" />
-      <entry key="S30" value="5.56903191672116" />
-      <entry key="S60" value="6.227678377946315" />
-      <entry key="M2" value="6.598241276511366" />
-      <entry key="M5" value="6.835356959298545" />
-      <entry key="M10" value="6.91700471381099" />
-      <entry key="M15" value="6.9445187801111485" />
-      <entry key="M30" value="6.972183546598642" />
-      <entry key="H1" value="6.986072750590704" />
-      <entry key="H2" value="6.993063753858056" />
-      <entry key="H4" value="7.044244824202276" />
-      <entry key="D1" value="66.30126263100003" />
-      <entry key="W1" value="233.37572769950214" />
+      <entry key="MS100" value="1.015372160748985" />
+      <entry key="MS500" value="1.7552732332093801" />
+      <entry key="S2" value="2.7064797108165326" />
+      <entry key="S5" value="4.021731880877995" />
+      <entry key="S10" value="5.508413832585182" />
+      <entry key="S30" value="7.462594252463923" />
+      <entry key="S60" value="8.168869461303704" />
+      <entry key="M2" value="8.567262278427878" />
+      <entry key="M5" value="8.822562059598603" />
+      <entry key="M10" value="8.910537802260063" />
+      <entry key="M15" value="8.940191898730014" />
+      <entry key="M30" value="8.970012259158453" />
+      <entry key="H1" value="8.98498513703041" />
+      <entry key="H2" value="8.992519451401026" />
+      <entry key="H4" value="9.04397092166908" />
+      <entry key="D1" value="68.30087992823954" />
+      <entry key="W1" value="235.37553726817518" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -113,23 +91,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9201876506248751" />
-      <entry key="MS500" value="0.98351859535833" />
-      <entry key="S2" value="1.1724605723193737" />
-      <entry key="S5" value="2.3283709452657346" />
-      <entry key="S10" value="3.7318114390751607" />
-      <entry key="S30" value="5.5677040286652995" />
-      <entry key="S60" value="6.226946905979583" />
-      <entry key="M2" value="6.597856893051268" />
-      <entry key="M5" value="6.835198482643717" />
-      <entry key="M10" value="6.916924666619712" />
-      <entry key="M15" value="6.944465233928478" />
-      <entry key="M30" value="6.972156682399178" />
-      <entry key="H1" value="6.986059295635992" />
-      <entry key="H2" value="6.993057020409849" />
-      <entry key="H4" value="7.04424094513791" />
-      <entry key="D1" value="66.3010529280978" />
-      <entry key="W1" value="233.3756014390687" />
+      <entry key="MS100" value="0.9667322166417646" />
+      <entry key="MS500" value="1.7326365169636833" />
+      <entry key="S2" value="2.696746682983555" />
+      <entry key="S5" value="4.015824156244677" />
+      <entry key="S10" value="5.504407116352165" />
+      <entry key="S30" value="7.460830690712393" />
+      <entry key="S60" value="8.16791412421993" />
+      <entry key="M2" value="8.566764246305397" />
+      <entry key="M5" value="8.8223576813697" />
+      <entry key="M10" value="8.910434727916002" />
+      <entry key="M15" value="8.940122983937385" />
+      <entry key="M30" value="8.969977702014882" />
+      <entry key="H1" value="8.984967833434103" />
+      <entry key="H2" value="8.992510793088432" />
+      <entry key="H4" value="9.043966080053897" />
+      <entry key="D1" value="68.30067006607995" />
+      <entry key="W1" value="235.3754109849228" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -312,15 +290,7 @@
       <workItem from="1780245161323" duration="646000" />
       <workItem from="1780251154059" duration="10957000" />
       <workItem from="1780515732986" duration="46000" />
-      <workItem from="1780554687560" duration="3390000" />
-    </task>
-    <task id="LOCAL-00058" summary="some fix">
-      <option name="closed" value="true" />
-      <created>1779376896922</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1779376896922</updated>
+      <workItem from="1780554687560" duration="4388000" />
     </task>
     <task id="LOCAL-00059" summary="some fix">
       <option name="closed" value="true" />
@@ -706,7 +676,15 @@
       <option name="project" value="LOCAL" />
       <updated>1780515759575</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="improvement">
+      <option name="closed" value="true" />
+      <created>1780559657395</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1780559657395</updated>
+    </task>
+    <option name="localTasksCounter" value="108" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -721,7 +699,6 @@
     <MESSAGE value="fix bug" />
     <MESSAGE value="update" />
     <MESSAGE value="pdf refactoring" />
-    <MESSAGE value="improvement" />
     <MESSAGE value="license" />
     <MESSAGE value="api update" />
     <MESSAGE value="little improvement" />
@@ -738,7 +715,8 @@
     <MESSAGE value="ai improvement" />
     <MESSAGE value="update ai dashboard" />
     <MESSAGE value="check error improvment" />
-    <option name="LAST_COMMIT_MESSAGE" value="check error improvment" />
+    <MESSAGE value="improvement" />
+    <option name="LAST_COMMIT_MESSAGE" value="improvement" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

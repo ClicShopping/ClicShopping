@@ -65,7 +65,8 @@ class Gdpr
 
   /**
    * Cron entry point shared by the admin (manual launch) and the Shop (external URL)
-   * cronjob hooks. Validates the cron code, records the run, then purges expired data.
+   * cronjob hooks. Validates the cron code, records the run, then purges expired data
+   * and anonymises the personal data still kept on orders past the legal retention.
    *
    * @return void
    */
@@ -86,6 +87,67 @@ class Gdpr
     }
 
     self::purgeExpired();
+    self::anonymizeExpiredOrders();
+  }
+
+  /**
+   * Anonymises the personal data snapshots kept on orders once they pass the legal
+   * accounting retention period (CLICSHOPPING_APP_CUSTOMERS_GDPR_GD_ORDERS_DATE days,
+   * default 10 years). Orders themselves are NOT deleted — only the PII columns are
+   * overwritten — so amounts, dates and product lines stay available for accounting.
+   *
+   * This is a separate, longer clock than the inactivity purge (GD_DATE): an order
+   * must be kept intact for the whole fiscal retention, then only the identity is
+   * scrubbed. Anonymisation is done per-row (column overwrite), never by touching the
+   * encryption key, which is shared and still required for AI and data restitution.
+   *
+   * @return int The number of orders anonymised.
+   */
+  public static function anonymizeExpiredOrders(): int
+  {
+    $CLICSHOPPING_Gdpr = Registry::get('Gdpr');
+
+    $retention_days = (defined('CLICSHOPPING_APP_CUSTOMERS_GDPR_GD_ORDERS_DATE') && (int)CLICSHOPPING_APP_CUSTOMERS_GDPR_GD_ORDERS_DATE > 0)
+      ? (int)CLICSHOPPING_APP_CUSTOMERS_GDPR_GD_ORDERS_DATE
+      : 3650;
+
+    // Cutoff in the PAST. A "+" here would target future orders and scrub everything.
+    $cutoff = date('Y-m-d H:i:s', strtotime('-' . $retention_days . ' days'));
+
+    $Qanonymize = $CLICSHOPPING_Gdpr->db->prepare("update :table_orders
+                                                      set customers_name = 'ANONYMIZED',
+                                                          customers_company = '',
+                                                          customers_street_address = '',
+                                                          customers_suburb = '',
+                                                          customers_postcode = '',
+                                                          customers_city = '',
+                                                          customers_state = '',
+                                                          customers_country = '',
+                                                          customers_telephone = '',
+                                                          customers_email_address = '',
+                                                          delivery_name = 'ANONYMIZED',
+                                                          delivery_company = '',
+                                                          delivery_street_address = '',
+                                                          delivery_suburb = '',
+                                                          delivery_postcode = '',
+                                                          delivery_city = '',
+                                                          delivery_state = '',
+                                                          delivery_country = '',
+                                                          billing_name = 'ANONYMIZED',
+                                                          billing_company = '',
+                                                          billing_street_address = '',
+                                                          billing_suburb = '',
+                                                          billing_postcode = '',
+                                                          billing_city = '',
+                                                          billing_state = '',
+                                                          billing_country = ''
+                                                      where date_purchased <= :cutoff
+                                                        and customers_name <> 'ANONYMIZED'
+                                                    ");
+    $Qanonymize->bindValue(':cutoff', $cutoff);
+    $Qanonymize->execute();
+
+    return $Qanonymize->rowCount();
   }
 
   /**
