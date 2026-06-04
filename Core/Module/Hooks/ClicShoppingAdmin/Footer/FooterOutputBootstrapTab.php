@@ -20,7 +20,7 @@ class FooterOutputBootstrapTab
    */
   public function display(): string|bool
   {
-    $params = $_SERVER['QUERY_STRING'];
+    $params = $_SERVER['QUERY_STRING'] ?? '';
 
     if (empty($params)) {
       return false;

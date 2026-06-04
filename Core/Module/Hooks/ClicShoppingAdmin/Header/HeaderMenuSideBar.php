@@ -65,7 +65,7 @@ class HeaderMenuSideBar
       $output .= '<div class="page-content content" id="content">';
       $output .= '<div id="page-content">';
       $output .= '<div class="sidebarCollapse float-start">';
-      $output .= '<button id="sidebarCollapse" type="button" class="btn btn-light bg-header"><i class="bi bi-layout-three-columns"></i></button>';
+      $output .= '<button id="sidebarCollapse" type="button" class="btn btn-light bg-header" aria-controls="sidebar" aria-expanded="true"><i class="bi bi-layout-three-columns"></i></button>';
       $output .= '</div>';
 
       $output .= '<div class="py-1 px-1 bg-header">';
@@ -73,14 +73,17 @@ class HeaderMenuSideBar
 
       $output .= (isset($_SESSION['admin']) ? '&nbsp;' . AdministratorAdmin::getUserAdmin() . '&nbsp; - &nbsp;<a href="' . CLICSHOPPING::link('login.php', 'action=logoff') . '" class="headerLink"><i class="bi bi-power" aria-hidden="true"></i></a>' : '');
 
-      if ($_SESSION['admin']['access'] === 1 && count(glob(ErrorHandler::getDirectory() . 'errors-*.txt', GLOB_NOSORT)) > 0) {
-        $output .= '&nbsp; - &nbsp; ' . HTML::link(CLICSHOPPING::link(null, 'A&Tools\EditLogError&LogError'), '<i class="bi bi-exclamation-circle-fill text-warning"></i>');
+      if ($_SESSION['admin']['access'] == 1 && count(glob(ErrorHandler::getDirectory() . 'phpmail_error-*.txt', GLOB_NOSORT)) > 0) {
+        $output .= '&nbsp; - &nbsp; ' . HTML::link(CLICSHOPPING::link(null, 'A&Tools\EditLogError&LogErrorPhpMailer'), '<i class="bi bi-exclamation-circle-fill text-warning" title="Mail"></i>');
+      }
+
+      if ($_SESSION['admin']['access'] == 1 && count(glob(ErrorHandler::getDirectory() . 'errors-*.txt', GLOB_NOSORT)) > 0) {
+        $output .= '&nbsp; - &nbsp; ' . HTML::link(CLICSHOPPING::link(null, 'A&Tools\EditLogError&LogError'), '<i class="bi bi-exclamation-circle-fill text-danger"></i>');
       }
 
       $output .= (isset($_SESSION['admin']) ? '&nbsp; - &nbsp; ' . HTML::link(CLICSHOPPING::link(null, 'A&Tools\WhosOnline&WhosOnline'), HTML::image($CLICSHOPPING_Template->getImageDirectory() . 'header/clients.gif', CLICSHOPPING::getDef('text_header_online_customers'), '16', '16')) : '');
       $output .= (isset($_SESSION['admin']) ? '&nbsp;&nbsp; ' . CLICSHOPPING::getDef('text_header_number_of_customers', ['online_customer' => WhosOnlineAdmin::getCountWhosOnline()]) . '&nbsp;&nbsp;' : '');
 
-      $output .= '</h6>';
       $output .= '</h6>';
       $output .= '</div>';
 
@@ -95,7 +98,7 @@ class HeaderMenuSideBar
       $output .= '</div>';
 
       $output .= '<div class="sidebarCollapse1 sidebarHide">';
-      $output .= '&nbsp;&nbsp;&nbsp;<button id="sidebarCollapse1" type="button" class="btn"><i class="bi bi-layout-three-columns"></i></button>';
+      $output .= '&nbsp;&nbsp;&nbsp;<button id="sidebarCollapse1" type="button" class="btn" aria-controls="sidebar" aria-expanded="true"><i class="bi bi-layout-three-columns"></i></button>';
       $output .= '</div>';
 
       $output .= '</div>';
@@ -143,7 +146,7 @@ class HeaderMenuSideBar
 //--------------------------------------------------------------
 // level 3
             if (isset($menu_sub[$second_level]['sub_menu'])) {
-              $output .= '<ul class="flex-column p-2 nav" id="submenu3sub1" aria-expanded="false"">';
+              $output .= '<ul class="flex-column p-2 nav" id="submenu3sub1" aria-expanded="false">';
               $z = 1;
 
               foreach ($menu_sub[$second_level]['sub_menu'] as $third_level) {
@@ -222,6 +225,15 @@ class HeaderMenuSideBar
       $output .= '</div>';
       $output .= '</div>';
       $output .= '</div>';
+
+      // Restore the collapsed state saved by the user before the browser paints,
+      // to avoid a visible flash of the open sidebar on reload. Desktop only:
+      // the "active" class has the opposite meaning under the mobile breakpoint.
+      // NB: the markup contains two elements sharing id="sidebar"; we must target
+      // every match (querySelectorAll) exactly like the footer toggle selector
+      // "#content, #sidebar", otherwise the two get out of sync and the inner menu
+      // container keeps the "active" offset and slides off-screen when reopened.
+      $output .= '<script>(function(){try{if(window.matchMedia("(min-width: 769px)").matches&&localStorage.getItem("clicAdminSidebarCollapsed")==="1"){document.querySelectorAll("#content, #sidebar").forEach(function(el){el.classList.add("active");});document.querySelectorAll("#sidebarCollapse, #sidebarCollapse1").forEach(function(b){b.setAttribute("aria-expanded","false");});}}catch(e){}})();</script>' . "\n";
       $output .= '<!-- Start left Menu  -->' . "\n";
     } else {
       return false;

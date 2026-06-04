@@ -4,7 +4,31 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="update ai dashboard" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="check error improvment">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/SEO/Sites/Shop/Pages/GoogleSitemap/Actions/GoogleSitemapBlogCategories.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/Apps/Marketing/SEO/Sites/Shop/Pages/GoogleSitemap/Actions/GoogleSitemapBlogContent.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Dashboard/ActionInformation.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Dashboard/ActionInformation.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Dashboard/ActionStatsCountStatus.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Dashboard/ActionStatsCountStatus.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapCopyText.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapCopyText.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapLinkTab.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapLinkTab.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapTab.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputBootstrapTab.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputClipBoardCopyText.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputClipBoardCopyText.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputGpt.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputGpt.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputJqvMap.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputJqvMap.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputSideBar.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Footer/FooterOutputSideBar.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderMenu.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderMenu.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderMenuSideBar.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderMenuSideBar.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputBootstrap.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputBootstrap.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputBootstrapTable.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputBootstrapTable.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputCodeMirror.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputCodeMirror.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputJquery.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputJquery.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputJqvMap.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputJqvMap.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputRag.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputRag.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputSmartMenus.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputSmartMenus.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputSortable.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputSortable.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputStyleSheet.php" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Module/Hooks/ClicShoppingAdmin/Header/HeaderOutputStyleSheet.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,7 +46,7 @@
     </execution>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7561" />
+    <option name="cachedIndexableFilesCount" value="7573" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -287,14 +311,8 @@
       <workItem from="1780224409266" duration="8000" />
       <workItem from="1780245161323" duration="646000" />
       <workItem from="1780251154059" duration="10957000" />
-    </task>
-    <task id="LOCAL-00057" summary="librairies updated">
-      <option name="closed" value="true" />
-      <created>1779374124240</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1779374124241</updated>
+      <workItem from="1780515732986" duration="46000" />
+      <workItem from="1780554687560" duration="3390000" />
     </task>
     <task id="LOCAL-00058" summary="some fix">
       <option name="closed" value="true" />
@@ -680,14 +698,21 @@
       <option name="project" value="LOCAL" />
       <updated>1780499868561</updated>
     </task>
-    <option name="localTasksCounter" value="106" />
+    <task id="LOCAL-00106" summary="check error improvment">
+      <option name="closed" value="true" />
+      <created>1780515759574</created>
+      <option name="number" value="00106" />
+      <option name="presentableId" value="LOCAL-00106" />
+      <option name="project" value="LOCAL" />
+      <updated>1780515759575</updated>
+    </task>
+    <option name="localTasksCounter" value="107" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="ratelimiter improvment" />
     <MESSAGE value="fix date" />
     <MESSAGE value="&#10;little improvement" />
     <MESSAGE value="fix sql error" />
@@ -712,7 +737,8 @@
     <MESSAGE value="some improvement" />
     <MESSAGE value="ai improvement" />
     <MESSAGE value="update ai dashboard" />
-    <option name="LAST_COMMIT_MESSAGE" value="update ai dashboard" />
+    <MESSAGE value="check error improvment" />
+    <option name="LAST_COMMIT_MESSAGE" value="check error improvment" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

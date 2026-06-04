@@ -9,7 +9,7 @@
 namespace ClicShopping\OM\Module\Hooks\ClicShoppingAdmin\Footer;
 
 /**
- * Class HeaderOutputBootstrapLinkTab
+ * Class FooterOutputBootstrapLinkTab
  *
  * This class is responsible for generating a JavaScript snippet that helps dynamically activate
  * Bootstrap navigation tabs based on certain conditions. It checks if specific criteria are
@@ -28,7 +28,7 @@ class FooterOutputBootstrapLinkTab
    */
   public function display(): string|bool
   {
-    $params = $_SERVER['QUERY_STRING'];
+    $params = $_SERVER['QUERY_STRING'] ?? '';
 
     if (empty($params)) {
       return false;

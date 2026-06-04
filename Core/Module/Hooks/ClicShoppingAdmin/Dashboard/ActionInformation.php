@@ -57,7 +57,7 @@ class ActionInformation
                     <div class="form-group row">
                       <label for="' . CLICSHOPPING::getDef('title_db_index') . '" class="col-9 col-form-label">' . CLICSHOPPING::getDef('title_db_index') . '</label>
                       <div class="col-md-3">
-                        ' . DB::sizeDb() . ' MB
+                        ' . Db::sizeDb() . ' MB
                       </div>
                     </div>
                   </div>

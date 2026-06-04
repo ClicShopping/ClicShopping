@@ -20,7 +20,7 @@ class HeaderOutputRag
   public function display(): string|bool
   {
     $output = '';
-    $status =  \defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') ?? 'False';
+    $status = \defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') ? CLICSHOPPING_APP_CHATGPT_RA_STATUS : 'False';
 
     if (isset($_SESSION['admin']) && $status == 'True') {
       $css_url = CLICSHOPPING::link('css/RAG/rag_dashboard.css');

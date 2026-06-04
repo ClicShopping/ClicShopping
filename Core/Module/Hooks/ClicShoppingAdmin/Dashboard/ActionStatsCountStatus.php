@@ -51,11 +51,14 @@ class ActionStatsCountStatus
     $CLICSHOPPING_Db = Registry::get('Db');
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    $QordersStatus = $CLICSHOPPING_Db->prepare('select orders_status_name,
-                                                         orders_status_id
-                                                  from :table_orders_status
-                                                  where language_id = :language_id
-                                                  order by orders_status_id
+    $QordersStatus = $CLICSHOPPING_Db->prepare('select os.orders_status_name as orders_status_name,
+                                                         os.orders_status_id as orders_status_id,
+                                                         count(o.orders_id) as count
+                                                  from :table_orders_status os
+                                                  inner join :table_orders o on o.orders_status = os.orders_status_id
+                                                  where os.language_id = :language_id
+                                                  group by os.orders_status_id, os.orders_status_name
+                                                  order by os.orders_status_id
                                                 ');
     $QordersStatus->bindint(':language_id', $CLICSHOPPING_Language->getId());
     $QordersStatus->execute();
@@ -63,21 +66,14 @@ class ActionStatsCountStatus
     $result = null;
 
     while ($QordersStatus->fetch()) {
-      $QordersPending = $CLICSHOPPING_Db->prepare('select count(orders_id) as count
-                                                     from :table_orders
-                                                     where orders_status = :orders_status
-                                                   ');
-      $QordersPending->bindInt(':orders_status', $QordersStatus->valueInt('orders_status_id'));
-      $QordersPending->execute();
-
-      if ($QordersPending->valueInt('count') > 0) {
+      if ($QordersStatus->valueInt('count') > 0) {
         $result[] = '
              <div class="row">
                 <div class="col-md-11 mainTable">
                   <div class="form-group row">
                     <label for="' . CLICSHOPPING::getDef($QordersStatus->value('orders_status_name')) . '" class="col-9 col-form-label"><a href="' . CLICSHOPPING::link(null, 'A&Orders\Orders&Orders', $QordersStatus->valueInt('orders_status_id')) . '">' . CLICSHOPPING::getDef($QordersStatus->value('orders_status_name')) . '</a></label>
                     <div class="col-md-3">
-                      ' . $QordersPending->valueInt('count') . '
+                      ' . $QordersStatus->valueInt('count') . '
                     </div>
                   </div>
                 </div>

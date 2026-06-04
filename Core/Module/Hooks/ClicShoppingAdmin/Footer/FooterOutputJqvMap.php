@@ -19,7 +19,7 @@ class FooterOutputJqvMap
    */
   public function display(): string|bool
   {
-    $params = $_SERVER['QUERY_STRING'];
+    $params = $_SERVER['QUERY_STRING'] ?? '';
 
     if (!empty($params)) {
       return false;
@@ -28,7 +28,7 @@ class FooterOutputJqvMap
     $output = '';
 
     if (isset($_SESSION['admin'])) {
-      $output .= '<! -- Start Jqvmap -->' . "\n";
+      $output .= '<!-- Start Jqvmap -->' . "\n";
       $output .= '<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jqvmap/1.5.1/jquery.vmap.min.js"></script>' . "\n";
       $output .= '<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jqvmap/1.5.1/maps/jquery.vmap.world.js"></script>' . "\n";
       $output .= '<!-- End Jqvmap  -->' . "\n";

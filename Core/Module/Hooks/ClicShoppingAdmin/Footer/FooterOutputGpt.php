@@ -8,10 +8,6 @@
 
 namespace ClicShopping\OM\Module\Hooks\ClicShoppingAdmin\Footer;
 
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-
-use function defined;
-
 class FooterOutputGpt
 {
   /**

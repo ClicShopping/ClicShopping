@@ -23,8 +23,16 @@ class FooterOutputSideBar
     if (isset($_SESSION['admin']) && VERTICAL_MENU_CONFIGURATION == 'true') {
       $output .= '<!--Sidebar Vertical Menu Script start-->' . "\n";
       $output .= '<script defer>' . "\n";
-      $output .= '$(function() {  $(\'#sidebarCollapse\').on(\'click\', function() { $(\'#sidebar, #content\').toggleClass(\'active\');  }); });' . "\n";
-      $output .= '$(function() {  $(\'#sidebarCollapse1\').on(\'click\', function() { $(\'#sidebar, #content\').toggleClass(\'active\');  }); });' . "\n";
+      $output .= '(function ($) {' . "\n";
+      $output .= '  const STORAGE_KEY = "clicAdminSidebarCollapsed";' . "\n";
+      $output .= '  const isDesktop = () => window.matchMedia("(min-width: 769px)").matches;' . "\n";
+      $output .= '  function toggleSidebar() {' . "\n";
+      $output .= '    const collapsed = $("#content, #sidebar").toggleClass("active").filter("#content").hasClass("active");' . "\n";
+      $output .= '    $("#sidebarCollapse, #sidebarCollapse1").attr("aria-expanded", (!collapsed).toString());' . "\n";
+      $output .= '    if (isDesktop()) { try { localStorage.setItem(STORAGE_KEY, collapsed ? "1" : "0"); } catch (e) {} }' . "\n";
+      $output .= '  }' . "\n";
+      $output .= '  $(function () { $("#sidebarCollapse, #sidebarCollapse1").on("click", toggleSidebar); });' . "\n";
+      $output .= '})(jQuery);' . "\n";
       $output .= '</script>' . "\n";
       $output .= '<!--End Sidebar Vertical Menu -->' . "\n";
     } else {

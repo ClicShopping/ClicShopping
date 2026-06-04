@@ -19,10 +19,10 @@ class HeaderOutputStyleSheet
    */
   public function display(): string
   {
-    $output = '<!-- Start SmatMenus -->' . "\n";
+    $output = '<!-- Start StyleSheet -->' . "\n";
     $output .= '<link rel="stylesheet" href="' . CLICSHOPPING::link('css/stylesheet.css') . '" media="screen, print">' . "\n";
     $output .= '<link rel="stylesheet" href="' . CLICSHOPPING::link('css/stylesheet_responsive.css') . '" media="screen, print">' . "\n";
-    $output .= '<!-- Start SmatMenus -->' . "\n";
+    $output .= '<!-- End StyleSheet -->' . "\n";
 
     return $output;
   }
