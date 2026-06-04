@@ -1,5 +1,5 @@
-version4.31
-
+version4.301
+add EncryptedColumnPattern
 
 ---------------
 version4.30

@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="api improvement">
-      <change afterPath="$PROJECT_DIR$/sql_upgrade/update_4_31" afterDir="false" />
+    <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="version4.31">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/ClicShopping/version.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/version.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql_upgrade/update_4_30.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sql_upgrade/history/update_4_30.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,7 +32,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="version4.30" />
+        <entry key="$PROJECT_DIR$" value="version4.31" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -57,23 +55,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000004542531957" />
-      <entry key="MS500" value="1.0538839715635997" />
-      <entry key="S2" value="1.4817987727927107" />
-      <entry key="S5" value="1.7506728991596594" />
-      <entry key="S10" value="1.9396305327201397" />
-      <entry key="S30" value="2.588496537176691" />
-      <entry key="S60" value="3.0954682679634953" />
-      <entry key="M2" value="3.483910596760606" />
-      <entry key="M5" value="3.8650717211193983" />
-      <entry key="M10" value="4.250300443749957" />
-      <entry key="M15" value="4.709061850882517" />
-      <entry key="M30" value="6.375174562216581" />
-      <entry key="H1" value="8.76115079905508" />
-      <entry key="H2" value="10.86655283558635" />
-      <entry key="H4" value="12.316228517841967" />
-      <entry key="D1" value="71.00104810267084" />
-      <entry key="W1" value="239.2299437171957" />
+      <entry key="MS100" value="1.0000000000000904" />
+      <entry key="MS500" value="1.0024619206904135" />
+      <entry key="S2" value="1.224759329265398" />
+      <entry key="S5" value="1.7345926881019489" />
+      <entry key="S10" value="3.05590149335823" />
+      <entry key="S30" value="8.247504928390809" />
+      <entry key="S60" value="11.65341995595875" />
+      <entry key="M2" value="14.02386929367819" />
+      <entry key="M5" value="15.727373547342147" />
+      <entry key="M10" value="16.349111455167694" />
+      <entry key="M15" value="16.562766732764857" />
+      <entry key="M30" value="16.779794082594062" />
+      <entry key="H1" value="16.92421134101474" />
+      <entry key="H2" value="17.698591630888078" />
+      <entry key="H4" value="20.543695811290156" />
+      <entry key="D1" value="75.05094193544554" />
+      <entry key="W1" value="250.9753402780172" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -95,23 +93,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9265884492024953" />
-      <entry key="MS500" value="1.0370594378598237" />
-      <entry key="S2" value="1.474168476562781" />
-      <entry key="S5" value="1.7467601592397344" />
-      <entry key="S10" value="1.9373826292453153" />
-      <entry key="S30" value="2.5874466317409137" />
-      <entry key="S60" value="3.094831473664856" />
-      <entry key="M2" value="3.4835501892875254" />
-      <entry key="M5" value="3.8649129312633717" />
-      <entry key="M10" value="4.250215516200996" />
-      <entry key="M15" value="4.709001448412402" />
-      <entry key="M30" value="6.375137816314842" />
-      <entry key="H1" value="8.761127799741123" />
-      <entry key="H2" value="10.866539301012438" />
-      <entry key="H4" value="12.316220653205791" />
-      <entry key="D1" value="71.00084462188856" />
-      <entry key="W1" value="239.2298179539108" />
+      <entry key="MS100" value="0.9395227492140951" />
+      <entry key="MS500" value="0.9900221655504773" />
+      <entry key="S2" value="1.2207085372071442" />
+      <entry key="S5" value="1.7319275853130067" />
+      <entry key="S10" value="3.0532422996097615" />
+      <entry key="S30" value="8.245340556136826" />
+      <entry key="S60" value="11.651979532524509" />
+      <entry key="M2" value="14.023030795418627" />
+      <entry key="M5" value="15.727005066107157" />
+      <entry key="M10" value="16.34892125783368" />
+      <entry key="M15" value="16.56263857595399" />
+      <entry key="M30" value="16.779729313611213" />
+      <entry key="H1" value="16.92417837247801" />
+      <entry key="H2" value="17.698571417967084" />
+      <entry key="H4" value="20.543679044558015" />
+      <entry key="D1" value="75.0507771479145" />
+      <entry key="W1" value="250.9752179388546" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -189,7 +187,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "version4.31",
+    "git-widget-placeholder": "version4.301",
     "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -295,14 +293,6 @@
       <workItem from="1780251154059" duration="10957000" />
       <workItem from="1780515732986" duration="46000" />
       <workItem from="1780554687560" duration="5634000" />
-    </task>
-    <task id="LOCAL-00061" summary="ratelimiter improvment">
-      <option name="closed" value="true" />
-      <created>1779388901229</created>
-      <option name="number" value="00061" />
-      <option name="presentableId" value="LOCAL-00061" />
-      <option name="project" value="LOCAL" />
-      <updated>1779388901229</updated>
     </task>
     <task id="LOCAL-00062" summary="fix date">
       <option name="closed" value="true" />
@@ -688,14 +678,21 @@
       <option name="project" value="LOCAL" />
       <updated>1780562869212</updated>
     </task>
-    <option name="localTasksCounter" value="110" />
+    <task id="LOCAL-00110" summary="version4.31">
+      <option name="closed" value="true" />
+      <created>1780564639421</created>
+      <option name="number" value="00110" />
+      <option name="presentableId" value="LOCAL-00110" />
+      <option name="project" value="LOCAL" />
+      <updated>1780564639421</updated>
+    </task>
+    <option name="localTasksCounter" value="111" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="&#10;little improvement" />
     <MESSAGE value="fix sql error" />
     <MESSAGE value="fix" />
     <MESSAGE value="new license" />
@@ -720,7 +717,8 @@
     <MESSAGE value="check error improvment" />
     <MESSAGE value="improvement" />
     <MESSAGE value="api improvement" />
-    <option name="LAST_COMMIT_MESSAGE" value="api improvement" />
+    <MESSAGE value="version4.31" />
+    <option name="LAST_COMMIT_MESSAGE" value="version4.31" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
