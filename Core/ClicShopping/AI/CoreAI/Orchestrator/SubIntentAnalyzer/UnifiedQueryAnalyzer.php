@@ -196,6 +196,10 @@ class UnifiedQueryAnalyzer
         // Use confidence scoring result to determine hybrid classification
         if ($confidenceResult['is_hybrid']) {
           // Determine sub-types from sub-query classifications.
+          // Trust the LLM (Pure LLM): if every sub-query is the same type (e.g. all 'analytics'
+          // type. Do NOT force ['analytics','semantic']: that hardcoded override injected a
+          // non-existent semantic part and routed structured attributes (SKU/EAN) to the semantic
+          // engine, contradicting the classifier.
           $types = array_map(function($c) { return $c['type']; }, $subQueryClassifications);
           $uniqueTypes = array_values(array_unique($types));
 

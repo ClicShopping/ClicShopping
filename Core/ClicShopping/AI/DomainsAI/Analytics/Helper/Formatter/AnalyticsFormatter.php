@@ -119,7 +119,8 @@ class AnalyticsFormatter extends AbstractFormatter
       }
     }
 
-    // Guardrails
+    // Guardrails — reuse the evaluation already computed by the validation gate (Volet B) when
+    // present, to avoid a second LLM call; otherwise compute it here (default path, gate OFF).
     $output .= "<div class='mt-2'></div>";
     $lmGuardrails = $results['validation_evaluation']
       ?? LlmGuardrails::checkGuardrails($question, Hash::displayDecryptedDataText($interpretationText));

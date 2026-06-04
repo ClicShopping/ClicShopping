@@ -429,6 +429,14 @@ class WebSearchExecutor
       ];
     }
 
+    // Ordering: when the user explicitly asks for a specific site (Mode C
+    // RAG WebSearch), those results MUST appear before the generic Google
+    // Shopping / Amazon catch-alls.
+    // Priority (lower = comes first):
+    //   rag_websearch   : 0  (the exact site the user asked for)
+    //   amazon          : 1  (domain-registered Mode D)
+    //   shopping_results: 2  (Mode B Google Shopping catch-all)
+    //   anything else   : 3
     if (!empty($merged['shopping_results'])) {
       $priorityMap = [
         'rag_websearch'    => 0,

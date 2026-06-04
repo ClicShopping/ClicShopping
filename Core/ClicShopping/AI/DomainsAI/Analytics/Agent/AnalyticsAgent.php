@@ -426,7 +426,12 @@ class AnalyticsAgent
         }
       }
 
-      // Validation gate (Volet B) — closes the agentic critique loop.
+      // Validation gate — closes the agentic critique loop.
+      // OFF by default (flag undefined) → no behaviour change. When enabled, an LLM evaluation
+      // (model-agnostic, no regex) scores the answer; ValidationGate turns the score into a
+      // decision. On 'regenerate' it re-runs generation ONCE with the critique as feedback, and
+      // keeps the new answer ONLY if it scores strictly better (never a regression). The final
+      // evaluation is attached to the response so the formatter reuses it (no double LLM call).
       if (AgentSystemConfig::isValidationGateEnabled()
           && is_string($interpretation) && $interpretation !== '') {
         try {

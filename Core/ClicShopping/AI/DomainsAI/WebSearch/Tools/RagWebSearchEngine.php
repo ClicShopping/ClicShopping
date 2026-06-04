@@ -479,6 +479,7 @@ class RagWebSearchEngine implements WebSearchInterface
       return null;
     }
 
+    // Patterns ordered from most specific (best precision) to most permissive.
     $patterns = [
       // -- EUR --
       // 1 099,99 € / 1.099,99 € / 1 099.99 € (thousand sep + 2 decimals + €)
@@ -506,6 +507,7 @@ class RagWebSearchEngine implements WebSearchInterface
 
     foreach ($patterns as $pattern) {
       if (preg_match($pattern, $text, $matches)) {
+        // Strip every kind of thousand separator from the integer part,
         $integerPart = preg_replace('/[\s\.\x{00A0}\x{202F},]/u', '', $matches[1]);
         $decimalPart = $matches[2] ?? '';
 

@@ -954,6 +954,8 @@ class PlanExecutor
         'metadata' => $searchResult['metadata'] ?? [],
       ];
 
+      // Forward fields injected by WebSearchResultEnhancers (registered by
+      // any Apps/AI/{Domain}/). The formatter consumes them by key name —
       if (!empty($searchResult['market_analysis'])) {
         $formatterData['market_analysis'] = $searchResult['market_analysis'];
       }

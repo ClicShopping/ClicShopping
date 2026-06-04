@@ -94,6 +94,10 @@ class WebSearchFormatter extends AbstractFormatter
 
     $output = "<div class='web-search-results'>";
     $output .= "<h4>" . $this->language->getDef('text_rag_web_search_results_for') . " " . htmlspecialchars($question) . "</h4>";
+
+    // Render domain-injected market analysis FIRST (above mode badges and
+    // product cards) so the user sees the answer to "is my price aligned
+    // with the market?"
     if (!empty($results['market_analysis']) && is_string($results['market_analysis'])) {
       $output .= $results['market_analysis'];
     }
@@ -535,6 +539,8 @@ class WebSearchFormatter extends AbstractFormatter
     }
 
     // Display mode badges
+    // Built-in agnostic modes (A/B/C/E) reuse their existing i18n keys.
+    // Any other mode (i.e. registered by an Apps/AI/{Domain}/) is rendered
     $badges = [];
     $registry = WebSearchEngineRegistry::getInstance();
 
@@ -641,7 +647,9 @@ class WebSearchFormatter extends AbstractFormatter
 
     $output = "<div class='shopping-results' style='margin: 20px 0;'>";
     $output .= '<h5 class="text-primary">🛒 ' . $this->language->getDef('text_rag_shopping_results') . ' (' . $count . ' ' . $this->language->getDef('text_rag_shopping_results_count') . ')' . $sourceLabel . '</h5>';
-    
+
+    // Informational notice when at least one result comes from Mode C
+    // (site-specific RAG WebSearch). 
     $hasRagResults = false;
     foreach ($shoppingResults as $r) {
       if (($r['data_source'] ?? '') === 'rag_websearch') {

@@ -32,6 +32,7 @@
     "Shop": {
       "mcp&ChatRagBI": "Sites\\Shop\\Pages\\ChatRagBI",
       "mcp&customersProducts": "Sites\\Shop\\Pages\\CustomersProducts",
+      "mcp&customerOrders": "Sites\\Shop\\Pages\\customerOrders",
       "mcp&AnthropicEcommerce": "Sites\\Shop\\Pages\\AnthropicEcommerce",
       "mcp&auth": "Sites\\Shop\\Pages\\Auth"
     }

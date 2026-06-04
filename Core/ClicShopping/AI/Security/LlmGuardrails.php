@@ -34,6 +34,16 @@ class LlmGuardrails
   private const CONFIDENCE_THRESHOLD = 0.75;
   private const MAX_RESPONSE_LENGTH = 8192;
   private const MIN_CONFIDENCE_SCORE = 0.6;
+
+  /**
+   * Maximum length (chars) of the response payload that we forward to the LLM
+   * critic for evaluation. Empirically, a Hybrid WebSearch answer can reach
+   * 130k+ chars of HTML cards — feeding that whole payload makes the critic
+   * spend ~20s on a 45k-token prompt for no quality gain (the criteria are
+   * relevance/accuracy/clarity, none of which need the HTML markup).
+   *
+   * Configurable via CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS.
+   */
   private const DEFAULT_CRITIC_RESULT_MAX_CHARS = 8000;
   private const WEIGHTS = [
     'structural' => 0.2,

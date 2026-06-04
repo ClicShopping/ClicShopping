@@ -207,6 +207,10 @@ class WebSearchFacade
       // Step 2: Execute search via dispatcher
       $results = $this->dispatcher->execute($routing, $query, $options);
 
+      // Each enhancer (e.g. Apps/AI/Ecommerce/.../Enhancers/MarketAnalysisEnhancer)
+      // can inject domain-specific fields into the result array — Core stays
+      // brand-free; the rendering layer (WebSearchFormatter) picks up these
+      // fields by key without knowing which domain produced them.
       $results = $this->applyResultEnhancers($results, $routing, $query, $options);
 
       // Step 3: Calculate execution time
