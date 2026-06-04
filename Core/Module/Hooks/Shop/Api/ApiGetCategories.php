@@ -80,22 +80,7 @@ class ApiGetCategories
    */
   public function execute()
   {
-    if (ApiSecurity::isLocalEnvironment()) {
-      ApiSecurity::logSecurityEvent('Local environment detected', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
-    }
-
-    if (!isset($_GET['token'])) {
-      ApiSecurity::logSecurityEvent('Missing token in categories request');
-      return false;
-    }
-
-    $token = ApiSecurity::checkToken($_GET['token']);
-    if (!$token) {
-      return false;
-    }
-
-    $clientIp = HTTP::getIpAddress();
-    if (!ApiSecurity::checkRateLimit($clientIp, 'get_categories')) {
+    if (ApiSecurity::authenticateRequest('get_categories') === false) {
       return false;
     }
 

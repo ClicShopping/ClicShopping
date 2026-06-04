@@ -104,24 +104,7 @@ class ApiDeleteCategories
   {
     if (isset($_GET['cId'], $_GET['categories'])) {
 
-    if (ApiSecurity::isLocalEnvironment()) {
-      ApiSecurity::logSecurityEvent('Local environment detected', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
-    }
-
-      if (!isset($_GET['token'])) {
-        ApiSecurity::logSecurityEvent('Missing token in categories request');
-        return false;
-      }
-
-      // Check if the token is valid
-      $token = ApiSecurity::checkToken($_GET['token']);
-      if (!$token) {
-        return false;
-      }
-
-      // Rate limiting
-      $clientIp = HTTP::getIpAddress();
-      if (!ApiSecurity::checkRateLimit($clientIp, 'delete_categories')) {
+      if (ApiSecurity::authenticateRequest('delete_categories') === false) {
         return false;
       }
 

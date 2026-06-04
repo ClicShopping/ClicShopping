@@ -90,28 +90,11 @@ class ApiGetProduct
    */
   public function execute()
   {
-    if (!isset($_GET['pId'], $_GET['token'])) {
+    if (!isset($_GET['pId'])) {
       return false;
     }
 
-    if (ApiSecurity::isLocalEnvironment()) {
-      ApiSecurity::logSecurityEvent('Local environment detected', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
-    }
-    
-    if (!isset($_GET['token'])) {
-      ApiSecurity::logSecurityEvent('Missing token in product request');
-      return false;
-    }
-
-    // Check if the token is valid
-    $token = ApiSecurity::checkToken($_GET['token']);
-    if (!$token) {
-      return false;
-    }
-
-    // Rate limiting
-    $clientIp = HTTP::getIpAddress();
-    if (!ApiSecurity::checkRateLimit($clientIp, 'get_product')) {
+    if (ApiSecurity::authenticateRequest('get_product') === false) {
       return false;
     }
 

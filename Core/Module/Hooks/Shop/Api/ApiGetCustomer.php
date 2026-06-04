@@ -87,25 +87,8 @@ class ApiGetCustomer
    */
   public function execute()
   {
-    if (isset($_GET['cId'], $_GET['token'])) {
-      if (ApiSecurity::isLocalEnvironment()) {
-        ApiSecurity::logSecurityEvent('Local environment detected', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
-      }
-
-      if (!isset($_GET['token'])) {
-        ApiSecurity::logSecurityEvent('Missing token in customer request');
-        return false;
-      }
-
-      // Check if the token is valid
-      $token = ApiSecurity::checkToken($_GET['token']);
-      if (!$token) {
-        return false;
-      }
-
-      // Rate limiting
-      $clientIp = HTTP::getIpAddress();
-      if (!ApiSecurity::checkRateLimit($clientIp, 'get_customer')) {
+    if (isset($_GET['cId'])) {
+      if (ApiSecurity::authenticateRequest('get_customer') === false) {
         return false;
       }
 

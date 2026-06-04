@@ -10,7 +10,6 @@
 namespace ClicShopping\OM\Module\Hooks\Shop\Api;
 
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\Api\Classes\Shop\ApiSecurity;
 
@@ -46,7 +45,6 @@ class ApiPutProduct
         'products_dimension_height' => isset($productData['products_dimension_height']) ? (float)$productData['products_dimension_height'] : null,
         'products_dimension_depth' => isset($productData['products_dimension_depth']) ? (float)$productData['products_dimension_depth'] : null,
         'products_volume' => isset($productData['products_volume']) ? (float)$productData['products_volume'] : null,
-        'products_last_modified' => 'now()'
       ];
 
       $updateFields = [];
@@ -60,7 +58,9 @@ class ApiPutProduct
       }
 
       if (!empty($updateFields)) {
-        $sql = 'UPDATE :table_products SET ' . implode(', ', $updateFields) . ' WHERE products_id = :products_id';
+        // products_last_modified must use the SQL NOW() function, not a bound
+        // parameter (a bound 'now()' is stored as the literal string).
+        $sql = 'UPDATE :table_products SET ' . implode(', ', $updateFields) . ', products_last_modified = now() WHERE products_id = :products_id';
         $updateParams[':products_id'] = $products_id;
 
         $Qupdate = $CLICSHOPPING_Db->prepare($sql);
@@ -137,32 +137,28 @@ class ApiPutProduct
           }
         }
 
-        // Supprimer les anciennes relations seulement si on a des catégories valides
-        if (!empty($validCategories)) {
-          $QdeleteCategories = $CLICSHOPPING_Db->prepare('DELETE FROM :table_products_to_categories WHERE products_id = :products_id');
-          $QdeleteCategories->bindInt(':products_id', $products_id);
-          $QdeleteCategories->execute();
+        // Replace semantics: when the request provides a "categories" array we
+        // clear the current relations and re-insert the validated ones. The DELETE
+        // is no longer gated on a non-empty set, so an explicit empty/whitelisted-out
+        // list correctly detaches the product (every removed id is logged above).
+        $QdeleteCategories = $CLICSHOPPING_Db->prepare('DELETE FROM :table_products_to_categories WHERE products_id = :products_id');
+        $QdeleteCategories->bindInt(':products_id', $products_id);
+        $QdeleteCategories->execute();
 
-          // Ajouter les nouvelles relations validées
-          foreach ($validCategories as $category_id) {
-            // Vérifier si la relation n'existe pas déjà (double sécurité)
-            $QcheckRelation = $CLICSHOPPING_Db->prepare('SELECT COUNT(*) as count FROM :table_products_to_categories WHERE products_id = :products_id AND categories_id = :categories_id');
-            $QcheckRelation->bindInt(':products_id', $products_id);
-            $QcheckRelation->bindInt(':categories_id', $category_id);
-            $QcheckRelation->execute();
-
-            if ($QcheckRelation->valueInt('count') === 0) {
-              $QinsertCategory = $CLICSHOPPING_Db->prepare('INSERT INTO :table_products_to_categories (products_id, categories_id) VALUES (:products_id, :categories_id)');
-              $QinsertCategory->bindInt(':products_id', $products_id);
-              $QinsertCategory->bindInt(':categories_id', $category_id);
-              $QinsertCategory->execute();
-            }
-          }
+        foreach ($validCategories as $category_id) {
+          $QinsertCategory = $CLICSHOPPING_Db->prepare('INSERT INTO :table_products_to_categories (products_id, categories_id) VALUES (:products_id, :categories_id)');
+          $QinsertCategory->bindInt(':products_id', $products_id);
+          $QinsertCategory->bindInt(':categories_id', $category_id);
+          $QinsertCategory->execute();
         }
       }
 
-      // Mise à jour des groupes de produits après l'enregistrement
-      self::updateProductGroups($products_id);
+      // Recompute per-customer-group prices only when the base price is part of this
+      // request. Previously this ran on every PUT and overwrote group prices even for
+      // a name/description/category-only update.
+      if (isset($productData['products_price'])) {
+        self::updateProductGroups($products_id);
+      }
 
       // Retourner les données mises à jour
       return self::getUpdatedProduct($products_id, $productData['language_id'] ?? 1);
@@ -251,7 +247,7 @@ class ApiPutProduct
   {
     $CLICSHOPPING_Db = Registry::get('Db');
 
-    $sql = 'SELECT p.*, pd.*
+    $sql = 'SELECT p.*, pd.products_name, pd.products_description, pd.language_id
             FROM :table_products p
             JOIN :table_products_description pd ON p.products_id = pd.products_id
             WHERE p.products_id = :products_id AND pd.language_id = :language_id';
@@ -342,26 +338,9 @@ class ApiPutProduct
    */
   public function execute()
   {
-    // Vérification des paramètres requis
-    if (!isset($_GET['token'])) {
-      ApiSecurity::logSecurityEvent('Missing token in product PUT request');
-      return false;
-    }
-
-    // Vérification de l'environnement local
-    if (ApiSecurity::isLocalEnvironment()) {
-      ApiSecurity::logSecurityEvent('Local environment detected', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
-    }
-
-    // Vérification du token
-    $token = ApiSecurity::checkToken($_GET['token']);
-    if (!$token) {
-      return false;
-    }
-
-    // Limitation du taux de requêtes
-    $clientIp = HTTP::getIpAddress();
-    if (!ApiSecurity::checkRateLimit($clientIp, 'put_product')) {
+    // Centralised authentication: token resolution (header or legacy query/body),
+    // rotation-aware validation and per-action rate limiting in one call.
+    if (ApiSecurity::authenticateRequest('put_product') === false) {
       return false;
     }
 
@@ -371,6 +350,13 @@ class ApiPutProduct
 
     if (json_last_error() !== JSON_ERROR_NONE) {
       ApiSecurity::logSecurityEvent('Invalid JSON in product PUT request', ['json_error' => json_last_error_msg()]);
+      return false;
+    }
+
+    // A valid-but-scalar body ("null", "5", "\"x\"") decodes without a JSON error
+    // yet is not an object; guard before it reaches the array-typed helpers.
+    if (!is_array($productData)) {
+      ApiSecurity::logSecurityEvent('Malformed payload in product PUT request (expected a JSON object)');
       return false;
     }
 

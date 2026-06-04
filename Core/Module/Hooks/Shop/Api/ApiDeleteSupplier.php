@@ -72,24 +72,7 @@ class ApiDeleteSupplier
   public function execute()
   {
     if (isset($_GET['sId'], $_GET['suppliers'])) {
-      if (ApiSecurity::isLocalEnvironment()) {
-        ApiSecurity::logSecurityEvent('Local environment detected', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
-      }
-
-      if (!isset($_GET['token'])) {
-        ApiSecurity::logSecurityEvent('Missing token in supplier request');
-        return false;
-      }
-
-      // Check if the token is valid
-      $token = ApiSecurity::checkToken($_GET['token']);
-      if (!$token) {
-        return false;
-      }
-
-      // Rate limiting
-      $clientIp = HTTP::getIpAddress();
-      if (!ApiSecurity::checkRateLimit($clientIp, 'delete_supplier')) {
+      if (ApiSecurity::authenticateRequest('delete_supplier') === false) {
         return false;
       }
 

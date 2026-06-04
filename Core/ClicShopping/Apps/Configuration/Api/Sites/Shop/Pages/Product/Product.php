@@ -110,16 +110,10 @@ class Product extends \ClicShopping\OM\Domains\PagesAbstract
       return $this->sendErrorResponse('Update not allowed');
     }
 
-    // Lire le corps PUT brut
-    $data = json_decode(file_get_contents('php://input'), true);
-
-    if (!isset($data['products_id'], $data['language_id'])) {
-      return $this->sendErrorResponse('Missing parameters');
-    }
-
-    // Effectue la mise à jour dans la base de données ici...
-
-    return $this->sendSuccessResponse('Product updated successfully');
+    // Route PUT to the real ApiPutProduct hook (same handler as POST). Payload
+    // reading and validation (products_id, JSON shape, etc.) are done inside the
+    // hook; returning a hardcoded success without running it was a no-op.
+    return $this->sendSuccessResponse(static::saveProducts());
   }
 
   /**

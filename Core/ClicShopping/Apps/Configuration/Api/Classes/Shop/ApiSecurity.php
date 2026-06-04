@@ -35,6 +35,48 @@ class ApiSecurity {
   }
 
   /**
+   * Single authentication entry point for the Shop Api hooks. Centralises the
+   * boilerplate previously duplicated in every Api* hook: resolve the token
+   * (header or legacy query/body), log local-environment access, validate the
+   * token (rotation-aware, via checkToken) and apply the per-action rate limit.
+   *
+   * checkToken() throws on failure; this wrapper converts that into a clean
+   * false so a hook can simply `return false` instead of leaking an exception.
+   *
+   * @param string $action Rate-limit bucket name (e.g. 'put_product', 'get_product').
+   * @return string|false The validated (possibly rotated) token, or false if the
+   *                       request is not authorised.
+   */
+  public static function authenticateRequest(string $action): string|false
+  {
+    $token = self::extractToken();
+
+    if ($token === '') {
+      self::logSecurityEvent('Missing token in API request', ['action' => $action]);
+
+      return false;
+    }
+
+    if (self::isLocalEnvironment()) {
+      self::logSecurityEvent('Local environment detected', ['ip' => HTTP::getIpAddress(), 'action' => $action]);
+    }
+
+    try {
+      $token = self::checkToken($token);
+    } catch (\Throwable $e) {
+      self::logSecurityEvent('Token validation failed', ['action' => $action, 'error' => $e->getMessage()]);
+
+      return false;
+    }
+
+    if (!self::checkRateLimit(HTTP::getIpAddress(), $action)) {
+      return false;
+    }
+
+    return $token;
+  }
+
+  /**
    * Emit the current session token + remaining TTL as response headers.
    *
    * Lets Api clients reuse the same session across requests instead of

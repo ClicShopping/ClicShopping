@@ -132,26 +132,9 @@ class ApiGetOrder
    */
   public function execute()
   {
-    if (isset($_GET['oId'], $_GET['token'])) {
+    if (isset($_GET['oId'])) {
 
-      if (ApiSecurity::isLocalEnvironment()) {
-        ApiSecurity::logSecurityEvent('Local environment detected', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
-      }
-
-      if (!isset($_GET['token'])) {
-        ApiSecurity::logSecurityEvent('Missing token in order request');
-        return false;
-      }
-
-      // Check if the token is valid
-      $token = ApiSecurity::checkToken($_GET['token']);
-      if (!$token) {
-        return false;
-      }
-
-      // Rate limiting
-      $clientIp = HTTP::getIpAddress();
-      if (!ApiSecurity::checkRateLimit($clientIp, 'get_order')) {
+      if (ApiSecurity::authenticateRequest('get_order') === false) {
         return false;
       }
 
