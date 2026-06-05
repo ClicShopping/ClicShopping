@@ -73,7 +73,8 @@ class fo_footer_multi_template
         $footer_tag .= '<script type="application/ld+json">' . "\n";
 
         $facebook_url  = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL')  ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL  : '';
-        $twitter_url   = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL')   ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL   : '';
+        $instagram_url = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_INSTAGRAM_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_INSTAGRAM_URL : '';
+        $whatsapp_number = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_WHATSAPP_URL') ? trim(MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_WHATSAPP_URL) : '';
         $pinterest_url = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL : '';
 
         $json = [
@@ -85,9 +86,10 @@ class fo_footer_multi_template
 
         $sameAs = [];
 
-        if (!empty($facebook_url))  $sameAs[] = $facebook_url;
-        if (!empty($twitter_url))   $sameAs[] = $twitter_url;
-        if (!empty($pinterest_url)) $sameAs[] = $pinterest_url;
+        if (!empty($facebook_url))   $sameAs[] = $facebook_url;
+        if (!empty($instagram_url))  $sameAs[] = $instagram_url;
+        if (!empty($whatsapp_number)) $sameAs[] = 'https://wa.me/' . $whatsapp_number;
+        if (!empty($pinterest_url))  $sameAs[] = $pinterest_url;
 
         if (!empty($sameAs)) {
           $json['sameAs'] = $sameAs;
@@ -105,26 +107,17 @@ class fo_footer_multi_template
 
         $filename = $CLICSHOPPING_Template->getTemplateModulesFilename($this->group . '/template_html/' . MODULE_FOOTER_MULTI_TEMPLATE);
 
-        $facebook = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL : '';
-        if (!empty($facebook)) {
-          $facebook_url = rawurldecode($facebook);
-        } else {
-          $facebook_url = '#';
-        }
+        // An icon is only shown in the template when !empty($url). Using '' instead
+        // of '#' as the fallback prevents rendering dead anchor links.
+        $fb = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL')  ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL  : '';
+        $ig = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_INSTAGRAM_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_INSTAGRAM_URL : '';
+        $pi = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL : '';
 
-        $twitter = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL : '';
-        if (!empty($twitter)) {
-          $twitter_url = rawurldecode(MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL);
-        } else {
-          $twitter_url = '#';
-        }
-
-        $pinterest = \defined('MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL') ? MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL : '';
-        if (!empty($pinterest)) {
-          $pinterest_url = rawurldecode($pinterest);
-        } else {
-          $pinterest_url = '#';
-        }
+        $facebook_url  = !empty($fb) ? rawurldecode($fb) : '';
+        $instagram_url = !empty($ig) ? rawurldecode($ig) : '';
+        $pinterest_url = !empty($pi) ? rawurldecode($pi) : '';
+        // WhatsApp stores a phone number, rendered as a https://wa.me/<number> link.
+        $whatsapp_url  = !empty($whatsapp_number) ? 'https://wa.me/' . $whatsapp_number : '';
 
         if (\defined('MODULES_HEADER_TAGS_MAILCHIMP_LIST_ANONYMOUS')) {
           if (!empty(MODULES_HEADER_TAGS_MAILCHIMP_LIST_ANONYMOUS)) {
@@ -242,8 +235,8 @@ class fo_footer_multi_template
     );
 
     $CLICSHOPPING_Db->save('configuration', [
-        'configuration_title' => 'Please indicate the Twitter URL ?',
-        'configuration_key' => 'MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL',
+        'configuration_title' => 'Please indicate the Instagram URL ?',
+        'configuration_key' => 'MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_INSTAGRAM_URL',
         'configuration_value' => '',
         'configuration_description' => '',
         'configuration_group_id' => '6',
@@ -254,7 +247,19 @@ class fo_footer_multi_template
     );
 
     $CLICSHOPPING_Db->save('configuration', [
-        'configuration_title' => 'Please indicate the Pointerest URL ?',
+        'configuration_title' => 'Please indicate the WhatsApp phone number ?',
+        'configuration_key' => 'MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_WHATSAPP_URL',
+        'configuration_value' => '',
+        'configuration_description' => 'Phone number only (e.g. 0663395227) — rendered as https://wa.me/NUMBER',
+        'configuration_group_id' => '6',
+        'sort_order' => '7',
+        'set_function' => '',
+        'date_added' => 'now()'
+      ]
+    );
+
+    $CLICSHOPPING_Db->save('configuration', [
+        'configuration_title' => 'Please indicate the Pinterest URL ?',
         'configuration_key' => 'MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL',
         'configuration_value' => '',
         'configuration_description' => '',
@@ -312,7 +317,8 @@ class fo_footer_multi_template
       'MODULE_FOOTER_MULTI_TEMPLATE_CONTENT_WIDTH',
       'MODULE_FOOTER_MULTI_TEMPLATE_MAILCHIMP_DISPLAY_PRIVACY',
       'MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_FACEBOOK_URL',
-      'MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_TWITTER_URL',
+      'MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_INSTAGRAM_URL',
+      'MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_WHATSAPP_URL',
       'MODULE_FOOTER_MULTI_TEMPLATE_CONTENTS_PINTEREST_URL',
       'MODULE_FOOTER_MULTI_TEMPLATE_SORT_ORDER',
       'MODULE_FOOTER_MULTI_TEMPLATE_DISPLAY_PAGES'

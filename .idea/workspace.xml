@@ -5,8 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="237046ab-2797-4d7a-b3f5-8235d048b27d" name="Changes" comment="version4.31">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/ClicShopping/version.json" beforeDir="false" afterPath="$PROJECT_DIR$/Core/ClicShopping/version.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/install/Db/clicshopping.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" beforeDir="false" afterPath="$PROJECT_DIR$/install/Db/clicshopping_en.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_footer/fo_footer_multi_template.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_footer/fo_footer_multi_template.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources/template/Default/modules/modules_footer/template_html/footer_multi_template.php" beforeDir="false" afterPath="$PROJECT_DIR$/sources/template/Default/modules/modules_footer/template_html/footer_multi_template.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,23 +58,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0001190221081016" />
-      <entry key="S5" value="1.038103496215446" />
-      <entry key="S10" value="1.2917887921145637" />
-      <entry key="S30" value="3.559952006619415" />
-      <entry key="S60" value="7.45811557950831" />
-      <entry key="M2" value="11.90226207745598" />
-      <entry key="M5" value="16.163397406792992" />
-      <entry key="M10" value="17.964743363937306" />
-      <entry key="M15" value="18.6157011839443" />
-      <entry key="M30" value="19.293812134058204" />
-      <entry key="H1" value="19.677554469312117" />
-      <entry key="H2" value="20.56943548152262" />
-      <entry key="H4" value="23.469056814957547" />
-      <entry key="D1" value="78.00666486889573" />
-      <entry key="W1" value="253.95433849927528" />
+      <entry key="MS100" value="1.0000009640918845" />
+      <entry key="MS500" value="1.096719575686884" />
+      <entry key="S2" value="2.176577503866005" />
+      <entry key="S5" value="3.1162943785047723" />
+      <entry key="S10" value="3.811780318936106" />
+      <entry key="S30" value="6.090168372648016" />
+      <entry key="S60" value="9.870524962933004" />
+      <entry key="M2" value="14.597161574564023" />
+      <entry key="M5" value="19.43832702637151" />
+      <entry key="M10" value="21.558492045779168" />
+      <entry key="M15" value="22.33426622842921" />
+      <entry key="M30" value="23.14755480247481" />
+      <entry key="H1" value="23.602867421548968" />
+      <entry key="H2" value="24.53040046936753" />
+      <entry key="H4" value="27.44683493796779" />
+      <entry key="D1" value="81.99450694807301" />
+      <entry key="W1" value="257.9487055112286" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -92,23 +96,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.8827029962906549" />
-      <entry key="MS500" value="0.9753554615276419" />
-      <entry key="S2" value="0.9938997728263634" />
-      <entry key="S5" value="1.0355654392242235" />
-      <entry key="S10" value="1.2903581966454076" />
-      <entry key="S30" value="3.5589216129987253" />
-      <entry key="S60" value="7.4571379737652395" />
-      <entry key="M2" value="11.901519599001674" />
-      <entry key="M5" value="16.16300550414359" />
-      <entry key="M10" value="17.964527607952505" />
-      <entry key="M15" value="18.615552596655508" />
-      <entry key="M30" value="19.29373536998564" />
-      <entry key="H1" value="19.677515047586102" />
-      <entry key="H2" value="20.569411948881356" />
-      <entry key="H4" value="23.469038375218254" />
-      <entry key="D1" value="78.00649988878463" />
-      <entry key="W1" value="253.95421612905972" />
+      <entry key="MS100" value="0.9726558560774924" />
+      <entry key="MS500" value="1.071870817063441" />
+      <entry key="S2" value="2.0819504156817947" />
+      <entry key="S5" value="3.04767854317323" />
+      <entry key="S10" value="3.7696618977925214" />
+      <entry key="S30" value="6.073618895674223" />
+      <entry key="S60" value="9.861529463348427" />
+      <entry key="M2" value="14.592321956535221" />
+      <entry key="M5" value="19.43626527678268" />
+      <entry key="M10" value="21.557434765032266" />
+      <entry key="M15" value="22.333555018793234" />
+      <entry key="M30" value="23.147195885794968" />
+      <entry key="H1" value="23.602686707043574" />
+      <entry key="H2" value="24.530306241282922" />
+      <entry key="H4" value="27.446781140882948" />
+      <entry key="D1" value="81.99433609710398" />
+      <entry key="W1" value="257.948582301359" />
     </decayedShown>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
@@ -179,30 +183,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "version4.31",
-    "last_opened_file_path": "/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "copyright",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;version4.31&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/oitsuki/workspace/clicshopping/clicshopping_V3/sql_upgrade/history&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;copyright&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mariadb"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mariadb&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/sql_upgrade/history" />
@@ -293,14 +297,7 @@
       <workItem from="1780251154059" duration="10957000" />
       <workItem from="1780515732986" duration="46000" />
       <workItem from="1780554687560" duration="5634000" />
-    </task>
-    <task id="LOCAL-00062" summary="fix date">
-      <option name="closed" value="true" />
-      <created>1779435667817</created>
-      <option name="number" value="00062" />
-      <option name="presentableId" value="LOCAL-00062" />
-      <option name="project" value="LOCAL" />
-      <updated>1779435667817</updated>
+      <workItem from="1780645380274" duration="36000" />
     </task>
     <task id="LOCAL-00063" summary="fix date">
       <option name="closed" value="true" />
@@ -686,7 +683,15 @@
       <option name="project" value="LOCAL" />
       <updated>1780564639421</updated>
     </task>
-    <option name="localTasksCounter" value="111" />
+    <task id="LOCAL-00111" summary="version4.31">
+      <option name="closed" value="true" />
+      <created>1780595194692</created>
+      <option name="number" value="00111" />
+      <option name="presentableId" value="LOCAL-00111" />
+      <option name="project" value="LOCAL" />
+      <updated>1780595194692</updated>
+    </task>
+    <option name="localTasksCounter" value="112" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

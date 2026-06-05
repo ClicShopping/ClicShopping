@@ -61,19 +61,25 @@ if (!empty($facebook_url)) {
         class="bi bi-facebook"></i></a></li>
   <?php
 }
-if (!empty($twitter_url)) {
+if (!empty($instagram_url)) {
   ?>
-  <li><a aria-label="Twitter" href="<?php echo $twitter_url; ?>" target="_blank" rel="noopener"><i
-        class="bi bi-twitter"></i></a></li>
+  <li><a aria-label="Instagram" href="<?php echo $instagram_url; ?>" target="_blank" rel="noopener"><i
+        class="bi bi-instagram"></i></a></li>
   <?php
 }
-/*
+if (!empty($whatsapp_url)) {
+  ?>
+  <li><a aria-label="WhatsApp" href="<?php echo $whatsapp_url; ?>" target="_blank" rel="noopener"><i
+        class="bi bi-whatsapp"></i></a></li>
+  <?php
+}
+
   if (!empty($pinterest_url)) {
-?>
-              <li><a aria-label="Pinterest" href="<?php echo $pinterest_url;?>" target="_blank" rel="noopener"><i class="bi bi-pinterest"></i></a></li>
-<?php
+    ?>
+    <li><a aria-label="Pinterest" href="<?php echo $pinterest_url; ?>" target="_blank" rel="noopener"><i
+          class="bi bi-pinterest"></i></a></li>
+    <?php
   }
-*/
 ?>
           </ul>
         </span>
