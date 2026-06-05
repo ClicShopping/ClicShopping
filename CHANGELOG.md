@@ -1,9 +1,5 @@
-version4.31
-
----------------
 version4.301
 add EncryptedColumnPattern
-- libraries updated
 
 ---------------
 version4.30
