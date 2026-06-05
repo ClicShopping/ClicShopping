@@ -1,3 +1,7 @@
+version4.302
+fix bug Schema
+
+---------------
 version4.301
 add EncryptedColumnPattern
 
