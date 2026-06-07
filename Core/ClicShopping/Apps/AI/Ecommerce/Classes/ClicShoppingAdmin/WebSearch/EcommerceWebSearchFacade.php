@@ -181,6 +181,7 @@ class EcommerceWebSearchFacade extends WebSearchFacade
         }
       }
 
+      // single source of truth, so the bounded set also flows to display and LLM synthesis.
       $priceBound = PriceBoundFilter::bound($internalPrice, $competitorPrices);
       $competitorPricesExcluded = (int)$priceBound['excluded'];
       $competitorPrices = $priceBound['kept'];

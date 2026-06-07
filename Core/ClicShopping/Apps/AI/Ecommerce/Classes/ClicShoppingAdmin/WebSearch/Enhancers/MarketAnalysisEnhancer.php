@@ -91,6 +91,8 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
             if ($internal === null || empty($internal['name']) || empty($internal['price'])) {
                 // No internal match → no comparison possible.
                 return $results;
+            }
+
             // Bound the DISPLAYED shopping results to ±BOUND_PERCENT of the catalog price so
             if (!empty($results['shopping_results']) && is_array($results['shopping_results'])) {
                 $cardBound = PriceBoundFilter::bound((float) $internal['price'], $results['shopping_results'], 'extracted_price');
