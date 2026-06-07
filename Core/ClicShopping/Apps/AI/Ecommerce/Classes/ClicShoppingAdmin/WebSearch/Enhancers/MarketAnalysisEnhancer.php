@@ -14,6 +14,7 @@ use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\InterfacesAI\WebSearchResultEnhancerInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\EcommerceWebSearchFacade;
+use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\Registry;
 
@@ -90,6 +91,10 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
             if ($internal === null || empty($internal['name']) || empty($internal['price'])) {
                 // No internal match → no comparison possible.
                 return $results;
+            // Bound the DISPLAYED shopping results to ±BOUND_PERCENT of the catalog price so
+            if (!empty($results['shopping_results']) && is_array($results['shopping_results'])) {
+                $cardBound = PriceBoundFilter::bound((float) $internal['price'], $results['shopping_results'], 'extracted_price');
+                $results['shopping_results'] = $cardBound['kept'];
             }
 
             // 2) Compute competitor stats (avg / min / max / status / etc.)
@@ -228,6 +233,15 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
                . htmlspecialchars($title) . " — "
                . "<span style='color:#212529;'>" . $productName . "</span></h5>";
         $html .= "<div class='market-analysis-body' style='color:#212529;'>{$synthesisHtml}</div>";
+
+        // Transparency: tell the user the comparison was bounded (accessories excluded).
+        $priceBound = $comparison['price_bound'] ?? [];
+        if ((int) ($priceBound['excluded'] ?? 0) > 0) {
+            $html .= "<div class='market-analysis-bound' style='margin-top:8px; font-size:0.85em; color:#856404; background:#fff3cd; border:1px solid #ffeeba; border-radius:4px; padding:6px 10px;'>⚠️ "
+                   . htmlspecialchars($language->getDef('text_rag_price_bound_notice', ['bound' => (int) ($priceBound['bound_percent'] ?? PriceBoundFilter::BOUND_PERCENT), 'excluded' => (int) $priceBound['excluded']]))
+                   . "</div>";
+        }
+
         $html .= "<div class='market-analysis-footer' style='margin-top:8px; font-size:0.8em; color:#6c757d;'>";
         $html .= "🤖 " . htmlspecialchars($aiNotice) . " — " . $count . " " . htmlspecialchars($sourcesLbl);
         $html .= "</div>";

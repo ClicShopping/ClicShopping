@@ -86,8 +86,8 @@ class ObfuscationPatterns
    * Leetspeak detection patterns (regex)
    */
   public static array $leetspeakPatterns = [
-    '/[0-9].*[a-z].*[0-9]/i',  // Numbers mixed with letters
-    '/[13470]/',                // Common leet numbers
+    '/[a-z][0134579]/i',        // letter immediately followed by a leet digit (l3, s5)
+    '/[0134579][a-z]/i',        // leet digit immediately followed by a letter (3t, 4g)
     '/\$/',                     // $ for s
     '/@/',                      // @ for a
     '/[a-z][0-9][a-z]/i'       // Letter-number-letter pattern

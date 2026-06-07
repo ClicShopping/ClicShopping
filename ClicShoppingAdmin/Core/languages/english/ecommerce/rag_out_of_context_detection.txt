@@ -33,6 +33,9 @@ OUT-OF-CONTEXT queries that should be REDIRECTED to WEB_SEARCH (business-related
 - Marketing research (advertising costs, social media trends, SEO best practices)
 - Innovation research (new technologies, emerging markets, startup trends)
 - Any business/marketing/innovation/prospection question requiring external data NOT in the database
+- EXPLICIT EXTERNAL SOURCE: any query that NAMES an external source/engine to obtain prices, price trends, availability or comparison. These form one set: Google Shopping, Google Trends, Google / "the web", a marketplace (Amazon, eBay, Cdiscount…), OR a competitor / competitor-price database. This INCLUDES a plain price or trend lookup such as "price of <product> on Google Shopping", "<product> price trend on Google Trends", or "<product> price on Amazon".
+
+⚠️ EXTERNAL-SOURCE OVERRIDE (decisive): when the query explicitly names any source in that external set, suggested_action MUST be "redirect_to_web_search" — NEVER "reject" and NEVER "allow" — EVEN for a simple price lookup AND EVEN IF that product exists in your internal catalog. Naming an external source is an explicit request for external data, so it always routes to web search.
 
 Query to analyze:
 {{query}}
@@ -117,6 +120,15 @@ Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_categ
 
 Query: "iPhone price on Amazon"
 Response: {"is_out_of_context": false, "context_relevance": 0.8, "detected_category": "ecommerce", "confidence": 0.85, "explanation": "Query about competitor pricing, relevant for business intelligence and market research", "suggested_action": "redirect_to_web_search"}
+
+Query: "What is the price of samsung galaxy s26 on google shopping"
+Response: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Price of a product on an explicitly named external source (Google Shopping) - external data, route to web search", "suggested_action": "redirect_to_web_search"}
+
+Query: "What is the price of samsung galaxy s25 on google shopping"
+Response: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Explicit external source (Google Shopping): even if the product exists in the catalog, the requested price is external - redirect_to_web_search, never reject", "suggested_action": "redirect_to_web_search"}
+
+Query: "price trend of samsung galaxy s26 on google shopping"
+Response: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Price trend on a named external source - external data, redirect_to_web_search", "suggested_action": "redirect_to_web_search"}
 
 Query: "ventes de nos chaussures de running ce trimestre"
 Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Internal sales data for our own products - answerable from the database", "suggested_action": "allow"}

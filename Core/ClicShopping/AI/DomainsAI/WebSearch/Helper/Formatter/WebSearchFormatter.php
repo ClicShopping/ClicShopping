@@ -17,6 +17,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters\AbstractFormatter;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
+use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
 
 /**
  * WebSearchFormatter - Formats web search query results
@@ -564,7 +565,7 @@ class WebSearchFormatter extends AbstractFormatter
       }
 
       if (!empty($badge)) {
-        $badges[] = "<span class='badge badge-primary' style='margin-right: 10px; padding: 8px 12px; font-size: 0.9em;'>{$badge}</span>";
+        $badges[] = "<span class='badge bg-primary' style='background-color: #0d6efd; color: #ffffff; border-radius: 4px; margin-right: 10px; padding: 8px 12px; font-size: 0.9em;'>{$badge}</span>";
       }
     }
 
@@ -951,6 +952,15 @@ class WebSearchFormatter extends AbstractFormatter
       $currency = $product['currency'] ?? '€';
       $productTitle = $product['product_title'] ?? '';
       
+      $priceBound = PriceBoundFilter::bound($internalPrice !== null ? (float)$internalPrice : null, $externalPrices);
+      $externalPrices = $priceBound['kept'];
+      $priceBoundNotice = '';
+      if ($priceBound['excluded'] > 0) {
+        $priceBoundNotice = "<div class='price-bound-notice' style='font-size:0.85em; color:#856404; background:#fff3cd; border:1px solid #ffeeba; border-radius:4px; padding:6px 10px; margin:8px 0;'>⚠️ "
+          . $this->language->getDef('text_rag_price_bound_notice', ['bound' => $priceBound['bound_percent'], 'excluded' => (int)$priceBound['excluded']])
+          . "</div>";
+      }
+
       // Collect all prices for best/worst detection
       $allPrices = [];
       if ($internalPrice !== null) {
@@ -971,6 +981,7 @@ class WebSearchFormatter extends AbstractFormatter
         $output .= htmlspecialchars($productTitle);
         $output .= "</div>";
       }
+      $output .= $priceBoundNotice;
 
       // Internal price (from SQL/database)
       if ($internalPrice !== null) {

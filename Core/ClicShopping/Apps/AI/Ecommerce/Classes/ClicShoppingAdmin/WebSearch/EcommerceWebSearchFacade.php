@@ -20,6 +20,7 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch;
 
 use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
+use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
 use ClicShopping\AI\InterfacesAI\EntityHelperInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\IntentAnalyzer;
 use ClicShopping\AI\Security\SecurityLogger;
@@ -180,6 +181,10 @@ class EcommerceWebSearchFacade extends WebSearchFacade
         }
       }
 
+      $priceBound = PriceBoundFilter::bound($internalPrice, $competitorPrices);
+      $competitorPricesExcluded = (int)$priceBound['excluded'];
+      $competitorPrices = $priceBound['kept'];
+
       if (empty($competitorPrices)) {
         return [
           'success' => true,
@@ -288,6 +293,10 @@ class EcommerceWebSearchFacade extends WebSearchFacade
         'recommendation' => $recommendation,
         'competitive_status' => $competitiveStatus,
         'total_competitors_found' => count($competitorPrices),
+        'price_bound' => [
+          'excluded' => $competitorPricesExcluded,
+          'bound_percent' => $priceBound['bound_percent'],
+        ],
       ];
 
     } catch (\Exception $e) {

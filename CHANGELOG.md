@@ -1,9 +1,13 @@
 version4.31
+- AI framework improvement
+- Miscellaneous improvement
+- fix / bug resolution
+- libraries updated
 
 ---------------
-
 version4.301
 add EncryptedColumnPattern
+- libraries updated
 
 ---------------
 version4.30

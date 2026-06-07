@@ -15,6 +15,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
 
 /**
  * ComplexQueryFormatter - Formats complex query results (multi-step queries)
@@ -469,30 +470,39 @@ class ComplexQueryFormatter extends AbstractFormatter
     $output = "<div class='price-comparison' style='margin: 10px 0; padding: 10px; background-color: white; border-radius: 4px; border: 1px solid #28a745;'>";
     $output .= "<strong>💰 " . $this->language->getDef('text_rag_complex_query_price_comparison') . "</strong>";
 
-    if (isset($priceComparison['internal_price'])) {
-      $internalPrice = $priceComparison['internal_price'];
+    $internalPrice = isset($priceComparison['internal_price']) ? (float)$priceComparison['internal_price'] : null;
+    if ($internalPrice !== null) {
       $currency = $priceComparison['currency'] ?? '€';
       $output .= "<div style='margin-top: 8px;'>";
-      $output .= "<strong>" . $this->language->getDef('text_rag_complex_query_our_price') . "</strong> " . number_format((float)$internalPrice, 2, ',', ' ') . " {$currency}";
+      $output .= "<strong>" . $this->language->getDef('text_rag_complex_query_our_price') . "</strong> " . number_format($internalPrice, 2, ',', ' ') . " {$currency}";
       $output .= "</div>";
     }
 
     if (isset($priceComparison['external_prices']) && is_array($priceComparison['external_prices'])) {
+      // Bound competitor listings to ±PriceBoundFilter::BOUND_PERCENT of the catalog price so
+      // accessories (cases, chargers…) do not skew the comparison / average.
+      $priceBound = PriceBoundFilter::bound($internalPrice, $priceComparison['external_prices']);
+
       $output .= "<div style='margin-top: 8px;'>";
       $output .= "<strong>" . $this->language->getDef('text_rag_complex_query_competitor_prices') . "</strong>";
       $output .= "<ul style='margin: 5px 0;'>";
-      
-      foreach ($priceComparison['external_prices'] as $competitor) {
+
+      foreach ($priceBound['kept'] as $competitor) {
         $name = $competitor['name'] ?? 'Unknown';
         $price = $competitor['price'] ?? 0;
         $currency = $competitor['currency'] ?? '€';
-        
+
         $output .= "<li>";
         $output .= htmlspecialchars($name) . " : " . number_format((float)$price, 2, ',', ' ') . " {$currency}";
         $output .= "</li>";
       }
-      
+
       $output .= "</ul>";
+      if ($priceBound['excluded'] > 0) {
+        $output .= "<div style='font-size:0.85em; color:#856404; background:#fff3cd; border:1px solid #ffeeba; border-radius:4px; padding:6px 10px; margin:6px 0;'>⚠️ "
+          . $this->language->getDef('text_rag_price_bound_notice', ['bound' => $priceBound['bound_percent'], 'excluded' => (int)$priceBound['excluded']])
+          . "</div>";
+      }
       $output .= "</div>";
     }
 

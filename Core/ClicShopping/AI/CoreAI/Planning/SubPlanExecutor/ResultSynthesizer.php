@@ -242,7 +242,6 @@ class ResultSynthesizer
    */
   public function aggregateStepResults(array $stepResults): array
   {
-    // CRITICAL DEBUG: Log entry and step count
     if($this->debug) {
       error_log("[ResultSynthesizer::aggregateStepResults] CALLED with " . count($stepResults) . " step results");
     }
@@ -347,7 +346,19 @@ class ResultSynthesizer
       }
 
       // Aggregate text responses (dedupe identical content)
-      $addTextResponse = function (string $text) use (&$aggregated, &$textResponseHashes): void {
+      $addTextResponse = function (mixed $text) use (&$aggregated, &$textResponseHashes): void {
+        if (is_array($text)) {
+          $parts = [];
+          array_walk_recursive($text, static function ($value) use (&$parts): void {
+            if (is_scalar($value)) {
+              $parts[] = (string)$value;
+            }
+          });
+          $text = implode("\n", $parts);
+        }
+        if (!is_string($text)) {
+          return;
+        }
         $normalized = trim($text);
         if ($normalized === '') {
           return;

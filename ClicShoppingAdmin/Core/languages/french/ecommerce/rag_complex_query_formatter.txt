@@ -19,6 +19,7 @@ text_rag_complex_query_external_links = Liens externes :
 text_rag_complex_query_result_number = Résultat
 
 text_rag_complex_query_price_comparison = Comparaison de prix
+text_rag_price_bound_notice = Comparaison limitée à ±{{bound}}% du prix catalogue ({{excluded}} résultat(s) exclu(s) comme accessoires probables).
 text_rag_complex_query_our_price = Notre prix :
 text_rag_complex_query_competitor_prices = Prix concurrents :
 text_rag_complex_query_recommendation = Recommandation :

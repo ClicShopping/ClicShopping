@@ -1,6 +1,7 @@
 text_rag_web_search_results_for = Web search results for:
 text_rag_web_search_summary = Summary:
 text_rag_web_search_price_comparison = Price Comparison
+text_rag_price_bound_notice = Comparison limited to ±{{bound}}% of the catalog price ({{excluded}} result(s) excluded as likely accessories).
 text_rag_web_search_our_price = Our price:
 text_rag_web_search_competitor_prices = Competitor prices:
 text_rag_web_search_see = See

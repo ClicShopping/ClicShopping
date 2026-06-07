@@ -45,8 +45,11 @@ BEFORE ANY CODE GENERATION:
 3. Check hooks before any other approach (see Scalability Priority Order below).
 
 BEFORE DELIVERY:
-Self-Correction Protocol: verify output against the Absolute Prohibitions list
-in ALL SEVEN .md files. If a conflict is found, prioritize AGENTS.md and SECURITY.md.
+1. Self-Correction Protocol: verify output against the Absolute Prohibitions list
+   in ALL SEVEN .md files. If a conflict is found, prioritize AGENTS.md and SECURITY.md.
+2. Documentation Sync: if the change alters structure, behavior, file/class locations,
+   routes or constants described in any .md, UPDATE those .md to match reality
+   (see "Documentation Synchronization" below). Outdated docs = bug.
 ```
 
 ---
@@ -114,6 +117,30 @@ configuration files before creating a new one.
 
 ---
 
+## Documentation Synchronization
+
+This project is large and documentation lives in many `.md` files (root, `Agents/`,
+and per-feature docs such as `Core/ClicShopping/AI/*REFACTORING*.md`, class indexes,
+`.kiro/specs/`, README). Docs that no longer match the code are a **source of bugs and
+wasted time** — treat documentation as part of every deliverable.
+
+```
+1. BEFORE writing a doc/section: search the existing .md files first. The rule, table,
+   path or component may already be documented — UPDATE it in place, never duplicate
+   (duplication is how desynchronization starts).
+2. AFTER any change that alters reality (structure, file/class location, route, constant,
+   behavior, table/schema), update EVERY .md that describes it so it reflects the
+   current state. Prefer one authoritative location per fact.
+3. Document the CURRENT state only. Roadmap / future work goes in dedicated
+   EVOLUTION/BACKLOG docs, not in the descriptive docs.
+4. If two docs disagree, AGENTS.md and SECURITY.md win; reconcile the others.
+5. An outdated .md is a bug — fix it in the same change, not "later".
+```
+> Rationale: with this many files, a small undocumented move silently breaks the mental
+> model of the next agent/human. Keeping `.md` in sync is mandatory, not optional.
+
+---
+
 ## Absolute Prohibitions
 
 ```
@@ -150,6 +177,8 @@ configuration files before creating a new one.
   in Core.
 ✗ Legacy osCommerce / ClicShopping V2/V3 patterns
 ✗ Inventing configuration constant names — always verify existing constants first
+✗ Leaving any .md documentation out of sync after a structural/behavioral change
+✗ Duplicating a rule/section across .md files instead of updating the single source
 ```
 
 ---

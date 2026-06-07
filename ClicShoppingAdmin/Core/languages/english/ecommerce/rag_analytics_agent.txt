@@ -1100,6 +1100,23 @@ COMPARISON QUERIES:
 
 
 
+MULTI-PERIOD TEMPORAL QUERIES (one row per period - day, week, month, quarter, year):
+
+When a query asks for a metric across SEVERAL periods (e.g. "in 2025 and 2026", "per quarter", "by month this year", "per day last week"), return ONE ROW PER PERIOD using GROUP BY on the period expression. NEVER chain contradictory single-date conditions for different periods (e.g. do not write "date >= X AND date = Y").
+
+Pick the GROUP BY expression by granularity (keep it in SELECT aliased, and ORDER BY it):
+- by year: GROUP BY YEAR(date)
+- by quarter: GROUP BY YEAR(date), QUARTER(date)
+- by month: GROUP BY YEAR(date), MONTH(date)
+- by week: GROUP BY YEARWEEK(date, 1)
+- by day: GROUP BY DATE(date)
+Use the aggregate that matches the wording: AVG for "average", SUM for "total"/"turnover"/"revenue", COUNT for "how many".
+
+- 'average turnover in 2025 and 2026' → SELECT YEAR(o.date_purchased) AS period, AVG(ot.value) AS average_turnover FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) IN (2025, 2026) GROUP BY YEAR(o.date_purchased) ORDER BY period
+- 'total revenue per quarter in 2025' → SELECT QUARTER(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = 2025 GROUP BY QUARTER(o.date_purchased) ORDER BY period
+- 'revenue by month this year' → SELECT MONTH(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = YEAR(CURDATE()) GROUP BY MONTH(o.date_purchased) ORDER BY period
+- 'orders per day last week' → SELECT DATE(o.date_purchased) AS period, COUNT(*) AS total_orders FROM clic_orders o WHERE o.date_purchased >= CURDATE() - INTERVAL 7 DAY GROUP BY DATE(o.date_purchased) ORDER BY period
+
 text_sql_format_instructions = SQL FORMAT RULES:
 1. ONLY respond with the SQL query, no explanatory text before or after
 2. Always use template variable {{language_id}} where language filter is required

@@ -48,7 +48,8 @@ use ClicShopping\AI\Config\DomainKeywordsLoader;
  * 3. Execute each sub-task with appropriate domain agent
  * 4. Synthesize results from all sub-tasks
  * 5. Force result type to 'hybrid' for consistency
- * 6. Store result in memory for conversation continuity
+ * 6. Return the result; conversation-memory storage is handled by the Orchestrator/MemoryManager,
+ *    not by this handler
  *
  * Web Search Detection:
  * - MUST use LLM-based classification via IntentAnalyzer
@@ -123,7 +124,8 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
    * 2. Executing each sub-task with appropriate domain agent
    * 3. Synthesizing results from all sub-tasks
    * 4. Forcing result type to 'hybrid' for consistency
-   * 5. Storing result in memory for conversation continuity
+   * 5. Returning the result (conversation-memory storage is handled by the
+   *    Orchestrator/MemoryManager, not by this handler)
    *
    * This method replaces the deprecated HybridQueryProcessor and provides
    * a cleaner separation of concerns between orchestration and execution.

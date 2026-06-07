@@ -29,6 +29,9 @@ Requêtes HORS CONTEXTE qui doivent être REDIRIGÉES vers WEB_SEARCH (liées au
 - Recherche marketing (coûts publicitaires, tendances réseaux sociaux, meilleures pratiques SEO)
 - Recherche innovation (nouvelles technologies, marchés émergents, tendances startups)
 - Toute question business/marketing/innovation/prospection nécessitant des données externes NON dans la base de données
+- SOURCE EXTERNE EXPLICITE : toute requête qui NOMME une source/un moteur externe pour obtenir des prix, des tendances de prix, la disponibilité ou une comparaison. Elles forment un ensemble : Google Shopping, Google Trends, Google / « le web », une marketplace (Amazon, eBay, Cdiscount…), OU une base concurrents / base de prix concurrents. Cela INCLUT une simple demande de prix ou de tendance comme « prix de <produit> sur Google Shopping », « tendance du prix <produit> sur Google Trends » ou « prix <produit> sur Amazon ».
+
+⚠️ RÈGLE PRIORITAIRE SOURCE EXTERNE (décisive) : lorsque la requête nomme explicitement une de ces sources externes, suggested_action DOIT être « redirect_to_web_search » — JAMAIS « reject » ni « allow » — MÊME pour une simple demande de prix ET MÊME SI le produit existe dans votre catalogue interne. Nommer une source externe est une demande explicite de données externes ; cela route toujours vers le web search.
 
 Requête à analyser:
 {{query}}
@@ -87,6 +90,18 @@ Réponse: {"is_out_of_context": false, "context_relevance": 1.0, "detected_categ
 
 Requête: "prix iPhone sur Amazon"
 Réponse: {"is_out_of_context": false, "context_relevance": 0.8, "detected_category": "ecommerce", "confidence": 0.85, "explanation": "Requête sur les prix concurrents, pertinent pour la business intelligence et l'étude de marché", "suggested_action": "redirect_to_web_search"}
+
+Requête: "Quel est le prix samsung galaxy s26 sur google shopping"
+Réponse: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Prix d'un produit sur une source externe explicite (Google Shopping) — donnée externe, route vers le web search", "suggested_action": "redirect_to_web_search"}
+
+Requête: "Quel est le prix samsung galaxy s25 sur google shopping"
+Réponse: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Source externe explicite (Google Shopping) : même si le produit existe en base, le prix demandé est externe — redirect_to_web_search, jamais reject", "suggested_action": "redirect_to_web_search"}
+
+Requête: "Quel est la tendance du prix samsung galaxy s26 sur google shopping"
+Réponse: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Tendance de prix sur une source externe nommée — donnée externe, redirect_to_web_search", "suggested_action": "redirect_to_web_search"}
+
+Requête: "donne moi les prix sur google shopping du iphone 17 pro"
+Réponse: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Prix sur Google Shopping (source externe explicite) — redirect_to_web_search", "suggested_action": "redirect_to_web_search"}
 
 Requête: "quelles sont les dernières tendances e-commerce?"
 Réponse: {"is_out_of_context": false, "context_relevance": 0.8, "detected_category": "ecommerce", "confidence": 0.90, "explanation": "Requête sur les tendances e-commerce, pertinent pour la stratégie business et l'innovation", "suggested_action": "redirect_to_web_search"}
