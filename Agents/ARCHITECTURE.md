@@ -1,4 +1,4 @@
-# ARCHITECTURE.md — ClicShopping AI v4.20+
+# ARCHITECTURE.md — ClicShopping AI v4.30+
 
 > Core architecture of the PHP framework.
 > Agent rules: `AGENTS.md` | AI concepts: `AI_SYSTEM.md` | AI directories: `AI_ARCHITECTURE.md`

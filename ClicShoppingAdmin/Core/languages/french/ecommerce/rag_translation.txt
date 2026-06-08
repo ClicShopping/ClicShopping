@@ -66,6 +66,15 @@ Quelle que soit la langue source (chinois, français, etc.) ou les termes anglai
   -> TOUJOURS utiliser : "expenses"
   -> INTERDIT : "costs", "charges", "fees", "dépenses", "支出", "Kosten", etc.
 
+- CONCEPT : VOLUME DE VENTES / UNITÉS VENDUES (COMBIEN d'articles ont été vendus — une QUANTITÉ, PAS de l'argent)
+  -> Ceci est DISTINCT du revenue. "vendus" / "sold" désigne le NOMBRE d'unités vendues, jamais un total monétaire.
+  -> TOUJOURS garder la base quantité : utiliser "best-selling" / "least-selling" / "most sold" / "units sold".
+  -> ⚠️ NE JAMAIS mapper "vendus" / "sold" / "best-selling" vers "revenue" :
+     * "les produits les plus vendus" -> "the best-selling products" (PAS "products with the highest revenue")
+     * "les produits les moins vendus" -> "the least-selling products" (PAS "products with the lowest revenue")
+     * "le produit le plus vendu" -> "the best-selling product" (PAS "the product with the most revenue")
+  -> Utiliser "revenue" UNIQUEMENT si l'entrée nomme EXPLICITEMENT un total monétaire (revenue, turnover, chiffre d'affaires, montant des ventes, €/$). "vendus" seul désigne le volume, pas l'argent.
+
 ## CONTEXTE E-COMMERCE (CRITIQUE)
 Ceci est un système e-commerce. Utiliser la terminologie e-commerce :
 - Transaction d'achat → "order" (PAS "command")

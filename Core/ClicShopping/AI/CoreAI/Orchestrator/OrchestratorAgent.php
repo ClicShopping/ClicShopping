@@ -16,7 +16,6 @@ use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\Config\AgentTechnicalConfig;
 use ClicShopping\AI\Config\AutonomousConfig;
 use ClicShopping\AI\Config\DomainConfig;
-use ClicShopping\AI\Config\DomainFields;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\CoreAI\Memory\WorkingMemory;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticCoordinator;
@@ -30,6 +29,20 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\OutOfContextGate;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\PlanStepValidator;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\LowConfidenceReasoningFallback;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\IntentTranslationValidator;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\OrchestrationContext;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\StageRegistry;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\PrepareExecutionScopeStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ResolveConversationContextStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ResolveQueryAgainstContextStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\AnalyzeIntentStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\RouteHybridEarlyStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ReasoningFallbackStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\RouteHybridDuplicateStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\CreatePlanStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\RunPlanStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\BuildResponseStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\StoreMemoryStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\FinalizeStage;
 use ClicShopping\AI\CoreAI\Planning\PlanExecutor;
 use ClicShopping\AI\CoreAI\Planning\TaskPlanner;
 use ClicShopping\AI\CoreAI\Query\QueryAnalyzer;
@@ -44,7 +57,6 @@ use ClicShopping\AI\Infrastructure\Monitoring\AlertManager;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
 use ClicShopping\AI\Infrastructure\Monitoring\MonitoringAgent;
 use ClicShopping\AI\Infrastructure\Monitoring\PerformanceTracker;
-use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\Validation\HallucinationDetector;
@@ -74,7 +86,7 @@ class OrchestratorAgent
   
   public TaskPlanner $taskPlanner;
   public PlanExecutor $planExecutor;
-  private ?MetricsCollector $collector = null;
+  private MetricsCollector $collector;
   private SecurityLogger $securityLogger;
   private RateLimit $rateLimit;
   private string $userId;
@@ -83,9 +95,8 @@ class OrchestratorAgent
   private int $entityId;
   private $db;
   private string $prefix;
-  private ?MultiDBRAGManager $ragManager = null;
   private array $executionStats = [];
-  private ?ConversationMemory $conversationMemory = null;
+  private ConversationMemory $conversationMemory;
   private WorkingMemory $workingMemory;
   private CorrectionAgent $correctionAgent;
   private ValidationAgent $validationAgent;
@@ -94,7 +105,7 @@ class OrchestratorAgent
   private MonitoringAgent $monitoring;
   private AlertManager $alertManager;
   private LlmResponseProcessor $responseProcessor;
-  private ?ResponseProcessorComponent $responseProcessorComponent = null;
+  private ResponseProcessorComponent $responseProcessorComponent;
 
   private IntentAnalyzer $intentAnalyzer;
   private EntityExtractor $entityExtractor;
@@ -103,20 +114,22 @@ class OrchestratorAgent
   private DomainRouter $domainRouter;
   private QueryProcessor $queryProcessor;
   private HybridQueryHandler $hybridQueryHandler;
-  private ActorCriticCoordinator $actorCriticCoordinator;
+  private ?ActorCriticCoordinator $actorCriticCoordinator = null;
   private ActorCriticInitializer $actorCriticInitializer;
   private ObjectiveManager $objectiveManager;
   private ComplexQueryHandler $complexQueryHandler;
-  private ?QueryAnalyzer $queryAnalyzer = null;
-  private ?ErrorHandlerComponent $errorHandler = null;
-  private ?MemoryManagerComponent $memoryManager = null;
-  private ?AutonomousConfig $autonomousConfig = null;
+  private QueryAnalyzer $queryAnalyzer;
+  private ErrorHandlerComponent $errorHandler;
+  private MemoryManagerComponent $memoryManager;
+  private AutonomousConfig $autonomousConfig;
   private HallucinationDetector $hallucinationDetector;
   private OutOfContextGate $outOfContextGate;
   private PlanStepValidator $planStepValidator;
   private LowConfidenceReasoningFallback $lowConfidenceReasoningFallback;
   private IntentTranslationValidator $intentTranslationValidator;
   private PerformanceTracker $performanceTracker;
+
+  private StageRegistry $stageRegistry;
 
   // Diagnostics - delegated to DiagnosticManager
 
@@ -204,14 +217,12 @@ class OrchestratorAgent
     $this->planExecutor = new PlanExecutor($this->taskPlanner, $this->userId, $this->languageId);
 
     // This enables contextual query resolution in AnalyticsAgent (e.g., "give me this sku")
-    if ($this->conversationMemory !== null) {
-      $this->planExecutor->setConversationMemory($this->conversationMemory);
-      
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent("ConversationMemory set on PlanExecutor", 'info');
-      }
+    $this->planExecutor->setConversationMemory($this->conversationMemory);
+    if ($this->debug) {
+      $this->securityLogger->logSecurityEvent("ConversationMemory set on PlanExecutor", 'info');
     }
-    
+
+
     $this->correctionAgent = new CorrectionAgent($this->userId, $this->languageId);
     $this->validationAgent = new ValidationAgent($this->userId);
 
@@ -230,7 +241,7 @@ class OrchestratorAgent
   private function initializeSubComponents(): void
   {
     // Existing SubOrchestrator components
-    $this->intentAnalyzer = new IntentAnalyzer($this->conversationMemory ?? null, $this->debug);
+    $this->intentAnalyzer = new IntentAnalyzer($this->conversationMemory, $this->debug);
     $this->entityExtractor = new EntityExtractor($this->debug);
     $this->diagnosticManager = new DiagnosticManager($this->executionStats, $this->debug);
     $this->contextManager = new ContextManager($this->debug, [
@@ -290,6 +301,86 @@ class OrchestratorAgent
 
     $this->actorCriticCoordinator = new ActorCriticCoordinator();
     $this->complexQueryHandler = new ComplexQueryHandler($this->debug);
+
+    // Phase 4: build the ordered orchestration stage pipeline. Core registers the agnostic stages;
+    // a domain App may insert its own stage via the registry without touching the core orchestrator.
+    // Built here (after all stage dependencies are initialized) and only iterated at request time.
+    $this->stageRegistry = (new StageRegistry())
+      ->append(new PrepareExecutionScopeStage($this->workingMemory, $this->performanceTracker))
+      ->append(new ResolveConversationContextStage(
+        $this->queryProcessor,
+        $this->workingMemory,
+        $this->performanceTracker,
+        $this->conversationMemory,
+        $this->securityLogger,
+        $this->debug
+      ))
+      ->append(new ResolveQueryAgainstContextStage(
+        $this->queryProcessor,
+        $this->workingMemory
+      ))
+      ->append(new AnalyzeIntentStage(
+        $this->intentAnalyzer,
+        $this->workingMemory,
+        $this->intentTranslationValidator,
+        $this->complexQueryHandler,
+        $this->securityLogger,
+        $this->debug
+      ))
+      ->append(new RouteHybridEarlyStage(
+        $this->queryProcessor,
+        $this->hybridQueryHandler,
+        $this->securityLogger,
+        $this->debug
+      ))
+      ->append(new ReasoningFallbackStage(
+        $this->lowConfidenceReasoningFallback,
+        $this->queryProcessor,
+        $this->securityLogger,
+        $this->debug
+      ))
+      ->append(new RouteHybridDuplicateStage(
+        $this->domainRouter,
+        $this->hybridQueryHandler,
+        $this->securityLogger,
+        $this->debug
+      ))
+      ->append(new CreatePlanStage(
+        $this->taskPlanner,
+        $this->workingMemory,
+        $this->planStepValidator,
+        $this->securityLogger,
+        $this->debug
+      ))
+      ->append(new RunPlanStage(
+        $this->planExecutor,
+        $this->entityExtractor,
+        $this->workingMemory,
+        $this->securityLogger,
+        $this->debug
+      ))
+      ->append(new BuildResponseStage(
+        $this->responseProcessorComponent,
+        $this->responseProcessor
+      ))
+      ->append(new StoreMemoryStage(
+        $this->performanceTracker,
+        $this->memoryManager,
+        $this->queryAnalyzer,
+        $this->responseProcessorComponent,
+        $this->userId,
+        $this->languageId,
+        $this->securityLogger,
+        $this->debug
+      ))
+      ->append(new FinalizeStage(
+        $this->workingMemory,
+        $this->collector,
+        $this->performanceTracker,
+        $this->securityLogger,
+        $this->debug,
+        $this->executionStats
+      ));
 
     if ($this->debug) {
       error_log('---------------------------');
@@ -796,452 +887,6 @@ class OrchestratorAgent
     }
   }
 
-  /**
-   * Prepare the execution scope for a full-orchestration run.
-   *
-   * Allocates a unique execution id, opens the matching working-memory scope and seeds it with
-   * the original query and start time, then records the post-init performance marker. The id is
-   * used downstream as the plan id and to tear the scope down. Pure extract-method.
-   *
-   * @param string $query Original user query
-   * @param float $startTime Start time for performance tracking
-   * @return string The allocated execution id
-   */
-  private function prepareExecutionScope(string $query, float $startTime): string
-  {
-    $executionId = 'exec_' . uniqid('', true);
-    $this->workingMemory->enterScope($executionId);
-
-    $this->workingMemory->set('original_query', $query);
-    $this->workingMemory->set('start_time', $startTime);
-
-    $this->performanceTracker->addMarker('after_init'); // Phase 5: Use PerformanceTracker
-
-    return $executionId;
-  }
-
-  /**
-   * Apply a conversation-context switch when the context decision requests it.
-   *
-   * When clear_conversation_context is set, clears the last tracked entity from the conversation
-   * memory (best-effort: failures are logged, not propagated) and logs the switch in debug mode.
-   * No-op otherwise. Pure extract-method, side-effects only.
-   *
-   * @param array $contextDecision Context decision from QueryProcessor::processContextDecision()
-   * @return void
-   */
-  private function handleContextSwitch(array $contextDecision): void
-  {
-    if ($contextDecision['clear_conversation_context'] && $this->conversationMemory) {
-      try {
-        // Clear the last entity from EntityTracker
-        $this->conversationMemory->clearLastEntity();
-
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "TASK 2.18: Cleared last entity due to context switch: " . $contextDecision['reason'],
-            'info'
-          );
-        }
-      } catch (\Exception $e) {
-        $this->securityLogger->logSecurityEvent(
-          "Error clearing last entity: " . $e->getMessage(),
-          'warning'
-        );
-      }
-    }
-
-    if ($this->debug && $contextDecision['clear_conversation_context']) {
-      $this->securityLogger->logSecurityEvent(
-        "Context cleared: " . $contextDecision['reason'],
-        'info'
-      );
-    }
-  }
-
-  /**
-   * Debug-log the complexity-detection outcome for a complex query.
-   *
-   * Emits the detection details and the resulting hybrid-route decision. No-op unless debug is on
-   * and the query was detected as complex. Pure extract-method, logging side-effect only.
-   *
-   * @param array $complexityDetection Result of ComplexQueryHandler::detectComplexQuery()
-   * @return void
-   */
-  private function logComplexityDetection(array $complexityDetection): void
-  {
-    if ($this->debug && $complexityDetection['is_complex']) {
-      $this->securityLogger->logStructured(
-        'info',
-        'OrchestratorAgent',
-        'detectComplexQuery',
-        [
-          'query_type' => $complexityDetection['query_type'],
-          'complexity_score' => $complexityDetection['complexity_score'],
-          'detected_patterns' => $complexityDetection['detected_patterns'],
-          'requires_web_search' => $complexityDetection['requires_web_search'],
-          'estimated_sub_queries' => $complexityDetection['estimated_sub_queries']
-        ]
-      );
-
-      $this->securityLogger->logStructured(
-        'info',
-        'OrchestratorAgent',
-        'PATH_DECISION.route',
-        [
-          'route' => 'hybrid',
-          'reason' => 'complex_query_detected',
-          'requires_web_search' => $complexityDetection['requires_web_search'],
-        ]
-      );
-    }
-  }
-
-  /**
-   * Route hybrid-intent queries to the hybrid handler before the ReasoningAgent stage.
-   *
-   * Hybrid queries must be processed by the hybrid handler (not the ReasoningAgent, which would
-   * misclassify them as analytics — see 2026-02-08 routing fix). Returns the hybrid orchestration
-   * result when the intent type is 'hybrid', or null to let the caller continue the standard flow.
-   * Pure extract-method: behaviour identical to the previously inline early-return block.
-   *
-   * @param string $queryToProcess Resolved query to process
-   * @param array $intent Intent produced by analyzeIntent()
-   * @param string $intentType Resolved intent type
-   * @param array $context Conversation context
-   * @param array $contextAnalysis Query-context relation analysis
-   * @param float $startTime Start time for performance tracking
-   * @return array|null Hybrid orchestration result, or null when the query is not hybrid
-   */
-  private function routeHybridEarly(string $queryToProcess, array $intent, string $intentType, array $context, array $contextAnalysis, float $startTime): ?array
-  {
-    if ($intentType !== 'hybrid') {
-      return null;
-    }
-
-    if ($this->debug) {
-      $this->securityLogger->logStructured(
-        'info',
-        'OrchestratorAgent',
-        'HYBRID_ROUTING_EARLY',
-        [
-          'action' => 'routing_to_hybrid_processor_before_reasoning',
-          'intent_type' => $intentType,
-          'is_hybrid_flag' => $intent['is_hybrid'] ?? false,
-          'confidence' => $intent['confidence'] ?? 0,
-          'query' => substr($queryToProcess, 0, 100),
-          'note' => 'Hybrid routing moved before ReasoningAgent to fix routing bug'
-        ]
-      );
-    }
-
-    // Get enriched context for hybrid processing
-    $enrichedContext = $this->queryProcessor->buildEnrichedContext($context, $contextAnalysis);
-
-    // Handle hybrid queries with Actor-Critic approach
-    // directly in OrchestratorAgent using TaskPlanner and specialized executors
-    return $this->handleHybridQuery($queryToProcess, $intent, $enrichedContext, $startTime);
-  }
-
-  /**
-   * Resolve the effective intent type, defaulting to a safe 'semantic' classification.
-   *
-   * Reads 'type' then 'query_type' from the intent, defaulting to 'semantic' (safer than
-   * 'analytics') when neither is present, and logs that fallback. Pure extract-method:
-   * behaviour identical to the previously inline block.
-   *
-   * @param array $intent Intent produced by analyzeIntent()
-   * @param string $queryToProcess Resolved query to process (for log context)
-   * @return string The resolved intent type
-   */
-  private function resolveIntentType(array $intent, string $queryToProcess): string
-  {
-    // 🔧 FIX: Check both 'type' and 'query_type' fields, default to 'semantic' (safer than 'analytics')
-    $intentType = $intent['type'] ?? $intent['query_type'] ?? 'semantic';
-
-    // Log when fallback default is used
-    if (!isset($intent['type']) && !isset($intent['query_type'])) {
-      $this->securityLogger->logStructured(
-        'warning',
-        'OrchestratorAgent',
-        'intent_type_fallback',
-        [
-          'fallback_value' => 'semantic',
-          'reason' => 'Neither type nor query_type found in intent',
-          'intent_keys' => array_keys($intent),
-          'query' => $queryToProcess
-        ]
-      );
-    }
-
-    return $intentType;
-  }
-
-  /**
-   * Safety-net duplicate hybrid routing (should never trigger).
-   *
-   * Hybrid queries are routed earlier (see routeHybridEarly). This fallback catches any hybrid
-   * intent that slips through and forwards it to the hybrid handler, returning its result; returns
-   * null for non-hybrid intents so the caller continues the standard plan flow.
-   * Pure extract-method: behaviour identical to the previously inline early-return block.
-   *
-   * @param string $queryToProcess Resolved query to process
-   * @param array $intent Intent produced by analyzeIntent()
-   * @param string $intentType Resolved intent type
-   * @param array $enrichedContext Enriched context for hybrid processing
-   * @param float $startTime Start time for performance tracking
-   * @return array|null Hybrid orchestration result, or null when the query is not hybrid
-   */
-  private function routeHybridDuplicate(string $queryToProcess, array $intent, string $intentType, array $enrichedContext, float $startTime): ?array
-  {
-    if ($intentType !== 'hybrid') {
-      return null;
-    }
-
-    if ($this->debug) {
-      $this->securityLogger->logStructured(
-        'warning',
-        'OrchestratorAgent',
-        'HYBRID_ROUTING_DUPLICATE',
-        [
-          'action' => 'unexpected_hybrid_routing_fallback',
-          'intent_type' => $intentType,
-          'is_hybrid_flag' => $intent['is_hybrid'] ?? false,
-          'confidence' => $intent['confidence'] ?? 0,
-          'query' => substr($queryToProcess, 0, 100),
-          'note' => 'This should not happen - hybrid queries should be routed earlier'
-        ]
-      );
-    }
-
-    // NEW (2026-02-09): Handle hybrid queries with Actor-Critic approach
-    // This is a fallback - hybrid queries should normally be caught earlier
-    return $this->handleHybridQuery($queryToProcess, $intent, $enrichedContext, $startTime);
-  }
-
-  /**
-   * Debug-log a freshly created execution plan (step count and step types).
-   *
-   * No-op unless debug is enabled. Pure extract-method, logging side-effect only.
-   *
-   * @param object $plan ExecutionPlan produced by TaskPlanner::createPlan()
-   * @return void
-   */
-  private function logPlanCreation(object $plan): void
-  {
-    if ($this->debug) {
-      $steps = $plan->getSteps();
-      $stepTypes = array_map(fn($step) => $step->getType(), $steps);
-      $this->securityLogger->logStructured(
-        'info',
-        'OrchestratorAgent',
-        'createPlan',
-        [
-          'step_count' => count($steps),
-          'step_types' => $stepTypes
-        ]
-      );
-    }
-  }
-
-  /**
-   * Proactively validate (and correct) each analytics step of a plan before execution.
-   *
-   * For every 'analytics_query' step, validates the sub-query with the ValidationAgent; on failure,
-   * attempts a correction with the CorrectionAgent and, if successful, updates the step's sub_query
-   * meta in place. Records all validations in working memory and debug-logs a summary. Returns the
-   * per-step validation results (consumed later by memory storage). Pure extract-method: the plan
-   * object is mutated in place exactly as before.
-   *
-   * @param object $plan ExecutionPlan whose steps are validated/corrected in place
-   * @param string $queryToProcess Resolved query (correction context)
-   * @param string $executionId Execution id used as plan id in validation metadata
-   * @return array Per-step validation results keyed by step id
-   */
-  /**
-   * Execute a validated plan and extract the resulting entity identity.
-   *
-   * Runs the plan via PlanExecutor, extracts entity id/type (patching a null/empty/'ABSENT' id to
-   * a neutral 0/'general'), and debug-logs completion. Returns the raw execution result together
-   * with the resolved entity id and type. Pure extract-method; the caller still records the result
-   * in working memory and raises on failure.
-   *
-   * @param object $plan Validated ExecutionPlan to run
-   * @param array $intent Intent produced by analyzeIntent() (entity extraction context)
-   * @return array{execution_result: array, entity_id: mixed, entity_type: string}
-   */
-  private function executePlanAndExtractEntities(object $plan, array $intent): array
-  {
-    $executionResult = $this->planExecutor->execute($plan);
-
-    // Extract entity information
-    $entityId = $this->entityExtractor->extractEntityId($executionResult, $intent, $plan);
-    $entityType = $this->entityExtractor->extractEntityType($executionResult, $intent, $plan) ?? 'unknown';
-
-    // Patch: Ensure entity_id is never null for database
-    if ($entityId === null || $entityId === '' || $entityId === 'ABSENT') {
-      $entityId = 0;
-      $entityType = 'general';
-    }
-
-    // Debug logging
-    if ($this->debug) {
-      $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'execution_complete', [
-        'success' => $executionResult['success'] ?? false,
-        'entity_id' => $entityId,
-        'entity_type' => $entityType
-      ]);
-    }
-
-    return [
-      'execution_result' => $executionResult,
-      'entity_id' => $entityId,
-      'entity_type' => $entityType,
-    ];
-  }
-
-  /**
-   * Store the orchestration outcome in conversation memory (with cache-aware skipping).
-   *
-   * On a warm-cache response (from_cache/cached flags), memory storage is skipped but the last
-   * entity is still tracked so follow-up contextual queries resolve. On a cache miss, the full
-   * result is persisted via MemoryManager::storeOrchestrationResult(). Debug-logs each path.
-   * Pure extract-method, side-effects only.
-   *
-   * @param array $response Built orchestration response
-   * @param string $query Original user query
-   * @param string $queryToProcess Resolved query to process
-   * @param array $intent Intent produced by analyzeIntent()
-   * @param array $contextAnalysis Query-context relation analysis
-   * @param object $plan Executed ExecutionPlan
-   * @param array $validationResults Per-step validation results
-   * @param mixed $entityId Resolved entity id
-   * @param string $entityType Resolved entity type
-   * @return void
-   */
-  private function storeOrchestrationMemory(array $response, string $query, string $queryToProcess, array $intent, array $contextAnalysis, object $plan, array $validationResults, mixed $entityId, string $entityType): void
-  {
-    // Check if query is already in QueryCache (warm cache scenario)
-    // Check both 'from_cache' and 'cached' flags (different agents use different naming)
-    $skipMemoryStorage = false;
-    $isCached = (isset($response['from_cache']) && $response['from_cache'] === true) ||
-                (isset($response['cached']) && $response['cached'] === true) ||
-                (isset($response['metadata']['from_cache']) && $response['metadata']['from_cache'] === true);
-
-    if ($isCached) {
-      $skipMemoryStorage = true;
-
-      if ($this->debug) {
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'memory_storage_skipped', [
-          'reason' => 'query_already_cached',
-          'cache_hit' => true,
-          'latency_saved_ms' => '2000-3000 (estimated)',
-          'query' => substr($query, 0, 100)
-        ]);
-      }
-
-      // Entity tracking is lightweight (<1ms) and essential for follow-up queries
-      // This ensures "What is its stock level" works after cached "What is the price of iPhone"
-      if ($entityId !== null && $entityId !== 0) {
-        if ($this->debug) {
-          error_log("[INFO ENTITY_TRACKING] Setting last entity: ID={$entityId}, Type={$entityType}, Query=" . substr($query, 0, 50));
-        }
-        $this->memoryManager->setLastEntity($entityId, $entityType);
-
-        if ($this->debug) {
-          $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'entity_tracked_for_cached_query', [
-            'entity_id' => $entityId,
-            'entity_type' => $entityType,
-            'reason' => 'contextual_reference_resolution',
-            'overhead_ms' => '<1'
-          ]);
-        }
-      } else {
-        if ($this->debug) {
-          error_log("[WARNING ENTITY_TRACKING] NOT setting last entity: ID={$entityId}, Type={$entityType}, Query=" . substr($query, 0, 50));
-        }
-      }
-    }
-
-    // Only store in memory for NEW queries (cache miss)
-    if (!$skipMemoryStorage) {
-      $this->memoryManager->storeOrchestrationResult(
-        $query,
-        $queryToProcess,
-        $response,
-        $intent,
-        $contextAnalysis,
-        $plan,
-        $validationResults,
-        $entityId,
-        $entityType,
-        $this->userId,
-        $this->languageId,
-        $this->queryAnalyzer,
-        $this->responseProcessorComponent
-      );
-
-      if ($this->debug) {
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'memory_storage_completed', [
-          'cache_miss' => true,
-          'entity_id' => $entityId,
-          'entity_type' => $entityType
-        ]);
-      }
-    }
-  }
-
-  /**
-   * Finalize a full-orchestration run: cleanup, request accounting, stats and end logging.
-   *
-   * Tears down the working-memory scope, records the request event, updates DiagnosticManager
-   * execution stats, and (in debug) logs the performance breakdown and an end summary. Pure
-   * extract-method, side-effects only; the caller still returns the response.
-   *
-   * @param string $executionId Execution id whose working-memory scope is torn down
-   * @param float $startTime Start time for performance tracking
-   * @param array $executionResult Raw plan execution result (for the end-log status)
-   * @param mixed $entityId Resolved entity id (for the end log)
-   * @param string $entityType Resolved entity type (for the end log)
-   * @param array $response Built orchestration response (for the end log)
-   * @return void
-   */
-  private function finalizeOrchestration(string $executionId, float $startTime, array $executionResult, mixed $entityId, string $entityType, array $response): void
-  {
-    // 11. Cleanup
-    $this->workingMemory->deleteScope($executionId);
-
-    $array_record = [
-      'component' => 'orchestrator',
-      'success' => true,
-      'execution_time' => microtime(true) - $startTime,
-    ];
-
-    $this->collector->recordEvent('request', $array_record);
-
-    // 🆕 Update execution stats for DiagnosticManager
-    $this->executionStats['total_requests']++;
-    $this->executionStats['total_execution_time'] += (microtime(true) - $startTime);
-
-    // Phase 5: Log performance breakdown using PerformanceTracker
-    if ($this->debug) {
-      $this->performanceTracker->logPerformanceBreakdown();
-
-      // End logging for handleFullOrchestration
-      $orchestrationDuration = (microtime(true) - $startTime) * 1000;
-
-      if ($this->debug) {
-        error_log("-----------------------------------------");
-        error_log("🏁 [INFO END] handleFullOrchestration");
-        error_log("✅ [INFO STATUS] Success: " . ($executionResult['success'] ?? false ? 'YES' : 'NO'));
-        error_log("🎯 [INFO ENTITY] ID: {$entityId}, Type: {$entityType}");
-        error_log("📊 [INFO RESPONSE] Type: " . ($response['type'] ?? 'unknown'));
-        error_log("⏱️ [INFO DURATION] Total time: " . round($orchestrationDuration, 2) . "ms");
-        error_log("[INFO TIME] End time: " . date('Y-m-d H:i:s.u'));
-        error_log("------------------------------------------");
-      }
-    }
-  }
 
   /**
    * Handle full orchestration for complex queries
@@ -1262,293 +907,20 @@ class OrchestratorAgent
       error_log("-----------------------------------");
     }
     
-    $executionId = $this->prepareExecutionScope($query, $startTime);
+    $pipelineContext = new OrchestrationContext($query, $queryToProcess, $startTime);
 
-    // Phase 2: Query Processing - Delegate parallel execution to QueryProcessor
-    $parallelResult = $this->queryProcessor->executeParallelOperations($query);
-    $rawContext = $parallelResult['raw_context'];
-    $contextError = $parallelResult['context_error'];
-
-    $this->performanceTracker->addMarker('after_parallel'); // Phase 5: Use PerformanceTracker
-
-    // Phase 2: Query Processing - Delegate context decision to QueryProcessor
-    $contextResult = $this->queryProcessor->processContextDecision($query, $rawContext);
-    $context = $contextResult['context'];
-    $contextDecision = $contextResult['context_decision'];
-
-    $this->workingMemory->set('conversation_context', $context);
-    $this->workingMemory->set('context_decision', $contextDecision);
-
-
-    $this->handleContextSwitch($contextDecision);
-
-    // Phase 2: Query-context relation analysis - Delegate to QueryProcessor
-    $relationAnalysis = $this->queryProcessor->analyzeQueryContextRelation($queryToProcess, $context);
-    $contextAnalysis = $relationAnalysis['context_analysis'];
-    $this->workingMemory->set('context_analysis', $contextAnalysis);
-
-    // Use enriched query if related to context
-    if ($contextAnalysis['is_related_to_context']) {
-      $queryToProcess = $relationAnalysis['enriched_query'];
+    // The full orchestration is an ordered pipeline of stages (see SubOrchestrator/). Each
+    // stage reads from and writes to $pipelineContext; a stage may short-circuit the whole run by
+    // returning a non-null result (e.g. hybrid routing, clarification). Otherwise the FinalizeStage
+    // completes and the built response is returned.
+    foreach ($this->stageRegistry->all() as $stage) {
+      $stageResult = $stage->run($pipelineContext);
+      if ($stageResult !== null) {
+        return $stageResult;
+      }
     }
 
-    $this->workingMemory->set('resolved_query', $queryToProcess);
-
-    $intentStart = microtime(true);
-    $intent = $this->analyzeIntent($queryToProcess);
-    $this->workingMemory->set('intent', $intent);
-
-    // Anti-hallucination verification (PRIORITY 1): validate the intent's translated query
-    // against the original; fall back to the resolved query if a hallucination is detected.
-    $translationCheck = $this->intentTranslationValidator->validate($query, $queryToProcess, $intent);
-    $intent = $translationCheck['intent'];
-    $validationResult = $translationCheck['validation'];
-
-    if ($this->debug) {
-      error_log("[INFO : TIME]️ [PERF] analyzeIntent took " . round((microtime(true) - $intentStart), 2) . "s");
-      $this->securityLogger->logStructured(
-        'info',
-        'OrchestratorAgent',
-        'PATH_DECISION.intent',
-        [
-          'translated_query' => $intent['translated_query'] ?? $queryToProcess,
-          'intent_type' => $intent['type'] ?? 'unknown',
-          'is_hybrid_flag' => $intent['is_hybrid'] ?? false,
-          'confidence' => $intent['confidence'] ?? 0,
-          'hallucination_detected' => $validationResult['hallucination_detected'],
-          'hallucination_keywords' => $validationResult['hallucination_detected'] ? $validationResult['hallucination_keywords'] : null,
-        ]
-      );
-    }
-
-    // Use translated query from intent for detection
-    $translatedQuery = $intent['translated_query'] ?? $queryToProcess;
-    $complexityDetection = $this->complexQueryHandler->detectComplexQuery($translatedQuery);
-    $this->workingMemory->set('complexity_detection', $complexityDetection);
-
-    $this->logComplexityDetection($complexityDetection);
-
-    // 4.6. DEPRECATED: Complex query handling moved to ActorCriticCoordinator (2026-02-09)
-    // Complex queries are now handled by the Actor-Critic system
-    if ($complexityDetection['is_complex']) {
-      // Use ActorCriticCoordinator instead of HybridQueryProcessor
-      // For now, fall through to standard processing
-      // TODO: Implement complex query handling in ActorCriticCoordinator
-      $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'complex_query_fallthrough', [
-        'message' => 'Complex query detected but HybridQueryProcessor is deprecated',
-        'query' => $translatedQuery,
-        'complexity' => $complexityDetection
-      ]);
-    }
-
-    // 🔧 FIX (2026-02-08): Route hybrid queries BEFORE ReasoningAgent
-    // BUG: Hybrid queries were being sent to ReasoningAgent instead of HybridQueryProcessor
-    // This caused hybrid queries to be processed as analytics
-    $intentType = $intent['type'] ?? $intent['query_type'] ?? 'semantic';
-
-    $hybridResult = $this->routeHybridEarly($queryToProcess, $intent, $intentType, $context, $contextAnalysis, $startTime);
-    if ($hybridResult !== null) {
-      return $hybridResult;
-    }
-
-    // 5. Low-confidence queries: clarify via ReasoningAgent, default unknown types to semantic.
-    $intent = $this->lowConfidenceReasoningFallback->apply($intent, $context, $contextAnalysis, $queryToProcess);
-
-    $enrichedContext = $this->queryProcessor->buildEnrichedContext($context, $contextAnalysis);
-
-    if ($this->debug) {
-      $this->securityLogger->logStructured(
-        'info',
-        'OrchestratorAgent',
-        'PATH_DECISION.intent_route',
-        [
-          'route' => $intent['type'] ?? 'unknown',
-          'is_hybrid_flag' => $intent['is_hybrid'] ?? false,
-        ]
-      );
-    }
-
-    // ===========================================================================
-    // DOMAIN-BASED ROUTING (PHASE 8: AI Architecture Domain Reorganization)
-    // ===========================================================================
-    //
-    // Current Implementation: Query Type Domains (DomainsAI)
-    // -------------------------------------------------------
-    // Routes queries to appropriate query type domain based on intent:
-    // - Semantic: Vector embeddings, similarity search (DomainsAI/Semantic/)
-    // - Analytics: SQL generation, BI queries (DomainsAI/Analytics/)
-    // - Hybrid: Combined semantic + analytics (DomainsAI/Hybrid/)
-    // - WebSearch: External web search (DomainsAI/WebSearch/)
-    //
-    // Query Type Domains define HOW queries are processed.
-    //
-    // Future Enhancement: Business Domains (Apps/ - rag-multi-domain-evolution)
-    // --------------------------------------------------------------------------
-    // Will also route to business domains that define WHAT data is queried:
-    // - Domain apps: Dynamic entity discovery via EntityConfig (Apps/AI/<Domain>/)
-    // - Finance: Transactions, invoices, payments (Apps/Finance/)
-    // - HR: Employees, payroll, benefits (Apps/HR/)
-    // - Trading: Stocks, portfolios, market data (Apps/Trading/)
-    //
-    // Business Domains define WHAT data is queried.
-    //
-    // Future Orchestration Flow:
-    // --------------------------
-    // User Query → OrchestratorAgent
-    //   ├- Identifies Query Type (HOW): Analytics
-    //   ├- Identifies Business Domain (WHAT): Ecommerce
-    //   ├- Routes to: DomainsAI/Analytics/Agent/AnalyticsAgent (HOW to generate SQL)
-    //   +- Coordinates with: Apps/Ecommerce/Entities/ProductEntity (WHAT data to query)
-    //
-    // This separation enables:
-    // - Same query type across multiple business domains
-    // - Clear separation of concerns (HOW vs WHAT)
-    // - Easy addition of new business domains
-    // - Scalable multi-domain architecture
-    //
-    // ===========================================================================
-
-    // Hybrid queries need to be split into sub-queries and executed by multiple agents
-    // NOTE: Check intent_type ONLY (is_hybrid flag can be inconsistent)
-    // 🔧 FIX: Check both 'type' and 'query_type' fields, default to 'semantic' (safer than 'analytics')
-    $intentType = $this->resolveIntentType($intent, $queryToProcess);
-
-    // PHASE 8: Domain-based routing (transitional implementation)
-    // Get domain for intent type (for logging and future use)
-    $domainClass = $this->getDomainForIntent($intentType);
-
-    // NOTE: Current implementation still uses direct routing for backward compatibility
-    // Future implementation will use: $domain->getAgent()->processQuery($query)
-    // when all domains implement QueryTypeDomainInterface
-
-    // Safety net: hybrid queries are routed earlier; this duplicate check should never trigger.
-    $hybridFallback = $this->routeHybridDuplicate($queryToProcess, $intent, $intentType, $enrichedContext, $startTime);
-    if ($hybridFallback !== null) {
-      return $hybridFallback;
-    }
-
-    $planStart = microtime(true);
-    $plan = $this->taskPlanner->createPlan($intent, $queryToProcess, $enrichedContext);
-    if ($this->debug) {
-      error_log("[INFO : TIME] [PERF] createPlan took " . round((microtime(true) - $planStart), 2) . "s");
-    }
-
-    $this->workingMemory->set('execution_plan', $plan->getSummary());
-
-    $this->logPlanCreation($plan);
-
-    // 7. Valider chaque étape du plan AVANT exécution
-    $validationResults = $this->planStepValidator->validate($plan, $queryToProcess, $executionId);
-
-    // 8. Execute plan and extract entities
-    $execution = $this->executePlanAndExtractEntities($plan, $intent);
-    $executionResult = $execution['execution_result'];
-    $entityId = $execution['entity_id'];
-    $entityType = $execution['entity_type'];
-
-    $this->workingMemory->set('execution_result', $executionResult['success']);
-
-    if (!$executionResult['success']) {
-      throw new \Exception($executionResult['error'] ?? 'Execution failed');
-    }
-
-    // 9. Build final response - delegate to ResponseProcessor
-    $response = $this->responseProcessorComponent->buildOrchestrationResponse(
-      $executionResult,
-      $intent,
-      $query,
-      $startTime,
-      $entityId,
-      $entityType,
-      $this->responseProcessor
-    );
-
-    // 10. Store in conversation memory - delegate to MemoryManager
-
-    $this->performanceTracker->addMarker('before_memory'); // Phase 5: Use PerformanceTracker
-
-    $this->storeOrchestrationMemory($response, $query, $queryToProcess, $intent, $contextAnalysis, $plan, $validationResults, $entityId, $entityType);
-
-    $this->performanceTracker->addMarker('after_memory'); // Phase 5: Use PerformanceTracker
-
-    // 11. Cleanup, request accounting, stats and end logging.
-    $this->finalizeOrchestration($executionId, $startTime, $executionResult, $entityId, $entityType, $response);
-
-    return $response;
-  }
-
-  /**
-   * Analyze query intent
-   *
-   * @param string $query User query
-   * @return array Analyzed intent with type, confidence and flags
-   */
-  private function analyzeIntent(string $query): array
-  {
-    // Delegate to IntentAnalyzer
-    return $this->intentAnalyzer->analyze($query);
-  }
-
-  /**
-   * Handle hybrid query processing
-   * 
-   * Delegates to HybridQueryHandler for hybrid query processing.
-   * This method maintains backward compatibility while delegating
-   * all hybrid query logic to the specialized handler.
-   * 
-   * @param string $queryToProcess Original query
-   * @param array $intent Intent analysis result
-   * @param array $context Query context
-   * @param float $startTime Query start timestamp
-   * @return array Hybrid query result
-   */
-  private function handleHybridQuery(
-    string $queryToProcess,
-    array $intent,
-    array $context,
-    float $startTime
-  ): array {
-    // Delegate to HybridQueryHandler
-    return $this->hybridQueryHandler->handleHybridQuery(
-      $queryToProcess,
-      $intent,
-      $context,
-      $startTime
-    );
-  }
-
-  /**
-   * Get domain for intent (domain-based routing)
-   *
-   * PHASE 8: Domain-Based Routing
-   *
-   * This method routes queries to the appropriate query type domain based on intent.
-   *
-   * IMPORTANT DISTINCTION:
-   * - Query Type Domains (DomainsAI): Define HOW queries are processed
-   *   Examples: Semantic search, SQL generation, hybrid processing, web search
-   *   Location: Core/ClicShopping/AI/DomainsAI
-   *
-   * - Business Domains (Apps/ - FUTURE): Define WHAT data is queried
-   *   Examples: Ecommerce (products, orders), Finance (transactions), HR (employees)
-   *   Location: Core/ClicShopping/AI/Apps/ (future spec: rag-multi-domain-evolution)
-   *
-   * Current Implementation:
-   * - Routes to query type domains (Semantic, Analytics, Hybrid, WebSearch)
-   * - Uses QueryTypeDomainInterface for standardized domain access
-   *
-   * Future Enhancement (rag-multi-domain-evolution):
-   * - Will also route to business domains (Ecommerce, Finance, HR, Trading)
-   * - Orchestrator will coordinate BOTH query types AND business domains
-   * - Example: Analytics query (HOW) + Ecommerce domain (WHAT)
-   *
-   * @param string $intentType Intent type from UnifiedQueryAnalyzer
-   * @return mixed Domain class name (transitional) or QueryTypeDomainInterface (future)
-   */
-  private function getDomainForIntent(string $intentType): mixed
-  {
-    // Delegate to DomainRouter for domain routing logic
-    return $this->domainRouter->getDomainForIntent($intentType, []);
+    return $pipelineContext->response;
   }
 
   /**
@@ -1560,7 +932,7 @@ class OrchestratorAgent
       'orchestrator' => $this->getStats(),
       'planning' => $this->taskPlanner->getStats(),
       'memory' => [
-        'conversation' => $this->conversationMemory ? $this->conversationMemory->getStats() : [],
+        'conversation' => $this->conversationMemory->getStats(),
         'working' => $this->workingMemory->getStats(),
       ],
       'correction' => $this->correctionAgent->getLearningStats(),
@@ -1687,8 +1059,6 @@ class OrchestratorAgent
    * This method provides backward compatibility when Actor-Critic is disabled
    * or when fallback is needed due to errors.
    *
-   * Requirement: 25.3
-   *
    * @param mixed $action Action to execute
    * @return array Execution result
    */
@@ -1727,8 +1097,6 @@ class OrchestratorAgent
    * Validate coordinated result
    *
    * Ensures the coordinated result meets security and validation constraints.
-   *
-   * Requirement: 25.3
    *
    * @param \ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\CoordinatedResult $result Result to validate
    * @return void

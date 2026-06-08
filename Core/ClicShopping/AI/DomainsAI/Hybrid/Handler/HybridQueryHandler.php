@@ -227,7 +227,7 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
 
       // Log the final type for debugging
       if ($this->debug) {
-        error_log("[info] HybridQueryHandler: Forcing type to 'hybrid' (was: " . ($executionResult['result']['type'] ?? 'unknown') . ")");
+        error_log("[INFO] HybridQueryHandler: Forcing type to 'hybrid' (was: " . ($executionResult['result']['type'] ?? 'unknown') . ")");
       }
 
       // Update statistics

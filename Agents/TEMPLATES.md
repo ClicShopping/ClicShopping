@@ -1,4 +1,4 @@
-# TEMPLATES.md — ClicShopping v4.20+
+# TEMPLATES.md — ClicShopping v4.30+
 
 > Rendering architecture — front-office (Shop) and back-office (ClicShoppingAdmin).
 > The two contexts have fundamentally different philosophies.

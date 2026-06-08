@@ -88,6 +88,15 @@ Regardless of the source language (Chinese, French, etc.) or synonymous English 
   -> ALWAYS use: "expenses"
   -> FORBIDDEN: "costs", "charges", "fees", "depenses", "支出", "Kosten", etc.
 
+- CONCEPT: SALES VOLUME / UNITS SOLD (How MANY items were sold — a QUANTITY, NOT money)
+  -> This is DISTINCT from revenue. "sold" / "vendus" refers to the COUNT of units sold, never to a monetary total.
+  -> ALWAYS keep it quantity-based: use "best-selling" / "least-selling" / "most sold" / "units sold".
+  -> ⚠️ NEVER map "sold" / "best-selling" / "most sold" to "revenue":
+     * "the most sold products" -> "the best-selling products" (NOT "products with the highest revenue")
+     * "the least sold products" -> "the least-selling products" (NOT "products with the lowest revenue")
+     * "the best-selling product" -> "the best-selling product" (already correct — NOT "the product with the most revenue")
+  -> Use "revenue" ONLY when the input EXPLICITLY names a monetary total (revenue, turnover, sales amount, €/$). "sold"/"best-selling" alone is volume, not money.
+
 ## E-COMMERCE CONTEXT (CRITICAL)
 This is an e-commerce system. Use e-commerce terminology:
 - Purchase transaction → "order" (NOT "command")

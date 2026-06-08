@@ -122,7 +122,7 @@ class TranslationHandler
         throw new \Exception("GPT returned empty string");
       }
       
-      error_log("[info] Gpt::getGptResponse() returned: " . substr($translation, 0, 100));
+      error_log("[INFO] Gpt::getGptResponse() returned: " . substr($translation, 0, 100));
 
       // Clean the translation
       error_log("Calling extractCleanTranslation()...");
@@ -136,7 +136,7 @@ class TranslationHandler
         throw new \Exception("Clean translation is empty");
       }
       
-      error_log("[info] Clean translation: " . substr($cleanTranslation, 0, 100));
+      error_log("[INFO] Clean translation: " . substr($cleanTranslation, 0, 100));
 
       if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
         error_log("Translation result: '{$prompt}' → '{$cleanTranslation}'");

@@ -75,7 +75,7 @@ class MariaDBVectorStore extends VectorStoreBase
 
     if ($this->debug) {
       error_log("===================================================");
-      error_log("[info] MariaDBVectorStore initialized");
+      error_log("[INFO] MariaDBVectorStore initialized");
       error_log("Input table name: {$tableName}");
       error_log("Final table name: {$this->tableName}");
       error_log("Prefix: {$prefix}");
@@ -371,7 +371,7 @@ class MariaDBVectorStore extends VectorStoreBase
         }
         $contextStr = !empty($context) ? ' (' . implode(', ', $context) . ')' : '';
         
-        error_log("[info] Semantic cache invalidated after embedding update: {$cleared} files cleared{$contextStr}");
+        error_log("[INFO] Semantic cache invalidated after embedding update: {$cleared} files cleared{$contextStr}");
       }
     } catch (\Exception $e) {
       // Log error but don't fail the document insertion

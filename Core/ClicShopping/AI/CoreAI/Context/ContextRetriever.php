@@ -95,7 +95,7 @@ class ContextRetriever
       $duration = (microtime(true) - $startTime) * 1000;
 
       if ($this->debug) {
-        error_log("[info]️ Context NOT needed - skipping retrieval");
+        error_log("[INFO]️ Context NOT needed - skipping retrieval");
         error_log("Duration: " . round($duration, 2) . " ms");
         error_log("--- CONTEXT RETRIEVAL END ---\n");
       }

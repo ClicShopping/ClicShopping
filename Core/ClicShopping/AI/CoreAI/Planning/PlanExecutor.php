@@ -86,7 +86,7 @@ class PlanExecutor
 
     // Direct SerpApi verification (without Gpt dependency)
     if ($this->debug) {
-      error_log("[info] PlanExecutor: Direct SerpApi verification...");
+      error_log("[INFO] PlanExecutor: Direct SerpApi verification...");
     }
 
     $serpApiKey = "";
@@ -96,7 +96,7 @@ class PlanExecutor
     if (!empty($envKey)) {
       $serpApiKey = $envKey;
       if ($this->debug) {
-        error_log("[info] PlanExecutor: Key found in environment variable");
+        error_log("[INFO] PlanExecutor: Key found in environment variable");
       }
     }
     // 2. ClicShopping constant
@@ -105,19 +105,19 @@ class PlanExecutor
       if (!empty($constKey)) {
         $serpApiKey = $constKey;
         if ($this->debug) {
-          error_log("[info] PlanExecutor: Key found in constant");
+          error_log("[INFO] PlanExecutor: Key found in constant");
         }
       }
     }
 
     if (!empty($serpApiKey)) {
       if ($this->debug) {
-        error_log("[info] SERPAPI Key loaded: " . substr($serpApiKey, 0, 10) . "...");
+        error_log("[INFO] SERPAPI Key loaded: " . substr($serpApiKey, 0, 10) . "...");
       }
       // Set environment variable for WebSearchTool
       putenv('SERP_API_KEY=' . $serpApiKey);
       if ($this->debug) {
-        error_log("[info] PlanExecutor: putenv('SERP_API_KEY') set");
+        error_log("[INFO] PlanExecutor: putenv('SERP_API_KEY') set");
       }
 
       $hasValidKey = true;
@@ -147,7 +147,7 @@ class PlanExecutor
       }
     } else {
       if ($this->debug) {
-        error_log("[info] SerpApi not configured - Web search disabled");
+        error_log("[INFO] SerpApi not configured - Web search disabled");
       }
 
       $this->webSearchFacade = null;
@@ -338,7 +338,7 @@ class PlanExecutor
               
               // 🆕 Debug: Check if source_attribution is in finalResult
               if ($this->debug) {
-                error_log("[info] PlanExecutor: finalResult has source_attribution: " . (isset($finalResult['source_attribution']) ? 'YES' : 'NO'));
+                error_log("[INFO] PlanExecutor: finalResult has source_attribution: " . (isset($finalResult['source_attribution']) ? 'YES' : 'NO'));
               }
 
               if (isset($finalResult['source_attribution'])) {

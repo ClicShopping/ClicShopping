@@ -419,6 +419,13 @@ class ResponseProcessor
       if (is_array($rawResult)) {
         $rawResult['response_type'] = $rawResult['response_type'] ?? $rawResult['type'] ?? 'semantic_results';
         $rawResult['entity_type'] = $rawResult['entity_type'] ?? $entityType ?? 'general';
+        // Seed 'interpretation' from the already-extracted answer. The execution result carries the
+        // answer under 'response'/'text_response' (executor-dependent), not 'interpretation', so
+        // without this the response processor warns about a missing field and falls back to the raw
+        // question — wrong for analytics. Only fill when genuinely absent.
+        if (empty($rawResult['interpretation'])) {
+          $rawResult['interpretation'] = $finalResponse !== '' ? $finalResponse : $query;
+        }
       }
       $dataForFormatter = $responseProcessor->processResponse($rawResult, $query, $intentType);
     } else {

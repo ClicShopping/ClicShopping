@@ -96,7 +96,7 @@ class IntentAnalyzerFactory
       $hybridResult = $this->hybridAnalyzer->analyze($query, $originalQuery);
 
       if ($this->debug) {
-        error_log("[info] HYBRID query detected (" . count($matchedAnalyzers) . " types)");
+        error_log("[INFO] HYBRID query detected (" . count($matchedAnalyzers) . " types)");
         error_log("Hybrid confidence: " . round($hybridResult['confidence'], 3));
       }
 
@@ -120,7 +120,7 @@ class IntentAnalyzerFactory
       $result = $matchedAnalyzers[$type];
 
       if ($this->debug) {
-        error_log("[info] SINGLE intent detected: {$type}");
+        error_log("[INFO] SINGLE intent detected: {$type}");
         error_log("Confidence: " . round($result['confidence'], 3));
       }
 

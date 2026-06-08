@@ -101,7 +101,7 @@ class MultiDBRAGManager
     // 🔥 DEBUG CRITIQUE
     if ($this->debug) {
       error_log("====================================================");
-      error_log("[info] MultiDBRAGManager::__construct() START");
+      error_log("[INFO] MultiDBRAGManager::__construct() START");
       error_log("Model: " . ($model ?? 'null'));
       error_log("TableNames provided: " . print_r($tableNames, true));
       error_log("Debug enabled: " . ($this->debug ? 'YES' : 'NO'));
@@ -121,7 +121,7 @@ class MultiDBRAGManager
     // 🔥 APPEL CRITIQUE : Initialize vector stores
     if ($this->debug) {
       error_log("------------------------------------------------------------------------------");
-      error_log("[info] About to call initializeVectorStores()...");
+      error_log("[INFO] About to call initializeVectorStores()...");
       error_log("TableNames param: " . (empty($tableNames) ? 'EMPTY (will auto-detect)' : implode(', ', $tableNames)));
     }
 
@@ -165,12 +165,12 @@ class MultiDBRAGManager
     } else {
       $this->useReranking = false;
       if ($this->debug) {
-        error_log("[info]️ Reranking disabled in configuration");
+        error_log("[INFO]️ Reranking disabled in configuration");
       }
     }
 
     if ($this->debug) {
-      error_log("[info] MultiDBRAGManager::__construct() END");
+      error_log("[INFO] MultiDBRAGManager::__construct() END");
       error_log("------------------------------------------");
     }
   }
@@ -367,14 +367,14 @@ class MultiDBRAGManager
 
     if ($this->debug) {
       error_log("=========================================================");
-      error_log("[info] initializeVectorStores() CALLED");
+      error_log("[INFO] initializeVectorStores() CALLED");
       error_log("Input tableNames: " . (empty($tableNames) ? 'EMPTY' : implode(', ', $tableNames)));
     }
 
     // DECISION: Use provided tables OR auto-detection
     if (empty($tableNames)) {
       if ($this->debug) {
-        error_log("[info] No tables provided, using auto-detection...");
+        error_log("[INFO] No tables provided, using auto-detection...");
       }
 
       try {
@@ -414,7 +414,7 @@ class MultiDBRAGManager
       try {
         if ($this->debug) {
           error_log("---------------------------------------------------");
-          error_log("[info] Creating VectorStore for: {$tableName}");
+          error_log("[INFO] Creating VectorStore for: {$tableName}");
         }
 
         // Verify that the table exists before creating the VectorStore
@@ -723,7 +723,7 @@ class MultiDBRAGManager
 
     // Apply LLMReranker if enabled (Task 2.14.3)
     if ($this->debug) {
-      error_log("[info] Reranking check:");
+      error_log("[INFO] Reranking check:");
       error_log("  - useReranking: " . ($this->useReranking ? 'true' : 'false'));
       error_log("  - reranker is null: " . ($this->reranker === null ? 'true' : 'false'));
       error_log("  - allResults count: " . count($allResults));
@@ -732,7 +732,7 @@ class MultiDBRAGManager
     if ($this->useReranking && $this->reranker !== null && count($allResults) > 0) {
       try {
         if ($this->debug) {
-          error_log("[info] Applying LLMReranker to improve relevance...");
+          error_log("[INFO] Applying LLMReranker to improve relevance...");
           error_log("Query for reranking: {$query}");
           error_log("Documents before reranking: " . count($allResults));
         }
@@ -790,7 +790,7 @@ class MultiDBRAGManager
       $auditMetadata['final_results_count'] = count($allResults);
 
       if ($this->debug) {
-        error_log("ℹ[info] Reranking disabled or not available, using top {$limit} by similarity");
+        error_log("ℹ[INFO] Reranking disabled or not available, using top {$limit} by similarity");
       }
     }
 
@@ -1000,7 +1000,7 @@ class MultiDBRAGManager
       if ($this->useReranking && $this->reranker !== null && count($allResults) > 0) {
         try {
           if ($this->debug) {
-            error_log("[info] Applying LLMReranker to improve relevance...");
+            error_log("[INFO] Applying LLMReranker to improve relevance...");
           }
 
           $rerankingOutputCount = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;
@@ -1317,7 +1317,7 @@ class MultiDBRAGManager
       $synthesisPrompt .= "\n\n" . $languageInstruction;
 
       if ($this->debug) {
-        error_log("[info] Prompt with language instruction: " . strlen($synthesisPrompt) . " chars");
+        error_log("[INFO] Prompt with language instruction: " . strlen($synthesisPrompt) . " chars");
       }
 
       try {
@@ -1399,7 +1399,7 @@ class MultiDBRAGManager
         $label = $documentName . " (Priority Source)";
 
         if ($this->debug) {
-          error_log("[info] Doc #{$i} PRIORITY ({$documentName}): " . strlen($docContent) . " chars (full content)");
+          error_log("[INFO] Doc #{$i} PRIORITY ({$documentName}): " . strlen($docContent) . " chars (full content)");
         }
       } else {
         // Other documents are truncated
@@ -1410,7 +1410,7 @@ class MultiDBRAGManager
         $label = $documentName;
 
         if ($this->debug) {
-          error_log("[info] Doc #{$i} secondary ({$documentName}): " . strlen($docContent) . " chars (truncated)");
+          error_log("[INFO] Doc #{$i} secondary ({$documentName}): " . strlen($docContent) . " chars (truncated)");
         }
       }
 

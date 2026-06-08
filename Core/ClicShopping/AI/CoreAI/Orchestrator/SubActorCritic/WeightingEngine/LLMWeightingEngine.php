@@ -62,10 +62,16 @@ class LLMWeightingEngine
     private int $timeoutSeconds = 30;
     private bool $fallbackEnabled = true;
     private float $fallbackAlertThreshold = 0.05; // 5%
-    
+    private int $maxParseRetries = 1; // extra LLM regenerations when a successful call returns unparseable JSON
+    private int $minSampleForAlert = 20; // min evaluations before the fallback-rate alert may fire (avoids 1/1=100%)
+    private bool $weightCacheEnabled = true; // reuse a recent weighting to skip the ~5s LLM call
+    private int $weightCacheTtl = 1800; // 30 min — caches the weighting "shape"; bounds reputation drift
+    private bool $debug = false; // gates verbose error_log (e.g. cache-hit traces)
+
     // Fallback tracking
     private const CACHE_KEY_FALLBACK_COUNT = 'adaptive_weighting_fallback_count';
     private const CACHE_KEY_TOTAL_COUNT = 'adaptive_weighting_total_count';
+    private const CACHE_KEY_WEIGHTS_PREFIX = 'adaptive_weights_'; // + md5(critic set + action/output shape)
     private const CACHE_TTL = 86400; // 24 hours
     
     /**
@@ -108,6 +114,26 @@ class LLMWeightingEngine
         }
         if (isset($config['fallback_alert_threshold'])) {
             $this->fallbackAlertThreshold = $config['fallback_alert_threshold'];
+        }
+        if (isset($config['max_parse_retries'])) {
+            $this->maxParseRetries = (int)$config['max_parse_retries'];
+        }
+        if (isset($config['min_sample_for_alert'])) {
+            $this->minSampleForAlert = (int)$config['min_sample_for_alert'];
+        }
+        if (isset($config['weight_cache_enabled'])) {
+            $this->weightCacheEnabled = (bool)$config['weight_cache_enabled'];
+        }
+        if (isset($config['weight_cache_ttl'])) {
+            $this->weightCacheTtl = (int)$config['weight_cache_ttl'];
+        }
+
+        // Debug flag: follows the RAG debug constant (same as Infrastructure\Cache\Cache), overridable
+        // via config. Gates verbose error_log such as cache-hit traces.
+        $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER')
+            && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
+        if (isset($config['debug'])) {
+            $this->debug = (bool)$config['debug'];
         }
     }
     
@@ -153,38 +179,46 @@ class LLMWeightingEngine
             if (empty($criticData)) {
                 throw new \RuntimeException('No critic data collected');
             }
-            
+
+            // Cache: the weighting decision depends on the critic SET + the action/output shape
+            // (output_type, action_type, required_domains, priority, special_requirements), NOT on the
+            // query text. A recent result is reusable, so reuse it to skip the ~5s LLM round-trip on
+            // every analytics query. The TTL bounds reputation drift (weights are a soft signal).
+            $cacheKey = $this->weightCacheKey($criticData, $context);
+            if ($this->weightCacheEnabled) {
+                $cached = $this->cache->getCachedResponse($cacheKey);
+                if ($cached !== null) {
+                    $parsed = json_decode($cached, true);
+                    if (is_array($parsed) && isset($parsed['weights']) && is_array($parsed['weights'])) {
+                        $this->logWeightCacheHit($evaluationId, microtime(true) - $startTime);
+                        return $this->buildWeightResult($evaluationId, $parsed);
+                    }
+                }
+            }
+
             // Step 2: Build structured prompt with domain matching requirements
             $prompt = $this->promptBuilder->buildWeightAnalysisPrompt($criticData, $context);
-            
-            // Step 3: Call LLM service with retry logic
-            $llmResponse = $this->callLLMWithRetry($prompt);
-            
-            // Step 4: Parse LLM response to extract weights, explanations, and domain_analysis
-            $parsedResponse = $this->parseLLMResponse($llmResponse, array_keys($criticData));
-            
-            // Step 5: Normalize weights
-            $normalizedWeights = $this->normalizer->normalize($parsedResponse['weights']);
-            
-            // Create WeightResult
-            $result = new WeightResult(
-                $evaluationId,
-                $parsedResponse['weights'],
-                $normalizedWeights,
-                $parsedResponse['explanations'],
-                $parsedResponse['overall_rationale'],
-                $parsedResponse['factor_analysis'],
-                $parsedResponse['bounds'] ?? null,
-                false, // not fallback
-                null
-            );
-            
+
+            // Call the LLM and parse its JSON, regenerating once if the response is
+            // unparseable. callLLMWithRetry only covers transport failures; a successful call that
+            // returns malformed JSON would otherwise drop straight to static weighting. A fresh
+            // generation usually yields valid JSON — cheaper and more reliable than the fallback.
+            $parsedResponse = $this->callAndParseWithRetry($prompt, array_keys($criticData));
+
+            // Cache the parsed weighting for reuse by subsequent equivalent evaluations.
+            if ($this->weightCacheEnabled) {
+                $this->cache->cacheResponse($cacheKey, json_encode($parsedResponse), $this->weightCacheTtl);
+            }
+
+            // Step 5 + create WeightResult
+            $result = $this->buildWeightResult($evaluationId, $parsedResponse);
+
             // Step 6: Store audit trail with domain_match_analysis
             $this->auditLogger->logWeightCalculation($evaluationId, $result);
-            
+
             $duration = microtime(true) - $startTime;
             $this->logSuccess($evaluationId, $duration);
-            
+
             return $result;
             
         } catch (\Exception $e) {
@@ -199,11 +233,104 @@ class LLMWeightingEngine
                 $this->checkFallbackRate();
                 return $this->fallbackToStaticWeighting($evaluationId, $critics, $e->getMessage());
             }
-            
+
             throw $e;
         }
     }
-    
+
+    /**
+     * Build the cache key for an adaptive-weighting result.
+     *
+     * Keyed on the stable factors the weighting actually depends on — the critic set and the
+     * action/output shape — NOT the query text or volatile fields (evaluation_id, execution_metrics,
+     * critic reputations). This maximizes reuse across equivalent evaluations; the cache TTL bounds
+     * how stale the (reputation-influenced) weights may get.
+     *
+     * @param array $criticData Collected critic data (keyed by critic id)
+     * @param array $context Evaluation context
+     * @return string Cache key
+     */
+    private function weightCacheKey(array $criticData, array $context): string
+    {
+        $criticIds = array_keys($criticData);
+        sort($criticIds);
+
+        $key = [
+            'critics' => $criticIds,
+            'output_type' => $context['output_type'] ?? '',
+            'action_type' => $context['action_type'] ?? '',
+            'required_domains' => $context['required_domains'] ?? [],
+            'priority' => $context['priority'] ?? '',
+            'special_requirements' => $context['special_requirements'] ?? [],
+        ];
+
+        return self::CACHE_KEY_WEIGHTS_PREFIX . md5(json_encode($key));
+    }
+
+    /**
+     * Build a WeightResult from a parsed weighting response (live or cached).
+     *
+     * Shared by the live LLM path and the cache-hit path so both produce an identical, non-fallback
+     * result. Defensive defaults guard against a partial/corrupted cache entry.
+     *
+     * @param string $evaluationId Evaluation identifier
+     * @param array $parsed Parsed weighting response
+     * @return WeightResult
+     */
+    private function buildWeightResult(string $evaluationId, array $parsed): WeightResult
+    {
+        return new WeightResult(
+            $evaluationId,
+            $parsed['weights'],
+            $this->normalizer->normalize($parsed['weights']),
+            $parsed['explanations'] ?? [],
+            $parsed['overall_rationale'] ?? '',
+            $parsed['factor_analysis'] ?? [],
+            $parsed['bounds'] ?? null,
+            false, // not fallback
+            null
+        );
+    }
+
+    /**
+     * Log an adaptive-weighting cache hit to the weighting log (debug-gated via debugLog()).
+     *
+     * @param string $evaluationId Evaluation identifier
+     * @param float $duration Time spent before the cache short-circuit (seconds)
+     * @return void
+     */
+    private function logWeightCacheHit(string $evaluationId, float $duration): void
+    {
+        $message = sprintf(
+            "[%s] [INFO] CACHE HIT - Evaluation: %s | Duration: %.3fs (LLM weighting skipped)\n",
+            date('Y-m-d H:i:s'),
+            $evaluationId,
+            $duration
+        );
+
+        $this->debugLog($message);
+    }
+
+    /**
+     * Write a verbose trace line to the adaptive-weighting log, only when debug is enabled.
+     *
+     * Centralizes the debug gate for every diagnostic written to {@see $errorLogPath} (SUCCESS,
+     * FALLBACK, retries, bounds/anomaly/critic traces, cache hits). Production-critical signals are
+     * NOT routed here: alerts still reach the structured log via AlertManager::triggerAlert(), and
+     * counters/fallback tracking are unaffected.
+     *
+     * @param string $message Pre-formatted log line (typically ending in "\n")
+     * @return void
+     */
+    private function debugLog(string $message): void
+    {
+        if (!$this->debug) {
+            return;
+        }
+
+        error_log($message, 3, $this->errorLogPath);
+    }
+
     /**
      * Call LLM service with retry logic and exponential backoff
      * 
@@ -254,6 +381,41 @@ class LLMWeightingEngine
         );
     }
     
+    /**
+     * Call the LLM and parse its JSON response, regenerating on a parse failure.
+     *
+     * {@see callLLMWithRetry} already covers transport failures; this adds resilience to a
+     * successful call that returns malformed JSON by regenerating up to {@see $maxParseRetries}
+     * times before letting the error propagate to the static-weighting fallback.
+     *
+     * @param string $prompt Structured prompt for the LLM
+     * @param array $expectedCriticIds Expected critic IDs (for validation)
+     * @return array Parsed response
+     * @throws \RuntimeException If parsing still fails after the allowed regenerations
+     */
+    private function callAndParseWithRetry(string $prompt, array $expectedCriticIds): array
+    {
+        $attempt = 0;
+        $lastException = null;
+
+        while ($attempt <= $this->maxParseRetries) {
+            $llmResponse = $this->callLLMWithRetry($prompt);
+
+            try {
+                return $this->parseLLMResponse($llmResponse, $expectedCriticIds);
+            } catch (\RuntimeException $e) {
+                $lastException = $e;
+                $attempt++;
+
+                if ($attempt <= $this->maxParseRetries) {
+                    $this->logRetryAttempt($attempt, $this->maxParseRetries, 'parse failure: ' . $e->getMessage());
+                }
+            }
+        }
+
+        throw $lastException;
+    }
+
     /**
      * Call LLM via Gpt facade
      *
@@ -310,9 +472,15 @@ class LLMWeightingEngine
         
         $jsonString = substr($response, $jsonStart, $jsonEnd - $jsonStart + 1);
         $data = json_decode($jsonString, true);
-        
+
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \RuntimeException('Invalid JSON in LLM response: ' . json_last_error_msg());
+            // Lenient repair of common, model-agnostic JSON defects (trailing commas, stray control
+            // characters) before giving up — avoids a regeneration/fallback for a trivial blemish.
+            $data = json_decode($this->repairJson($jsonString), true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \RuntimeException('Invalid JSON in LLM response: ' . json_last_error_msg());
+            }
         }
         
         // Validate required fields
@@ -369,7 +537,28 @@ class LLMWeightingEngine
             'bounds' => $bounds
         ];
     }
-    
+
+    /**
+     * Lenient, model-agnostic repair of common LLM JSON defects.
+     *
+     * Fixes the blemishes that recur across models regardless of prompt — trailing commas before a
+     * closing brace/bracket and stray ASCII control characters — so a single malformed body does not
+     * force a regeneration or fallback. This is mechanical JSON cleanup, not model-output pattern
+     * matching, and the result is still validated by the caller.
+     *
+     * @param string $json Candidate JSON string
+     * @return string Repaired JSON string
+     */
+    private function repairJson(string $json): string
+    {
+        // Drop trailing commas: {"a":1,} or [1,2,] -> valid JSON
+        $json = preg_replace('/,\s*([}\]])/', '$1', $json);
+        // Replace ASCII control characters (keep the \t \n \r that JSON permits) with a space
+        $json = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', ' ', $json);
+
+        return $json;
+    }
+
     /**
      * Fall back to static reputation-based weighting
      * 
@@ -470,7 +659,7 @@ class LLMWeightingEngine
     {
         $timestamp = date('Y-m-d H:i:s');
         $errorMessage = sprintf(
-            "[%s] ERROR - Evaluation: %s | Duration: %.3fs\n" .
+            "[%s] [ERROR] Evaluation: %s | Duration: %.3fs\n" .
             "Exception: %s\n" .
             "Message: %s\n" .
             "File: %s:%d\n" .
@@ -489,10 +678,12 @@ class LLMWeightingEngine
         );
         
         // Write to dedicated error log file
-        error_log($errorMessage, 3, $this->errorLogPath);
+        $this->debugLog($errorMessage);
         
-        // Also log to standard error log for visibility
-        error_log("LLMWeightingEngine error for evaluation {$evaluationId}: " . $exception->getMessage());
+        // Also log to standard error log for visibility (debug-gated)
+        if ($this->debug) {
+            error_log("[ERROR] LLMWeightingEngine error for evaluation {$evaluationId}: " . $exception->getMessage());
+        }
     }
     
     /**
@@ -508,13 +699,13 @@ class LLMWeightingEngine
     {
         $timestamp = date('Y-m-d H:i:s');
         $message = sprintf(
-            "[%s] SUCCESS - Evaluation: %s | Duration: %.3fs\n",
+            "[%s] [INFO] SUCCESS - Evaluation: %s | Duration: %.3fs\n",
             $timestamp,
             $evaluationId,
             $duration
         );
         
-        error_log($message, 3, $this->errorLogPath);
+        $this->debugLog($message);
     }
     
     /**
@@ -530,14 +721,16 @@ class LLMWeightingEngine
     {
         $timestamp = date('Y-m-d H:i:s');
         $message = sprintf(
-            "[%s] FALLBACK - Evaluation: %s | Reason: %s\n",
+            "[%s] [WARNING] FALLBACK - Evaluation: %s | Reason: %s\n",
             $timestamp,
             $evaluationId,
             $reason
         );
         
-        error_log($message, 3, $this->errorLogPath);
-        error_log("Falling back to static weighting for evaluation {$evaluationId}: {$reason}");
+        $this->debugLog($message);
+        if ($this->debug) {
+            error_log("[WARNING] Falling back to static weighting for evaluation {$evaluationId}: {$reason}");
+        }
     }
     
     /**
@@ -554,14 +747,14 @@ class LLMWeightingEngine
     {
         $timestamp = date('Y-m-d H:i:s');
         $message = sprintf(
-            "[%s] RETRY - Attempt %d/%d | Error: %s\n",
+            "[%s] [WARNING] RETRY - Attempt %d/%d | Error: %s\n",
             $timestamp,
             $attempt,
             $maxRetries,
             $error
         );
         
-        error_log($message, 3, $this->errorLogPath);
+        $this->debugLog($message);
     }
     
     /**
@@ -576,12 +769,12 @@ class LLMWeightingEngine
     {
         $timestamp = date('Y-m-d H:i:s');
         $message = sprintf(
-            "[%s] RETRY SUCCESS - Succeeded on attempt %d\n",
+            "[%s] [INFO] RETRY SUCCESS - Succeeded on attempt %d\n",
             $timestamp,
             $attempt
         );
         
-        error_log($message, 3, $this->errorLogPath);
+        $this->debugLog($message);
     }
     
     /**
@@ -601,7 +794,7 @@ class LLMWeightingEngine
             $count++;
             $this->cache->cacheResponse(self::CACHE_KEY_TOTAL_COUNT, (string)$count, self::CACHE_TTL);
         } catch (\Exception $e) {
-            error_log("Failed to increment total count: " . $e->getMessage());
+            error_log("[ERROR] Failed to increment total count: " . $e->getMessage());
         }
     }
     
@@ -622,7 +815,7 @@ class LLMWeightingEngine
             $count++;
             $this->cache->cacheResponse(self::CACHE_KEY_FALLBACK_COUNT, (string)$count, self::CACHE_TTL);
         } catch (\Exception $e) {
-            error_log("Failed to increment fallback count: " . $e->getMessage());
+            error_log("[ERROR] Failed to increment fallback count: " . $e->getMessage());
         }
     }
     
@@ -650,7 +843,7 @@ class LLMWeightingEngine
             
             return $fallback / $total;
         } catch (\Exception $e) {
-            error_log("Failed to calculate fallback rate: " . $e->getMessage());
+            error_log("[ERROR] Failed to calculate fallback rate: " . $e->getMessage());
             return 0.0;
         }
     }
@@ -668,13 +861,22 @@ class LLMWeightingEngine
     private function checkFallbackRate(): void
     {
         try {
+            // Require a minimum number of evaluations before alerting: on a tiny window a single
+            // early failure reads as a 100% fallback rate and trips the threshold spuriously.
+            $totalCached = $this->cache->getCachedResponse(self::CACHE_KEY_TOTAL_COUNT);
+            $total = $totalCached !== null ? (int)$totalCached : 0;
+
+            if ($total < $this->minSampleForAlert) {
+                return;
+            }
+
             $rate = $this->getFallbackRate();
-            
+
             if ($rate > $this->fallbackAlertThreshold) {
                 $this->generateFallbackAlert($rate);
             }
         } catch (\Exception $e) {
-            error_log("Failed to check fallback rate: " . $e->getMessage());
+            error_log("[ERROR] Failed to check fallback rate: " . $e->getMessage());
         }
     }
     
@@ -715,15 +917,15 @@ class LLMWeightingEngine
             // Log alert generation
             $timestamp = date('Y-m-d H:i:s');
             $message = sprintf(
-                "[%s] ALERT - High fallback rate: %.2f%% (threshold: %.2f%%)\n",
+                "[%s] [WARNING] ALERT - High fallback rate: %.2f%% (threshold: %.2f%%)\n",
                 $timestamp,
                 $percentage,
                 $threshold
             );
-            error_log($message, 3, $this->errorLogPath);
+            $this->debugLog($message);
             
         } catch (\Exception $e) {
-            error_log("Failed to generate fallback alert: " . $e->getMessage());
+            error_log("[ERROR] Failed to generate fallback alert: " . $e->getMessage());
         }
     }
     
@@ -742,10 +944,10 @@ class LLMWeightingEngine
             $this->cache->cacheResponse(self::CACHE_KEY_TOTAL_COUNT, '0', self::CACHE_TTL);
             
             $timestamp = date('Y-m-d H:i:s');
-            $message = sprintf("[%s] Fallback tracking reset\n", $timestamp);
-            error_log($message, 3, $this->errorLogPath);
+            $message = sprintf("[%s] [INFO] Fallback tracking reset\n", $timestamp);
+            $this->debugLog($message);
         } catch (\Exception $e) {
-            error_log("Failed to reset fallback tracking: " . $e->getMessage());
+            error_log("[ERROR] Failed to reset fallback tracking: " . $e->getMessage());
         }
     }
     
@@ -777,7 +979,7 @@ class LLMWeightingEngine
                 'alert_triggered' => $rate > $this->fallbackAlertThreshold
             ];
         } catch (\Exception $e) {
-            error_log("Failed to get fallback stats: " . $e->getMessage());
+            error_log("[ERROR] Failed to get fallback stats: " . $e->getMessage());
             return [
                 'total_calculations' => 0,
                 'fallback_count' => 0,
@@ -1121,7 +1323,7 @@ class LLMWeightingEngine
         $status = $isFallback ? 'FALLBACK' : 'SUCCESS';
         
         $message = sprintf(
-            "[%s] CRITIC_SELECTION_%s - Evaluation: %s | Selected: %d critics | Duration: %.3fs\n" .
+            "[%s] [INFO] CRITIC_SELECTION_%s - Evaluation: %s | Selected: %d critics | Duration: %.3fs\n" .
             "Selected Critics: %s\n" .
             "Rationale: %s\n",
             $timestamp,
@@ -1133,7 +1335,7 @@ class LLMWeightingEngine
             $result['selection_rationale']
         );
         
-        error_log($message, 3, $this->errorLogPath);
+        $this->debugLog($message);
     }
     
     /**
@@ -1364,7 +1566,7 @@ class LLMWeightingEngine
     {
         $timestamp = date('Y-m-d H:i:s');
         $message = sprintf(
-            "[%s] BOUNDS_EXCEED_TYPICAL\n" .
+            "[%s] [WARNING] BOUNDS_EXCEED_TYPICAL\n" .
             "Suggested Bounds: [%.3f, %.3f]\n" .
             "Typical Bounds: [%.3f, %.3f]\n" .
             "Rationale: %s\n" .
@@ -1379,8 +1581,10 @@ class LLMWeightingEngine
             $bounds['explanation']
         );
         
-        error_log($message, 3, $this->errorLogPath);
-        error_log("LLM suggested bounds outside typical range: [{$bounds['min_bound']}, {$bounds['max_bound']}]");
+        $this->debugLog($message);
+        if ($this->debug) {
+            error_log("[WARNING] LLM suggested bounds outside typical range: [{$bounds['min_bound']}, {$bounds['max_bound']}]");
+        }
     }
     
     /**
@@ -1485,7 +1689,7 @@ class LLMWeightingEngine
         $exceedsTypical = $result['exceeds_typical'] ? 'YES' : 'NO';
         
         $message = sprintf(
-            "[%s] BOUNDS_DETERMINATION_%s - Evaluation: %s | Duration: %.3fs\n" .
+            "[%s] [INFO] BOUNDS_DETERMINATION_%s - Evaluation: %s | Duration: %.3fs\n" .
             "Bounds: [%.3f, %.3f]\n" .
             "Exceeds Typical: %s\n" .
             "Rationale: %s\n",
@@ -1499,7 +1703,7 @@ class LLMWeightingEngine
             $result['rationale']
         );
         
-        error_log($message, 3, $this->errorLogPath);
+        $this->debugLog($message);
     }
     
     /**
@@ -1690,7 +1894,7 @@ class LLMWeightingEngine
                 $stored[] = array_merge($anomaly, ['id' => $anomalyId]);
                 
             } catch (\Exception $e) {
-                error_log("Failed to store anomaly: " . $e->getMessage());
+                error_log("[ERROR] Failed to store anomaly: " . $e->getMessage());
                 // Continue with other anomalies
             }
         }
@@ -1765,7 +1969,7 @@ class LLMWeightingEngine
                     $this->logAnomalyAlert($anomaly);
                     
                 } catch (\Exception $e) {
-                    error_log("Failed to generate alert for anomaly {$anomaly['id']}: " . $e->getMessage());
+                    error_log("[ERROR] Failed to generate alert for anomaly {$anomaly['id']}: " . $e->getMessage());
                 }
             }
         }
@@ -1781,7 +1985,7 @@ class LLMWeightingEngine
     {
         $timestamp = date('Y-m-d H:i:s');
         $message = sprintf(
-            "[%s] ANOMALY_ALERT - ID: %d | Type: %s | Critic: %s | Severity: %s\n" .
+            "[%s] [WARNING] ANOMALY_ALERT - ID: %d | Type: %s | Critic: %s | Severity: %s\n" .
             "Description: %s\n",
             $timestamp,
             $anomaly['id'],
@@ -1791,7 +1995,7 @@ class LLMWeightingEngine
             $anomaly['description']
         );
         
-        error_log($message, 3, $this->errorLogPath);
+        $this->debugLog($message);
     }
     
     /**
@@ -1866,7 +2070,7 @@ class LLMWeightingEngine
         $anomalyCount = count($result['anomalies']);
         
         $message = sprintf(
-            "[%s] ANOMALY_DETECTION - Analysis: %s | Duration: %.3fs\n" .
+            "[%s] [INFO] ANOMALY_DETECTION - Analysis: %s | Duration: %.3fs\n" .
             "Period: %d days | Critics: %d | Evaluations: %d\n" .
             "Anomalies Found: %d (High: %d, Medium: %d, Low: %d)\n" .
             "Assessment: %s\n" .
@@ -1884,7 +2088,7 @@ class LLMWeightingEngine
             $result['overall_assessment']
         );
         
-        error_log($message, 3, $this->errorLogPath);
+        $this->debugLog($message);
     }
     
     /**

@@ -193,7 +193,7 @@ class EmbeddingSearch
       $totalDuration = (microtime(true) - $startTime) * 1000;
       
       if ($this->debug) {
-        error_log("[info] Vector search completed");
+        error_log("[INFO] Vector search completed");
         error_log("Results: " . count($resultsArray));
         error_log("Search duration: " . round($searchDuration, 2) . " ms");
         error_log("Total duration: " . round($totalDuration, 2) . " ms");

@@ -406,7 +406,6 @@ class TaskPlanner
             // Test in order of specificity
             $plannersToTest = [
                 'competitor_analysis',  // Most specific
-                'pattern_analysis',     // Specific
                 'analytics'             // Basic analytics catch-all (handles COUNT, SUM, AVG, etc.)
             ];
 

@@ -168,7 +168,7 @@ class IntentAnalyzer
         }
         
         if ($this->debug) {
-          error_log("[info] CACHE HIT - Returning cached result");
+          error_log("[INFO] CACHE HIT - Returning cached result");
           error_log(str_repeat("=", 100));
         }
         
@@ -181,7 +181,7 @@ class IntentAnalyzer
     // 2. Use UnifiedQueryAnalyzer (ALWAYS - required for analytics)
     // UnifiedQueryAnalyzer provides comprehensive intent classification for all query types
     if ($this->debug) {
-      error_log("[info] Using UNIFIED analyzer (Pure LLM mode - always enabled)");
+      error_log("[INFO] Using UNIFIED analyzer (Pure LLM mode - always enabled)");
     }
     
     $unifiedStart = microtime(true);

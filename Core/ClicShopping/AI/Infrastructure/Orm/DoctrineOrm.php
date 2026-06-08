@@ -123,7 +123,7 @@ class DoctrineOrm
             $connectionParams['serverVersion'] = 'mariadb-' . $versionNumber;
 
             if (self::$debug) {
-              error_log("[info] Using MariaDB version: mariadb-{$versionNumber}");
+              error_log("[INFO] Using MariaDB version: mariadb-{$versionNumber}");
             }
           } else {
             $connectionParams['serverVersion'] = 'mariadb-11.7.0';
@@ -141,7 +141,7 @@ class DoctrineOrm
             $connectionParams['serverVersion'] = $versionNumber;
 
             if (self::$debug) {
-              error_log("[info] Using MySQL version: {$versionNumber}");
+              error_log("[INFO] Using MySQL version: {$versionNumber}");
             }
           } else {
             $connectionParams['serverVersion'] = '8.0.0';
@@ -467,7 +467,7 @@ class DoctrineOrm
       // METHOD 2 (FALLBACK): SHOW TABLES LIKE
       if (empty($tables)) {
         if (self::$debug) {
-          error_log("[info] Trying SHOW TABLES fallback method...");
+          error_log("[INFO] Trying SHOW TABLES fallback method...");
         }
 
         try {
@@ -503,7 +503,7 @@ class DoctrineOrm
       // METHOD 3 (ULTIMATE FALLBACK): Validated hardcoded list
       if (empty($tables)) {
         if (self::$debug) {
-          error_log("[info] Using hardcoded fallback list...");
+          error_log("[INFO] Using hardcoded fallback list...");
         }
 
         $tables = self::getFallbackEmbeddingTables();

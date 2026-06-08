@@ -1,4 +1,4 @@
-# AI_ARCHITECTURE.md — ClicShopping AI v4.20+
+# AI_ARCHITECTURE.md — ClicShopping AI v4.30+
 
 > Physical architecture of the AI layer: directory structure, OrchestratorAgent components, domain-agnostic patterns.
 > Agent operational rules: `AGENTS.md` — AI concepts and pipelines: `AI_SYSTEM.md`
@@ -39,7 +39,7 @@ Core/ClicShopping/AI/
 
 The `Agents/` directory was renamed to `CoreAI/` to align with the `*AI` suffix naming pattern
 (InterfacesAI, DomainsAI, RegistryAI, CoreAI). The old `Agents/` namespace is deprecated
-and will be removed in version 5.0. See `MIGRATION_GUIDE_COREAI.md`.
+and will be removed in version 5.0.
 
 ### Multi-Domain App Structure
 
@@ -108,10 +108,7 @@ $this->performanceTracker->startTracking();
 ```
 
 Documentation:
-- Overview: `Core/ClicShopping/AI/ORCHESTRATOR_REFACTORING_2026_04_30.md`
-- Migration: `Core/ClicShopping/AI/ORCHESTRATOR_MIGRATION_GUIDE.md`
-- Class Index: `Core/ClicShopping/AI/REFACTORING_CLASS_INDEX.md`
-- Spec: `.kiro/specs/orchestrator-agent-refactoring/`
+- Current state: `Core/ClicShopping/AI/ARCHITECTURE_EVOLUTION.md`
 
 ---
 

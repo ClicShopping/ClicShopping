@@ -121,7 +121,7 @@ class UnifiedQueryAnalyzer
     $startTime = microtime(true);
 
     if ($this->debug) {
-      error_log("[info] " . $this->language->getDef('debug_analysis_start'));
+      error_log("[INFO] " . $this->language->getDef('debug_analysis_start'));
       error_log(sprintf($this->language->getDef('debug_input_query'), $query));
     }
 

@@ -163,7 +163,7 @@ Le CalculatorTool est prêt à être utilisé.
 
 ---
 
-## [info] Structure des Tables Créées
+## [INFO] Structure des Tables Créées
 
 ### Table `calculator_cache`
 ```sql

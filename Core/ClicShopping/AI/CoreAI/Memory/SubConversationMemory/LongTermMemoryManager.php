@@ -300,7 +300,7 @@ class LongTermMemoryManager
             
             if ($docUserIdStr !== $userIdStr && $docUserId != $userId) {
               if ($debug) {
-                error_log("[info] FILTER: user_id mismatch - doc: {$docUserIdStr} (type: " . gettype($docUserId) . "), filter: {$userIdStr} (type: " . gettype($userId) . ")");
+                error_log("[INFO] FILTER: user_id mismatch - doc: {$docUserIdStr} (type: " . gettype($docUserId) . "), filter: {$userIdStr} (type: " . gettype($userId) . ")");
               }
               return false;
             }
@@ -315,7 +315,7 @@ class LongTermMemoryManager
             
             if ($docLanguageIdInt !== $languageIdInt) {
               if ($debug) {
-                error_log("[info] FILTER: language_id mismatch - doc: {$docLanguageIdInt}, filter: {$languageIdInt}");
+                error_log("[INFO] FILTER: language_id mismatch - doc: {$docLanguageIdInt}, filter: {$languageIdInt}");
               }
               return false;
             }
@@ -324,7 +324,7 @@ class LongTermMemoryManager
           if ($debug) {
             $userMatch = $userId === null ? 'N/A' : ($metadata['user_id'] ?? 'missing');
             $langMatch = $languageId === null ? 'N/A' : ($metadata['language_id'] ?? 'missing');
-            error_log("[info] FILTER: Document passed filter (user_id: {$userMatch}, language_id: {$langMatch})");
+            error_log("[INFO] FILTER: Document passed filter (user_id: {$userMatch}, language_id: {$langMatch})");
           }
           
           return true;
