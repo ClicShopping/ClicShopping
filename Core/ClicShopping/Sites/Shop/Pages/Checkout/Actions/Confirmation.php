@@ -58,11 +58,11 @@ class Confirmation extends \ClicShopping\OM\Domains\PagesActionsAbstract
       CLICSHOPPING::redirect(null, 'Account&LogIn');
     }
 
-// avoid hack attempts during the checkout procedure by checking the internal cartID
-    if (isset($CLICSHOPPING_ShoppingCart->cartID) && isset($_SESSION['cartID'])) {
-      if ($CLICSHOPPING_ShoppingCart->cartID != $_SESSION['cartID']) {
-        CLICSHOPPING::redirect(null, 'Checkout&Shipping');
-      }
+// avoid hack attempts during the checkout procedure by checking the internal cartID.
+// Fail closed: if either id is missing (or null) or they differ, restart the shipping step.
+    if (!isset($CLICSHOPPING_ShoppingCart->cartID, $_SESSION['cartID'])
+      || $CLICSHOPPING_ShoppingCart->cartID != $_SESSION['cartID']) {
+      CLICSHOPPING::redirect(null, 'Checkout&Shipping');
     }
 
 // if no shipping method has been selected, redirect the customer to the shipping method selection page

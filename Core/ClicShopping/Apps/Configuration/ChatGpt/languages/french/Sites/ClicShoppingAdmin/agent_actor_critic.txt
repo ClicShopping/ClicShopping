@@ -64,6 +64,10 @@ text_message = Message
 text_created_at = Créé le
 text_no_data = Aucune donnée disponible
 
+text_full_explanation = Explication complète
+text_view_full_explanation = Voir l'explication complète
+button_close = Fermer
+
 help_title = Aide - Comprendre le système Acteur-Critique
 help_description = Cette page présente les métriques du système Acteur-Critique qui sépare la génération de réponses (acteurs) de leur évaluation (critiques).
 help_actors = <strong>Acteurs :</strong> Agents qui produisent les réponses (AnalyticsAgent, SemanticAgent, etc.). Métriques clés : temps d'exécution, taux de réussite, score de qualité.

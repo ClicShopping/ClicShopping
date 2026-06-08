@@ -200,7 +200,7 @@ INSERT INTO administrator_menu VALUES(790, 'index.php?A&Configuration\\Api&Api',
 INSERT INTO administrator_menu VALUES(791, 'index.php?A&Configuration\\Antispam&Configure', 13, 15, 0, 'antispam.png', 0, 'app_configuration_antispam', 1);
 INSERT INTO administrator_menu VALUES(792, 'index.php?A&Tools\\Upgrade&Upgrade', 644, 5, 1, '', 0, 'app_tools_upgrade', 1);
 INSERT INTO administrator_menu VALUES(793, 'index.php?A&Tools\\Upgrade&Marketplace', 644, 10, 1, null, 0, 'app_tools_upgrade', 1);
-INSERT INTO administrator_menu VALUES(794, 'index.php?A&Configuration\\ChatGpt&DashBoard', 810, 1, 1, 'chatgpt.gif', 1, 'app_configuration_chatgpt', 1);
+INSERT INTO administrator_menu VALUES(794, 'index.php?A&Configuration\\ChatGpt&Dashboard', 810, 1, 1, 'chatgpt.gif', 1, 'app_configuration_chatgpt', 1);
 INSERT INTO administrator_menu VALUES(795, 'index.php?A&Catalog\\Products&StatsProductsNoPurchased', 98, 3, 0, 'stats_products_purchased.gif', 0, 'app_catalog_products', 1);
 INSERT INTO administrator_menu VALUES(796, 'index.php?A&Shipping\\Item&Configure&module=IT', 449, 4, 1, 'modules_shipping.gif', 0, 'app_shipping_item', 1);
 INSERT INTO administrator_menu VALUES(797, 'index.php?A&Marketing\\Recommendations&Recommendations', 107, 1, 0, 'products_recommendations.png', 0, 'app_marketing_recommendations', 1);

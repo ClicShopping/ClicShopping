@@ -81,6 +81,10 @@ text_message = Message
 text_created_at = Created At
 text_no_data = No data available
 
+text_full_explanation = Full Explanation
+text_view_full_explanation = View full explanation
+button_close = Close
+
 help_title = Help - Understanding the Actor-Critic System
 help_description = This page presents metrics for the Actor-Critic system that separates response generation (actors) from quality evaluation (critics).
 help_actors = <strong>Actors:</strong> Agents that produce responses (AnalyticsAgent, SemanticAgent, etc.). Key metrics: execution time, success rate, quality score.

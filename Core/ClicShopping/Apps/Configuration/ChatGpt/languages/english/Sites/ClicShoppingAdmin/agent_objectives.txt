@@ -59,6 +59,18 @@ text_failure_reason = Failure Reason
 text_previous = Previous
 text_next = Next
 
+text_general_information = General Information
+text_deadline = Deadline
+text_timeline = Timeline
+text_approved_at = Approved At
+text_started_at = Started At
+text_completed_at = Completed At
+text_no_description = No description
+text_objective_not_found = Objective not found
+text_error_loading_details = Error loading details
+text_objectives_refreshed = Objectives refreshed
+text_action_success = Action completed successfully
+
 help_title = Help - Understanding Agent Objectives
 help_description = This page displays objectives assigned to the AI agents in the system. Each objective represents a task or goal that the agent must accomplish.
 help_statuses = <strong>Statuses:</strong> Pending = awaiting validation, Approved = validated by an administrator, Active = currently executing, Completed = successfully finished, Failed = failed, Cancelled = cancelled.

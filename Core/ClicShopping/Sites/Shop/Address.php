@@ -486,7 +486,7 @@ class Address
    *                        If numeric, the method looks for a specific zone ID.
    *                        If a string, the method looks for a matching zone name or code.
    *
-   * @return int|null The ID of the zone if found, or null if no matching zone is found.
+   * @return int|false The ID of the zone if found, or false if no matching zone is found.
    */
   public function checkZoneCountry(int $country, $zone_id = null)
   {
@@ -528,7 +528,9 @@ class Address
 
     $result = $Qcheck->valueInt('zone_id');
 
-    return $result;
+    // zone_id is an auto-increment PK (never 0), so 0 means "no matching zone".
+    // Return false in that case so callers testing `!== false` / `=== false` work.
+    return $result > 0 ? $result : false;
   }
 
   /**

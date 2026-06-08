@@ -24,12 +24,12 @@ class HistoryInfo extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Language = Registry::get('Language');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    $CLICSHOPPING_Hooks->call('HistoryInfo', 'PreAction');
-
     if (!$CLICSHOPPING_Customer->isLoggedOn()) {
       $CLICSHOPPING_NavigationHistory->setSnapshot();
       CLICSHOPPING::redirect(null, 'Account&LogIn');
     }
+
+    $CLICSHOPPING_Hooks->call('HistoryInfo', 'PreAction');
 
     if (!isset($_GET['order_id']) || (isset($_GET['order_id']) && !is_numeric($_GET['order_id']))) {
       CLICSHOPPING::redirect(null, 'Account&History');
@@ -51,5 +51,7 @@ class HistoryInfo extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Breadcrumb->add(CLICSHOPPING::getDef('navbar_title_1'), CLICSHOPPING::link(null, 'Account&Main'));
     $CLICSHOPPING_Breadcrumb->add(CLICSHOPPING::getDef('navbar_title_2'), CLICSHOPPING::link(null, 'Account&HistoryInfo'));
     $CLICSHOPPING_Breadcrumb->add(sprintf(CLICSHOPPING::getDef('navbar_title_3', ['order_id' => HTML::sanitize($_GET['order_id'])]), $_GET['order_id']), CLICSHOPPING::link(null, 'Account&HistoryInfo&order_id=' . (int)$_GET['order_id']));
+
+    $CLICSHOPPING_Hooks->call('HistoryInfo', 'PostAction');
   }
 }

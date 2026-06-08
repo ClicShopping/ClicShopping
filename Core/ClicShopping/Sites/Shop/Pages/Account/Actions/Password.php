@@ -22,12 +22,12 @@ class Password extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Language = Registry::get('Language');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    $CLICSHOPPING_Hooks->call('Password', 'PreAction');
-
     if (!$CLICSHOPPING_Customer->isLoggedOn()) {
       $CLICSHOPPING_NavigationHistory->setSnapshot();
       CLICSHOPPING::redirect(null, 'Account&LogIn');
     }
+
+    $CLICSHOPPING_Hooks->call('Password', 'PreAction');
 
 // templates
     $this->page->setFile('password.php');
@@ -38,5 +38,7 @@ class Password extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $CLICSHOPPING_Breadcrumb->add(CLICSHOPPING::getDef('navbar_title_1'), CLICSHOPPING::link(null, 'Account&Main'));
     $CLICSHOPPING_Breadcrumb->add(CLICSHOPPING::getDef('navbar_title_2'), CLICSHOPPING::link(null, 'Account&Password'));
+
+    $CLICSHOPPING_Hooks->call('Password', 'PostAction');
   }
 }

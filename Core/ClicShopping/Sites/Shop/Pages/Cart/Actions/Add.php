@@ -33,16 +33,24 @@ class Add extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
         $CLICSHOPPING_ShoppingCart->addCart($_POST['products_id'], $CLICSHOPPING_ShoppingCart->getQuantity($CLICSHOPPING_Prod::getProductIDString($_POST['products_id'], $attributes)) + ((int)$_POST['cart_quantity']), $attributes);
 
+        // Defense-in-depth: only keep the return url if it is an internal page reference.
+        // Reject anything starting with a scheme (http:, javascript:, …), a protocol-relative
+        // "//host" or a backslash, and anything containing CR/LF.
+        $safeUrl = '';
+
+        if (isset($_POST['url']) && is_string($_POST['url'])
+          && !preg_match('#^(?:[a-z][a-z0-9+.-]*:|//|\\\\)#i', $_POST['url'])
+          && !preg_match('#[\r\n]#', $_POST['url'])) {
+          $safeUrl = $_POST['url'];
+        }
+
         if (defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true' && !isset($_SESSION['login_customer_id'])) {
           if (DISPLAY_CART == 'true') {
             $goto = null;
             $parameters = 'Cart';
           } else {
             $goto = null;
-
-            if (isset($_POST['url'])) {
-              $parameters = $_POST['url'];
-            }
+            $parameters = $safeUrl;
           }
         } else {
           if (DISPLAY_CART == 'true') {
@@ -50,10 +58,7 @@ class Add extends \ClicShopping\OM\Domains\PagesActionsAbstract
             $parameters = 'Cart';
           } else {
             $goto = CLICSHOPPING::getConfig('bootstrap_file');
-
-            if (isset($_POST['url'])) {
-              $parameters = $_POST['url'];
-            }
+            $parameters = $safeUrl;
           }
         }
 

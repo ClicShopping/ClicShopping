@@ -36,7 +36,7 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
           </span>
           <span class="col-md-4 text-end">
             <?php echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_refresh'), null, null, 'primary', ['params' => 'onclick="refreshObjectives()"']); ?>
-            <?php echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_back_dashboard'), null, $CLICSHOPPING_ChatGpt->link('Dashboard'), 'warning'); ?>
+            <?php echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_back_dashboard'), null, $CLICSHOPPING_ChatGpt->link('DashboardDataScientist'), 'warning'); ?>
           </span>
         </div>
       </div>
@@ -219,7 +219,18 @@ window.AgentObjectivesConfig = {
     metrics: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_metrics'); ?>",
     failure_reason: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_failure_reason'); ?>",
     previous: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_previous'); ?>",
-    next: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_next'); ?>"
+    next: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_next'); ?>",
+    general_information: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_general_information'); ?>",
+    deadline: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_deadline'); ?>",
+    timeline: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_timeline'); ?>",
+    approved_at: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_approved_at'); ?>",
+    started_at: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_started_at'); ?>",
+    completed_at: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_completed_at'); ?>",
+    no_description: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_no_description'); ?>",
+    objective_not_found: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_objective_not_found'); ?>",
+    error_loading_details: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_error_loading_details'); ?>",
+    objectives_refreshed: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_objectives_refreshed'); ?>",
+    action_success: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_action_success'); ?>"
   }
 };
 </script>

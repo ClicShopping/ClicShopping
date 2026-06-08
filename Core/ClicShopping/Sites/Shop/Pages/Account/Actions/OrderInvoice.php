@@ -25,12 +25,12 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Order = Registry::get('Order');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    $CLICSHOPPING_Hooks->call('OrderInvoice', 'PreAction');
-
     if (!$CLICSHOPPING_Customer->isLoggedOn()) {
       $CLICSHOPPING_NavigationHistory->setSnapshot();
       CLICSHOPPING::redirect(null, 'Account&LogIn');
     }
+
+    $CLICSHOPPING_Hooks->call('OrderInvoice', 'PreAction');
 
     $CLICSHOPPING_Language->loadDefinitions('orders_invoice');
 

@@ -526,6 +526,22 @@ class AddressBook
     $CLICSHOPPING_Customer = Registry::get('Customer');
 
     if (is_numeric($id) && ($id > 0)) {
+      // Ensure the address actually belongs to the current customer before making it the
+      // default, otherwise customers_default_address_id could point to a foreign entry.
+      $Qowner = $CLICSHOPPING_Db->prepare('select address_book_id
+                                             from :table_address_book
+                                             where address_book_id = :address_book_id
+                                               and customers_id = :customers_id
+                                             limit 1
+                                            ');
+      $Qowner->bindInt(':address_book_id', $id);
+      $Qowner->bindInt(':customers_id', $CLICSHOPPING_Customer->getID());
+      $Qowner->execute();
+
+      if ($Qowner->fetch() === false) {
+        return false;
+      }
+
       $Qupdate = $CLICSHOPPING_Db->prepare('update :table_customers
                                               set customers_default_address_id = :customers_default_address_id
                                               where customers_id = :customers_id

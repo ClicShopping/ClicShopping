@@ -233,7 +233,20 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
 
     $customer_id = $CLICSHOPPING_Customer->getId();
     $currency = mb_strtoupper($CLICSHOPPING_Order->info['currency']);
-    $total_amount = (int)round($CLICSHOPPING_Order->info['total'] * 100);
+    // Stripe expects the amount in the currency's smallest unit, which depends on its decimals:
+    //  - zero-decimal currencies (JPY, KRW, …): the plain amount, no ×100;
+    //  - three-decimal currencies (BHD, KWD, …): ×1000, but rounded to the nearest 10 (last digit 0);
+    //  - everyone else: ×100.
+    $zeroDecimalCurrencies = ['BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'];
+    $threeDecimalCurrencies = ['BHD', 'JOD', 'KWD', 'OMR', 'TND'];
+
+    if (\in_array($currency, $zeroDecimalCurrencies, true)) {
+      $total_amount = (int)round($CLICSHOPPING_Order->info['total']);
+    } elseif (\in_array($currency, $threeDecimalCurrencies, true)) {
+      $total_amount = (int)(round($CLICSHOPPING_Order->info['total'] * 1000 / 10) * 10);
+    } else {
+      $total_amount = (int)round($CLICSHOPPING_Order->info['total'] * 100);
+    }
 
     $metadata = ['customer_id' => (int)$customer_id,
       'customer_name' => $CLICSHOPPING_Customer->getName(),
@@ -319,7 +332,7 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
     $content .= $this->app->getDef('text_stripe_title');
     $content .= '<div class="mt-1"></div>';
 // have to create intent before loading the javascript because it needs the intent id
-    $content .= '<input type="hidden" id="intent_id" value="' . HTML::output($stripe_payment_intent_id) . '" />' .
+    $content .= '<input type="hidden" id="intent_id" name="intent_id" value="' . HTML::output($stripe_payment_intent_id) . '" />' .
       '<input type="hidden" id="secret" value="' . HTML::output($this->intent->client_secret) . '" />';
     $content .= '<div id="stripe_table_new_card">' .
       '<div><label for="cardholder-name" class="control-label">' . $this->app->getDef('text_stripe_credit_card_owner') . '</label>' .
@@ -338,12 +351,12 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
     */
 
     $content .= '<div id="card-errors" role="alert" class="messageStackError payment-errors"></div></div>';
-    $content .= '<input type="hidden" id="city" value="' . $CLICSHOPPING_Order->billing['city'] . '" />';
+    $content .= '<input type="hidden" id="city" value="' . HTML::output($CLICSHOPPING_Order->billing['city']) . '" />';
     $content .= '<input type="hidden" id="line1" value="' . HTML::output($CLICSHOPPING_Order->customer['street_address']) . '" />';
     $content .= '<input type="hidden" id="line2" value="' . HTML::output($CLICSHOPPING_Order->billing['suburb']) . '" />';
     $content .= '<input type="hidden" id="postal_code" value="' . HTML::output($CLICSHOPPING_Order->customer['postcode']) . '" />';
-    $content .= '<input type="hidden" id="state" value="' . $CLICSHOPPING_Address->getZoneName($CLICSHOPPING_Order->billing['country']['id'], $CLICSHOPPING_Order->billing['zone_id'], $CLICSHOPPING_Order->billing['state']) . '" />';
-    $content .= '<input type="hidden" id="country" value="' . $CLICSHOPPING_Order->billing['country']['iso_code_2'] . '" />';
+    $content .= '<input type="hidden" id="state" value="' . HTML::output($CLICSHOPPING_Address->getZoneName($CLICSHOPPING_Order->billing['country']['id'], $CLICSHOPPING_Order->billing['zone_id'], $CLICSHOPPING_Order->billing['state'])) . '" />';
+    $content .= '<input type="hidden" id="country" value="' . HTML::output($CLICSHOPPING_Order->billing['country']['iso_code_2']) . '" />';
     $content .= '<input type="hidden" id="email_address" value="' . HTML::output($CLICSHOPPING_Order->customer['email_address']) . '" />';
     $content .= '<input type="hidden" id="customer_id" value="' . HTML::output($customer_id) . '" />';
 
@@ -392,11 +405,17 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
     $orders_id = $CLICSHOPPING_Order->getLastOrderId();
 
     if (empty($orders_id) || $orders_id == 0 || \is_null($orders_id)) {
+      // Scope the fallback to the current customer: a bare "last order id" can target
+      // another customer's order under concurrent checkouts.
+      $customers_id = (int)(Registry::get('Customer')->getId());
+
       $Qorder = $CLICSHOPPING_Order->db->prepare('select orders_id
-                                                    from :table_orders                                                    
+                                                    from :table_orders
+                                                    where customers_id = :customers_id
                                                     order by orders_id desc
                                                     limit 1
                                                    ');
+      $Qorder->bindInt(':customers_id', $customers_id);
       $Qorder->execute();
 
       $orders_id = $Qorder->valueInt('orders_id');

@@ -232,7 +232,7 @@ function getSeverityBadgeClass($severity) {
           <span class="col-md-4 text-end">
             <?php 
               echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_refresh'), null, null, 'primary', ['params' => 'onclick="location.reload()"']) . ' ';
-              echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_back_dashboard'), null, $CLICSHOPPING_ChatGpt->link('Dashboard'), 'warning');
+              echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_back_dashboard'), null, $CLICSHOPPING_ChatGpt->link('DashboardDataScientist'), 'warning');
             ?>
           </span>
         </div>
@@ -773,12 +773,35 @@ function getSeverityBadgeClass($severity) {
     </div><!-- End Tab 3 -->
   </div>
 </div>
+
+<!-- Adaptive Weight Explanation Modal -->
+<div class="modal fade" id="weightExplanationModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_full_explanation'); ?></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small" id="weight-explanation-meta"></p>
+        <p id="weight-explanation-body" style="white-space: pre-wrap;"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $CLICSHOPPING_ChatGpt->getDef('button_close'); ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="py-4"></div>
 <script>
 window.AdaptiveWeightingConfig = {
   baseUrl: '<?php echo CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'); ?>',
   weightsEndpoint: 'ajax/Agent/get_adaptive_weights.php',
-  consensusEndpoint: 'ajax/Agent/get_agent_consensus.php'
+  consensusEndpoint: 'ajax/Agent/get_agent_consensus.php',
+  labels: {
+    view_full_explanation: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_view_full_explanation'); ?>"
+  }
 };
 window.ExportMetricsConfig = {
   baseUrl: '<?php echo CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'); ?>'

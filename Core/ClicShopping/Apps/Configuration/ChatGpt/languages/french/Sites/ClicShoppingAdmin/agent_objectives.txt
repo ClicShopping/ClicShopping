@@ -59,6 +59,18 @@ text_failure_reason = Raison de l'echec
 text_previous = Precedent
 text_next = Suivant
 
+text_general_information = Informations générales
+text_deadline = Échéance
+text_timeline = Chronologie
+text_approved_at = Approuvé le
+text_started_at = Démarré le
+text_completed_at = Terminé le
+text_no_description = Aucune description
+text_objective_not_found = Objectif non trouvé
+text_error_loading_details = Erreur lors du chargement des détails
+text_objectives_refreshed = Objectifs actualisés
+text_action_success = Action effectuée avec succès
+
 help_title = Aide - Comprendre les objectifs des agents
 help_description = Cette page affiche les objectifs assignes aux agents IA du systeme. Chaque objectif represente une tache ou un but que l'agent doit accomplir.
 help_statuses = <strong>Statuts :</strong> Pending = en attente de validation, Approved = valide par un administrateur, Active = en cours d'execution, Completed = termine avec succes, Failed = echec, Cancelled = annule.

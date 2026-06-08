@@ -19,17 +19,19 @@ class OrderConditions extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_NavigationHistory = Registry::get('NavigationHistory');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    $CLICSHOPPING_Hooks->call('OrderConditions', 'PreAction');
-
     if (!$CLICSHOPPING_Customer->isLoggedOn()) {
       $CLICSHOPPING_NavigationHistory->setSnapshot();
       CLICSHOPPING::redirect(null, 'Account&LogIn');
     }
+
+    $CLICSHOPPING_Hooks->call('OrderConditions', 'PreAction');
 
     if (!isset($_GET['order_id']) || (isset($_GET['order_id']) && !is_numeric($_GET['order_id']))) {
       CLICSHOPPING::redirect('account_history.php');
     }
 
     $this->page->setFile('order_conditions.php');
+
+    $CLICSHOPPING_Hooks->call('OrderConditions', 'PostAction');
   }
 }

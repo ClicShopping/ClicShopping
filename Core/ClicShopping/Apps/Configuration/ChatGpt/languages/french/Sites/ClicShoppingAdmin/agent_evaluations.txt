@@ -34,6 +34,11 @@ text_final_score = Score final
 text_created = Créé
 text_resolved = Résolu
 
+text_dynamic_consensus = Consensus dynamique
+text_static_consensus = Consensus statique
+text_difference = Différence
+text_difference_percent = Différence %
+
 text_evaluation_details = Détails de l'évaluation
 text_details = Détails
 text_number_of_evaluations = Nombre d'évaluations
