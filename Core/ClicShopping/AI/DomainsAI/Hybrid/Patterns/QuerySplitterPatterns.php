@@ -213,7 +213,7 @@ class QuerySplitterPatterns
       '/\s+(with|to)\s+(other\s+)?.*$/i',
       '/\s+(versus|vs\.?)(\s+.*)?$/i',  // Remove "versus" or "vs" with or without following text
       '/\s+(price\s+)?comparison.*$/i',
-      '/\s+(on|at|from)\s+[a-z0-9.-]+$/i',  // Remove "on Amazon", "at Amazon", "from Amazon" (English only - query is already translated)
+      '/\s+(on|at|from)\s+[a-z0-9.-]+$/i',  // Remove a trailing "on/at/from <site>" (English only - query is already translated)
     ],
     // Phase 4: Clean up "the new" constructs
     'cleanup' => [

@@ -1455,9 +1455,9 @@ TEMPORAL AGGREGATIONS:
 AMBIGUOUS QUERIES:
 When query is ambiguous about order status (e.g., "revenue by category"), use default rule (status != 4) and explain in analysis
 
-text_multi_query_warning = ⚠️ WARNING: Multiple SQL queries detected in response
+text_multi_query_warning = ⚠️ AVERTISSEMENT : Plusieurs requêtes SQL détectées dans la réponse
 
-This query contains multiple sub-queries or statements. Ensure each query is properly separated and valid.
+Cette requête contient plusieurs sous-requêtes ou instructions. Assurez-vous que chaque requête est correctement séparée et valide.
 
 text_response_format = RESPONSE FORMAT RULES:
 

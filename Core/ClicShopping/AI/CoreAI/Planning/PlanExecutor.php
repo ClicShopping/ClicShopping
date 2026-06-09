@@ -963,7 +963,7 @@ class PlanExecutor
       // Add shopping_results for Mode B and Mode D (use original shopping_results from WebSearchFacade)
       // Check for 'mode_b_google_shopping' instead of 'B'
       // Also pass shopping_results for Hybrid mode
-      // Also pass shopping_results for Mode D (Amazon Shopping)
+      // Also pass shopping_results for Mode D (domain shopping engine)
       
       if (($mode === 'B' || $mode === 'mode_b_google_shopping' || $mode === 'mode_d_amazon_shopping' || $mode === 'D' || $mode === 'hybrid') && !empty($searchResult['shopping_results'])) {
         $formatterData['shopping_results'] = $searchResult['shopping_results'];

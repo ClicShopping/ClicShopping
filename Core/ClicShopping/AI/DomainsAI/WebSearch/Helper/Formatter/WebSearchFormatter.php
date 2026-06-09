@@ -688,8 +688,8 @@ class WebSearchFormatter extends AbstractFormatter
       }
 
       $thumbnail = $result['thumbnail'] ?? '';
-      $rating = $result['rating'] ?? null; // Amazon rating
-      $reviews = $result['reviews'] ?? null; // Amazon reviews count
+      $rating = $result['rating'] ?? null; // rating, when provided by the engine
+      $reviews = $result['reviews'] ?? null; // reviews count, when provided by the engine
       
       // CRITICAL DEBUG: Log what we extracted
       if ($this->debug) {
@@ -712,7 +712,7 @@ class WebSearchFormatter extends AbstractFormatter
       $output .= htmlspecialchars($title);
       $output .= "</div>";
       
-      // Rating and Reviews (Amazon specific)
+      // Rating and Reviews (when the engine provides them)
       if ($rating !== null || $reviews !== null) {
         $output .= "<div class='product-rating' style='margin-bottom: 10px; font-size: 0.9em;'>";
         
@@ -902,7 +902,7 @@ class WebSearchFormatter extends AbstractFormatter
 
     $disclaimer = $this->language->getDef('text_rag_trends_disclaimer');
     if (empty($disclaimer)) {
-        $disclaimer = 'Google Trends shows the relative search interest for a keyword over time (0 = no data, 100 = peak). It is a proxy for popularity, NOT the actual product price. For real price comparisons across competitors, use Google Shopping / Amazon results above.';
+        $disclaimer = 'Google Trends shows the relative search interest for a keyword over time (0 = no data, 100 = peak). It is a proxy for popularity, NOT the actual product price. For real price comparisons across competitors, use the Google Shopping results above.';
     }
     $output .= "<div class='alert alert-info' style='font-size:0.85em; color:#0c5460; background:#d1ecf1; border:1px solid #bee5eb; border-radius:4px; padding:8px 12px; margin:8px 0;'>"
         . "ℹ️ " . htmlspecialchars($disclaimer)

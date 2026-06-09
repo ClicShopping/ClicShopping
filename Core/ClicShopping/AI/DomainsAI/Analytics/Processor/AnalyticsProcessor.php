@@ -62,9 +62,10 @@ class AnalyticsProcessor
    * Uses analytics patterns to determine confidence score.
    * Higher confidence for queries with multiple analytics indicators.
    *
-   * PATTERN BYPASS: Respects USE_PATTERN_BASED_DETECTION flag
-   * - Pure LLM mode: Returns low confidence (LLM handles classification)
-   * - Pattern mode: Uses AnalyticsPattern for detection
+   * Pattern-based analytics detection has been removed; Pure LLM Mode is the
+   * mandated primary path and the LLM handles classification through prompts.
+   * Confidence therefore stays neutral here regardless of the
+   * USE_PATTERN_BASED_DETECTION flag — the method always returns a valid array.
    *
    * @param string $query Query to analyze
    * @return array Result with confidence and matched patterns
@@ -74,25 +75,19 @@ class AnalyticsProcessor
     if ($this->debug) {
       error_log("--- ANALYTICS CONFIDENCE CALCULATION ---");
       error_log("Query: '{$query}'");
+      $reason = $this->usePureLlmMode ? 'Pure LLM mode' : 'pattern detection unavailable';
+      error_log("Analytics confidence calculation bypassed ({$reason})");
+      error_log("Returning low confidence (0.5) - LLM will handle classification");
+      error_log("--- END ANALYTICS CONFIDENCE ---");
     }
 
-    if ($this->usePureLlmMode) {
-      // Pure LLM mode: Return low confidence
-      // LLM handles analytics classification through prompts
-      if ($this->debug) {
-        error_log("Analytics confidence calculation bypassed (Pure LLM mode)");
-        error_log("Returning low confidence (0.5) - LLM will handle classification");
-        error_log("--- END ANALYTICS CONFIDENCE ---");
-      }
-
-      return [
-        'confidence' => 0.5,
-        'match_count' => 0,
-        'matched_patterns' => [],
-        'word_count' => str_word_count($query),
-        'detection_method' => 'llm',
-      ];
-    }
+    return [
+      'confidence' => 0.5,
+      'match_count' => 0,
+      'matched_patterns' => [],
+      'word_count' => str_word_count($query),
+      'detection_method' => 'llm',
+    ];
   }
 
   /**

@@ -87,7 +87,7 @@ class IntentDetectionPatterns
 
   /**
    * Site-specific pattern
-   * Extracts target site from query (e.g., "site:amazon.fr")
+   * Extracts target site from query (e.g., "site:<site>.fr")
    * Indicates Mode C (RAG WebSearch) or Hybrid mode intent
    *
    * @var string

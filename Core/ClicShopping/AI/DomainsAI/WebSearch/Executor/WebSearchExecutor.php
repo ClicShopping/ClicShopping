@@ -347,7 +347,7 @@ class WebSearchExecutor
         );
       }
 
-      // **NEW: Merge rag_results (Mode C - Amazon and other competitor sites)**
+      // **NEW: Merge rag_results (Mode C - registered competitor sites)**
       if (!empty($result['rag_results'])) {
         // **DEBUG: Log rag_results detection**
         if ($this->debug) {
@@ -482,7 +482,7 @@ class WebSearchExecutor
     // Add location parameters from routing decision
     $engineOptions['location_params'] = $routing->getLocationParams();
 
-    // **NEW: Add target_site from routing decision for Amazon engine support**
+    // **NEW: Add target_site from routing decision for domain engine support**
     $targetSite = $routing->getTargetSite();
     if ($targetSite !== null) {
       $engineOptions['target_site'] = $targetSite;

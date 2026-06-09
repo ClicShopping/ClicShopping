@@ -199,7 +199,7 @@ class ModeSelector
     echo "\n🔍 How would you like to analyze prices?\n\n";
     
     echo "1️⃣  Analyse via WebSearch\n";
-    echo "   → Search specific competitor sites (Amazon, Fnac, etc.)\n";
+    echo "   → Search specific registered competitor sites\n";
     echo "   → More targeted results\n\n";
     
     echo "2️⃣  Analyse via Google Shopping (recommended)\n";
@@ -379,7 +379,7 @@ class ModeSelector
    *   + Domain-routed engines (2026-05-24, agnostic refactor):
    * - No target_site → Mode B
    * - target_site owned by a domain SiteRouter → modes returned by the router
-   *   (e.g. Ecommerce/Amazon → Mode D + Mode B hybrid)
+   *   (e.g. an Ecommerce site → Mode D + Mode B hybrid)
    * - target_site not in DB and unrouted → Mode B only + User notification
    * - One target_site in DB → Hybrid (Mode B + Mode C)
    * - Multiple target_sites in DB → Hybrid (Mode B + Mode C for all sites)
@@ -415,7 +415,7 @@ class ModeSelector
       return $selectedModes;
     }
     
-    // Domain SiteRouter takes precedence (e.g. Ecommerce → Amazon → hybrid Mode D + Mode B)
+    // Domain SiteRouter takes precedence (e.g. Ecommerce → its site → hybrid Mode D + Mode B)
     $router = $this->findSiteRouter($targetSite);
     
     if ($router !== null) {
@@ -434,14 +434,14 @@ class ModeSelector
     }
     
     // Case 3: Find all available sites matching the target_site (no domain router matched)
-    // This handles both exact matches and TLD variants (e.g. "fnac" → ["fnac.fr", "fnac.com"])
+    // This handles both exact matches and TLD variants (e.g. "<site>" → ["<site>.fr", "<site>.com"])
     $availableSites = $this->findAvailableSites($targetSite);
     
     if (empty($availableSites)) {
       // Case 4: target_site not in DB → Mode B only + User notification
       $selectedModes = ['mode_b_google_shopping'];
       
-      // 🔧 FIX (2026-05-07): Notify user that requested site is not available
+      // Notify user that requested site is not available
       $this->notifyUserSiteUnavailable($targetSite);
       
       // Log for admin to track requested but unavailable sites
@@ -492,8 +492,8 @@ class ModeSelector
    * Resolve a target site (as extracted upstream by the Pure-LLM IntentRouter)
    * to its owning SiteRouter, if any domain has registered one.
    *
-   * Domain-agnostic: Core itself has no knowledge of Amazon, LinkedIn,
-   * Salesforce or any other commercial brand. The Ecommerce / HR / CRM apps
+   * Domain-agnostic: Core itself has no knowledge of any commercial
+   * brand. The Ecommerce / HR / CRM apps
    * register the routers they own at boot time via WebSearchEngineRegistry.
    *
    * @param string|null $targetSite Target site detected by the LLM
@@ -527,7 +527,7 @@ class ModeSelector
       return ['mode_a_ai_overview'];
     }
 
-    // Domain SiteRouter takes precedence (e.g. Ecommerce → Amazon → hybrid Mode A + Mode D)
+    // Domain SiteRouter takes precedence (e.g. Ecommerce → its site → hybrid Mode A + Mode D)
     $router = $this->findSiteRouter($targetSite);
     if ($router !== null) {
       $modes = $router->getRecommendedModes('market_research');
@@ -607,7 +607,7 @@ class ModeSelector
    * Queries the database via Doctrine ORM to check if the target site
    * is configured for RAG websearch (Mode C).
    *
-   * @param string $targetSite Target site domain (e.g., "amazon.fr")
+   * @param string $targetSite Target site domain (e.g., "<site>.fr")
    * @return bool True if site exists and is active (status = 1)
    */
   private function checkTargetSiteExists(string $targetSite): bool
@@ -656,9 +656,9 @@ class ModeSelector
    * 🆕 NEW (2026-05-07): Multi-site support
    * 
    * Handles both exact matches and domain variants:
-   * - "amazon.fr" → ["amazon.fr"] (exact match)
-   * - "amazon" → ["amazon.fr", "amazon.com", "amazon.co.uk"] (all amazon.* variants)
-   * - "amazon.de" → [] (not in DB - specific TLD requested but not found)
+   * - "<site>.fr" → ["<site>.fr"] (exact match)
+   * - "<site>" → ["<site>.fr", "<site>.com", "<site>.co.uk"] (all <site>.* variants)
+   * - "<site>.de" → [] (not in DB - specific TLD requested but not found)
    * 
    * @param string $targetSite Target site domain or partial domain
    * @return array Array of available site domains
@@ -692,9 +692,9 @@ class ModeSelector
         return [$exactMatch['site_domain']];
       }
       
-      // 🔧 FIX (2026-05-07): Check if target site has a TLD
-      // If it has a TLD (e.g., "amazon.de"), don't search for variants
-      // If it doesn't have a TLD (e.g., "amazon"), search for all variants
+      // Check if target site has a TLD
+      // If it has a TLD (e.g., "<site>.de"), don't search for variants
+      // If it doesn't have a TLD (e.g., "<site>"), search for all variants
       $hasTLD = $this->hasTLD($targetSite);
       
       if ($hasTLD) {
@@ -705,7 +705,7 @@ class ModeSelector
         return [];
       }
       
-      // No TLD specified, try to find variants (e.g., "amazon" → "amazon.fr", "amazon.com")
+      // No TLD specified, try to find variants (e.g., "<site>" → "<site>.fr", "<site>.com")
       $baseDomain = $this->extractBaseDomain($targetSite);
       
       $sql = "SELECT site_domain 
@@ -743,11 +743,11 @@ class ModeSelector
    * Check if target site has a TLD (Top-Level Domain)
    * 
    * Examples:
-   * - "amazon.fr" → true (has TLD)
-   * - "amazon.com" → true (has TLD)
-   * - "amazon" → false (no TLD)
-   * - "fnac.com" → true (has TLD)
-   * - "fnac" → false (no TLD)
+   * - "<site>.fr" → true (has TLD)
+   * - "<site>.com" → true (has TLD)
+   * - "<site>" → false (no TLD)
+   * - "<site2>.com" → true (has TLD)
+   * - "<site2>" → false (no TLD)
    * 
    * @param string $targetSite Target site domain
    * @return bool True if has TLD, false otherwise
@@ -774,10 +774,10 @@ class ModeSelector
    * Extract base domain from target site
    * 
    * Examples:
-   * - "amazon.fr" → "amazon"
-   * - "amazon.com" → "amazon"
-   * - "amazon" → "amazon"
-   * - "fnac.com" → "fnac"
+   * - "<site>.fr" → "<site>"
+   * - "<site>.com" → "<site>"
+   * - "<site>" → "<site>"
+   * - "<site2>.com" → "<site2>"
    * 
    * @param string $targetSite Target site domain
    * @return string Base domain without TLD
@@ -796,7 +796,7 @@ class ModeSelector
    * 🆕 NEW (2026-05-07): User notification for unavailable sites
    * 
    * Adds a warning message to the result that will be displayed to the user.
-   * Message format: "Le site [amazon.de] n'est pas encore disponible dans la base de données compétiteur, 
+   * Message format: "Le site [<site>.de] n'est pas encore disponible dans la base de données compétiteur, 
    * veuillez compléter votre base de sites compétiteurs."
    * 
    * @param string $targetSite Requested site domain

@@ -9,7 +9,7 @@
 /**
  * PriceBoundFilter
  *
- * Bounds external price listings (Google Shopping, Amazon, competitors) to a band around a
+ * Bounds external price listings (Google Shopping and registered competitor sites) to a band around a
  * reference price, so that accessories (cases, chargers, screen protectors…) — which are far
  * cheaper or pricier than the device itself — do not skew the price analysis/average.
  *

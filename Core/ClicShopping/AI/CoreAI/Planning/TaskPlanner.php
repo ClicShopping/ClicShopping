@@ -18,9 +18,6 @@ use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
-use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerCompetitorAnalysis;
-use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerPatternAnalysis;
-use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerPriceAnalytics;
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerAnalytics;
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerSemanticSearch;
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerWebSearch;
@@ -90,8 +87,6 @@ class TaskPlanner
     {
         // Evaluation order: from most specific to most general
         $this->subTaskPlanners = [
-            'competitor_analysis' => new SubTaskPlannerCompetitorAnalysis($this->debug, $this->securityLogger),
-            'pattern_analysis' => new SubTaskPlannerPatternAnalysis($this->debug, $this->securityLogger),
             'analytics' => new SubTaskPlannerAnalytics($this->debug, $this->securityLogger), // Basic analytics catch-all
             'semantic_search' => new SubTaskPlannerSemanticSearch($this->debug, $this->securityLogger),
             'web_search' => new SubTaskPlannerWebSearch($this->debug, $this->securityLogger),
@@ -405,7 +400,6 @@ class TaskPlanner
         if ($intentType === 'analytics') {
             // Test in order of specificity
             $plannersToTest = [
-                'competitor_analysis',  // Most specific
                 'analytics'             // Basic analytics catch-all (handles COUNT, SUM, AVG, etc.)
             ];
 

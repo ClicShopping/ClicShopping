@@ -1,11 +1,5 @@
 # AI_SYSTEM.md — ClicShopping AI v4.30+
 
-> Complete AI system: agents, RAG, LLM providers, memory, embeddings, guardrails, MCP.
-> Agent operational rules: `AGENTS.md` — Directory structure & patterns: `AI_ARCHITECTURE.md`
-
-
-**Validator Architecture (May 2026)**: Analytics validation logic extracted from Critics
-into `DomainsAI/Analytics/Validator/` to separate business logic from Actor-Critic infrastructure.
 
 ---
 

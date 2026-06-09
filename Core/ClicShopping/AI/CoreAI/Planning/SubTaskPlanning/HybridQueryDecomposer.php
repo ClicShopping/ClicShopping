@@ -1168,7 +1168,7 @@ class HybridQueryDecomposer
      * Continues with normal LLM decomposition but with explicit instructions
      * to create analytics + web_search sub-queries.
      * 
-     * 🔧 FIX (2026-05-08): Extract and preserve target site (e.g., "amazon")
+     * 🔧 FIX (2026-05-08): Extract and preserve target site (e.g., "<site>")
      * 
      * @param string $query Original query
      * @param array $intent Intent analysis

@@ -232,7 +232,7 @@ class RagWebSearchEngine implements WebSearchInterface
 
       $params = [];
 
-      // Optional target_site filter: use LIKE when no TLD (e.g. "cdiscount" → "cdiscount.com")
+      // Optional target_site filter: use LIKE when no TLD (e.g. "<site>" → "<site>.com")
       if (!empty($options['target_site'])) {
         $targetSite = $options['target_site'];
         if ($this->hasTLD($targetSite)) {

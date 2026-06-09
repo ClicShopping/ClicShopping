@@ -130,7 +130,7 @@ class WebSearchFacade
    * - Mode B: Google Shopping (structured product results)
    * - Mode C: RAG WebSearch (site-specific search)
    * - Mode D-...: Domain-specific shopping engines registered by each
-   *   Apps/AI/{Domain}/ (e.g. Ecommerce → Amazon, future HR/CRM → ...)
+   *   Apps/AI/{Domain}/ (e.g. Ecommerce → its retail engines, future HR/CRM → ...)
    * - Hybrid: Multiple modes combined
    *
    * @param string $query Natural language search query

@@ -41,7 +41,7 @@ use ClicShopping\AI\Security\SecurityLogger;
  * - Trading: Apps/AI/Trading/Classes/ClicShoppingAdmin/Patterns/HybridPreFilter.php (future)
  *
  * Keyword Types:
- * - Web search platforms: amazon, ebay, google, alibaba, aliexpress, etsy
+ * - Web search platforms: the site keywords each domain registers in its config
  * - Web search actions: compare with, search online, find on, check on
  * - Web search indicators: trends, news, latest, recent, competitors
  * - Domain-specific: Defined by each business domain
@@ -100,7 +100,7 @@ class DomainKeywordsLoader
    * - Keywords should be organized by type (platforms, actions, indicators)
    *
    * Examples:
-   * - loadWebSearchKeywords('Ecommerce') → ['amazon', 'ebay', 'google', ...]
+   * - loadWebSearchKeywords('Ecommerce') → the site keywords that domain registered
    * - loadWebSearchKeywords('HR') → [] (not implemented yet)
    * - loadWebSearchKeywords('Finance') → [] (not implemented yet)
    * - loadWebSearchKeywords('Unknown') → [] (domain not found)

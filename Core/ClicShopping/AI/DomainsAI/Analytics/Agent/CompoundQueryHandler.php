@@ -19,7 +19,6 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\CompoundQueryIndicatorsPattern;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Config\DomainConfig;
 
@@ -493,8 +492,7 @@ class CompoundQueryHandler
         'is_compound' => $json['is_compound'] ?? false,
         'confidence' => (float)($json['confidence'] ?? 0.5),
         'reasoning' => $json['reasoning'] ?? '',
-        'sub_queries' => $json['sub_queries'] ?? [],
-        'indicators' => $this->detectIndicators($originalQuery)
+        'sub_queries' => $json['sub_queries'] ?? []
       ];
     }
     
@@ -507,8 +505,7 @@ class CompoundQueryHandler
       'is_compound' => $isCompound,
       'confidence' => 0.5,
       'reasoning' => 'Parsed from text response',
-      'sub_queries' => [],
-      'indicators' => $this->detectIndicators($originalQuery)
+      'sub_queries' => []
     ];
   }
   
@@ -582,18 +579,4 @@ class CompoundQueryHandler
     return null;
   }
   
-  /**
-   * Detect compound indicators in query using pattern class
-   * 
-   * Uses CompoundQueryIndicatorsPattern for English-only pattern matching.
-   * Query should be translated to English before calling this method.
-   * 
-   * @param string $query Query to analyze (should be in English)
-   * @return array List of detected indicators
-   */
-  private function detectIndicators(string $query): array
-  {
-    // Use centralized pattern class for English-only indicators
-    return CompoundQueryIndicatorsPattern::detectIndicators($query);
-  }
 }

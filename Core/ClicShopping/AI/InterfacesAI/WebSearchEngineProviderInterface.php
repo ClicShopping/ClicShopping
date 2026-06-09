@@ -24,7 +24,7 @@ namespace ClicShopping\AI\InterfacesAI;
  * MULTI-DOMAIN ARCHITECTURE:
  * - Core only knows about generic, brand-free engines (Google AI Overview, Google Shopping,
  *   Google Trends, RAG WebSearch — all SerpAPI public protocols, no commercial brand)
- * - Domain-specific engines (Amazon for Ecommerce, LinkedIn for HR, Salesforce for CRM, ...)
+ * - Domain-specific engines (registered by each Apps/AI/{Domain}, e.g. a retail or jobs site)
  *   are declared by the matching App through this interface
  * - Adding a new domain never requires touching Core/
  *
@@ -37,10 +37,10 @@ interface WebSearchEngineProviderInterface
      * Unique mode identifier used by WebSearchExecutor and IntentRouter.
      *
      * Built-in modes are prefixed by `mode_a_`, `mode_b_`, etc. Domain-specific
-     * modes follow the same pattern (e.g. `mode_d_amazon_shopping`, `mode_h_linkedin`)
+     * modes follow the same pattern (e.g. `mode_d_<engine>_shopping`, `mode_h_<engine>`)
      * but their meaning is opaque to Core — only the registered provider knows.
      *
-     * @return string Mode identifier (e.g. 'mode_d_amazon_shopping')
+     * @return string Mode identifier (e.g. 'mode_d_<engine>_shopping')
      */
     public function getMode(): string;
 
@@ -69,7 +69,7 @@ interface WebSearchEngineProviderInterface
     /**
      * SerpAPI query-parameter key for this engine.
      *
-     * Most engines use `q`. A few (e.g. Amazon) require `k`. Returning the right
+     * Most engines use `q`. A few require `k`. Returning the right
      * key here lets SerpApiClient stay generic — Core does not need to know which
      * engine names require which key.
      *
@@ -84,7 +84,7 @@ interface WebSearchEngineProviderInterface
      * mode. Engines from the agnostic Core layer may return a generic label;
      * domain-specific engines typically return their brand name.
      *
-     * @return string Human-readable label (e.g. 'Amazon Shopping', 'Google Trends')
+     * @return string Human-readable label (e.g. 'Shop Search', 'Google Trends')
      */
     public function getDisplayName(): string;
 }

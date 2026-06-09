@@ -19,6 +19,8 @@
 
 namespace ClicShopping\AI\CoreAI\Planning\Patterns;
 
+use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
+
 /**
  * Pattern-based price comparison detection
  * 
@@ -38,9 +40,10 @@ class PriceComparisonDetectionPatterns
    * 
    * FALLBACK ONLY: This method should only be called when LLM detection fails.
    * 
-   * 🆕 NEW (2026-05-07): Added detection for "on [site]" pattern
-   * Queries like "price on amazon" are now detected as price comparison
-   * 
+   * Also detects an explicit target site ("price on <site>") fully agnostically:
+   * a candidate site token is matched against the registered SiteRouters
+   * (Apps/AI/{Domain}) — no retailer brand is ever hard-coded in Core.
+   *
    * @param string $query Query to analyze (any language)
    * @return bool True if price comparison detected, false otherwise
    */
@@ -64,15 +67,15 @@ class PriceComparisonDetectionPatterns
       mb_strpos($queryLower, 'vs') !== false
     );
     
-    // 🆕 NEW (2026-05-07): Check for "on [site]" or "sur [site]" pattern
-    // This indicates user wants to compare with external site prices
-    $hasTargetSitePattern = (
-      preg_match('/\b(on|at)\s+(amazon|cdiscount|fnac|darty|ebay|alibaba|aliexpress)/i', $queryLower) === 1
-    );
+    // Check for an explicit "on/at/from <site>" target site — domain-agnostic.
+    $hasTargetSitePattern = false;
+    if (preg_match('/\b(?:on|at|from)\s+([a-z0-9][a-z0-9.\-]+)/i', $queryLower, $m) === 1) {
+      $hasTargetSitePattern = WebSearchEngineRegistry::getInstance()->findSiteRouter($m[1]) !== null;
+    }
     
     // Price comparison if:
     // 1. Has price keyword AND competitor keyword, OR
-    // 2. Has price keyword AND target site pattern (e.g., "price on amazon")
+    // 2. Has price keyword AND target site pattern (e.g., "price on <site>")
     return $hasPriceKeyword && ($hasCompetitorKeyword || $hasTargetSitePattern);
   }
 }

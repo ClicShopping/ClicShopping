@@ -57,19 +57,8 @@ class SubTaskPlannerWebSearch
   /**
    * Creates le plan de recherche web (1 étape simple)
    * 
-   * 🔧 FIX (2026-05-10): Extract product name from intent for price_comparison queries
+   * Extract product name from intent for price_comparison queries
    * 
-   * Problem: For queries like "prix amazon iphone 17 pro", the system was sending
-   * "iphone 17 pro price" to Amazon, causing suboptimal results. Amazon search works
-   * better with just the product name.
-   * 
-   * Solution: For price_comparison intent, use the extracted product name from intent
-   * instead of the full query. This ensures clean queries to shopping engines.
-   * 
-   * Examples:
-   * - "prix amazon iphone 17 pro" → search_query: "iPhone 17 Pro"
-   * - "donne moi le prix de l'iPhone 17 Pro sur amazon" → search_query: "iPhone 17 Pro"
-   * - "compare iPhone 17 Pro prices on amazon" → search_query: "iPhone 17 Pro"
    * 
    * @param array $intent Intent analysis result
    * @param string $query Original query

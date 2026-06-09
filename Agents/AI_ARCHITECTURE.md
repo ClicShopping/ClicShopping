@@ -1,8 +1,5 @@
 # AI_ARCHITECTURE.md — ClicShopping AI v4.30+
 
-> Physical architecture of the AI layer: directory structure, OrchestratorAgent components, domain-agnostic patterns.
-> Agent operational rules: `AGENTS.md` — AI concepts and pipelines: `AI_SYSTEM.md`
-
 ---
 
 ## 1. Core AI Directory Structure

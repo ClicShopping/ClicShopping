@@ -17,7 +17,7 @@ use ClicShopping\OM\Registry;
  * HybridQueryPlanner - Task planner for compound search queries
  *
  * Detects when a user query contains multiple independent search intents
- * (e.g. "What are smartphone trends AND compare iPhone 17 Pro price on Amazon?")
+ * (e.g. "What are smartphone trends AND compare iPhone 17 Pro price on <site>?")
  * and decomposes it into a plan of separate tasks.
  *
  * Each task is then routed and executed independently by WebSearchFacade,

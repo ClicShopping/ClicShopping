@@ -24,14 +24,14 @@ namespace ClicShopping\AI\InterfacesAI;
  *   site the user is targeting. They translate that site into the recommended
  *   mode pipeline (single mode or hybrid) for the matching engine.
  * - This is therefore NOT a fallback pattern detector — it is the downstream
- *   domain-knowledge layer that knows "amazon.fr means Mode D" because the
- *   Ecommerce domain owns an Amazon engine.
+ *   domain-knowledge layer that knows "<site>.fr means Mode D" because the
+ *   Ecommerce domain owns that engine.
  *
  * MULTI-DOMAIN ARCHITECTURE:
  * - Each App registers its own SiteRouters via WebSearchRegistration.
- *   Ecommerce → AmazonSiteRouter (amazon.*)
- *   HR → LinkedInSiteRouter (linkedin.com)        [future]
- *   CRM → SalesforceSiteRouter (salesforce.com)   [future]
+ *   {Domain} app → its own SiteRouter (the sites that domain owns)
+ *   another domain → its SiteRouter for the sites it owns       [future]
+ *   ...                                                         [future]
  * - Core consults all registered routers via WebSearchEngineRegistry::findSiteRouter().
  *
  * @package ClicShopping\AI\InterfacesAI
@@ -47,7 +47,7 @@ interface SiteRouterInterface
      * normalise). Matching strategy is left to each implementation (exact host,
      * substring, regex, TLD list, ...).
      *
-     * @param string $targetSite Lower-cased site identifier (e.g. 'amazon.fr')
+     * @param string $targetSite Lower-cased site identifier (e.g. '<site>.fr')
      * @return bool True if this router owns the site and can recommend modes
      */
     public function matches(string $targetSite): bool;
@@ -72,7 +72,7 @@ interface SiteRouterInterface
     /**
      * Stable identifier for this router (used in logs and diagnostics).
      *
-     * @return string Router identifier (e.g. 'amazon', 'linkedin', 'salesforce')
+     * @return string Router identifier (e.g. '<site-id>', one per domain-owned site)
      */
     public function getRouterId(): string;
 }

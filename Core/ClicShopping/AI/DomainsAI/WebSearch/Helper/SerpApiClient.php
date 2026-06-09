@@ -50,7 +50,7 @@ class SerpApiClient
   public function search(string $engine, string $query, array $params = []): array|false
   {
     // Per-engine query param key is declared by the registered provider
-    // (default 'q'; e.g. Amazon's provider returns 'k'). Core stays brand-free.
+    // (default 'q'; some providers return 'k'). Core stays brand-free.
     $queryParamKey = WebSearchEngineRegistry::getInstance()->getSerpApiQueryParam($engine);
 
     // Build base parameters

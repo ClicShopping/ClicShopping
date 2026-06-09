@@ -172,7 +172,7 @@ interface HybridQueryHandlerInterface
    * Web search indicators (detected by LLM):
    * - Real-time information requests ("latest", "current", "today")
    * - External data requests ("market trends", "competitor prices")
-   * - Comparison with external sources ("compare with Amazon")
+   * - Comparison with external sources ("compare with <site>")
    * - Information not in knowledge base ("new product X")
    *
    * Domain-specific keyword loading (optional):
@@ -186,7 +186,7 @@ interface HybridQueryHandlerInterface
    *   ['requires_web_search' => true]) → true
    * - requiresWebSearch("What are top products by revenue?",
    *   ['requires_web_search' => false]) → false
-   * - requiresWebSearch("Find latest iPhone prices on Amazon",
+   * - requiresWebSearch("Find latest iPhone prices on <site>",
    *   ['requires_web_search' => true]) → true
    *
    * @param string $query User query to evaluate

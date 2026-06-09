@@ -34,7 +34,7 @@ use ClicShopping\AI\Security\SecurityLogger;
  *    (Google AI Overview, Google Shopping, RAG WebSearch, Google Trends —
  *    Google here refers to public SerpAPI protocols, not a merchant brand).
  * 2. Let any `Apps/AI/{Domain}/` register additional domain-specific engines
- *    (Mode D Amazon for Ecommerce, future Modes for HR / CRM / Finance / ...).
+ *    (e.g. a Mode D engine for Ecommerce, future Modes for HR / CRM / Finance / ...).
  * 3. Map a target site, as detected upstream by the LLM in IntentRouter, to
  *    the recommended modes of the matching SiteRouter — without Core ever
  *    knowing about any specific brand.
@@ -53,8 +53,8 @@ use ClicShopping\AI\Security\SecurityLogger;
  *   Apps/AI/HR/Classes/ClicShoppingAdmin/WebSearch/Registration/WebSearchRegistration.php
  *     final class WebSearchRegistration {
  *       public static function register(WebSearchEngineRegistry $r): void {
- *         $r->registerProvider(new LinkedInProvider());
- *         $r->registerSiteRouter(new LinkedInSiteRouter());
+ *         $r->registerProvider(new MyDomainProvider());
+ *         $r->registerSiteRouter(new MyDomainSiteRouter());
  *       }
  *     }
  *   No Core change is needed to add HR, CRM, Finance, Trading, ... domains.
