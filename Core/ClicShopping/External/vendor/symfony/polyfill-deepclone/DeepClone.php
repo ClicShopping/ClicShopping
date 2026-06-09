@@ -398,12 +398,16 @@ final class DeepClone
 
         if (\is_string($class = $object_or_class)) {
             $r = self::$reflectors[$class] ??= self::getClassReflector($class);
-            if (self::$cloneable[$class]) {
+            if (null === self::$prototypes[$class] && !self::$instantiableWithoutConstructor[$class]) {
+                // No empty-shell prototype exists (e.g. an internal final class
+                // whose __unserialize() rejects an empty payload, like
+                // BcMath\Number). Such a class can only be reconstructed via a
+                // full serialization round-trip, never by property injection.
+                throw new \DeepClone\NotInstantiableException('Class "'.$class.'" is not instantiable.');
+            } elseif (self::$cloneable[$class]) {
                 $object = clone self::$prototypes[$class];
             } elseif (self::$instantiableWithoutConstructor[$class]) {
                 $object = $r->newInstanceWithoutConstructor();
-            } elseif (null === self::$prototypes[$class]) {
-                throw new \DeepClone\NotInstantiableException('Class "'.$class.'" is not instantiable.');
             } elseif ($r->implementsInterface('Serializable') && !method_exists($class, '__unserialize')) {
                 $object = unserialize('C:'.\strlen($class).':"'.$class.'":0:{}');
             } else {
@@ -787,7 +791,12 @@ final class DeepClone
 
         foreach ($objectMeta as $id => [$class]) {
             if (':' === ($class[1] ?? null)) {
-                $objects[$id] = unserialize($class, null !== $allowedClasses ? ['allowed_classes' => $allowedClasses] : []);
+                // The result is used as an object below; a malformed payload can
+                // carry any serialize form (i:…, s:…, a:…), so reject anything
+                // that did not decode to an object rather than mistreating it.
+                if (!\is_object($objects[$id] = unserialize($class, null !== $allowedClasses ? ['allowed_classes' => $allowedClasses] : []))) {
+                    throw new \ValueError('deepclone_from_array(): Argument #1 ($data) object '.$id.' did not unserialize to an object, '.get_debug_type($objects[$id]).' given');
+                }
                 continue;
             }
             try {
@@ -829,6 +838,40 @@ final class DeepClone
             $refs[$k] = self::resolveWithMask($refs[$k], $m, $objects, $refs);
         }
 
+        // Finalize the remaining deferred objects: needsFullUnserialize objects
+        // whose __serialize() state nests another object (e.g. Random\Randomizer
+        // wrapping a Random\Engine\*), so their state carries an object-ref mask.
+        // The loop above skipped them because resolving the mask needs the
+        // referenced objects to exist first. Iterate to a fixpoint: each pass
+        // finalizes those whose referenced objects are now available. A leftover
+        // null (a cycle of such classes, which pure PHP cannot reconstruct) is
+        // reported by the properties/states loop below.
+        if ($states) {
+            do {
+                $progress = false;
+                foreach ($states as $state) {
+                    if (!\is_array($state) || !isset($state[2])) {
+                        continue;
+                    }
+                    $zid = $state[0] ?? null;
+                    if (!\is_int($zid) || !\array_key_exists($zid, $objects) || null !== $objects[$zid]) {
+                        continue;
+                    }
+                    if (!self::maskRefsReady($state[1] ?? null, $state[2], $objects)) {
+                        continue;
+                    }
+                    $class = $objectMeta[$zid][0];
+                    $resolvedProps = self::resolveWithMask($state[1] ?? null, $state[2], $objects, $refs);
+                    $ser = serialize($resolvedProps);
+                    if (false === $obj = unserialize('O:'.\strlen($class).':"'.$class.'"'.substr($ser, strpos($ser, ':', 1)))) {
+                        throw new \ValueError('deepclone_from_array(): could not reconstruct "'.$class.'" via __unserialize()');
+                    }
+                    $objects[$zid] = $obj;
+                    $progress = true;
+                }
+            } while ($progress);
+        }
+
         foreach ($properties as $scope => $scopeProps) {
             if (!\is_string($scope)) {
                 throw new \ValueError('deepclone_from_array(): Argument #1 ($data) "properties" keys must be of type string');
@@ -847,9 +890,9 @@ final class DeepClone
                 $resolveScope = $resolve[$scope];
             }
             foreach ($scopeProps as $name => $idValues) {
-                if (!\is_string($name)) {
-                    throw new \ValueError('deepclone_from_array(): Argument #1 ($data) "properties" inner keys must be of type string');
-                }
+                // Numeric property names (e.g. $o->{'999'}) surface as integer
+                // array keys because PHP normalizes numeric string keys; accept
+                // them as-is, the same way unserialize() round-trips them.
                 if (!\is_array($idValues)) {
                     throw new \ValueError('deepclone_from_array(): Argument #1 ($data) "properties" value for "'.$scope.'::'.$name.'" must be of type array, '.self::valueName($idValues).' given');
                 }
@@ -919,6 +962,14 @@ final class DeepClone
                     continue;
                 }
                 $objClass = $obj::class;
+                if (self::$needsFullUnserialize[$objectMeta[$zid][0]] ?? false) {
+                    // Already fully reconstructed via the full O: serialization
+                    // form (eager-finalize loop above), which invokes
+                    // __unserialize() internally. Calling it again would re-init
+                    // an already-initialized (often readonly) object, e.g.
+                    // BcMath\Number throws "Cannot modify readonly property".
+                    continue;
+                }
                 if (!method_exists($obj, '__unserialize')) {
                     throw new \ValueError('deepclone_from_array(): Argument #1 ($data) "states" entry references object id '.$zid.' whose class '.$objClass.' has no __unserialize() method');
                 }
@@ -953,6 +1004,9 @@ final class DeepClone
 
                 return $objects[$prepared];
             }
+            if (\PHP_INT_MIN === $prepared) {
+                throw new \ValueError('deepclone_from_array(): Argument #1 ($data) "prepared" references unknown ref id out of range');
+            }
             if (!isset($refs[-$prepared])) {
                 throw new \ValueError('deepclone_from_array(): Argument #1 ($data) "prepared" references unknown ref id '.(-$prepared));
             }
@@ -967,6 +1021,29 @@ final class DeepClone
         return $prepared;
     }
 
+    /**
+     * Whether every object referenced by $mask (positive object ids) has already
+     * been finalized in $objects, so resolveWithMask() can run without hitting an
+     * unbuilt placeholder. Hard/soft refs (negative ids, resolved against $refs in
+     * an earlier pass) and scalar/enum/closure masks never gate this.
+     */
+    private static function maskRefsReady($value, $mask, array $objects): bool
+    {
+        if (true === $mask) {
+            return !\is_int($value) || $value < 0 || isset($objects[$value]);
+        }
+        if (!\is_array($mask) || !\is_array($value)) {
+            return true;
+        }
+        foreach ($mask as $k => $m) {
+            if (false !== $m && !self::maskRefsReady($value[$k] ?? null, $m, $objects)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private static function resolveWithMask($value, $mask, $objects, &$refs)
     {
         if (true === $mask) {
@@ -979,6 +1056,9 @@ final class DeepClone
                 }
 
                 return $objects[$value];
+            }
+            if (\PHP_INT_MIN === $value) {
+                throw new \ValueError('deepclone_from_array(): Argument #1 ($data) malformed payload, ref id out of range');
             }
             if (!isset($refs[-$value])) {
                 throw new \ValueError('deepclone_from_array(): Argument #1 ($data) malformed payload, unknown ref id '.(-$value));
@@ -1091,7 +1171,7 @@ final class DeepClone
                 }
                 $obj = $objects[$obj];
             } else {
-                if (!isset($refs[-$obj])) {
+                if (\PHP_INT_MIN === $obj || !isset($refs[-$obj])) {
                     throw new \ValueError('deepclone_from_array(): Argument #1 ($data) malformed payload, named-closure references unknown id '.$obj);
                 }
                 $obj = $refs[-$obj];
