@@ -89,7 +89,14 @@ Provide your analysis as a JSON object with the following structure:
     "critic_id_2": "Strong reputation (0.90) but expertise is in analytics domain which has moderate relevance to this evaluation. Confidence is high (0.9) and recent activity is good. Weight reflects solid but not perfect domain match.",
     "critic_id_3": "Competent expertise in semantic domain (0.6) but lower reputation (0.75) and confidence (0.7). Recent activity is limited. Weight reflects adequate but not exceptional qualification."
   },
-  "rationale": "For this search_results evaluation with high priority, I prioritized domain expertise match over pure reputation. Critic 1 received the highest weight due to expert-level semantic expertise directly matching requirements. Critic 2, despite higher reputation, received lower weight due to domain mismatch. Critic 3 received the lowest weight due to combination of lower expertise level and limited recent activity. The weights reflect a balance between expertise relevance and reliability."
+  "overall_rationale": "For this search_results evaluation I prioritized domain expertise match over pure reputation: critic_id_1 scored highest (expert semantic match), critic_id_2 lower (domain mismatch despite high reputation), critic_id_3 lowest (novice + limited recent activity).",
+  "dominant_factors": ["domain_match", "reputation", "confidence"],
+  "domain_analysis": {
+    "critic_id_1": {"match_quality": "high", "expertise_depth": "expert", "relevant_domains": ["semantic"]},
+    "critic_id_2": {"match_quality": "medium", "expertise_depth": "competent", "relevant_domains": ["analytics"]},
+    "critic_id_3": {"match_quality": "low", "expertise_depth": "novice", "relevant_domains": []}
+  },
+  "suggested_bounds": {"min": 0.1, "max": 0.5}
 }
 ```
 
@@ -97,7 +104,7 @@ Provide your analysis as a JSON object with the following structure:
 - Provide a weight for EVERY critic (do not omit any)
 - Weights should be positive numbers (can be any positive value, will be normalized later)
 - Each explanation should mention the key factors that influenced the weight
-- The rationale should explain your overall weighting strategy for this evaluation
+- ALWAYS include `overall_rationale` (your overall weighting strategy), `dominant_factors` (the factors that drove the weights) and `domain_analysis` (one entry PER critic, each with `match_quality` of high/medium/low/none, plus `expertise_depth` and `relevant_domains`) — these power the monitoring dashboards and must never be omitted or left empty.
 - Use natural language - explain your reasoning as you would to a human
 
 Respond ONLY with the JSON object, no additional text.

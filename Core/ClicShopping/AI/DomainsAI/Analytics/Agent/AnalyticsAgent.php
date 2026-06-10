@@ -19,7 +19,6 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
-use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveRegistry;
 use ClicShopping\AI\CoreAI\Query\QueryClassifier;
 use ClicShopping\AI\CoreAI\Orchestrator\SubValidation\ValidationGate;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
@@ -75,6 +74,8 @@ class AnalyticsAgent
   private AmbiguityHandler $ambiguityHandler;
   private CompoundQueryHandler $compoundQueryHandler;
   private AnalyticsErrorHandler $errorHandler;
+  private AnalyticsPeerEvaluator $peerEvaluator;
+  private AnalyticsObjectiveRunner $objectiveRunner;
   private mixed $app;
   
   private mixed $conversationMemory = null;
@@ -197,6 +198,9 @@ class AnalyticsAgent
       $this->queryExecutor,
       $this->debug
     );
+
+    $this->peerEvaluator = new AnalyticsPeerEvaluator($this->autonomousConfig);
+    $this->objectiveRunner = new AnalyticsObjectiveRunner($this->autonomousConfig, $this->debug, $this->securityLogger);
 
     try {
       $this->schemaManager->initializeTableRelationships();
@@ -1501,40 +1505,7 @@ class AnalyticsAgent
     array $successCriteria,
     string $priority
   ): LocalObjective {
-    
-    if (!$this->autonomousConfig->canAgentCreateObjectives('AnalyticsAgent')) {
-      throw new \RuntimeException('AnalyticsAgent is not authorized to create objectives (disabled in configuration)');
-    }
-    
-    // Estimate completion time based on priority
-    $estimatedTime = match ($priority) {
-      'critical' => 300,  // 5 minutes
-      'high' => 900,      // 15 minutes
-      'medium' => 1800,   // 30 minutes
-      'low' => 3600,      // 1 hour
-      default => 1800
-    };
-
-    $objective = new LocalObjective(
-      'AnalyticsAgent',
-      $goalStatement,
-      $successCriteria,
-      $priority,
-      $estimatedTime
-    );
-
-    // Register with ObjectiveRegistry
-    $objectiveRegistry = new ObjectiveRegistry($this->db, $this->debug);
-    $objectiveRegistry->registerObjective($objective);
-
-    if ($this->debug) {
-      $this->securityLogger->logSecurityEvent(
-        "AnalyticsAgent created objective: {$goalStatement}",
-        'info'
-      );
-    }
-
-    return $objective;
+    return $this->objectiveRunner->createLocalObjective($goalStatement, $successCriteria, $priority);
   }
 
   /**
@@ -1545,89 +1516,7 @@ class AnalyticsAgent
    */
   public function executeObjective(LocalObjective $objective): mixed
   {
-    $goalStatement = $objective->getGoalStatement();
-
-    if ($this->debug) {
-      $this->securityLogger->logSecurityEvent(
-        "AnalyticsAgent executing objective: {$goalStatement}",
-        'info'
-      );
-    }
-
-    // Update objective status to active
-    $objective->setStatus('active');
-
-    try {
-      // Execute based on goal type
-      $result = null;
-
-      if (str_contains(strtolower($goalStatement), 'query performance')) {
-        $result = $this->optimizeQueryPerformance();
-      } elseif (str_contains(strtolower($goalStatement), 'cache')) {
-        $result = $this->optimizeCacheStrategy();
-      } elseif (str_contains(strtolower($goalStatement), 'schema')) {
-        $result = $this->analyzeSchemaOptimizations();
-      } else {
-        $result = ['message' => 'Objective type not yet implemented'];
-      }
-
-      // Mark objective as completed
-      $objective->markCompleted([
-        'execution_time' => time() - strtotime($objective->getCreatedAt()->format('Y-m-d H:i:s')),
-        'result' => $result
-      ]);
-
-      return $result;
-
-    } catch (\Exception $e) {
-      // Mark objective as failed
-      $objective->markFailed($e->getMessage());
-      throw $e;
-    }
-  }
-
-  /**
-   * Optimize query performance
-   *
-   * @return array Optimization results
-   */
-  private function optimizeQueryPerformance(): array
-  {
-    // Placeholder for query performance optimization logic
-    return [
-      'optimizations_applied' => 0,
-      'performance_improvement' => '0%',
-      'message' => 'Query performance optimization not yet implemented'
-    ];
-  }
-
-  /**
-   * Optimize cache strategy
-   *
-   * @return array Cache optimization results
-   */
-  private function optimizeCacheStrategy(): array
-  {
-    // Placeholder for cache optimization logic
-    return [
-      'cache_hit_rate_before' => 0,
-      'cache_hit_rate_after' => 0,
-      'message' => 'Cache optimization not yet implemented'
-    ];
-  }
-
-  /**
-   * Analyze schema optimizations
-   *
-   * @return array Schema analysis results
-   */
-  private function analyzeSchemaOptimizations(): array
-  {
-    // Placeholder for schema analysis logic
-    return [
-      'recommendations' => [],
-      'message' => 'Schema analysis not yet implemented'
-    ];
+    return $this->objectiveRunner->executeObjective($objective);
   }
 
   /**
@@ -1643,34 +1532,7 @@ class AnalyticsAgent
     mixed $output,
     array $criteria
   ): AgentEvaluation {
-
-    if (!$this->autonomousConfig->canAgentEvaluatePeers('AnalyticsAgent')) {
-      throw new \RuntimeException('AnalyticsAgent is not authorized to evaluate peers (disabled in configuration)');
-    }
-
-    // Verify capability
-    $capabilities = $this->getEvaluationCapabilities();
-    if (!isset($capabilities[$outputType])) {
-      throw new \InvalidArgumentException(
-        "AnalyticsAgent cannot evaluate {$outputType}"
-      );
-    }
-
-    // Perform evaluation based on output type
-    $scores = match ($outputType) {
-      'sql_query' => $this->evaluateSqlQuery($output, $criteria),
-      'data_analysis' => $this->evaluateDataAnalysis($output, $criteria),
-      default => $this->getDefaultScores()
-    };
-
-    return new AgentEvaluation(
-      'AnalyticsAgent',
-      $output['output_id'] ?? uniqid('output_'),
-      $scores,
-      $scores['feedback'] ?? 'Evaluation completed',
-      $scores['strengths'] ?? [],
-      $scores['improvements'] ?? []
-    );
+    return $this->peerEvaluator->evaluatePeerOutput($outputType, $output, $criteria);
   }
 
   // ========================================
@@ -1684,101 +1546,7 @@ class AnalyticsAgent
    */
   public function getEvaluationCapabilities(): array
   {
-    return [
-      'sql_query' => 'expert',        // Expert in SQL query evaluation
-      'data_analysis' => 'expert',    // Expert in data analysis
-      'reasoning_chain' => 'competent', // Competent in reasoning evaluation
-      'validation_result' => 'novice'  // Basic validation understanding
-    ];
-  }
-
-  /**
-   * Evaluate SQL query quality
-   *
-   * @param mixed $output SQL query output
-   * @param array $criteria Evaluation criteria
-   * @return array Evaluation scores
-   */
-  private function evaluateSqlQuery(mixed $output, array $criteria): array
-  {
-    $sql = $output['sql_query'] ?? '';
-
-    // Evaluate SQL query
-    $validation = InputValidator::validateSqlQuery($sql);
-
-    $accuracyScore = $validation['valid'] ? 0.9 : 0.5;
-    $completenessScore = 0.8; // Check if query has all necessary clauses
-    $efficiencyScore = 0.8;   // Check for performance issues
-    $clarityScore = 0.8;      // Check for readability
-
-    $strengths = [];
-    $improvements = [];
-
-    if ($validation['valid']) {
-      $strengths[] = 'SQL syntax is valid';
-    } else {
-      $improvements[] = 'Fix SQL syntax errors: ' . implode(', ', $validation['issues']);
-    }
-
-    // Check for SELECT *
-    if (preg_match('/SELECT\s+\*/i', $sql)) {
-      $improvements[] = 'Avoid SELECT * - specify columns explicitly';
-      $efficiencyScore -= 0.1;
-    }
-
-    // Check for LIMIT clause
-    if (preg_match('/^SELECT/i', $sql) && !preg_match('/LIMIT/i', $sql)) {
-      $improvements[] = 'Consider adding LIMIT clause to prevent large result sets';
-      $efficiencyScore -= 0.05;
-    }
-
-    return [
-      'accuracy_score' => max(0, $accuracyScore),
-      'completeness_score' => max(0, $completenessScore),
-      'efficiency_score' => max(0, $efficiencyScore),
-      'clarity_score' => max(0, $clarityScore),
-      'feedback' => 'SQL query evaluation completed',
-      'strengths' => $strengths,
-      'improvements' => $improvements
-    ];
-  }
-
-  /**
-   * Evaluate data analysis quality
-   *
-   * @param mixed $output Data analysis output
-   * @param array $criteria Evaluation criteria
-   * @return array Evaluation scores
-   */
-  private function evaluateDataAnalysis(mixed $output, array $criteria): array
-  {
-    return [
-      'accuracy_score' => 0.8,
-      'completeness_score' => 0.8,
-      'efficiency_score' => 0.8,
-      'clarity_score' => 0.8,
-      'feedback' => 'Data analysis evaluation completed',
-      'strengths' => ['Analysis structure is sound'],
-      'improvements' => ['Consider additional data validation']
-    ];
-  }
-
-  /**
-   * Get default evaluation scores
-   *
-   * @return array Default scores
-   */
-  private function getDefaultScores(): array
-  {
-    return [
-      'accuracy_score' => 0.7,
-      'completeness_score' => 0.7,
-      'efficiency_score' => 0.7,
-      'clarity_score' => 0.7,
-      'feedback' => 'Default evaluation',
-      'strengths' => [],
-      'improvements' => []
-    ];
+    return $this->peerEvaluator->getEvaluationCapabilities();
   }
 
   /**
@@ -1815,22 +1583,7 @@ class AnalyticsAgent
    */
   public function canCollaborate(LocalObjective $objective): bool
   {
-    $goalStatement = strtolower($objective->getGoalStatement());
-
-    // Can collaborate on objectives related to:
-    // - Data analysis
-    // - Query optimization
-    // - Database performance
-    // - Analytics
-    $keywords = ['data', 'query', 'sql', 'analytics', 'database', 'performance', 'optimization'];
-
-    foreach ($keywords as $keyword) {
-      if (str_contains($goalStatement, $keyword)) {
-        return true;
-      }
-    }
-
-    return false;
+    return $this->objectiveRunner->canCollaborate($objective);
   }
 
   /**

@@ -40,7 +40,10 @@ class AdaptiveWeightingMetricsProvider
       'coordination_metrics' => $this->getCoordinationMetrics($periodDays),
       'utilization_metrics' => $this->getUtilizationMetrics($periodDays),
       'recent_coordinations' => $this->getRecentCoordinations(20),
-      'weight_anomalies' => $this->getWeightAnomalies($periodDays)
+      'weight_anomalies' => $this->getWeightAnomalies($periodDays),
+      'weight_stats' => $this->getWeightStats($periodDays),
+      'top_weighted_critics' => $this->getTopWeightedCritics($periodDays),
+      'consensus_comparison' => $this->getConsensusComparison($periodDays)
     ];
   }
 
@@ -415,6 +418,143 @@ class AdaptiveWeightingMetricsProvider
       return $anomalies;
     } catch (\Exception $e) {
       error_log('AdaptiveWeightingMetricsProvider: Failed to get weight anomalies - ' . $e->getMessage());
+      return [];
+    }
+  }
+
+  /**
+   * Aggregate weight statistics for the dashboard overview card.
+   * Source: rag_agent_adaptive_weights (written on every weighting).
+   *
+   * @param int $days Look-back window in days
+   * @return array Keys: total_weight_calculations, avg_weight, total_evaluations, active_critics
+   */
+  public function getWeightStats(int $days = 7): array
+  {
+    try {
+      $days = (int)$days;
+      $r = DoctrineOrm::select("
+        SELECT
+          COUNT(*) AS total_weight_calculations,
+          AVG(normalized_weight) AS avg_weight,
+          COUNT(DISTINCT evaluation_id) AS total_evaluations,
+          COUNT(DISTINCT critic_id) AS active_critics
+        FROM {$this->prefix}rag_agent_adaptive_weights
+        WHERE created_at > DATE_SUB(NOW(), INTERVAL {$days} DAY)
+      ");
+      $row = $r[0] ?? [];
+
+      return [
+        'total_weight_calculations' => (int)($row['total_weight_calculations'] ?? 0),
+        'avg_weight' => (float)($row['avg_weight'] ?? 0),
+        'total_evaluations' => (int)($row['total_evaluations'] ?? 0),
+        'active_critics' => (int)($row['active_critics'] ?? 0),
+      ];
+    } catch (\Exception $e) {
+      error_log('AdaptiveWeightingMetricsProvider: Failed to get weight stats - ' . $e->getMessage());
+      return [];
+    }
+  }
+
+  /**
+   * Top critics by average normalized weight (dashboard table).
+   * Source: rag_agent_adaptive_weights.
+   *
+   * @param int $days Look-back window in days
+   * @param int $limit Max rows
+   * @return array Rows: critic_id, avg_weight, min_weight, max_weight, weight_count
+   */
+  public function getTopWeightedCritics(int $days = 7, int $limit = 10): array
+  {
+    try {
+      $days = (int)$days;
+      $limit = (int)$limit;
+      $results = DoctrineOrm::select("
+        SELECT
+          critic_id,
+          AVG(normalized_weight) AS avg_weight,
+          MIN(normalized_weight) AS min_weight,
+          MAX(normalized_weight) AS max_weight,
+          COUNT(*) AS weight_count
+        FROM {$this->prefix}rag_agent_adaptive_weights
+        WHERE created_at > DATE_SUB(NOW(), INTERVAL {$days} DAY)
+        GROUP BY critic_id
+        ORDER BY avg_weight DESC
+        LIMIT {$limit}
+      ");
+
+      $critics = [];
+      foreach ($results as $row) {
+        $critics[] = [
+          'critic_id' => $row['critic_id'],
+          'avg_weight' => (float)$row['avg_weight'],
+          'min_weight' => (float)$row['min_weight'],
+          'max_weight' => (float)$row['max_weight'],
+          'weight_count' => (int)$row['weight_count'],
+        ];
+      }
+
+      return $critics;
+    } catch (\Exception $e) {
+      error_log('AdaptiveWeightingMetricsProvider: Failed to get top weighted critics - ' . $e->getMessage());
+      return [];
+    }
+  }
+
+  /**
+   * Dynamic-vs-static consensus comparison for the dashboard.
+   * Source: rag_agent_weight_consensus (written by WeightedConsensusBuilder).
+   *
+   * @param int $days Look-back window in days
+   * @return array Keys: total_comparisons, avg_dynamic_consensus, avg_static_consensus,
+   *               dynamic_better_percentage, recent_comparisons[]
+   */
+  public function getConsensusComparison(int $days = 7): array
+  {
+    try {
+      $days = (int)$days;
+      $agg = DoctrineOrm::select("
+        SELECT
+          COUNT(*) AS total_comparisons,
+          AVG(dynamic_consensus) AS avg_dynamic_consensus,
+          AVG(static_consensus) AS avg_static_consensus,
+          SUM(CASE WHEN difference > 0 THEN 1 ELSE 0 END) AS dynamic_better_count
+        FROM {$this->prefix}rag_agent_weight_consensus
+        WHERE created_at > DATE_SUB(NOW(), INTERVAL {$days} DAY)
+      ");
+      $a = $agg[0] ?? [];
+      $total = (int)($a['total_comparisons'] ?? 0);
+      $dynamicBetterPct = $total > 0
+        ? round(((int)($a['dynamic_better_count'] ?? 0) / $total) * 100, 1)
+        : 0;
+
+      $recent = DoctrineOrm::select("
+        SELECT evaluation_id, dynamic_consensus, static_consensus, difference, created_at
+        FROM {$this->prefix}rag_agent_weight_consensus
+        WHERE created_at > DATE_SUB(NOW(), INTERVAL {$days} DAY)
+        ORDER BY created_at DESC
+        LIMIT 10
+      ");
+      $recentComparisons = [];
+      foreach ($recent as $row) {
+        $recentComparisons[] = [
+          'evaluation_id' => $row['evaluation_id'],
+          'dynamic_consensus' => (float)$row['dynamic_consensus'],
+          'static_consensus' => (float)$row['static_consensus'],
+          'difference' => (float)$row['difference'],
+          'created_at' => $row['created_at'],
+        ];
+      }
+
+      return [
+        'total_comparisons' => $total,
+        'avg_dynamic_consensus' => (float)($a['avg_dynamic_consensus'] ?? 0),
+        'avg_static_consensus' => (float)($a['avg_static_consensus'] ?? 0),
+        'dynamic_better_percentage' => $dynamicBetterPct,
+        'recent_comparisons' => $recentComparisons,
+      ];
+    } catch (\Exception $e) {
+      error_log('AdaptiveWeightingMetricsProvider: Failed to get consensus comparison - ' . $e->getMessage());
       return [];
     }
   }

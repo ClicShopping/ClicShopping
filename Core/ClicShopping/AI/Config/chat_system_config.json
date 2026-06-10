@@ -6,9 +6,6 @@
     "enable_fallback": true,
     "enable_competitor_detection": true
   },
-  "OrchestratorAgent": {
-    "max_plan_steps": 10
-  },
   "ConversationMemory": {
     "max_history_size": 10,
     "max_context_window": 5,

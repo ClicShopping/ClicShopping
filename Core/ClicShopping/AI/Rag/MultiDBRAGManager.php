@@ -13,14 +13,11 @@ use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
-use ClicShopping\AI\DomainsAI\CoreAI\Embedding\NewVector;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
-use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\ResultFormatter;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
-use ClicShopping\AI\Config\DomainFields;
 
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
@@ -54,13 +51,12 @@ class MultiDBRAGManager
   private array $vectorStores = [];
   private mixed $securityLogger;
   private bool $debug = false;
-  private static array $tableStatsCache = [];
 
-  private mixed $resultFormatter;
   private int $userId;
 
   private ?LLMReranker $reranker = null;
   private bool $useReranking = false;
+  private RagContextFormatter $contextFormatter;
 
   /**
    * Constructor for MultiDBRAGManager
@@ -88,15 +84,13 @@ class MultiDBRAGManager
     // Language definitions are now loaded from main.txt via CLICSHOPPING::getDef()
     // $this->app->loadDefinitions('Sites/ClicShoppingAdmin/rag_analytics_agent');
 
-    if (!Registry::exists('ResultFormatter')) {
-      registry::set('ResultFormatter', new ResultFormatter());
-    }
-
-    $this->resultFormatter = Registry::get('ResultFormatter');
 
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
     $this->securityLogger = new SecurityLogger();
+
+    // Near-stateless document/context formatter extracted from this class (god-class decomposition).
+    $this->contextFormatter = new RagContextFormatter($this->debug);
 
     // 🔥 DEBUG CRITIQUE
     if ($this->debug) {
@@ -284,76 +278,7 @@ class MultiDBRAGManager
    */
   private function createEmbeddingGenerator(): EmbeddingGeneratorInterface
   {
-    return new class(Gpt::class) implements EmbeddingGeneratorInterface {
-      private $gptClass;
-
-      /**
-       * Constructor for the embedding generator
-       *
-       * @param string $gptClass Class name of the Gpt instance
-       */
-      public function __construct(string $gptClass)
-      {
-        $this->gptClass = $gptClass;
-      }
-
-      /**
-       * Embeds a single text string
-       *
-       * @param string $text Text to embed
-       * @return array Embedding vector
-       */
-      public function embedText(string $text): array
-      {
-        $generator = NewVector::gptEmbeddingsModel();
-
-        if (!$generator) {
-          throw new \RuntimeException('Embedding generator non initialisé');
-        }
-
-        return $generator->embedText($text);
-      }
-
-      /**
-       * Embeds a single document
-       *
-       * @param Document $document Document object to embed
-       * @return Document Embedded Document object
-       */
-      public function embedDocument(Document $document): Document
-      {
-        $document->embedding = NewVector::createEmbedding(null, $document->content);
-
-        return $document;
-      }
-
-      /**
-       * Embeds multiple documents
-       *
-       * @param array $documents Array of Document objects to embed
-       * @return array Array of embedded Document objects
-       */
-      public function embedDocuments(array $documents): array
-      {
-        $results = [];
-
-        foreach ($documents as $document) {
-          $results[] = $this->embedDocument($document);
-        }
-
-        return $results;
-      }
-
-      /**
-       * Returns the length of the embedding vector
-       *
-       * @return int Length of the embedding vector
-       */
-      public function getEmbeddingLength(): int
-      {
-        return NewVector::getEmbeddingLength();
-      }
-    };
+    return new RagEmbeddingGenerator();
   }
 
   /**
@@ -1080,56 +1005,6 @@ class MultiDBRAGManager
   }
 
 
-  /**
-   * Formats the analysis results for display
-   *
-   * @param array $results Analysis results
-   * @return string|null Formatted results for display
-   */
-  public function formatResults(array $results): string|null
-  {
-    try {
-      // Validate input
-      if (empty($results)) {
-        return 'No results to display';
-      }
-
-      // If results don't have a 'type' key, try to infer it or set a default
-      if (!isset($results['type'])) {
-        // Check if it looks like analytics results
-        if (isset($results['results']) && is_array($results['results'])) {
-          $results['type'] = 'analytics_results';
-        } // Check if it looks like a semantic response
-        else if (isset($results['response']) || isset($results['query'])) {
-          $results['type'] = 'semantic_results';
-        } // Default to unknown
-        else {
-          $results['type'] = 'unknown';
-        }
-      }
-
-      $result = $this->resultFormatter->format($results);
-
-      if (is_array($result) && array_key_exists('content', $result)) {
-        $result = $result['content'];
-      } else {
-        $result = '<span class="alert alert-warning">Error : please change or adapt your question</span>';
-      }
-
-      return $result;
-    } catch (\Exception $e) {
-      // Log the error for debugging
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          'Error in formatResults: ' . $e->getMessage(),
-          'error',
-          ['results' => $results]
-        );
-      }
-
-      return 'An error occurred while formatting the results. Please try again.';
-    }
-  }
 
   /**
    * Executes an analytical query on e-commerce data
@@ -1290,11 +1165,11 @@ class MultiDBRAGManager
       }
 
       // Build context from documents (with priority handling)
-      $context = $this->optimizeContext($documents, 3000);
+      $context = $this->contextFormatter->optimizeContext($documents, 3000);
 
       $documentNames = [];
       foreach ($documents as $doc) {
-        $docName = $this->extractDocumentName($doc);
+        $docName = $this->contextFormatter->extractDocumentName($doc);
         // Only include real document names (not generic "Document" fallback)
         if ($docName !== "Document") {
           $documentNames[] = $docName;
@@ -1366,398 +1241,4 @@ class MultiDBRAGManager
     }
   }
 
-  /**
-   * Build context with priority document handling
-   *
-   * Priority documents (with priority_boost metadata) get full content
-   * Other documents are truncated to maxCharsPerDoc
-   *
-   * This ensures critical information from priority sources is not lost,
-   * which is essential for accurate answers (e.g., "14 days" vs "7 days")
-   *
-   * @param array $documents Array of Document objects
-   * @param int $maxCharsPerDoc Maximum chars per non-priority document
-   * @return string Formatted context string
-   */
-  private function optimizeContext(array $documents, int $maxCharsPerDoc = 3000): string
-  {
-    $context = '';
-    $totalChars = 0;
-    $maxTotalChars = 60000; // Global limit: ~15,000 tokens
-
-    // Function to detect priority documents
-    $isPriorityDoc = function ($doc) {
-      return isset($doc->metadata['priority_boost']) && $doc->metadata['priority_boost'] === true;
-    };
-
-    foreach ($documents as $i => $doc) {
-      $documentName = $this->extractDocumentName($doc);
-
-      // Priority documents get FULL content (no truncation)
-      if ($isPriorityDoc($doc)) {
-        $docContent = $doc->content; //  FULL CONTENT
-        $label = $documentName . " (Priority Source)";
-
-        if ($this->debug) {
-          error_log("[INFO] Doc #{$i} PRIORITY ({$documentName}): " . strlen($docContent) . " chars (full content)");
-        }
-      } else {
-        // Other documents are truncated
-        $docContent = $doc->content;
-        if (strlen($docContent) > $maxCharsPerDoc) {
-          $docContent = mb_substr($docContent, 0, $maxCharsPerDoc) . "\n[...content truncated...]";
-        }
-        $label = $documentName;
-
-        if ($this->debug) {
-          error_log("[INFO] Doc #{$i} secondary ({$documentName}): " . strlen($docContent) . " chars (truncated)");
-        }
-      }
-
-      // Check global limit
-      if ($totalChars + strlen($docContent) > $maxTotalChars) {
-        if ($this->debug) {
-          error_log("⚠[warning] Context limit reached after " . ($i + 1) . " documents");
-        }
-        break;
-      }
-
-      $context .= "--- {$label} ---\n";
-      $context .= $docContent . "\n\n";
-      $totalChars += strlen($docContent);
-    }
-
-    if ($this->debug) {
-      error_log("[stats] Context built: {$totalChars} chars (~" . round($totalChars / 4) . " tokens)");
-    }
-
-    return $context;
-  }
-
-  /**
-   * Extract document name from document metadata
-   *
-   *
-   * This method extracts the document name from metadata to use in prompts
-   * instead of generic "Document 1", "Document 2" labels.
-   *
-   * Priority order:
-   * 1. title (most common)
-   * 2. document_name
-   * 3. brand_name (for pages_manager)
-   * 4. product_name (for products)
-   * 5. category_name (for categories)
-   * 6. name
-   * 7. page_title
-   * 8. source_table (as fallback)
-   * 9. "Document" (last resort - changed from "Unknown Document" to avoid polluting LLM responses)
-   *
-   * @param object $doc Document object with metadata
-   * @return string Document name
-   */
-  private function extractDocumentName($doc): string
-  {
-    // Try to get metadata
-    $metadata = null;
-    if (is_object($doc) && isset($doc->metadata)) {
-      $metadata = $doc->metadata;
-    } elseif (is_array($doc) && isset($doc['metadata'])) {
-      $metadata = $doc['metadata'];
-    }
-
-    if ($metadata === null) {
-      return "Document";
-    }
-
-    // Try different metadata fields in priority order
-    $possibleFields = array_values(array_unique(array_merge(
-      DomainFields::getPossibleFields(),
-      ['title', 'document_name', 'page_title', 'name']
-    )));
-
-    foreach ($possibleFields as $field) {
-      if (isset($metadata[$field]) && !empty($metadata[$field])) {
-        $name = trim($metadata[$field]);
-
-        // Clean up the name (remove extra whitespace, limit length)
-        $name = preg_replace('/\s+/', ' ', $name);
-
-        // Limit length to 100 chars for readability
-        if (strlen($name) > 100) {
-          $name = substr($name, 0, 97) . '...';
-        }
-
-        return $name;
-      }
-    }
-
-    // Fallback: use source_table if available
-    if (isset($metadata['source_table']) && !empty($metadata['source_table'])) {
-      $tableName = $metadata['source_table'];
-
-      // Remove prefix and _embedding suffix
-      $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-      if (!empty($prefix) && str_starts_with($tableName, $prefix)) {
-        $tableName = substr($tableName, strlen($prefix));
-      }
-      $tableName = str_replace('_embedding', '', $tableName);
-
-      // Convert to readable format (e.g., "pages_manager_description" -> "Pages Manager Description")
-      $tableName = str_replace('_', ' ', $tableName);
-      $tableName = ucwords($tableName);
-
-      return $tableName;
-    }
-
-    // Last resort: return generic name (changed from "Unknown Document" to "Document")
-
-    return "Document";
-  }
-
-  /**
-   * Converts the structured context array into a string readable by the LLM.
-   * (This is the logic that was placed in MemoryRetentionService, now moved here.)
-   */
-  private function formatContextArrayToLlmString(array $context): string
-  {
-    $formatted = "";
-
-    // Working Memory
-    if (!empty($context['working_memory']) && !empty($context['working_memory']['last_message'])) {
-      $formatted .= "## IMMEDIATE WORKING MEMORY";
-      $formatted .= "Last Question: " . substr($context['working_memory']['last_message'], 0, 200) . "\n";
-      $formatted .= "Last Answer: " . substr($context['working_memory']['last_response'], 0, 200) . "\n";
-      $formatted .= "---\n\n";
-    }
-
-    // Short-term (Current Session)
-    if (!empty($context['short_term']) && is_array($context['short_term'])) {
-      $formatted .= "## CURRENT SESSION HISTORY\n";
-      foreach ($context['short_term'] as $message) {
-        if (is_array($message)) {
-          $role = isset($message['role']) ? ucfirst($message['role']) : 'System';
-          $content = isset($message['content']) ? trim($message['content']) : '';
-          if (!empty($content)) {
-            $formatted .= "{$role}: " . substr($content, 0, 150) . "\n";
-          }
-        }
-      }
-      $formatted .= "---\n\n";
-    }
-
-    // Long-term (RAG Semantic)
-    if (!empty($context['long_term']) && is_array($context['long_term'])) {
-      $formatted .= "## RELEVANT PREVIOUS CONTEXT (SEMANTIC RAG)\n";
-      foreach ($context['long_term'] as $interaction) {
-        if (is_array($interaction)) {
-          $userMsg = $interaction['user_message'] ?? '';
-          $sysResp = $interaction['system_response'] ?? '';
-          if (!empty($userMsg) && !empty($sysResp)) {
-            $formatted .= "Q: " . substr($userMsg, 0, 100) . "\n";
-            $formatted .= "A: " . substr($sysResp, 0, 100) . "\n";
-            $formatted .= "---\n";
-          }
-        }
-      }
-      $formatted .= "\n";
-    }
-
-    return trim($formatted);
-  }
-
-
-//***********************
-// not used
-//***********************
-
-  /**
-   * Analyzes the actual content of a table to understand what it contains
-   *
-   * @param string $tableName Name of the table to analyze
-   * @return array Statistics and content samples
-   */
-  private function analyzeTableContent(string $tableName): array
-  {
-    // Use cache if available
-    if (isset(self::$tableStatsCache[$tableName])) {
-      return self::$tableStatsCache[$tableName];
-    }
-
-    try {
-      // Count documents
-      $count = DoctrineOrm::selectOne("SELECT COUNT(*) as total FROM {$tableName}");
-
-      if ($count['total'] == 0) {
-        self::$tableStatsCache[$tableName] = [
-          'total_documents' => 0,
-          'has_content' => false,
-          'types' => [],
-          'sample_content' => ''
-        ];
-        return self::$tableStatsCache[$tableName];
-      }
-
-      // Get present document types
-      $typesRows = DoctrineOrm::select("
-        SELECT DISTINCT type, COUNT(*) as count 
-        FROM {$tableName} 
-        GROUP BY type
-      ");
-
-      $types = [];
-      foreach ($typesRows as $row) {
-        $types[$row['type']] = $row['count'];
-      }
-
-      // Get content sample for semantic analysis
-      $sample = DoctrineOrm::selectOne("
-        SELECT GROUP_CONCAT(LEFT(content, 200) SEPARATOR ' ') as sample
-        FROM (
-          SELECT content FROM {$tableName} 
-          ORDER BY RAND() 
-          LIMIT 5
-        ) as samples
-      ");
-
-      $stats = [
-        'total_documents' => $count['total'],
-        'has_content' => true,
-        'types' => $types,
-        'sample_content' => $sample['sample'] ?? ''
-      ];
-
-      self::$tableStatsCache[$tableName] = $stats;
-
-      if ($this->debug) {
-        error_log("[stats] Table {$tableName} stats: " . json_encode($stats));
-      }
-
-      return $stats;
-
-    } catch (\Exception $e) {
-      if ($this->debug) {
-        error_log("️ Error analyzing table {$tableName}: " . $e->getMessage());
-      }
-
-      return [
-        'total_documents' => 0,
-        'has_content' => false,
-        'types' => [],
-        'sample_content' => ''
-      ];
-    }
-  }
-
-  /**
-   * Builds the prompt with context retrieved by the MemoryService.
-   *
-   * @param string $prompt The original user query.
-   * @param array $context The structured context (array) returned by MemoryRetentionService.
-   * @return string The final prompt formatted for the LLM.
-   */
-  private function buildPromptWithContext(string $userQuery, array $context): string
-  {
-    if (empty(array_filter($context, fn($v) => !empty($v)))) {
-      return $userQuery;
-    }
-
-    $contextString = $this->formatContextArrayToLlmString($context);
-
-    if (empty(trim($contextString))) {
-      return $userQuery;
-    }
-
-    return "RAG Context (Previous Interactions):\n---\n{$contextString}\n---\n\nCurrent Request: {$userQuery}";
-  }
-
-
-  /**
-   * DIAGNOSTIC METHOD - Checks the state of all embedding tables and their content
-   */
-  public function performDiagnostics(): array
-  {
-    error_log("=== DIAGNOSTIC START ===");
-    $diagnostics = [
-      'timestamp' => date('Y-m-d H:i:s'),
-      'vector_stores' => [],
-      'tables_status' => [],
-      'content_samples' => []
-    ];
-
-    // 1. Check each initialized VectorStore
-    error_log("Step 1: Checking initialized VectorStores");
-    foreach ($this->vectorStores as $tableName => $vectorStore) {
-      error_log("  - VectorStore found: {$tableName}");
-      $diagnostics['vector_stores'][] = $tableName;
-    }
-
-    if (empty($this->vectorStores)) {
-      error_log("  WARNING: No VectorStores initialized!");
-      $diagnostics['vector_stores'] = ['ERROR' => 'No VectorStores'];
-    }
-
-    // 2. Check embedding tables in the database
-    error_log("Step 2: Checking embedding tables in database");
-
-    foreach ($this->knownEmbeddingTable() as $tableName) {
-      try {
-        $result = DoctrineOrm::selectOne("SELECT COUNT(*) as cnt FROM {$tableName}");
-        $count = $result['cnt'] ?? 0;
-
-        error_log("  - Table {$tableName}: {$count} documents");
-        $diagnostics['tables_status'][$tableName] = [
-          'exists' => true,
-          'document_count' => $count
-        ];
-
-        // If the table has content, take a sample
-        if ($count > 0) {
-          $sample = DoctrineOrm::selectOne(
-            "SELECT content FROM {$tableName} LIMIT 1"
-          );
-
-          if ($sample) {
-            $preview = substr($sample['content'], 0, 200);
-            error_log("    Sample preview: {$preview}...");
-            $diagnostics['content_samples'][$tableName] = $preview;
-          }
-        }
-
-      } catch (\Exception $e) {
-        error_log("  - Table {$tableName}: NOT FOUND - {$e->getMessage()}");
-        $diagnostics['tables_status'][$tableName] = [
-          'exists' => false,
-          'error' => $e->getMessage()
-        ];
-      }
-    }
-
-    // 3. Attempt a test search
-    error_log("Step 3: Testing search with simple query");
-    try {
-      // Very permissive search
-      $testResults = $this->searchDocuments(
-        "Strauss produit prix",
-        limit: 10,
-        minScore: 0.01  // Very low to see all results
-      );
-
-      $docCount = count($testResults['documents'] ?? []);
-      error_log("  - Search returned: {$docCount} documents");
-      $diagnostics['search_test'] = [
-        'query' => 'Strauss produit prix',
-        'results_count' => $docCount,
-        'audit_metadata' => $testResults['audit_metadata'] ?? []
-      ];
-
-    } catch (\Exception $e) {
-      error_log("  - Search failed: {$e->getMessage()}");
-      $diagnostics['search_test'] = [
-        'error' => $e->getMessage()
-      ];
-    }
-
-    error_log("=== DIAGNOSTIC END ===");
-    return $diagnostics;
-  }
 }

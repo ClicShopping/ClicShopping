@@ -89,7 +89,14 @@ Fournissez votre analyse sous forme d'objet JSON avec la structure suivante :
     "critic_id_2": "Forte réputation (0.90) mais l'expertise est dans le domaine analytique qui a une pertinence modérée pour cette évaluation. La confiance est élevée (0.9) et l'activité récente est bonne. La pondération reflète une correspondance de domaine solide mais pas parfaite.",
     "critic_id_3": "Expertise compétente dans le domaine sémantique (0.6) mais réputation plus faible (0.75) et confiance (0.7). L'activité récente est limitée. La pondération reflète une qualification adéquate mais pas exceptionnelle."
   },
-  "rationale": "Pour cette évaluation de résultats de recherche avec haute priorité, j'ai priorisé la correspondance de l'expertise de domaine sur la réputation pure. Le Critique 1 a reçu la pondération la plus élevée en raison de son expertise sémantique de niveau expert correspondant directement aux exigences. Le Critique 2, malgré une réputation plus élevée, a reçu une pondération plus faible en raison d'une inadéquation de domaine. Le Critique 3 a reçu la pondération la plus faible en raison d'une combinaison de niveau d'expertise plus faible et d'activité récente limitée. Les pondérations reflètent un équilibre entre la pertinence de l'expertise et la fiabilité."
+  "overall_rationale": "Pour cette évaluation j'ai priorisé la correspondance d'expertise de domaine sur la réputation pure : critic_id_1 le plus élevé (correspondance sémantique experte), critic_id_2 plus faible (inadéquation de domaine malgré une forte réputation), critic_id_3 le plus faible (novice + activité récente limitée).",
+  "dominant_factors": ["domain_match", "reputation", "confidence"],
+  "domain_analysis": {
+    "critic_id_1": {"match_quality": "high", "expertise_depth": "expert", "relevant_domains": ["semantic"]},
+    "critic_id_2": {"match_quality": "medium", "expertise_depth": "competent", "relevant_domains": ["analytics"]},
+    "critic_id_3": {"match_quality": "low", "expertise_depth": "novice", "relevant_domains": []}
+  },
+  "suggested_bounds": {"min": 0.1, "max": 0.5}
 }
 ```
 
@@ -97,7 +104,7 @@ Fournissez votre analyse sous forme d'objet JSON avec la structure suivante :
 - Fournissez une pondération pour CHAQUE critique (n'en omettez aucun)
 - Les pondérations doivent être des nombres positifs (peuvent être n'importe quelle valeur positive, seront normalisées plus tard)
 - Chaque explication doit mentionner les facteurs clés qui ont influencé la pondération
-- La justification doit expliquer votre stratégie de pondération globale pour cette évaluation
+- Incluez TOUJOURS `overall_rationale` (votre stratégie globale), `dominant_factors` (les facteurs déterminants) et `domain_analysis` (une entrée PAR critique, chacune avec `match_quality` parmi high/medium/low/none, plus `expertise_depth` et `relevant_domains`) — ces champs alimentent les tableaux de bord de monitoring et ne doivent jamais être omis ni laissés vides.
 - Utilisez un langage naturel - expliquez votre raisonnement comme vous le feriez à un humain
 
 Répondez UNIQUEMENT avec l'objet JSON, sans texte supplémentaire.
