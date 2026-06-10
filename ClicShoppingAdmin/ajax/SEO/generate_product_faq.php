@@ -9,6 +9,7 @@
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTTP;
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+  use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Faq\SeoFaqPipeline;
 
   // Phase 3 (FAQ generation + grounding + per-locale translation) runs every
@@ -26,7 +27,7 @@
 
   CLICSHOPPING::initialize();
   CLICSHOPPING::loadSite('ClicShoppingAdmin');
-AdministratorAdmin::hasUserAccess();
+  AdministratorAdmin::hasUserAccess();
 
   header('Content-Type: application/json; charset=utf-8');
 

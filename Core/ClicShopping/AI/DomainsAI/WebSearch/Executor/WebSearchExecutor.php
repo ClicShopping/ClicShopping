@@ -429,23 +429,19 @@ class WebSearchExecutor
       ];
     }
 
-    // Ordering: when the user explicitly asks for a specific site (Mode C
-    // RAG WebSearch), those results MUST appear before the generic Google
-    // Shopping / Amazon catch-alls.
     // Priority (lower = comes first):
-    //   rag_websearch   : 0  (the exact site the user asked for)
-    //   amazon          : 1  (domain-registered Mode D)
-    //   shopping_results: 2  (Mode B Google Shopping catch-all)
-    //   anything else   : 3
+    //   rag_websearch      : 0  (exact site the user requested)
+    //   <registered engine>: 1  (domain-registered specific-site results)
+    //   shopping_results   : 2  (generic catch-all, comes last)
     if (!empty($merged['shopping_results'])) {
-      $priorityMap = [
-        'rag_websearch'    => 0,
-        'amazon'           => 1,
-        'shopping_results' => 2,
-      ];
-      usort($merged['shopping_results'], static function (array $a, array $b) use ($priorityMap): int {
-        $pa = $priorityMap[$a['data_source'] ?? ''] ?? 3;
-        $pb = $priorityMap[$b['data_source'] ?? ''] ?? 3;
+      $sourcePriority = static fn (string $dataSource): int => match ($dataSource) {
+        'rag_websearch'        => 0,
+        '', 'shopping_results' => 2,
+        default                => 1,
+      };
+      usort($merged['shopping_results'], static function (array $a, array $b) use ($sourcePriority): int {
+        $pa = $sourcePriority($a['data_source'] ?? '');
+        $pb = $sourcePriority($b['data_source'] ?? '');
         if ($pa === $pb) {
           // Preserve original ordering within the same source by falling
           // back to position (lower position = earlier in the original list).

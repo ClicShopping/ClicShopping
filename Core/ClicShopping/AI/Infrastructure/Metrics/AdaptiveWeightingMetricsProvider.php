@@ -39,7 +39,8 @@ class AdaptiveWeightingMetricsProvider
       'critic_metrics' => $this->getCriticMetrics($periodDays),
       'coordination_metrics' => $this->getCoordinationMetrics($periodDays),
       'utilization_metrics' => $this->getUtilizationMetrics($periodDays),
-      'recent_coordinations' => $this->getRecentCoordinations(20)
+      'recent_coordinations' => $this->getRecentCoordinations(20),
+      'weight_anomalies' => $this->getWeightAnomalies($periodDays)
     ];
   }
 
@@ -372,8 +373,55 @@ class AdaptiveWeightingMetricsProvider
   }
 
   /**
+   * Get stored weight anomalies for the dashboard panel
+   *
+   * Reads anomalies persisted by {@see \ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightAnomalyDetector}
+   * into rag_agent_weight_anomalies. The returned row shape matches the columns the
+   * adaptive_weighting_dashboard template renders (critic_id, anomaly_type, severity,
+   * llm_analysis, detected_at).
+   *
+   * @param int $days Look-back window in days
+   * @return array Anomaly rows, most recent first
+   */
+  public function getWeightAnomalies(int $days = 7): array
+  {
+    try {
+      $days = (int)$days;
+      $results = DoctrineOrm::select("
+        SELECT
+          id,
+          anomaly_type,
+          critic_id,
+          severity,
+          llm_analysis,
+          detected_at
+        FROM {$this->prefix}rag_agent_weight_anomalies
+        WHERE detected_at > DATE_SUB(NOW(), INTERVAL {$days} DAY)
+        ORDER BY detected_at DESC
+      ");
+
+      $anomalies = [];
+      foreach ($results as $row) {
+        $anomalies[] = [
+          'id' => (int)$row['id'],
+          'anomaly_type' => $row['anomaly_type'],
+          'critic_id' => $row['critic_id'] ?? '',
+          'severity' => $row['severity'],
+          'llm_analysis' => $row['llm_analysis'] ?? '',
+          'detected_at' => $row['detected_at']
+        ];
+      }
+
+      return $anomalies;
+    } catch (\Exception $e) {
+      error_log('AdaptiveWeightingMetricsProvider: Failed to get weight anomalies - ' . $e->getMessage());
+      return [];
+    }
+  }
+
+  /**
    * Get detailed actor information
-   * 
+   *
    * @param string $actorId Actor ID
    * @return array Actor details
    */

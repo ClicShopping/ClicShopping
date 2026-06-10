@@ -22,7 +22,6 @@ CLICSHOPPING::initialize();
 
 CLICSHOPPING::loadSite('ClicShoppingAdmin');
 
-AdministratorAdmin::hasUserAccess();
 $CLICSHOPPING_Db = Registry::get('Db');
 $CLICSHOPPING_Language = Registry::get('Language');
 

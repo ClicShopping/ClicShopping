@@ -3,6 +3,7 @@ button_refresh = Refresh
 button_back_dashboard = Back to Dashboard
 button_export_csv = Export CSV
 button_export_json = Export JSON
+button_run_anomaly_scan = Run anomaly scan
 
 text_overview = Adaptive Weighting Overview
 text_weight_stats = Weight Statistics
@@ -62,6 +63,8 @@ text_severity = Severity
 text_llm_analysis = LLM Analysis
 text_detected_at = Detected At
 text_no_anomalies = No anomalies detected
+text_anomaly_scan_running = Scanning…
+text_anomaly_scan_error = Anomaly scan failed
 
 text_weight_trends = Weight Trends Over Time
 text_date = Date

@@ -12,7 +12,6 @@
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
-use ClicShopping\OM\HTTP;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
 define('PAGE_PARSE_START_TIME', microtime());

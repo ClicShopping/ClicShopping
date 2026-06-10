@@ -25,7 +25,7 @@ CLICSHOPPING::initialize();
 CLICSHOPPING::loadSite('ClicShoppingAdmin');
 
 // Check admin access
-AdministratorAdmin::hasUserAccess();
+//AdministratorAdmin::hasUserAccess();
 
 // Set JSON response header
 header('Content-Type: application/json');

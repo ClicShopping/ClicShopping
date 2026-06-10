@@ -8,6 +8,7 @@
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\AI\Infrastructure\Metrics\ActorCriticMetricsProvider;
 
 define('PAGE_PARSE_START_TIME', microtime());

@@ -53,21 +53,30 @@ class AdministratorAdmin
     return $check_array;
   }
 
-
-  /*
-   * check is the admin session and access
+  /**
+   * Enforce that the current request carries an authenticated admin session.
    *
-   * @return array|bool
+   * Fail-closed: when no admin session is present, emit a 403 + JSON error and
+   * terminate the request. Every caller is an admin AJAX/JSON endpoint that calls
+   * this bare, as a guard, so blocking here (rather than returning) is what actually
+   * protects the endpoint. Returns true when access is granted.
+   *
+   * @return bool true when an authenticated admin session is present (otherwise exits)
    */
-  public static function hasUserAccess(): array|bool
+  public static function hasUserAccess(): bool
   {
-    $check = true;
     if (!isset($_SESSION['admin']['id'], $_SESSION['admin']['access'])) {
       http_response_code(403);
-      return json_encode(['error' => 'Access denied']);
+
+      if (!headers_sent()) {
+        header('Content-Type: application/json');
+      }
+
+      echo json_encode(['error' => 'Access denied']);
+      exit;
     }
 
-    return $check;
+    return true;
   }
 
   /**

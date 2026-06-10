@@ -15,16 +15,16 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Models\WeightResult;
  * - Log LLM explanations and reasoning
  * - Track weight history per critic
  * - Support querying and analysis with multi-domain filtering
- * 
- * Requirements: 9.5, 13.1, 13.2, 13.4, 13.5
  */
 class WeightAuditLogger
 {
     private $db;
-    
+    private string $prefix;
+
     public function __construct()
     {
         $this->db = Registry::get('Db');
+        $this->prefix = (string)CLICSHOPPING::getConfig('db_table_prefix');
     }
     
     /**
@@ -589,25 +589,22 @@ class WeightAuditLogger
                 LEFT JOIN {$this->prefix}rag_agent_adaptive_weights w
                     ON h.evaluation_id = w.evaluation_id 
                     AND h.critic_id = w.critic_id
-                WHERE h.timestamp > DATE_SUB(NOW(), INTERVAL :days DAY)
+                WHERE h.timestamp > DATE_SUB(NOW(), INTERVAL {$days} DAY)
             ";
-            
-            // Add critic ID filtering if specified
+
+            // Add critic ID filtering if specified. Use positional (?) placeholders only —
+            // mixing named (:days) and positional in one statement triggers PDO HY093.
+            // $days is an int (typed param) so it is interpolated safely above.
+            $params = [];
             if ($criticIds !== null && !empty($criticIds)) {
                 $placeholders = implode(',', array_fill(0, count($criticIds), '?'));
                 $sql .= " AND h.critic_id IN ({$placeholders})";
+                $params = array_values($criticIds);
             }
-            
+
             $sql .= " ORDER BY h.timestamp DESC";
-            
+
             $stmt = $this->db->prepare($sql);
-            
-            // Bind parameters
-            $params = [$days];
-            if ($criticIds !== null && !empty($criticIds)) {
-                $params = array_merge($params, $criticIds);
-            }
-            
             $stmt->execute($params);
             
             $history = [];

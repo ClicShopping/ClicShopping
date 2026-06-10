@@ -295,9 +295,9 @@ class ClicShoppingAdmin extends \ClicShopping\OM\Domains\SitesAbstract
    *
    * @return mixed The first matched route from the provided routes array.
    */
-  public static function resolveRoute(array $route, array $routes)
+  public static function resolveRoute(array $route, array $routes) :mixed
   {
-    return array_values($routes)[0];
+    return array_values($routes)[0] ?? null;
   }
 
   /**

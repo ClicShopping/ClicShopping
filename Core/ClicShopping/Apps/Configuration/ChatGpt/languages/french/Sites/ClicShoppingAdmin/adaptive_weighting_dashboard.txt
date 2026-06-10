@@ -3,6 +3,7 @@ button_refresh = Actualiser
 button_back_dashboard = Retour au Tableau de Bord
 button_export_csv = Exporter CSV
 button_export_json = Exporter JSON
+button_run_anomaly_scan = Lancer un scan d'anomalies
 
 text_overview = Vue d'Ensemble Pondération Adaptive
 text_weight_stats = Statistiques de Pondération
@@ -62,6 +63,8 @@ text_severity = Sévérité
 text_llm_analysis = Analyse LLM
 text_detected_at = Détecté le
 text_no_anomalies = Aucune anomalie détectée
+text_anomaly_scan_running = Analyse en cours…
+text_anomaly_scan_error = Échec du scan d'anomalies
 
 text_weight_trends = Tendances des Poids dans le Temps
 text_date = Date

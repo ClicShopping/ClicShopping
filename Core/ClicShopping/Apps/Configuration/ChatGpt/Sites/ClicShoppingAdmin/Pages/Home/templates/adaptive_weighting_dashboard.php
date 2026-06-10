@@ -188,7 +188,7 @@ function formatWeight($weight) {
           </span>
           <span class="col-md-4 text-end">
             <?php 
-              echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_refresh'), null, null, 'primary', ['params' => 'onclick="location.reload()"']) . ' ';
+              echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_refresh'), null, null, 'primary', ['type' => 'button', 'params' => 'id="awRefreshBtn"']) . ' ';
               echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_back_dashboard'), null, $CLICSHOPPING_ChatGpt->link('DashboardDataScientist'), 'warning');
             ?>
           </span>
@@ -410,7 +410,10 @@ function formatWeight($weight) {
     <!-- Weight Anomalies -->
     <?php if (!empty($weightAnomalies)): ?>
     <div class="metric-card">
-      <h3><i class="bi bi-exclamation-triangle"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('text_weight_anomalies'); ?></h3>
+      <h3 class="d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-exclamation-triangle"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('text_weight_anomalies'); ?></span>
+        <?php echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_run_anomaly_scan'), null, null, 'primary', ['type' => 'button', 'params' => 'id="runAnomalyScanBtn"']); ?>
+      </h3>
       <table class="data-table">
         <thead>
           <tr>
@@ -440,7 +443,10 @@ function formatWeight($weight) {
     </div>
     <?php else: ?>
     <div class="metric-card">
-      <h3><i class="bi bi-check-circle"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('text_weight_anomalies'); ?></h3>
+      <h3 class="d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-check-circle"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('text_weight_anomalies'); ?></span>
+        <?php echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_run_anomaly_scan'), null, null, 'primary', ['type' => 'button', 'params' => 'id="runAnomalyScanBtn"']); ?>
+      </h3>
       <div class="alert alert-success">
         <?php echo $CLICSHOPPING_ChatGpt->getDef('text_no_anomalies'); ?>
       </div>
@@ -453,8 +459,8 @@ function formatWeight($weight) {
       <div class="row">
         <div class="col-md-12">
           <?php 
-            echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_export_csv'), null, null, 'success', ['params' => 'onclick="exportMetrics(\'csv\')"']) . ' ';
-            echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_export_json'), null, null, 'info', ['params' => 'onclick="exportMetrics(\'json\')"']);
+            echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_export_csv'), null, null, 'success', ['type' => 'button', 'params' => 'id="awExportCsvBtn"']) . ' ';
+            echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_export_json'), null, null, 'info', ['type' => 'button', 'params' => 'id="awExportJsonBtn"']);
           ?>
         </div>
       </div>
@@ -466,6 +472,38 @@ function formatWeight($weight) {
 // Include JavaScript file
 use ClicShopping\OM\CLICSHOPPING;
 
-$jsPath = CLICSHOPPING::getConfig('http_server', 'Shop') . CLICSHOPPING::getConfig('http_path', 'Shop') . 'ext/javascript/clicshopping/ClicShoppingAdmin/Agent/adaptive_weighting.js';
-echo '<script src="' . $jsPath . '"></script>';
+// Base URL for the admin AJAX endpoints, resolved server-side (includes the install
+// sub-path, e.g. /clicshopping_test/ClicShoppingAdmin/). runAnomalyScan()/exportMetrics()
+// read CLICSHOPPING_BASE_URL first and only fall back to window.location.origin otherwise —
+// the fallback omits the sub-path and 404s. Same pattern as the Agent dashboards.
+echo '<script>var CLICSHOPPING_BASE_URL = '
+  . json_encode(
+      CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'),
+      JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+    )
+  . ';</script>';
+
+// Labels consumed by runAnomalyScan() in adaptive_weighting.js (no hardcoded strings in JS).
+echo '<script>var CLICSHOPPING_ANOMALY_SCAN_LABELS = '
+  . json_encode([
+      'running' => $CLICSHOPPING_ChatGpt->getDef('text_anomaly_scan_running'),
+      'error' => $CLICSHOPPING_ChatGpt->getDef('text_anomaly_scan_error'),
+    ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP)
+  . ';</script>';
+
+echo '<script src="' . CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Agent/adaptive_weighting.js') . '"></script>';
+
+// Attach button handlers here (inline) rather than via inline onclick: HTML::button
+// strips inline on* handlers (sanitizeHtmlAttributes), so each button only carries an id.
+// runAnomalyScan()/exportMetrics() live in the JS loaded above.
+echo '<script>document.addEventListener("DOMContentLoaded",function(){'
+  . 'var scan=document.getElementById("runAnomalyScanBtn");'
+  . 'if(scan){scan.addEventListener("click",function(){runAnomalyScan(scan);});}'
+  . 'var refresh=document.getElementById("awRefreshBtn");'
+  . 'if(refresh){refresh.addEventListener("click",function(){location.reload();});}'
+  . 'var csv=document.getElementById("awExportCsvBtn");'
+  . 'if(csv){csv.addEventListener("click",function(){exportMetrics("csv");});}'
+  . 'var json=document.getElementById("awExportJsonBtn");'
+  . 'if(json){json.addEventListener("click",function(){exportMetrics("json");});}'
+  . '});</script>';
 ?>
