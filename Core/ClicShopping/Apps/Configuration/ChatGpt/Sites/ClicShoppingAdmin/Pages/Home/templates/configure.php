@@ -43,7 +43,7 @@ if ($CLICSHOPPING_MessageStack->exists('ChatGpt')) {
               // If the table does not exist (empty result), show the form
               if (empty($result) || $result === false) {
                 echo HTML::form('updateChatGpt', $CLICSHOPPING_ChatGpt->link('Configure&Update'));
-                echo HTML::button($CLICSHOPPING_ChatGpt->getDef('module_ch_sql_update'), null, $CLICSHOPPING_ChatGpt->link('ChatGpt'), 'warning',  ['params' => 'id="sqlUpdate" onclick="return confirm(\'' . $CLICSHOPPING_ChatGpt->getDef('module_ch_confirmation') . '\');"']) . '&bnsp;';
+                echo HTML::button($CLICSHOPPING_ChatGpt->getDef('module_ch_sql_update'), null, $CLICSHOPPING_ChatGpt->link('ChatGpt'), 'warning',  ['params' => 'data-confirm-text="' . $CLICSHOPPING_ChatGpt->getDef('module_ch_confirmation') . '"']) . '&bnsp;';
                 echo '</form>';
               }
             }

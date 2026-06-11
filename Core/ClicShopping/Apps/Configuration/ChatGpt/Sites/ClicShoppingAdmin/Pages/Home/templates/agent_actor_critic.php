@@ -231,7 +231,7 @@ function getSeverityBadgeClass($severity) {
           </span>
           <span class="col-md-4 text-end">
             <?php 
-              echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_refresh'), null, null, 'primary', ['params' => 'onclick="location.reload()"']) . ' ';
+              echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_refresh'), null, null, 'primary', ['params' => 'data-fn="location.reload"']) . ' ';
               echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_back_dashboard'), null, $CLICSHOPPING_ChatGpt->link('DashboardDataScientist'), 'warning');
             ?>
           </span>
@@ -556,8 +556,8 @@ function getSeverityBadgeClass($severity) {
                 <div class="row">
                   <div class="col-md-12">
                     <?php 
-                      echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_export_csv'), null, null, 'success', ['params' => 'onclick="exportMetrics(\'csv\')"']) . ' ';
-                      echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_export_json'), null, null, 'info', ['params' => 'onclick="exportMetrics(\'json\')"']);
+                      echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_export_csv'), null, null, 'success', ['params' => 'data-fn="exportMetrics" data-fn-arg="csv"']) . ' ';
+                      echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_export_json'), null, null, 'info', ['params' => 'data-fn="exportMetrics" data-fn-arg="json"']);
                     ?>
                   </div>
                 </div>

@@ -119,4 +119,49 @@ function getSeverityBadgeClass(severity) {
   return 'bg-' + (severityMap[severity] || 'secondary');
 }
 
+/**
+ * Trigger an on-demand weight anomaly scan (LLM analysis + DB write), then reload
+ * so the stored-anomalies panel reflects the new findings.
+ * The click handler is attached in the dashboard template (inline), because
+ * HTML::button strips inline on* handlers via sanitizeHtmlAttributes.
+ * @param {HTMLElement} btn - The button that triggered the scan (disabled during the call)
+ */
+function runAnomalyScan(btn) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const period = parseInt(urlParams.get('period') || '7', 10);
+
+  const baseUrl = typeof CLICSHOPPING_BASE_URL !== 'undefined'
+    ? CLICSHOPPING_BASE_URL
+    : window.location.origin + '/ClicShoppingAdmin/';
+
+  const labels = (typeof CLICSHOPPING_ANOMALY_SCAN_LABELS !== 'undefined') ? CLICSHOPPING_ANOMALY_SCAN_LABELS : {};
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = labels.running || 'Scanning…';
+  }
+
+  fetch(baseUrl + 'ajax/RAG/run_weight_anomaly_scan.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ days: period })
+  })
+    .then(function (response) { return response.json(); })
+    .then(function (json) {
+      if (json && json.success) {
+        // New anomalies are persisted; reload to render them in the stored panel.
+        window.location.reload();
+      } else {
+        const msg = (json && json.error) ? json.error : (labels.error || 'Scan failed');
+        alert(msg);
+        if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+      }
+    })
+    .catch(function (err) {
+      console.error('Anomaly scan failed:', err);
+      alert(labels.error || 'Scan failed');
+      if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    });
+}
+
 console.log('📦 Adaptive Weighting Dashboard JS loaded');
