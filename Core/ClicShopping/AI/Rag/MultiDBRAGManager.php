@@ -594,85 +594,7 @@ class MultiDBRAGManager
       'initial_results_count' => count($allResults)
     ];
 
-    // Apply LLMReranker if enabled (Task 2.14.3)
-    if ($this->debug) {
-      error_log("[INFO] Reranking check:");
-      error_log("  - useReranking: " . ($this->useReranking ? 'true' : 'false'));
-      error_log("  - reranker is null: " . ($this->reranker === null ? 'true' : 'false'));
-      error_log("  - allResults count: " . count($allResults));
-    }
-
-    if ($this->useReranking && $this->reranker !== null && count($allResults) > 0) {
-      try {
-        if ($this->debug) {
-          error_log("[INFO] Applying LLMReranker to improve relevance...");
-          error_log("Query for reranking: {$query}");
-          error_log("Documents before reranking: " . count($allResults));
-        }
-
-        // Get the configured number of output documents for reranking
-        // We send 2-3x more documents than we want back to give the LLM options
-        $rerankingOutputCount = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;
-
-        // Send 2x the output count to the reranker (but not more than available)
-        $initialLimit = min(count($allResults), $rerankingOutputCount * 2);
-        $documentsForReranking = array_slice($allResults, 0, $initialLimit);
-
-        if ($this->debug) {
-          error_log("Reranking {$initialLimit} documents to get top {$rerankingOutputCount}");
-        }
-
-        // Apply LLMReranker - this will reorder documents by relevance
-        // transformDocuments expects: array of questions, array of documents
-        $rerankedDocuments = $this->reranker->transformDocuments([$query], $documentsForReranking);
-
-        if ($this->debug) {
-          error_log(" Reranking complete: " . count($rerankedDocuments) . " documents");
-
-          // Log reranked order for debugging
-          foreach ($rerankedDocuments as $i => $doc) {
-            $preview = substr($doc->content, 0, 100);
-            $score = $doc->metadata['score'] ?? 0;
-            error_log("Reranked #{$i} (score: {$score}): {$preview}...");
-          }
-        }
-
-        // Use reranked documents
-        $allResults = $rerankedDocuments;
-
-        // Add reranking metadata
-        $auditMetadata['reranking_applied'] = true;
-        $auditMetadata['reranking_input_count'] = $initialLimit;
-        $auditMetadata['reranking_output_count'] = count($rerankedDocuments);
-        $auditMetadata['final_results_count'] = count($allResults);
-
-      } catch (\Exception $e) {
-        error_log("[error] Reranking failed: " . $e->getMessage());
-        error_log("Falling back to original order");
-
-        // Fallback: use original order, just take top N
-        $allResults = array_slice($allResults, 0, $limit);
-        $auditMetadata['reranking_failed'] = true;
-        $auditMetadata['reranking_error'] = $e->getMessage();
-        $auditMetadata['final_results_count'] = count($allResults);
-      }
-    } else {
-      // No reranking, just take top N by similarity score
-      $allResults = array_slice($allResults, 0, $limit);
-      $auditMetadata['reranking_applied'] = false;
-      $auditMetadata['final_results_count'] = count($allResults);
-
-      if ($this->debug) {
-        error_log("ℹ[INFO] Reranking disabled or not available, using top {$limit} by similarity");
-      }
-    }
-
-    $result = [
-      'documents' => $allResults,
-      'audit_metadata' => $auditMetadata
-    ];
-
-    return $result;
+    return $this->applyReranking($allResults, $query, $limit, $auditMetadata);
   }
 
   /**
@@ -723,54 +645,8 @@ class MultiDBRAGManager
     $embeddingJson = json_encode($queryEmbedding);
 
     // Build UNION ALL query for all tables
-    $unionQueries = [];
-    $tables = $this->knownEmbeddingTable();
     $sqlLimit = (int)($limit * 5); // Request 5x more results to account for filtering - cast to int
-
-    foreach ($tables as $table) {
-      if (isset($this->vectorStores[$table])) {
-        // Check if table has metadata column
-        $hasMetadata = DoctrineOrm::columnExists($table, 'metadata');
-
-        // Build metadata/content SELECT clauses with forced collation to prevent UNION collation errors
-        $contentSelect = 'CONVERT(content USING utf8mb4) COLLATE utf8mb4_unicode_ci AS content';
-        $metadataSelect = $hasMetadata
-          ? 'CONVERT(metadata USING utf8mb4) COLLATE utf8mb4_unicode_ci AS metadata'
-          : "CONVERT(JSON_OBJECT() USING utf8mb4) COLLATE utf8mb4_unicode_ci AS metadata";
-
-        // Build sub-query for this table
-        // Use literal value instead of parameter for LIMIT
-        // Doctrine cannot bind the same parameter multiple times in UNION ALL
-        $subQuery = "(
-          SELECT 
-            '{$table}' as source_table,
-            id,
-            {$contentSelect},
-            embedding,
-            {$metadataSelect},
-            (1 / (1 + VEC_DISTANCE_COSINE(embedding, VEC_FromText(:queryEmbedding)))) as similarity_score
-          FROM {$table}
-          HAVING similarity_score >= :minScore";
-
-        // Add language filter if specified (only if metadata column exists)
-        if ($languageId !== null && $hasMetadata) {
-          $subQuery .= " AND JSON_EXTRACT(metadata, '$.language_id') = :languageId";
-        }
-
-        // Add entity type filter if specified (only if metadata column exists)
-        if ($entityType !== null && $hasMetadata) {
-          $subQuery .= " AND JSON_EXTRACT(metadata, '$.entity_type') = :entityType";
-        }
-
-        // Use literal integer value for LIMIT (not quoted)
-        $subQuery .= "
-          ORDER BY similarity_score DESC
-          LIMIT " . $sqlLimit . "
-        )";
-
-        $unionQueries[] = $subQuery;
-      }
-    }
+    $unionQueries = $this->buildParallelUnionSubQueries($sqlLimit, $languageId, $entityType);
 
     if (empty($unionQueries)) {
       error_log("No tables available for parallel search");
@@ -869,52 +745,165 @@ class MultiDBRAGManager
         'speedup_factor' => round($sequentialEstimate / $duration, 1)
       ];
 
-      // Apply LLMReranker if enabled (same logic as sequential)
-      if ($this->useReranking && $this->reranker !== null && count($allResults) > 0) {
-        try {
-          if ($this->debug) {
-            error_log("[INFO] Applying LLMReranker to improve relevance...");
-          }
-
-          $rerankingOutputCount = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;
-          $initialLimit = min(count($allResults), $rerankingOutputCount * 2);
-          $documentsForReranking = array_slice($allResults, 0, $initialLimit);
-
-          $rerankedDocuments = $this->reranker->transformDocuments([$query], $documentsForReranking);
-
-          if ($this->debug) {
-            error_log("✅ Reranking complete: " . count($rerankedDocuments) . " documents");
-          }
-
-          $allResults = $rerankedDocuments;
-          $auditMetadata['reranking_applied'] = true;
-          $auditMetadata['reranking_input_count'] = $initialLimit;
-          $auditMetadata['reranking_output_count'] = count($rerankedDocuments);
-          $auditMetadata['final_results_count'] = count($allResults);
-
-        } catch (\Exception $e) {
-          error_log("[error] Reranking failed: " . $e->getMessage());
-          $allResults = array_slice($allResults, 0, $limit);
-          $auditMetadata['reranking_failed'] = true;
-          $auditMetadata['reranking_error'] = $e->getMessage();
-          $auditMetadata['final_results_count'] = count($allResults);
-        }
-      } else {
-        $allResults = array_slice($allResults, 0, $limit);
-        $auditMetadata['reranking_applied'] = false;
-        $auditMetadata['final_results_count'] = count($allResults);
-      }
-
-      return [
-        'documents' => $allResults,
-        'audit_metadata' => $auditMetadata
-      ];
+      return $this->applyReranking($allResults, $query, $limit, $auditMetadata);
 
     } catch (\Exception $e) {
       error_log("❌ Parallel search failed: " . $e->getMessage());
       error_log("Trace: " . $e->getTraceAsString());
       throw $e; // Re-throw to trigger fallback to sequential
     }
+  }
+
+  /**
+   * Build the per-table UNION ALL sub-queries for the parallel vector search.
+   * Extracted verbatim from searchDocumentsParallel.
+   *
+   * @param int $sqlLimit Per-table row cap (already limit*5)
+   * @param int|null $languageId
+   * @param string|null $entityType
+   * @return array List of SQL sub-query strings (one per embedding table)
+   */
+  private function buildParallelUnionSubQueries(int $sqlLimit, ?int $languageId, ?string $entityType): array
+  {
+    $unionQueries = [];
+    $tables = $this->knownEmbeddingTable();
+    foreach ($tables as $table) {
+      if (isset($this->vectorStores[$table])) {
+        // Check if table has metadata column
+        $hasMetadata = DoctrineOrm::columnExists($table, 'metadata');
+
+        // Build metadata/content SELECT clauses with forced collation to prevent UNION collation errors
+        $contentSelect = 'CONVERT(content USING utf8mb4) COLLATE utf8mb4_unicode_ci AS content';
+        $metadataSelect = $hasMetadata
+          ? 'CONVERT(metadata USING utf8mb4) COLLATE utf8mb4_unicode_ci AS metadata'
+          : "CONVERT(JSON_OBJECT() USING utf8mb4) COLLATE utf8mb4_unicode_ci AS metadata";
+
+        // Build sub-query for this table
+        // Use literal value instead of parameter for LIMIT
+        // Doctrine cannot bind the same parameter multiple times in UNION ALL
+        $subQuery = "(
+          SELECT 
+            '{$table}' as source_table,
+            id,
+            {$contentSelect},
+            embedding,
+            {$metadataSelect},
+            (1 / (1 + VEC_DISTANCE_COSINE(embedding, VEC_FromText(:queryEmbedding)))) as similarity_score
+          FROM {$table}
+          HAVING similarity_score >= :minScore";
+
+        // Add language filter if specified (only if metadata column exists)
+        if ($languageId !== null && $hasMetadata) {
+          $subQuery .= " AND JSON_EXTRACT(metadata, '$.language_id') = :languageId";
+        }
+
+        // Add entity type filter if specified (only if metadata column exists)
+        if ($entityType !== null && $hasMetadata) {
+          $subQuery .= " AND JSON_EXTRACT(metadata, '$.entity_type') = :entityType";
+        }
+
+        // Use literal integer value for LIMIT (not quoted)
+        $subQuery .= "
+          ORDER BY similarity_score DESC
+          LIMIT " . $sqlLimit . "
+        )";
+
+        $unionQueries[] = $subQuery;
+      }
+    }
+
+    return $unionQueries;
+  }
+
+  /**
+   * Apply optional LLMReranking to the collected documents and finalise the result.
+   * Shared by searchDocumentsSequential and searchDocumentsParallel (was duplicated verbatim).
+   *
+   * @param array $allResults Collected documents (already boosted + sorted)
+   * @param string $query
+   * @param int $limit Final result cap when reranking is disabled or fails
+   * @param array $auditMetadata Mode-specific audit metadata to enrich
+   * @return array ['documents' => array, 'audit_metadata' => array]
+   */
+  private function applyReranking(array $allResults, string $query, int $limit, array $auditMetadata): array
+  {
+    // Apply LLMReranker if enabled (Task 2.14.3)
+    if ($this->debug) {
+      error_log("[INFO] Reranking check:");
+      error_log("  - useReranking: " . ($this->useReranking ? 'true' : 'false'));
+      error_log("  - reranker is null: " . ($this->reranker === null ? 'true' : 'false'));
+      error_log("  - allResults count: " . count($allResults));
+    }
+
+    if ($this->useReranking && $this->reranker !== null && count($allResults) > 0) {
+      try {
+        if ($this->debug) {
+          error_log("[INFO] Applying LLMReranker to improve relevance...");
+          error_log("Query for reranking: {$query}");
+          error_log("Documents before reranking: " . count($allResults));
+        }
+
+        // Get the configured number of output documents for reranking
+        // We send 2-3x more documents than we want back to give the LLM options
+        $rerankingOutputCount = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;
+
+        // Send 2x the output count to the reranker (but not more than available)
+        $initialLimit = min(count($allResults), $rerankingOutputCount * 2);
+        $documentsForReranking = array_slice($allResults, 0, $initialLimit);
+
+        if ($this->debug) {
+          error_log("Reranking {$initialLimit} documents to get top {$rerankingOutputCount}");
+        }
+
+        // Apply LLMReranker - this will reorder documents by relevance
+        // transformDocuments expects: array of questions, array of documents
+        $rerankedDocuments = $this->reranker->transformDocuments([$query], $documentsForReranking);
+
+        if ($this->debug) {
+          error_log(" Reranking complete: " . count($rerankedDocuments) . " documents");
+
+          // Log reranked order for debugging
+          foreach ($rerankedDocuments as $i => $doc) {
+            $preview = substr($doc->content, 0, 100);
+            $score = $doc->metadata['score'] ?? 0;
+            error_log("Reranked #{$i} (score: {$score}): {$preview}...");
+          }
+        }
+
+        // Use reranked documents
+        $allResults = $rerankedDocuments;
+
+        // Add reranking metadata
+        $auditMetadata['reranking_applied'] = true;
+        $auditMetadata['reranking_input_count'] = $initialLimit;
+        $auditMetadata['reranking_output_count'] = count($rerankedDocuments);
+        $auditMetadata['final_results_count'] = count($allResults);
+
+      } catch (\Exception $e) {
+        error_log("[error] Reranking failed: " . $e->getMessage());
+        error_log("Falling back to original order");
+
+        // Fallback: use original order, just take top N
+        $allResults = array_slice($allResults, 0, $limit);
+        $auditMetadata['reranking_failed'] = true;
+        $auditMetadata['reranking_error'] = $e->getMessage();
+        $auditMetadata['final_results_count'] = count($allResults);
+      }
+    } else {
+      // No reranking, just take top N by similarity score
+      $allResults = array_slice($allResults, 0, $limit);
+      $auditMetadata['reranking_applied'] = false;
+      $auditMetadata['final_results_count'] = count($allResults);
+
+      if ($this->debug) {
+        error_log("ℹ[INFO] Reranking disabled or not available, using top {$limit} by similarity");
+      }
+    }
+
+    return [
+      'documents' => $allResults,
+      'audit_metadata' => $auditMetadata
+    ];
   }
 
   /**

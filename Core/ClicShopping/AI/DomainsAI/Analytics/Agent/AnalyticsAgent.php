@@ -25,7 +25,6 @@ use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
-use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\ModificationKeywordsPattern;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
@@ -69,6 +68,7 @@ class AnalyticsAgent
   private ResultInterpreter $resultInterpreter;
   private AmbiguityTranslator $ambiguityTranslator;
   private QueryEnricher $queryEnricher;
+  private AnalyticsQueryClassifier $queryClassifier;
   private CorrectionAgent $correctionAgent;
   private QueryCache $queryCache;
   private AmbiguousQueryDetector $ambiguityDetector;
@@ -172,6 +172,7 @@ class AnalyticsAgent
     );
     $this->ambiguityTranslator = new AmbiguityTranslator($this->resultInterpreter, $this->debug);
     $this->queryEnricher = new QueryEnricher($this->promptBuilder, $this->language, $this->debug);
+    $this->queryClassifier = new AnalyticsQueryClassifier($this->resultInterpreter, $this->debug);
     $this->correctionAgent = new CorrectionAgent($userId, $languageId);
     
     // Initialize QueryCache
@@ -249,7 +250,7 @@ class AnalyticsAgent
     
     try {
       // 0. 🆕 Detect if it's a modification and enrich with the last SQL query
-      if ($this->isModificationRequest($question) && $this->conversationMemory) {
+      if ($this->queryClassifier->isModificationRequest($question) && $this->conversationMemory) {
         $lastSQL = $this->conversationMemory->getLastSQLQuery();
         if ($lastSQL) {
           error_log("\n--- STEP 0: Modification detected, enriching with last SQL ---");
@@ -544,66 +545,15 @@ class AnalyticsAgent
   }
 
   /**
-   * Detects if the query is a modification of a previous query
-   * Note: Questions are translated to English before processing
-   *
-   *
-   * @param string $question The user's question (in English after translation)
-   * @return bool True if it's a modification query
-   */
-  private function isModificationRequest(string $question): bool
-  {
-    // Use centralized pattern class (uses getAllKeywords() internally)
-    $isModification = ModificationKeywordsPattern::isModificationRequest($question);
-
-    if ($isModification && $this->debug) {
-      $keyword = ModificationKeywordsPattern::getModificationKeyword($question);
-      error_log("🔄 Modification request detected with keyword: {$keyword}");
-    }
-
-    return $isModification;
-  }
-
-
-  /**
-   * Determines if a query is analytical in nature
-   * Uses semantic analysis to classify query type
-   * Checks against predefined analytical patterns
+   * Determines if a query is analytical in nature.
+   * Public API kept for external callers (e.g. MultiDBRAGManager); delegates to AnalyticsQueryClassifier.
    *
    * @param string $query Query to analyze
    * @return bool True if query is analytical, false otherwise
    */
   public function isAnalyticsQuery(string $query): bool
   {
-    error_log("\n=== ANALYTICS AGENT: isAnalyticsQuery() ===");
-    error_log("Input query: '{$query}'");
-
-    // CRITICAL FIX: Translate the query to English FIRST
-    $translatedQuery = SemanticAgent::translateToEnglish($query, 80);
-    error_log("Translated query: '{$translatedQuery}'");
-
-    // Extract only the clean translation (not the descriptive text)
-    $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translatedQuery);
-    error_log("Clean translation: '{$cleanTranslation}'");
-
-    // NOW classify the translated query using centralized QueryClassifier
-    $classifier = new QueryClassifier($this->debug);
-    $classificationResult = $classifier->classify($cleanTranslation, $cleanTranslation);
-    
-    error_log("Classification result: '{$classificationResult['type']}' (confidence: {$classificationResult['confidence']})");
-    if (!empty($classificationResult['reasoning'])) {
-      error_log("Reasoning: " . implode('; ', $classificationResult['reasoning']));
-    }
-
-    // REVERTED: Only accept 'analytics' type, NOT 'hybrid'
-    // Hybrid queries should be handled by HybridQueryProcessor, not AnalyticsAgent
-    // The CompoundQueryHandler in AnalyticsAgent produces incorrect output format
-    // HybridQueryProcessor has proper handling for multi-intent queries
-    $isAnalytics = $classificationResult['type'] === 'analytics';
-    error_log("Is analytics? " . ($isAnalytics ? 'YES' : 'NO'));
-    error_log("=== END isAnalyticsQuery() ===\n");
-
-    return $isAnalytics;
+    return $this->queryClassifier->isAnalyticsQuery($query);
   }
 
   /**
@@ -691,103 +641,10 @@ class AnalyticsAgent
 
     try {
 
-      //  Use classification confidence instead of recalculating
-      $this->debugLog("--- STEP -1: Evaluate confidence for abstention ---", "ABSTENTION");
-
-      // FIX 2026-01-29: Configure lower thresholds for AnalyticsAgent
-      // Abstention: 0.15 (was 0.3), Delegation: 0.5 (was 0.7)
-      try {
-        $this->abstentionManager->setThresholds('AnalyticsAgent', 0.15, 0.5);
-        $this->debugLog("Thresholds configured: abstention=0.15, delegation=0.5", "ABSTENTION");
-      } catch (\Exception $e) {
-        $this->debugLog("Failed to set thresholds: " . $e->getMessage(), "ABSTENTION");
+      $abstainResponse = $this->evaluateAbstention($question, $feedbackContext);
+      if ($abstainResponse !== null) {
+        return $abstainResponse;
       }
-
-      // Get classification confidence (already calculated in isAnalyticsQuery)
-      $translatedForClassification = SemanticAgent::translateToEnglish($question, 80);
-      $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translatedForClassification);
-      $classifier = new QueryClassifier($this->debug);
-      $classificationResult = $classifier->classify($cleanTranslation, $cleanTranslation);
-
-      $classificationConfidence = $classificationResult['confidence'] ?? 0.0;
-      $this->debugLog("Classification confidence: {$classificationConfidence}", "ABSTENTION");
-
-      // Use classification confidence if high, otherwise calculate complexity-based confidence
-      if ($classificationConfidence >= 0.7) {
-        // High classification confidence - use it directly
-        $confidence = $classificationConfidence;
-        $this->debugLog("Using classification confidence: {$confidence}", "ABSTENTION");
-      } else {
-        // Low classification confidence - calculate based on complexity
-        $complexity = AnalyticsQueryHeuristics::estimateQueryComplexity($question);
-        $this->debugLog("Query complexity: {$complexity}", "ABSTENTION");
-
-        $confidence = $this->abstentionManager->evaluateConfidence(
-          'AnalyticsAgent',
-          $question,
-          [
-            'task_type' => 'analytics_query',
-            'description' => $question,
-            'parameters' => $feedbackContext,
-            'complexity' => $complexity
-          ]
-        );
-        $this->debugLog("Calculated confidence: {$confidence}", "ABSTENTION");
-      }
-
-      $decision = $this->abstentionManager->getAbstentionDecision(
-        'AnalyticsAgent',
-        $confidence,
-        'analytics_query'
-      );
-
-      $this->debugLog("Abstention decision: {$decision['action']}", "ABSTENTION");
-      $this->debugLog("Reason: {$decision['reason']}", "ABSTENTION");
-
-      if ($decision['action'] === 'abstain') {
-        // Log abstention to database
-        $this->abstentionManager->logAbstention(
-          'AnalyticsAgent',
-          md5($question),
-          'analytics_query',
-          $confidence,
-          $decision['reason'],
-          'escalate_human'
-        );
-
-        $this->debugLog("ABSTAINING - Confidence too low", "ABSTENTION");
-
-        // Return error requiring human intervention
-        return [
-          'type' => 'error',
-          'message' => 'Confidence too low for autonomous execution. Human review required.',
-          'reason' => $decision['reason'],
-          'confidence' => $confidence,
-          'requires_human' => true,
-          'query' => $question
-        ];
-      }
-
-      if ($decision['action'] === 'delegate') {
-        // Log delegation intent
-        $this->abstentionManager->logAbstention(
-          'AnalyticsAgent',
-          md5($question),
-          'analytics_query',
-          $confidence,
-          $decision['reason'],
-          'delegate_peer',
-          $decision['suggested_delegate']
-        );
-
-        $this->debugLog("DELEGATING - Medium confidence", "ABSTENTION");
-        $this->debugLog("Suggested delegate: " . ($decision['suggested_delegate'] ?? 'none'), "ABSTENTION");
-
-        // For now, proceed with execution but log the delegation intent
-        // TODO: Implement actual delegation mechanism when peer agents are available
-      }
-
-      $this->debugLog("EXECUTING - Confidence sufficient ({$confidence})", "ABSTENTION");
 
       $this->debugLog("--- STEP 0: Translate query for ambiguity detection ---", "TRANSLATION");
 
@@ -807,37 +664,7 @@ class AnalyticsAgent
 
       $this->debugLog("--- STEP 0.5: Check for ambiguous query ---", "AMBIGUITY");
 
-      // 🚀 OPTIMIZATION: Skip ambiguity detection for high-confidence analytics queries
-      // Get classification confidence from isAnalyticsQuery (already called in processBusinessQuery)
-      // If confidence >= 0.9, skip ambiguity detection to save 1-2 seconds
-      $skipAmbiguity = false;
-      $classificationConfidence = 0.0;
-
-      // Re-classify to get confidence (cached, so very fast)
-      $translatedForClassification = SemanticAgent::translateToEnglish($question, 80);
-      $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translatedForClassification);
-      $classifier = new QueryClassifier($this->debug);
-      $classificationResult = $classifier->classify($cleanTranslation, $cleanTranslation);
-
-      $classificationConfidence = $classificationResult['confidence'] ?? 0.0;
-
-      if ($classificationResult['type'] === 'analytics' && $classificationConfidence >= 0.9) {
-        $skipAmbiguity = true;
-        $this->debugLog("⚡ SKIPPING ambiguity detection (high confidence: {$classificationConfidence})", "OPTIMIZATION");
-        $this->securityLogger->logSecurityEvent(
-          "Ambiguity detection skipped for high-confidence analytics query",
-          'info',
-          [
-            'query' => substr($question, 0, 100),
-            'confidence' => $classificationConfidence,
-            'time_saved_estimate' => '1-2 seconds'
-          ]
-        );
-      }
-
-      $ambiguityAnalysis = $skipAmbiguity
-        ? ['is_ambiguous' => false, 'skipped' => true, 'reason' => 'high_confidence_analytics', 'confidence' => $classificationConfidence]
-        : $this->ambiguityDetector->detectAmbiguity($queryForAmbiguity);
+      $ambiguityAnalysis = $this->analyzeAmbiguity($question, $queryForAmbiguity);
 
       if ($ambiguityAnalysis['is_ambiguous']) {
         $this->debugLog("AMBIGUOUS QUERY DETECTED!", "AMBIGUITY");
@@ -885,275 +712,483 @@ class AnalyticsAgent
 
       $this->debugLog("--- STEP 1: Check QueryCache ---", "CACHE");
 
-      // Check QueryCache FIRST
-      $cacheResult = $this->queryCache->get($question);
-      if ($cacheResult !== null) {
-        $this->debugLog("CACHE HIT! Returning cached results", "CACHE");
-        $this->debugLog("Cache entry age: " . (time() - strtotime($cacheResult['created_at'])) . " seconds", "CACHE");
-
-        return [
-          'type' => 'analytics_results',
-          'query' => $question,
-          'sql_query' => $cacheResult['sql_query'],
-          'original_sql_query' => $cacheResult['sql_query'],
-          'corrections' => [],
-          'results' => $cacheResult['results'],
-          'count' => $cacheResult['result_count'],
-          'entity_id' => $cacheResult['entity_id'] ?? null,
-          'entity_type' => $cacheResult['entity_type'] ?? null,
-          'interpretation' => $cacheResult['interpretation'] ?? null,  // 🆕 Return cached interpretation
-          'ambiguous' => $ambiguityAnalysis['is_ambiguous'],  // Add ambiguity metadata
-          'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
-          'cached' => true,
-          'cache_age' => time() - strtotime($cacheResult['created_at'])
-        ];
+      $cachedResponse = $this->checkQueryCache($question, $ambiguityAnalysis);
+      if ($cachedResponse !== null) {
+        return $cachedResponse;
       }
-      $this->debugLog("CACHE MISS - Generating new query", "CACHE");
 
       $this->debugLog("--- STEP 2: Generate SQL from question ---", "SQL");
 
-      $cacheKey = md5($question . json_encode($feedbackContext));
-      $sqlCache = new OMCache($cacheKey, 'Rag/SQL');
-
-      if ($sqlCache->exists(60)) { // 60 minutes = 1 hour
-        $cachedSQL = $sqlCache->get();
-        if ($cachedSQL !== null && !empty($cachedSQL)) {
-          $this->debugLog("✅ SQL CACHE HIT - Duration: < 10ms", "CACHE");
-          $this->securityLogger->logSecurityEvent(
-            "SQL generation cache hit",
-            'info',
-            [
-              'query' => substr($question, 0, 100),
-              'cache_key' => $cacheKey,
-              'time_saved_estimate' => '1-2 seconds'
-            ]
-          );
-
-          // Use cached SQL directly
-          $rawResponse = $cachedSQL;
-          $sqlQueries = [$cachedSQL];
-          $this->debugLog("Using cached SQL: " . substr($cachedSQL, 0, 200) . "...", "SQL");
-        }
-      }
-
-      // Generate SQL via LLM only if not cached
-      if (!isset($sqlQueries)) {
-        $this->debugLog("❌ SQL CACHE MISS - Calling LLM", "CACHE");
-
-        // Update system message with Schema RAG if enabled
-        $this->updateSystemMessageForQuery($question);
-
-        // Enrich question with feedback context for learning
-        $enrichedQuestion = $this->queryEnricher->enrichWithFeedback($question, $feedbackContext, $this->conversationMemory);
-
-        $this->debugLog("Calling chat.generateText()...", "SQL");
-        $startTime = microtime(true);
-        $rawResponse = $this->chat->generateText($enrichedQuestion);
-        $duration = (microtime(true) - $startTime) * 1000;
-        $this->debugLog("Raw response from GPT (first 500 chars): " . substr($rawResponse, 0, 500), "SQL");
-        $this->debugLog("LLM SQL generation took: " . round($duration, 2) . " ms", "PERFORMANCE");
-      }
-
-      // Extract SQL queries (skip if we already have template SQL)
-      if (!isset($sqlQueries)) {
-        $this->debugLog("Extracting SQL from response...", "SQL");
-        $sqlQueries = $this->queryProcessor->extractSqlQueries($rawResponse);
-        $this->debugLog("Extracted SQL queries count: " . count($sqlQueries), "SQL");
-      }
-
-      foreach ($sqlQueries as $idx => $sql) {
-        $this->debugLog("SQL Query " . ($idx + 1) . ": " . substr($sql, 0, 200) . "...", "SQL");
-      }
-
-      if (empty($sqlQueries)) {
-        $this->debugLog("NO SQL EXTRACTED - Trying to clean response", "SQL");
-        $sqlQueries = [$this->queryProcessor->cleanSqlResponse($rawResponse)];
-        $this->debugLog("After cleaning: " . substr($sqlQueries[0], 0, 200), "SQL");
-      }
-
-      if (empty($sqlQueries[0])) {
-        $this->debugLog("ERROR: No valid SQL query extracted", "SQL");
-        throw new \Exception('No valid SQL query could be extracted');
-      }
-
-      // Only cache if this was a fresh LLM generation (not from cache)
-      if (!isset($cachedSQL)) {
-        $this->debugLog("💾 Saving SQL to cache (TTL: 1 hour)", "CACHE");
-        $sqlCache->save($sqlQueries[0]);
-        $this->securityLogger->logSecurityEvent(
-          "SQL generation cached",
-          'info',
-          [
-            'query' => substr($question, 0, 100),
-            'cache_key' => $cacheKey,
-            'sql_length' => strlen($sqlQueries[0])
-          ]
-        );
-      }
+      $sqlQueries = $this->generateSqlQueries($question, $feedbackContext);
 
       $this->debugLog("--- STEP 3: Execute SQL queries ---", "EXECUTION");
-      $results = [];
-      $this->correctionLog = [];
-
-      foreach ($sqlQueries as $idx => $sqlQuery) {
-        $this->debugLog("Processing SQL query " . ($idx + 1), "EXECUTION");
-        $this->debugLog("Original: " . substr($sqlQuery, 0, 150) . "...", "EXECUTION");
-
-        $resolvedQuery = $this->queryProcessor->resolvePlaceholders($sqlQuery);
-        $this->debugLog("After placeholder resolution: " . substr($resolvedQuery, 0, 150) . "...", "EXECUTION");
-
-        $likeValidation = $this->queryProcessor->validateLikePatterns($resolvedQuery);
-        if (!empty($likeValidation['warnings'])) {
-          $this->debugLog("LIKE pattern warnings: " . count($likeValidation['warnings']), "VALIDATION");
-
-          // Log warnings using security logger
-          foreach ($likeValidation['warnings'] as $warning) {
-            $this->securityLogger->logSecurityEvent(
-              "LIKE pattern validation warning: " . $warning,
-              'warning',
-              [
-                'sql_snippet' => substr($resolvedQuery, 0, 200),
-                'like_count' => $likeValidation['like_count'],
-                'patterns' => $likeValidation['patterns']
-              ]
-            );
-          }
-
-          // Log suggestions if available
-          if (!empty($likeValidation['suggestions'])) {
-            $this->debugLog("Suggestions: " . implode('; ', $likeValidation['suggestions']), "VALIDATION");
-          }
-        } else {
-          $this->debugLog("LIKE pattern validation: PASSED (" . $likeValidation['like_count'] . " patterns checked)", "VALIDATION");
-        }
-
-        $validation = InputValidator::validateSqlQuery($resolvedQuery);
-        $this->debugLog("SQL validation: " . ($validation['valid'] ? 'VALID' : 'INVALID'), "VALIDATION");
-
-        if (!$validation['valid']) {
-          error_log("  Validation issues: " . implode(', ', $validation['issues']));
-          continue;
-        }
-
-        $finalQuery = $validation['valid'] ? $resolvedQuery : $sqlQuery;
-        $finalQuery = $this->queryProcessor->fixDateFilters($finalQuery);
-        // Schema-level guard: never GROUP BY a GDPR-encrypted column (shatters aggregation).
-        $finalQuery = $this->queryProcessor->fixEncryptedGroupBy($finalQuery);
-
-        error_log("  Final query to execute: " . substr($finalQuery, 0, 150) . "...");
-
-        try {
-          error_log("  Executing query...");
-          $executionResult = $this->queryExecutor->execute($finalQuery);
-
-          if (!$executionResult['success']) {
-            throw new \Exception($executionResult['error'] ?? 'Query execution failed');
-          }
-
-          $queryResults = $executionResult['data'];
-
-          error_log("  Query executed successfully!");
-          error_log("  Rows returned: " . count($queryResults));
-
-          if (!empty($queryResults)) {
-            error_log("  First row keys: " . implode(', ', array_keys($queryResults[0])));
-            error_log("  First row preview: " . json_encode(array_slice($queryResults[0], 0, 3)));
-          }
-
-          // Extract entity_id using QueryExecutor
-          $entityInfo = $this->queryExecutor->extractEntityIdFromResults($queryResults);
-          $entityId = $entityInfo['entity_id'];
-          $entityType = $entityInfo['entity_type'];
-
-          if ($entityId !== null) {
-            error_log("  Entity extracted: ID={$entityId}, Type={$entityType}");
-          }
-
-          $results = [
-            'type' => 'analytics_results',
-            'query' => $question,
-            'sql_query' => $finalQuery,
-            'original_sql_query' => $sqlQuery,
-            'corrections' => $this->correctionLog,
-            'results' => $queryResults,
-            'count' => count($queryResults),
-            'entity_id' => $entityId,
-            'entity_type' => $entityType,
-            'ambiguous' => $ambiguityAnalysis['is_ambiguous'] ?? false,  //Add ambiguity metadata
-            'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
-            'interpretations' => $ambiguityAnalysis['is_ambiguous'] ? array_keys($ambiguityAnalysis['interpretations']) : [],
-          ];
-
-          // 🆕 CACHE THE SUCCESSFUL RESULT
-          error_log("   Caching successful query result in QueryCache");
-          $this->queryCache->set(
-            $question,
-            $finalQuery,
-            $queryResults,
-            [
-              'entity_id' => $entityId,
-              'entity_type' => $entityType
-            ]
-          );
-
-        } catch (\Exception $e) {
-          error_log("  QUERY EXECUTION FAILED: " . $e->getMessage());
-          error_log("  Attempting intelligent correction...");
-
-          $correctionResult = $this->errorHandler->attemptIntelligentCorrection($e, $finalQuery, $sqlQuery, $question);
-
-          if ($correctionResult['success']) {
-            error_log("  Correction successful!");
-
-            // Use the corrected data as the main result (not append to array)
-            $correctedData = $correctionResult['data'];
-
-            // Extract entity info from corrected results
-            $entityInfo = $this->queryExecutor->extractEntityIdFromResults($correctedData['results']);
-
-            $results = [
-              'type' => 'analytics_results',
-              'query' => $question,
-              'sql_query' => $correctedData['executed_query'],
-              'original_sql_query' => $sqlQuery,
-              'corrections' => $correctedData['corrections'] ?? [],
-              'results' => $correctedData['results'],
-              'count' => count($correctedData['results']),
-              'entity_id' => $entityInfo['entity_id'],
-              'entity_type' => $entityInfo['entity_type'],
-              'ambiguous' => $ambiguityAnalysis['is_ambiguous'] ?? false,  // Add ambiguity metadata
-              'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
-              'interpretations' => $ambiguityAnalysis['is_ambiguous'] ? array_keys($ambiguityAnalysis['interpretations']) : [],
-            ];
-
-            // 🆕 CACHE THE CORRECTED RESULT
-            if (!empty($correctedData['results'])) {
-              error_log("  Caching corrected query result");
-              $this->queryCache->set(
-                $question,
-                $correctedData['executed_query'],
-                $correctedData['results'],
-                [
-                  'entity_id' => $entityInfo['entity_id'],
-                  'entity_type' => $entityInfo['entity_type']
-                ]
-              );
-            }
-          } else {
-            error_log("  Correction failed");
-            throw new \Exception("Execution failed after intelligent correction attempt: " . $e->getMessage());
-          }
-        }
-      }
-
-      error_log("\n" . "." . str_repeat(".", 99) . "\n");
-      return $results;
+      return $this->executeSqlQueries($sqlQueries, $question, $ambiguityAnalysis);
 
     } catch (\Exception $e) {
       error_log("\nFINAL EXCEPTION: " . $e->getMessage());
       error_log("." . str_repeat(".", 99) . "\n");
       throw $e;
     }
+  }
+
+  /**
+   * STEP 3: execute each generated SQL query (with validation, intelligent correction on
+   * failure, and result caching), interpret and assemble the analytics response. Extracted
+   * verbatim from processAnalyticsQuery. Throws on unrecoverable execution failure.
+   *
+   * @param array $sqlQueries Generated SQL queries (STEP 2)
+   * @param string $question Original question
+   * @param array $ambiguityAnalysis Ambiguity metadata echoed into the response
+   * @return array The assembled analytics_results response
+   */
+  private function executeSqlQueries(array $sqlQueries, string $question, array $ambiguityAnalysis): array
+  {
+    $results = [];
+    $this->correctionLog = [];
+
+    foreach ($sqlQueries as $idx => $sqlQuery) {
+      $this->debugLog("Processing SQL query " . ($idx + 1), "EXECUTION");
+      $this->debugLog("Original: " . substr($sqlQuery, 0, 150) . "...", "EXECUTION");
+
+      $resolvedQuery = $this->queryProcessor->resolvePlaceholders($sqlQuery);
+      $this->debugLog("After placeholder resolution: " . substr($resolvedQuery, 0, 150) . "...", "EXECUTION");
+
+      $likeValidation = $this->queryProcessor->validateLikePatterns($resolvedQuery);
+      if (!empty($likeValidation['warnings'])) {
+        $this->debugLog("LIKE pattern warnings: " . count($likeValidation['warnings']), "VALIDATION");
+
+        // Log warnings using security logger
+        foreach ($likeValidation['warnings'] as $warning) {
+          $this->securityLogger->logSecurityEvent(
+            "LIKE pattern validation warning: " . $warning,
+            'warning',
+            [
+              'sql_snippet' => substr($resolvedQuery, 0, 200),
+              'like_count' => $likeValidation['like_count'],
+              'patterns' => $likeValidation['patterns']
+            ]
+          );
+        }
+
+        // Log suggestions if available
+        if (!empty($likeValidation['suggestions'])) {
+          $this->debugLog("Suggestions: " . implode('; ', $likeValidation['suggestions']), "VALIDATION");
+        }
+      } else {
+        $this->debugLog("LIKE pattern validation: PASSED (" . $likeValidation['like_count'] . " patterns checked)", "VALIDATION");
+      }
+
+      $validation = InputValidator::validateSqlQuery($resolvedQuery);
+      $this->debugLog("SQL validation: " . ($validation['valid'] ? 'VALID' : 'INVALID'), "VALIDATION");
+
+      if (!$validation['valid']) {
+        error_log("  Validation issues: " . implode(', ', $validation['issues']));
+        continue;
+      }
+
+      $finalQuery = $validation['valid'] ? $resolvedQuery : $sqlQuery;
+      $finalQuery = $this->queryProcessor->fixDateFilters($finalQuery);
+      // Schema-level guard: never GROUP BY a GDPR-encrypted column (shatters aggregation).
+      $finalQuery = $this->queryProcessor->fixEncryptedGroupBy($finalQuery);
+
+      error_log("  Final query to execute: " . substr($finalQuery, 0, 150) . "...");
+
+      try {
+        error_log("  Executing query...");
+        $executionResult = $this->queryExecutor->execute($finalQuery);
+
+        if (!$executionResult['success']) {
+          throw new \Exception($executionResult['error'] ?? 'Query execution failed');
+        }
+
+        $queryResults = $executionResult['data'];
+
+        error_log("  Query executed successfully!");
+        error_log("  Rows returned: " . count($queryResults));
+
+        if (!empty($queryResults)) {
+          error_log("  First row keys: " . implode(', ', array_keys($queryResults[0])));
+          error_log("  First row preview: " . json_encode(array_slice($queryResults[0], 0, 3)));
+        }
+
+        // Extract entity_id using QueryExecutor
+        $entityInfo = $this->queryExecutor->extractEntityIdFromResults($queryResults);
+        $entityId = $entityInfo['entity_id'];
+        $entityType = $entityInfo['entity_type'];
+
+        if ($entityId !== null) {
+          error_log("  Entity extracted: ID={$entityId}, Type={$entityType}");
+        }
+
+        $results = [
+          'type' => 'analytics_results',
+          'query' => $question,
+          'sql_query' => $finalQuery,
+          'original_sql_query' => $sqlQuery,
+          'corrections' => $this->correctionLog,
+          'results' => $queryResults,
+          'count' => count($queryResults),
+          'entity_id' => $entityId,
+          'entity_type' => $entityType,
+          'ambiguous' => $ambiguityAnalysis['is_ambiguous'] ?? false,  //Add ambiguity metadata
+          'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
+          'interpretations' => $ambiguityAnalysis['is_ambiguous'] ? array_keys($ambiguityAnalysis['interpretations']) : [],
+        ];
+
+        // 🆕 CACHE THE SUCCESSFUL RESULT
+        error_log("   Caching successful query result in QueryCache");
+        $this->queryCache->set(
+          $question,
+          $finalQuery,
+          $queryResults,
+          [
+            'entity_id' => $entityId,
+            'entity_type' => $entityType
+          ]
+        );
+
+      } catch (\Exception $e) {
+        error_log("  QUERY EXECUTION FAILED: " . $e->getMessage());
+        error_log("  Attempting intelligent correction...");
+
+        $correctionResult = $this->errorHandler->attemptIntelligentCorrection($e, $finalQuery, $sqlQuery, $question);
+
+        if ($correctionResult['success']) {
+          error_log("  Correction successful!");
+
+          // Use the corrected data as the main result (not append to array)
+          $correctedData = $correctionResult['data'];
+
+          // Extract entity info from corrected results
+          $entityInfo = $this->queryExecutor->extractEntityIdFromResults($correctedData['results']);
+
+          $results = [
+            'type' => 'analytics_results',
+            'query' => $question,
+            'sql_query' => $correctedData['executed_query'],
+            'original_sql_query' => $sqlQuery,
+            'corrections' => $correctedData['corrections'] ?? [],
+            'results' => $correctedData['results'],
+            'count' => count($correctedData['results']),
+            'entity_id' => $entityInfo['entity_id'],
+            'entity_type' => $entityInfo['entity_type'],
+            'ambiguous' => $ambiguityAnalysis['is_ambiguous'] ?? false,  // Add ambiguity metadata
+            'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
+            'interpretations' => $ambiguityAnalysis['is_ambiguous'] ? array_keys($ambiguityAnalysis['interpretations']) : [],
+          ];
+
+          // 🆕 CACHE THE CORRECTED RESULT
+          if (!empty($correctedData['results'])) {
+            error_log("  Caching corrected query result");
+            $this->queryCache->set(
+              $question,
+              $correctedData['executed_query'],
+              $correctedData['results'],
+              [
+                'entity_id' => $entityInfo['entity_id'],
+                'entity_type' => $entityInfo['entity_type']
+              ]
+            );
+          }
+        } else {
+          error_log("  Correction failed");
+          throw new \Exception("Execution failed after intelligent correction attempt: " . $e->getMessage());
+        }
+      }
+    }
+
+    error_log("\n" . "." . str_repeat(".", 99) . "\n");
+    return $results;
+  }
+
+  /**
+   * STEP 2: produce the SQL queries for the question (SQL cache hit, else LLM generation +
+   * extraction/cleaning, with fresh results cached). Extracted verbatim from processAnalyticsQuery.
+   * Throws when no valid SQL can be extracted (caught by the caller's try).
+   *
+   * @param string $question
+   * @param array $feedbackContext
+   * @return array The extracted SQL queries (first element is the primary query)
+   */
+  private function generateSqlQueries(string $question, array $feedbackContext): array
+  {
+    $cacheKey = md5($question . json_encode($feedbackContext));
+    $sqlCache = new OMCache($cacheKey, 'Rag/SQL');
+
+    if ($sqlCache->exists(60)) { // 60 minutes = 1 hour
+      $cachedSQL = $sqlCache->get();
+      if ($cachedSQL !== null && !empty($cachedSQL)) {
+        $this->debugLog("✅ SQL CACHE HIT - Duration: < 10ms", "CACHE");
+        $this->securityLogger->logSecurityEvent(
+          "SQL generation cache hit",
+          'info',
+          [
+            'query' => substr($question, 0, 100),
+            'cache_key' => $cacheKey,
+            'time_saved_estimate' => '1-2 seconds'
+          ]
+        );
+
+        // Use cached SQL directly
+        $rawResponse = $cachedSQL;
+        $sqlQueries = [$cachedSQL];
+        $this->debugLog("Using cached SQL: " . substr($cachedSQL, 0, 200) . "...", "SQL");
+      }
+    }
+
+    // Generate SQL via LLM only if not cached
+    if (!isset($sqlQueries)) {
+      $this->debugLog("❌ SQL CACHE MISS - Calling LLM", "CACHE");
+
+      // Update system message with Schema RAG if enabled
+      $this->updateSystemMessageForQuery($question);
+
+      // Enrich question with feedback context for learning
+      $enrichedQuestion = $this->queryEnricher->enrichWithFeedback($question, $feedbackContext, $this->conversationMemory);
+
+      $this->debugLog("Calling chat.generateText()...", "SQL");
+      $startTime = microtime(true);
+      $rawResponse = $this->chat->generateText($enrichedQuestion);
+      $duration = (microtime(true) - $startTime) * 1000;
+      $this->debugLog("Raw response from GPT (first 500 chars): " . substr($rawResponse, 0, 500), "SQL");
+      $this->debugLog("LLM SQL generation took: " . round($duration, 2) . " ms", "PERFORMANCE");
+    }
+
+    // Extract SQL queries (skip if we already have template SQL)
+    if (!isset($sqlQueries)) {
+      $this->debugLog("Extracting SQL from response...", "SQL");
+      $sqlQueries = $this->queryProcessor->extractSqlQueries($rawResponse);
+      $this->debugLog("Extracted SQL queries count: " . count($sqlQueries), "SQL");
+    }
+
+    foreach ($sqlQueries as $idx => $sql) {
+      $this->debugLog("SQL Query " . ($idx + 1) . ": " . substr($sql, 0, 200) . "...", "SQL");
+    }
+
+    if (empty($sqlQueries)) {
+      $this->debugLog("NO SQL EXTRACTED - Trying to clean response", "SQL");
+      $sqlQueries = [$this->queryProcessor->cleanSqlResponse($rawResponse)];
+      $this->debugLog("After cleaning: " . substr($sqlQueries[0], 0, 200), "SQL");
+    }
+
+    if (empty($sqlQueries[0])) {
+      $this->debugLog("ERROR: No valid SQL query extracted", "SQL");
+      throw new \Exception('No valid SQL query could be extracted');
+    }
+
+    // Only cache if this was a fresh LLM generation (not from cache)
+    if (!isset($cachedSQL)) {
+      $this->debugLog("💾 Saving SQL to cache (TTL: 1 hour)", "CACHE");
+      $sqlCache->save($sqlQueries[0]);
+      $this->securityLogger->logSecurityEvent(
+        "SQL generation cached",
+        'info',
+        [
+          'query' => substr($question, 0, 100),
+          'cache_key' => $cacheKey,
+          'sql_length' => strlen($sqlQueries[0])
+        ]
+      );
+    }
+
+    return $sqlQueries;
+  }
+
+  /**
+   * STEP 1: QueryCache lookup. Returns the cached analytics_results response on hit, or null
+   * to proceed with SQL generation. Extracted verbatim from processAnalyticsQuery.
+   *
+   * @param string $question
+   * @param array $ambiguityAnalysis Ambiguity metadata echoed into the cached response
+   * @return array|null Cached response, or null on cache miss
+   */
+  private function checkQueryCache(string $question, array $ambiguityAnalysis): ?array
+  {
+    // Check QueryCache FIRST
+    $cacheResult = $this->queryCache->get($question);
+    if ($cacheResult !== null) {
+      $this->debugLog("CACHE HIT! Returning cached results", "CACHE");
+      $this->debugLog("Cache entry age: " . (time() - strtotime($cacheResult['created_at'])) . " seconds", "CACHE");
+
+      return [
+        'type' => 'analytics_results',
+        'query' => $question,
+        'sql_query' => $cacheResult['sql_query'],
+        'original_sql_query' => $cacheResult['sql_query'],
+        'corrections' => [],
+        'results' => $cacheResult['results'],
+        'count' => $cacheResult['result_count'],
+        'entity_id' => $cacheResult['entity_id'] ?? null,
+        'entity_type' => $cacheResult['entity_type'] ?? null,
+        'interpretation' => $cacheResult['interpretation'] ?? null,  // 🆕 Return cached interpretation
+        'ambiguous' => $ambiguityAnalysis['is_ambiguous'],  // Add ambiguity metadata
+        'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
+        'cached' => true,
+        'cache_age' => time() - strtotime($cacheResult['created_at'])
+      ];
+    }
+    $this->debugLog("CACHE MISS - Generating new query", "CACHE");
+
+    return null;
+  }
+
+  /**
+   * STEP 0.5 (compute): runs the ambiguity analysis for the query (with the high-confidence
+   * skip-optimization). Extracted verbatim from processAnalyticsQuery (core-method decomposition).
+   *
+   * @param string $question Original question
+   * @param string $queryForAmbiguity Query translated for ambiguity detection
+   * @return array The ambiguity analysis result
+   */
+  private function analyzeAmbiguity(string $question, string $queryForAmbiguity): array
+  {
+    // 🚀 OPTIMIZATION: Skip ambiguity detection for high-confidence analytics queries
+    // Get classification confidence from isAnalyticsQuery (already called in processBusinessQuery)
+    // If confidence >= 0.9, skip ambiguity detection to save 1-2 seconds
+    $skipAmbiguity = false;
+    $classificationConfidence = 0.0;
+
+    // Re-classify to get confidence (cached, so very fast)
+    $translatedForClassification = SemanticAgent::translateToEnglish($question, 80);
+    $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translatedForClassification);
+    $classifier = new QueryClassifier($this->debug);
+    $classificationResult = $classifier->classify($cleanTranslation, $cleanTranslation);
+
+    $classificationConfidence = $classificationResult['confidence'] ?? 0.0;
+
+    if ($classificationResult['type'] === 'analytics' && $classificationConfidence >= 0.9) {
+      $skipAmbiguity = true;
+      $this->debugLog("⚡ SKIPPING ambiguity detection (high confidence: {$classificationConfidence})", "OPTIMIZATION");
+      $this->securityLogger->logSecurityEvent(
+        "Ambiguity detection skipped for high-confidence analytics query",
+        'info',
+        [
+          'query' => substr($question, 0, 100),
+          'confidence' => $classificationConfidence,
+          'time_saved_estimate' => '1-2 seconds'
+        ]
+      );
+    }
+
+    $ambiguityAnalysis = $skipAmbiguity
+      ? ['is_ambiguous' => false, 'skipped' => true, 'reason' => 'high_confidence_analytics', 'confidence' => $classificationConfidence]
+      : $this->ambiguityDetector->detectAmbiguity($queryForAmbiguity);
+
+    return $ambiguityAnalysis;
+  }
+
+  /**
+   * STEP -1: confidence / abstention evaluation.
+   *
+   * Extracted verbatim from processAnalyticsQuery (core-method decomposition). Returns the
+   * abstain error response when the agent must not execute autonomously, or null to proceed
+   * (the 'delegate' case also proceeds, after logging the delegation intent).
+   *
+   * @param string $question
+   * @param array $feedbackContext
+   * @return array|null Abstain response array, or null to continue execution
+   */
+  private function evaluateAbstention(string $question, array $feedbackContext): ?array
+  {
+    //  Use classification confidence instead of recalculating
+    $this->debugLog("--- STEP -1: Evaluate confidence for abstention ---", "ABSTENTION");
+
+    // FIX 2026-01-29: Configure lower thresholds for AnalyticsAgent
+    // Abstention: 0.15 (was 0.3), Delegation: 0.5 (was 0.7)
+    try {
+      $this->abstentionManager->setThresholds('AnalyticsAgent', 0.15, 0.5);
+      $this->debugLog("Thresholds configured: abstention=0.15, delegation=0.5", "ABSTENTION");
+    } catch (\Exception $e) {
+      $this->debugLog("Failed to set thresholds: " . $e->getMessage(), "ABSTENTION");
+    }
+
+    // Get classification confidence (already calculated in isAnalyticsQuery)
+    $translatedForClassification = SemanticAgent::translateToEnglish($question, 80);
+    $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translatedForClassification);
+    $classifier = new QueryClassifier($this->debug);
+    $classificationResult = $classifier->classify($cleanTranslation, $cleanTranslation);
+
+    $classificationConfidence = $classificationResult['confidence'] ?? 0.0;
+    $this->debugLog("Classification confidence: {$classificationConfidence}", "ABSTENTION");
+
+    // Use classification confidence if high, otherwise calculate complexity-based confidence
+    if ($classificationConfidence >= 0.7) {
+      // High classification confidence - use it directly
+      $confidence = $classificationConfidence;
+      $this->debugLog("Using classification confidence: {$confidence}", "ABSTENTION");
+    } else {
+      // Low classification confidence - calculate based on complexity
+      $complexity = AnalyticsQueryHeuristics::estimateQueryComplexity($question);
+      $this->debugLog("Query complexity: {$complexity}", "ABSTENTION");
+
+      $confidence = $this->abstentionManager->evaluateConfidence(
+        'AnalyticsAgent',
+        $question,
+        [
+          'task_type' => 'analytics_query',
+          'description' => $question,
+          'parameters' => $feedbackContext,
+          'complexity' => $complexity
+        ]
+      );
+      $this->debugLog("Calculated confidence: {$confidence}", "ABSTENTION");
+    }
+
+    $decision = $this->abstentionManager->getAbstentionDecision(
+      'AnalyticsAgent',
+      $confidence,
+      'analytics_query'
+    );
+
+    $this->debugLog("Abstention decision: {$decision['action']}", "ABSTENTION");
+    $this->debugLog("Reason: {$decision['reason']}", "ABSTENTION");
+
+    if ($decision['action'] === 'abstain') {
+      // Log abstention to database
+      $this->abstentionManager->logAbstention(
+        'AnalyticsAgent',
+        md5($question),
+        'analytics_query',
+        $confidence,
+        $decision['reason'],
+        'escalate_human'
+      );
+
+      $this->debugLog("ABSTAINING - Confidence too low", "ABSTENTION");
+
+      // Return error requiring human intervention
+      return [
+        'type' => 'error',
+        'message' => 'Confidence too low for autonomous execution. Human review required.',
+        'reason' => $decision['reason'],
+        'confidence' => $confidence,
+        'requires_human' => true,
+        'query' => $question
+      ];
+    }
+
+    if ($decision['action'] === 'delegate') {
+      // Log delegation intent
+      $this->abstentionManager->logAbstention(
+        'AnalyticsAgent',
+        md5($question),
+        'analytics_query',
+        $confidence,
+        $decision['reason'],
+        'delegate_peer',
+        $decision['suggested_delegate']
+      );
+
+      $this->debugLog("DELEGATING - Medium confidence", "ABSTENTION");
+      $this->debugLog("Suggested delegate: " . ($decision['suggested_delegate'] ?? 'none'), "ABSTENTION");
+
+      // For now, proceed with execution but log the delegation intent
+      // TODO: Implement actual delegation mechanism when peer agents are available
+    }
+
+    $this->debugLog("EXECUTING - Confidence sufficient ({$confidence})", "ABSTENTION");
+
+    return null;
   }
 
   /**
