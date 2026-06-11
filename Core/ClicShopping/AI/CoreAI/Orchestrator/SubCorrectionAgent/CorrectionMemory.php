@@ -9,7 +9,7 @@
 namespace ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent;
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\AI\DomainsAI\CoreAI\Entity\EntityRegistry;
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;

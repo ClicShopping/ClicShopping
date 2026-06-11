@@ -10,7 +10,7 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Cache;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
-use ClicShopping\AI\DomainsAI\CoreAI\Embedding\NewVector;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use LLPhant\Embeddings\Document;

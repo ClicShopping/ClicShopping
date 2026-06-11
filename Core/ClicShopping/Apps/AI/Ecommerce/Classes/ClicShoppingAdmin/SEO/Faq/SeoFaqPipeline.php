@@ -312,7 +312,7 @@ class SeoFaqPipeline
     }
 
     try {
-      $generator = \ClicShopping\AI\DomainsAI\CoreAI\Embedding\NewVector::gptEmbeddingsModel();
+      $generator = \ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector::gptEmbeddingsModel();
       if (!$generator) {
         $this->logDebug('Embedding generator unavailable — grounding will fall back to accept-all.');
         return $sourceDocuments;

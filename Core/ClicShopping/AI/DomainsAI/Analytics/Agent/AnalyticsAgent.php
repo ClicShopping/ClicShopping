@@ -34,7 +34,7 @@ use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\LlmGuardrails;
-use ClicShopping\AI\Utils\TypeSafetyGuard;
+use ClicShopping\AI\Helper\TypeSafetyGuard;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 

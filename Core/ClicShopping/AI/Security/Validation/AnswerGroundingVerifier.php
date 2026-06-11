@@ -10,8 +10,8 @@ namespace ClicShopping\AI\Security\Validation;
 
 
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\DomainsAI\CoreAI\Embedding\NewVector;
-use ClicShopping\AI\DomainsAI\CoreAI\Embedding\VectorStatistics;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\VectorStatistics;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 
 /**

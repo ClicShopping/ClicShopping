@@ -429,6 +429,7 @@ class WebSearchExecutor
       ];
     }
 
+    // Ordering of merged shopping results — fully domain-agnostic. Core itself
     // Priority (lower = comes first):
     //   rag_websearch      : 0  (exact site the user requested)
     //   <registered engine>: 1  (domain-registered specific-site results)

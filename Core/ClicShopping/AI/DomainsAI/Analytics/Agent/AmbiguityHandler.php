@@ -10,7 +10,7 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 
 use ClicShopping\AI\Security\InputValidator;
-use ClicShopping\AI\DomainsAI\CoreAI\Helper\AgentResponseHelper;
+use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
 
 /**

@@ -10,7 +10,7 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Processor;
 
 
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\ResultFormatter;
-use ClicShopping\AI\DomainsAI\CoreAI\Helper\AgentResponseHelper;
+use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
 /**

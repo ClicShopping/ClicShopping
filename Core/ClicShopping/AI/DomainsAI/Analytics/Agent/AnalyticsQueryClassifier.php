@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 use ClicShopping\AI\CoreAI\Query\QueryClassifier;
-use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\ModificationKeywordsPattern;
+use ClicShopping\AI\DomainsAI\Shared\Patterns\Common\ModificationKeywordsPattern;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 
 /**

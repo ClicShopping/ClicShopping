@@ -13,7 +13,7 @@ use ClicShopping\OM\Cache;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\Config\DomainFields;
-use ClicShopping\AI\DomainsAI\CoreAI\Helper\AgentResponseHelper;
+use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;

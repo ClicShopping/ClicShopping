@@ -15,6 +15,7 @@ Core/ClicShopping/AI/
 ├── Config/              ✅ Configuration
 ├── Dashboard/           ✅ Monitoring
 ├── DomainsAI/           ✅ Business domain query types
+│   ├── Shared/          ✅ Cross-query-type components (Embedding, Entity, Patterns) — ex-`CoreAI`, renamed June 2026
 │   ├── Analytics/
 │   │   └── Validator/   ✅ Business logic validators (added May 2026)
 │   └── WebSearch/
@@ -26,10 +27,7 @@ Core/ClicShopping/AI/
 ├── LoadBalancing/       ✅ Load balancing
 ├── Rag/                 ✅ RAG Manager
 ├── RegistryAI/          ✅ Actor, Critic and WebSearch engine registries
-├── Security/            ✅ Guardrails and security
-├── Services/            ✅ ActorCritic, Autonomous services
-├── Tools/               ✅ Tools
-└── Utils/               ✅ Utilities
+└── Security/            ✅ Guardrails and security
 ```
 
 ### Migration Notice (May 2026)
@@ -228,6 +226,59 @@ a new domain (HR, CRM, Finance, Trading, ...) is added.
 
 Mode D is **always domain-registered**. The Ecommerce App ships
 `mode_d_amazon_shopping` via `AmazonShoppingProvider`.
+
+### 5.3 — Language prompt files (`Agents/` vs `{domain}/`)
+
+RAG/agent **prompts are language files**, never hardcoded strings (no heredoc or inline prompt
+text in classes — always `getDef()`). A third agnostic-vs-domain split applies, mirroring
+5.1/5.2:
+
+| Kind | Location | Content |
+|------|----------|---------|
+| **Agnostic** (any domain) | `ClicShoppingAdmin/Core/languages/{lang}/Agents/rag_*.txt` | Instructions/logic with NO domain entities, schema or few-shot examples (critic selection, weight bounds, anomaly detection, …) |
+| **Domain-specific** | `ClicShoppingAdmin/Core/languages/{lang}/{domain}/rag_*.txt` (e.g. `ecommerce/`) | NL-to-SQL with the real schema, entity extraction, domain few-shot examples |
+
+**Decision rule**: if a prompt would read identically for Finance/HR/CRM (only generic
+instructions), it belongs in `Agents/`. If it embeds the domain's entities/schema/examples it
+stays in `{domain}/`. When a prompt is *mostly* agnostic with a few domain examples, split the
+agnostic skeleton into `Agents/` and keep only the examples in `{domain}/`.
+
+**Goal**: adding a domain (e.g. `finance/`) must require providing **only** the domain-specific
+prompts; the agnostic ones in `Agents/` are inherited without recopy.
+
+Loading — use the symmetric `DomainConfig` helpers:
+
+```php
+// domain prompt (derives {domain} from CLICSHOPPING_APP_CHATGPT_RA_ACTIVITIES → ecommerce/)
+DomainConfig::loadLanguageFile('rag_analytics_agent');
+// agnostic prompt — loads the Agents/ group (prefixes 'Agents/' instead of '{domain}/')
+DomainConfig::loadAgnosticLanguageFile('rag_adaptive_weighting');
+```
+
+`loadAgnosticLanguageFile()` is the counterpart of `loadLanguageFile()` and is the API for any
+agnostic file (it centralizes the `'Agents/'` literal; equivalent to a direct
+`$this->language->loadDefinitions('Agents/<file>', 'en', null, 'ClicShoppingAdmin')`).
+
+**Mixed file (skeleton + domain examples)** — a class that needs both layers loads them with
+two calls, so every definition key (and its variables) ends up available together:
+
+```php
+DomainConfig::loadAgnosticLanguageFile('rag_xxx_skeleton'); // agnostic instructions/logic
+DomainConfig::loadLanguageFile('rag_xxx_examples');         // domain entities/schema/few-shot
+```
+
+`'Agents'` is not a registered site, so `Language::loadDefinitions()` does not strip it as a
+site prefix → it resolves to `…/languages/{lang}/Agents/{file}.txt`.
+
+**Interpolation**: `getDef('text_key', ['var' => $value])` substitutes `{{var}}` placeholders
+in the value (prefer over `sprintf %s` for multi-variable lines). Prompts load in English by
+design (internal, not user-facing) but EN **and** FR must both be translated.
+
+⚠️ Editing these `.txt` requires a cache + DB purge — see **ARCHITECTURE.md §7.1/§7.2** for the
+parser rules (`=` handling, single space before `=`) and the mandatory purge procedure.
+
+**Reference implementation**: `…/SubActorCritic/WeightingEngine/LLMPromptBuilder.php` is fully
+externalized into `Agents/rag_adaptive_weighting.txt` (49 keys, EN+FR).
 
 ---
 

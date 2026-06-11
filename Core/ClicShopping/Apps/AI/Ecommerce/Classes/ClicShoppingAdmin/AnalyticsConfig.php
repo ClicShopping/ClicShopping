@@ -11,7 +11,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
-use ClicShopping\AI\DomainsAI\CoreAI\Entity\EntityRegistry;
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 
 /**

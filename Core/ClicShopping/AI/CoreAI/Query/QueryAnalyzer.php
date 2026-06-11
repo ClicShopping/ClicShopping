@@ -11,8 +11,8 @@ namespace ClicShopping\AI\CoreAI\Query;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Helper\LanguageHelper;
-use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\EntityDetectionPattern;
-use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\ContinuationPattern;
+use ClicShopping\AI\DomainsAI\Shared\Patterns\Common\EntityDetectionPattern;
+use ClicShopping\AI\DomainsAI\Shared\Patterns\Common\ContinuationPattern;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\OperatorPattern;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\QueryCriteriaPattern;
 

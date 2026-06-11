@@ -94,7 +94,12 @@ For cache and session details → `ARCHITECTURE.md`.
 - All comments inside Core/ClicShopping/AI/ classes must be in English
 - All class comments must respect PSR standardization
 - No visible hardcoded string in PHP or templates — always use getDef('')
+  (this includes RAG/agent PROMPTS: no heredoc/inline prompt text in classes)
 - Minimum language compatibility: EN + FR
+- AI prompt language files are split agnostic vs domain: agnostic → {lang}/Agents/,
+  domain-specific → {lang}/{domain}/ (e.g. ecommerce/). See AI_ARCHITECTURE.md §5.3 for the
+  split rule + {{var}} interpolation, and ARCHITECTURE.md §7.1/§7.2 for the .txt parser rules
+  and the mandatory cache+DB purge after editing a language file.
 ```
 
 ---

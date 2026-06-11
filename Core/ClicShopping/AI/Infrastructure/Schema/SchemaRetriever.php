@@ -12,7 +12,7 @@ use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\Config\DomainFields;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\Cache as OMCache;
-use ClicShopping\AI\DomainsAI\CoreAI\Embedding\NewVector;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Infrastructure\Prompt\PromptOptimizer;
 

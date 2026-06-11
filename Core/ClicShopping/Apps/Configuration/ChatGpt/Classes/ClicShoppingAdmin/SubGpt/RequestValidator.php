@@ -9,7 +9,7 @@
 namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt;
 
 use ClicShopping\AI\Helper\ClarificationHelper;
-use ClicShopping\AI\DomainsAI\CoreAI\Helper\AgentResponseHelper;
+use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\Security\SecurityOrchestrator;
 
 /**

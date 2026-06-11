@@ -11,8 +11,8 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Executor;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\DbSecurity;
-use ClicShopping\AI\DomainsAI\CoreAI\Entity\EntityRegistry;
-use ClicShopping\AI\Tools\Performance\QueryPerformanceMonitor;
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
+use ClicShopping\AI\Infrastructure\Monitoring\QueryPerformanceMonitor;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 

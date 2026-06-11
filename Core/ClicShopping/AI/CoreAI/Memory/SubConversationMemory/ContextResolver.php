@@ -11,7 +11,7 @@ namespace ClicShopping\AI\CoreAI\Memory\SubConversationMemory;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\CoreAI\Memory\EntityTypeRegistry;
-use ClicShopping\AI\DomainsAI\CoreAI\Entity\EntityHelper;
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityHelper;
 use LLPhant\Chat\Message;
 
 /**

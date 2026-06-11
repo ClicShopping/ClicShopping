@@ -8,7 +8,7 @@
 
 namespace ClicShopping\AI\DomainsAI\WebSearch\Executor;
 
-use ClicShopping\AI\DomainsAI\CoreAI\Helper\AgentResponseHelper;
+use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\InterfacesAI\EntityHelperInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;

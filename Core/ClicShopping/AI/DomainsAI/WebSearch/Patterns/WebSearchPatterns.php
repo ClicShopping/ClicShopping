@@ -22,7 +22,7 @@
 namespace ClicShopping\AI\DomainsAI\WebSearch\Patterns;
 
 
-use ClicShopping\AI\DomainsAI\CoreAI\Patterns\Common\EntityKeywordsPattern;
+use ClicShopping\AI\DomainsAI\Shared\Patterns\Common\EntityKeywordsPattern;
 
 
 // DEPRECATED: Pattern-based logic superseded by Pure LLM Mode. Scheduled for removal in Q3 2026.

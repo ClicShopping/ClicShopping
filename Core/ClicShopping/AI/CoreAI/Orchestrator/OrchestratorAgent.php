@@ -60,8 +60,8 @@ use ClicShopping\AI\Infrastructure\Monitoring\PerformanceTracker;
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\Validation\HallucinationDetector;
-use ClicShopping\AI\ServicesAI\ActorCritic\ActorCriticInitializer;
-use ClicShopping\AI\ServicesAI\Autonomous\ObjectiveManager;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticInitializer;
+use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveManager;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 

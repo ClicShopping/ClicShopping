@@ -10,7 +10,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator;
 
 
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\DomainsAI\CoreAI\Embedding\NewVector;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 
 /**
  * FeedbackImpactDetector Class

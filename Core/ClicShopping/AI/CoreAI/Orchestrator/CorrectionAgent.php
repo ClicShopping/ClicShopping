@@ -11,7 +11,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
-use ClicShopping\AI\DomainsAI\CoreAI\Embedding\NewVector;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\LearningStatistics;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\CorrectionValidator;

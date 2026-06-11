@@ -38,7 +38,6 @@ use ClicShopping\AI\Config\DomainFields;
  * - Analytics with filters: Load analytics context (entity data, aggregations)
  * - Hybrid queries: Load both semantic and analytics context
  *
- * @package ClicShopping\AI\CoreAI\Context
  */
 
 class ContextRetriever
