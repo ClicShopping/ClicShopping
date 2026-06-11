@@ -133,7 +133,7 @@ class ResultInterpreter
     }
 
     // Load the prompt in English for consistency with AI training
-    DomainConfig::loadLanguageFile('rag_result_interpreter');
+    DomainConfig::loadAgnosticLanguageFile('rag_result_interpreter');
     
     $array = [
       'question' => $question,

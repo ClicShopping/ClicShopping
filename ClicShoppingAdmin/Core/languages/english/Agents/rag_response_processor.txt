@@ -1,0 +1,40 @@
+error_database_user_message = Sorry, I couldn't access the data. A connection error occurred.
+error_database_details = Database connection error
+error_database_suggestion_1 = Please try again in a few moments
+error_database_suggestion_2 = If the issue persists, contact technical support
+
+error_timeout_user_message = The request took too long to execute.
+error_timeout_details = Execution time exceeded
+error_timeout_suggestion_1 = Try simplifying your query
+error_timeout_suggestion_2 = Reduce the requested time range
+error_timeout_suggestion_3 = Be more specific in your query
+
+error_sql_user_message = I couldn't understand your data request.
+error_sql_details = Query generation error
+error_sql_suggestion_1 = Rephrase your question more simply
+error_sql_suggestion_3 = Avoid overly technical terms
+
+error_no_data_user_message = No data was found for your request.
+error_no_data_details = No matching results
+error_no_data_suggestion_1 = Verify that the data exists in the system
+error_no_data_suggestion_2 = Try broadening your search
+error_no_data_suggestion_3 = Adjust the requested time period
+
+error_permission_user_message = You do not have the necessary permissions to access this data.
+error_permission_details = Access denied
+error_permission_suggestion_1 = Contact your administrator to obtain permissions
+error_permission_suggestion_2 = Try querying public data instead
+
+error_ai_service_user_message = The AI service is temporarily unavailable.
+error_ai_service_details = AI service error
+error_ai_service_suggestion_1 = Try again in a few moments
+error_ai_service_suggestion_2 = The service should be restored shortly
+
+error_generic_user_message = An unexpected error occurred while processing your request.
+error_generic_suggestion_1 = Retry your request
+error_generic_suggestion_2 = Rephrase your question differently
+error_generic_suggestion_3 = If the problem persists, contact support
+
+response_not_available = Response not available
+analysis_not_available = Analysis not available
+response_extraction_fallback = Unable to extract response from result. Please try rephrasing your question.

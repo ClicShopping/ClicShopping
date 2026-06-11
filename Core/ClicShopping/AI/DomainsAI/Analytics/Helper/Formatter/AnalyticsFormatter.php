@@ -47,7 +47,7 @@ class AnalyticsFormatter extends AbstractFormatter
     $this->languageCode = $this->language->get('code');
     
     // Load language definitions (null = use current user language)
-    DomainConfig::loadLanguageFile('rag_formatters', null);
+    DomainConfig::loadAgnosticLanguageFile('rag_formatters', null);
   }
   
   public function canHandle(array $results): bool

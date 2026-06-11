@@ -48,7 +48,7 @@ class SemanticFormatter extends AbstractFormatter
     $this->languageCode = $this->language->get('code');
     
     // Load language definitions once (null = use current user language)
-    DomainConfig::loadLanguageFile('rag_formatters', null);
+    DomainConfig::loadAgnosticLanguageFile('rag_formatters', null);
   }
   
   public function canHandle(array $results): bool

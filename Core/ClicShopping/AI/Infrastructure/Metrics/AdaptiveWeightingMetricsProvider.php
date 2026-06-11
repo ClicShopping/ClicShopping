@@ -43,7 +43,10 @@ class AdaptiveWeightingMetricsProvider
       'weight_anomalies' => $this->getWeightAnomalies($periodDays),
       'weight_stats' => $this->getWeightStats($periodDays),
       'top_weighted_critics' => $this->getTopWeightedCritics($periodDays),
-      'consensus_comparison' => $this->getConsensusComparison($periodDays)
+      'consensus_comparison' => $this->getConsensusComparison($periodDays),
+      'weights_by_domain' => $this->getWeightsByDomain($periodDays),
+      'domain_match_quality' => $this->getDomainMatchQuality($periodDays),
+      'critic_domain_performance' => $this->getCriticDomainPerformance($periodDays)
     ];
   }
 
@@ -555,6 +558,214 @@ class AdaptiveWeightingMetricsProvider
       ];
     } catch (\Exception $e) {
       error_log('AdaptiveWeightingMetricsProvider: Failed to get consensus comparison - ' . $e->getMessage());
+      return [];
+    }
+  }
+
+  /**
+   * Fetch the raw adaptive-weight rows carrying per-critic domain analysis.
+   *
+   * Shared source for the three domain dashboard sections. Each row is one critic's
+   * contribution to one weighting; the per-critic domain analysis lives in the
+   * factor_analysis JSON (see extractCriticDomainAnalysis). Historical rows written
+   * before 2026-06-10 carry an empty domain_analysis and are naturally skipped.
+   *
+   * @param int $days Look-back window in days
+   * @return array<int, array<string, mixed>> Rows: evaluation_id, critic_id, normalized_weight, factor_analysis
+   */
+  private function fetchDomainAnalysisRows(int $days): array
+  {
+    return DoctrineOrm::select("
+      SELECT evaluation_id, critic_id, normalized_weight, factor_analysis
+      FROM {$this->prefix}rag_agent_adaptive_weights
+      WHERE created_at > DATE_SUB(NOW(), INTERVAL {$days} DAY)
+    ");
+  }
+
+  /**
+   * Extract one critic's domain analysis from a stored factor_analysis JSON blob.
+   *
+   * Path: factor_analysis.dominant_factors.domain_analysis[<criticId>]. Returns null
+   * when absent/empty so callers skip pre-fix rows and partial payloads transparently.
+   *
+   * @param string|null $factorAnalysisJson Raw JSON from the factor_analysis column
+   * @param string $criticId Critic whose entry to pull
+   * @return array{match_quality: string, relevant_domains: array<int, string>}|null
+   */
+  private function extractCriticDomainAnalysis(?string $factorAnalysisJson, string $criticId): ?array
+  {
+    if (empty($factorAnalysisJson) || $criticId === '') {
+      return null;
+    }
+
+    $decoded = json_decode($factorAnalysisJson, true);
+    if (!is_array($decoded)) {
+      return null;
+    }
+
+    $domainAnalysis = $decoded['dominant_factors']['domain_analysis'] ?? null;
+    if (!is_array($domainAnalysis) || !isset($domainAnalysis[$criticId]) || !is_array($domainAnalysis[$criticId])) {
+      return null;
+    }
+
+    $entry = $domainAnalysis[$criticId];
+    $matchQuality = is_string($entry['match_quality'] ?? null) ? strtolower($entry['match_quality']) : 'none';
+
+    $relevantDomains = [];
+    if (isset($entry['relevant_domains']) && is_array($entry['relevant_domains'])) {
+      foreach ($entry['relevant_domains'] as $domain) {
+        if (is_string($domain) && $domain !== '') {
+          $relevantDomains[] = $domain;
+        }
+      }
+    }
+
+    return ['match_quality' => $matchQuality, 'relevant_domains' => $relevantDomains];
+  }
+
+  /**
+   * Average adaptive weight per domain (dashboard "Weights by Domain" table).
+   * Source: rag_agent_adaptive_weights factor_analysis.domain_analysis.
+   *
+   * @param int $days Look-back window in days
+   * @return array<int, array{domain: string, avg_weight: float, weight_count: int, critic_count: int}>
+   */
+  public function getWeightsByDomain(int $days = 7): array
+  {
+    try {
+      $rows = $this->fetchDomainAnalysisRows((int)$days);
+
+      // domain => ['sum' => float, 'count' => int, 'critics' => [criticId => true]]
+      $acc = [];
+      foreach ($rows as $row) {
+        $criticId = (string)($row['critic_id'] ?? '');
+        $analysis = $this->extractCriticDomainAnalysis($row['factor_analysis'] ?? null, $criticId);
+        if ($analysis === null || empty($analysis['relevant_domains'])) {
+          continue;
+        }
+
+        $weight = (float)($row['normalized_weight'] ?? 0);
+        foreach ($analysis['relevant_domains'] as $domain) {
+          if (!isset($acc[$domain])) {
+            $acc[$domain] = ['sum' => 0.0, 'count' => 0, 'critics' => []];
+          }
+          $acc[$domain]['sum'] += $weight;
+          $acc[$domain]['count']++;
+          $acc[$domain]['critics'][$criticId] = true;
+        }
+      }
+
+      $result = [];
+      foreach ($acc as $domain => $d) {
+        $result[] = [
+          'domain' => $domain,
+          // $d['count'] is always >= 1: the entry only exists once incremented.
+          'avg_weight' => $d['sum'] / $d['count'],
+          'weight_count' => $d['count'],
+          'critic_count' => count($d['critics']),
+        ];
+      }
+
+      usort($result, static fn(array $a, array $b): int => $b['avg_weight'] <=> $a['avg_weight']);
+
+      return $result;
+    } catch (\Exception $e) {
+      error_log('AdaptiveWeightingMetricsProvider: Failed to get weights by domain - ' . $e->getMessage());
+      return [];
+    }
+  }
+
+  /**
+   * Distribution of domain match quality across weightings (dashboard cards).
+   * Returns an empty array when no row carries domain analysis, so the template
+   * (which guards on a non-empty match_quality_distribution) hides the section.
+   *
+   * @param int $days Look-back window in days
+   * @return array{match_quality_distribution: array{high_match: int, medium_match: int, low_match: int, no_match: int}}|array{}
+   */
+  public function getDomainMatchQuality(int $days = 7): array
+  {
+    try {
+      $rows = $this->fetchDomainAnalysisRows((int)$days);
+
+      $distribution = ['high_match' => 0, 'medium_match' => 0, 'low_match' => 0, 'no_match' => 0];
+      $hasData = false;
+      foreach ($rows as $row) {
+        $analysis = $this->extractCriticDomainAnalysis($row['factor_analysis'] ?? null, (string)($row['critic_id'] ?? ''));
+        if ($analysis === null) {
+          continue;
+        }
+
+        $hasData = true;
+        switch ($analysis['match_quality']) {
+          case 'high':
+            $distribution['high_match']++;
+            break;
+          case 'medium':
+            $distribution['medium_match']++;
+            break;
+          case 'low':
+            $distribution['low_match']++;
+            break;
+          default: // 'none' or any unexpected value
+            $distribution['no_match']++;
+            break;
+        }
+      }
+
+      return $hasData ? ['match_quality_distribution' => $distribution] : [];
+    } catch (\Exception $e) {
+      error_log('AdaptiveWeightingMetricsProvider: Failed to get domain match quality - ' . $e->getMessage());
+      return [];
+    }
+  }
+
+  /**
+   * Per-critic average weight broken down by domain (dashboard "Critic Domain Performance").
+   * Source: rag_agent_adaptive_weights factor_analysis.domain_analysis.
+   *
+   * @param int $days Look-back window in days
+   * @return array<int, array{critic_id: string, domains: array<int, array{domain: string, avg_weight: float, evaluation_count: int}>}>
+   */
+  public function getCriticDomainPerformance(int $days = 7): array
+  {
+    try {
+      $rows = $this->fetchDomainAnalysisRows((int)$days);
+
+      // critic_id => domain => ['sum' => float, 'count' => int]
+      $acc = [];
+      foreach ($rows as $row) {
+        $criticId = (string)($row['critic_id'] ?? '');
+        $analysis = $this->extractCriticDomainAnalysis($row['factor_analysis'] ?? null, $criticId);
+        if ($analysis === null || empty($analysis['relevant_domains'])) {
+          continue;
+        }
+
+        $weight = (float)($row['normalized_weight'] ?? 0);
+        foreach ($analysis['relevant_domains'] as $domain) {
+          $acc[$criticId][$domain]['sum'] = ($acc[$criticId][$domain]['sum'] ?? 0.0) + $weight;
+          $acc[$criticId][$domain]['count'] = ($acc[$criticId][$domain]['count'] ?? 0) + 1;
+        }
+      }
+
+      $result = [];
+      foreach ($acc as $criticId => $domains) {
+        $domainRows = [];
+        foreach ($domains as $domain => $d) {
+          $domainRows[] = [
+            'domain' => $domain,
+            // $d['count'] is always >= 1: the entry only exists once incremented.
+            'avg_weight' => $d['sum'] / $d['count'],
+            'evaluation_count' => $d['count'],
+          ];
+        }
+        usort($domainRows, static fn(array $a, array $b): int => $b['avg_weight'] <=> $a['avg_weight']);
+        $result[] = ['critic_id' => $criticId, 'domains' => $domainRows];
+      }
+
+      return $result;
+    } catch (\Exception $e) {
+      error_log('AdaptiveWeightingMetricsProvider: Failed to get critic domain performance - ' . $e->getMessage());
       return [];
     }
   }

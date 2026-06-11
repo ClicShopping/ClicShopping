@@ -22,13 +22,10 @@ $metricsProvider = new AdaptiveWeightingMetricsProvider();
 $metrics = $metricsProvider->getAllMetrics($periodDays);
 
 $weightStats = $metrics['weight_stats'] ?? [];
-$weightDistribution = $metrics['weight_distribution'] ?? [];
-$criticWeightHistory = $metrics['critic_weight_history'] ?? [];
 $weightsByDomain = $metrics['weights_by_domain'] ?? [];
 $domainMatchQuality = $metrics['domain_match_quality'] ?? [];
 $consensusComparison = $metrics['consensus_comparison'] ?? [];
 $weightAnomalies = $metrics['weight_anomalies'] ?? [];
-$weightTrends = $metrics['weight_trends'] ?? [];
 $topWeightedCritics = $metrics['top_weighted_critics'] ?? [];
 $criticDomainPerformance = $metrics['critic_domain_performance'] ?? [];
 

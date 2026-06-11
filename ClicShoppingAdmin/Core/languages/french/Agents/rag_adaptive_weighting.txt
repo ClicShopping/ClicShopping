@@ -1,0 +1,367 @@
+text_eval_context_header = CONTEXTE D'ÉVALUATION :
+text_eval_output_type = - Type de sortie : '{{output_type}}'
+text_eval_priority_level = - Niveau de priorité : '{{priority}}'
+text_eval_required_domains = - Domaines requis : [{{domains}}]
+text_eval_special_requirements_header = - Exigences particulières :
+text_eval_requirement_item =   * {{requirement}}
+text_eval_context_description = Description du contexte : {{description}}
+
+text_expertise_expert = expert
+text_expertise_competent = compétent
+text_expertise_novice = novice
+text_value_never = Jamais
+
+text_selection_system_instructions = RÔLE : Vous êtes un expert de la sélection des critiques optimaux pour des évaluations, sur la base de l'expertise de domaine, de la réputation et de la diversité.
+TÂCHE : Analysez les critiques disponibles et le contexte d'évaluation pour sélectionner les critiques les plus appropriés pour cette évaluation.
+STRATÉGIE DE SÉLECTION MULTI-DOMAINE :
+- Privilégiez les critiques ayant une expertise dans les domaines requis
+- Équilibrez spécialistes de domaine (expertise profonde dans un domaine) et généralistes (expertise large sur plusieurs domaines)
+- Assurez la couverture de tous les domaines requis si possible
+- Tenez compte du niveau d'expertise de domaine (expert > compétent > novice)
+- Équilibrez la pertinence d'expertise avec la diversité des points de vue
+- Garantissez au minimum 2 critiques pour un consensus valide
+
+text_selection_critics_header = CRITIQUES DISPONIBLES :
+text_selection_critic_line = Critique : {{name}} (ID : {{id}})
+text_selection_critic_domain = - Expertise de domaine : {{domains}} ({{label}})
+text_selection_critic_expertise = - Niveau d'expertise : {{level}}
+text_selection_critic_reputation = - Score de réputation : {{score}}
+text_selection_critic_confidence = - Confiance : {{confidence}}
+text_selection_critic_activity = - Activité récente : {{count}} évaluations sur les 30 derniers jours
+text_selection_critic_last_eval = - Dernière évaluation : {{date}}
+
+text_selection_criteria = CRITÈRES DE SÉLECTION :
+1. Adéquation d'expertise de domaine :
+   - Dans quelle mesure l'expertise de domaine du critique correspond-elle aux domaines requis ?
+   - Privilégiez les critiques de niveau expert dans les domaines requis
+   - Considérez à la fois la profondeur (niveau d'expertise) et l'étendue (plusieurs domaines)
+2. Réputation et performance :
+   - Des scores de réputation plus élevés indiquent une meilleure performance historique
+   - Tenez compte de l'activité récente et de la régularité
+3. Niveaux de confiance :
+   - Une confiance appropriée témoigne de lucidité
+   - Évitez les critiques sur-confiants ou sous-confiants si de meilleures options existent
+4. Diversité des points de vue :
+   - Sélectionnez des critiques aux spécialisations de domaine différentes lorsque possible
+   - Équilibrez spécialistes (profonds dans un domaine) et généralistes (larges sur plusieurs domaines)
+   - Assurez plusieurs points de vue pour un consensus robuste
+5. Nombre optimal :
+   - Déterminez le nombre optimal de critiques pour cette évaluation
+   - Minimum 2 critiques requis pour un consensus valide
+   - Plus de critiques pour les évaluations critiques, moins pour les routinières
+   - Tenez compte de l'expertise disponible et des besoins de diversité
+6. Couverture des domaines :
+   - Assurez la couverture de tous les domaines requis si possible
+   - Si tous les domaines ne peuvent être couverts, priorisez les plus critiques
+
+text_selection_response_format = FORMAT DE SORTIE :
+Vous DEVEZ répondre uniquement avec du JSON valide. N'incluez aucun texte avant ou après l'objet JSON.
+{
+  "selected_critics": ["critic_id1", "critic_id2", ...],
+  "selection_rationale": "Justification globale de cette sélection",
+  "critic_explanations": {
+    "critic_id1": "Pourquoi ce critique a été sélectionné (mentionner expertise de domaine, réputation, etc.)",
+    "critic_id2": "Pourquoi ce critique a été sélectionné",
+    ...
+  },
+  "rejected_critics": {
+    "critic_id_x": "Pourquoi ce critique n'a pas été sélectionné",
+    ...
+  },
+  "optimal_count": <nombre de critiques sélectionnés>,
+  "diversity_score": <0.0-1.0, à quel point le groupe sélectionné est diversifié>,
+  "domain_coverage": {
+    "domain1": ["critic_id1", "critic_id2"],
+    "domain2": ["critic_id2"],
+    ...
+  }
+}
+RÈGLES IMPORTANTES :
+- Sélectionnez au moins 2 critiques (minimum pour un consensus valide)
+- Expliquez votre raisonnement pour chaque sélection et rejet
+- Considérez l'adéquation d'expertise de domaine comme facteur principal
+- Équilibrez qualité (réputation) et diversité
+- Déterminez le nombre optimal selon la criticité de l'évaluation et l'expertise disponible
+
+text_bounds_system_instructions = RÔLE : Vous êtes un expert de la détermination de bornes de pondération appropriées pour la construction du consensus entre critiques.
+TÂCHE : Analysez le contexte d'évaluation et le panel de critiques pour déterminer des bornes de pondération minimale et maximale appropriées.
+OBJECTIF : Déterminer des bornes qui :
+- Empêchent la dominance d'un seul critique tout en laissant l'expertise s'exprimer
+- Garantissent à chaque critique une influence significative (aucun critique réduit au silence)
+- Équilibrent qualité (autoriser une pondération plus élevée aux experts) et diversité (faire entendre toutes les voix)
+- S'adaptent au contexte d'évaluation et à sa criticité
+
+text_bounds_pool_header = SYNTHÈSE DU PANEL DE CRITIQUES :
+text_bounds_num_critics = - Nombre de critiques : {{num}}
+text_bounds_reputation_range = - Plage de réputation : {{min}} - {{max}} (moy. : {{avg}})
+text_bounds_expertise_range = - Plage de niveau d'expertise : {{min}} - {{max}} (moy. : {{avg}})
+text_bounds_expertise_distribution = - Distribution d'expertise : {{experts}} experts, {{competent}} compétents, {{novices}} novices
+text_bounds_domain_coverage = - Couverture de domaines : {{count}} domaines uniques ({{list}})
+text_bounds_domain_more = , +{{n}} de plus
+
+text_bounds_guidance = LIGNES DIRECTRICES DE DÉTERMINATION DES BORNES :
+BORNES TYPIQUES : 0.1 (min) à 0.5 (max)
+- Ces bornes conviennent à la plupart des scénarios avec 3 à 5 critiques
+- Garantit qu'aucun critique n'est réduit au silence (influence min. de 10%)
+- Empêche la dominance d'un seul critique (influence max. de 50%)
+FACTEURS À CONSIDÉRER :
+1. Nombre de critiques :
+   - 2 critiques : bornes plus larges (p. ex. 0.05-0.7) pour une différenciation significative
+   - 3-5 critiques : bornes typiques (0.1-0.5) offrant un bon équilibre
+   - 6+ critiques : bornes plus serrées (p. ex. 0.15-0.4) pour empêcher la dominance
+2. Criticité de l'évaluation :
+   - Évaluations critiques : autoriser une borne max plus large (p. ex. 0.6) pour laisser les experts dominer
+   - Priorité haute : bornes typiques avec léger ajustement
+   - Priorité moyenne/basse : bornes plus serrées pour garantir la diversité
+3. Besoins de diversité :
+   - Forte diversité nécessaire : bornes plus serrées (p. ex. 0.15-0.4) pour faire entendre toutes les voix
+   - Axé expertise : bornes plus larges (p. ex. 0.1-0.6) pour laisser les experts mener
+   - Équilibré : bornes typiques
+4. Distribution d'expertise :
+   - Grand écart d'expertise : des bornes plus larges donnent plus d'influence aux experts
+   - Expertise similaire : bornes plus serrées car tous les critiques sont comparables
+   - Peu d'experts : borne max plus large pour exploiter le savoir des experts
+5. Exigences particulières :
+   - Critique pour la sécurité : peut nécessiter des bornes plus larges pour faire confiance au jugement expert
+   - Critique pour la performance : similaire à la sécurité
+   - Exploratoire/recherche : bornes plus serrées pour encourager des points de vue diversifiés
+CONTRAINTES SUR LES BORNES :
+- La borne minimale doit être >= 0.0 (ne peut pas être négative)
+- La borne maximale doit être <= 1.0 (ne peut pas dépasser 100%)
+- La minimale doit être < la maximale (doit autoriser une variation)
+- La plage (max - min) doit être d'au moins 0.05 (variation significative)
+QUAND DÉPASSER LES BORNES TYPIQUES :
+- Expliquez clairement pourquoi les bornes typiques sont insuffisantes
+- Fournissez une justification solide fondée sur le contexte
+- Considérez les compromis (qualité vs diversité)
+
+text_bounds_response_format = FORMAT DE SORTIE :
+Vous DEVEZ répondre uniquement avec du JSON valide. N'incluez aucun texte avant ou après l'objet JSON.
+{
+  "min_bound": <flottant entre 0.0 et 1.0>,
+  "max_bound": <flottant entre 0.0 et 1.0>,
+  "rationale": "Justification globale de ces bornes (2-3 phrases)",
+  "explanation": "Explication détaillée de la pertinence de ces bornes pour ce contexte d'évaluation précis",
+  "factors_considered": {
+    "num_critics": "Comment le nombre de critiques a influencé votre décision de bornes",
+    "criticality": "Comment la criticité de l'évaluation a influencé votre décision de bornes",
+    "diversity_needs": "Comment les besoins de diversité ont influencé votre décision de bornes",
+    "context_requirements": "Comment les exigences de contexte particulières ont influencé votre décision de bornes"
+  }
+}
+RÈGLES IMPORTANTES :
+- min_bound doit être >= 0.0
+- max_bound doit être <= 1.0
+- min_bound doit être < max_bound
+- La plage (max_bound - min_bound) doit être >= 0.05
+- Si vous proposez des bornes hors de la plage typique (0.1-0.5), fournissez une justification solide
+- Expliquez clairement votre raisonnement pour chaque facteur
+
+text_anomaly_system_instructions = RÔLE : Vous êtes un expert de la détection d'anomalies et de manipulation potentielle dans les distributions de pondération.
+TÂCHE : Analysez l'historique de pondération suivant pour identifier des motifs suspects pouvant indiquer :
+- Des distributions de pondération inhabituelles
+- Des tentatives potentielles de manipulation
+- Des critiques recevant des pondérations anormalement élevées ou basses
+- Des changements soudains et inexpliqués dans les motifs de pondération
+- De la collusion ou coordination entre critiques
+OBJECTIF : Identifier les motifs justifiant une investigation ou une action corrective.
+
+text_history_header = HISTORIQUE DE PONDÉRATION ({{days}} derniers jours) :
+text_history_none = Aucun historique de pondération disponible.
+text_history_eval_omitted = [... {{n}} évaluations supplémentaires omises par souci de concision ...]
+text_history_evaluation = Évaluation : {{id}}
+text_history_timestamp = Horodatage : {{ts}}
+text_history_context = Contexte : {{type}} (priorité : {{priority}})
+text_history_weights_header = Pondérations :
+text_history_weight_item =   - {{id}} : {{weight}}
+
+text_history_summary_header = STATISTIQUES DE SYNTHÈSE :
+text_history_total_evaluations = Total d'évaluations : {{n}}
+text_history_total_critics = Total de critiques : {{n}}
+text_history_per_critic_header = Statistiques par critique (triées par pondération moyenne) :
+text_history_critics_omitted = [... {{n}} critiques supplémentaires omis ...]
+text_history_critic_stat =   - {{id}} : avg={{avg}}, max={{max}}, min={{min}}, count={{count}}
+
+text_anomaly_analysis_focus = OBJECTIF D'ANALYSE :
+GARDE-FOUS STATISTIQUES — appliquez-les D'ABORD, avant de signaler quoi que ce soit. En cas de doute, ne signalez AUCUNE anomalie. Retourner zéro anomalie pour des données saines, équilibrées ou à faible échantillon est la BONNE réponse ; ne fabriquez PAS de constats pour remplir le rapport.
+- Taille d'échantillon minimale : ne signalez jamais « constamment élevé », « manipulation », « dominance » ou « collusion » pour un critique observé sur moins de 5 évaluations. Une observation unique (un effectif de 1) est une donnée insuffisante et n'est JAMAIS une anomalie.
+- Changement significatif seulement : ne signalez « sudden_change » que lorsque la pondération d'un critique varie de PLUS DE 0,10 (en valeur absolue) entre évaluations comparables. Les écarts de l'ordre de 0,01–0,05 sont du bruit normal, pas des anomalies.
+- La normalisation n'est pas de la collusion : au sein d'une évaluation les pondérations somment à 1,0 par construction, donc avec 2 critiques un partage ~0,5/0,5 (ou 0,52/0,48) est l'arithmétique ATTENDUE, PAS une coordination. Ne considérez la collusion qu'à travers de NOMBREUSES évaluations impliquant 3+ critiques partageant un motif identique et non trivial.
+- Une bande étroite est saine : si toutes les pondérations restent dans une bande étroite (≈ 0,40–0,60, c.-à-d. aucune ne dépasse ~0,65 ni ne descend sous ~0,35), la distribution est ÉQUILIBRÉE — ne signalez pas d'anomalie.
+Recherchez les motifs suspects suivants (uniquement lorsque les garde-fous ci-dessus sont satisfaits) :
+1. PONDÉRATIONS CONSTAMMENT ÉLEVÉES :
+   - Critiques dont la pondération moyenne dépasse 0,5 sur plusieurs évaluations
+   - Critiques recevant fréquemment la pondération la plus élevée de leur groupe d'évaluation
+   - Motif : peut indiquer une sur-dépendance à un seul critique ou une manipulation
+2. DOMINANCE DE PONDÉRATION MAXIMALE :
+   - Critiques recevant systématiquement des pondérations maximales (proches de 1,0 ou de la borne haute)
+   - Critiques dominant le consensus dans la plupart des évaluations
+   - Motif : peut indiquer une dominance inappropriée ou une manipulation
+3. DISTRIBUTIONS DE PONDÉRATION INHABITUELLES :
+   - Évaluations où un critique détient plus de 70% de la pondération totale
+   - Évaluations présentant des déséquilibres de pondération extrêmes
+   - Motif : peut indiquer une inadéquation de contexte ou une manipulation
+4. CHANGEMENTS DE PONDÉRATION SOUDAINS :
+   - Critiques dont les pondérations changent radicalement sans changement de réputation correspondant
+   - Pics ou chutes soudains de pondération non alignés sur la performance
+   - Motif : peut indiquer une manipulation du système ou des problèmes de données
+5. MOTIFS DE COLLUSION :
+   - Plusieurs critiques avec des motifs de pondération suspectement similaires
+   - Critiques dont les pondérations évoluent toujours ensemble
+   - Motif : peut indiquer une coordination ou une manipulation
+6. INADÉQUATION DE CONTEXTE :
+   - Critiques recevant des pondérations élevées dans des contextes hors de leur expertise
+   - Pondérations non alignées sur l'expertise de domaine
+   - Motif : peut indiquer une mauvaise configuration du système
+7. INDICATEURS DE MANIPULATION :
+   - Motifs suggérant une manipulation intentionnelle
+   - Timing ou coordination inhabituels des changements de pondération
+   - Pondérations semblant artificiellement gonflées ou minorées
+NIVEAUX DE GRAVITÉ :
+- HIGH : preuve claire de manipulation, de fraude ou de défaillance système nécessitant une action immédiate
+- MEDIUM : motifs suspects justifiant investigation et surveillance
+- LOW : anomalies mineures ou cas limites à noter mais potentiellement explicables
+Pour chaque anomalie détectée, fournissez :
+- Le type d'anomalie
+- Le ou les critiques concernés
+- Le niveau de gravité
+- La description de ce qui a été détecté
+- Les preuves issues des données
+- L'action recommandée
+
+text_anomaly_response_format = FORMAT DE SORTIE :
+Vous DEVEZ répondre uniquement avec du JSON valide. N'incluez aucun texte avant ou après l'objet JSON.
+{
+  "anomalies": [
+    {
+      "type": "anomaly_type (p. ex. 'consistently_high_weights', 'maximum_weight_dominance', 'unusual_distribution', 'sudden_change', 'collusion_pattern', 'context_mismatch', 'gaming_indicator')",
+      "critic_id": "critic_id (ou null si l'anomalie concerne toute l'évaluation)",
+      "severity": "low|medium|high",
+      "description": "Description claire de ce qui a été détecté",
+      "evidence": [
+        "Élément de preuve 1",
+        "Élément de preuve 2",
+        "..."
+      ],
+      "recommendation": "Action suggérée (p. ex. 'Investiguer la réputation du critique', 'Revoir les contextes d'évaluation', 'Surveiller la persistance du motif')"
+    }
+  ],
+  "overall_assessment": "Synthèse des constats - y a-t-il des motifs préoccupants ? Le système fonctionne-t-il normalement ?"
+}
+RÈGLES IMPORTANTES :
+- Incluez TOUTES les anomalies détectées, même de faible gravité
+- Fournissez des preuves précises issues des données (citez les IDs d'évaluation, pondérations, dates)
+- Soyez objectif - distinguez les problèmes avérés des préoccupations potentielles
+- Si aucune anomalie n'est détectée, retournez un tableau d'anomalies vide avec une évaluation globale positive
+- La gravité doit refléter la confiance et l'impact : high=problème avéré nécessitant une action, medium=motif suspect nécessitant investigation, low=préoccupation mineure ou cas limite
+
+text_system_instructions = # Tâche d'Analyse de Pondération Adaptative
+
+Vous êtes un système expert chargé de déterminer les pondérations optimales pour les agents critiques dans un système de consensus.
+
+**CRITIQUE : Mode LLM Pur**
+- Analysez et déterminez les pondérations SANS utiliser de formules mathématiques
+- Considérez la réputation, la pertinence du domaine, le niveau d'expertise, la confiance, la récence et les tendances
+- Utilisez votre jugement et votre raisonnement pour déterminer les pondérations appropriées
+- Fournissez des explications en langage naturel pour vos décisions
+- Adaptez votre analyse en fonction du contexte d'évaluation spécifique
+
+Votre objectif est d'attribuer des pondérations qui reflètent la qualification et la pertinence de chaque critique pour cette évaluation spécifique.
+
+text_context_header = ## Contexte d'Évaluation
+
+text_context_output_type = - **Type de Sortie** : {{output_type}}
+text_context_priority = - **Priorité** : {{priority}}
+text_context_required_domains = - **Domaines Requis** : {{domains}}
+text_context_special_requirements = - **Exigences Spéciales** :
+text_context_requirement_item = - {{requirement}}
+text_context_description = **Description du Contexte** : {{description}}
+
+text_critics_header = ## Critiques Disponibles pour l'Évaluation
+
+text_critic_section_header = ### {{name}} (ID : {{id}})
+
+text_reputation_header = **Réputation** :
+text_reputation_score = - Score : {{score}}
+text_reputation_status = - Statut : {{status}}
+text_reputation_total_evaluations = - Évaluations Totales : {{total}}
+text_reputation_consensus_alignment = - Alignement au Consensus : {{value}}
+text_reputation_feedback_quality = - Qualité des Retours : {{value}}
+text_reputation_consistency = - Cohérence : {{value}}
+text_reputation_expertise_accuracy = - Précision de l'Expertise : {{value}}
+
+text_domain_header = **Expertise de Domaine** :
+text_domain_list = - Domaines : {{domains}}
+text_domain_expertise_level = - Niveau d'Expertise : {{level}} (0.0=novice, 0.5=compétent, 1.0=expert)
+
+text_confidence_header = **Confiance** :
+text_confidence_current = - Actuelle : {{value}}
+text_confidence_average = - Moyenne : {{value}}
+text_confidence_stability = - Stabilité : {{value}}
+text_confidence_over_warning = - ⚠️ Schéma de sur-confiance détecté
+text_confidence_under_warning = - ⚠️ Schéma de sous-confiance détecté
+
+text_activity_header = **Activité Récente** :
+text_activity_count = - Évaluations (30 derniers jours) : {{count}}
+text_activity_last_date = - Dernière Évaluation : {{date}}
+text_activity_no_recent = - Dernière Évaluation : Aucune évaluation récente
+
+text_analysis_instructions = ## Instructions d'Analyse
+
+Analysez chaque critique et déterminez une pondération appropriée basée sur :
+
+1. **Analyse de Réputation** : Considérez le score de réputation du critique, son historique et son statut. Quelle a été la fiabilité de ce critique historiquement ?
+
+2. **Correspondance de l'Expertise de Domaine** : Évaluez dans quelle mesure l'expertise de domaine du critique correspond aux domaines requis pour cette évaluation. Considérez à la fois l'étendue (plusieurs domaines) et la profondeur (niveau d'expertise).
+
+3. **Niveau d'Expertise** : Considérez le niveau d'expertise du critique (0.0-1.0). Les experts (0.8-1.0) devraient généralement avoir plus d'influence que les novices (0.0-0.3) dans leurs domaines.
+
+4. **Évaluation de la Confiance** : Analysez les niveaux de confiance du critique. Sont-ils appropriément confiants ? Surveillez les schémas de sur-confiance ou de sous-confiance.
+
+5. **Récence et Activité** : Considérez la récence de l'activité du critique et sa fréquence d'évaluation. Une activité récente peut indiquer une pertinence actuelle.
+
+6. **Pertinence Contextuelle** : Plus important encore, considérez la pertinence de ce critique pour CETTE évaluation SPÉCIFIQUE. Un critique avec une réputation plus faible mais une correspondance de domaine parfaite peut être plus précieux qu'un critique de haute réputation dans un domaine non lié.
+
+**Considérations Importantes** :
+- Le niveau de priorité affecte la valeur que vous devriez accorder à la fiabilité vs l'expertise
+- Les exigences spéciales peuvent rendre certains critiques plus ou moins appropriés
+- Équilibre entre avoir des perspectives diverses et assurer la qualité
+- Considérez les compromis entre différents facteurs
+
+Déterminez une pondération brute pour chaque critique qui reflète sa qualification globale pour cette évaluation.
+
+text_response_format = ## Format de Réponse Requis
+
+Fournissez votre analyse sous forme d'objet JSON avec la structure suivante :
+
+```json
+{
+  "weights": {
+    "critic_id_1": 0.85,
+    "critic_id_2": 0.65,
+    "critic_id_3": 0.50
+  },
+  "explanations": {
+    "critic_id_1": "Ce critique a une expertise de niveau expert dans le domaine sémantique requis (0.9) avec une forte réputation (0.85) et des performances cohérentes. Son expertise de domaine est hautement pertinente pour cette évaluation de résultats de recherche. La pondération reflète une forte qualification.",
+    "critic_id_2": "Forte réputation (0.90) mais l'expertise est dans le domaine analytique qui a une pertinence modérée pour cette évaluation. La confiance est élevée (0.9) et l'activité récente est bonne. La pondération reflète une correspondance de domaine solide mais pas parfaite.",
+    "critic_id_3": "Expertise compétente dans le domaine sémantique (0.6) mais réputation plus faible (0.75) et confiance (0.7). L'activité récente est limitée. La pondération reflète une qualification adéquate mais pas exceptionnelle."
+  },
+  "overall_rationale": "Pour cette évaluation j'ai priorisé la correspondance d'expertise de domaine sur la réputation pure : critic_id_1 le plus élevé (correspondance sémantique experte), critic_id_2 plus faible (inadéquation de domaine malgré une forte réputation), critic_id_3 le plus faible (novice + activité récente limitée).",
+  "dominant_factors": ["domain_match", "reputation", "confidence"],
+  "domain_analysis": {
+    "critic_id_1": {"match_quality": "high", "expertise_depth": "expert", "relevant_domains": ["semantic"]},
+    "critic_id_2": {"match_quality": "medium", "expertise_depth": "competent", "relevant_domains": ["analytics"]},
+    "critic_id_3": {"match_quality": "low", "expertise_depth": "novice", "relevant_domains": []}
+  },
+  "suggested_bounds": {"min": 0.1, "max": 0.5}
+}
+```
+
+**Exigences** :
+- Fournissez une pondération pour CHAQUE critique (n'en omettez aucun)
+- Les pondérations doivent être des nombres positifs (peuvent être n'importe quelle valeur positive, seront normalisées plus tard)
+- Chaque explication doit mentionner les facteurs clés qui ont influencé la pondération
+- Incluez TOUJOURS `overall_rationale` (votre stratégie globale), `dominant_factors` (les facteurs déterminants) et `domain_analysis` (une entrée PAR critique, chacune avec `match_quality` parmi high/medium/low/none, plus `expertise_depth` et `relevant_domains`) — ces champs alimentent les tableaux de bord de monitoring et ne doivent jamais être omis ni laissés vides.
+- Utilisez un langage naturel - expliquez votre raisonnement comme vous le feriez à un humain
+
+Répondez UNIQUEMENT avec l'objet JSON, sans texte supplémentaire.

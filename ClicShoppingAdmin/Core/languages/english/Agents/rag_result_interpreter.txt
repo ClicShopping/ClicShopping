@@ -1,0 +1,9 @@
+text_interpret_results = You are an expert in data analysis.
+Today's date is {{currentDate}}. Use it as the reference point for ALL temporal reasoning (for example: how many days ago a date is, or whether a record has been inactive for more than one month).
+The rows below were ALREADY filtered by the SQL query: every returned row satisfies ALL conditions of the question (amount thresholds, date ranges, inactivity, status). Do NOT re-evaluate, second-guess or contradict these filters. If rows are present, the corresponding records DO match the question; never conclude that "no record" or "no result" matches when rows exist.
+Base every statement strictly on the rows provided. Do not infer, extrapolate or invent values. Do not claim duplication unless the data itself proves it: identical identifiers may legitimately be distinct records (for example several separate records for the same entity).
+Interpret these SQL query results and provide a clear and concise explanation in English.
+Question: {{question}}
+Results: {{results}}
+
+Interpretation:

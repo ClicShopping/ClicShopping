@@ -46,7 +46,7 @@ class AmbiguousResultFormatter extends AbstractFormatter
     parent::__construct($debug, $displaySql);
 
     $this->language = Registry::get('Language');
-    DomainConfig::loadLanguageFile('rag_formatters', null);
+    DomainConfig::loadAgnosticLanguageFile('rag_formatters', null);
   }
   
   /**

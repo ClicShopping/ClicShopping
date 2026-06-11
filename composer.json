@@ -11,21 +11,21 @@
         "ext-pdo": "*",
         "daveearley/daves-email-validation-tool": "^1.2",
         "nyholm/psr7": "^1.8",
-        "setasign/fpdf": "^1.8",
         "ext-xml": "*",
         "phpxmlrpc/phpxmlrpc": "^4.11",
         "doctrine/migrations": "^3.9",
         "php-http/discovery": "^1.20",
         "stymiee/email-validator": "^2.1",
-        "guzzlehttp/guzzle": "^7.10",
         "amnuts/opcache-gui": "^3.6",
         "doctrine/orm": "^3.6",
         "symfony/cache": "^8.0",
         "symfony/http-client": "^8.0",
         "mattketmo/email-checker": "^3.0",
-        "stripe/stripe-php": "^20.1",
         "theodo-group/llphant": "^0.11.21",
-        "phpmailer/phpmailer": "^7.1"
+        "phpmailer/phpmailer": "^7.1",
+        "stripe/stripe-php": "^20.2",
+        "setasign/fpdf": "^1.9",
+        "guzzlehttp/guzzle": "^7.11"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"

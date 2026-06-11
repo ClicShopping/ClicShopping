@@ -111,7 +111,7 @@ class ColumnErrorStrategy implements CorrectionStrategyInterface
       $language = Registry::get('Language');
       
       // Load language definitions for SQL correction prompts using DomainConfig
-      DomainConfig::loadLanguageFile('rag_sql_correction');
+      DomainConfig::loadAgnosticLanguageFile('rag_sql_correction');
       
       // Get ORDER BY correction prompt from language file
       $prompt = $language->getDef('llm_prompt_order_by_correction', [

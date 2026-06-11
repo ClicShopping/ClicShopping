@@ -165,10 +165,48 @@ class DomainConfig
   }
 
   /**
+   * Load a domain-agnostic language file from the shared 'Agents/' directory
+   *
+   * Symmetric counterpart of loadLanguageFile(): instead of prefixing the active
+   * domain (e.g. 'ecommerce/'), it prefixes the agnostic 'Agents/' subdirectory.
+   * Prompts that carry no domain-specific entities live here once and are inherited
+   * by every domain without being recopied.
+   *
+   * A class needing BOTH layers loads them with two calls — the agnostic skeleton
+   * via this method and the domain examples via loadLanguageFile() — so all the
+   * definition keys (and their variables) end up available together:
+   *   DomainConfig::loadAgnosticLanguageFile('rag_xxx_skeleton');
+   *   DomainConfig::loadLanguageFile('rag_xxx_examples');
+   *
+   * @param string $textFile Language file name without extension (e.g., 'rag_empty_results')
+   * @param string|null $language Language code (default: 'en')
+   * @param string $site Site context (default: 'ClicShoppingAdmin')
+   * @return mixed Returns result from loadDefinitions() or false on error
+   *
+   */
+  public static function loadAgnosticLanguageFile(string $textFile, ?string $language = 'en', string $site = 'ClicShoppingAdmin'): mixed
+  {
+    try {
+      $CLICSHOPPING_language = Registry::get('Language');
+
+      if (is_null($language)) {
+        $language = $CLICSHOPPING_language->getCode();
+      }
+
+      $group = 'Agents/' . $textFile;
+
+      return $CLICSHOPPING_language->loadDefinitions($group, $language, null, $site);
+    } catch (\Exception $e) {
+      // Log the error but don't throw to maintain backward compatibility
+      error_log('DomainConfig::loadAgnosticLanguageFile() error: ' . $e->getMessage());
+      return false;
+    }
+  }
+
+  /**
    * Clear entity configuration cache (useful when switching domains)
    *
    * @return void
-   * @since 1.0.0
    */
   public function clearCache(): void
   {

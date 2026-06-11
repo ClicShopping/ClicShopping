@@ -12,7 +12,6 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine;
 
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
-use ClicShopping\AI\Config\DomainConfig;
 
 /**
  * LLMPromptBuilder - Builds structured prompts for LLM-based weight analysis
@@ -23,12 +22,6 @@ use ClicShopping\AI\Config\DomainConfig;
  * 
  * Prompts are loaded from language files (ClicShoppingAdmin/Core/Languages/.../ecommerce/rag_adaptive_weighting.txt)
  * Input sanitization uses HTML::sanitize() for security.
- * 
- * Requirements: 1.1, 1.2, 1.3, 10.1, 10.2
- * 
- * @package ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine
- * @version 1.0.0
- * @since 2026-02-06
  */
 class LLMPromptBuilder
 {
@@ -41,7 +34,7 @@ class LLMPromptBuilder
     {
         $this->language = Registry::get('Language');
         
-        DomainConfig::loadLanguageFile('rag_adaptive_weighting');
+        $this->language->loadDefinitions('Agents/rag_adaptive_weighting', 'en', null, 'ClicShoppingAdmin');
     }
     
     /**
@@ -52,8 +45,6 @@ class LLMPromptBuilder
      * - Critic profiles (reputation, domain, expertise, confidence, recent performance)
      * - Instructions for Pure LLM analysis (no formulas)
      * - Expected JSON response format
-     * 
-     * Requirements: 1.1, 1.2, 1.3, 10.1, 10.2
      * 
      * @param array $criticData Array of critic data from CriticDataCollector
      * @param array $evaluationContext Evaluation context information
@@ -90,8 +81,6 @@ class LLMPromptBuilder
      * Loads instructions from language file.
      * Emphasizes Pure LLM mode - no formulas, natural language reasoning.
      * 
-     * Requirements: 1.1, 10.1
-     * 
      * @return string System instructions
      */
     private function buildSystemInstructions(): string
@@ -104,8 +93,6 @@ class LLMPromptBuilder
      * 
      * Describes the evaluation context using language file templates.
      * 
-     * Requirements: 1.3, 10.2
-     * 
      * @param array $context Sanitized evaluation context
      * @return string Context section
      */
@@ -117,26 +104,26 @@ class LLMPromptBuilder
         $specialRequirements = $context['special_requirements'] ?? [];
         
         $section = $this->language->getDef('text_context_header') . "\n\n";
-        $section .= sprintf($this->language->getDef('text_context_output_type'), $outputType) . "\n";
-        $section .= sprintf($this->language->getDef('text_context_priority'), $priority) . "\n";
-        
+        $section .= $this->language->getDef('text_context_output_type', ['output_type' => $outputType]) . "\n";
+        $section .= $this->language->getDef('text_context_priority', ['priority' => $priority]) . "\n";
+
         if (!empty($requiredDomains)) {
             $domainsList = implode(', ', $requiredDomains);
-            $section .= sprintf($this->language->getDef('text_context_required_domains'), $domainsList) . "\n";
+            $section .= $this->language->getDef('text_context_required_domains', ['domains' => $domainsList]) . "\n";
         }
-        
+
         if (!empty($specialRequirements)) {
             $section .= $this->language->getDef('text_context_special_requirements') . "\n";
             foreach ($specialRequirements as $requirement) {
-                $section .= sprintf($this->language->getDef('text_context_requirement_item'), $requirement) . "\n";
+                $section .= $this->language->getDef('text_context_requirement_item', ['requirement' => $requirement]) . "\n";
             }
         }
-        
+
         // Add context description if available
         if (isset($context['description'])) {
-            $section .= "\n" . sprintf($this->language->getDef('text_context_description'), $context['description']) . "\n";
+            $section .= "\n" . $this->language->getDef('text_context_description', ['description' => $context['description']]) . "\n";
         }
-        
+
         return $section;
     }
     
@@ -144,8 +131,6 @@ class LLMPromptBuilder
      * Build critics section
      * 
      * Provides detailed information about each critic using language file templates.
-     * 
-     * Requirements: 1.2, 1.3
      * 
      * @param array $critics Sanitized critic data
      * @return string Critics section
@@ -156,44 +141,44 @@ class LLMPromptBuilder
         
         foreach ($critics as $criticId => $data) {
             $criticName = $data['critic_name'] ?? $criticId;
-            $section .= sprintf($this->language->getDef('text_critic_section_header'), $criticName, $criticId) . "\n\n";
-            
+            $section .= $this->language->getDef('text_critic_section_header', ['name' => $criticName, 'id' => $criticId]) . "\n\n";
+
             // Reputation information
             $reputation = $data['reputation'] ?? [];
             $section .= $this->language->getDef('text_reputation_header') . "\n";
-            $section .= sprintf($this->language->getDef('text_reputation_score'), $reputation['score'] ?? 0.75) . "\n";
-            $section .= sprintf($this->language->getDef('text_reputation_status'), $reputation['status'] ?? 'unknown') . "\n";
-            $section .= sprintf($this->language->getDef('text_reputation_total_evaluations'), $reputation['total_evaluations'] ?? 0) . "\n";
-            
+            $section .= $this->language->getDef('text_reputation_score', ['score' => $reputation['score'] ?? 0.75]) . "\n";
+            $section .= $this->language->getDef('text_reputation_status', ['status' => $reputation['status'] ?? 'unknown']) . "\n";
+            $section .= $this->language->getDef('text_reputation_total_evaluations', ['total' => $reputation['total_evaluations'] ?? 0]) . "\n";
+
             if (isset($reputation['consensus_alignment'])) {
-                $section .= sprintf($this->language->getDef('text_reputation_consensus_alignment'), $reputation['consensus_alignment']) . "\n";
+                $section .= $this->language->getDef('text_reputation_consensus_alignment', ['value' => $reputation['consensus_alignment']]) . "\n";
             }
             if (isset($reputation['feedback_quality'])) {
-                $section .= sprintf($this->language->getDef('text_reputation_feedback_quality'), $reputation['feedback_quality']) . "\n";
+                $section .= $this->language->getDef('text_reputation_feedback_quality', ['value' => $reputation['feedback_quality']]) . "\n";
             }
             if (isset($reputation['consistency_score'])) {
-                $section .= sprintf($this->language->getDef('text_reputation_consistency'), $reputation['consistency_score']) . "\n";
+                $section .= $this->language->getDef('text_reputation_consistency', ['value' => $reputation['consistency_score']]) . "\n";
             }
             if (isset($reputation['expertise_accuracy'])) {
-                $section .= sprintf($this->language->getDef('text_reputation_expertise_accuracy'), $reputation['expertise_accuracy']) . "\n";
+                $section .= $this->language->getDef('text_reputation_expertise_accuracy', ['value' => $reputation['expertise_accuracy']]) . "\n";
             }
-            
+
             // Domain expertise
             $domains = $data['domain'] ?? ['general'];
             $expertiseLevel = $data['expertise_level'] ?? 0.5;
-            
+
             $section .= "\n" . $this->language->getDef('text_domain_header') . "\n";
-            $section .= sprintf($this->language->getDef('text_domain_list'), implode(', ', $domains)) . "\n";
-            $section .= sprintf($this->language->getDef('text_domain_expertise_level'), $expertiseLevel) . "\n";
-            
+            $section .= $this->language->getDef('text_domain_list', ['domains' => implode(', ', $domains)]) . "\n";
+            $section .= $this->language->getDef('text_domain_expertise_level', ['level' => $expertiseLevel]) . "\n";
+
             // Confidence information
             $confidence = $data['confidence'] ?? [];
             $section .= "\n" . $this->language->getDef('text_confidence_header') . "\n";
-            $section .= sprintf($this->language->getDef('text_confidence_current'), $confidence['current_confidence'] ?? 0.7) . "\n";
-            $section .= sprintf($this->language->getDef('text_confidence_average'), $confidence['average_confidence'] ?? 0.7) . "\n";
-            
+            $section .= $this->language->getDef('text_confidence_current', ['value' => $confidence['current_confidence'] ?? 0.7]) . "\n";
+            $section .= $this->language->getDef('text_confidence_average', ['value' => $confidence['average_confidence'] ?? 0.7]) . "\n";
+
             if (isset($confidence['confidence_stability'])) {
-                $section .= sprintf($this->language->getDef('text_confidence_stability'), $confidence['confidence_stability']) . "\n";
+                $section .= $this->language->getDef('text_confidence_stability', ['value' => $confidence['confidence_stability']]) . "\n";
             }
             if (isset($confidence['over_confidence_detected']) && $confidence['over_confidence_detected']) {
                 $section .= $this->language->getDef('text_confidence_over_warning') . "\n";
@@ -201,16 +186,16 @@ class LLMPromptBuilder
             if (isset($confidence['under_confidence_detected']) && $confidence['under_confidence_detected']) {
                 $section .= $this->language->getDef('text_confidence_under_warning') . "\n";
             }
-            
+
             // Recent performance
             $recentEvals = $data['recent_evaluations'] ?? [];
             $count30Days = $recentEvals['count_30_days'] ?? 0;
             $lastEvalDate = $data['last_evaluation_date'] ?? null;
-            
+
             $section .= "\n" . $this->language->getDef('text_activity_header') . "\n";
-            $section .= sprintf($this->language->getDef('text_activity_count'), $count30Days) . "\n";
+            $section .= $this->language->getDef('text_activity_count', ['count' => $count30Days]) . "\n";
             if ($lastEvalDate !== null) {
-                $section .= sprintf($this->language->getDef('text_activity_last_date'), $lastEvalDate) . "\n";
+                $section .= $this->language->getDef('text_activity_last_date', ['date' => $lastEvalDate]) . "\n";
             } else {
                 $section .= $this->language->getDef('text_activity_no_recent') . "\n";
             }
@@ -225,8 +210,6 @@ class LLMPromptBuilder
      * Build analysis instructions section
      * 
      * Loads instructions from language file.
-     * 
-     * Requirements: 1.1, 1.2, 10.1
      * 
      * @return string Analysis instructions
      */
@@ -254,8 +237,6 @@ class LLMPromptBuilder
      * 
      * Uses HTML::sanitize() for security.
      * Ensures context data is safe to include in LLM prompt.
-     * 
-     * Requirements: 10.2
      * 
      * @param array $context Raw evaluation context
      * @return array Sanitized context
@@ -470,8 +451,6 @@ class LLMPromptBuilder
      * - Balance between domain specialists and generalists
      * - Diversity of perspectives
      * 
-     * Requirements: 16.1, 16.2, 16.3, 16.4, 15.1, 15.2, 15.3, 15.4
-     * 
      * @param array $criticData Array of critic data from CriticDataCollector
      * @param array $evaluationContext Evaluation context information
      * @return string Structured prompt for LLM critic selection
@@ -506,31 +485,15 @@ class LLMPromptBuilder
      * 
      * Emphasizes multi-domain selection strategy and Pure LLM approach.
      * 
-     * Requirements: 16.1, 16.2
-     * 
      * @return string System instructions
      */
     private function buildSelectionSystemInstructions(): string
     {
-        return <<<INSTRUCTIONS
-ROLE: You are an expert in selecting optimal critics for evaluations based on domain expertise, reputation, and diversity.
-
-TASK: Analyze the available critics and evaluation context to select the most appropriate critics for this evaluation.
-
-MULTI-DOMAIN SELECTION STRATEGY:
-- Prioritize critics with expertise in required domains
-- Balance domain specialists (deep expertise in one domain) vs generalists (broad expertise across domains)
-- Ensure coverage of all required domains if possible
-- Consider domain expertise level (expert > competent > novice)
-- Balance expertise relevance with diversity of perspectives
-- Ensure minimum 2 critics for valid consensus
-INSTRUCTIONS;
+        return $this->language->getDef('text_selection_system_instructions');
     }
     
     /**
      * Build evaluation context section for critic selection
-     * 
-     * Requirements: 16.1, 16.3
      * 
      * @param array $context Sanitized evaluation context
      * @return string Context section
@@ -542,161 +505,93 @@ INSTRUCTIONS;
         $requiredDomains = $context['required_domains'] ?? [];
         $specialRequirements = $context['special_requirements'] ?? [];
         
-        $section = "EVALUATION CONTEXT:\n\n";
-        $section .= "- Output Type: '{$outputType}'\n";
-        $section .= "- Priority Level: '{$priority}'\n";
-        
+        $section = $this->language->getDef('text_eval_context_header') . "\n\n";
+        $section .= $this->language->getDef('text_eval_output_type', ['output_type' => $outputType]) . "\n";
+        $section .= $this->language->getDef('text_eval_priority_level', ['priority' => $priority]) . "\n";
+
         if (!empty($requiredDomains)) {
             $domainsList = implode(', ', $requiredDomains);
-            $section .= "- Required Domains: [{$domainsList}]\n";
+            $section .= $this->language->getDef('text_eval_required_domains', ['domains' => $domainsList]) . "\n";
         }
-        
+
         if (!empty($specialRequirements)) {
-            $section .= "- Special Requirements:\n";
+            $section .= $this->language->getDef('text_eval_special_requirements_header') . "\n";
             foreach ($specialRequirements as $requirement) {
-                $section .= "  * {$requirement}\n";
+                $section .= $this->language->getDef('text_eval_requirement_item', ['requirement' => $requirement]) . "\n";
             }
         }
-        
+
         if (isset($context['description'])) {
-            $section .= "\nContext Description: {$context['description']}\n";
+            $section .= "\n" . $this->language->getDef('text_eval_context_description', ['description' => $context['description']]) . "\n";
         }
-        
+
         return $section;
     }
-    
+
     /**
      * Build available critics section for selection
-     * 
-     * Requirements: 16.1, 16.2
      * 
      * @param array $critics Sanitized critic data
      * @return string Critics section
      */
     private function buildSelectionCriticsSection(array $critics): string
     {
-        $section = "AVAILABLE CRITICS:\n\n";
-        
+        $section = $this->language->getDef('text_selection_critics_header') . "\n\n";
+
         foreach ($critics as $criticId => $data) {
             $criticName = $data['critic_name'] ?? $criticId;
-            $section .= "Critic: {$criticName} (ID: {$criticId})\n";
-            
+            $section .= $this->language->getDef('text_selection_critic_line', ['name' => $criticName, 'id' => $criticId]) . "\n";
+
             // Domain expertise
             $domains = $data['domain'] ?? ['general'];
             $expertiseLevel = $data['expertise_level'] ?? 0.5;
             $expertiseLabel = $this->getExpertiseLevelLabel($expertiseLevel);
-            
-            $section .= "- Domain Expertise: " . implode(', ', $domains) . " ({$expertiseLabel})\n";
-            $section .= "- Expertise Level: {$expertiseLevel}\n";
-            
+
+            $section .= $this->language->getDef('text_selection_critic_domain', ['domains' => implode(', ', $domains), 'label' => $expertiseLabel]) . "\n";
+            $section .= $this->language->getDef('text_selection_critic_expertise', ['level' => $expertiseLevel]) . "\n";
+
             // Reputation
             $reputation = $data['reputation'] ?? [];
             $reputationScore = $reputation['score'] ?? 0.75;
-            $section .= "- Reputation Score: {$reputationScore}\n";
-            
+            $section .= $this->language->getDef('text_selection_critic_reputation', ['score' => $reputationScore]) . "\n";
+
             // Confidence
             $confidence = $data['confidence'] ?? [];
             $currentConfidence = $confidence['current_confidence'] ?? 0.7;
-            $section .= "- Confidence: {$currentConfidence}\n";
-            
+            $section .= $this->language->getDef('text_selection_critic_confidence', ['confidence' => $currentConfidence]) . "\n";
+
             // Recent activity
             $recentEvals = $data['recent_evaluations'] ?? [];
             $count30Days = $recentEvals['count_30_days'] ?? 0;
-            $lastEvalDate = $data['last_evaluation_date'] ?? 'Never';
-            
-            $section .= "- Recent Activity: {$count30Days} evaluations in last 30 days\n";
-            $section .= "- Last Evaluation: {$lastEvalDate}\n";
-            
+            $lastEvalDate = $data['last_evaluation_date'] ?? $this->language->getDef('text_value_never');
+
+            $section .= $this->language->getDef('text_selection_critic_activity', ['count' => $count30Days]) . "\n";
+            $section .= $this->language->getDef('text_selection_critic_last_eval', ['date' => $lastEvalDate]) . "\n";
+
             $section .= "\n";
         }
-        
+
         return $section;
     }
     
     /**
      * Build selection criteria section
      * 
-     * Requirements: 16.2, 16.3, 16.4
-     * 
      * @return string Selection criteria
      */
     private function buildSelectionCriteria(): string
     {
-        return <<<CRITERIA
-SELECTION CRITERIA:
-
-1. Domain Expertise Match:
-   - How well does the critic's domain expertise align with required domains?
-   - Prioritize critics with expert-level knowledge in required domains
-   - Consider both depth (expertise level) and breadth (multiple domains)
-
-2. Reputation and Performance:
-   - Higher reputation scores indicate better historical performance
-   - Consider recent activity and consistency
-
-3. Confidence Levels:
-   - Appropriate confidence indicates self-awareness
-   - Avoid over-confident or under-confident critics if better options exist
-
-4. Diversity of Perspectives:
-   - Select critics with different domain specializations when possible
-   - Balance specialists (deep in one domain) vs generalists (broad across domains)
-   - Ensure multiple viewpoints for robust consensus
-
-5. Optimal Number:
-   - Determine the optimal number of critics for this evaluation
-   - Minimum 2 critics required for valid consensus
-   - More critics for critical evaluations, fewer for routine ones
-   - Consider available expertise and diversity needs
-
-6. Domain Coverage:
-   - Ensure all required domains are covered if possible
-   - If not all domains can be covered, prioritize most critical domains
-CRITERIA;
+        return $this->language->getDef('text_selection_criteria');
     }
     
     /**
      * Build response format for critic selection
      * 
-     * Requirements: 16.3, 16.4
-     * 
      * @return string Response format specification
      */
     private function buildSelectionResponseFormat(): string
     {
-        return <<<FORMAT
-OUTPUT FORMAT:
-
-You MUST respond with valid JSON only. Do not include any text before or after the JSON object.
-
-{
-  "selected_critics": ["critic_id1", "critic_id2", ...],
-  "selection_rationale": "Overall reasoning for this selection",
-  "critic_explanations": {
-    "critic_id1": "Why this critic was selected (mention domain expertise, reputation, etc.)",
-    "critic_id2": "Why this critic was selected",
-    ...
-  },
-  "rejected_critics": {
-    "critic_id_x": "Why this critic was not selected",
-    ...
-  },
-  "optimal_count": <number of critics selected>,
-  "diversity_score": <0.0-1.0, how diverse is the selected group>,
-  "domain_coverage": {
-    "domain1": ["critic_id1", "critic_id2"],
-    "domain2": ["critic_id2"],
-    ...
-  }
-}
-
-IMPORTANT RULES:
-- Select at least 2 critics (minimum for valid consensus)
-- Explain your reasoning for each selection and rejection
-- Consider domain expertise match as primary factor
-- Balance quality (reputation) with diversity
-- Determine optimal number based on evaluation criticality and available expertise
-FORMAT;
+        return $this->language->getDef('text_selection_response_format');
     }
     
     /**
@@ -710,12 +605,12 @@ FORMAT;
     private function getExpertiseLevelLabel(float $level): string
     {
         if ($level >= 0.8) {
-            return 'expert';
+            return $this->language->getDef('text_expertise_expert');
         } elseif ($level >= 0.6) {
-            return 'competent';
-        } else {
-            return 'novice';
+            return $this->language->getDef('text_expertise_competent');
         }
+
+        return $this->language->getDef('text_expertise_novice');
     }
     
     /**
@@ -733,8 +628,6 @@ FORMAT;
      * - Appropriate maximum weight bound
      * - Rationale for the chosen bounds
      * - Explanation of factors considered
-     * 
-     * Requirements: 14.1, 14.2, 14.3, 14.4
      * 
      * @param array $criticData Array of critic data from CriticDataCollector
      * @param array $evaluationContext Evaluation context information
@@ -770,29 +663,15 @@ FORMAT;
      * 
      * Emphasizes context-aware bounds determination and Pure LLM approach.
      * 
-     * Requirements: 14.1, 14.2
-     * 
      * @return string System instructions
      */
     private function buildBoundsSystemInstructions(): string
     {
-        return <<<INSTRUCTIONS
-ROLE: You are an expert in determining appropriate weight bounds for critic consensus building.
-
-TASK: Analyze the evaluation context and critic pool to determine appropriate minimum and maximum weight bounds.
-
-OBJECTIVE: Determine bounds that:
-- Prevent single critic dominance while allowing expertise to shine
-- Ensure all critics have meaningful influence (no critic is effectively silenced)
-- Balance quality (allowing experts higher weight) with diversity (ensuring all voices heard)
-- Adapt to the specific evaluation context and criticality
-INSTRUCTIONS;
+        return $this->language->getDef('text_bounds_system_instructions');
     }
     
     /**
      * Build evaluation context section for bounds determination
-     * 
-     * Requirements: 14.1, 14.3
      * 
      * @param array $context Sanitized evaluation context
      * @return string Context section
@@ -804,35 +683,33 @@ INSTRUCTIONS;
         $requiredDomains = $context['required_domains'] ?? [];
         $specialRequirements = $context['special_requirements'] ?? [];
         
-        $section = "EVALUATION CONTEXT:\n\n";
-        $section .= "- Output Type: '{$outputType}'\n";
-        $section .= "- Priority Level: '{$priority}'\n";
-        
+        $section = $this->language->getDef('text_eval_context_header') . "\n\n";
+        $section .= $this->language->getDef('text_eval_output_type', ['output_type' => $outputType]) . "\n";
+        $section .= $this->language->getDef('text_eval_priority_level', ['priority' => $priority]) . "\n";
+
         if (!empty($requiredDomains)) {
             $domainsList = implode(', ', $requiredDomains);
-            $section .= "- Required Domains: [{$domainsList}]\n";
+            $section .= $this->language->getDef('text_eval_required_domains', ['domains' => $domainsList]) . "\n";
         }
-        
+
         if (!empty($specialRequirements)) {
-            $section .= "- Special Requirements:\n";
+            $section .= $this->language->getDef('text_eval_special_requirements_header') . "\n";
             foreach ($specialRequirements as $requirement) {
-                $section .= "  * {$requirement}\n";
+                $section .= $this->language->getDef('text_eval_requirement_item', ['requirement' => $requirement]) . "\n";
             }
         }
-        
+
         if (isset($context['description'])) {
-            $section .= "\nContext Description: {$context['description']}\n";
+            $section .= "\n" . $this->language->getDef('text_eval_context_description', ['description' => $context['description']]) . "\n";
         }
-        
+
         return $section;
     }
-    
+
     /**
      * Build critics summary section for bounds determination
      * 
      * Provides aggregate information about the critic pool rather than individual details.
-     * 
-     * Requirements: 14.1, 14.3
      * 
      * @param array $critics Sanitized critic data
      * @return string Critics summary section
@@ -866,17 +743,18 @@ INSTRUCTIONS;
         }
         $uniqueDomains = array_unique($allDomains);
         
-        $section = "CRITIC POOL SUMMARY:\n\n";
-        $section .= "- Number of Critics: {$numCritics}\n";
-        $section .= "- Reputation Range: {$minReputation} - {$maxReputation} (avg: " . round($avgReputation, 3) . ")\n";
-        $section .= "- Expertise Level Range: {$minExpertise} - {$maxExpertise} (avg: " . round($avgExpertise, 3) . ")\n";
-        $section .= "- Expertise Distribution: {$experts} experts, {$competent} competent, {$novices} novices\n";
-        $section .= "- Domain Coverage: " . count($uniqueDomains) . " unique domains (" . implode(', ', array_slice($uniqueDomains, 0, 5));
+        $section = $this->language->getDef('text_bounds_pool_header') . "\n\n";
+        $section .= $this->language->getDef('text_bounds_num_critics', ['num' => $numCritics]) . "\n";
+        $section .= $this->language->getDef('text_bounds_reputation_range', ['min' => $minReputation, 'max' => $maxReputation, 'avg' => round($avgReputation, 3)]) . "\n";
+        $section .= $this->language->getDef('text_bounds_expertise_range', ['min' => $minExpertise, 'max' => $maxExpertise, 'avg' => round($avgExpertise, 3)]) . "\n";
+        $section .= $this->language->getDef('text_bounds_expertise_distribution', ['experts' => $experts, 'competent' => $competent, 'novices' => $novices]) . "\n";
+
+        $domainList = implode(', ', array_slice($uniqueDomains, 0, 5));
         if (count($uniqueDomains) > 5) {
-            $section .= ", +" . (count($uniqueDomains) - 5) . " more";
+            $domainList .= $this->language->getDef('text_bounds_domain_more', ['n' => count($uniqueDomains) - 5]);
         }
-        $section .= ")\n";
-        
+        $section .= $this->language->getDef('text_bounds_domain_coverage', ['count' => count($uniqueDomains), 'list' => $domainList]) . "\n";
+
         return $section;
     }
     
@@ -885,95 +763,21 @@ INSTRUCTIONS;
      * 
      * Provides guidance on factors to consider when determining bounds.
      * 
-     * Requirements: 14.1, 14.2, 14.3
-     * 
      * @return string Bounds guidance
      */
     private function buildBoundsGuidance(): string
     {
-        return <<<GUIDANCE
-BOUNDS DETERMINATION GUIDANCE:
-
-TYPICAL BOUNDS: 0.1 (min) to 0.5 (max)
-- These bounds work well for most scenarios with 3-5 critics
-- Ensures no critic is silenced (min 10% influence)
-- Prevents single critic dominance (max 50% influence)
-
-FACTORS TO CONSIDER:
-
-1. Number of Critics:
-   - 2 critics: Wider bounds (e.g., 0.05-0.7) allow meaningful differentiation
-   - 3-5 critics: Typical bounds (0.1-0.5) provide good balance
-   - 6+ critics: Tighter bounds (e.g., 0.15-0.4) prevent dominance
-
-2. Evaluation Criticality:
-   - Critical evaluations: Allow wider max bound (e.g., 0.6) to let experts dominate
-   - High priority: Typical bounds with slight adjustment
-   - Medium/Low priority: Tighter bounds to ensure diversity
-
-3. Diversity Needs:
-   - High diversity needed: Tighter bounds (e.g., 0.15-0.4) ensure all voices heard
-   - Expertise-focused: Wider bounds (e.g., 0.1-0.6) allow experts to lead
-   - Balanced: Typical bounds
-
-4. Expertise Distribution:
-   - Wide expertise gap: Wider bounds allow experts to have more influence
-   - Similar expertise: Tighter bounds since all critics are comparable
-   - Few experts: Wider max bound to leverage expert knowledge
-
-5. Special Requirements:
-   - Security-critical: May need wider bounds to trust expert judgment
-   - Performance-critical: Similar to security
-   - Exploratory/Research: Tighter bounds to encourage diverse perspectives
-
-BOUNDS CONSTRAINTS:
-- Minimum bound must be >= 0.0 (cannot be negative)
-- Maximum bound must be <= 1.0 (cannot exceed 100%)
-- Minimum must be < Maximum (must allow variation)
-- Range (max - min) should be at least 0.05 (meaningful variation)
-
-WHEN TO EXCEED TYPICAL BOUNDS:
-- Explain clearly why typical bounds are insufficient
-- Provide strong justification based on context
-- Consider the trade-offs (quality vs diversity)
-GUIDANCE;
+        return $this->language->getDef('text_bounds_guidance');
     }
     
     /**
      * Build response format for bounds determination
      * 
-     * Requirements: 14.2, 14.4
-     * 
      * @return string Response format specification
      */
     private function buildBoundsResponseFormat(): string
     {
-        return <<<FORMAT
-OUTPUT FORMAT:
-
-You MUST respond with valid JSON only. Do not include any text before or after the JSON object.
-
-{
-  "min_bound": <float between 0.0 and 1.0>,
-  "max_bound": <float between 0.0 and 1.0>,
-  "rationale": "Overall reasoning for these bounds (2-3 sentences)",
-  "explanation": "Detailed explanation of why these bounds are appropriate for this specific evaluation context",
-  "factors_considered": {
-    "num_critics": "How the number of critics influenced your bounds decision",
-    "criticality": "How evaluation criticality influenced your bounds decision",
-    "diversity_needs": "How diversity requirements influenced your bounds decision",
-    "context_requirements": "How special context requirements influenced your bounds decision"
-  }
-}
-
-IMPORTANT RULES:
-- min_bound must be >= 0.0
-- max_bound must be <= 1.0
-- min_bound must be < max_bound
-- Range (max_bound - min_bound) must be >= 0.05
-- If you suggest bounds outside typical range (0.1-0.5), provide strong justification
-- Explain your reasoning clearly for each factor
-FORMAT;
+        return $this->language->getDef('text_bounds_response_format');
     }
     
     /**
@@ -991,8 +795,6 @@ FORMAT;
      * - Unusual weight distributions (e.g., one critic dominates)
      * - Sudden weight changes without corresponding reputation changes
      * - Patterns suggesting collusion or gaming
-     * 
-     * Requirements: 20.1, 20.3, 29.1, 29.2, 29.3, 29.4
      * 
      * @param array $weightHistory Weight history data from audit logger
      * @param int $days Number of days of history analyzed
@@ -1022,24 +824,11 @@ FORMAT;
      * 
      * Emphasizes pattern detection and gaming prevention.
      * 
-     * Requirements: 20.1, 20.3
-     * 
      * @return string System instructions
      */
     private function buildAnomalySystemInstructions(): string
     {
-        return <<<INSTRUCTIONS
-ROLE: You are an expert in detecting anomalies and potential gaming in weight distributions.
-
-TASK: Analyze the following weight history to identify suspicious patterns that may indicate:
-- Unusual weight distributions
-- Potential gaming or manipulation attempts
-- Critics receiving inappropriately high or low weights
-- Sudden unexplained changes in weight patterns
-- Collusion or coordination between critics
-
-OBJECTIVE: Identify patterns that warrant investigation or corrective action.
-INSTRUCTIONS;
+        return $this->language->getDef('text_anomaly_system_instructions');
     }
     
     /**
@@ -1048,18 +837,16 @@ INSTRUCTIONS;
      * Formats weight history data for LLM analysis.
      * Includes evaluation context, critic weights, and timestamps.
      * 
-     * Requirements: 20.1, 29.1
-     * 
      * @param array $weightHistory Weight history data
      * @param int $days Number of days analyzed
      * @return string Weight history section
      */
     private function buildWeightHistorySection(array $weightHistory, int $days): string
     {
-        $section = "WEIGHT HISTORY (Last {$days} days):\n\n";
-        
+        $section = $this->language->getDef('text_history_header', ['days' => $days]) . "\n\n";
+
         if (empty($weightHistory)) {
-            $section .= "No weight history available.\n";
+            $section .= $this->language->getDef('text_history_none') . "\n";
             return $section;
         }
         
@@ -1086,28 +873,28 @@ INSTRUCTIONS;
         foreach ($evaluations as $evalId => $eval) {
             $count++;
             if ($count > 50) {
-                $section .= "\n[... " . (count($evaluations) - 50) . " more evaluations omitted for brevity ...]\n";
+                $section .= "\n" . $this->language->getDef('text_history_eval_omitted', ['n' => count($evaluations) - 50]) . "\n";
                 break;
             }
-            
-            $section .= "Evaluation: {$evalId}\n";
-            $section .= "Timestamp: {$eval['timestamp']}\n";
-            
+
+            $section .= $this->language->getDef('text_history_evaluation', ['id' => $evalId]) . "\n";
+            $section .= $this->language->getDef('text_history_timestamp', ['ts' => $eval['timestamp']]) . "\n";
+
             // Context summary
             $context = $eval['context'];
             if (!empty($context)) {
                 $outputType = $context['output_type'] ?? 'unknown';
                 $priority = $context['priority'] ?? 'unknown';
-                $section .= "Context: {$outputType} (priority: {$priority})\n";
+                $section .= $this->language->getDef('text_history_context', ['type' => $outputType, 'priority' => $priority]) . "\n";
             }
-            
+
             // Weights
-            $section .= "Weights:\n";
+            $section .= $this->language->getDef('text_history_weights_header') . "\n";
             arsort($eval['weights']); // Sort by weight descending
             foreach ($eval['weights'] as $criticId => $weight) {
-                $section .= "  - {$criticId}: " . round($weight, 4) . "\n";
+                $section .= $this->language->getDef('text_history_weight_item', ['id' => $criticId, 'weight' => round($weight, 4)]) . "\n";
             }
-            
+
             $section .= "\n";
         }
         
@@ -1121,8 +908,6 @@ INSTRUCTIONS;
      * Build weight history summary statistics
      * 
      * Provides aggregate statistics to help LLM identify patterns.
-     * 
-     * Requirements: 20.1, 29.1
      * 
      * @param array $weightHistory Weight history data
      * @return string Summary statistics
@@ -1156,31 +941,31 @@ INSTRUCTIONS;
         foreach ($criticStats as $criticId => &$stats) {
             $stats['avg'] = $stats['count'] > 0 ? $stats['sum'] / $stats['count'] : 0.0;
         }
+        unset($stats); // break the reference, else the read-loop below clobbers the last critic
         uasort($criticStats, fn($a, $b) => $b['avg'] <=> $a['avg']);
         
-        $section = "SUMMARY STATISTICS:\n\n";
-        $section .= "Total Evaluations: " . count(array_unique(array_column($weightHistory, 'evaluation_id'))) . "\n";
-        $section .= "Total Critics: " . count($criticStats) . "\n\n";
-        
-        $section .= "Per-Critic Statistics (sorted by average weight):\n";
+        $section = $this->language->getDef('text_history_summary_header') . "\n\n";
+        $section .= $this->language->getDef('text_history_total_evaluations', ['n' => count(array_unique(array_column($weightHistory, 'evaluation_id')))]) . "\n";
+        $section .= $this->language->getDef('text_history_total_critics', ['n' => count($criticStats)]) . "\n\n";
+
+        $section .= $this->language->getDef('text_history_per_critic_header') . "\n";
         $count = 0;
         foreach ($criticStats as $criticId => $stats) {
             $count++;
             if ($count > 20) {
-                $section .= "[... " . (count($criticStats) - 20) . " more critics omitted ...]\n";
+                $section .= $this->language->getDef('text_history_critics_omitted', ['n' => count($criticStats) - 20]) . "\n";
                 break;
             }
-            
-            $section .= sprintf(
-                "  - %s: avg=%.4f, max=%.4f, min=%.4f, count=%d\n",
-                $criticId,
-                $stats['avg'],
-                $stats['max'],
-                $stats['min'],
-                $stats['count']
-            );
+
+            $section .= $this->language->getDef('text_history_critic_stat', [
+                'id' => $criticId,
+                'avg' => number_format($stats['avg'], 4, '.', ''),
+                'max' => number_format($stats['max'], 4, '.', ''),
+                'min' => number_format($stats['min'], 4, '.', ''),
+                'count' => $stats['count'],
+            ]) . "\n";
         }
-        
+
         return $section;
     }
     
@@ -1189,106 +974,21 @@ INSTRUCTIONS;
      * 
      * Guides the LLM on what patterns to look for.
      * 
-     * Requirements: 20.1, 20.3, 29.1, 29.2, 29.3, 29.4
-     * 
      * @return string Analysis focus guidance
      */
     private function buildAnomalyAnalysisFocus(): string
     {
-        return <<<FOCUS
-ANALYSIS FOCUS:
-
-Look for the following suspicious patterns:
-
-1. CONSISTENTLY HIGH WEIGHTS:
-   - Critics with average weight > 0.5 across multiple evaluations
-   - Critics who frequently receive the highest weight in their evaluation group
-   - Pattern: May indicate over-reliance on a single critic or gaming
-
-2. MAXIMUM WEIGHT DOMINANCE:
-   - Critics consistently receiving maximum weights (close to 1.0 or upper bound)
-   - Critics who dominate consensus in most evaluations
-   - Pattern: May indicate inappropriate dominance or manipulation
-
-3. UNUSUAL WEIGHT DISTRIBUTIONS:
-   - Evaluations where one critic has >70% of total weight
-   - Evaluations with extreme weight imbalances
-   - Pattern: May indicate context mismatch or gaming
-
-4. SUDDEN WEIGHT CHANGES:
-   - Critics whose weights change dramatically without corresponding reputation changes
-   - Sudden spikes or drops in weight that don't align with performance
-   - Pattern: May indicate system manipulation or data issues
-
-5. COLLUSION PATTERNS:
-   - Multiple critics with suspiciously similar weight patterns
-   - Critics whose weights always move together
-   - Pattern: May indicate coordination or gaming
-
-6. CONTEXT MISMATCH:
-   - Critics receiving high weights in contexts outside their expertise
-   - Weights that don't align with domain expertise
-   - Pattern: May indicate system misconfiguration
-
-7. GAMING INDICATORS:
-   - Patterns that suggest intentional manipulation
-   - Unusual timing or coordination of weight changes
-   - Weights that seem artificially inflated or deflated
-
-SEVERITY LEVELS:
-- HIGH: Clear evidence of gaming, manipulation, or system failure requiring immediate action
-- MEDIUM: Suspicious patterns that warrant investigation and monitoring
-- LOW: Minor anomalies or edge cases that should be noted but may be explainable
-
-For each anomaly detected, provide:
-- Type of anomaly
-- Affected critic(s)
-- Severity level
-- Description of what was detected
-- Supporting evidence from the data
-- Recommended action
-FOCUS;
+        return $this->language->getDef('text_anomaly_analysis_focus');
     }
     
     /**
      * Build response format for anomaly detection
      * 
-     * Requirements: 20.1, 20.3, 29.1
-     * 
      * @return string Response format specification
      */
     private function buildAnomalyResponseFormat(): string
     {
-        return <<<FORMAT
-OUTPUT FORMAT:
-
-You MUST respond with valid JSON only. Do not include any text before or after the JSON object.
-
-{
-  "anomalies": [
-    {
-      "type": "anomaly_type (e.g., 'consistently_high_weights', 'maximum_weight_dominance', 'unusual_distribution', 'sudden_change', 'collusion_pattern', 'context_mismatch', 'gaming_indicator')",
-      "critic_id": "critic_id (or null if anomaly is evaluation-wide)",
-      "severity": "low|medium|high",
-      "description": "Clear description of what was detected",
-      "evidence": [
-        "Specific evidence point 1",
-        "Specific evidence point 2",
-        "..."
-      ],
-      "recommendation": "Suggested action (e.g., 'Investigate critic reputation', 'Review evaluation contexts', 'Monitor for continued pattern')"
-    }
-  ],
-  "overall_assessment": "Summary of findings - are there concerning patterns? Is the system functioning normally?"
-}
-
-IMPORTANT RULES:
-- Include ALL detected anomalies, even low-severity ones
-- Provide specific evidence from the data (cite evaluation IDs, weights, dates)
-- Be objective - distinguish between definite issues and potential concerns
-- If no anomalies detected, return empty anomalies array with positive overall assessment
-- Severity should reflect confidence and impact: high = definite issue requiring action, medium = suspicious pattern needing investigation, low = minor concern or edge case
-FORMAT;
+        return $this->language->getDef('text_anomaly_response_format');
     }
 }
 

@@ -1,0 +1,367 @@
+text_eval_context_header = EVALUATION CONTEXT:
+text_eval_output_type = - Output Type: '{{output_type}}'
+text_eval_priority_level = - Priority Level: '{{priority}}'
+text_eval_required_domains = - Required Domains: [{{domains}}]
+text_eval_special_requirements_header = - Special Requirements:
+text_eval_requirement_item =   * {{requirement}}
+text_eval_context_description = Context Description: {{description}}
+
+text_expertise_expert = expert
+text_expertise_competent = competent
+text_expertise_novice = novice
+text_value_never = Never
+
+text_selection_system_instructions = ROLE: You are an expert in selecting optimal critics for evaluations based on domain expertise, reputation, and diversity.
+TASK: Analyze the available critics and evaluation context to select the most appropriate critics for this evaluation.
+MULTI-DOMAIN SELECTION STRATEGY:
+- Prioritize critics with expertise in required domains
+- Balance domain specialists (deep expertise in one domain) vs generalists (broad expertise across domains)
+- Ensure coverage of all required domains if possible
+- Consider domain expertise level (expert > competent > novice)
+- Balance expertise relevance with diversity of perspectives
+- Ensure minimum 2 critics for valid consensus
+
+text_selection_critics_header = AVAILABLE CRITICS:
+text_selection_critic_line = Critic: {{name}} (ID: {{id}})
+text_selection_critic_domain = - Domain Expertise: {{domains}} ({{label}})
+text_selection_critic_expertise = - Expertise Level: {{level}}
+text_selection_critic_reputation = - Reputation Score: {{score}}
+text_selection_critic_confidence = - Confidence: {{confidence}}
+text_selection_critic_activity = - Recent Activity: {{count}} evaluations in last 30 days
+text_selection_critic_last_eval = - Last Evaluation: {{date}}
+
+text_selection_criteria = SELECTION CRITERIA:
+1. Domain Expertise Match:
+   - How well does the critic's domain expertise align with required domains?
+   - Prioritize critics with expert-level knowledge in required domains
+   - Consider both depth (expertise level) and breadth (multiple domains)
+2. Reputation and Performance:
+   - Higher reputation scores indicate better historical performance
+   - Consider recent activity and consistency
+3. Confidence Levels:
+   - Appropriate confidence indicates self-awareness
+   - Avoid over-confident or under-confident critics if better options exist
+4. Diversity of Perspectives:
+   - Select critics with different domain specializations when possible
+   - Balance specialists (deep in one domain) vs generalists (broad across domains)
+   - Ensure multiple viewpoints for robust consensus
+5. Optimal Number:
+   - Determine the optimal number of critics for this evaluation
+   - Minimum 2 critics required for valid consensus
+   - More critics for critical evaluations, fewer for routine ones
+   - Consider available expertise and diversity needs
+6. Domain Coverage:
+   - Ensure all required domains are covered if possible
+   - If not all domains can be covered, prioritize most critical domains
+
+text_selection_response_format = OUTPUT FORMAT:
+You MUST respond with valid JSON only. Do not include any text before or after the JSON object.
+{
+  "selected_critics": ["critic_id1", "critic_id2", ...],
+  "selection_rationale": "Overall reasoning for this selection",
+  "critic_explanations": {
+    "critic_id1": "Why this critic was selected (mention domain expertise, reputation, etc.)",
+    "critic_id2": "Why this critic was selected",
+    ...
+  },
+  "rejected_critics": {
+    "critic_id_x": "Why this critic was not selected",
+    ...
+  },
+  "optimal_count": <number of critics selected>,
+  "diversity_score": <0.0-1.0, how diverse is the selected group>,
+  "domain_coverage": {
+    "domain1": ["critic_id1", "critic_id2"],
+    "domain2": ["critic_id2"],
+    ...
+  }
+}
+IMPORTANT RULES:
+- Select at least 2 critics (minimum for valid consensus)
+- Explain your reasoning for each selection and rejection
+- Consider domain expertise match as primary factor
+- Balance quality (reputation) with diversity
+- Determine optimal number based on evaluation criticality and available expertise
+
+text_bounds_system_instructions = ROLE: You are an expert in determining appropriate weight bounds for critic consensus building.
+TASK: Analyze the evaluation context and critic pool to determine appropriate minimum and maximum weight bounds.
+OBJECTIVE: Determine bounds that:
+- Prevent single critic dominance while allowing expertise to shine
+- Ensure all critics have meaningful influence (no critic is effectively silenced)
+- Balance quality (allowing experts higher weight) with diversity (ensuring all voices heard)
+- Adapt to the specific evaluation context and criticality
+
+text_bounds_pool_header = CRITIC POOL SUMMARY:
+text_bounds_num_critics = - Number of Critics: {{num}}
+text_bounds_reputation_range = - Reputation Range: {{min}} - {{max}} (avg: {{avg}})
+text_bounds_expertise_range = - Expertise Level Range: {{min}} - {{max}} (avg: {{avg}})
+text_bounds_expertise_distribution = - Expertise Distribution: {{experts}} experts, {{competent}} competent, {{novices}} novices
+text_bounds_domain_coverage = - Domain Coverage: {{count}} unique domains ({{list}})
+text_bounds_domain_more = , +{{n}} more
+
+text_bounds_guidance = BOUNDS DETERMINATION GUIDANCE:
+TYPICAL BOUNDS: 0.1 (min) to 0.5 (max)
+- These bounds work well for most scenarios with 3-5 critics
+- Ensures no critic is silenced (min 10% influence)
+- Prevents single critic dominance (max 50% influence)
+FACTORS TO CONSIDER:
+1. Number of Critics:
+   - 2 critics: Wider bounds (e.g., 0.05-0.7) allow meaningful differentiation
+   - 3-5 critics: Typical bounds (0.1-0.5) provide good balance
+   - 6+ critics: Tighter bounds (e.g., 0.15-0.4) prevent dominance
+2. Evaluation Criticality:
+   - Critical evaluations: Allow wider max bound (e.g., 0.6) to let experts dominate
+   - High priority: Typical bounds with slight adjustment
+   - Medium/Low priority: Tighter bounds to ensure diversity
+3. Diversity Needs:
+   - High diversity needed: Tighter bounds (e.g., 0.15-0.4) ensure all voices heard
+   - Expertise-focused: Wider bounds (e.g., 0.1-0.6) allow experts to lead
+   - Balanced: Typical bounds
+4. Expertise Distribution:
+   - Wide expertise gap: Wider bounds allow experts to have more influence
+   - Similar expertise: Tighter bounds since all critics are comparable
+   - Few experts: Wider max bound to leverage expert knowledge
+5. Special Requirements:
+   - Security-critical: May need wider bounds to trust expert judgment
+   - Performance-critical: Similar to security
+   - Exploratory/Research: Tighter bounds to encourage diverse perspectives
+BOUNDS CONSTRAINTS:
+- Minimum bound must be >= 0.0 (cannot be negative)
+- Maximum bound must be <= 1.0 (cannot exceed 100%)
+- Minimum must be < Maximum (must allow variation)
+- Range (max - min) should be at least 0.05 (meaningful variation)
+WHEN TO EXCEED TYPICAL BOUNDS:
+- Explain clearly why typical bounds are insufficient
+- Provide strong justification based on context
+- Consider the trade-offs (quality vs diversity)
+
+text_bounds_response_format = OUTPUT FORMAT:
+You MUST respond with valid JSON only. Do not include any text before or after the JSON object.
+{
+  "min_bound": <float between 0.0 and 1.0>,
+  "max_bound": <float between 0.0 and 1.0>,
+  "rationale": "Overall reasoning for these bounds (2-3 sentences)",
+  "explanation": "Detailed explanation of why these bounds are appropriate for this specific evaluation context",
+  "factors_considered": {
+    "num_critics": "How the number of critics influenced your bounds decision",
+    "criticality": "How evaluation criticality influenced your bounds decision",
+    "diversity_needs": "How diversity requirements influenced your bounds decision",
+    "context_requirements": "How special context requirements influenced your bounds decision"
+  }
+}
+IMPORTANT RULES:
+- min_bound must be >= 0.0
+- max_bound must be <= 1.0
+- min_bound must be < max_bound
+- Range (max_bound - min_bound) must be >= 0.05
+- If you suggest bounds outside typical range (0.1-0.5), provide strong justification
+- Explain your reasoning clearly for each factor
+
+text_anomaly_system_instructions = ROLE: You are an expert in detecting anomalies and potential gaming in weight distributions.
+TASK: Analyze the following weight history to identify suspicious patterns that may indicate:
+- Unusual weight distributions
+- Potential gaming or manipulation attempts
+- Critics receiving inappropriately high or low weights
+- Sudden unexplained changes in weight patterns
+- Collusion or coordination between critics
+OBJECTIVE: Identify patterns that warrant investigation or corrective action.
+
+text_history_header = WEIGHT HISTORY (Last {{days}} days):
+text_history_none = No weight history available.
+text_history_eval_omitted = [... {{n}} more evaluations omitted for brevity ...]
+text_history_evaluation = Evaluation: {{id}}
+text_history_timestamp = Timestamp: {{ts}}
+text_history_context = Context: {{type}} (priority: {{priority}})
+text_history_weights_header = Weights:
+text_history_weight_item =   - {{id}}: {{weight}}
+
+text_history_summary_header = SUMMARY STATISTICS:
+text_history_total_evaluations = Total Evaluations: {{n}}
+text_history_total_critics = Total Critics: {{n}}
+text_history_per_critic_header = Per-Critic Statistics (sorted by average weight):
+text_history_critics_omitted = [... {{n}} more critics omitted ...]
+text_history_critic_stat =   - {{id}}: avg={{avg}}, max={{max}}, min={{min}}, count={{count}}
+
+text_anomaly_analysis_focus = ANALYSIS FOCUS:
+STATISTICAL GUARDRAILS — apply these FIRST, before flagging anything. When in doubt, report NO anomaly. Returning zero anomalies for healthy, balanced or low-sample data is the CORRECT answer; do NOT manufacture findings to fill the report.
+- Minimum sample size: never flag "consistently high", "gaming", "dominance" or "collusion" for a critic observed in fewer than 5 evaluations. A single observation (a count of 1) is insufficient data and is NEVER an anomaly.
+- Significant change only: report "sudden_change" only when a critic's weight moves by MORE THAN 0.10 (absolute) between comparable evaluations. Differences around 0.01–0.05 are normal noise, not anomalies.
+- Normalization is not collusion: within one evaluation the weights sum to 1.0 by design, so with 2 critics a ~0.5/0.5 (or 0.52/0.48) split is the EXPECTED arithmetic, NOT coordination. Only consider collusion across MANY evaluations involving 3+ critics that share an identical, non-trivial pattern.
+- Narrow band is healthy: if every weight sits in a narrow band (≈ 0.40–0.60, i.e. none exceeds ~0.65 nor drops below ~0.35), the distribution is BALANCED — do not report an anomaly.
+Look for the following suspicious patterns (only when the guardrails above are satisfied):
+1. CONSISTENTLY HIGH WEIGHTS:
+   - Critics with average weight above 0.5 across multiple evaluations
+   - Critics who frequently receive the highest weight in their evaluation group
+   - Pattern: May indicate over-reliance on a single critic or gaming
+2. MAXIMUM WEIGHT DOMINANCE:
+   - Critics consistently receiving maximum weights (close to 1.0 or upper bound)
+   - Critics who dominate consensus in most evaluations
+   - Pattern: May indicate inappropriate dominance or manipulation
+3. UNUSUAL WEIGHT DISTRIBUTIONS:
+   - Evaluations where one critic has more than 70% of total weight
+   - Evaluations with extreme weight imbalances
+   - Pattern: May indicate context mismatch or gaming
+4. SUDDEN WEIGHT CHANGES:
+   - Critics whose weights change dramatically without corresponding reputation changes
+   - Sudden spikes or drops in weight that don't align with performance
+   - Pattern: May indicate system manipulation or data issues
+5. COLLUSION PATTERNS:
+   - Multiple critics with suspiciously similar weight patterns
+   - Critics whose weights always move together
+   - Pattern: May indicate coordination or gaming
+6. CONTEXT MISMATCH:
+   - Critics receiving high weights in contexts outside their expertise
+   - Weights that don't align with domain expertise
+   - Pattern: May indicate system misconfiguration
+7. GAMING INDICATORS:
+   - Patterns that suggest intentional manipulation
+   - Unusual timing or coordination of weight changes
+   - Weights that seem artificially inflated or deflated
+SEVERITY LEVELS:
+- HIGH: Clear evidence of gaming, manipulation, or system failure requiring immediate action
+- MEDIUM: Suspicious patterns that warrant investigation and monitoring
+- LOW: Minor anomalies or edge cases that should be noted but may be explainable
+For each anomaly detected, provide:
+- Type of anomaly
+- Affected critic(s)
+- Severity level
+- Description of what was detected
+- Supporting evidence from the data
+- Recommended action
+
+text_anomaly_response_format = OUTPUT FORMAT:
+You MUST respond with valid JSON only. Do not include any text before or after the JSON object.
+{
+  "anomalies": [
+    {
+      "type": "anomaly_type (e.g., 'consistently_high_weights', 'maximum_weight_dominance', 'unusual_distribution', 'sudden_change', 'collusion_pattern', 'context_mismatch', 'gaming_indicator')",
+      "critic_id": "critic_id (or null if anomaly is evaluation-wide)",
+      "severity": "low|medium|high",
+      "description": "Clear description of what was detected",
+      "evidence": [
+        "Specific evidence point 1",
+        "Specific evidence point 2",
+        "..."
+      ],
+      "recommendation": "Suggested action (e.g., 'Investigate critic reputation', 'Review evaluation contexts', 'Monitor for continued pattern')"
+    }
+  ],
+  "overall_assessment": "Summary of findings - are there concerning patterns? Is the system functioning normally?"
+}
+IMPORTANT RULES:
+- Include ALL detected anomalies, even low-severity ones
+- Provide specific evidence from the data (cite evaluation IDs, weights, dates)
+- Be objective - distinguish between definite issues and potential concerns
+- If no anomalies detected, return empty anomalies array with positive overall assessment
+- Severity should reflect confidence and impact: high=definite issue requiring action, medium=suspicious pattern needing investigation, low=minor concern or edge case
+
+text_system_instructions = # Adaptive Weight Analysis Task
+
+You are an expert system analyst tasked with determining optimal weights for critic agents in a consensus-building system.
+
+**CRITICAL: Pure LLM Mode**
+- Analyze and determine weights WITHOUT using mathematical formulas
+- Consider reputation, domain relevance, expertise level, confidence, recency, and trends
+- Use your judgment and reasoning to determine appropriate weights
+- Provide natural language explanations for your decisions
+- Adapt your analysis based on the specific evaluation context
+
+Your goal is to assign weights that reflect each critic's qualification and relevance for this specific evaluation.
+
+text_context_header = ## Evaluation Context
+
+text_context_output_type = - **Output Type**: {{output_type}}
+text_context_priority = - **Priority**: {{priority}}
+text_context_required_domains = - **Required Domains**: {{domains}}
+text_context_special_requirements = - **Special Requirements**:
+text_context_requirement_item = - {{requirement}}
+text_context_description = **Context Description**: {{description}}
+
+text_critics_header = ## Critics Available for Evaluation
+
+text_critic_section_header = ### {{name}} (ID: {{id}})
+
+text_reputation_header = **Reputation**:
+text_reputation_score = - Score: {{score}}
+text_reputation_status = - Status: {{status}}
+text_reputation_total_evaluations = - Total Evaluations: {{total}}
+text_reputation_consensus_alignment = - Consensus Alignment: {{value}}
+text_reputation_feedback_quality = - Feedback Quality: {{value}}
+text_reputation_consistency = - Consistency: {{value}}
+text_reputation_expertise_accuracy = - Expertise Accuracy: {{value}}
+
+text_domain_header = **Domain Expertise**:
+text_domain_list = - Domains: {{domains}}
+text_domain_expertise_level = - Expertise Level: {{level}} (0.0=novice, 0.5=competent, 1.0=expert)
+
+text_confidence_header = **Confidence**:
+text_confidence_current = - Current: {{value}}
+text_confidence_average = - Average: {{value}}
+text_confidence_stability = - Stability: {{value}}
+text_confidence_over_warning = - ⚠️ Over-confidence pattern detected
+text_confidence_under_warning = - ⚠️ Under-confidence pattern detected
+
+text_activity_header = **Recent Activity**:
+text_activity_count = - Evaluations (last 30 days): {{count}}
+text_activity_last_date = - Last Evaluation: {{date}}
+text_activity_no_recent = - Last Evaluation: No recent evaluations
+
+text_analysis_instructions = ## Analysis Instructions
+
+Analyze each critic and determine an appropriate weight based on:
+
+1. **Reputation Analysis**: Consider the critic's reputation score, history, and status. How reliable has this critic been historically?
+
+2. **Domain Expertise Match**: Evaluate how well the critic's domain expertise aligns with the required domains for this evaluation. Consider both breadth (multiple domains) and depth (expertise level).
+
+3. **Expertise Level**: Consider the critic's expertise level (0.0-1.0). Experts (0.8-1.0) should generally have more influence than novices (0.0-0.3) in their domains.
+
+4. **Confidence Assessment**: Analyze the critic's confidence levels. Are they appropriately confident? Watch for over-confidence or under-confidence patterns.
+
+5. **Recency and Activity**: Consider how recently the critic has been active and their evaluation frequency. Recent activity may indicate current relevance.
+
+6. **Context Relevance**: Most importantly, consider how relevant this critic is for THIS SPECIFIC evaluation context. A critic with lower reputation but perfect domain match may be more valuable than a high-reputation critic in an unrelated domain.
+
+**Important Considerations**:
+- Priority level affects how much you should value reliability vs. expertise
+- Special requirements may make certain critics more or less suitable
+- Balance between having diverse perspectives and ensuring quality
+- Consider the trade-offs between different factors
+
+Determine a raw weight for each critic that reflects their overall qualification for this evaluation.
+
+text_response_format = ## Required Response Format
+
+Provide your analysis as a JSON object with the following structure:
+
+```json
+{
+  "weights": {
+    "critic_id_1": 0.85,
+    "critic_id_2": 0.65,
+    "critic_id_3": 0.50
+  },
+  "explanations": {
+    "critic_id_1": "This critic has expert-level expertise in the required semantic domain (0.9) with strong reputation (0.85) and consistent performance. Their domain expertise is highly relevant for this search_results evaluation. Weight reflects strong qualification.",
+    "critic_id_2": "Strong reputation (0.90) but expertise is in analytics domain which has moderate relevance to this evaluation. Confidence is high (0.9) and recent activity is good. Weight reflects solid but not perfect domain match.",
+    "critic_id_3": "Competent expertise in semantic domain (0.6) but lower reputation (0.75) and confidence (0.7). Recent activity is limited. Weight reflects adequate but not exceptional qualification."
+  },
+  "overall_rationale": "For this search_results evaluation I prioritized domain expertise match over pure reputation: critic_id_1 scored highest (expert semantic match), critic_id_2 lower (domain mismatch despite high reputation), critic_id_3 lowest (novice + limited recent activity).",
+  "dominant_factors": ["domain_match", "reputation", "confidence"],
+  "domain_analysis": {
+    "critic_id_1": {"match_quality": "high", "expertise_depth": "expert", "relevant_domains": ["semantic"]},
+    "critic_id_2": {"match_quality": "medium", "expertise_depth": "competent", "relevant_domains": ["analytics"]},
+    "critic_id_3": {"match_quality": "low", "expertise_depth": "novice", "relevant_domains": []}
+  },
+  "suggested_bounds": {"min": 0.1, "max": 0.5}
+}
+```
+
+**Requirements**:
+- Provide a weight for EVERY critic (do not omit any)
+- Weights should be positive numbers (can be any positive value, will be normalized later)
+- Each explanation should mention the key factors that influenced the weight
+- ALWAYS include `overall_rationale` (your overall weighting strategy), `dominant_factors` (the factors that drove the weights) and `domain_analysis` (one entry PER critic, each with `match_quality` of high/medium/low/none, plus `expertise_depth` and `relevant_domains`) — these power the monitoring dashboards and must never be omitted or left empty.
+- Use natural language - explain your reasoning as you would to a human
+
+Respond ONLY with the JSON object, no additional text.

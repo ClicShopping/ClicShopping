@@ -529,7 +529,7 @@ class ReasoningAgent
     $CLICSHOPPING_Language = Registry::get('Language');
 
     // Load language file in English for internal processing
-    DomainConfig::loadLanguageFile('rag_reasoning_agent');
+    DomainConfig::loadAgnosticLanguageFile('rag_reasoning_agent');
 
     // Get the prompt template
     $prompt = $CLICSHOPPING_Language->getDef('text_reasoning_cot_prompt');
@@ -674,7 +674,7 @@ class ReasoningAgent
     $CLICSHOPPING_Language = Registry::get('Language');
 
     // Load language file in English for internal processing
-    DomainConfig::loadLanguageFile('rag_reasoning_agent');
+    DomainConfig::loadAgnosticLanguageFile('rag_reasoning_agent');
 
     // Get the prompt template
     $prompt = $CLICSHOPPING_Language->getDef('text_reasoning_tot_prompt');
@@ -1004,7 +1004,7 @@ class ReasoningAgent
     $CLICSHOPPING_Language = Registry::get('Language');
 
     // Load language file in English for internal processing
-    DomainConfig::loadLanguageFile('rag_reasoning_agent');
+    DomainConfig::loadAgnosticLanguageFile('rag_reasoning_agent');
 
     // Get the prompt template
     $prompt = $CLICSHOPPING_Language->getDef('text_reasoning_decompose_prompt');
@@ -1082,7 +1082,7 @@ class ReasoningAgent
     $CLICSHOPPING_Language = Registry::get('Language');
 
     // Load language file in English for internal processing
-    DomainConfig::loadLanguageFile('rag_reasoning_agent');
+    DomainConfig::loadAgnosticLanguageFile('rag_reasoning_agent');
 
     // Get the prompt template
     $prompt = $CLICSHOPPING_Language->getDef('text_reasoning_verification_prompt');

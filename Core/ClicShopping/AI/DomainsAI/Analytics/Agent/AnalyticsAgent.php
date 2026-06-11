@@ -67,6 +67,8 @@ class AnalyticsAgent
   private SqlQueryProcessor $queryProcessor;
   private QueryExecutor $queryExecutor;
   private ResultInterpreter $resultInterpreter;
+  private AmbiguityTranslator $ambiguityTranslator;
+  private QueryEnricher $queryEnricher;
   private CorrectionAgent $correctionAgent;
   private QueryCache $queryCache;
   private AmbiguousQueryDetector $ambiguityDetector;
@@ -168,6 +170,8 @@ class AnalyticsAgent
       $this->enablePromptCache,
       $this->debug
     );
+    $this->ambiguityTranslator = new AmbiguityTranslator($this->resultInterpreter, $this->debug);
+    $this->queryEnricher = new QueryEnricher($this->promptBuilder, $this->language, $this->debug);
     $this->correctionAgent = new CorrectionAgent($userId, $languageId);
     
     // Initialize QueryCache
@@ -199,6 +203,7 @@ class AnalyticsAgent
       $this->debug
     );
 
+    // Autonomous-agent concerns extracted from this class (god-class decomposition):
     $this->peerEvaluator = new AnalyticsPeerEvaluator($this->autonomousConfig);
     $this->objectiveRunner = new AnalyticsObjectiveRunner($this->autonomousConfig, $this->debug, $this->securityLogger);
 
@@ -248,7 +253,7 @@ class AnalyticsAgent
         $lastSQL = $this->conversationMemory->getLastSQLQuery();
         if ($lastSQL) {
           error_log("\n--- STEP 0: Modification detected, enriching with last SQL ---");
-          $question = $this->enrichQuestionWithLastSQL($question, $lastSQL);
+          $question = $this->queryEnricher->enrichWithLastSQL($question, $lastSQL);
         }
       }
 
@@ -559,18 +564,6 @@ class AnalyticsAgent
     return $isModification;
   }
 
-  /**
-   * Enriches the question with the previous SQL query for modifications
-   * Note: The prompt is in English because all processing is in English
-   *
-   * @param string $question The user's question (already translated to English)
-   * @param string $lastSQL The last executed SQL query
-   * @return string The enriched question
-   */
-  private function enrichQuestionWithLastSQL(string $question, string $lastSQL): string
-  {
-    return $this->promptBuilder->enrichWithLastSQL($question, $lastSQL);
-  }
 
   /**
    * Determines if a query is analytical in nature
@@ -726,7 +719,7 @@ class AnalyticsAgent
         $this->debugLog("Using classification confidence: {$confidence}", "ABSTENTION");
       } else {
         // Low classification confidence - calculate based on complexity
-        $complexity = $this->estimateQueryComplexity($question);
+        $complexity = AnalyticsQueryHeuristics::estimateQueryComplexity($question);
         $this->debugLog("Query complexity: {$complexity}", "ABSTENTION");
 
         $confidence = $this->abstentionManager->evaluateConfidence(
@@ -798,10 +791,9 @@ class AnalyticsAgent
 
       $this->debugLog("--- STEP 0: Translate query for ambiguity detection ---", "TRANSLATION");
 
-      // CRITICAL FIX: Translate query to English for ambiguity detection
       // This ensures the LLM can properly detect explicit keywords in any language
       // Use a simple, fast translation that focuses on keywords
-      $queryForAmbiguity = $this->translateQueryForAmbiguity($question);
+      $queryForAmbiguity = $this->ambiguityTranslator->translate($question);
       $this->debugLog("Original query: {$question}", "TRANSLATION");
       $this->debugLog("Translated for ambiguity: {$queryForAmbiguity}", "TRANSLATION");
 
@@ -860,7 +852,7 @@ class AnalyticsAgent
           // Create SQL generator closure for AmbiguityHandler
           $sqlGenerator = function(string $modifiedQuery) use ($feedbackContext) {
             // Enrich question with feedback context
-            $enrichedQuestion = $this->enrichQuestionWithFeedback($modifiedQuery, $feedbackContext);
+            $enrichedQuestion = $this->queryEnricher->enrichWithFeedback($modifiedQuery, $feedbackContext, $this->conversationMemory);
 
             // Generate SQL using LLM
             $rawResponse = $this->chat->generateText($enrichedQuestion);
@@ -952,7 +944,7 @@ class AnalyticsAgent
         $this->updateSystemMessageForQuery($question);
 
         // Enrich question with feedback context for learning
-        $enrichedQuestion = $this->enrichQuestionWithFeedback($question, $feedbackContext);
+        $enrichedQuestion = $this->queryEnricher->enrichWithFeedback($question, $feedbackContext, $this->conversationMemory);
 
         $this->debugLog("Calling chat.generateText()...", "SQL");
         $startTime = microtime(true);
@@ -1194,168 +1186,6 @@ class AnalyticsAgent
   }
 
   /**
-   * Estimate query complexity for confidence evaluation
-   *
-
-   *
-   * @param string $question The analytics question
-   * @return float Complexity score (0.0-1.0)
-   */
-  private function estimateQueryComplexity(string $question): float
-  {
-    $complexity = 0.3; // Base complexity
-
-    // Increase for multiple questions
-    $questionCount = preg_match_all('/\?/', $question);
-    if ($questionCount > 1) {
-      $complexity += 0.2;
-    }
-
-    // Increase for aggregation keywords
-    if (preg_match('/\b(total|average|sum|count|group|aggregate)\b/i', $question)) {
-      $complexity += 0.1;
-    }
-
-    // Increase for time-based queries
-    if (preg_match('/\b(month|year|week|day|period|date|time)\b/i', $question)) {
-      $complexity += 0.1;
-    }
-
-    // Increase for comparison queries
-    if (preg_match('/\b(compare|versus|vs|difference|between)\b/i', $question)) {
-      $complexity += 0.15;
-    }
-
-    // Increase for complex joins (multiple entities)
-    $entityCount = 0;
-    $entities = ['product', 'order', 'customer', 'category', 'manufacturer', 'supplier'];
-    foreach ($entities as $entity) {
-      if (preg_match('/\b' . $entity . 's?\b/i', $question)) {
-        $entityCount++;
-      }
-    }
-    if ($entityCount > 2) {
-      $complexity += 0.1;
-    }
-
-    return min(1.0, $complexity);
-  }
-
-  /**
-   * Translate query to English for ambiguity detection
-   * Uses a lightweight, cached translation focused on keywords
-   *
-   * @param string $question Original question in any language
-   * @return string Translated question in English
-   */
-  private function translateQueryForAmbiguity(string $question): string
-  {
-    // FULL LLM MODE: Always translate using LLM, no pattern-based shortcuts
-    // This ensures consistent behavior (Pure LLM mode - no pattern matching)
-
-    // Check cache first
-    $cacheKey = 'translation_ambiguity_' . md5($question);
-    $cacheDir = CLICSHOPPING::BASE_DIR . 'Work/Cache/Rag/Translation/';
-    $cacheFile = $cacheDir . $cacheKey . '.cache';
-
-    // Ensure cache directory exists
-    if (!is_dir($cacheDir)) {
-      @mkdir($cacheDir, 0755, true);
-    }
-
-    if (file_exists($cacheFile)) {
-      $cached = file_get_contents($cacheFile);
-      if ($cached !== false) {
-        if ($this->debug) {
-          error_log("Using cached translation for ambiguity detection");
-        }
-        return $cached;
-      }
-    }
-
-    // Use SemanticAgent::translateToEnglish for actual translation
-    try {
-      $translated = SemanticAgent::translateToEnglish($question, 50);
-
-      // Extract clean translation (remove descriptive text)
-      $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translated);
-
-      // Cache the result
-      @file_put_contents($cacheFile, $cleanTranslation);
-
-      if ($this->debug) {
-        error_log("Translated and cached: {$question} -> {$cleanTranslation}");
-      }
-
-      return $cleanTranslation;
-    } catch (\Exception $e) {
-      // If translation fails, return original query
-      if ($this->debug) {
-        error_log("Translation failed: " . $e->getMessage() . ", using original query");
-      }
-      return $question;
-    }
-  }
-
-  /**
-   * Enriches the question with feedback context for learning
-   * Adds examples from previous corrections to help the LLM generate better SQL
-   *  Also injects last_entity context from ConversationMemory
-   * This fixes the bug where contextual queries like "donne moi son sku" were failing
-   * because the LLM didn't know what "son" referred to during SQL generation.
-   *
-   * @param string $question Original question
-   * @param array $feedbackContext Feedback items with corrections
-   * @return string Enriched question with learning examples and entity context
-   */
-  private function enrichQuestionWithFeedback(string $question, array $feedbackContext): string
-  {
-    // Start with feedback enrichment
-    $enrichedQuestion = $this->promptBuilder->enrichWithFeedback($question, $feedbackContext);
-    
-    // Inject last_entity context if available
-    // This provides the LLM with context about what entity was discussed previously
-    // so it can resolve pronouns like "son", "sa", "it", "its", etc.
-    if ($this->conversationMemory !== null) {
-      try {
-        $lastEntity = $this->conversationMemory->getLastEntity();
-        
-        if ($lastEntity !== null) {
-          // Check if 'name' key exists before accessing it
-          $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? 'unknown');
-          $entityType = $lastEntity['type'] ?? 'entity';
-          $entityId = $lastEntity['id'] ?? 'unknown';
-
-          DomainConfig::loadLanguageFile('rag_analytics_agent');
-
-          $array = [
-            'entityType' => $entityType,
-            'entityName' => $entityName,
-            'entityId' => $entityId
-          ];
-
-          $contextString = $this->language ->getDef('text_analytic_agent_context', $array);
-
-          // Inject context BEFORE the question so the LLM sees it first
-          $enrichedQuestion = $contextString . $enrichedQuestion;
-          
-          if ($this->debug) {
-            error_log("[AnalyticsAgent] Injected last_entity context into SQL prompt:");
-            error_log("  Entity: {$entityType} (ID: {$entityId}, Name: {$entityName})");
-          }
-        }
-      } catch (\Exception $e) {
-        // Don't fail on context injection errors - just log and continue
-        if ($this->debug) {
-          error_log("[AnalyticsAgent] Error injecting last_entity context: " . $e->getMessage());
-        }
-      }
-    }
-    
-    return $enrichedQuestion;
-  }
-  
-  /**
    * Set the conversation memory instance
    * Allows AnalyticsExecutor to inject ConversationMemory
    * This is needed to access last_entity context for contextual query resolution.
@@ -1420,33 +1250,7 @@ class AnalyticsAgent
   }
 
   /**
-   * Identifies the analytical categories of a query
-   * Matches query against predefined pattern categories
-   * Supports multiple category classification
-   *
-   * @param string $query Query to analyze
-   * @return array List of matched analytical categories
-   *               Returns empty array if no categories match
-   */
-  public function getAnalyticsCategories(string $query): array
-  {
-    $analyticsPatterns = SemanticAgent::analyticsPatterns();
-    $matchedCategories = [];
-
-    foreach ($analyticsPatterns as $category => $patterns) {
-      foreach ($patterns as $pattern) {
-        if (preg_match($pattern, $query)) {
-          $matchedCategories[] = $category;
-          break; // éviter les doublons
-        }
-      }
-    }
-
-    return array_unique($matchedCategories);
-  }
-  
-  /**
-   * 🆕 NEW METHOD: Get query cache statistics
+   * Get query cache statistics
    * Enriches statistics with calculated metrics for the dashboard
    */
   public function getQueryCacheStats(): array

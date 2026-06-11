@@ -56,7 +56,7 @@ class TimeoutResponseFormatter
   {
     // Load language definitions
     $this->language = Registry::get('Language');
-    DomainConfig::loadLanguageFile('rag_timeout_response');
+    DomainConfig::loadAgnosticLanguageFile('rag_timeout_response');
   }
 
   /**

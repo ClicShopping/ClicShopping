@@ -48,7 +48,8 @@ class ResponseProcessor
     $this->language = Registry::get('Language');
     $this->languageCode = $this->language->get('code');
 
-    DomainConfig::loadLanguageFile('rag_response_processor');    
+    DomainConfig::loadAgnosticLanguageFile('rag_response_processor');
+    DomainConfig::loadLanguageFile('rag_response_processor');
 
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent("ResponseProcessor initialized", 'info');

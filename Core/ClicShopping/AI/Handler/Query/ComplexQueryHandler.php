@@ -386,7 +386,7 @@ class ComplexQueryHandler
     {
         // Load language file in English for internal processing
         $CLICSHOPPING_Language = Registry::get('Language');
-        DomainConfig::loadLanguageFile('rag_decomposition_prompt');
+        DomainConfig::loadAgnosticLanguageFile('rag_decomposition_prompt');
         
         // Get prompt template with placeholders
         $prompt = $CLICSHOPPING_Language->getDef('text_rag_decomposition_prompt', [

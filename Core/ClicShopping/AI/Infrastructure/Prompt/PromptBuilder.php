@@ -349,7 +349,7 @@ class PromptBuilder
     $lastYearStart = $lastYear . '-01-01';
     $lastYearEnd = $lastYear . '-12-31';
 
-    DomainConfig::loadLanguageFile('rag_context_builder');
+    DomainConfig::loadAgnosticLanguageFile('rag_context_builder');
 
     $incorrectComment = ($currentMonth === 1)
       ? "-- This would query December {$currentYear}, which doesn't exist yet!\n-- This will return ZERO RESULTS because December {$currentYear} is in the future!"

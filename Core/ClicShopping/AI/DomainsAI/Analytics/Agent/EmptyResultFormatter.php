@@ -50,7 +50,7 @@ class EmptyResultFormatter
     $this->securityLogger = $securityLogger;
     $this->debug = $debug;
     $this->language = Registry::get('Language');
-    DomainConfig::loadLanguageFile('rag_empty_results');
+    DomainConfig::loadAgnosticLanguageFile('rag_empty_results');
   }
   
   /**

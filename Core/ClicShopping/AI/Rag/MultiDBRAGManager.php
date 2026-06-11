@@ -18,6 +18,7 @@ use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
+use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsQueryHeuristics;
 
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
@@ -48,6 +49,7 @@ class MultiDBRAGManager
   public mixed $db;
   public mixed $language;
   private mixed $embeddingGenerator;
+  private ?EmbeddingTableDiscovery $embeddingTableDiscovery = null;
   private array $vectorStores = [];
   private mixed $securityLogger;
   private bool $debug = false;
@@ -196,65 +198,11 @@ class MultiDBRAGManager
    */
   public function knownEmbeddingTable(bool $useCache = true): array
   {
-    // Static cache to avoid repeated database queries
-    static $cachedTables = null;
+    // Delegates to the dedicated EmbeddingTableDiscovery service (extracted concern).
+    // Lazily built so the public contract and all external callers stay unchanged.
+    $this->embeddingTableDiscovery ??= new EmbeddingTableDiscovery($this->debug, $this->securityLogger);
 
-    if ($useCache && $cachedTables !== null) {
-      return $cachedTables;
-    }
-
-    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-    $dbName = CLICSHOPPING::getConfig('db_database');
-
-    try {
-      // Try to dynamically detect all *_embedding tables from database
-      $sql = "SELECT TABLE_NAME 
-              FROM INFORMATION_SCHEMA.TABLES 
-              WHERE TABLE_SCHEMA = :dbName 
-              AND TABLE_NAME LIKE :pattern 
-              ORDER BY TABLE_NAME";
-
-      $detectedTables = DoctrineOrm::select($sql, [
-        'dbName' => $dbName,
-        'pattern' => $prefix . '%_embedding'
-      ]);
-
-      $detectedTables = array_column($detectedTables, 'TABLE_NAME');
-
-      if (!empty($detectedTables)) {
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Dynamically detected " . count($detectedTables) . " embedding tables from database",
-            'info',
-            ['tables' => $detectedTables]
-          );
-        }
-
-        $cachedTables = $detectedTables;
-        return $detectedTables;
-      }
-
-    } catch (\Exception $e) {
-      // Log error but continue with fallback
-      $this->securityLogger->logSecurityEvent(
-        "Failed to dynamically detect embedding tables: " . $e->getMessage(),
-        'warning'
-      );
-    }
-
-    // Fallback: Return empty array (no hardcoded list)
-    // The dynamic detection above handles ALL embedding tables automatically.
-    // If dynamic detection fails, it's better to return empty than use stale hardcoded list.
-    // This ensures the system adapts to new embeddings (including future parallel reads).
-    if ($this->debug) {
-      $this->securityLogger->logSecurityEvent(
-        "No embedding tables detected - returning empty array",
-        'warning'
-      );
-    }
-
-    $cachedTables = [];
-    return [];
+    return $this->embeddingTableDiscovery->discover($useCache);
   }
 
   /**
@@ -1039,7 +987,7 @@ class MultiDBRAGManager
         ];
       }
 
-      $matchedCategories = $analyticsAgent->getAnalyticsCategories($query);
+      $matchedCategories = AnalyticsQueryHeuristics::getAnalyticsCategories($query);
 
       $response = [
         'type' => 'analytics_results',

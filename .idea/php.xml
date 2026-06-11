@@ -42,7 +42,6 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/psr/http-message" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/psr/log" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/ralouphie/getallheaders" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/setasign/fpdf" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stymiee/email-validator" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache-contracts" />
@@ -59,7 +58,6 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/stopwatch" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/var-exporter" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stripe/stripe-php" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/amnuts/opcache-gui" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/composer" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/smalot/pdfparser" />
@@ -69,10 +67,12 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/openai-php/client" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/theodo-group/llphant" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/yethee/tiktoken" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpmailer/phpmailer" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-deepclone" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php80" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpmailer/phpmailer" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stripe/stripe-php" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/setasign/fpdf" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.5">
