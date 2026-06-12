@@ -31,8 +31,8 @@ spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');
 CLICSHOPPING::initialize();
 CLICSHOPPING::loadSite('ClicShoppingAdmin');
 
-// Check admin access
 AdministratorAdmin::hasUserAccess();
+
 header('Content-Type: application/json');
 
 // Fail-closed: POST only (this endpoint mutates and triggers a paid LLM call).

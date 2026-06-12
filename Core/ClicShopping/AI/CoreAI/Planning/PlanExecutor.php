@@ -588,7 +588,6 @@ class PlanExecutor
           [
             'target_site' => $context['plan_intent']['target_site'],
             'query' => $context['query'] ?? 'unknown',
-            'feature_flag' => 'ANALYTICS_OPTIONAL_WITH_TARGET_SITE'
           ]
         );
       }

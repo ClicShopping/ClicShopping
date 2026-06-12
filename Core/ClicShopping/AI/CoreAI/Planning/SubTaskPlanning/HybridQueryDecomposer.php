@@ -767,13 +767,11 @@ class HybridQueryDecomposer
                 . "QUERY TO DECOMPOSE:\n"
                 . "\"{$query}\"\n\n"
                 . "INSTRUCTIONS:\n"
-                . "1. Split the query into exactly " . count($subTypes) . " sub-queries\n"
+                . "1. Produce ONE sub-query per DISTINCT intent in the query (at least " . count($subTypes) . " — more if a type covers several separate questions)\n"
                 . "2. Each sub-query must have a 'type' and 'text' field\n"
-                . "3. Types must match the requested types: " . implode(', ', $subTypes) . "\n"
-                . "4. Preserve the original meaning and context\n"
-                . "5. Use {$domainContext['name']} terminology\n"
-                . "6. If the query is multi-intent joined by 'and', separate the metric/COUNT intent into the analytics sub-query and the policy/article intent into the semantic sub-query\n"
-                . "7. Keep sub-queries concise and focused on their intent\n\n"
+                . "3. Use ONLY these types: " . implode(', ', $subTypes) . ". The SAME type MAY repeat — two separate analytics questions (e.g. 'price of X' and 'last 3 orders') become TWO analytics sub-queries, never one merged sub-query (one analytics sub-query = one SQL result)\n"
+                . "4. Cover every requested type at least once; never merge two distinct questions into one sub-query\n"
+                . "5. Preserve the original meaning and context; use {$domainContext['name']} terminology\n\n"
                 . "OUTPUT FORMAT (JSON):\n"
                 . "[\n"
                 . "  {\"type\": \"analytics\", \"text\": \"sub-query text\"},\n"
@@ -896,10 +894,12 @@ class HybridQueryDecomposer
             return false;
         }
 
-        // Check count matches requested types
-        if (count($subQueries) !== count($requestedTypes)) {
+        // Intent-driven decomposition: a query may carry several DISTINCT intents of the SAME type
+        // (e.g. "price of X" + "last 3 orders" = two analytics sub-queries). So the count is NOT
+        // forced to equal the number of types — it must be AT LEAST one per requested type (§R).
+        if (count($subQueries) < count($requestedTypes)) {
             if ($this->debug) {
-                $this->logDebug("Validation failed: count mismatch (expected " . count($requestedTypes) . ", got " . count($subQueries) . ")");
+                $this->logDebug("Validation failed: too few sub-queries (need >= " . count($requestedTypes) . " to cover each type, got " . count($subQueries) . ")");
             }
             return false;
         }
@@ -925,6 +925,18 @@ class HybridQueryDecomposer
             if (empty(trim($subQuery['text']))) {
                 if ($this->debug) {
                     $this->logDebug("Validation failed: sub-query {$index} has empty text");
+                }
+                return false;
+            }
+        }
+
+        // Every requested type must be covered at least once — guards against the LLM dropping a
+        // component (e.g. the semantic part) while duplicating another.
+        $presentTypes = array_column($subQueries, 'type');
+        foreach ($requestedTypes as $requestedType) {
+            if (!in_array($requestedType, $presentTypes, true)) {
+                if ($this->debug) {
+                    $this->logDebug("Validation failed: requested type '{$requestedType}' not present in sub-queries");
                 }
                 return false;
             }

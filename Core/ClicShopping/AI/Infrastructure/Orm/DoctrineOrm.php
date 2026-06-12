@@ -50,6 +50,7 @@ class DoctrineOrm
   private static ?SecurityLogger $logger = null;
   private static ?array $cachedFields = null;
   private static ?array $cachedFieldsByTable = null;
+  private static ?EntityManager $entityManager = null;
 
   public function __construct()
   {
@@ -180,6 +181,11 @@ class DoctrineOrm
    */
   public static function getEntityManager(): EntityManager
   {
+    // Reuse a single EntityManager per process. Previously every call opened a brand-new
+    if (self::$entityManager !== null && self::$entityManager->isOpen()) {
+      return self::$entityManager;
+    }
+
     $orm = self::Orm();
     $connectionParams = $orm['connectionParams'];
     $config = $orm['config'];
@@ -191,8 +197,8 @@ class DoctrineOrm
       Type::addType('vector', VectorType::class);
     }
 
-    // EntityManager creation
-    return new EntityManager($connection, $config);
+    // EntityManager creation (cached for reuse)
+    return self::$entityManager = new EntityManager($connection, $config);
   }
 
   /**

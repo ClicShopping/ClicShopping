@@ -107,8 +107,10 @@ class SemanticExecutor
       $enrichedQuery = $query;
       if (isset($context['last_entity']) && !empty($context['last_entity'])) {
         $lastEntity = $context['last_entity'];
-        $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? null);
-        
+        // Only enrich with a resolved entity NAME — never the raw id. A numeric id is meaningless as
+        // a semantic-search token and pollutes the query toward unrelated product embeddings (§R).
+        $entityName = $lastEntity['name'] ?? null;
+
         if ($entityName !== null) {
           // Detect if query needs context enrichment
           $enrichedQuery = $this->enrichSemanticQuery($query, $entityName);
@@ -680,8 +682,9 @@ class SemanticExecutor
     // Detect if query contains pronouns or possessive adjectives that need entity context
     // IMPORTANT: Only English keywords - queries are translated to English before processing
     $contextualKeywords = [
-      // English pronouns and possessives
-      'it', 'its', 'this', 'that', 'these', 'those', 'the',
+      // English pronouns and possessives.
+      // NB: 'the' was removed — it is a determiner present in almost every sentence, so it falsely
+      'it', 'its', 'this', 'that', 'these', 'those',
       'him', 'her', 'them', 'his', 'their',
       // Generic contextual words (English only)
       'description', 'details', 'info', 'information',
@@ -704,7 +707,12 @@ class SemanticExecutor
       // Query doesn't need context enrichment
       return $query;
     }
-    
+
+    // Defence in depth: a bare numeric id (no resolved entity name) is noise, never a useful search token
+    if (ctype_digit(trim($entityName))) {
+      return $query;
+    }
+
     // Enrich query by prepending entity name
     // Example: "give me its description" → "iPhone 17 Pro description"
     // Example: "what are the features" → "iPhone 17 Pro features"

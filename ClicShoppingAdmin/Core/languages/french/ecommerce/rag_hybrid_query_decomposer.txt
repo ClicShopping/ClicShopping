@@ -17,11 +17,11 @@ QUERY TO DECOMPOSE:
 "{{query}}"
 
 INSTRUCTIONS:
-1. Split the query into exactly {{sub_type_count}} sub-queries
+1. Produce ONE sub-query per DISTINCT intent in the query (at least {{sub_type_count}} — more if a single type covers several separate questions)
 2. Each sub-query must have a "type" and "text" field
-3. Types must match the requested types: {{sub_types_csv}}
-4. Preserve the original meaning and context
-5. Use {{domain_name}} terminology
+3. Use ONLY these types: {{sub_types_csv}}. The SAME type MAY appear multiple times: two separate analytics questions (for example "price of X" and "last 3 orders") become TWO analytics sub-queries, never one combined sub-query (one analytics sub-query maps to a single SQL result)
+4. Cover every requested type at least once; never merge two distinct questions into a single sub-query
+5. Preserve the original meaning and context; use {{domain_name}} terminology
 
 OUTPUT FORMAT (JSON):
 [
@@ -45,6 +45,10 @@ Sub-queries: [{"type": "analytics", "text": "number of categories"}, {"type": "s
 Example 3 (E-commerce):
 Query: "total orders this month and shipping policy"
 Sub-queries: [{"type": "analytics", "text": "total orders this month"}, {"type": "semantic", "text": "shipping policy"}]
+
+Example 4 (E-commerce, several distinct intents of the same type):
+Query: "the price of the iPhone, then the last 3 orders, and 3 important clauses of the terms of sale"
+Sub-queries: [{"type": "analytics", "text": "the price of the iPhone"}, {"type": "analytics", "text": "the last 3 orders"}, {"type": "semantic", "text": "3 important clauses of the terms of sale"}]
 
 text_rag_hybrid_decomposer_extract_target_site_with_llm = TÂCHE : Extraire le site e-commerce mentionné dans la requête.
 Règles :
