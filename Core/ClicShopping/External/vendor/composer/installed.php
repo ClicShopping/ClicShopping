@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'f3b79a1bdda8de326292b4aac78b2093bb1cfbdd',
+        'reference' => '287fc39fc93d678071cbd681e10999e4127ab63f',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'f3b79a1bdda8de326292b4aac78b2093bb1cfbdd',
+            'reference' => '287fc39fc93d678071cbd681e10999e4127ab63f',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '21becf5973eb93d86cf68e3e724af0aa412e8129',
+            'reference' => '5d4f7cc7622a8e3a4d3771a9133ac6b5a228c19f',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -478,9 +478,9 @@
             'dev_requirement' => false,
         ),
         'symfony/polyfill-deepclone' => array(
-            'pretty_version' => 'v1.38.2',
-            'version' => '1.38.2.0',
-            'reference' => 'c1b95c370cb2ee4ee221f0a317f5ae5dfae9a42e',
+            'pretty_version' => 'v1.40.0',
+            'version' => '1.40.0.0',
+            'reference' => 'dca4ccba5f360070b574414dce4c1e7a559844fa',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/polyfill-deepclone',
             'aliases' => array(),

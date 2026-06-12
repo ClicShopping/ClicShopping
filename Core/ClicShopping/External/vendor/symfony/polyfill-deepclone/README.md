@@ -4,10 +4,10 @@ Symfony Polyfill / DeepClone
 This package provides a pure-PHP implementation of the functions and exception
 classes from the [deepclone extension](https://github.com/symfony/php-ext-deepclone):
 
-- `deepclone_to_array(mixed $value, ?array $allowedClasses = null): array`
+- `deepclone_to_array(mixed $value, ?array $allowed_classes = null, bool $allow_named_closures = false): array`
   — converts any serializable PHP value graph into a pure array (only scalars
   and nested arrays, no objects).
-- `deepclone_from_array(array $data, ?array $allowedClasses = null): mixed`
+- `deepclone_from_array(array $data, ?array $allowed_classes = null, bool $allow_named_closures = false): mixed`
   — rebuilds the value graph from the array, preserving object identity,
   references, cycles, and private property state.
 - `DeepClone\NotInstantiableException` and `DeepClone\ClassNotFoundException`
