@@ -1102,9 +1102,11 @@ class LlmGuardrails
 
       public function getEvaluationPromptForQuestion(string $question, string $result): string
       {
-        // Load SYSTEM prompt in English for better LLM evaluation (internal process)
-        // Note: This evaluates the response quality, not user-facing
-        $this->language->loadDefinitions('main', 'en', null, 'ClicShoppingAdmin');
+        // Internal SYSTEM prompt in English for LLM evaluation (not user-facing).
+        // Loaded from a dedicated Agents/ file so it no longer reloads the shared 'main'
+        // group (which would overwrite the application-language user-facing definitions
+        // and force the final answer into English — the FR->EN restitution bug).
+        DomainConfig::loadAgnosticLanguageFile('rag_guardrails', 'en');
         return $this->language->getDef('llm_guardrails_prompt', [
           'result' => $result,
           'question' => $question

@@ -21,6 +21,7 @@ INSTRUCTIONS:
 3. Use ONLY these types: {{sub_types_csv}}. The SAME type MAY appear multiple times: two separate analytics questions (for example "price of X" and "last 3 orders") become TWO analytics sub-queries, never one combined sub-query (one analytics sub-query maps to a single SQL result)
 4. Cover every requested type at least once; never merge two distinct questions into a single sub-query
 5. Preserve the original meaning and context; use {{domain_name}} terminology
+6. A COUNT of items to retrieve from a SINGLE document ("3 clauses", "les 3 clauses", "3 articles", "the 3 clauses of the terms / CGV / policy") is ONE semantic sub-query asking for that many items. NEVER split it into one sub-query per item, and NEVER reinterpret the count as a specific item number — "3 clauses" means THREE clauses, it does NOT mean "article 3". Correct: [{"type":"semantic","text":"3 clauses of the terms and conditions"}]. Wrong: one sub-query for "article 3", one for "article 4", one for "article 5"
 
 OUTPUT FORMAT (JSON):
 [

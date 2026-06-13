@@ -15,6 +15,7 @@ use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 use ClicShopping\AI\Infrastructure\Monitoring\QueryPerformanceMonitor;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
+use ClicShopping\AI\Infrastructure\Cache\Helper\SQLTableParser;
 
 /**
  * Class QueryExecutor
@@ -82,6 +83,32 @@ class QueryExecutor
         error_log("QueryExecutor: Executing query via DoctrineOrm...");
       }
        
+      // Schema guard (§R maillon b): never execute SQL against a non-existent table.
+      // Abstain cleanly (warning, no DB round-trip) instead of crashing.
+      $missingTables = array_values(array_filter(
+        SQLTableParser::extractTables($sqlQuery),
+        static fn(string $t): bool => !DoctrineOrm::tableExists($t)
+      ));
+      if (!empty($missingTables)) {
+        $executionTime = round((microtime(true) - $startTime) * 1000, 2);
+        $this->securityLogger->logSecurityEvent(
+          'Analytics query references unknown table(s); abstaining instead of executing: ' . implode(', ', $missingTables),
+          'warning',
+          ['query' => $sqlQuery, 'missing_tables' => $missingTables]
+        );
+
+        return [
+          'success' => false,
+          'error' => 'unknown_table',
+          'missing_tables' => $missingTables,
+          'query' => $sqlQuery,
+          'execution_time_ms' => $executionTime,
+          'data' => [],
+          'row_count' => 0,
+          'columns' => [],
+        ];
+      }
+
       $rows = DoctrineOrm::select($sqlQuery, $parameters);
       
       // Apply deduplication

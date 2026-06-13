@@ -28,6 +28,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\RegistryAI\ActorRegistry;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
+use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
 
@@ -528,7 +529,14 @@ class AnalyticsExecutor
   private function generateInterpretationFromResults(array $results, string $question): string
   {
     if (empty($results)) {
-      return "No results found for: {$question}";
+      // Standard, translated empty-results message (no hardcoded string, no "your query"
+      // placeholder) — same message the EmptyResultFormatter shows.
+      DomainConfig::loadLanguageFile('rag_error_handler', null);
+      $emptyMessage = CLICSHOPPING::getDef('text_empty_results_base');
+
+      return ($emptyMessage !== '' && $emptyMessage !== 'text_empty_results_base')
+        ? $emptyMessage
+        : 'No results found.';
     }
 
     $count = count($results);
@@ -611,7 +619,7 @@ class AnalyticsExecutor
     }
 
     $count = count($results);
-    $question = $rawResult['question'] ?? 'your query';
+    $question = $rawResult['question'] ?? '';
 
     if ($this->debugRAManager) {
       error_log("count: {$count}");
@@ -624,7 +632,14 @@ class AnalyticsExecutor
         error_log("This is the message user sees!");
         error_log(str_repeat("=", 100) . "\n");
       }
-      return "No results found for: {$question}";
+      // Standard, translated empty-results message (no hardcoded string, no "your query"
+      // placeholder) — same message the EmptyResultFormatter shows.
+      DomainConfig::loadLanguageFile('rag_error_handler', null);
+      $emptyMessage = CLICSHOPPING::getDef('text_empty_results_base');
+
+      return ($emptyMessage !== '' && $emptyMessage !== 'text_empty_results_base')
+        ? $emptyMessage
+        : 'No results found.';
     }
 
     if ($this->debugRAManager) {
@@ -633,11 +648,11 @@ class AnalyticsExecutor
     }
     // Single result
     if ($count === 1) {
-      return "1 result found for: {$question}";
+      return $question !== '' ? "1 result found for: {$question}" : '1 result found.';
     }
 
     // Multiple results - try to add more context
-    $interpretation = "{$count} results found for: {$question}";
+    $interpretation = $question !== '' ? "{$count} results found for: {$question}" : "{$count} results found.";
 
     // Try to add a summary of the first result
     if (!empty($results[0]) && is_array($results[0])) {

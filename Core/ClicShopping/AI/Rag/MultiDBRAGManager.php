@@ -19,6 +19,7 @@ use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsQueryHeuristics;
+use ClicShopping\AI\Config\DomainConfig;
 
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
@@ -1123,8 +1124,10 @@ class MultiDBRAGManager
 
       $synthesisPrompt .= "Answer:";
 
-      // 🔥 CRITICAL FIX: Add language instruction with anti-hallucination rules
-      // This forces the LLM to respond in the user's language and prevents hallucination
+      // Restitution language instruction — loaded from the agnostic Agents/ layer in the
+      // APPLICATION language (null), so it is never overwritten by the internal English
+      // prompt loads (guardrails / SQL-error analysis) that previously reloaded 'main' in EN.
+      DomainConfig::loadAgnosticLanguageFile('rag_language', null);
       $languageInstruction = CLICSHOPPING::getDef('text_rag_language_instruction');
       $synthesisPrompt .= "\n\n" . $languageInstruction;
 

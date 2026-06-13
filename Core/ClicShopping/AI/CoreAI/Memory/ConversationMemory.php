@@ -23,6 +23,7 @@ use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ShortTermMemoryManager;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\LongTermMemoryManager;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ContextResolver;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\EntityTracker;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
 use ClicShopping\AI\Infrastructure\Metrics\MemoryStatistics;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\FeedbackManager;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
@@ -456,28 +457,35 @@ class ConversationMemory
       if ($this->debug) {
         error_log("[ConversationMemory] Last entity retrieved: " . json_encode($lastEntity));
       }  
-      // If we have a last entity, provide it as context to the LLM
+      // If we have a last entity, perform REAL agentic resolution by delegating to the
+      // shared ReferenceResolver (single source of truth, also used by the compound-query
+      // SemanticExecutor). It rewrites the query into a self-contained one ONLY when the
+      // query actually references the entity (pronoun / implicit follow-up); 
+      
       if ($lastEntity !== null) {
+        $resolution = (new ReferenceResolver($this->debug))->resolve($query, $lastEntity);
+        $referencesEntity = (bool)($resolution['references_entity'] ?? false);
+        $resolvedQuery = (string)($resolution['resolved_query'] ?? $query);
+
         if ($this->debug) {
           $this->securityLogger->logSecurityEvent(
-            "Providing last entity context to LLM: {$lastEntity['type']} (ID: {$lastEntity['id']})",
+            "ReferenceResolver for {$lastEntity['type']} (ID: {$lastEntity['id']}): "
+            . ($referencesEntity ? "rewrote '{$query}' -> '{$resolvedQuery}'" : "left query untouched"),
             'info'
           );
+          error_log("[ConversationMemory] ReferenceResolver references=" . ($referencesEntity ? 'true' : 'false') . ", resolved='{$resolvedQuery}'");
         }
 
-        if ($this->debug) {  
-          error_log("[ConversationMemory] Returning context with last entity: ID={$lastEntity['id']}, Type={$lastEntity['type']}");
-        }   
-	     
         $this->memoryStats->recordOperation('references_resolved', true, microtime(true) - $startTime);
-        
+
         return [
-          'resolved_query' => $query,
+          'resolved_query' => $resolvedQuery,
           'original_query' => $query,
-          'has_references' => true, // Mark as having context available
-          'is_implicit_context' => true,
+          // Honest now: true only when the query actually referenced the entity and was rewritten.
+          'has_references' => $referencesEntity,
+          'is_implicit_context' => false,
           'context_used' => null,
-          'last_entity' => $lastEntity, // Provide to LLM for intelligent context resolution
+          'last_entity' => $lastEntity,
         ];
       }
       

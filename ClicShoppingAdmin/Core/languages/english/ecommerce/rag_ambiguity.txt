@@ -21,6 +21,7 @@ A NUMBER followed by "last"/"past"/"previous"/"derniers"/"dernières" WITHOUT a 
     * "the last 12", "over the past 6", "for the previous 3" → AMBIGUOUS (12/6/3 of WHAT? days? weeks? months? years?)
     * "les 12 derniers", "sur les 6 dernières", "les 3 derniers" → AMBIGUOUS (12/6/3 quoi ? jours ? semaines ? mois ? années ?)
 By contrast, when the unit IS present the reference is EXPLICIT and NOT ambiguous: "last 12 months", "last 30 days", "les 12 derniers mois", "les 30 derniers jours".
+EQUALLY NOT ambiguous — and NEVER temporal_unit_missing: when the number is immediately followed by a COUNTABLE RECORD/ENTITY noun (orders, customers, products, invoices, categories, manufacturers, reviews ; commandes, clients, produits, factures, catégories). "the last 3 orders" / "les 3 dernières commandes" means the 3 MOST RECENT records of that entity (sort by date or id DESC, LIMIT N) — set is_ambiguous false and "recommendation": "proceed", do NOT clarify. The unit is only "missing" when NO countable noun follows the number.
 For temporal_unit_missing set "recommendation": "clarify" and provide interpretations naming the plausible units (months / days / years). DO NOT silently default the unit — the user must confirm which period unit they mean.
 
 **NEW CRITICAL RULE - TEMPORAL PERIOD SCOPE AMBIGUITY**:

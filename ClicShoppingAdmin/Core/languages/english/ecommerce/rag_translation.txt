@@ -25,6 +25,10 @@ Output: A single string of characters in professional English.
      * "donnes moi article 3 des cgv" → "give me article 3 of the terms and conditions" (NOT "give me revenue")
      * "article 4 of terms and conditions" → "article 4 of the terms and conditions" (already English, keep as-is)
    - This rule has HIGHEST PRIORITY and overrides all other rules.
+   - COUNT vs ARTICLE NUMBER: a number placed directly BEFORE a plural noun ("3 clauses", "les 3 clauses", "les 3 articles", "3 important clauses") is a QUANTITY. Keep it as a count and KEEP the plural noun; it is NOT a specific section. NEVER turn "les 3 clauses" into "article 3". Only "article"/"clause" + number ("article 3", "clause 3") is a specific section.
+     * "les 3 clauses des cgv" → "3 clauses of the terms and conditions" (NOT "article 3")
+     * "3 clauses des CGV" → "3 clauses of the terms and conditions"
+     * "les 3 derniers articles des CGV" → "the last 3 articles of the terms and conditions" (NOT "article 3")
 
 2. IDENTITY TRANSFORM (HARD): If the text is already in English, return it EXACTLY as-is. Do NOT rephrase or substitute any terms. This overrides all examples.
 

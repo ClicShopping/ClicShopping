@@ -13,6 +13,7 @@ namespace ClicShopping\AI\Rag;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
+use ClicShopping\AI\CoreAI\Memory\EntityTypeRegistry;
 
 /**
  * EmbeddingTableDiscovery - dynamic discovery of *_embedding tables from the database schema.
@@ -66,6 +67,14 @@ class EmbeddingTableDiscovery
       ]);
 
       $detectedTables = array_column($detectedTables, 'TABLE_NAME');
+
+      // Exclude internal/system RAG embedding tables (conversation memory, correction patterns,
+      // web cache, feedback): they are NOT knowledge-base documents and must never surface as
+      // document-search "sources" (they polluted results and triggered)
+      $detectedTables = array_values(array_filter(
+        $detectedTables,
+        static fn(string $t): bool => !EntityTypeRegistry::isSystemTable($t)
+      ));
 
       if (!empty($detectedTables)) {
         if ($this->debug && $this->securityLogger !== null) {

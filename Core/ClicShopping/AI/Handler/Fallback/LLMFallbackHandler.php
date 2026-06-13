@@ -17,6 +17,7 @@ namespace ClicShopping\AI\Handler\Fallback;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\AI\Config\DomainConfig;
 
 /**
  * LLMFallbackHandler Class
@@ -167,8 +168,10 @@ class LLMFallbackHandler
 
     $prompt .= "Answer:";
 
-    // 🔥 CRITICAL FIX: Use LLM fallback instruction (allows general knowledge)
-    // NOT the standard RAG instruction (which forbids general knowledge)
+    // LLM fallback instruction (allows general knowledge), loaded from the agnostic
+    // Agents/ layer in the APPLICATION language (null) so it stays consistent with the
+    // app language regardless of internal English prompt loads. See Agents/rag_language.txt.
+    DomainConfig::loadAgnosticLanguageFile('rag_language', null);
     $languageInstruction = CLICSHOPPING::getDef('text_rag_llm_fallback_instruction');
     $prompt .= "\n\n" . $languageInstruction;
 

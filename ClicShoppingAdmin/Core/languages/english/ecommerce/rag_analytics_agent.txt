@@ -108,18 +108,35 @@ WHERE o.orders_status != 4
 - "by day" / "list by day" → GROUP BY DAY with last 30 days limit
 - "by week" / "list by week" → GROUP BY WEEK with last 12 weeks limit
 
+**REVENUE RULE (MANDATORY)**: revenue is `SUM(ot.value)` where `ot` is `clic_orders_total`. You MUST
+ALWAYS define `ot` with the join — `FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'`.
+NEVER write `ot.value` (or any `ot.` column) without that JOIN, or the query fails with "Unknown table 'ot'".
+Every example below is COMPLETE — copy the full FROM/JOIN, never abbreviate it as "FROM ...".
+
+**ORDER STATUS — two INDEPENDENT, CATEGORICAL columns (NEVER use >= or <=, the numbers are not ordered)**:
+- `orders_status` (fulfilment): 1=Pending, 2=Processing, 3=Delivered, 4=Cancelled. To exclude cancelled use `orders_status != 4`. "delivered/livrée" = `orders_status = 3`. NEVER write `orders_status >= 3` (it wrongly includes Cancelled=4 and breaks if new statuses are added).
+- `orders_status_invoice` (billing — INDEPENDENT of orders_status, the two are NOT synchronised): 1=Order (NOT yet invoiced), 2=Invoice/Facture, 3=Cancelled, 4=Avoir/credit note (used for the PDF bill). An INVOICED / "facturée" order = `orders_status_invoice = 2`. NEVER infer "invoiced/facturée" from orders_status.
+  ⚠️ For "facturée / invoiced" use ONLY `orders_status_invoice = 2`. NEVER use the column `erp_invoice` (it is an unused ERP-integration flag, always 0 → returns no rows). NEVER use `orders_status` for "invoiced".
+- Examples:
+  * "commandes facturées" / "invoiced orders" → SELECT o.orders_id, o.customers_name, o.date_purchased FROM clic_orders o WHERE o.orders_status_invoice = 2
+  * "évolution des commandes facturées" → SELECT DATE(o.date_purchased) AS date, COUNT(o.orders_id) AS invoiced FROM clic_orders o WHERE o.orders_status_invoice = 2 GROUP BY DATE(o.date_purchased) ORDER BY date ASC
+
 **EXAMPLES**:
 Query: "monthly revenue"
-✅ CORRECT: SELECT SUM(ot.value) FROM ... WHERE MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())
+✅ CORRECT: SELECT SUM(ot.value) AS revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND YEAR(o.date_purchased) = YEAR(CURDATE()) AND MONTH(o.date_purchased) = MONTH(CURDATE())
 (Returns revenue for CURRENT MONTH only)
 
 Query: "yearly revenue" / "chiffre d'affaires annuel"
-✅ CORRECT: SELECT SUM(ot.value) FROM ... WHERE YEAR(date) = YEAR(CURDATE())
+✅ CORRECT: SELECT SUM(ot.value) AS revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND YEAR(o.date_purchased) = YEAR(CURDATE())
 (Returns revenue for CURRENT YEAR only - 2026)
 
 Query: "revenue by month"
-✅ CORRECT: SELECT MONTH(date), SUM(ot.value) FROM ... WHERE date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY MONTH(date)
+✅ CORRECT: SELECT MONTH(o.date_purchased) AS month, SUM(ot.value) AS revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY MONTH(o.date_purchased)
 (Returns breakdown by month for last 12 months)
+
+Query: "revenue this year vs last year" / "chiffre d'affaires de cette année et de l'an dernier"
+✅ CORRECT: SELECT YEAR(o.date_purchased) AS year, SUM(ot.value) AS revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND YEAR(o.date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(o.date_purchased)
+(One row per year — both years in a single grouped query, NOT two separate `ot` references)
 
 **OVERRIDE KEYWORDS** (no time limit):
 - "all time" / "all data" → NO date filter
@@ -715,6 +732,9 @@ RETURNS:
 
 
 text_sql_generation_rules = SQL GENERATION RULES:
+
+🚫 EXCLUDED COLUMNS — NEVER reference these in any SQL, even though they appear in the schema (unused / not connected). Maintain this list here:
+- `erp_invoice` : ERP-integration flag — NO ERP is connected, so it is ALWAYS 0 (filtering on it returns zero rows). For "invoiced / facturée" orders use `orders_status_invoice = 2` instead; NEVER use `erp_invoice`.
 
 1. Always use full table prefixes (e.g., clic_products not products)
 2. Add appropriate joins for related tables
@@ -1434,12 +1454,13 @@ REVENUE CALCULATION RULES:
    - This includes all valid orders: Pending (1), Processing (2), Delivered (3), and other statuses (5+)
    - Rationale: All non-cancelled orders represent valid business transactions
 
-2. ALTERNATIVE (if user specifies): WHERE o.orders_status >= 3 (only completed orders)
+2. ALTERNATIVE (if user specifies): WHERE o.orders_status = 3 (only delivered/completed orders)
    - Use ONLY when user explicitly asks for "completed orders" or "delivered orders"
+   - orders_status is CATEGORICAL: use `= 3` for delivered, NEVER `>= 3` (that would also count Cancelled=4)
 
 3. ALWAYS EXPLAIN: In your analysis, ALWAYS mention which order statuses are included
    - Example: "This calculation includes all orders except cancelled ones (status != 4)"
-   - Example: "This calculation includes only delivered orders (status >= 3)"
+   - Example: "This calculation includes only delivered orders (status = 3)"
 
 4. Use orders_total for total revenue: SELECT SUM(o.orders_total)
 5. Use orders_products for product revenue: SELECT SUM(op.final_price * op.products_quantity)
@@ -1456,8 +1477,8 @@ Analysis note: "Includes all orders except cancelled ones"
 ✅ CORRECT (Completed only): 
 SELECT SUM(ot.value) FROM clic_orders o 
 JOIN clic_orders_total ot ON o.orders_id = ot.orders_id 
-WHERE o.orders_status >= 3 AND ot.class = 'ST'
-Analysis note: "Includes only delivered orders (status >= 3)"
+WHERE o.orders_status = 3 AND ot.class = 'ST'
+Analysis note: "Includes only delivered orders (status = 3)"
 
 ❌ WRONG: SELECT SUM(ot.value) FROM clic_orders_total ot (missing orders_status filter!)
 
@@ -1538,7 +1559,7 @@ FROM (
         SUM(ot.value) AS revenue
     FROM clic_orders o
     JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
-    WHERE o.orders_status >= 3
+    WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
 ) AS quarterly_data
@@ -1604,7 +1625,7 @@ FROM (
         SUM(ot.value) AS revenue
     FROM clic_orders o
     JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
-    WHERE o.orders_status >= 3
+    WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
     GROUP BY YEAR(o.date_purchased), MONTH(o.date_purchased)
 ) AS monthly_data
@@ -1651,7 +1672,7 @@ FROM (
         SUM(ot.value) AS revenue
     FROM clic_orders o
     JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
-    WHERE o.orders_status >= 3
+    WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
 ) AS quarterly_data
@@ -1698,7 +1719,7 @@ FROM (
         SUM(ot.value) AS revenue
     FROM clic_orders o
     JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
-    WHERE o.orders_status >= 3
+    WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
 ) AS quarterly_data
@@ -1742,7 +1763,7 @@ FROM (
         SUM(ot.value) AS revenue
     FROM clic_orders o
     JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
-    WHERE o.orders_status >= 3
+    WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
 ) AS quarterly_data

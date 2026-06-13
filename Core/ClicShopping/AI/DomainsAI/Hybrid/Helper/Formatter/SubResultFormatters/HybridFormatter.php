@@ -85,14 +85,27 @@ class HybridFormatter extends AbstractFormatter
     // Instead of just showing text_response, render actual tables and structured data
     
     // Display analytics component with table
-    $hasAnalyticsComponent = isset($results['analytics_component']) && is_array($results['analytics_component']);
+    // Maillon C: render ALL analytics sub-queries (e.g. price + last 3 orders), not just the first.
+    // Falls back to the singular analytics_component for backward compatibility.
+    $analyticsComponents = $results['analytics_components']
+      ?? ((isset($results['analytics_component']) && is_array($results['analytics_component']))
+          ? [$results['analytics_component']]
+          : []);
+    $hasAnalyticsComponent = !empty($analyticsComponents);
     $hasSemanticComponent = isset($results['semantic_component']) && is_array($results['semantic_component']);
 
-    if ($hasAnalyticsComponent) {
-      $analyticsComp = $results['analytics_component'];
+    foreach ($analyticsComponents as $analyticsComp) {
+      if (!is_array($analyticsComp)) {
+        continue;
+      }
       
       $output .= "<div class='mt-4'>";
       $output .= "<h5>📊 " . htmlspecialchars($this->language->getDef('analytics_results_title')) . "</h5>";
+
+      $analyticsInterpretation = trim((string)($analyticsComp['interpretation'] ?? ''));
+      if ($analyticsInterpretation !== '') {
+        $output .= "<div class='analytics-interpretation mb-3'>" . nl2br(htmlspecialchars($analyticsInterpretation)) . "</div>";
+      }
 
       // SQL Query (always visible)
       if (!empty($analyticsComp['sql_query'])) {

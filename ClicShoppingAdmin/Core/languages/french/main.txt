@@ -498,28 +498,8 @@ Texte : {{document_text}}
 
 
 
-text_rag_language_instruction = IMPORTANT: Vous DEVEZ répondre en français uniquement. N'utilisez aucune autre langue dans votre réponse.
-INSTRUCTIONS CRITIQUES:
-    1. Fournissez une réponse claire et concise basée UNIQUEMENT sur les informations fournies ci-dessus.
-    2. NE PAS inventer, supposer ou ajouter des informations qui ne sont pas explicitement indiquées dans les informations fournies.
-    3. Si les informations ne répondent pas complètement à la question, indiquez clairement quelles informations manquent.
-    4. Si vous ne pouvez pas répondre sur la base des informations fournies, dites: 'Je n'ai pas assez d'informations dans ma base de connaissances pour répondre à cette question.'
-    5. NE JAMAIS faire de suppositions ou utiliser des connaissances générales - utilisez uniquement les informations fournies ci-dessus.
-EXIGENCES DE CITATION DES SOURCES:
-    6. Vous DEVEZ citer le document source pour chaque affirmation que vous faites en utilisant le nom EXACT du document indiqué dans le contexte.
-    7. Utilisez le format: 'Selon [nom exact du document], ...' ou 'D'après [nom exact du document], ...'
-    8. NE PAS utiliser de références génériques comme 'Document 1' ou 'Document 2' - utilisez le nom réel du document indiqué dans l'en-tête '--- Nom du Document ---'.
-    9. Si aucune source ne peut être citée pour une affirmation, NE FAITES PAS cette affirmation.
-    10. Chaque déclaration factuelle doit référencer son document source par son nom réel.
 
 
-text_rag_llm_fallback_instruction = IMPORTANT: Vous DEVEZ répondre en français uniquement. N'utilisez aucune autre langue dans votre réponse.
-INSTRUCTIONS:
-    1. Répondez à la question en utilisant vos connaissances générales et vos données d'entraînement.
-    2. Fournissez une réponse claire, concise et précise.
-    3. Si vous n'êtes pas certain d'une partie de la réponse, indiquez votre niveau de confiance.
-    4. N'inventez pas d'informations - si vous ne savez vraiment pas, dites-le.
-    5. Gardez votre réponse ciblée et pertinente à la question posée.
 
 
 text_rag_answer_question_not_found = Je n'ai pas trouvé d'informations spécifiques pour répondre à votre question. Veuillez reformuler ou poser une autre question.
@@ -560,31 +540,6 @@ llm_guardrails_prompt_accuracy = Vérifier l’exactitude métier.
 llm_guardrails_prompt_completeness = Ajouter des détails.
 llm_guardrails_prompt_clarity = Clarifier la rédaction.
 
-llm_guardrails_prompt = En tant qu'expert en analyse BI e-commerce, évaluez la réponse suivante selon ces critères:
-QUESTION: {{question}}
-RÉPONSE: {{result}}
-
-Critères d'évaluation (notez de 1 à 5):
-1. EXACTITUDE: Les données et métriques sont-elles correctes?
-2. PERTINENCE: La réponse répond-elle à la question posée?
-3. COMPLETUDE: Toutes les informations nécessaires sont-elles présentes?
-4. CLARTÉ: La réponse est-elle claire et compréhensible?
-5. FIABILITÉ: Y a-t-il des signes d'hallucination ou d'erreur?
-
-Répondez au format JSON:
-{
-    'scores': {
-        'éxactitude': X,
-        'pertinence': X,
-        'complétude': X,
-        'clarté': X,
-        'fiabilité': X
-    },
-
-    'problèmes_détectés': ['liste des problèmes'],
-    'recommandations': ['liste des améliorations'],
-    'niveau_confiance': 'élevé/moyen/faible'
-}
 
 llm_guardrails_accuracy = Exactitude
 llm_guardrails_relevance = Pertinence
@@ -697,7 +652,6 @@ text_query_too_ambiguous = Votre requête est trop ambiguë. Veuillez être plus
 text_rag_insufficient_information = Je n'ai pas suffisamment d'informations fiables pour répondre à cette question avec précision. Les informations disponibles dans ma base de connaissances sont insuffisantes ou pas directement pertinentes à votre requête.
 text_rag_source_insufficient_information = Informations Insuffisantes - Réponse rejetée en raison d'un score de fiabilité faible
 
-text_analyze_sql_error = Analyser l'erreur SQL: {{error}} pour la requête: {{query}}
 
 text_orchestrator_no_business_operation = Je suis désolé(e), mais cette question n'est pas liée aux opérations commerciales.
 text_orchestrator_no_business_domain = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions concernant {{entity_list}}, les revenus, l'analyse et les opérations commerciales.

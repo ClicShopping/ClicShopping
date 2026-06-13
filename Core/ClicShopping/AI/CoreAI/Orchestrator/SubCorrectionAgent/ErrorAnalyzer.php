@@ -11,6 +11,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\AI\Config\DomainConfig;
 
 /**
  * ErrorAnalyzer Class
@@ -164,9 +165,12 @@ class ErrorAnalyzer
    */
   private function analyzErrorWithLLM(string $errorMessage, string $query): array
   {
-    // Load SYSTEM prompt in English for better LLM performance (internal analysis)
-    $this->language->loadDefinitions('main', 'en', null, 'ClicShoppingAdmin');
-    
+    // Internal SYSTEM prompt in English for better LLM performance (internal analysis).
+    // Loaded from a dedicated Agents/ file so it no longer reloads the shared 'main' group
+    // (which would overwrite the application-language user-facing definitions and force
+    // the final answer into English — the FR->EN restitution bug).
+    DomainConfig::loadAgnosticLanguageFile('rag_error_analysis', 'en');
+
     $prompt = $this->language->getDef('text_analyze_sql_error', [
       'error' => $errorMessage,
       'query' => $query

@@ -143,6 +143,12 @@ class ResultInterpreter
 
     $prompt = $this->language->getDef('text_interpret_results', $array);
 
+    // The interpretation prompt above is English (internal), but the restitution must be
+    // returned in the APPLICATION language (null). Loaded from the agnostic Agents/ layer
+    // so it stays consistent with the app language. See Agents/rag_language.txt.
+    DomainConfig::loadAgnosticLanguageFile('rag_language', null);
+    $prompt .= "\n\n" . $this->language->getDef('text_rag_language_instruction');
+
     if ($this->debug) {
       error_log("ResultInterpreter: Using English prompt for interpretation");
       error_log("Prompt length: " . \strlen($prompt) . " chars");

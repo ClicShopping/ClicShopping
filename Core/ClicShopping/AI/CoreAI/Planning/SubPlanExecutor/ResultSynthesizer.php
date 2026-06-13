@@ -1112,82 +1112,70 @@ class ResultSynthesizer
       'semantic_component' => null,
     ];
 
-    // Process analytics results
+    // Process analytics results — aggregate ALL analytics sub-queries (not just the first),
+    // so a hybrid query like "price + last 3 orders" renders BOTH tables (§R maillon C).
     if ($hasAnalyticsStep) {
-      $firstAnalytics = $analyticsResults[0];
+      $combined['analytics_components'] = [];
 
-      $analyticsRows = $firstAnalytics['results'] ?? [];
+      foreach ($analyticsResults as $analytics) {
+        $analyticsRows = $analytics['results'] ?? [];
 
-      // Extract analytics data
-      $combined['analytics_component'] = [
-        'type' => 'analytics_response',
-        'interpretation' => $firstAnalytics['interpretation'] ?? '',
-        'results' => $analyticsRows,  // ALWAYS present, even if empty
-        'sql_query' => $firstAnalytics['sql_query'] ?? '',
-        'question' => $firstAnalytics['question'] ?? '',
-      ];
-
-      if (!empty($analyticsRows)) {
-        // Extract column definitions from first result
-        $columns = [];
-        if (is_array($analyticsRows[0])) {
-          $columns = array_keys($analyticsRows[0]);
-        }
-
-        $combined['analytics_component']['table_format'] = [
-          'enabled' => true,
-          'columns' => $columns,
-          'row_count' => count($analyticsRows),
-          'display_type' => 'table',
+        $component = [
+          'type' => 'analytics_response',
+          'interpretation' => $analytics['interpretation'] ?? '',
+          'results' => $analyticsRows,  // ALWAYS present, even if empty
+          'sql_query' => $analytics['sql_query'] ?? '',
+          'question' => $analytics['question'] ?? '',
         ];
 
-        if ($this->debug) {
-          $this->logger->logSecurityEvent(
-            "Table display enabled for analytics results",
-            'info',
-            [
-              'row_count' => count($analyticsResults),
-              'column_count' => count($columns),
-              'columns' => $columns,
-              'display_type' => 'table',
-            ]
-          );
+        if (!empty($analyticsRows)) {
+          $columns = is_array($analyticsRows[0]) ? array_keys($analyticsRows[0]) : [];
+          $component['table_format'] = [
+            'enabled' => true,
+            'columns' => $columns,
+            'row_count' => count($analyticsRows),
+            'display_type' => 'table',
+          ];
+          // Ensure data field contains structured table data from every analytics sub-query
+          $combined['data'] = array_merge($combined['data'], $analyticsRows);
+        } else {
+          $component['table_format'] = [
+            'enabled' => false,
+            'columns' => [],
+            'row_count' => 0,
+            'display_type' => 'none',
+          ];
         }
-      } else {
-        // Empty results - still add metadata but disabled
-        $combined['analytics_component']['table_format'] = [
-          'enabled' => false,
-          'columns' => [],
-          'row_count' => 0,
-          'display_type' => 'none',
-        ];
 
-        if ($this->debug) {
-          $this->logger->logSecurityEvent(
-            "Table display disabled - no analytics results",
-            'info'
-          );
+        $combined['analytics_components'][] = $component;
+
+        // Preserve analytics source attribution (one per sub-query)
+        if (isset($analytics['source_attribution'])) {
+          $combined['source_attributions'][] = [
+            'component' => 'analytics',
+            'attribution' => $analytics['source_attribution'],
+          ];
+        }
+
+        // Concatenate each analytics interpretation into the text response
+        $interp = $analytics['interpretation'] ?? ($analytics['text_response'] ?? '');
+        if (!empty($interp)) {
+          if (!empty($combined['text_response'])) {
+            $combined['text_response'] .= "\n\n";
+          }
+          $combined['text_response'] .= $interp;
         }
       }
 
-      // Preserve analytics source attribution
-      if (isset($firstAnalytics['source_attribution'])) {
-        $combined['source_attributions'][] = [
-          'component' => 'analytics',
-          'attribution' => $firstAnalytics['source_attribution'],
-        ];
-      }
+      // Backward compatibility: expose the first analytics as analytics_component (singular).
+      // The loop above runs at least once ($hasAnalyticsStep), so offset 0 always exists.
+      $combined['analytics_component'] = $combined['analytics_components'][0];
 
-      // Ensure data field contains structured table data
-      if (!empty($analyticsRows)) {
-        $combined['data'] = array_merge($combined['data'], $analyticsRows);
-      }
-
-      // Add analytics interpretation to text response
-      if (!empty($firstAnalytics['interpretation'])) {
-        $combined['text_response'] .= $firstAnalytics['interpretation'];
-      } elseif (!empty($firstAnalytics['text_response'])) {
-        $combined['text_response'] .= $firstAnalytics['text_response'];
+      if ($this->debug) {
+        $this->logger->logSecurityEvent(
+          "Aggregated " . count($combined['analytics_components']) . " analytics component(s)",
+          'info'
+        );
       }
     }
 

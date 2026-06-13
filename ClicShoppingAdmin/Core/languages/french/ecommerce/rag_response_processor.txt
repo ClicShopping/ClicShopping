@@ -1,1 +1,0 @@
-error_sql_suggestion_2 = Exemple : "Quelles sont les ventes d'aujourd'hui ?"

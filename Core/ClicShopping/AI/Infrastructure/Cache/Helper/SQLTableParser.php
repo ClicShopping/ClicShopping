@@ -82,8 +82,8 @@ class SQLTableParser
       $tables[] = $matches[1];
     }
 
-    // Pattern: FROM table1, table2, table3
-    if (preg_match('/\bFROM\s+([^WHERE|JOIN|GROUP|ORDER|LIMIT|;]+)/i', $query, $matches)) {
+    // Pattern: FROM table1, table2, table3 — capture everything after FROM up to the next SQL
+    if (preg_match('/\bFROM\s+(.+?)(?:\s+\b(?:WHERE|INNER|LEFT|RIGHT|FULL|CROSS|JOIN|GROUP|ORDER|HAVING|LIMIT|UNION)\b|\s*;|\s*$)/is', $query, $matches)) {
       $tableList = $matches[1];
       // Split by comma and extract table names
       $parts = explode(',', $tableList);

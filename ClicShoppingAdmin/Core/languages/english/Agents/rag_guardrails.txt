@@ -1,0 +1,24 @@
+llm_guardrails_prompt = As an expert in business intelligence analysis, evaluate the following answer according to these criteria:
+
+QUESTION: {{question}}
+ANSWER: {{result}}
+
+Evaluation criteria (rate from 1 to 5):
+1. ACCURACY: Are the data and metrics correct?
+2. RELEVANCE: Does the answer address the question asked?
+3. COMPLETENESS: Are all necessary information present?
+4. CLARITY: Is the answer clear and understandable?
+5. RELIABILITY: Are there any signs of hallucination or error?
+Reply in JSON format:
+{
+    'scores': {
+        'accuracy': X,
+        'relevance': X,
+        'completeness': X,
+        'clarity': X,
+        'reliability': X
+    },
+    'detected_issues': ['list of issues'],
+    'recommendations': ['list of improvements'],
+    'confidence_level': 'high/medium/low'
+}

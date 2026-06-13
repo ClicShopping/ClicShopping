@@ -158,7 +158,7 @@ class EntityTypeRegistry
 
         // Filter out system tables
         foreach ($allTables as $tableName) {
-          if (!$this->isSystemTable($tableName)) {
+          if (!self::isSystemTable($tableName)) {
             $tables[] = $tableName;
           }
         }
@@ -192,13 +192,15 @@ class EntityTypeRegistry
    * @param string $tableName Table name
    * @return bool True if system table
    */
-  private function isSystemTable(string $tableName): bool
+  public static function isSystemTable(string $tableName): bool
   {
+    // Internal RAG embedding tables (NOT knowledge-base documents): excluded from the document
+    // search. Matched as substrings of the FULL table name. Canonical tables are rag_-prefixed
     $systemTables = [
-      'rag_conversation_memory_embedding',
-      'rag_correction_patterns_embedding',
-      'rag_web_cache_embedding',
-      'rag_feedback_embedding',
+      'rag_conversation_memory_embedding',  // chat history (own dedicated store)
+      'rag_correction_pattern',             // SQL correction patterns (own dedicated store)
+      'rag_web_cache_embedding',            // web search result cache
+      'rag_schema_embedding',               // DB schema embeddings for NL->SQL generation
     ];
 
     foreach ($systemTables as $systemTable) {
@@ -230,7 +232,7 @@ class EntityTypeRegistry
         // Get the table name from the result (key varies by database)
         $tableName = reset($row); // Get first value from array
         // Exclude system tables
-        if (!$this->isSystemTable($tableName)) {
+        if (!self::isSystemTable($tableName)) {
           $tables[] = $tableName;
         }
       }
@@ -298,7 +300,7 @@ class EntityTypeRegistry
       // Filter out system tables
       $filteredTables = [];
       foreach ($knownTables as $tableName) {
-        if (!$this->isSystemTable($tableName)) {
+        if (!self::isSystemTable($tableName)) {
           $filteredTables[] = $tableName;
         }
       }

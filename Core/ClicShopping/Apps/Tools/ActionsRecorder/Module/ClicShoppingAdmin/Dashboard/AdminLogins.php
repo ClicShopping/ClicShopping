@@ -41,7 +41,7 @@ class AdminLogins extends \ClicShopping\OM\Modules\AdminDashboardAbstract
     $this->description = $this->app->getDef('module_admin_dashboard_admin_logins_app_description');
 
     if (\defined('MODULE_ADMIN_DASHBOARD_ADMIN_LOGINS_APP_STATUS')) {
-      $this->sort_order = MODULE_ADMIN_DASHBOARD_ADMIN_LOGINS_APP_SORT_ORDER;
+      $this->sort_order = MODULE_ADMIN_DASHBOARD_ADMIN_LOGINS_APP_SORT_ORDER ?? 0;
       $this->enabled = (MODULE_ADMIN_DASHBOARD_ADMIN_LOGINS_APP_STATUS == 'True');
     }
   }

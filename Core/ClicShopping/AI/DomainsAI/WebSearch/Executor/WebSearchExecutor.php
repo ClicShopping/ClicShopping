@@ -440,6 +440,7 @@ class WebSearchExecutor
         '', 'shopping_results' => 2,
         default                => 1,
       };
+      
       usort($merged['shopping_results'], static function (array $a, array $b) use ($sourcePriority): int {
         $pa = $sourcePriority($a['data_source'] ?? '');
         $pb = $sourcePriority($b['data_source'] ?? '');

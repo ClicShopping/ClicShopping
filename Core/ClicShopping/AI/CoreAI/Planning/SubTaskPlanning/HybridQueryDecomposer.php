@@ -264,8 +264,9 @@ class HybridQueryDecomposer
         }
 
         try {
-            // Get sub_types from intent
-            $subTypes = $intent['sub_types'] ?? [];
+            // Get sub_types from intent — normalised so the decomposer's ALLOWED types only
+            // ever contain leaf types. 
+            $subTypes = self::normalizeSubTypes($intent['sub_types'] ?? []);
 
             if (empty($subTypes)) {
                 if ($this->debug) {
@@ -725,6 +726,34 @@ class HybridQueryDecomposer
     }
 
     /**
+     * Normalise the allowed sub-types to LEAF types only.
+     *
+     * A sub-query leaf is analytics XOR semantic XOR web_search — never "hybrid". When a
+     * multi-intent chunk is classified "hybrid" upstream, that value leaks into sub_types and,
+     * because "semantic" is then absent from the allowed list, the LLM mistypes documentary
+     * sub-queries (e.g. "CGV clauses") as hybrid/analytics → hallucinated table. Expanding
+     * "hybrid" to its leaf types lets the decomposer type each leaf correctly.
+     *
+     * @param array $subTypes Raw sub-types from intent
+     * @return array<int,string> Leaf-only sub-types, de-duplicated
+     */
+    public static function normalizeSubTypes(array $subTypes): array
+    {
+        $normalized = [];
+
+        foreach ($subTypes as $type) {
+            if ($type === 'hybrid') {
+                $normalized[] = 'analytics';
+                $normalized[] = 'semantic';
+            } else {
+                $normalized[] = $type;
+            }
+        }
+
+        return array_values(array_unique($normalized));
+    }
+
+    /**
      * Build LLM prompt for decomposition (domain-aware)
      *
      * @param string $query Original query
@@ -754,30 +783,8 @@ class HybridQueryDecomposer
         ]);
 
         if (empty($template) || $template === 'text_rag_hybrid_decomposer_prompt_template') {
-            // Fallback to a minimal prompt if the language file is missing
-            return "You are a query decomposition expert for a {$domainContext['name']} system.\n\n"
-                . "DOMAIN CONTEXT:\n"
-                . "- Domain: {$domainContext['name']}\n"
-                . "- Terminology: {$domainContext['terminology']}\n"
-                . "- Data Types: {$domainContext['data_types']}\n\n"
-                . "REQUESTED SUB-QUERY TYPES:\n"
-                . implode("\n", $subTypeLines) . "\n\n"
-                . "EXAMPLES FOR {$domainContext['name']} DOMAIN:\n"
-                . $domainExamples . "\n\n"
-                . "QUERY TO DECOMPOSE:\n"
-                . "\"{$query}\"\n\n"
-                . "INSTRUCTIONS:\n"
-                . "1. Produce ONE sub-query per DISTINCT intent in the query (at least " . count($subTypes) . " — more if a type covers several separate questions)\n"
-                . "2. Each sub-query must have a 'type' and 'text' field\n"
-                . "3. Use ONLY these types: " . implode(', ', $subTypes) . ". The SAME type MAY repeat — two separate analytics questions (e.g. 'price of X' and 'last 3 orders') become TWO analytics sub-queries, never one merged sub-query (one analytics sub-query = one SQL result)\n"
-                . "4. Cover every requested type at least once; never merge two distinct questions into one sub-query\n"
-                . "5. Preserve the original meaning and context; use {$domainContext['name']} terminology\n\n"
-                . "OUTPUT FORMAT (JSON):\n"
-                . "[\n"
-                . "  {\"type\": \"analytics\", \"text\": \"sub-query text\"},\n"
-                . "  {\"type\": \"semantic\", \"text\": \"sub-query text\"}\n"
-                . "]\n\n"
-                . "Return ONLY the JSON array, no additional text.";
+            $this->logDebug("Decomposition prompt template missing from language file");
+            return '';
         }
 
         return $template;

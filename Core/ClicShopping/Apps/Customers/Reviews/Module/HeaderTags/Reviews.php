@@ -40,7 +40,7 @@ class Reviews extends \ClicShopping\OM\Modules\HeaderTagsAbstract
     $this->description = $this->app->getDef('module_header_tags_products_reviews_description');
 
     if (\defined('MODULE_HEADER_TAGS_PRODUCT_REVIEWS_STATUS')) {
-      $this->sort_order = (int)MODULE_HEADER_TAGS_PRODUCT_REVIEWS_SORT_ORDER;
+      $this->sort_order = (int)MODULE_HEADER_TAGS_PRODUCT_REVIEWS_SORT_ORDER ?? 0;
       $this->enabled = (MODULE_HEADER_TAGS_PRODUCT_REVIEWS_STATUS == 'True');
     }
   }
@@ -82,11 +82,11 @@ class Reviews extends \ClicShopping\OM\Modules\HeaderTagsAbstract
 
       $output =
         <<<EOD
-    <title>{$title}</title>
-    <meta name="description" content="{$description}" />
-    <meta name="keywords"  content="{$keywords}" />
-    <meta name="news_keywords" content="{$keywords}" />
-EOD;
+          <title>{$title}</title>
+          <meta name="description" content="{$description}" />
+          <meta name="keywords"  content="{$keywords}" />
+          <meta name="news_keywords" content="{$keywords}" />
+        EOD;
 
       return $output;
     }
@@ -132,7 +132,8 @@ EOD;
    */
   public function keys()
   {
-    return ['MODULE_HEADER_TAGS_PRODUCT_REVIEWS_STATUS',
+    return [
+      'MODULE_HEADER_TAGS_PRODUCT_REVIEWS_STATUS',
       'MODULE_HEADER_TAGS_PRODUCT_REVIEWS_SORT_ORDER'
     ];
   }

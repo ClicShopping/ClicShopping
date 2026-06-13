@@ -203,29 +203,35 @@ When combining results from multiple modes:
 
 text_order_calculation = CRITICAL BUSINESS RULES - ORDER STATUS FILTERING:
 
-🚨 MANDATORY RULE: ALWAYS filter orders_status >= 3 for revenue/sales calculations 🚨
+🚨 MANDATORY RULE: ALWAYS filter orders_status != 4 for revenue/sales calculations 🚨
 
-ORDER STATUS MEANINGS:
-- 1 = "Pending" (NOT completed - DO NOT include in revenue)
-- 2 = "Processing" (NOT completed - DO NOT include in revenue)
-- 3 = "Delivered" (COMPLETED - INCLUDE in revenue)
-- 4 = "Cancelled" (NOT completed - DO NOT include in revenue)
+ORDER STATUS — CATEGORICAL values, NOT ordered. NEVER use >= or <= on orders_status:
+- 1 = "Pending"
+- 2 = "Processing"
+- 3 = "Delivered"
+- 4 = "Cancelled"
+To exclude cancelled orders from revenue/sales use `orders_status != 4`. For delivered-only use `orders_status = 3`. NEVER `orders_status >= 3` (it wrongly includes Cancelled=4 and breaks if new statuses are added).
+
+INVOICE STATUS — `orders_status_invoice`, a SEPARATE, INDEPENDENT column (NOT synchronised with orders_status):
+- 1 = "Order" (not yet invoiced), 2 = "Invoice/Facture", 3 = "Cancelled", 4 = "Avoir/credit note" (PDF bill)
+- An INVOICED / "facturée" order = `orders_status_invoice = 2`. NEVER infer "invoiced" from orders_status.
 
 REVENUE CALCULATION RULES:
-1. ALWAYS use: WHERE o.orders_status >= 3
+1. ALWAYS use: WHERE o.orders_status != 4
 2. Use orders_total for total revenue: SELECT SUM(o.orders_total)
 3. Use orders_products for product revenue: SELECT SUM(op.final_price * op.products_quantity)
 4. ALWAYS join orders_products with orders table to check orders_status
 5. NEVER calculate revenue without orders_status filter
 
 EXAMPLES:
-✅ CORRECT: SELECT SUM(ot.value) FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status >= 3 AND ot.class = 'ST'
+✅ CORRECT: SELECT SUM(ot.value) FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST'
+✅ CORRECT (facturées): SELECT DATE(o.date_purchased) AS date, COUNT(o.orders_id) AS invoiced FROM clic_orders o WHERE o.orders_status_invoice = 2 GROUP BY DATE(o.date_purchased) ORDER BY date ASC
 ❌ WRONG: SELECT SUM(ot.value) FROM clic_orders_total ot (missing orders_status filter!)
 
 TEMPORAL AGGREGATIONS:
-- Maintain orders_status >= 3 filter across ALL time periods
-- Example monthly: WHERE o.orders_status >= 3 AND MONTH(o.date_purchased) = MONTH(CURDATE())
-- Example yearly: WHERE o.orders_status >= 3 AND YEAR(o.date_purchased) = YEAR(CURDATE())
+- Maintain orders_status != 4 filter across ALL time periods
+- Example monthly: WHERE o.orders_status != 4 AND MONTH(o.date_purchased) = MONTH(CURDATE())
+- Example yearly: WHERE o.orders_status != 4 AND YEAR(o.date_purchased) = YEAR(CURDATE())
 
 text_query_examples = COMMON QUERY EXAMPLES:
 
