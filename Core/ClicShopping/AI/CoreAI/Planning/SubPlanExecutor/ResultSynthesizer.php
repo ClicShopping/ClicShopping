@@ -85,10 +85,27 @@ class ResultSynthesizer
     
     $finalValidation = $this->validateFinalResult($finalResult);
     if (!$finalValidation['valid']) {
-      // Log validation failure
+      // A "missing sources and data" / empty failure is a HANDLED no-grounding outcome:
+      // the query found no document match and the only candidate was an ungrounded LLM
+      // fallback (e.g. "article 5 of the terms and conditions" — not indexed). We reject it
+      // on purpose (never surface possibly-hallucinated content) and inform the user via a
+      // friendly message below, so it is NOT a system error — log it at 'warning' to avoid
+      // noise. Genuinely unexpected validation failures stay at 'error'.
+      $isHandledNoGrounding = array_reduce(
+        $finalValidation['errors'],
+        static fn(bool $carry, string $e): bool => $carry
+          && (str_contains($e, 'missing sources and data')
+            || str_contains($e, 'missing data and sources')
+            || stripos($e, 'empty') !== false),
+        true
+      );
+
       $this->logger->logSecurityEvent(
-        "Final result validation failed: " . implode(', ', $finalValidation['errors']),
-        'error',
+        ($isHandledNoGrounding
+          ? "Final result rejected - no grounded sources/data (handled: user informed content is unavailable): "
+          : "Final result validation failed: ")
+        . implode(', ', $finalValidation['errors']),
+        $isHandledNoGrounding ? 'warning' : 'error',
         ['result_type' => $finalResult['type'] ?? 'unknown']
       );
 

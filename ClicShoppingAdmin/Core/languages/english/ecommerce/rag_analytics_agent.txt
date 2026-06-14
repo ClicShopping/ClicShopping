@@ -830,6 +830,9 @@ text_sql_generation_rules = SQL GENERATION RULES:
    - "stock level" → SELECT p.products_id, p.products_quantity, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd...
    - "stock alert" → SELECT p.products_id, p.products_quantity_alert, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd...
    - "inventory count" → SELECT SUM(p.products_quantity) FROM clic_products p
+   - "low stock" / "low in stock" / "stock bas" → SELECT p.products_id, p.products_quantity, p.products_quantity_alert, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE p.products_quantity <= p.products_quantity_alert
+   - "out of stock" / "rupture" → SELECT p.products_id, p.products_quantity, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE p.products_quantity = 0
+   - "out of stock OR low stock" / "en rupture ou en stock bas" → use the alert threshold which already covers both (0 <= alert): WHERE p.products_quantity <= p.products_quantity_alert. NEVER return empty SQL for a stock question — products_quantity / products_quantity_alert always exist.
 
 9. MULTI-TOKEN SEARCH (CRITICAL):
    When searching for products with MULTIPLE WORDS, generate separate LIKE conditions for EACH word using AND.

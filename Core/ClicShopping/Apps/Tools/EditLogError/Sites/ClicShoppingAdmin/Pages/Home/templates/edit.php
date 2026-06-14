@@ -32,7 +32,9 @@ foreach (glob(ErrorHandler::getDirectory() . 'errors-*.txt') as $f) {
   }
 }
 
-$log = $files[$_GET['log']];
+// Requested log key may be missing from $_GET or point to a rotated/deleted file
+// (e.g. an old errors-YYYYMMDD that no longer exists) -> degrade gracefully, no warning.
+$log = $files[$_GET['log'] ?? ''] ?? null;
 ?>
 <div class="contentBody">
   <div class="row">
@@ -44,14 +46,14 @@ $log = $files[$_GET['log']];
           <span class="col-md-5 pageHeading">
             <?php
             echo '&nbsp;' . $CLICSHOPPING_EditLogError->getDef('heading_title') . ' -  ';
-            echo HTML::outputProtected($log['date']);
+            echo HTML::outputProtected($log['date'] ?? '');
             ?>
           </span>
           <span class="col-md-6 text-end">
             <?php
             echo HTML::button($CLICSHOPPING_EditLogError->getDef('button_back'), null, $CLICSHOPPING_EditLogError->link('LogError'), 'primary') . ' ';
 
-            echo HTML::form('delete', $CLICSHOPPING_EditLogError->link('LogError&Delete&log=' . $log['key']));
+            echo HTML::form('delete', $CLICSHOPPING_EditLogError->link('LogError&Delete&log=' . ($log['key'] ?? '')));
             echo HTML::button($CLICSHOPPING_EditLogError->getDef('button_delete'), null, null, 'danger');
             ?>
             </form>

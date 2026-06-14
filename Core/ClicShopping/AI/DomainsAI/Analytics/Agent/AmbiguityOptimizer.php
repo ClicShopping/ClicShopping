@@ -212,10 +212,22 @@ class AmbiguityOptimizer
       }
     }
     
+    // Normalize to a flat list of type STRINGS. The detector passes
+    // $analysis['interpretations'] as a list of interpretation OBJECTS
+    // (['type' => 'sum', ...]); without this, the string comparisons below
+    // never match
+    $availableInterpretations = array_values(array_filter(
+      array_map(
+        static fn($interp) => is_array($interp) ? ($interp['type'] ?? null) : $interp,
+        $availableInterpretations
+      ),
+      static fn($type) => is_string($type) && $type !== ''
+    ));
+
     // Priority order: sum > count > list > recent
     // "recent" is rarely what users want, so it's last
     $priority = ['sum', 'count', 'list', 'recent'];
-    
+
     $selected = [];
     foreach ($priority as $type) {
       if (in_array($type, $availableInterpretations, true)) {
@@ -228,11 +240,13 @@ class AmbiguityOptimizer
     
     // Fill remaining with any available interpretations
     foreach ($availableInterpretations as $type) {
+      // Check the limit BEFORE adding — the priority loop may already have
+      // reached $count; adding first then checking overshoots by one.
+      if (count($selected) >= $count) {
+        break;
+      }
       if (!in_array($type, $selected, true)) {
         $selected[] = $type;
-        if (count($selected) >= $count) {
-          break;
-        }
       }
     }
     

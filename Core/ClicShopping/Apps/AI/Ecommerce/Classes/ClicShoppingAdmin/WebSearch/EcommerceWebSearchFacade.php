@@ -181,6 +181,8 @@ class EcommerceWebSearchFacade extends WebSearchFacade
         }
       }
 
+      // Bound competitor listings to ±PriceBoundFilter::BOUND_PERCENT of the internal (catalog)
+      // price so accessories (cases, chargers…) do not skew avg/min/max/cheapest. This is the
       // single source of truth, so the bounded set also flows to display and LLM synthesis.
       $priceBound = PriceBoundFilter::bound($internalPrice, $competitorPrices);
       $competitorPricesExcluded = (int)$priceBound['excluded'];
