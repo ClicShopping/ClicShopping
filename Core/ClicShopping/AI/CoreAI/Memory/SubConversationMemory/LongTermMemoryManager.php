@@ -350,8 +350,8 @@ class LongTermMemoryManager
       if (empty($resultsArray) && $filter !== null) {
         if ($this->debug) {
           $this->logger->logSecurityEvent(
-            "No results with filter, trying without filter to check if filter is too restrictive",
-            'warning'
+            "No per-user history matched the filter yet; checking unfiltered availability",
+            'info'
           );
         }
         
@@ -362,8 +362,8 @@ class LongTermMemoryManager
         if (!empty($resultsNoFilterArray)) {
           if ($this->debug) {
             $this->logger->logSecurityEvent(
-              "Found " . count($resultsNoFilterArray) . " results WITHOUT filter but 0 WITH filter - filter is too restrictive, returning unfiltered",
-              'warning'
+              "No matching per-user history yet for this user - using unfiltered fallback (" . count($resultsNoFilterArray) . " candidates available)",
+              'info'
             );
           }
           

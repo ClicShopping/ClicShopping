@@ -17,3 +17,4 @@ INSTRUCTIONS:
     2. Provide a clear, concise, and accurate answer.
     3. If you are uncertain about any part of the answer, indicate your level of confidence.
     4. Do not make up information - if you genuinely don't know, say so.\n5. Keep your answer focused and relevant to the question asked.
+text_rag_translate_response = Translate the following text into {{language}}. Keep all HTML tags, formatting, numbers, codes and proper nouns unchanged. Output ONLY the translated text, with nothing added before or after.
