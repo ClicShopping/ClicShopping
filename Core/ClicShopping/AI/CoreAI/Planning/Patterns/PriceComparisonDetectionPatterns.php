@@ -68,6 +68,9 @@ class PriceComparisonDetectionPatterns
     );
     
     // Check for an explicit "on/at/from <site>" target site — domain-agnostic.
+    // The candidate token is resolved against the registered SiteRouters; a
+    // match means a domain (Apps/AI/{Domain}) owns that site. No brand list in
+    // Core: new competitors become detectable simply by registering a router.
     $hasTargetSitePattern = false;
     if (preg_match('/\b(?:on|at|from)\s+([a-z0-9][a-z0-9.\-]+)/i', $queryLower, $m) === 1) {
       $hasTargetSitePattern = WebSearchEngineRegistry::getInstance()->findSiteRouter($m[1]) !== null;

@@ -817,7 +817,29 @@ class OrchestratorAgent
       }
 
       // Full orchestration path
-      return $this->handleFullOrchestration($query, $queryToProcess, $startTime);
+      $result = $this->handleFullOrchestration($query, $queryToProcess, $startTime);
+
+      // Restitution: the AI pipeline runs in English; return the user-facing narrative in the
+      // interface language ($this->languageId). Translate only the prose 'text_response' (the
+      // displayed answer for semantic/analytics/hybrid/web), leaving data/sources/metadata
+      // untouched. No-op for the English interface (see SemanticAgent::translateToLanguage).
+      if (isset($result['text_response']) && is_string($result['text_response']) && trim($result['text_response']) !== ''
+        && !preg_match('/<(?:div|table|script|canvas|h[1-6]|ul|ol|iframe)\b/i', $result['text_response'])) {
+        $originalResponse = $result['text_response'];
+        $result['text_response'] = SemanticAgent::translateToLanguage($originalResponse, $this->languageId);
+
+        // 'response' usually mirrors 'text_response' — reuse the translation, no second LLM call.
+        if (isset($result['response']) && $result['response'] === $originalResponse) {
+          $result['response'] = $result['text_response'];
+        }
+      }
+      foreach (['text_response', 'response'] as $brKey) {
+        if (isset($result[$brKey]) && is_string($result[$brKey]) && $result[$brKey] !== '') {
+          $result[$brKey] = preg_replace('#(?:<br\s*/?>\s*){2,}#i', '<br>', $result[$brKey]);
+        }
+      }
+
+      return $result;
     } catch (\Exception $e) {
       $status = 'error';
 

@@ -1124,10 +1124,10 @@ class MultiDBRAGManager
 
       $synthesisPrompt .= "Answer:";
 
-      // Restitution language instruction — loaded from the agnostic Agents/ layer in the
-      // APPLICATION language (null), so it is never overwritten by the internal English
-      // prompt loads (guardrails / SQL-error analysis) that previously reloaded 'main' in EN.
-      DomainConfig::loadAgnosticLanguageFile('rag_language', null);
+      // The internal RAG process runs ENTIRELY in English (retrieval, context, synthesis).
+      // Force the synthesis to answer in English regardless of the ambient Registry language;
+      // the user-facing answer is translated to the interface language afterwards (see below).
+      DomainConfig::loadAgnosticLanguageFile('rag_language', 'en');
       $languageInstruction = CLICSHOPPING::getDef('text_rag_language_instruction');
       $synthesisPrompt .= "\n\n" . $languageInstruction;
 
@@ -1149,6 +1149,8 @@ class MultiDBRAGManager
         // Fallback: return first document content
         $answer = $documents[0]->content ?? "Error generating answer.";
       }
+
+      // NOTE: the answer is intentionally left in English here. Restitution to the interface
 
       // Return with metadata if requested
       if ($options['return_metadata'] ?? false) {

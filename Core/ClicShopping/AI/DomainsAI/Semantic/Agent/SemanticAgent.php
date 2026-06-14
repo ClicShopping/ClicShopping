@@ -195,6 +195,62 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
   }
 
   /**
+   * Translate a user-facing English text into the given interface language.
+   *
+   * The AI pipeline runs in English (retrieval, context, synthesis, interpretation); the
+   * user-facing answer must be returned in the interface language. Fail-safe: returns the
+   * text unchanged for the English interface, an unknown/empty language, an empty text, a
+   * missing prompt key, or any error. Shared by every domain so restitution is uniform.
+   *
+   * @param string $text English text to translate
+   * @param int|null $languageId Interface language id
+   * @return string Text translated to the interface language (or unchanged on no-op/failure)
+   */
+  public static function translateToLanguage(string $text, ?int $languageId): string
+  {
+    if ($languageId === null || trim($text) === '') {
+      return $text;
+    }
+
+    try {
+      if (!Registry::exists('Language')) {
+        return $text;
+      }
+
+      // Resolve the target code/name from the id (getLanguages() is keyed by code -> [id, code, name]).
+      $targetCode = null;
+      $targetName = null;
+      foreach (Registry::get('Language')->getLanguages() as $lang) {
+        if ((int)($lang['id'] ?? 0) === $languageId) {
+          $targetCode = strtolower((string)($lang['code'] ?? ''));
+          $targetName = (string)($lang['name'] ?? '');
+          break;
+        }
+      }
+
+      // English interface (or unknown language) -> nothing to translate.
+      if ($targetCode === null || $targetName === '' || str_starts_with($targetCode, 'en')) {
+        return $text;
+      }
+
+      // Agnostic translation prompt (English layer); {{language}} = target language name.
+      DomainConfig::loadAgnosticLanguageFile('rag_language', 'en');
+      $prompt = CLICSHOPPING::getDef('text_rag_translate_response', ['language' => $targetName]);
+      if ($prompt === '' || $prompt === 'text_rag_translate_response') {
+        return $text;
+      }
+
+      $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, 600);
+
+      return (is_string($translated) && trim($translated) !== '') ? $translated : $text;
+    } catch (\Throwable $e) {
+      self::logSecurityEvent('translateToLanguage failed: ' . $e->getMessage(), 'warning');
+
+      return $text;
+    }
+  }
+
+  /**
    * Classifies query as 'analytics' or 'semantic' (delegates to ClassificationEngine)
    * 
    * @param string $text Text to classify
