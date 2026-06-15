@@ -37,7 +37,7 @@ use ClicShopping\AI\Infrastructure\Cache\Cache;
  * - Doctrine ORM configuration
  * - Valid embedding generator implementation
  *
- * @package ClicShopping\Apps\Configuration\ChatGpt\Classes\Rag
+ * @package ClicShopping\AI\Infrastructure\Storage
  */
  
 

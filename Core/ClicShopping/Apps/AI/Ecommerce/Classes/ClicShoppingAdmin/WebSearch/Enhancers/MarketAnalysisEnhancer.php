@@ -15,6 +15,7 @@ use ClicShopping\AI\InterfacesAI\WebSearchResultEnhancerInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\EcommerceWebSearchFacade;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
+use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\Registry;
 
@@ -110,11 +111,14 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
                 return $results;
             }
 
-            // 3) Ask the LLM for a short natural-language synthesis.
+            // 3) Ask the LLM for a short natural-language synthesis (generated in English,
+            //    per the "process in English" rule), then restitute it in the interface
             $synthesisText = $this->callLlm($internal, $comparison, $context);
             if ($synthesisText === '') {
                 return $results;
             }
+	    
+            $synthesisText = SemanticAgent::translateToLanguage($synthesisText, $languageId);
 
             // 4) Wrap as HTML encart, ready for WebSearchFormatter to inline.
             $results['market_analysis'] = $this->buildHtmlEncart(

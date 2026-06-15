@@ -12,6 +12,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Reg
 
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Enhancers\MarketAnalysisEnhancer;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Enrichers\ContextualQueryEnricher;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Providers\AmazonShoppingProvider;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\SiteRouters\AmazonSiteRouter;
 
@@ -46,5 +47,10 @@ final class WebSearchRegistration
         // Post-search enhancers: add the "is my price aligned with the
         // market?" LLM synthesis at the top of price_comparison responses.
         $registry->registerResultEnhancer(new MarketAnalysisEnhancer());
+
+        // Pre-search enrichers: turn a contextual follow-up ("compare with
+        // competitors") into a self-contained query by prepending the last
+        // entity name discussed by the user.
+        $registry->registerQueryEnricher(new ContextualQueryEnricher());
     }
 }

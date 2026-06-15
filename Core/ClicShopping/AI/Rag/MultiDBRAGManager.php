@@ -41,7 +41,7 @@ use LLPhant\Query\SemanticSearch\LLMReranker;
  * - Question answering using RAG
  * - Support for different languages and entity types
  *
- * @package ClicShopping\Apps\Configuration\ChatGpt\Classes\Rag
+ * @package ClicShopping\AI\Rag
  */
 
 class MultiDBRAGManager

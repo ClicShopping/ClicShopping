@@ -25,6 +25,7 @@ use ClicShopping\AI\DomainsAI\WebSearch\Processor\IntentRouter;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\ResultNormalizer;
 use ClicShopping\AI\DomainsAI\WebSearch\Response\UserInputRequiredResponse;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
+use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\Security\SecurityLogger;
 
 /**
@@ -534,6 +535,19 @@ class WebSearchFacade
         // Continue with the other enhancers — a single failure must not
         // poison the overall response.
       }
+    }
+
+    // Restitution: the search engine returns the AI-overview summary in English (search runs
+    $langId = isset($context['language_id']) ? (int) $context['language_id'] : null;
+    
+    if ($langId !== null
+      && isset($results['ai_overview']['full_summary'])
+      && is_string($results['ai_overview']['full_summary'])
+      && trim($results['ai_overview']['full_summary']) !== '') {
+      $results['ai_overview']['full_summary'] = SemanticAgent::translateToLanguage(
+        $results['ai_overview']['full_summary'],
+        $langId
+      );
     }
 
     return $results;

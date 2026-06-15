@@ -543,6 +543,10 @@ class WebSearchPatterns
       return $query;
     }
 
+    if ($entityName !== '' && str_contains($lowerQuery, strtolower($entityName))) {
+      return $query;
+    }
+
     // Enrich query by prepending entity name
     // Example: "compare with competitors" → "iPhone 17 Pro compare with competitors"
     $enrichedQuery = $entityName . ' ' . $query;

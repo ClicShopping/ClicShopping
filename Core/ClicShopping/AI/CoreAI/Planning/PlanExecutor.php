@@ -22,7 +22,7 @@ use ClicShopping\AI\Infrastructure\Metrics\CalculatorTool;
 use ClicShopping\AI\DomainsAI\WebSearch\Cache\SearchCacheManager;
 use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\WebSearchFormatter;
-use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\WebSearchPatterns;
+use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 
 /**
  * PlanExecutor Class
@@ -788,10 +788,18 @@ class PlanExecutor
           
           // Only enrich if we have a valid entity NAME (not just ID)
           if ($entityName !== null && !empty(trim($entityName))) {
-            // Enrich query with entity context
-            // Example: "compare avec les concurrents" → "compare iPhone 17 Pro avec les concurrents"
-            $query = WebSearchPatterns::enrichWebSearchQuery($query, $entityName, $entityType);
-            
+            // Enrich the query through the domain-agnostic registry: each
+            // Apps/AI/{Domain} can register a QueryEnricher that injects the
+            $enrichContext = [
+              'entity_name' => $entityName,
+              'entity_type' => $entityType,
+              'intent_type' => $intentType,
+            ];
+
+            foreach (WebSearchEngineRegistry::getInstance()->getQueryEnrichers() as $enricher) {
+              $query = $enricher->enrich($query, $enrichContext);
+            }
+
             if ($this->debug) {
               $this->securityLogger->logSecurityEvent(
                 "Enriched web search query with last_entity: {$entityName} ({$entityType})",

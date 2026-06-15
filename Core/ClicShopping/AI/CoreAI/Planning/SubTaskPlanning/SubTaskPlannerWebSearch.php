@@ -72,11 +72,10 @@ class SubTaskPlannerWebSearch
 
     $steps = [];
 
-    // 🔧 FIX (2026-05-10): Extract clean search query for price_comparison
-    // For price_comparison queries, use the extracted product name from intent
-    // instead of the full query to avoid sending "price" keywords to shopping engines
-    $searchQuery = $query; // Default: use full query
-    
+    //  Extract clean search query for price_comparison
+    // Search the web with the ENGLISH-translated query when available: the engine (Google/
+    $searchQuery = !empty($intent['translated_query']) ? $intent['translated_query'] : $query;
+
     if (isset($intent['intent']) && $intent['intent'] === 'price_comparison') {
       // Check if intent has extracted product name
       if (!empty($intent['product'])) {

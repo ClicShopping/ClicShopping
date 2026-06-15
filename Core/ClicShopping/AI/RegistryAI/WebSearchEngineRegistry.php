@@ -15,6 +15,7 @@ use ClicShopping\AI\DomainsAI\WebSearch\Providers\GoogleAIOverviewProvider;
 use ClicShopping\AI\DomainsAI\WebSearch\Providers\GoogleShoppingProvider;
 use ClicShopping\AI\DomainsAI\WebSearch\Providers\GoogleTrendsProvider;
 use ClicShopping\AI\DomainsAI\WebSearch\Providers\RagWebSearchProvider;
+use ClicShopping\AI\InterfacesAI\QueryEnricherInterface;
 use ClicShopping\AI\InterfacesAI\SiteRouterInterface;
 use ClicShopping\AI\InterfacesAI\WebSearchEngineProviderInterface;
 use ClicShopping\AI\InterfacesAI\WebSearchResultEnhancerInterface;
@@ -81,6 +82,9 @@ final class WebSearchEngineRegistry
 
     /** @var array<string, WebSearchResultEnhancerInterface> */
     private array $resultEnhancersById = [];
+
+    /** @var array<string, QueryEnricherInterface> */
+    private array $queryEnrichersById = [];
 
     private SecurityLogger $logger;
     private bool $debug;
@@ -204,6 +208,44 @@ final class WebSearchEngineRegistry
     public function getResultEnhancers(): array
     {
         return \array_values($this->resultEnhancersById);
+    }
+
+    /**
+     * Register a query enricher (pre-processor invoked before the engines run).
+     *
+     * Enrichers fire in registration order; each receives the query rewritten
+     * by the previous one. Lets a domain App inject conversational context
+     * (e.g. the last entity name) into a follow-up query without Core ever
+     * referencing the domain.
+     *
+     * @throws \InvalidArgumentException If an enricher with the same id is already registered
+     */
+    public function registerQueryEnricher(QueryEnricherInterface $enricher): void
+    {
+        $enricherId = $enricher->getEnricherId();
+
+        if (isset($this->queryEnrichersById[$enricherId])) {
+            throw new \InvalidArgumentException(
+                "WebSearch query enricher with id '{$enricherId}' is already registered"
+            );
+        }
+
+        $this->queryEnrichersById[$enricherId] = $enricher;
+
+        if ($this->debug) {
+            $this->logger->logStructured('info', 'WebSearchEngineRegistry', 'query_enricher_registered', [
+                'enricher_id' => $enricherId,
+                'enricher_class' => $enricher::class,
+            ]);
+        }
+    }
+
+    /**
+     * @return array<QueryEnricherInterface> All registered enrichers in registration order
+     */
+    public function getQueryEnrichers(): array
+    {
+        return \array_values($this->queryEnrichersById);
     }
 
     /**

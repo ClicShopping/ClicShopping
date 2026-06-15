@@ -31,8 +31,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
  * This type should be registered with Doctrine using:
  * Type::addType('vector', VectorType::class);
  *
- * @package ClicShopping\Apps\Configuration\ChatGpt\Classes\Rag
- * @extends Type
+ * @package ClicShopping\AI\DomainsAI\Shared\Embedding
  */
 
 class VectorType extends Type

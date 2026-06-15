@@ -40,7 +40,7 @@ use ClicShopping\AI\Config\DomainFields;
 * - Proper database credentials configuration
 * - Vector support in MariaDB
 *
- * @package ClicShopping\Apps\Configuration\ChatGpt\Classes\Rag
+ * @package ClicShopping\AI\Infrastructure\Orm
 */
 
 class DoctrineOrm
