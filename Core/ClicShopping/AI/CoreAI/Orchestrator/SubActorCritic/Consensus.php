@@ -53,6 +53,21 @@ class Consensus
     public function getEvaluations(): array { return $this->evaluations; }
     public function getScore(): float { return $this->consensusScore; }
     public function isReached(): bool { return $this->consensusReached; }
+
+    /**
+     * Quality gate: is the consensus SCORE at or above the required minimum?
+     *
+     * Distinct from isReached() (critic agreement / std-dev): this checks whether the
+     * agreed quality is high enough. Wired to AT_CONSENSUS_THRESHOLD by the coordinator;
+     * this is the signal the response-regeneration loop gates on.
+     *
+     * @param float $threshold Minimum acceptable consensus score (0.0–1.0).
+     */
+    public function meetsQualityThreshold(float $threshold): bool
+    {
+        return $this->consensusScore >= $threshold;
+    }
+    
     public function getAggregatedFeedback(): array { return $this->aggregatedFeedback; }
     public function getOutliers(): array { return $this->outliers; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }

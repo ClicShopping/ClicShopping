@@ -96,10 +96,15 @@ For cache and session details → `ARCHITECTURE.md`.
 - No visible hardcoded string in PHP or templates — always use getDef('')
   (this includes RAG/agent PROMPTS: no heredoc/inline prompt text in classes)
 - Minimum language compatibility: EN + FR
-- AI prompt language files are split agnostic vs domain: agnostic → {lang}/Agents/,
-  domain-specific → {lang}/{domain}/ (e.g. ecommerce/). See AI_ARCHITECTURE.md §5.3 for the
-  split rule + {{var}} interpolation, and ARCHITECTURE.md §7.1/§7.2 for the .txt parser rules
-  and the mandatory cache+DB purge after editing a language file.
+- AI language files use THREE buckets (see AI_ARCHITECTURE.md §5.3):
+  (1) agnostic PROMPTS → {lang}/Agents/ ; (2) domain PROMPTS → {lang}/{domain}/ (e.g. ecommerce/)
+  — both read by the LLM, English-by-design, FR kept but UNUSED (the whole AI process runs in
+  English; the answer is translated back to the interface language at one orchestrator chokepoint);
+  (3) agnostic USER-FACING labels (chat/formatter labels, error messages) → platform root
+  {lang}/ai_response_labels.txt — rendered verbatim to the user, so FR IS used and must be really
+  translated; loaded via the NATIVE Language::loadDefinitions() (NOT DomainConfig) once in the
+  class constructor, read via CLICSHOPPING::getDef(). See §5.3 for the {{var}} interpolation,
+  and ARCHITECTURE.md §7.1/§7.2 for the .txt parser rules and the mandatory cache+DB purge.
 ```
 
 ---

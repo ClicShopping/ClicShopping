@@ -143,7 +143,6 @@ abstract class ConfigAbstract
 
       $cfg = new $class($this->code);
 
-
       if (!\defined($key)) {
         $this->app->saveCfgParam($key, $cfg->default, $cfg->title ?? null, $cfg->description ?? null, $cfg->set_func ?? null);
       }

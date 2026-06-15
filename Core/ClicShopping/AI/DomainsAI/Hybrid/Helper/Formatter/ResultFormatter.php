@@ -18,7 +18,6 @@ use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters\Comple
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\WebSearchFormatter;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Formatter\AmbiguousResultFormatter;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters\HybridFormatter;
-use ClicShopping\AI\Config\DomainConfig;
 
 /**
  * ResultFormatter Class (Refactored - Clean Version)
@@ -64,7 +63,7 @@ class ResultFormatter
     $this->languageCode = $this->language->get('code');
 
     // Load language definitions (null = use current user language)
-    DomainConfig::loadLanguageFile('rag_result_formatter', null);
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
 
     // Initialize router
     $this->router = new FormatterRouter($this->debug);
@@ -258,7 +257,7 @@ class ResultFormatter
       $languageCode = $language->get('code');
       
       // Load language definitions (null = use current user language)
-      DomainConfig::loadLanguageFile('rag_result_formatter', null);
+      Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
     }
     
     $formatted = $language->getDef('analytics_results_title') . "\n\n";
@@ -304,7 +303,7 @@ class ResultFormatter
       $languageCode = $language->get('code');
       
       // Load language definitions (null = use current user language)
-      DomainConfig::loadLanguageFile('rag_result_formatter', null);
+      Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
     }
     
     $formatted = $language->getDef('web_search_results_title') . "\n\n";
@@ -913,7 +912,7 @@ class ResultFormatter
       $languageCode = $language->get('code');
       
       // Load language definitions (null = use current user language)
-      DomainConfig::loadLanguageFile('rag_result_formatter', null);
+      Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
     }
     
     $output = "📊 " . $language->getDef('price_comparison_title') . "\n";

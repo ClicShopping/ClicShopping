@@ -211,6 +211,9 @@ class ActorCriticCoordinator
             $feedback = $this->feedbackManager->createFeedback($consensus, $evaluations);
             $this->deliverFeedback($actor, $feedback);
             
+            $qualityThreshold = AgentTechnicalConfig::getConsensusThreshold();
+            $qualityGatePassed = $consensus->meetsQualityThreshold($qualityThreshold);
+
             // Step 6: Create coordinated result with adaptive weighting data
             $result = new CoordinatedResult(
                 $actionResult,
@@ -226,6 +229,8 @@ class ActorCriticCoordinator
                     'critics_count' => count($critics),
                     'consensus_reached' => $consensus->isReached(),
                     'outliers_count' => count($consensus->getOutliers()),
+                    'quality_gate_passed' => $qualityGatePassed,
+                    'quality_threshold' => $qualityThreshold,
                     'adaptive_weighting_used' => $this->config['ADAPTIVE_WEIGHTING_ENABLED']
                 ],
                 $adaptiveWeights,

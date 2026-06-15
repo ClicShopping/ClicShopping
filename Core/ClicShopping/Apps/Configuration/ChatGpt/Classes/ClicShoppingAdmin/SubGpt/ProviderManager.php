@@ -179,19 +179,20 @@ class ProviderManager
         ];
       }
 
-      // LLPhant AnthropicConfig handles the API model name mapping internally
+      // Current Claude 4.x model strings. LLPhant's AnthropicConfig accepts an arbitrary
+      // model string, so we pass the API id directly (its CLAUDE_3_* constants are stale).
       if ($model === 'anth-sonnet') {
         $result = new AnthropicChat(
-          new AnthropicConfig(AnthropicConfig::CLAUDE_3_5_SONNET, $maxtoken, $modelOptions, $api_key)
+          new AnthropicConfig('claude-sonnet-4-6', $maxtoken, $modelOptions, $api_key)
         );
       } elseif ($model === 'anth-opus') {
         $result = new AnthropicChat(
-          new AnthropicConfig(AnthropicConfig::CLAUDE_3_OPUS, $maxtoken, $modelOptions, $api_key)
+          new AnthropicConfig('claude-opus-4-8', $maxtoken, $modelOptions, $api_key)
         );
       } else {
         // Default to Haiku
         $result = new AnthropicChat(
-          new AnthropicConfig(AnthropicConfig::CLAUDE_3_HAIKU, $maxtoken, $modelOptions, $api_key)
+          new AnthropicConfig('claude-haiku-4-5-20251001', $maxtoken, $modelOptions, $api_key)
         );
       }
     }

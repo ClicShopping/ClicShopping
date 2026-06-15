@@ -91,8 +91,8 @@ class WebSearchRegistryConfig
     /**
      * Resolve the fully qualified registration class name for a given domain.
      *
-     * @param string $domain Domain directory name (e.g. 'Ecommerce')
-     * @return string FQCN such as `ClicShopping\Apps\AI\Ecommerce\Classes\...\WebSearchRegistration`
+     * @param string $domain Domain directory name (the {Domain} segment under Apps/AI/)
+     * @return string FQCN such as `ClicShopping\Apps\AI\{Domain}\Classes\...\WebSearchRegistration`
      */
     public static function getRegistrationClassFqcn(string $domain): string
     {

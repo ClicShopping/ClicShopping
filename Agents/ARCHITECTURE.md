@@ -167,6 +167,10 @@ Rules:
 - Minimum compatibility: EN + FR
 - Format consistent with existing files in target scope
 
+**AI prompt sub-layers** (under *Admin core*): RAG/agent prompts live in
+`ClicShoppingAdmin/Core/languages/{lang}/{domain}/rag_*.txt` (domain-specific) and
+`ClicShoppingAdmin/Core/languages/{lang}/Agents/rag_*.txt` (domain-agnostic). See
+**AI_ARCHITECTURE.md §5.3** for the split rule and the `{{var}}` interpolation.
 ---
 
 ## 8. Custom/ — Override Core

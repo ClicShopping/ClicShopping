@@ -28,7 +28,6 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\RegistryAI\ActorRegistry;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
-use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
 
@@ -74,6 +73,9 @@ class AnalyticsExecutor
     if ($this->debug) {
       $this->logger->logSecurityEvent("AnalyticsExecutor initialized", 'info');
     }
+
+    // Load shared user-facing labels once (interface language) for all methods
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
   
   /**
@@ -531,7 +533,6 @@ class AnalyticsExecutor
     if (empty($results)) {
       // Standard, translated empty-results message (no hardcoded string, no "your query"
       // placeholder) — same message the EmptyResultFormatter shows.
-      DomainConfig::loadLanguageFile('rag_error_handler', null);
       $emptyMessage = CLICSHOPPING::getDef('text_empty_results_base');
 
       return ($emptyMessage !== '' && $emptyMessage !== 'text_empty_results_base')
@@ -634,7 +635,6 @@ class AnalyticsExecutor
       }
       // Standard, translated empty-results message (no hardcoded string, no "your query"
       // placeholder) — same message the EmptyResultFormatter shows.
-      DomainConfig::loadLanguageFile('rag_error_handler', null);
       $emptyMessage = CLICSHOPPING::getDef('text_empty_results_base');
 
       return ($emptyMessage !== '' && $emptyMessage !== 'text_empty_results_base')

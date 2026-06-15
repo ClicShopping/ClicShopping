@@ -1,0 +1,180 @@
+# ai_response_labels — agnostic user-facing labels for AI chat rendering
+# Consolidated from the rag_*_formatter + rag_error_handler files.
+# Loaded via standard platform i18n (current interface language).
+
+text_rag_web_search_results_for = Résultats de recherche web pour :
+text_rag_web_search_summary = Résumé :
+text_rag_web_search_price_comparison = Comparaison de prix
+text_rag_price_bound_notice = Comparaison limitée à ±{{bound}}% du prix catalogue ({{excluded}} résultat(s) exclu(s) comme accessoires probables).
+text_rag_web_search_our_price = Notre prix :
+text_rag_web_search_competitor_prices = Prix concurrents :
+text_rag_web_search_see = Voir
+text_rag_web_search_recommendation = Recommandation :
+text_rag_web_search_external_results = Résultats de recherche externe
+text_rag_web_search_result = Résultat
+text_rag_web_search_external_sources = Sources externes consultées :
+text_rag_web_search_external_links = Liens externes :
+text_rag_web_search_comparison_table = Tableau comparatif
+text_rag_ai_overview = Aperçu IA
+text_rag_ai_sources = Sources :
+text_rag_shopping_results = Résultats Shopping
+text_rag_shopping_results_count = produits
+text_rag_view_product = Voir le produit
+text_rag_data_source_shopping = Google Shopping Data
+text_rag_data_source_amazon = Amazon Shopping Data
+text_rag_data_source_web = Extraction Web
+text_rag_best_price = Meilleur prix
+text_rag_worst_price = Prix le plus élevé
+text_rag_mode_ai_overview = Aperçu IA
+text_rag_mode_shopping = Shopping
+text_rag_mode_amazon_shopping = Amazon Shopping
+text_rag_mode_rag_scraping = Scraping RAG
+text_rag_hybrid_search = Recherche hybride
+text_rag_execution_time = Temps d'exécution
+text_rag_source_amazon = Amazon
+text_rag_source_google_shopping = Google Shopping
+text_rag_mode_google_trends = Google Trends
+text_rag_trends_title = Intérêt au fil du temps
+text_rag_trends_interest_over_time = Intérêt (0–100)
+text_rag_market_analysis_title = Analyse du marché
+text_rag_market_analysis_ai_notice = Synthèse générée par IA
+text_rag_market_analysis_sources = sources analysées
+text_rag_trends_disclaimer = Google Trends affiche l'intérêt de recherche relatif pour ce mot-clé au fil du temps (0 = aucune donnée, 100 = pic d'intérêt). C'est un indicateur de popularité, PAS le prix réel du produit. Pour la comparaison de prix entre concurrents, utilisez les résultats Google Shopping / Amazon.
+text_rag_site_search_notice = Certains résultats proviennent d'un site marchand spécifique (Fnac, Cdiscount, etc.). Chaque marchand utilise sa propre mise en page HTML, donc l'image et le prix du produit peuvent être absents ici — cliquez sur "Voir le produit" pour ouvrir la page complète directement sur le site marchand.
+no_results_to_display = Aucun résultat à afficher
+clarification_needed_message = Votre requête nécessite des précisions.
+clarification_needed_label = Clarification nécessaire:
+raw_result_label = Résultat brut:
+
+analytics_results_title = Résultats analytiques:
+analytics_result_number = Résultat
+analytics_rows_count = Lignes:
+
+web_search_results_title = Résultats de recherche web:
+web_search_source_label = Source:
+web_search_additional_info = Informations supplémentaires:
+
+price_comparison_title = RAPPORT DE COMPARAISON DE PRIX
+price_comparison_product = Produit:
+price_comparison_your_price = Votre prix:
+price_comparison_competitors_analyzed = Concurrents analysés:
+price_comparison_average_price = Prix moyen des concurrents:
+price_comparison_competitor_prices = Prix des concurrents:
+price_comparison_cheapest = Le moins cher:
+price_comparison_most_expensive = Le plus cher:
+price_comparison_difference = Différence:
+price_comparison_competitive_status = Statut concurrentiel:
+price_comparison_recommendation = RECOMMANDATION:
+price_comparison_no_competitors = Aucun prix concurrent trouvé pour comparaison
+price_comparison_recommendation_label = Recommandation:
+
+# Temporal Labels
+temporal_month_january = Janvier
+temporal_month_february = Février
+temporal_month_march = Mars
+temporal_month_april = Avril
+temporal_month_may = Mai
+temporal_month_june = Juin
+temporal_month_july = Juillet
+temporal_month_august = Août
+temporal_month_september = Septembre
+temporal_month_october = Octobre
+temporal_month_november = Novembre
+temporal_month_december = Décembre
+
+temporal_quarter_1 = T1
+temporal_quarter_2 = T2
+temporal_quarter_3 = T3
+temporal_quarter_4 = T4
+
+temporal_semester_1 = Semestre 1
+temporal_semester_2 = Semestre 2
+
+temporal_week_label = Semaine
+temporal_day_label = Jour
+
+temporal_section_monthly = Résultats mensuels
+temporal_section_quarterly = Résultats trimestriels
+temporal_section_semester = Résultats semestriels
+temporal_section_yearly = Résultats annuels
+temporal_section_weekly = Résultats hebdomadaires
+temporal_section_daily = Résultats quotidiens
+temporal_section_custom = Résultats par période personnalisée
+results_for = Résultats pour :
+response_label = Réponse :
+source_details_label = ℹ️ Détails des sources (
+combined_queries_suffix = requêtes combinées)
+semantic_results_title = 📚 Résultats Sémantiques
+sources_label = Sources
+toggle_sql_query = Afficher / Masquer la requête SQL
+sql_query_label = Requête SQL :
+text_rag_complex_query_results_for = Résultats pour : {{query}}
+text_rag_complex_query_global_summary = Synthèse globale :
+text_rag_complex_query_detailed_results = Résultats détaillés par section
+text_rag_complex_query_aggregated_data = Données agrégées:
+text_rag_complex_query_sub_queries_success = sous-requête(s) exécutée(s) avec succès
+text_rag_complex_query_failures = échec(s)
+
+text_rag_complex_query_section_data_analysis = Analyse de données
+text_rag_complex_query_section_semantic_search = Recherche sémantique
+text_rag_complex_query_section_web_search = Recherche web
+text_rag_complex_query_section_result = Résultat
+
+text_rag_complex_query_response = Réponse :
+text_rag_complex_query_sql_query = Requête SQL :
+text_rag_complex_query_documents_found = document(s) trouvé(s)
+text_rag_complex_query_view_sources = Voir les sources (contexte)
+text_rag_complex_query_similarity_score = Score de similarité :
+text_rag_complex_query_external_links = Liens externes :
+text_rag_complex_query_result_number = Résultat
+
+text_rag_complex_query_price_comparison = Comparaison de prix
+text_rag_complex_query_our_price = Notre prix :
+text_rag_complex_query_competitor_prices = Prix concurrents :
+text_rag_complex_query_recommendation = Recommandation :
+
+text_rag_complex_query_multiple_sources = Sources Multiples (Requête Hybride)
+text_rag_complex_query_sources_used = Sources utilisées :
+text_rag_complex_query_sub_query = Sous-requête
+text_column_reference_does_not_exist = La colonne ou référence mentionnée dans votre question n'existe pas dans la base de données. Veuillez vérifier le nom du champ et réessayer.
+text_sql_query_generated_error = La requête SQL générée contient une erreur de syntaxe. Veuillez reformuler votre question plus clairement.
+text_table_referenced_does_not_exist = La table référencée dans votre question n'existe pas dans la base de données. Veuillez vérifier le nom de l'entité.
+text_error_executing_query = Une erreur s'est produite lors de l'exécution de votre requête. Veuillez reformuler votre question ou contacter le support si le problème persiste.
+text_empty_results_base = Je n'ai trouvé aucun résultat pour votre requête. Pourriez-vous préciser votre question pour que je puisse mieux vous aider ?<br />
+text_empty_results_product_title = **Suggestions pour affiner votre recherche :**<br />
+text_empty_results_product_spelling = - Vérifiez l'orthographe du nom du produit<br />
+text_empty_results_product_shorter = - Essayez un nom plus court (ex: 'iPhone' au lieu de 'Apple iPhone 17 Pro')<br />
+text_empty_results_product_generic = - Utilisez des mots-clés génériques (ex: 'smartphone' au lieu d'un modèle spécifique)<br />
+text_empty_results_product_list_all = - Demandez 'liste tous les produits' pour voir le catalogue complet<br />
+text_empty_results_date_title = **Suggestions pour affiner votre recherche :**<br />
+text_empty_results_date_period = - Vérifiez la période sélectionnée (année, mois, jour)<br />
+text_empty_results_date_wider = - Essayez une plage de dates plus large<br />
+text_empty_results_date_recent = - Précisez si vous cherchez des données récentes ou historiques<br />
+text_empty_results_category_title = **Suggestions pour affiner votre recherche :**<br />
+text_empty_results_category_name = - Vérifiez le nom de la catégorie<br />
+text_empty_results_category_parent = - Essayez une catégorie parente plus générale<br />
+text_empty_results_category_list_all = - Demandez 'liste toutes les catégories' pour voir les catégories disponibles<br />
+text_empty_results_customer_title = **Suggestions pour affiner votre recherche :**<br />
+text_empty_results_customer_criteria = - Vérifiez les critères de recherche (nom, email, numéro de commande)<br />
+text_empty_results_customer_period = - Élargissez la période de recherche<br />
+text_empty_results_customer_specific = - Précisez si vous cherchez un client ou une commande spécifique<br />
+text_empty_results_reference_title = **Suggestions pour affiner votre recherche :**<br />
+text_empty_results_reference_exists = - Vérifiez que le produit existe dans la base de données<br />
+text_empty_results_reference_by_name = - Essayez de chercher par nom de produit au lieu de la référence<br />
+text_empty_results_reference_list_all = - Demandez 'liste tous les produits' pour voir les produits disponibles<br />
+text_empty_results_reference_exact_name = - Précisez le nom exact du produit (ex: 'iPhone 17 Pro' au lieu de 'iphone')<br />
+text_empty_results_generic_title = **Suggestions pour affiner votre recherche :**<br />
+text_empty_results_generic_rephrase = - Reformulez votre question avec plus de détails<br />
+text_empty_results_generic_criteria = - Vérifiez les critères de recherche<br />
+text_empty_results_generic_simpler = - Essayez une question plus simple pour commencer<br />
+text_empty_results_no_sql_title = **Suggestions :**<br />
+text_empty_results_no_sql_precision = - Reformulez votre question avec plus de précision<br />
+text_empty_results_no_sql_data_exists = - Vérifiez que les données existent dans la base<br />
+text_empty_results_no_sql_simpler = - Essayez une question plus simple pour commencer<br />
+text_empty_results_debug_title = **Debug - Requête SQL exécutée :**<br />
+text_empty_results_debug_query =  {{sql_query}}
+text_correction_success = Requête automatiquement corrigée par l'IA
+text_correction_failed = Échec de la correction
+text_correction_attempted = Correction tentée mais échouée
+hybrid_web_search_results_title = 🌐 Résultats de Recherche Web
+hybrid_analytics_results_title = 📊 Résultats Analytiques

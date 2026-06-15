@@ -14,7 +14,6 @@ use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters\AbstractFormatter;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
@@ -54,6 +53,9 @@ class WebSearchFormatter extends AbstractFormatter
     // Initialize language
     $this->language = Registry::get('Language');
     $this->languageCode = $this->language->get('code');
+
+    // Load shared user-facing labels once (interface language)
+    $this->language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
   
   /**
@@ -76,9 +78,6 @@ class WebSearchFormatter extends AbstractFormatter
    */
   public function format(array $results): array
   {
-    // Load language definitions
-    DomainConfig::loadLanguageFile('rag_web_search_formatter');
-      
     $question = $results['question'] ?? $results['query'] ?? 'Unknown request';
 
     if ($this->debug) {

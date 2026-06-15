@@ -54,6 +54,22 @@ class AmbiguityOptimizer
   }
 
   /**
+   * Force-disable the analysis cache (read + write) for this instance.
+   *
+   * Used by the ambiguity bench so each detection measures raw behavior: the OM\Cache
+   * memory tier persists for the whole process and would otherwise replay one strategy's
+   * verdict across the others. Production leaves the cache enabled.
+   *
+   * @internal Measurement hook for unit_test/2026_06_15/ambiguity_eval_harness.php ONLY.
+   *           Business code must never call this. Removed if/when the bench is archived
+   *           (BACKLOG §T cleanup).
+   */
+  public function disableCache(): void
+  {
+    $this->useCache = false;
+  }
+
+  /**
    * Check if query is clearly non-ambiguous using pattern-based pre-filter
    *
    * ⚠️ EXCEPTION TO PURE LLM APPROACH:

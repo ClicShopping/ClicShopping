@@ -11,7 +11,6 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
-use ClicShopping\AI\Config\DomainConfig;
 
 /**
  * HybridFormatter - Formats hybrid query results
@@ -38,7 +37,7 @@ class HybridFormatter extends AbstractFormatter
     $this->languageCode = $this->language->get('code');
     
     // Load language definitions (null = use current user language)
-    DomainConfig::loadLanguageFile('rag_hybrid_formatter', null);
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
 
   public function canHandle(array $results): bool
@@ -100,7 +99,7 @@ class HybridFormatter extends AbstractFormatter
       }
       
       $output .= "<div class='mt-4'>";
-      $output .= "<h5>📊 " . htmlspecialchars($this->language->getDef('analytics_results_title')) . "</h5>";
+      $output .= "<h5>📊 " . htmlspecialchars($this->language->getDef('hybrid_analytics_results_title')) . "</h5>";
 
       $analyticsInterpretation = trim((string)($analyticsComp['interpretation'] ?? ''));
       if ($analyticsInterpretation !== '') {
@@ -212,7 +211,7 @@ class HybridFormatter extends AbstractFormatter
         // Format web_search results with full HTML rendering
         if ($subType === 'web_search' && isset($subQuery['results']) && is_array($subQuery['results'])) {
           $output .= "<div class='mt-4'>";
-          $output .= "<h5>" . htmlspecialchars($this->language->getDef('web_search_results_title')) . "</h5>";
+          $output .= "<h5>" . htmlspecialchars($this->language->getDef('hybrid_web_search_results_title')) . "</h5>";
           $output .= "<div class='web-search-results'>";
           
           foreach ($subQuery['results'] as $resultIdx => $result) {
@@ -261,7 +260,7 @@ class HybridFormatter extends AbstractFormatter
             $output .= "</div>";
         }
 
-          $output .= "<h5>" . htmlspecialchars($this->language->getDef('analytics_results_title')) . "</h5>";
+          $output .= "<h5>" . htmlspecialchars($this->language->getDef('hybrid_analytics_results_title')) . "</h5>";
           // Use existing analytics formatting logic
           $output .= $this->formatAnalyticsSubQuery($subQuery);
           $output .= "</div>";

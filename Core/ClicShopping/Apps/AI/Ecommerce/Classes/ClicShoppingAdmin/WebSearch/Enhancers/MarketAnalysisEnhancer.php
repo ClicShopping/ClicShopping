@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Enhancers;
 
-use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\InterfacesAI\WebSearchResultEnhancerInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\EcommerceWebSearchFacade;
@@ -211,13 +210,13 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
     /**
      * Render the synthesis as an HTML encart for the top of the response.
      *
-     * The enhancer runs BEFORE WebSearchFormatter::format() (which is what
-     * normally loads the rag_web_search_formatter language file), so we
-     * load it explicitly here — otherwise getDef() returns the raw key.
+     * The enhancer runs BEFORE WebSearchFormatter (which loads the shared
+     * ai_response_labels file in its constructor), so we load it explicitly
+     * here — otherwise getDef() returns the raw key.
      */
     private function buildHtmlEncart(array $internal, array $comparison, string $synthesisText): string
     {
-        DomainConfig::loadLanguageFile('rag_web_search_formatter');
+        Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
 
         $language = Registry::get('Language');
 

@@ -490,7 +490,8 @@ text_sql_generation_rules = SQL GENERATION RULES:
      → Use clic_products_viewed table (special tracking table)
 
    - "profit margin" / "margin calculation"
-     → Calculate: (products_price - products_cost) / products_price * 100
+     → Calculate: (products_price - (products_cost + products_handling)) / products_price * 100
+       (the cost basis is products_cost plus products_handling)
 
    LEVEL 4 - FRENCH-ENGLISH BUSINESS TERMS:
 

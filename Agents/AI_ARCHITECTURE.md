@@ -227,21 +227,33 @@ a new domain (HR, CRM, Finance, Trading, ...) is added.
 Mode D is **always domain-registered**. The Ecommerce App ships
 `mode_d_amazon_shopping` via `AmazonShoppingProvider`.
 
-### 5.3 — Language prompt files (`Agents/` vs `{domain}/`)
+### 5.3 — Language files: the three buckets (`Agents/` · `{domain}/` · root labels)
 
 RAG/agent **prompts are language files**, never hardcoded strings (no heredoc or inline prompt
-text in classes — always `getDef()`). A third agnostic-vs-domain split applies, mirroring
-5.1/5.2:
+text in classes — always `getDef()`). There are **three** buckets, distinguished by *who reads
+the text* (the LLM vs the end user) and therefore *whether French is actually used*:
 
-| Kind | Location | Content |
-|------|----------|---------|
-| **Agnostic** (any domain) | `ClicShoppingAdmin/Core/languages/{lang}/Agents/rag_*.txt` | Instructions/logic with NO domain entities, schema or few-shot examples (critic selection, weight bounds, anomaly detection, …) |
-| **Domain-specific** | `ClicShoppingAdmin/Core/languages/{lang}/{domain}/rag_*.txt` (e.g. `ecommerce/`) | NL-to-SQL with the real schema, entity extraction, domain few-shot examples |
+| Bucket | Location | Read by | Content | FR |
+|--------|----------|---------|---------|----|
+| **Agnostic prompt** | `…/languages/{lang}/Agents/rag_*.txt` | LLM | Instructions/logic with NO domain entities (critic selection, weight bounds, anomaly detection, …) | kept, **unused** |
+| **Domain prompt** | `…/languages/{lang}/{domain}/rag_*.txt` (e.g. `ecommerce/`) | LLM | NL-to-SQL with the real schema, entity extraction, domain few-shot examples | kept, **unused** |
+| **User-facing labels** | `…/languages/{lang}/ai_response_labels.txt` (platform root, alongside `main.txt`) | End user | Agnostic chat-rendering labels & error/empty-result messages (formatter titles, mode names, month names, "No results", correction notices, …) | **used** (really translated) |
 
-**Decision rule**: if a prompt would read identically for Finance/HR/CRM (only generic
+> **The whole AI process runs in English** (queries are translated to EN, the pipeline reasons
+> in EN, and the final answer is translated back to the interface language at the single
+> orchestrator chokepoint — `SemanticAgent::translateToLanguage`). That is why the two **prompt**
+> buckets are English-by-design and their FR copies are kept but never loaded. Only the
+> **labels** bucket is genuinely localized, because those strings are rendered verbatim to the
+> user (they are NOT prose that passes through the chokepoint).
+
+**Decision rule (prompts)**: if a prompt would read identically for Finance/HR/CRM (only generic
 instructions), it belongs in `Agents/`. If it embeds the domain's entities/schema/examples it
 stays in `{domain}/`. When a prompt is *mostly* agnostic with a few domain examples, split the
 agnostic skeleton into `Agents/` and keep only the examples in `{domain}/`.
+
+**Decision rule (labels)**: any string shown verbatim to the user that is the same for every
+domain (formatter labels, error/empty-result messages) belongs in the root `ai_response_labels.txt`,
+NOT in `{domain}/` — keeping the domain prompt files free of user-facing text.
 
 **Goal**: adding a domain (e.g. `finance/`) must require providing **only** the domain-specific
 prompts; the agnostic ones in `Agents/` are inherited without recopy.
@@ -270,9 +282,25 @@ DomainConfig::loadLanguageFile('rag_xxx_examples');         // domain entities/s
 `'Agents'` is not a registered site, so `Language::loadDefinitions()` does not strip it as a
 site prefix → it resolves to `…/languages/{lang}/Agents/{file}.txt`.
 
+**Loading the labels bucket** — do NOT use `DomainConfig` (that wrapper prefixes `Agents/` or
+`{domain}/`). The labels file lives at the platform languages root, so use the **native**
+`Language::loadDefinitions()` exactly like `main.txt`, loaded **once in the class constructor**
+(not re-loaded in every method), then read with `getDef()`:
+
+```php
+// constructor (loads in the CURRENT interface language, with DEFAULT_LANGUAGE fallback)
+Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+// methods
+$label = CLICSHOPPING::getDef('text_rag_web_search_summary'); // → "Résumé :" in FR, "Summary:" in EN
+```
+
+(Exception: `static` formatter helpers cannot use a constructor, so they load on first use behind
+an `if ($language === null)` guard — see `ResultFormatter::formatAnalyticsAsText()`.)
+
 **Interpolation**: `getDef('text_key', ['var' => $value])` substitutes `{{var}}` placeholders
-in the value (prefer over `sprintf %s` for multi-variable lines). Prompts load in English by
-design (internal, not user-facing) but EN **and** FR must both be translated.
+in the value (prefer over `sprintf %s` for multi-variable lines). The two **prompt** buckets load
+in English by design (internal, FR kept but unused); the **labels** bucket loads in the current
+interface language and its EN **and** FR must both be really translated.
 
 ⚠️ Editing these `.txt` requires a cache + DB purge — see **ARCHITECTURE.md §7.1/§7.2** for the
 parser rules (`=` handling, single space before `=`) and the mandatory purge procedure.

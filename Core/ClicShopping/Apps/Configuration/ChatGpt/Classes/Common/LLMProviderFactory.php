@@ -193,7 +193,7 @@ class LLMProviderFactory
 
       case 'anthropic':
         $config['api_key'] = defined('CLICSHOPPING_APP_CHATGPT_ANTHROPIC_API_KEY') ? CLICSHOPPING_APP_CHATGPT_ANTHROPIC_API_KEY : '';
-        $config['model'] = defined('CLICSHOPPING_APP_CHATGPT_ANTHROPIC_MODEL') ? CLICSHOPPING_APP_CHATGPT_ANTHROPIC_MODEL : 'claude-3-5-sonnet-20241022';
+        $config['model'] = defined('CLICSHOPPING_APP_CHATGPT_ANTHROPIC_MODEL') ? CLICSHOPPING_APP_CHATGPT_ANTHROPIC_MODEL : 'claude-sonnet-4-6';
         $config['temperature'] = defined('CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE') ? (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE : 0.7;
         $config['max_tokens'] = defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 4000;
         $config['api_url'] = 'https://api.anthropic.com/v1/messages';

@@ -10,7 +10,6 @@ namespace ClicShopping\Apps\Customers\Groups\Module\ClicShoppingAdmin\Config\GR;
 
 class GR extends \ClicShopping\Apps\Customers\Groups\Module\ClicShoppingAdmin\Config\ConfigAbstract
 {
-
   protected $pm_code = 'groups';
 
   public bool $is_uninstallable = true;

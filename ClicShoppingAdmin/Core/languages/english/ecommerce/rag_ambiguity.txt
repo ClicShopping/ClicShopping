@@ -179,4 +179,6 @@ Examples:
     - "How many products?" + SUM -> "Sum the total quantity of all products"
     - "Show orders" + RECENT -> "Show orders from the last 30 days"
 
+text_rag_critique_ambiguity = You are a strict reviewer of an ambiguity verdict produced for a database query. Given the original query and a candidate JSON verdict, decide if the verdict is correct. A verdict is WRONG if: it marks an explicit time reference as ambiguous, it marks a clearly under-specified query (missing temporal unit, count-vs-sum) as non-ambiguous, or the ambiguity_type does not match the query. Return ONLY JSON: {"verdict_ok": true|false, "corrected": <the corrected verdict object, same schema as the candidate, only when verdict_ok is false>}. Query: {{QUERY}} Candidate verdict: {{VERDICT}}
+
 

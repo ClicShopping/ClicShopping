@@ -10,6 +10,11 @@ namespace ClicShopping\Apps\Customers\Groups\Module\ClicShoppingAdmin\Config;
 
 use ClicShopping\OM\Registry;
 
+/**
+ * Configuration parameter management for CustomersSupport module.
+ * Uses centralized AppConfigParamAbstract to eliminate code duplication.
+ */
+
 abstract class ConfigParamAbstract extends \ClicShopping\Sites\ClicShoppingAdmin\ConfigParamAbstract
 {
   public mixed $app;
@@ -32,10 +37,7 @@ abstract class ConfigParamAbstract extends \ClicShopping\Sites\ClicShoppingAdmin
 
     $this->config_module = $config_module;
 
-    /**
-     *
-     */
-      $this->code = (new \ReflectionClass($this))->getShortName();
+    $this->code = (new \ReflectionClass($this))->getShortName();
 
     $this->app->loadDefinitions('Module/ClicShoppingAdmin/Config/' . $config_module . '/Params/' . $this->code);
 

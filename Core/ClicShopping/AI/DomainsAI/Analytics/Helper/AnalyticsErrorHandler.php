@@ -9,7 +9,6 @@
 namespace ClicShopping\AI\DomainsAI\Analytics\Helper;
 
 
-use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
@@ -54,6 +53,9 @@ class AnalyticsErrorHandler
     $this->correctionAgent = $correctionAgent;
     $this->queryExecutor = $queryExecutor;
     $this->debug = $debug;
+
+    // Load shared user-facing labels once (interface language) for all methods
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
   
   /**
@@ -75,9 +77,6 @@ class AnalyticsErrorHandler
     string $originalQuery,
     string $userQuestion
   ): array {
-    // Load language definitions
-    $CLICSHOPPING_Language = Registry::get('Language');
-    DomainConfig::loadLanguageFile('rag_error_handler');
       
     try {
       // Prepare error context for CorrectionAgent
@@ -163,9 +162,6 @@ class AnalyticsErrorHandler
    */
   public function generateErrorSuggestion(string $errorMessage, string $question): string
   {
-    // Load language definitions
-    $CLICSHOPPING_Language = Registry::get('Language');
-    DomainConfig::loadLanguageFile('rag_error_handler');
     
     // Suggestions based on the type of error
     if (str_contains($errorMessage, 'Unknown column')) {
@@ -198,9 +194,6 @@ class AnalyticsErrorHandler
    */
   public function generateEmptyResultsMessage(string $question, array $results, bool $debug = false): string
   {
-    // Load language definitions
-    $CLICSHOPPING_Language = Registry::get('Language');
-    DomainConfig::loadLanguageFile('rag_error_handler');
     
     // Base message - more conversational and asking for clarification
     $message = CLICSHOPPING::getDef('text_empty_results_base');

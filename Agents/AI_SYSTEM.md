@@ -62,7 +62,7 @@ Mode is automatically selected by `QueryClassifier` before execution.
 | `ValidationAgent` | Specialized agent | Output validation and consistency |
 | `AnalyticsAgent` | Domain Agent | SQL generation/execution from natural language |
 | `SemanticAgent` | Domain Agent | Semantic search on vector tables |
-| `WebSearchTool` + `WebSearchQueryExecutor` | Domain tools | External data retrieval |
+| `WebSearchFacade` + `WebSearchExecutor` | Domain tools | External data retrieval |
 | `QueryClassifier` | Classifier | Intent analysis and RAG mode routing |
 | `MemoryRetentionService` | Memory service | Short/medium/long-term memory management |
 

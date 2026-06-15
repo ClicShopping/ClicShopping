@@ -9,7 +9,6 @@
 namespace ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters;
 
 
-use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
@@ -56,7 +55,7 @@ class ComplexQueryFormatter extends AbstractFormatter
     $this->languageCode = $this->language->get('code');
     
     // Load language definitions (null = use current user language)
-    DomainConfig::loadLanguageFile('rag_complex_query_formatter', null);
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
   
   /**

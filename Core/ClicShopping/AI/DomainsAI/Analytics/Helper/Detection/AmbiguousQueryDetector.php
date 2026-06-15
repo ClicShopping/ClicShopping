@@ -15,7 +15,10 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AmbiguityOptimizer;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\ParallelLLMExecutor;
+use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguityStrategy;
+use ClicShopping\AI\DomainsAI\Hybrid\Patterns\AmbiguityPreFilter;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
 
 /**
@@ -36,7 +39,50 @@ class AmbiguousQueryDetector
   private bool $debug;
   private mixed $chat;
   private mixed $language;
-  
+
+  /**
+   * Active strategy mode. Production runs c1 (deterministic LLM at temperature 0.0 via the
+   * Gpt facade, no regex pre-filter) — the bench winner on capable models (100% accuracy).
+   * See docs/superpowers/specs/2026-06-15-ambiguity-detection-bench-design.md. The bench can
+   * still select c0/c2/c3 via setStrategy(); c2 (regex fallback) is the recommended choice if
+   * a deployment must support weak/local models.
+   */
+  private string $strategy = AmbiguityStrategy::C1;
+
+  /** Optional engine override for cross-model measurement; null = configured default. */
+  private ?string $engine = null;
+
+  /** When false, the analysis cache is disabled (bench measurement). Production: true. */
+  private bool $optimizerCacheEnabled = true;
+
+  public function getStrategy(): string
+  {
+    return $this->strategy;
+  }
+
+  public function setStrategy(string $mode): void
+  {
+    if (!AmbiguityStrategy::isValid($mode)) {
+      throw new \InvalidArgumentException("Unknown ambiguity strategy: {$mode}");
+    }
+    $this->strategy = $mode;
+  }
+
+  public function setEngine(?string $engine): void
+  {
+    $this->engine = $engine;
+  }
+
+  /**
+   * @internal Measurement hook for unit_test/2026_06_15/ambiguity_eval_harness.php ONLY.
+   *           Business code must never disable the cache. Production keeps it enabled.
+   */
+  public function setCacheEnabled(bool $enabled): void
+  {
+    $this->optimizerCacheEnabled = $enabled;
+  }
+
+
   /**
    * LLM prompt for ambiguity detection
    * Dynamic detection without hardcoded patterns
@@ -85,6 +131,9 @@ class AmbiguousQueryDetector
     try {
       // OPTIMIZATION 1: Initialize optimizer
       $optimizer = new AmbiguityOptimizer($this->debug);
+      if (!$this->optimizerCacheEnabled) {
+        $optimizer->disableCache();
+      }
       
       // OPTIMIZATION 2: Check cache first (Memcached/Redis/Traditional)
       $cached = $optimizer->getCachedAmbiguityAnalysis($query);
@@ -95,8 +144,12 @@ class AmbiguousQueryDetector
         return $cached;
       }
       
-      // OPTIMIZATION 3: Check clear patterns before LLM call
-      $clearCheck = $optimizer->isClearlyNonAmbiguous($query);
+      // OPTIMIZATION 3: Check clear patterns before LLM call (PRIMARY only for c0).
+      // c1/c2/c3 defer the regex: c2 keeps it as a fallback (handled after the LLM call),
+      // c1/c3 do not use it at all.
+      $clearCheck = AmbiguityStrategy::usesPrefilterPrimary($this->strategy)
+        ? $optimizer->isClearlyNonAmbiguous($query)
+        : ['is_clear' => false, 'pattern_type' => null, 'matched_text' => null, 'reason' => 'prefilter_skipped'];
       if ($clearCheck['is_clear']) {
         if ($this->debug) {
           error_log("AmbiguousQueryDetector: Clear pattern detected ({$clearCheck['pattern_type']}), skipping LLM");
@@ -148,15 +201,46 @@ class AmbiguousQueryDetector
       
       $prompt = $this->language->getDef('text_rag_detect_ambiguity', ['QUERY' => $query]);
 
-      // Get LLM analysis
-      $response = $this->chat->generateText($prompt);
+      // Get LLM analysis. c1/c2/c3 use the Gpt facade at temperature 0.0 (deterministic +
+      // facade-compliant). c0 keeps the legacy direct chat call at default temperature.
+      if (AmbiguityStrategy::usesDeterministicLlm($this->strategy)) {
+        $response = (string) Gpt::getGptResponse($prompt, 600, 0.0, $this->engine);
+      } else {
+        $response = $this->chat->generateText($prompt);
+      }
       
       if ($this->debug) {
         error_log("AmbiguousQueryDetector: LLM response: " . substr($response, 0, 500));
       }
       
-      // Parse JSON response
-      $analysis = $this->parseAmbiguityResponse($response);
+      // Parse JSON response. For c2, an unusable verdict (parse failure or low confidence)
+      // falls back to the regex pre-filter rather than guessing.
+      try {
+        $analysis = $this->parseAmbiguityResponse($response);
+        $parseFailed = false;
+      } catch (\Exception $e) {
+        $parseFailed = true;
+        $analysis = [
+          'is_ambiguous' => false, 'ambiguity_type' => null, 'interpretations' => [],
+          'default_interpretation' => null, 'confidence' => 0.0,
+          'recommendation' => 'proceed', 'reasoning' => 'llm_parse_failed',
+        ];
+      }
+
+      if ($this->strategy === AmbiguityStrategy::C2
+          && AmbiguityStrategy::shouldFallbackToRegex($parseFailed, (float) ($analysis['confidence'] ?? 0.0))) {
+        $regex = AmbiguityPreFilter::preFilter($query);
+        if ($regex !== null) {
+          $regex['optimization'] = 'c2_regex_fallback';
+          $optimizer->cacheAmbiguityAnalysis($query, $regex);
+          return $regex;
+        }
+      }
+
+      if ($parseFailed) {
+        // No regex fallback available (or not c2): surface the safe non-ambiguous default.
+        return $analysis;
+      }
       
       // OPTIMIZATION 5: Reduce interpretations to 2 max (instead of 3)
       if ($analysis['is_ambiguous'] && !empty($analysis['interpretations'])) {
@@ -201,9 +285,14 @@ class AmbiguousQueryDetector
         }
       }
       
+      // c3: an LLM critic validates the verdict and regenerates it once if rejected.
+      if (AmbiguityStrategy::usesCritic($this->strategy)) {
+        $analysis = $this->critiqueAnalysis($query, $analysis);
+      }
+
       // OPTIMIZATION 6: Cache the result
       $optimizer->cacheAmbiguityAnalysis($query, $analysis);
-      
+
       return $analysis;
       
     } catch (\Exception $e) {
@@ -329,6 +418,55 @@ class AmbiguousQueryDetector
       'recommendation' => $data['recommendation'] ?? 'proceed',
       'reasoning' => $data['reasoning'] ?? ''
     ];
+  }
+
+  /**
+   * C3 critic pass: ask an LLM to validate the verdict and regenerate it once if rejected.
+   * Returns the (possibly corrected) analysis. Falls back to the input on any failure.
+   *
+   * @param string $query Translated English query.
+   * @param array $analysis Candidate verdict from the first LLM pass.
+   * @return array Validated/regenerated verdict.
+   */
+  private function critiqueAnalysis(string $query, array $analysis): array
+  {
+    try {
+      $prompt = $this->language->getDef('text_rag_critique_ambiguity', [
+        'QUERY' => $query,
+        'VERDICT' => json_encode($analysis, JSON_UNESCAPED_UNICODE),
+      ]);
+      $raw = (string) Gpt::getGptResponse($prompt, 600, 0.0, $this->engine);
+
+      // extractCriticJson returns the corrected verdict object when verdict_ok is false,
+      // otherwise the original analysis — so parse just normalizes it.
+      return $this->parseAmbiguityResponse($this->extractCriticJson($raw, $analysis));
+    } catch (\Exception $e) {
+      if ($this->debug) {
+        error_log('AmbiguousQueryDetector: critic pass failed: ' . $e->getMessage());
+      }
+      return $analysis;
+    }
+  }
+
+  /**
+   * Pull the effective verdict out of a critic response: the corrected object when the
+   * critic rejected it, the original analysis when accepted or unparseable.
+   *
+   * @param string $raw Raw critic LLM output.
+   * @param array $fallback Original analysis to keep if the critic accepted or failed.
+   * @return string JSON string of the effective verdict (for parseAmbiguityResponse).
+   */
+  private function extractCriticJson(string $raw, array $fallback): string
+  {
+    $json = $raw;
+    if (preg_match('/```(?:json)?\s*(.*?)\s*```/s', $raw, $m)) {
+      $json = $m[1];
+    }
+    $data = json_decode(trim($json), true);
+    if (!is_array($data) || ($data['verdict_ok'] ?? true) === true || !isset($data['corrected'])) {
+      return json_encode($fallback, JSON_UNESCAPED_UNICODE);
+    }
+    return json_encode($data['corrected'], JSON_UNESCAPED_UNICODE);
   }
 
   /**

@@ -53,19 +53,15 @@ class ModelManager
       // Context: 200K+ | Embeddings: Yes | Reasoning: Yes | Analytics: Yes | Web Search: Yes
         ['id' => 'gpt-5.5',       'text' => 'OpenAI GPT-5.5 (1.05M context, embeddings, reasoning, web search)', 'provider' => 'openai'],
         ['id' => 'gpt-5.5-mini',  'text' => 'OpenAI GPT-5.5 mini (400K context, embeddings, reasoning, web search)', 'provider' => 'openai'],
-        ['id' => 'gpt-5.5-nano',  'text' => 'OpenAI GPT-5.5 nano (128K context, reasoning)', 'provider' => 'openai'],
 
         ['id' => 'gpt-5.4',       'text' => 'OpenAI GPT-5.4 (1.05M context, embeddings, reasoning, web search)', 'provider' => 'openai'],
         ['id' => 'gpt-5.4-mini',  'text' => 'OpenAI GPT-5.4 mini (400K context, embeddings, reasoning, web search)', 'provider' => 'openai'],
-        ['id' => 'gpt-5.4-nano',  'text' => 'OpenAI GPT-5.4 nano (128K context, reasoning)', 'provider' => 'openai'],
 
         ['id' => 'gpt-5.2',       'text' => 'OpenAI GPT-5.2 (200K context, embeddings, reasoning, web search)', 'provider' => 'openai'],
         ['id' => 'gpt-5.2-mini',  'text' => 'OpenAI GPT-5.2 mini (128K context, embeddings, reasoning)', 'provider' => 'openai'],
-        ['id' => 'gpt-5.2-nano',  'text' => 'OpenAI GPT-5.2 nano (64K context, reasoning)', 'provider' => 'openai'],
 
         ['id' => 'gpt-5.1',       'text' => 'OpenAI GPT-5.1 (200K context, embeddings, reasoning)', 'provider' => 'openai'],
         ['id' => 'gpt-5.1-mini',  'text' => 'OpenAI GPT-5.1 mini (128K context, embeddings, reasoning)', 'provider' => 'openai'],
-        ['id' => 'gpt-5.1-nano',  'text' => 'OpenAI GPT-5.1 nano (64K context, reasoning)', 'provider' => 'openai'],
 
       // ============================================
       // GPT-4.1 SERIES (Latest Stable)
@@ -73,16 +69,15 @@ class ModelManager
       // Context: 128K | Embeddings: Yes | Reasoning: Yes | Analytics: Yes
         ['id' => 'gpt-4.1',       'text' => 'OpenAI GPT-4.1 (128K context, embeddings, reasoning)', 'provider' => 'openai'],
         ['id' => 'gpt-4.1-mini',  'text' => 'OpenAI GPT-4.1 mini **Recommended** (64K context, embeddings, reasoning)', 'provider' => 'openai'],
-        ['id' => 'gpt-4.1-nano',  'text' => 'OpenAI GPT-4.1 nano (32K context, reasoning)', 'provider' => 'openai'],
 
 
       // ============================================
       // ANTHROPIC MODELS (Alternative Provider)
       // ============================================
       // Context: 200K | Embeddings: Yes | Reasoning: Yes | Analytics: Yes
-      ['id' => 'anth-sonnet', 'text' => 'Anthropic Claude Sonnet 3.5 (200K context, embeddings, reasoning)', 'provider' => 'anthropic'],
-      ['id' => 'anth-opus', 'text' => 'Anthropic Claude Opus (200K context, embeddings, reasoning)', 'provider' => 'anthropic'],
-      ['id' => 'anth-haiku', 'text' => 'Anthropic Claude Haiku (200K context, embeddings, fast)', 'provider' => 'anthropic'],
+      ['id' => 'anth-sonnet', 'text' => 'Anthropic Claude Sonnet 4.6 (200K context, embeddings, reasoning)', 'provider' => 'anthropic'],
+      ['id' => 'anth-opus', 'text' => 'Anthropic Claude Opus 4.8 (200K context, embeddings, reasoning)', 'provider' => 'anthropic'],
+      ['id' => 'anth-haiku', 'text' => 'Anthropic Claude Haiku 4.5 (200K context, embeddings, fast)', 'provider' => 'anthropic'],
 
       // ============================================
       // MISTRAL MODELS (Alternative Provider)
@@ -101,10 +96,12 @@ class ModelManager
       // ============================================
       // Context: 16K | Embeddings: No | Reasoning: Yes | Analytics: Limited
       // NOTE: Local models have limited capabilities but provide privacy and cost benefits
-        ['id' => 'openai/gpt-oss-120b', 'text' => 'LM Studio GPT-OSS 120B (120K context, reasoning, local)', 'provider' => 'lmstudio'],
-        ['id' => 'openai/gpt-oss-20b',  'text' => 'LM Studio GPT-OSS 20B (16K context, reasoning, local)', 'provider' => 'lmstudio'],
-        ['id' => 'qwen/qwen3-4b',       'text' => 'LM Studio Qwen3 4B (16K context, local)', 'provider' => 'lmstudio'],
-        ['id' => 'microsoft/phi-4',     'text' => 'LM Studio Phi-4 (16K context, reasoning, local)', 'provider' => 'lmstudio'],
+        ['id' => 'openai/gpt-oss-120b',     'text' => 'LM Studio GPT-OSS 120B (120K context, reasoning, local)', 'provider' => 'lmstudio'],
+        ['id' => 'qwen/qwen3.6-35b-a3b',    'text' => 'LM Studio Qwen3.6 35B-A3B (262K context, reasoning, local)', 'provider' => 'lmstudio'],
+        ['id' => 'qwen/qwen3.6-27b',        'text' => 'LM Studio Qwen3.6 27B (262K context, reasoning, local)', 'provider' => 'lmstudio'],
+        ['id' => 'openai/gpt-oss-20b',      'text' => 'LM Studio GPT-OSS 20B (16K context, reasoning, local — chat only, not AI pipeline)', 'provider' => 'lmstudio'],
+        ['id' => 'qwen/qwen3-4b',           'text' => 'LM Studio Qwen3 4B (16K context, local — chat only, not AI pipeline)', 'provider' => 'lmstudio'],
+        ['id' => 'microsoft/phi-4',         'text' => 'LM Studio Phi-4 (16K context, local — chat only, not AI pipeline)', 'provider' => 'lmstudio'],
     ];
 
     return $array;
@@ -299,9 +296,9 @@ class ModelManager
     // LLPhant's AnthropicConfig handles model name mapping internally
     
     $mapping = [
-      'anth-sonnet' => 'claude-3-5-sonnet-20241022',
-      'anth-opus' => 'claude-3-opus-20240229',
-      'anth-haiku' => 'claude-3-haiku-20240307'
+      'anth-sonnet' => 'claude-sonnet-4-6',
+      'anth-opus' => 'claude-opus-4-8',
+      'anth-haiku' => 'claude-haiku-4-5-20251001'
     ];
 
     return $mapping[$model] ?? $model;
