@@ -30,15 +30,17 @@ Click to create a new Application and give it a name, such as "Webstore", and cl
 - Click the "Show Secret" button, and copy the Secret key test inside ClicShopping Stripe apps.<br />
 - Also Copy the public key inside ClicShopping Stripe apps.<br /><br />
 
-2/ <strong>Click on WebHooks to create the webhooks</strong><br /><br />
-- Add a new Endpoints<br />
-- The url must be like that : https://www.mydomain.com/shop/index.php?order&stripe&webhook&st<br />
-You must update the url in function.<br />
-- Add an Event Endpoints and save:<br /><br />
-Choose the 2 elements :<br />
-payment_method.attached<br />
-payment_intent_succeeded<br />
-charge.succeeded<br /><br />
+2/ <strong>Click on Developers &gt; Webhooks to create the webhook endpoint</strong><br /><br />
+- Add a new endpoint<br />
+- The endpoint URL must be (replace the domain with yours) : https://www.mydomain.com/shop/index.php?order&stripe&webhook&st<br /><br />
+- Select the events to listen to. This module reconciles the order from the PaymentIntent (it does NOT use Checkout Sessions, so do not select checkout.session.* events). Enable these 4 events:<br />
+&nbsp;&nbsp;&bull; payment_intent.succeeded&nbsp;&nbsp;(required - confirms the order and updates its status)<br />
+&nbsp;&nbsp;&bull; payment_intent.payment_failed&nbsp;&nbsp;(marks a failed payment)<br />
+&nbsp;&nbsp;&bull; charge.succeeded<br />
+&nbsp;&nbsp;&bull; charge.refunded&nbsp;&nbsp;(records a refund)<br /><br />
+- Save the endpoint, then in Stripe click "Reveal" on the <strong>Signing secret</strong> (it starts with whsec_).<br />
+- Copy that signing secret into the ClicShopping Stripe configuration field <strong>"Webhook endpoint key"</strong>. This value is provided by Stripe (you do not invent it) and is mandatory: every incoming event signature is verified against it, otherwise the webhook is rejected.<br /><br />
+- Note: the webhook is a server-to-server reconciliation safety net (e.g. if the customer closes the tab right after paying). The order is also created synchronously at checkout, so a missing secret does not block normal payments, but it is strongly recommended for reliable status updates and refunds.<br /><br />
 
 3/ <strong>Test your integration</strong><br /><br />
 - In your clicShopping Stripe Apps select also the test environment<br />

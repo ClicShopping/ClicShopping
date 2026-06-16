@@ -323,6 +323,7 @@ abstract class AppAbstract implements AppInterface
         'configuration_key' => $key
       ]);
     }
+
     Cache::clear('configuration');
   }
 

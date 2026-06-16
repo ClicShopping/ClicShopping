@@ -114,9 +114,14 @@ class Cache
       }
     }
 
+    if (is_file($filename) && !is_writable($filename)) {
+      return false;
+    }
+
     // Écriture directe avec verrouillage exclusif
-    // LOCK_EX empêche les écritures concurrentes
-    $result = file_put_contents($filename, $serializedData, LOCK_EX);
+    // LOCK_EX empêche les écritures concurrentes. Le @ évite qu'un échec d'écriture (permissions,
+    // disque plein, course) ne remonte en PHP Warning : la valeur de retour false suffit à l'appelant.
+    $result = @file_put_contents($filename, $serializedData, LOCK_EX);
 
     if ($result !== false) {
       // Forcer les permissions pour contourner le umask

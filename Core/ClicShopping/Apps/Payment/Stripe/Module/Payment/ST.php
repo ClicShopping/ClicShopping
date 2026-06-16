@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\Payment\Stripe\Module\Payment;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Payment\Stripe\Stripe as StripeApp;
@@ -109,16 +110,19 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
         }
       }
 
-      if(empty(CLICSHOPPING_APP_STRIPE_ST_PRIVATE_KEY) || empty(CLICSHOPPING_APP_STRIPE_ST_PUBLIC_KEY)) {
-        $this->enabled = false;
-      }
-
       if (CLICSHOPPING_APP_STRIPE_ST_SERVER_PROD == 'True') {
         $this->private_key = CLICSHOPPING_APP_STRIPE_ST_PRIVATE_KEY;
         $this->public_key = CLICSHOPPING_APP_STRIPE_ST_PUBLIC_KEY;
       } else {
         $this->private_key = CLICSHOPPING_APP_STRIPE_ST_PRIVATE_KEY_TEST;
         $this->public_key = CLICSHOPPING_APP_STRIPE_ST_PUBLIC_KEY_TEST;
+      }
+
+      // Disable the module when the keys for the ACTIVE mode (test vs production) are missing.
+      // Previously this always checked the production keys, so a test-mode shop with only the
+      // _TEST keys filled was wrongly disabled and never appeared in the payment selection.
+      if (empty($this->private_key) || empty($this->public_key)) {
+        $this->enabled = false;
       }
 
       $this->sort_order = \defined('CLICSHOPPING_APP_STRIPE_ST_SORT_ORDER') ? CLICSHOPPING_APP_STRIPE_ST_SORT_ORDER : 0;
@@ -280,14 +284,14 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
       $stripe_payment_intent_id = HTML::sanitize($_SESSION['stripe_payment_intent_id']);
 
       try {
-        $this->intent = PaymentIntent::retrieve($stripe_payment_intent_id);
-        // $this->event_log($customer_id, 'page retrieve intent', $stripe_payment_intent_id, $this->intent);
-        $this->intent->amount = $total_amount; //$CLICSHOPPING_Order->info['total'],
-        $this->intent->currency = $currency;
-        $this->intent->metadata = $metadata;
-
-        $this->intent->save();
-//          $response = $this->intent->save();
+        // PaymentIntent::update() replaces the deprecated retrieve() + property mutation + ->save()
+        // flow (the magic ->save() on Stripe resources is deprecated in stripe-php; the modern API
+        // is a single update call, already used in after_process()).
+        $this->intent = PaymentIntent::update($stripe_payment_intent_id, [
+          'amount' => $total_amount,
+          'currency' => $currency,
+          'metadata' => $metadata,
+        ]);
 
       } catch (\Exception $err) {
         //$this->event_log($customer_id, 'page create intent', $stripe_payment_intent_id, $err->getMessage());
@@ -336,11 +340,11 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
       '<input type="hidden" id="secret" value="' . HTML::output($this->intent->client_secret) . '" />';
     $content .= '<div id="stripe_table_new_card">' .
       '<div><label for="cardholder-name" class="control-label">' . $this->app->getDef('text_stripe_credit_card_owner') . '</label>' .
-      '<div><input type="text" id="cardholder-name" class="form-control" value="' . HTML::output($CLICSHOPPING_Order->billing['firstname'] . ' ' . $CLICSHOPPING_Order->billing['lastname']) . '" required></text></div>
+      '<div><input type="text" id="cardholder-name" class="form-control" value="' . HTML::output(trim(Hash::displayDecryptedDataText($CLICSHOPPING_Order->billing['firstname']) . ' ' . Hash::displayDecryptedDataText($CLICSHOPPING_Order->billing['lastname']))) . '" required></text></div>
                   </div>' .
       '<div class="mt-1"></div>' .
       '<div><label for="card-element" class="control-label">' . $this->app->getDef('text_stripe_credit_card_type') . '</label>' .
-      '<div id="card-element" class="col-md-5"></div>
+      '<div id="card-element" class="stripeCardElement"></div>
                   </div>';
 
     /*
@@ -351,18 +355,24 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
     */
 
     $content .= '<div id="card-errors" role="alert" class="messageStackError payment-errors"></div></div>';
-    $content .= '<input type="hidden" id="city" value="' . HTML::output($CLICSHOPPING_Order->billing['city']) . '" />';
-    $content .= '<input type="hidden" id="line1" value="' . HTML::output($CLICSHOPPING_Order->customer['street_address']) . '" />';
-    $content .= '<input type="hidden" id="line2" value="' . HTML::output($CLICSHOPPING_Order->billing['suburb']) . '" />';
-    $content .= '<input type="hidden" id="postal_code" value="' . HTML::output($CLICSHOPPING_Order->customer['postcode']) . '" />';
-    $content .= '<input type="hidden" id="state" value="' . HTML::output($CLICSHOPPING_Address->getZoneName($CLICSHOPPING_Order->billing['country']['id'], $CLICSHOPPING_Order->billing['zone_id'], $CLICSHOPPING_Order->billing['state'])) . '" />';
+    // Billing PII is stored AES-encrypted on the Order object; decrypt it before sending the
+    // address to Stripe (otherwise Stripe receives the ciphertext, not the real values).
+    $content .= '<input type="hidden" id="city" value="' . HTML::output(Hash::displayDecryptedDataText($CLICSHOPPING_Order->billing['city'])) . '" />';
+    $content .= '<input type="hidden" id="line1" value="' . HTML::output(Hash::displayDecryptedDataText($CLICSHOPPING_Order->customer['street_address'])) . '" />';
+    $content .= '<input type="hidden" id="line2" value="' . HTML::output(Hash::displayDecryptedDataText($CLICSHOPPING_Order->billing['suburb'])) . '" />';
+    $content .= '<input type="hidden" id="postal_code" value="' . HTML::output(Hash::displayDecryptedDataText($CLICSHOPPING_Order->customer['postcode'])) . '" />';
+    $content .= '<input type="hidden" id="state" value="' . HTML::output($CLICSHOPPING_Address->getZoneName($CLICSHOPPING_Order->billing['country']['id'], $CLICSHOPPING_Order->billing['zone_id'], Hash::displayDecryptedDataText($CLICSHOPPING_Order->billing['state']))) . '" />';
     $content .= '<input type="hidden" id="country" value="' . HTML::output($CLICSHOPPING_Order->billing['country']['iso_code_2']) . '" />';
-    $content .= '<input type="hidden" id="email_address" value="' . HTML::output($CLICSHOPPING_Order->customer['email_address']) . '" />';
+    $content .= '<input type="hidden" id="email_address" value="' . HTML::output(Hash::displayDecryptedEmail($CLICSHOPPING_Order->customer['email_address'])) . '" />';
     $content .= '<input type="hidden" id="customer_id" value="' . HTML::output($customer_id) . '" />';
 
     $content .= $this->getSubmitCardDetailsJavascript();
 
-    $confirmation = ['title' => $content];
+    // Return the markup under 'content' (not 'title'): the confirmation content module renders a
+    // 'title' inside a <table>, which foster-parents the Stripe <div id="card-element"> and its
+    // <script> out of the table and breaks the Element mount. The 'content' branch renders it in a
+    // plain <div>, so the card Element mounts correctly.
+    $confirmation = ['content' => $content];
 
     return $confirmation;
   }
@@ -421,7 +431,9 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
       $orders_id = $Qorder->valueInt('orders_id');
     }
 
-    $comment = $this->app->getDef('text_reference_transaction');
+    // Internal order note (customer_notified = 0 below): records the initial Stripe processing,
+    // which is never displayed to the customer.
+    $comment = $this->app->getDef('text_reference_transaction') . ' - ' . $this->app->getDef('text_stripe_initial_processing');
 
     if (CLICSHOPPING_APP_STRIPE_ST_PREPARE_ORDER_STATUS_ID > 0) {
       $new_order_status = CLICSHOPPING_APP_STRIPE_ST_PREPARE_ORDER_STATUS_ID;
@@ -648,16 +660,28 @@ class ST implements \ClicShopping\OM\Modules\PaymentInterface
 
     $js = <<<EOD
 <style>
-#stripe_table_new_card #card-element {
+#stripe_table_new_card #card-element,
+.stripeCardElement {
   background-color: #fff;
-  padding: 6px 12px;
+  padding: 10px 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  width: 100%;
+  max-width: 500px;
+  box-sizing: border-box;
 }
 </style>
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-$(function() {
+(function clicStripeInit() {
+    // The card form is rendered in the page body, but jQuery (and sometimes Stripe.js v3) are
+    // loaded later in the footer. Defer initialisation until BOTH are available, otherwise the
+    // inline script runs before jQuery/Stripe exist and the card Element never mounts.
+    if (typeof window.jQuery === 'undefined' || typeof window.Stripe === 'undefined') {
+        return window.setTimeout(clicStripeInit, 50);
+    }
+
+    jQuery(function($) {
     $('[name=checkout_confirmation]').attr('id','payment-form');
 
     var stripe = Stripe('{$stripe_publishable_key}');
@@ -670,10 +694,18 @@ $(function() {
     card.mount('#card-element');
 
     $('#payment-form').submit(function(event) {
-        var $form = $(this);
+        // Respect the "law Hamon" agreement checkbox (rendered by a separate confirmation module):
+        // if it is present and not ticked, abort BEFORE charging the card. The form's inline
+        // onsubmit=checkCheckBox already shows the alert; this just stops the Stripe flow too.
+        var agreeBox = document.getElementById('agree');
+        if (agreeBox && !agreeBox.checked) {
+            return false;
+        }
+
+        var form = $(this);
 
         // Disable the submit button to prevent repeated clicks
-        $form.find('button').prop('disabled', true);
+        form.find('button').prop('disabled', true);
 
         var selected =  $("input[name='stripe_card']:checked").val();
         var cc_save = $('[name=card-save]').prop('checked');
@@ -686,7 +718,7 @@ $(function() {
                 processNewCardPayment();
             }
         } catch (error) {
-            $form.find('.payment-errors').text(error);
+            form.find('.payment-errors').text(error);
         }
 
         // Prevent the form from submitting with the default action
@@ -764,8 +796,8 @@ $(function() {
                     processSavedCardPayment(data.payment_method);
                 }
             } else {
-                var $form = $('#payment-form');
-                $form.find('button').prop('disabled', false);
+                var form = $('#payment-form');
+                form.find('button').prop('disabled', false);
                 $('#card-errors').text(data.error);    
             }
         });
@@ -801,19 +833,20 @@ $(function() {
     }
 
     function stripeResponseHandler(result) {
-        var $form = $('#payment-form');
+        var form = $('#payment-form');
         if (result.error) {
             $('#card-errors').text(result.error.message);
-            $form.find('button').prop('disabled', false);
+            form.find('button').prop('disabled', false);
         } else {
             $('#card-errors').text('Processing');
             // Insert the token into the form so it gets submitted to the server
-            $form.append($('<input type="hidden" name="stripeIntentId" />').val(result.paymentIntent.id));
+            form.append($('<input type="hidden" name="stripeIntentId" />').val(result.paymentIntent.id));
             // and submit
-            $form.get(0).submit();
+            form.get(0).submit();
         }
     }
-});
+    });
+})();
 </script>
 EOD;
 

@@ -109,12 +109,12 @@ class Shipping extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       switch (MODULE_ORDER_TOTAL_SHIPPING_DESTINATION) {
         case 'national':
-          if ($CLICSHOPPING_Order->delivery['country_id'] === STORE_COUNTRY) {
+          if ($CLICSHOPPING_Order->delivery['country_id'] == STORE_COUNTRY) {
             $pass = true;
           }
           break;
         case 'international':
-          if ($CLICSHOPPING_Order->delivery['country_id'] !== STORE_COUNTRY) {
+          if ($CLICSHOPPING_Order->delivery['country_id'] != STORE_COUNTRY) {
             $pass = true;
           }
           break;

@@ -94,4 +94,4 @@ foreach (glob(Cache::getPath() . '*.cache') as $c) {
     </tbody>
   </table>
 </div>
-
+<div class="py-4"></div>

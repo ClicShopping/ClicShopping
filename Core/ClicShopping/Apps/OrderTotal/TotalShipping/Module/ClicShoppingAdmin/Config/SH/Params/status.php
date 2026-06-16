@@ -10,11 +10,13 @@
 namespace ClicShopping\Apps\OrderTotal\TotalShipping\Module\ClicShoppingAdmin\Config\SH\Params;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\Apps\OrderTotal\TotalShipping\Module\ClicShoppingAdmin\Config\ConfigParamAbstract;
 
-class status extends \ClicShopping\Apps\OrderTotal\TotalShipping\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
+class status extends ConfigParamAbstract
 {
   public $default = 'True';
   public int|null $sort_order = 10;
+  public bool $app_configured = true;
 
   protected function init()
   {

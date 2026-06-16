@@ -198,7 +198,10 @@ class ST extends \ClicShopping\OM\Domains\PagesAbstract
   private function updateOrderStatus(int $orderId, int $statusId, string $comment): void
   {
     $db = Registry::get('Db');
-    $Qorder = $db->prepare('SELECT orders_status_id FROM :table_orders WHERE orders_id = :orders_id');
+    $Qorder = $db->prepare('SELECT orders_status_id 
+                            FROM :table_orders 
+                            WHERE orders_id = :orders_id
+                            ');
     $Qorder->bindInt(':orders_id', $orderId);
     $Qorder->execute();
     

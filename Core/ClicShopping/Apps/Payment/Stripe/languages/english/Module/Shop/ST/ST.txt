@@ -8,6 +8,7 @@ text_stripe_credit_card_type = Card type
 text_stripe_alert_mode_test = Mode test selected
 
 text_reference_transaction = Stripe Payment
+text_stripe_initial_processing = Initial processing by Stripe (not shown to the customer)
 module_stripe_error_general = An error has been detected, please try another time
 module_stripe_error_stripe = Error during the process via Stripe payment
 module_stripe_error_title = Stripe error

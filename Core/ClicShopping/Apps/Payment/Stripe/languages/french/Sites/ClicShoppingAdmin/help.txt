@@ -30,15 +30,17 @@ Click to create a new Application and give it a name, such as "Webstore", and cl
 - Click the "Show Secret" button, and copy the Secret key test inside ClicShopping Stripe apps.<br />
 - Also Copy the public key inside ClicShopping Stripe apps.<br /><br />
 
-2/ <strong>Click on WebHooks to create the webhooks</strong><br /><br />
-- Add a new Endpoints<br />
-- The url must be like that : https://www.mydomain.com/shop/index.php?order&stripe&webhook&st<br />
-You must update the url in function.<br />
-- Add an Event Endpoints and save:<br /><br />
-Choose the 2 elements :<br />
-payment_method.attached<br />
-payment_intent_succeeded<br />
-charge.succeeded<br /><br />
+2/ <strong>Cliquez sur Developers &gt; Webhooks pour créer le point de terminaison webhook</strong><br /><br />
+- Ajoutez un nouveau endpoint<br />
+- L'URL du endpoint doit être (remplacez le domaine par le vôtre) : https://www.mydomain.com/shop/index.php?order&stripe&webhook&st<br /><br />
+- Sélectionnez les événements à écouter. Ce module réconcilie la commande à partir du PaymentIntent (il n'utilise PAS les Checkout Sessions, ne sélectionnez donc pas les événements checkout.session.*). Activez ces 4 événements :<br />
+&nbsp;&nbsp;&bull; payment_intent.succeeded&nbsp;&nbsp;(obligatoire - valide la commande et met à jour son statut)<br />
+&nbsp;&nbsp;&bull; payment_intent.payment_failed&nbsp;&nbsp;(marque un paiement échoué)<br />
+&nbsp;&nbsp;&bull; charge.succeeded<br />
+&nbsp;&nbsp;&bull; charge.refunded&nbsp;&nbsp;(enregistre un remboursement)<br /><br />
+- Enregistrez le endpoint, puis dans Stripe cliquez sur "Reveal" pour afficher le <strong>Signing secret</strong> (il commence par whsec_).<br />
+- Copiez ce signing secret dans le champ de configuration Stripe de ClicShopping <strong>"Clé du webhook endpoint"</strong>. Cette valeur est fournie par Stripe (vous ne l'inventez pas) et elle est obligatoire : la signature de chaque événement reçu est vérifiée avec elle, sinon le webhook est rejeté.<br /><br />
+- Note : le webhook est un filet de sécurité serveur-à-serveur (par ex. si le client ferme l'onglet juste après avoir payé). La commande est aussi créée de façon synchrone au checkout, donc un secret manquant ne bloque pas les paiements normaux, mais il est fortement recommandé pour des mises à jour de statut et des remboursements fiables.<br /><br />
 
 
 3/ <strong>Test your integration</strong><br /><br />

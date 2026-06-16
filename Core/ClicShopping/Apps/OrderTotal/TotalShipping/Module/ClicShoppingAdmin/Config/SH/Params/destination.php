@@ -13,7 +13,7 @@ use ClicShopping\OM\HTML;
 class destination extends \ClicShopping\Apps\OrderTotal\TotalShipping\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
   public $default = 'national';
-  public int|null $sort_order = 10;
+  public int|null $sort_order = 15;
 
   protected function init()
   {
