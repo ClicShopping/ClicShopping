@@ -1,2 +1,2 @@
 cfg_chatgpt_consensus_threshold_title = Consensus Threshold (0.0 - 1.0)
-cfg_chatgpt_consensus_threshold_description = Minimum weighted score required for consensus. Higher = stricter quality. Range: 0.0 (accept all) to 1.0 (perfect only). Recommended: 0.8.
+cfg_chatgpt_consensus_threshold_description = Minimum weighted score required for consensus. Higher = stricter quality. Range: 0.0 (accept all) to 1.0 (perfect only). Recommended: 0.7.

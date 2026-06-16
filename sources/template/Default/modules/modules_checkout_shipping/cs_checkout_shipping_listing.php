@@ -135,6 +135,25 @@ class cs_checkout_shipping_listing
 
                   $data .= '</tr>';
                 }
+              } elseif (isset($quote['error'])) {
+                // Informational teaser row for a module that returned a message but no
+                // selectable method (e.g. free-shipping conditions not yet met with DISPLAY on).
+                $data .= '<tr>';
+                $data .= '<td>';
+
+                if (!empty($quote['module'])) {
+                  $data .= '<strong>' . $quote['module'] . '&nbsp;</strong>';
+                }
+
+                $data .= '<div class="form-text">' . $quote['error'] . '</div>';
+
+                if (isset($quote['icon']) && !empty($quote['icon'])) {
+                  $data .= '&nbsp;' . $quote['icon'];
+                }
+
+                $data .= '</td>';
+                $data .= '<td class="text-end">&nbsp;</td>';
+                $data .= '</tr>';
               }
 
               $radio_buttons++;

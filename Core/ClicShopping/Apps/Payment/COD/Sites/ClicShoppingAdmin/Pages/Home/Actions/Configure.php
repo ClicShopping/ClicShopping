@@ -18,7 +18,6 @@ use ClicShopping\OM\Registry;
  * managing module selection, access control, and configuration interface setup
  * within the ClicShoppingAdmin environment.
  * 
- * @package ClicShopping\Apps\Payment\COD\Sites\ClicShoppingAdmin\Pages\Home\Actions
  * Copyright (c) 2008–2026 Loic Richard
  *
  * Licensed under AGPLv3 or commercial license.

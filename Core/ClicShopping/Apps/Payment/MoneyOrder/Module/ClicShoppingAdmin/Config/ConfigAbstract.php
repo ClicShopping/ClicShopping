@@ -95,10 +95,17 @@ abstract class ConfigAbstract
 
       $this->app->saveCfgParam($key, $cfg->default, $cfg->title ?? null, $cfg->description ?? null, $cfg->set_func ?? null);
     }
-}
+  }
 
   /**
+   * Removes configuration settings associated with the module from the database.
    *
+   * This method executes a SQL DELETE statement to remove all entries in the
+   * configuration table where the configuration key matches the specific pattern
+   * associated with the current module. The number of rows affected by the deletion
+   * is returned.
+   *
+   * @return int The number of rows deleted from the configuration table.
    */
   public function uninstall()
   {
@@ -138,9 +145,9 @@ abstract class ConfigAbstract
           } else {
             trigger_error('ClicShopping\Apps\Payment\MoneyOrder\Module\ClicShoppingAdmin\Config\\ConfigAbstract::getParameters(): ClicShopping\Apps\Payment\MoneyOrder\Module\ClicShoppingAdmin\Config\\' . $this->code . '\\Params\\' . $file->getBasename('.php') . ' is not a subclass of ClicShopping\Apps\Payment\MoneyOrder\Module\ClicShoppingAdmin\Config\ConfigParamAbstract and cannot be loaded.');
           }
-}
+        }
       }
-}
+    }
 
     return $result;
   }
@@ -195,7 +202,7 @@ abstract class ConfigAbstract
 
           break;
         }
-}
+      }
     }
 
     ksort($result, SORT_NUMERIC);

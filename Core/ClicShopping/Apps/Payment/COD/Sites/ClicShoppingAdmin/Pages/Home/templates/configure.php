@@ -18,7 +18,7 @@ $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 
 $current_module = $CLICSHOPPING_Page->data['current_module'];
 
-$CLICSHOPPING_COD_Config = Registry::get('CodAdminConfig' . $current_module);
+$CLICSHOPPING_COD_Config = Registry::get('CODAdminConfig' . $current_module);
 
 if ($CLICSHOPPING_MessageStack->exists('main')) {
   echo $CLICSHOPPING_MessageStack->get('main');
@@ -46,7 +46,7 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
   <?php
   if ($CLICSHOPPING_COD_Config->is_installed === true) {
     ?>
-    <form name="codConfigure"
+    <form name="Configure"
           action="<?php echo $CLICSHOPPING_COD->link('Configure&Process&module=' . $current_module); ?>"
           method="post">
 
@@ -119,5 +119,5 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
     <?php
   }
   ?>
-  <div class="py-4"></div>
 </div>
+<div class="py-4"></div>

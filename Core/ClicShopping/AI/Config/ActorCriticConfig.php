@@ -37,6 +37,7 @@ class ActorCriticConfig
     private const CONFIG_KEY_MAX_CONCURRENT_ACTIONS_PER_ACTOR = 'max_concurrent_actions_per_actor';
     private const CONFIG_KEY_MAX_CONCURRENT_EVALUATIONS_PER_CRITIC = 'max_concurrent_evaluations_per_critic';
     private const CONFIG_KEY_FALLBACK_TO_HYBRID = 'fallback_to_hybrid_on_error';
+    private const CONFIG_KEY_QUALITY_GATE_REGENERATION = 'quality_gate_regeneration_enabled';
     private const CONFIG_KEY_REPUTATION_DECAY_ENABLED = 'reputation_decay_enabled';
     private const CONFIG_KEY_REPUTATION_DECAY_FACTOR = 'reputation_decay_factor';
     
@@ -66,6 +67,7 @@ class ActorCriticConfig
         self::CONFIG_KEY_MAX_CONCURRENT_ACTIONS_PER_ACTOR => 5,
         self::CONFIG_KEY_MAX_CONCURRENT_EVALUATIONS_PER_CRITIC => 10,
         self::CONFIG_KEY_FALLBACK_TO_HYBRID => true, // Fallback to hybrid mode on error
+        self::CONFIG_KEY_QUALITY_GATE_REGENERATION => false, // Feature flag — regenerate once on quality-gate miss. OFF by default, enable in DB after ai_eval validation.
 
         // Reputation decay configuration (Requirement 4.2)
         self::CONFIG_KEY_REPUTATION_DECAY_ENABLED => true,
@@ -110,6 +112,19 @@ class ActorCriticConfig
     {
         self::initialize();
         return self::$config[self::CONFIG_KEY_ENABLED] ?? false;
+    }
+
+    /**
+     * Whether the quality-gate response-regeneration loop is enabled.
+     *
+     * Feature flag (default false). When on, a result whose consensus score misses
+     * AT_CONSENSUS_THRESHOLD is regenerated once with critic feedback; the higher-scoring
+     * of the two is kept (never worse than the original).
+     */
+    public static function isQualityGateRegenerationEnabled(): bool
+    {
+        self::initialize();
+        return self::$config[self::CONFIG_KEY_QUALITY_GATE_REGENERATION] ?? false;
     }
 
   /**

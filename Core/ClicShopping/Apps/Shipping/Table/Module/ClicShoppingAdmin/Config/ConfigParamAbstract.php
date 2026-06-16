@@ -20,7 +20,7 @@ abstract class ConfigParamAbstract extends \ClicShopping\Sites\ClicShoppingAdmin
   public mixed $app;
   protected $config_module;
 
-  protected string $key_prefix = 'clicshopping_app_module_';
+  protected string $key_prefix = 'clicshopping_app_table_';
   public bool $app_configured = true;
 
   /**

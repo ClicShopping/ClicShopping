@@ -40,7 +40,7 @@ products_image_medium varchar(255) null, comment(Path to medium-sized product im
 products_image_small varchar(255) null, comment(Path to small thumbnail product image file)
 products_weight_class_id tinyint(2) default(2) not_null comment(FK to weight_classes table - unit of measurement for weight)
 products_cost decimal(15,2) default (0.00) not_null comment(Product supplier cost price for margin calculations)
-products_handling decimal(15,2) default(0.00) not_null comment(Handling fee added to product price for margin calculations)
+products_handling decimal(15,2) default(0.00) not_null comment(Handling fee that is part of the total cost basis for margin calculations together with products_cost)
 products_packaging tinyint(1) default(0) not_null comment(Packaging requirement - 0: standard, 1: special packaging)
 products_sort_order int default(0) not_null comment(Display sort order - lower numbers appear first)
 products_quantity_alert int(4) default(0) not_null comment(Low stock alert threshold - triggers notification when quantity falls below)

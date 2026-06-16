@@ -79,18 +79,6 @@ class AnalyzeIntentStage implements OrchestrationStageInterface
 
     $this->logComplexityDetection($complexityDetection);
 
-    // 4.6. DEPRECATED: Complex query handling moved to ActorCriticCoordinator (2026-02-09)
-    // Complex queries are now handled by the Actor-Critic system
-    if ($complexityDetection['is_complex']) {
-      // Use ActorCriticCoordinator instead of HybridQueryProcessor
-      // For now, fall through to standard processing
-      // TODO: Implement complex query handling in ActorCriticCoordinator
-      $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'complex_query_fallthrough', [
-        'message' => 'Complex query detected but HybridQueryProcessor is deprecated',
-        'query' => $translatedQuery,
-        'complexity' => $complexityDetection
-      ]);
-    }
 
     // 🔧 FIX (2026-02-08): Route hybrid queries BEFORE ReasoningAgent
     // BUG: Hybrid queries were being sent to ReasoningAgent instead of HybridQueryProcessor

@@ -12,6 +12,7 @@ use ClicShopping\OM\Registry;
 
 $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 $CLICSHOPPING_MoneyOrder = Registry::get('MoneyOrder');
+$CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 
@@ -76,7 +77,7 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
           echo '<span class="float-end">' . HTML::button($CLICSHOPPING_MoneyOrder->getDef('button_dialog_uninstall'), null, '#', 'warning', ['params' => 'data-bs-toggle="modal" data-bs-target="#ppUninstallModal"']) . '</span>';
         }
         ?>
-
+      </div>
     </form>
     <?php
     if ($CLICSHOPPING_MoneyOrder->getConfigModuleInfo($current_module, 'is_uninstallable') === true) {
@@ -102,7 +103,7 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
       </div>
       <?php
     }
-} else {
+  } else {
     ?>
     <div class="col-md-12 mainTitle">
       <strong><?php echo $CLICSHOPPING_MoneyOrder->getConfigModuleInfo($current_module, 'title'); ?></strong></div>
@@ -111,14 +112,13 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
         <div class="mt-1"></div>
         <div class="col-md-12">
           <div><?php echo $CLICSHOPPING_MoneyOrder->getConfigModuleInfo($current_module, 'introduction'); ?></div>
-          <div class="separator">
-            <div><?php echo HTML::button($CLICSHOPPING_MoneyOrder->getDef('button_install_title', ['title' => $CLICSHOPPING_MoneyOrder->getConfigModuleInfo($current_module, 'title')]), null, $CLICSHOPPING_MoneyOrder->link('Configure&Install&module=' . $current_module), 'warning'); ?></div>
-          </div>
+          <div class="mt-1"></div>
+          <div><?php echo HTML::button($CLICSHOPPING_MoneyOrder->getDef('button_install_title', ['title' => $CLICSHOPPING_MoneyOrder->getConfigModuleInfo($current_module, 'title')]), null, $CLICSHOPPING_MoneyOrder->link('Configure&Install&module=' . $current_module), 'warning'); ?></div>
         </div>
       </div>
     </div>
     <?php
   }
   ?>
-  <div class="py-4"></div>
 </div>
+<div class="py-4"></div>

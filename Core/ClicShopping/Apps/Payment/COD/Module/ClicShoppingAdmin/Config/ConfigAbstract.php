@@ -11,9 +11,39 @@ namespace ClicShopping\Apps\Payment\COD\Module\ClicShoppingAdmin\Config;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 /**
- * Abstract class providing a base structure for configuration modules.
- * Handles initialization, installation, uninstallation, and parameter management
- * for the ClicShopping Config structure related to the COD payment module.
+ * Abstract class ConfigAbstract
+ *
+ * This abstract class provides a base structure for configuration management
+ * related to the Money Order payment module within the ClicShopping Administrator.
+ * It includes methods for the installation and uninstallation of configuration keys,
+ * parameter retrieval, and input parameter handling. It also enforces the initialization
+ * of properties and behavior through its abstract component.
+ *
+ * Properties:
+ * - $app: Holds the instance of the MoneyOrder application.
+ * - $code: Stores the shorthand code for the configuration.
+ * - $title: Title of the configuration (unspecified type).
+ * - $short_title: Brief title of the configuration.
+ * - $introduction: Introduction or description for the configuration.
+ * - $req_notes: Array containing required notes for the configuration.
+ * - $is_installed: Indicates if the module is currently installed.
+ * - $is_uninstallable: Determines if the module can be uninstalled.
+ * - $is_migratable: Specifies if the configuration can be migrated.
+ * - $sort_order: The sorting order for the configuration (nullable integer).
+ * - $group: Represents the group categorization (unspecified type).
+ *
+ * Methods:
+ * - __construct(): Initializes the configuration object by setting the application instance and invoking the abstract init method.
+ * - install(): Installs the configuration by registering all necessary parameters to the database.
+ * - uninstall(): Removes the configuration from the database and returns the number of affected rows.
+ * - getParameters(): Retrieves a list of configuration parameter keys associated with the module.
+ * - getInputParameters(): Returns a sorted array of configuration input parameters, ensuring that default values and defined structures are properly prepared and saved.
+ *
+ * This class enforces the implementation of the abstract init() method in any subclass,
+ * ensuring that module-specific logic is appropriately handled.
+ *
+ * Errors:
+ * - Triggers an error if a parameter file is not a subclass of ConfigParamAbstract during parameter retrieval.
  */
 abstract class ConfigAbstract
 {
@@ -33,8 +63,8 @@ abstract class ConfigAbstract
   abstract protected function init();
 
   /**
-   * Initializes the object by setting the app instance, determining the class name,
-   * and calling the initial setup method.
+   * Initializes the class instance by setting up the application context,
+   * deriving the short name of the class, and performing any required initialization steps.
    *
    * @return void
    */
@@ -48,9 +78,7 @@ abstract class ConfigAbstract
   }
 
   /**
-   * Installs the module configuration by iterating through its parameters,
-   * dynamically instantiating the configuration parameter class, and saving
-   * its default values along with optional metadata (title, description, and set function).
+   * Installs the module by initializing configuration parameters and saving them into the application configuration.
    *
    * @return void
    */
@@ -92,9 +120,14 @@ abstract class ConfigAbstract
   }
 
   /**
-   * Retrieves an array of configuration parameter constants for the module.
+   * Retrieves configuration parameters for the specified module code.
    *
-   * @return array An array of constants representing the configuration parameters of the module.
+   * This method scans the directory containing parameter classes for the module
+   * and checks if each file within that directory is a valid parameter class
+   * extending ConfigParamAbstract. The method then builds a list of parameter
+   * constant names based on the valid files found.
+   *
+   * @return array Returns an array of parameter constant names for the module.
    */
   public function getParameters()
   {
@@ -120,9 +153,13 @@ abstract class ConfigAbstract
   }
 
   /**
-   * Retrieves and processes input parameters for the module configuration.
+   * Retrieves and processes configuration parameters for the module.
    *
-   * @return array An array of processed input parameters sorted by their order.
+   * This method scans through parameters, initializes their configuration if required,
+   * and organizes them based on their sort order or default configuration settings.
+   *
+   * @return array Returns an array of processed input parameters, each formatted
+   *               according to their configuration settings.
    */
   public function getInputParameters()
   {
@@ -138,7 +175,6 @@ abstract class ConfigAbstract
       $class = 'ClicShopping\Apps\Payment\COD\Module\ClicShoppingAdmin\Config\\' . $this->code . '\Params\\' . $p;
 
       $cfg = new $class($this->code);
-
 
       if (!\defined($key)) {
         $this->app->saveCfgParam($key, $cfg->default, $cfg->title ?? null, $cfg->description ?? null, $cfg->set_func ?? null);

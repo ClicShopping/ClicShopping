@@ -34,7 +34,11 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
   public $group;
 
   /**
-   * Constructor method for initializing the MoneyOrder module.
+   * Constructor method initializes the Cash on Delivery (COD) module.
+   * Sets up the module attributes such as code, title, description, and status.
+   * Loads necessary resources and configuration options from the registry.
+   * Determines module availability based on customer group and other conditions.
+   * Configures order status and sort order specific to the module.
    *
    * @return void
    */
@@ -69,7 +73,7 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
           } else {
             $this->enabled = false;
           }
-}
+        }
       } else {
         if (CLICSHOPPING_APP_MONEYORDER_MO_NO_AUTHORIZE == 'True' && $CLICSHOPPING_Customer->getCustomersGroupID() == 0) {
           if ($CLICSHOPPING_Customer->getCustomersGroupID() == 0) {
@@ -78,14 +82,11 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
             } else {
               $this->enabled = false;
             }
-}
+          }
         }
-}
+      }
 
       if ((int)CLICSHOPPING_APP_MONEYORDER_MO_PREPARE_ORDER_STATUS_ID > 0) {
-        /**
-         *
-         */
           $this->order_status = CLICSHOPPING_APP_MONEYORDER_MO_PREPARE_ORDER_STATUS_ID;
       }
 
@@ -93,14 +94,17 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
         if (isset($CLICSHOPPING_Order) && \is_object($CLICSHOPPING_Order)) {
           $this->update_status();
         }
-}
+      }
 
       $this->sort_order = \defined('CLICSHOPPING_APP_MONEYORDER_MO_SORT_ORDER') ? CLICSHOPPING_APP_MONEYORDER_MO_SORT_ORDER : 0;
     }
-}
+  }
+
 
   /**
-   * Updates the status of the payment module based on the geographical zone and order delivery details.
+   * Updates the status of the module based on geographic zones and order content type.
+   * The method checks if the module is enabled and verifies its compatibility with
+   * the specified geographic zones and whether the order contains only virtual products.
    *
    * @return void
    */
@@ -122,18 +126,19 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
           $check_flag = true;
           break;
         }
-}
+      }
 
       if ($check_flag === false) {
         $this->enabled = false;
       }
-}
+    }
+
   }
 
   /**
-   * Validates JavaScript-related inputs or processes.
+   * Validates JavaScript input or related functionality.
    *
-   * @return bool Returns false to indicate validation failure or unimplemented logic.
+   * @return bool Returns false indicating the validation process.
    */
   public function javascript_validation()
   {
@@ -155,9 +160,10 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
       } else {
         $this->public_title = $this->public_title;
       }
-}
+    }
 
-    return ['id' => $this->app->vendor . '\\' . $this->app->code . '\\' . $this->code,
+    return [
+      'id' => $this->app->vendor . '\\' . $this->app->code . '\\' . $this->code,
       'module' => $this->public_title
     ];
   }
@@ -196,7 +202,7 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
   /**
    * Processes the button and determines its action.
    *
-   * @return bool Returns false indicating the button processing does not proceed.
+   * @return bool Returns false indicating the button processing did not complete successfully.
    */
   public function process_button()
   {
@@ -204,9 +210,9 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
   }
 
   /**
-   * Executes before a process begins.
+   * Executes preliminary processing logic before the main process.
    *
-   * @return bool Returns false to indicate that the process should not proceed.
+   * @return bool Returns false to indicate no further processing is required.
    */
   public function before_process()
   {
@@ -214,8 +220,9 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
   }
 
   /**
+   * Executes finalization logic after the main process has completed.
    *
-   * @return bool Returns false after processing.
+   * @return bool Returns false to indicate the process did not complete successfully or requires no additional handling.
    */
   public function after_process()
   {
@@ -223,8 +230,9 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
   }
 
   /**
+   * Retrieves the error state of the process.
    *
-   * @return bool Returns false indicating no specific error handling or error state.
+   * @return bool Returns false when no error is present.
    */
   public function get_error()
   {
@@ -242,10 +250,9 @@ class MO implements \ClicShopping\OM\Modules\PaymentInterface
   }
 
   /**
-   * Redirects the application to the configuration and installation page
-   * for the MoneyOrder module.
+   * Initiates the installation process and redirects to the configuration page for the specified module.
    *
-   * @return void
+   * @return void This method does not return a value.
    */
   public function install()
   {

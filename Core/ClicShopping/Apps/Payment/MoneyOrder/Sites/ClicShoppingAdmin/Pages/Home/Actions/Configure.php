@@ -18,7 +18,6 @@ use ClicShopping\OM\Registry;
  * managing module selection, access control, and configuration interface setup
  * within the ClicShoppingAdmin environment.
  * 
- * @package ClicShopping\Apps\Payment\MoneyOrder\Sites\ClicShoppingAdmin\Pages\Home\Actions
  * Copyright (c) 2008–2026 Loic Richard
  *
  * Licensed under AGPLv3 or commercial license.
@@ -57,7 +56,7 @@ class Configure extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $default_module = $m;
         break;
       }
-}
+    }
 
     $this->page->data['current_module'] = (isset($_GET['module']) && \in_array($_GET['module'], $modules)) ? $_GET['module'] : $default_module;
   }

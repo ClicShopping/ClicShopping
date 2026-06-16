@@ -31,8 +31,7 @@ if ($CLICSHOPPING_MessageStack->exists('MoneyOrder')) {
     </div>
   </div>
   <div class="mt-1"></div>
-  <div class="col-md-12 mainTitle"><strong><?php echo $CLICSHOPPING_MoneyOrder->getDef('text_moneyorder'); ?></strong>
-  </div>
+  <div class="col-md-12 mainTitle"><strong><?php echo $CLICSHOPPING_MoneyOrder->getDef('text_moneyorder'); ?></strong></div>
   <div class="adminformTitle">
     <div class="row">
       <div class="mt-1"></div>
@@ -57,6 +56,6 @@ if ($CLICSHOPPING_MessageStack->exists('MoneyOrder')) {
         </div>
       </div>
     </div>
-    <div class="mt-1"></div>
   </div>
 </div>
+<div class="py-4"></div>

@@ -23,6 +23,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\LLMPrompt
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightNormalizer;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightAuditLogger;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\EvaluationRetryHandler;
+use ClicShopping\AI\Config\ActorCriticConfig;
 use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\Config\AgentTechnicalConfig;
 use Exception;
@@ -213,6 +214,26 @@ class ActorCriticCoordinator
             
             $qualityThreshold = AgentTechnicalConfig::getConsensusThreshold();
             $qualityGatePassed = $consensus->meetsQualityThreshold($qualityThreshold);
+            $regenerated = false;
+
+            // Step 5c: Quality-gate regeneration loop (feature flag, default OFF).
+            if (!$qualityGatePassed && ActorCriticConfig::isQualityGateRegenerationEnabled()) {
+                $this->deliverFeedback($actor, $feedback); // actor learns before retry
+                $retryResult = $this->executeWithRetry($actor, $action);
+                $retryCritics = $this->selectCritics($retryResult, $criticsCount);
+                $retryEvaluations = $this->evaluateInParallel($retryCritics, $retryResult);
+                $retryConsensus = $this->consensusBuilder->buildConsensus($retryEvaluations);
+
+                if (self::higherScoringConsensus($consensus, $retryConsensus) === $retryConsensus) {
+                    $actionResult = $retryResult;
+                    $evaluations = $retryEvaluations;
+                    $critics = $retryCritics;
+                    $consensus = $retryConsensus;
+                    $feedback = $this->feedbackManager->createFeedback($consensus, $evaluations);
+                    $qualityGatePassed = $consensus->meetsQualityThreshold($qualityThreshold);
+                    $regenerated = true;
+                }
+            }
 
             // Step 6: Create coordinated result with adaptive weighting data
             $result = new CoordinatedResult(
@@ -231,6 +252,7 @@ class ActorCriticCoordinator
                     'outliers_count' => count($consensus->getOutliers()),
                     'quality_gate_passed' => $qualityGatePassed,
                     'quality_threshold' => $qualityThreshold,
+                    'regenerated' => $regenerated,
                     'adaptive_weighting_used' => $this->config['ADAPTIVE_WEIGHTING_ENABLED']
                 ],
                 $adaptiveWeights,
@@ -266,7 +288,17 @@ class ActorCriticCoordinator
         }
     }
 
-    
+    /**
+     * Return the higher-scoring of two consensuses (ties keep the original).
+     *
+     * Used by the quality-gate regeneration loop so a regenerated result is adopted only
+     * when it is strictly better — the outcome is never worse than the original attempt.
+     */
+    public static function higherScoringConsensus(Consensus $original, Consensus $candidate): Consensus
+    {
+        return $candidate->getScore() > $original->getScore() ? $candidate : $original;
+    }
+
     /**
      * Select best actor for action based on capabilities, confidence, and load
      *

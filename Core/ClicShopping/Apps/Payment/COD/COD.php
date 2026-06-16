@@ -11,12 +11,11 @@ namespace ClicShopping\Apps\Payment\COD;
 use ClicShopping\OM\Domains\ConfigurableAppAbstract;
 
 /**
- * Class COD
  *
- * This class extends the abstract class \ClicShopping\OM\Domains\AppAbstract and provides functionalities
- * related to the configuration and management of Cash on Delivery (COD) payment modules within
- * the ClicShopping application. It includes methods for retrieving configuration modules, module
- * information, API version, and identifier.
+ * This class represents the MoneyOrder application in the ClicShopping environment.
+ * It extends the AppAbstract class and implements the necessary methods to handle
+ * the configuration of Money Order payment modules. It provides methods to retrieve
+ * configuration modules, module information, API version, and the identifier of the app.
  */
 class COD extends ConfigurableAppAbstract
 {

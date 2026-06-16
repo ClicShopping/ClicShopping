@@ -8,6 +8,8 @@
 
 namespace ClicShopping\AI\CoreAI\Planning\SubPlanExecutor;
 
+use ClicShopping\OM\Registry;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\AnalyticsExecutorPatterns;
@@ -28,8 +30,9 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\RegistryAI\ActorRegistry;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
-use ClicShopping\OM\Registry;
-use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\AI\DomainsAI\Analytics\Validator\SqlPerformanceValidator;
+use ClicShopping\AI\DomainsAI\Analytics\Validator\SqlQualityValidator;
+use ClicShopping\AI\DomainsAI\Analytics\Validator\SqlSecurityValidator;
 
 /**
  * AnalyticsExecutor Class
@@ -726,11 +729,11 @@ class AnalyticsExecutor
       );
 
       $criticRegistry = new CriticRegistry();
-      
+
       // Create AnalyticsCriticWrapper with proper dependencies
-      $qualityValidator = new \ClicShopping\AI\DomainsAI\Analytics\Validator\SqlQualityValidator();
-      $securityValidator = new \ClicShopping\AI\DomainsAI\Analytics\Validator\SqlSecurityValidator(null, null, $this->debug);
-      $performanceValidator = new \ClicShopping\AI\DomainsAI\Analytics\Validator\SqlPerformanceValidator(null, $this->debug);
+      $qualityValidator = new SqlQualityValidator();
+      $securityValidator = new SqlSecurityValidator(null, null, $this->debug);
+      $performanceValidator = new SqlPerformanceValidator(null, $this->debug);
       
       // Get PDO for DatabaseSchemaManager
       $entityManager = \ClicShopping\AI\Infrastructure\Orm\DoctrineOrm::getEntityManager();

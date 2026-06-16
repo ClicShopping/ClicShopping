@@ -11,7 +11,6 @@ namespace ClicShopping\Apps\Payment\MoneyOrder;
 use ClicShopping\OM\Domains\ConfigurableAppAbstract;
 
 /**
- * Class MoneyOrder
  *
  * This class represents the MoneyOrder application in the ClicShopping environment.
  * It extends the AppAbstract class and implements the necessary methods to handle

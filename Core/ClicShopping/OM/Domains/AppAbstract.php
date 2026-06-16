@@ -10,6 +10,7 @@ namespace ClicShopping\OM\Domains;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Cache;
 use ClicShopping\OM\Interfaces\AppInterface;
 use DirectoryIterator;
 use ReflectionClass;
@@ -322,6 +323,7 @@ abstract class AppAbstract implements AppInterface
         'configuration_key' => $key
       ]);
     }
+    Cache::clear('configuration');
   }
 
   /**

@@ -28,11 +28,11 @@ class CO implements \ClicShopping\OM\Modules\PaymentInterface
   public $description;
   public $enabled = false;
   public mixed $app;
-  protected $signature;
-  protected $api_version;
+  public $title_selection;
+  public $signature;
   public $public_title;
-  public $order_status;
   public int|null $sort_order = 0;
+  protected $api_version;
   public $group;
 
   /**
@@ -58,7 +58,6 @@ class CO implements \ClicShopping\OM\Modules\PaymentInterface
 
     $this->app = Registry::get('COD');
     $this->app->loadDefinitions('Module/Shop/CO/CO');
-
 
     $this->signature = 'cod|' . $this->app->getVersion() . '|1.0';
     $this->api_version = $this->app->getApiVersion();
@@ -200,6 +199,7 @@ class CO implements \ClicShopping\OM\Modules\PaymentInterface
   }
 
   /**
+   * Processes the button and determines its action.
    *
    * @return bool Returns false indicating the button processing did not complete successfully.
    */
@@ -238,7 +238,6 @@ class CO implements \ClicShopping\OM\Modules\PaymentInterface
     return false;
   }
 
-
   /**
    * Checks if the constant 'CLICSHOPPING_APP_COD_CO_STATUS' is defined and if its value is not an empty string after trimming.
    *
@@ -256,7 +255,7 @@ class CO implements \ClicShopping\OM\Modules\PaymentInterface
    */
   public function install()
   {
-    $this->app->redirect('Configure&Install&module=CO');
+    $this->app->redirect('Configure&Install&module=COD');
   }
 
   /**
@@ -266,7 +265,7 @@ class CO implements \ClicShopping\OM\Modules\PaymentInterface
    */
   public function remove()
   {
-    $this->app->redirect('Configure&Uninstall&module=CO');
+    $this->app->redirect('Configure&Uninstall&module=COD');
   }
 
   /**

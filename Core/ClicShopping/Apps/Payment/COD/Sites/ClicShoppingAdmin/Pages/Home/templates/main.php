@@ -13,8 +13,8 @@ use ClicShopping\OM\Registry;
 $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 $CLICSHOPPING_COD = Registry::get('COD');
 
-if ($CLICSHOPPING_MessageStack->exists('main')) {
-  echo $CLICSHOPPING_MessageStack->get('main');
+if ($CLICSHOPPING_MessageStack->exists('COD')) {
+  echo $CLICSHOPPING_MessageStack->get('COD');
 }
 ?>
 <div class="contentBody">
@@ -41,7 +41,7 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
             <?php echo $CLICSHOPPING_COD->getDef('text_intro'); ?>
           </div>
         </div>
-        <div class="mt-1"></div>
+      </div>
 
         <div class="col-md-12 text-center">
           <div>
@@ -51,10 +51,10 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
               echo HTML::button($CLICSHOPPING_COD->getDef('button_configure'), null, null, 'primary');
               echo '</form>';
               ?>
-            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+<div class="py-4"></div>

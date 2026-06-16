@@ -20,7 +20,7 @@ class MO extends \ClicShopping\Apps\Payment\MoneyOrder\Module\ClicShoppingAdmin\
   public int|null $sort_order = 400;
 
   /**
-   * Initializes module properties such as title, short title, introduction, and installation status.
+   * Initializes module properties including title, short title, introduction, and installation status.
    *
    * @return void
    */
@@ -33,7 +33,7 @@ class MO extends \ClicShopping\Apps\Payment\MoneyOrder\Module\ClicShoppingAdmin\
   }
 
   /**
-   * Installs the payment module by adding it to the list of installed modules.
+   * Installs the current payment module by adding it to the MODULE_PAYMENT_INSTALLED configuration.
    *
    * @return void
    */
@@ -67,5 +67,5 @@ class MO extends \ClicShopping\Apps\Payment\MoneyOrder\Module\ClicShoppingAdmin\
 
       $this->app->saveCfgParam('MODULE_PAYMENT_INSTALLED', implode(';', $installed));
     }
-}
+  }
 }
