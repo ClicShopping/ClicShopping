@@ -174,8 +174,11 @@ class SqlQualityValidator
         $efficiency = $checks['uses_wildcard'] ? 0.45 : 0.65;
         $efficiency += $checks['has_limit'] ? 0.1 : 0.0;
 
-        // Clarity: Query structure and readability
-        $clarity = $checks['has_select'] ? 0.6 : 0.4;
+        // Clarity: Query structure and readability. Additive like the other dimensions
+        $clarity = ($checks['has_select'] && $checks['has_from']) ? 0.7 : 0.4;
+        $clarity += $checks['uses_wildcard'] ? 0.0 : 0.15; // explicit columns read clearer than SELECT *
+        $clarity += $checks['has_where'] ? 0.1 : 0.0;      // an explicit filter makes intent clear
+        $clarity += $checks['has_limit'] ? 0.05 : 0.0;     // a bounded result set is tidier
 
         return [
             'accuracy' => $this->clamp($accuracy),

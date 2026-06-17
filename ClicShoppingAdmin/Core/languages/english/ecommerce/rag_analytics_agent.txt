@@ -733,6 +733,12 @@ RETURNS:
 
 text_sql_generation_rules = SQL GENERATION RULES:
 
+COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
+- Catalog / list price comes from clic_products.products_price → you MUST alias it: SELECT p.products_price AS catalog_price
+- Transaction / sale price comes from clic_orders_products.products_price → you MUST alias it: SELECT op.products_price AS transaction_price
+- Units sold / quantity sold is SUM of clic_orders_products.products_quantity → you MUST alias it: SUM(op.products_quantity) AS total_sold
+- NEVER output a bare products_price or invent ad-hoc alias names. These fixed aliases (catalog_price, transaction_price, total_sold) are REQUIRED so downstream synthesis and the front-office receive stable, predictable column names on single-product lookups, lists, aggregations and hybrid queries.
+
 🚫 EXCLUDED COLUMNS — NEVER reference these in any SQL, even though they appear in the schema (unused / not connected). Maintain this list here:
 - `erp_invoice` : ERP-integration flag — NO ERP is connected, so it is ALWAYS 0 (filtering on it returns zero rows). For "invoiced / facturée" orders use `orders_status_invoice = 2` instead; NEVER use `erp_invoice`.
 

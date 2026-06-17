@@ -116,6 +116,38 @@
             $lastAnalysis = json_decode($result['metadata'], true);
             if ($lastAnalysis) {
               $hasAnalysis = true;
+
+              // The CockpitAI snapshot is frozen: its seo_status stays 'NOT_ANALYZED' even after
+              // a later SEO optimization, so the server-side rendered badge would lie. Refresh it
+              // from the live seo_serp_reports (same freshness logic as
+              // ajax/CockpitAI/load_last_analysis.php) so a product that HAS been SEO-analyzed in
+              // this language is shown as ANALYZED.
+              try {
+                $Qfresh = $db->prepare('SELECT seo_score_after
+                                          FROM :table_seo_serp_reports
+                                          WHERE entity_type = :entity_type
+                                            AND entity_id = :entity_id
+                                            AND language_id = :language_id
+                                            AND seo_score_after > 0
+                                          ORDER BY created_at DESC
+                                          LIMIT 1');
+                $Qfresh->bindValue(':entity_type', 'product');
+                $Qfresh->bindInt(':entity_id', (int)$productId);
+                $Qfresh->bindInt(':language_id', $languageId);
+                $Qfresh->execute();
+
+                if ($Qfresh->rowCount() > 0) {
+                  $freshScore = (float)($Qfresh->valueDecimal('seo_score_after') ?? 0);
+                  if ($freshScore > 0) {
+                    $lastAnalysis['seo']['status']        = 'ANALYZED';
+                    $lastAnalysis['seo']['score']         = $freshScore;
+                    $lastAnalysis['header']['seo_status'] = 'ANALYZED';
+                    $lastAnalysis['header']['seo_score']  = $freshScore;
+                  }
+                }
+              } catch (\Throwable $e) {
+                // Defensive: never block rendering on the freshness probe.
+              }
             }
           }
         } catch (\Exception $e) {

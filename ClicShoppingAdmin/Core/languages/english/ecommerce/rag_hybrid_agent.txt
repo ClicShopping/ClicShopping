@@ -352,6 +352,12 @@ COMPARISON QUERIES:
 
 text_sql_generation_rules = SQL GENERATION RULES:
 
+COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
+- Catalog / list price comes from clic_products.products_price → you MUST alias it: SELECT p.products_price AS catalog_price
+- Transaction / sale price comes from clic_orders_products.products_price → you MUST alias it: SELECT op.products_price AS transaction_price
+- Units sold / quantity sold is SUM of clic_orders_products.products_quantity → you MUST alias it: SUM(op.products_quantity) AS total_sold
+- NEVER output a bare products_price or invent ad-hoc alias names. These fixed aliases (catalog_price, transaction_price, total_sold) are REQUIRED so downstream synthesis and the front-office receive stable, predictable column names on single-product lookups, lists, aggregations and hybrid queries.
+
 1. Always use full table prefixes (e.g., clic_products not products)
 2. Add appropriate joins for related tables
 3. Filter by language_id when relevant

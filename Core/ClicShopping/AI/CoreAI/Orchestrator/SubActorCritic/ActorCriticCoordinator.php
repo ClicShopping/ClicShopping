@@ -154,7 +154,7 @@ class ActorCriticCoordinator
             $executionTime = microtime(true) - $startTime;
             
             // Step 2: Select critics excluding producing actor (Requirements 3.2, 11.1-11.5)
-            $criticsCount = $this->getConfig('critics_per_evaluation', self::DEFAULT_CRITICS_PER_EVALUATION);
+            $criticsCount = $this->config['critics_per_evaluation'] ?? self::DEFAULT_CRITICS_PER_EVALUATION;
             $critics = $this->selectCritics($actionResult, $criticsCount);
             
             // Step 3: Parallel evaluation (Requirements 3.3, 9.1-9.3, 21.1-21.5)
@@ -1182,6 +1182,8 @@ class ActorCriticCoordinator
             $config['LLM_PROVIDER'] = AgentTechnicalConfig::getLLMProvider();
             $config['TIMEOUT_SECONDS'] = AgentTechnicalConfig::getCoordinationTimeout();
             $config['MAX_RETRIES'] = 2; // Could be added to AgentTechnicalConfig later
+            $config['critics_per_evaluation'] = AgentTechnicalConfig::getMaxCritics();
+            $config['weight_cache_ttl'] = AgentTechnicalConfig::getCacheTtl();
         }
         
         // Set other defaults if not in file
@@ -1239,7 +1241,8 @@ class ActorCriticCoordinator
                     'max_retries' => $this->config['MAX_RETRIES'],
                     'timeout_seconds' => $this->config['TIMEOUT_SECONDS'],
                     'fallback_enabled' => $this->config['FALLBACK_ENABLED'],
-                    'fallback_alert_threshold' => $this->config['FALLBACK_ALERT_THRESHOLD']
+                    'fallback_alert_threshold' => $this->config['FALLBACK_ALERT_THRESHOLD'],
+                    'weight_cache_ttl' => $this->config['weight_cache_ttl'] ?? 86400
                 ]
             );
             

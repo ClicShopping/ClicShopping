@@ -69,7 +69,7 @@ class AgentTechnicalConfig
         'status' => false, // Disabled by default until module is installed
         'coordination_timeout' => 30, // seconds
         'max_critics' => 5,
-        'consensus_threshold' => 0.8, // 0.0 to 1.0
+        'consensus_threshold' => 0.7, // 0.0 to 1.0 — recalibrated 2026-06-16 from 0.8 (see consensus_threshold param)
         'llm_provider' => 'openai', // openai, ollama, anthropic, LmStudio
         'cache_ttl' => 3600, // seconds (1 hour)
         'sort_order' => 200
@@ -195,7 +195,7 @@ class AgentTechnicalConfig
     public static function getConsensusThreshold(): float
     {
         self::initialize();
-        return self::$config['consensus_threshold'] ?? 0.8;
+        return self::$config['consensus_threshold'] ?? 0.7;
     }
     
     /**

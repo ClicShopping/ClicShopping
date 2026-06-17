@@ -8,17 +8,10 @@
 
 namespace ClicShopping\AI\CoreAI\Orchestrator;
 
-use ClicShopping\AI\Config\ActorCriticConfig;
-use ClicShopping\AI\Config\AgentActorsConfig;
-use ClicShopping\AI\Config\AgentCriticsConfig;
-use ClicShopping\AI\Config\AgentDomainsConfig;
-use ClicShopping\AI\Config\AgentSystemConfig;
-use ClicShopping\AI\Config\AgentTechnicalConfig;
 use ClicShopping\AI\Config\AutonomousConfig;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\CoreAI\Memory\WorkingMemory;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticCoordinator;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ContextManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\DiagnosticManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\EntityExtractor;
@@ -60,7 +53,6 @@ use ClicShopping\AI\Infrastructure\Monitoring\PerformanceTracker;
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\Validation\HallucinationDetector;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticInitializer;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveManager;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
@@ -68,10 +60,10 @@ use ClicShopping\OM\Registry;
 /**
  * OrchestratorAgent Class
  *
- * Senior Agent / Coordinator — does NOT implement ActorAgentInterface.
- * This is by design: the Orchestrator coordinates Actors and Critics but does not
- * execute domain actions itself. It delegates execution to specialized Actor agents
- * (AnalyticsActor, ValidationActor, ReasoningActor) via the Actor-Critic framework.
+ * Senior Agent / Coordinator. Drives the request through an ordered stage pipeline
+ * (StageRegistry): intent analysis, hybrid/compound decomposition, planning, execution,
+ * response building. It does not execute domain actions itself.
+ *
  */
 
 class OrchestratorAgent
@@ -114,8 +106,6 @@ class OrchestratorAgent
   private DomainRouter $domainRouter;
   private QueryProcessor $queryProcessor;
   private HybridQueryHandler $hybridQueryHandler;
-  private ?ActorCriticCoordinator $actorCriticCoordinator = null;
-  private ActorCriticInitializer $actorCriticInitializer;
   private ObjectiveManager $objectiveManager;
   private ComplexQueryHandler $complexQueryHandler;
   private QueryAnalyzer $queryAnalyzer;
@@ -293,13 +283,9 @@ class OrchestratorAgent
     // Phase 5: Performance Tracking - Initialize PerformanceTracker
     $this->performanceTracker = new PerformanceTracker($this->collector, $this->debug);
 
-    // Phase 6B: Actor-Critic Initialization - Initialize ActorCriticInitializer
-    $this->actorCriticInitializer = new ActorCriticInitializer($this->securityLogger);
-
     // Phase 6B: Autonomous Agent Management - Initialize ObjectiveManager
     $this->objectiveManager = new ObjectiveManager($this->db, $this->securityLogger, $this->debug);
 
-    $this->actorCriticCoordinator = new ActorCriticCoordinator();
     $this->complexQueryHandler = new ComplexQueryHandler($this->debug);
 
     // Phase 4: build the ordered orchestration stage pipeline. Core registers the agnostic stages;
@@ -382,92 +368,6 @@ class OrchestratorAgent
         $this->executionStats
       ));
 
-    if ($this->debug) {
-      error_log('---------------------------');
-      error_log('Actor CriticsConfig Enable : ' . ActorCriticConfig::isEnabled());
-      error_log('---------------------------');
-    }
-
-    if (ActorCriticConfig::isEnabled()) {
-      try {
-        // Log Agent System and Agent Technical status
-        if ($this->debug) {
-          $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'agent_modules_status', [
-            'agent_system' => [
-              'enabled' => AgentSystemConfig::isEnabled(),
-              'websearch_global' => AgentSystemConfig::isWebSearchGloballyEnabled(),
-              'adaptive_weighting' => AgentSystemConfig::isAdaptiveWeightingEnabled(),
-              'reputation_system' => AgentSystemConfig::isReputationSystemEnabled()
-            ],
-            'agent_technical' => [
-              'enabled' => AgentTechnicalConfig::isEnabled(),
-              'llm_provider' => AgentTechnicalConfig::getLLMProvider(),
-              'coordination_timeout' => AgentTechnicalConfig::getCoordinationTimeout(),
-              'max_critics' => AgentTechnicalConfig::getMaxCritics(),
-              'consensus_threshold' => AgentTechnicalConfig::getConsensusThreshold()
-            ],
-            'agent_actors' => [
-              'enabled' => AgentActorsConfig::isEnabled(),
-              'analytics' => AgentActorsConfig::isAnalyticsEnabled(),
-              'semantic' => AgentActorsConfig::isSemanticEnabled(),
-              'validation' => AgentActorsConfig::isValidationEnabled(),
-              'websearch' => AgentActorsConfig::isWebSearchEnabled(),
-              'reasoning' => AgentActorsConfig::isReasoningEnabled()
-            ],
-            'agent_critics' => [
-              'enabled' => AgentCriticsConfig::isEnabled(),
-              'analytics_expert' => AgentCriticsConfig::isAnalyticsExpertEnabled(),
-              'specialist' => AgentCriticsConfig::isSpecialistEnabled(),
-              'security_expert' => AgentCriticsConfig::isSecurityExpertEnabled(),
-              'generalist' => AgentCriticsConfig::isGeneralistEnabled()
-            ],
-            'agent_domains' => [
-              'enabled' => AgentDomainsConfig::isEnabled(),
-              'domains_enabled' => AgentDomainsConfig::isDomainsEnabled()
-            ]
-          ]);
-        }
-        
-        // Initialize registries and register actors/critics
-        $this->initializeActorCriticSystem();
-        
-        $this->actorCriticCoordinator = new ActorCriticCoordinator();
-        
-        if ($this->debug) {
-          $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'actor_critic_enabled', [
-            'message' => 'Actor-Critic separation is ENABLED',
-            'fallback_enabled' => ActorCriticConfig::shouldFallbackToHybrid()
-          ]);
-        }
-      } catch (\Exception $e) {
-        if ($this->debug) {
-          $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'actor_critic_init_failed', [
-            'message' => 'Failed to initialize ActorCriticCoordinator, will use hybrid mode',
-            'error' => $e->getMessage()
-          ]);
-        }
-        $this->actorCriticCoordinator = null;
-      }
-    } else {
-      if ($this->debug) {
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'actor_critic_disabled', [
-          'message' => 'Actor-Critic separation is DISABLED (using hybrid mode)'
-        ]);
-      }
-    }
-  }
-  
-  /**
-   * Initialize Actor-Critic system by registering all actors and critics
-   * 
-   * Delegates to ActorCriticInitializer for actor/critic registration.
-   * Called during OrchestratorAgent initialization when Actor-Critic separation is enabled.
-   * 
-   * @return void
-   */
-  private function initializeActorCriticSystem(): void
-  {
-    $this->actorCriticInitializer->initialize($this->languageId, $this->debug);
   }
 
   /**
@@ -977,225 +877,4 @@ class OrchestratorAgent
     return $this->executionStats;
   }
   
-  /**
-   * Execute action using Actor-Critic coordination
-   *
-   * This method provides transparent integration with the Actor-Critic workflow.
-   * When enabled, it delegates to ActorCriticCoordinator for execution and evaluation.
-   * When disabled or on error, it falls back to hybrid mode.
-   *
-   * Requirements: 25.1, 25.2, 25.3, 25.4, 25.5
-   *
-   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action $action Action to execute
-   * @return \ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\CoordinatedResult|array Result or fallback response
-   */
-  public function executeWithActorCritic($action)
-  {
-    // Check if Actor-Critic is enabled (Requirement 25.5)
-    if (!$this->isActorCriticEnabled()) {
-      if ($this->debug) {
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'actor_critic_disabled', [
-          'message' => 'Actor-Critic disabled, using hybrid mode',
-          'action_type' => is_object($action) ? $action->getType() : 'unknown'
-        ]);
-      }
-      
-      // Fallback to hybrid mode (Requirement 25.3)
-      return $this->executeWithHybridMode($action);
-    }
-    
-    try {
-      // Use ActorCriticCoordinator for execution (Requirements 25.1, 25.2)
-      if ($this->debug) {
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'actor_critic_execution', [
-          'message' => 'Using Actor-Critic coordination',
-          'action_type' => $action->getType(),
-          'action_priority' => $action->getPriority()
-        ]);
-      }
-      
-      $result = $this->actorCriticCoordinator->coordinateExecution($action);
-      
-      // Preserve existing security and validation constraints (Requirement 25.3)
-      $this->validateCoordinatedResult($result);
-      
-      // Integrate with MonitoringAgent (Requirement 25.4)
-      $this->monitoring->recordEvent('actor_critic_execution', [
-        'action_type' => $action->getType(),
-        'consensus_score' => $result->getConsensusScore(),
-        'execution_time' => $result->getMetadata()['execution_time'] ?? 0,
-        'evaluation_time' => $result->getMetadata()['evaluation_time'] ?? 0,
-        'total_time' => $result->getMetadata()['total_time'] ?? 0,
-        'critics_count' => $result->getMetadata()['critics_count'] ?? 0
-      ]);
-      
-      if ($this->debug) {
-        $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'actor_critic_success', [
-          'action_type' => $action->getType(),
-          'consensus_score' => $result->getConsensusScore(),
-          'actor_id' => $result->getMetadata()['actor_id'] ?? 'unknown',
-          'critics_count' => $result->getMetadata()['critics_count'] ?? 0
-        ]);
-      }
-      
-      return $result;
-      
-    } catch (\Exception $e) {
-      // Error handling with fallback (Requirement 25.3)
-      $this->securityLogger->logSecurityEvent(
-        "Actor-Critic execution failed: " . $e->getMessage(),
-        'error'
-      );
-      
-      // Check if fallback is enabled
-      if (ActorCriticConfig::shouldFallbackToHybrid()) {
-        if ($this->debug) {
-          $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'actor_critic_fallback', [
-            'message' => 'Falling back to hybrid mode after error',
-            'error' => $e->getMessage()
-          ]);
-        }
-        
-        // Fallback to hybrid mode
-        return $this->executeWithHybridMode($action);
-      } else {
-        // Re-throw exception if fallback disabled
-        throw $e;
-      }
-    }
-  }
-  
-  /**
-   * Check if Actor-Critic separation is enabled
-
-   * @return bool True if enabled
-   */
-  public function isActorCriticEnabled(): bool
-  {
-    return ActorCriticConfig::isEnabled() && $this->actorCriticCoordinator !== null;
-  }
-  
-  /**
-   * Execute action using hybrid mode (fallback)
-   *
-   * This method provides backward compatibility when Actor-Critic is disabled
-   * or when fallback is needed due to errors.
-   *
-   * @param mixed $action Action to execute
-   * @return array Execution result
-   */
-  private function executeWithHybridMode($action): array
-  {
-    // Extract action details
-    $actionType = is_object($action) && method_exists($action, 'getType')
-                  ? $action->getType()
-                  : 'unknown';
-
-    $parameters = is_object($action) && method_exists($action, 'getParameters')
-                  ? $action->getParameters()
-                  : [];
-
-    // Use existing hybrid agent workflow
-    // This maintains backward compatibility with the current system
-
-    if ($this->debug) {
-      $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'hybrid_mode_execution', [
-        'action_type' => $actionType,
-        'reason' => 'actor_critic_disabled_or_fallback'
-      ]);
-    }
-
-    // Return a compatible response structure
-    return [
-      'success' => true,
-      'mode' => 'hybrid',
-      'action_type' => $actionType,
-      'message' => 'Executed using hybrid mode (Actor-Critic disabled or fallback)',
-      'parameters' => $parameters
-    ];
-  }
-  
-  /**
-   * Validate coordinated result
-   *
-   * Ensures the coordinated result meets security and validation constraints.
-   *
-   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\CoordinatedResult $result Result to validate
-   * @return void
-   * @throws \Exception If validation fails
-   */
-  private function validateCoordinatedResult($result): void
-  {
-    // Integrate with ValidationAgent (Requirement 25.4)
-    $actionResult = $result->getActionResult();
-    $output = $actionResult->getOutput();
-
-    // Validate output if it's a query
-    if (is_string($output) && str_contains(strtoupper($output), 'SELECT')) {
-      $validation = $this->validationAgent->validateBeforeExecution($output, [
-        'source' => 'actor_critic_coordination',
-        'actor_id' => $result->getMetadata()['actor_id'] ?? 'unknown'
-      ]);
-
-      if (!$validation['can_execute']) {
-        throw new \Exception(
-          'Coordinated result failed validation: ' . implode(', ', $validation['errors'])
-        );
-      }
-    }
-
-    // Additional security checks can be added here
-  }
-
-  /**
-   * Get Actor-Critic coordination statistics
-   *
-   * @return array Statistics about Actor-Critic coordination
-   */
-  public function getActorCriticStats(): array
-  {
-    if (!$this->isActorCriticEnabled()) {
-      return [
-        'enabled' => false,
-        'message' => 'Actor-Critic separation is disabled'
-      ];
-    }
-
-    // Get statistics from monitoring
-    $stats = [
-      'enabled' => true,
-      'configuration' => ActorCriticConfig::getAll(),
-      'executions' => []
-    ];
-
-    // Add execution statistics if available
-    try {
-      $sql = "SELECT 
-                COUNT(*) as total_coordinations,
-                AVG(total_time_ms) as avg_total_time,
-                AVG(execution_time_ms) as avg_execution_time,
-                AVG(evaluation_time_ms) as avg_evaluation_time,
-                AVG(consensus_score) as avg_consensus_score,
-                AVG(num_critics) as avg_critics_count
-              FROM {$this->prefix}rag_coordinated_results
-              WHERE created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)";
-
-      $result = $this->db->query($sql)->fetch();
-
-      if ($result) {
-        $stats['executions'] = [
-          'total_coordinations_24h' => (int)$result['total_coordinations'],
-          'avg_total_time_ms' => round((float)$result['avg_total_time'], 2),
-          'avg_execution_time_ms' => round((float)$result['avg_execution_time'], 2),
-          'avg_evaluation_time_ms' => round((float)$result['avg_evaluation_time'], 2),
-          'avg_consensus_score' => round((float)$result['avg_consensus_score'], 2),
-          'avg_critics_count' => round((float)$result['avg_critics_count'], 1)
-        ];
-      }
-    } catch (\Exception $e) {
-      $stats['executions']['error'] = 'Failed to retrieve statistics: ' . $e->getMessage();
-    }
-
-    return $stats;
-  }
 }

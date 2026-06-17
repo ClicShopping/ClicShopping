@@ -80,9 +80,7 @@ class AnalyzeIntentStage implements OrchestrationStageInterface
     $this->logComplexityDetection($complexityDetection);
 
 
-    // 🔧 FIX (2026-02-08): Route hybrid queries BEFORE ReasoningAgent
-    // BUG: Hybrid queries were being sent to ReasoningAgent instead of HybridQueryProcessor
-    // This caused hybrid queries to be processed as analytics
+    //  Route hybrid queries BEFORE ReasoningAgent
     $context->intent = $intent;
     $context->intentType = $intent['type'] ?? $intent['query_type'] ?? 'semantic';
 

@@ -9,7 +9,7 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO;
 
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticCoordinator;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticFactory;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 use ClicShopping\AI\Config\ActorCriticConfig;
 use ClicShopping\AI\RegistryAI\ActorRegistry;
@@ -188,12 +188,13 @@ class SeoAgenticPipeline
 
     if ($useActorCritic) {
       try {
-        $actorRegistry = new ActorRegistry();
-        $criticRegistry = new CriticRegistry();
-        new SeoOptimizationActor($this->debug, $actorRegistry, $seoAgent);
-        new SeoValidationCritic($this->debug, $criticRegistry, $codeAgent);
-        new SeoContentReadinessCritic($this->debug, $criticRegistry);
-        $coordinator = new ActorCriticCoordinator($actorRegistry, $criticRegistry);
+        $coordinator = ActorCriticFactory::create(
+          [fn(ActorRegistry $r) => new SeoOptimizationActor($this->debug, $r, $seoAgent)],
+          [
+            fn(CriticRegistry $r) => new SeoValidationCritic($this->debug, $r, $codeAgent),
+            fn(CriticRegistry $r) => new SeoContentReadinessCritic($this->debug, $r),
+          ]
+        );
         $this->actorCriticUsed = true;   // T6.4
       } catch (\Throwable $e) {
         $this->logDebug('Actor-Critic init failed, fallback to legacy', [

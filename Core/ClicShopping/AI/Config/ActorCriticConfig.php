@@ -160,8 +160,10 @@ class ActorCriticConfig
 
             $sql = "SELECT config_key, 
                            config_value 
-                    FROM :table_rag_agent_actor_critic_config 
-                    WHERE config_key LIKE 'actor_critic_%' OR config_key LIKE 'reputation_%'";
+                    FROM :table_rag_agent_actor_critic_config
+                    WHERE config_key LIKE 'actor_critic_%'
+                       OR config_key LIKE 'reputation_%'
+                       OR config_key = 'quality_gate_regeneration_enabled'";
 
             $result = $db->query($sql);
 
@@ -174,6 +176,7 @@ class ActorCriticConfig
               // Type conversion
                 if ($key === self::CONFIG_KEY_ENABLED ||
                     $key === self::CONFIG_KEY_FALLBACK_TO_HYBRID ||
+                    $key === self::CONFIG_KEY_QUALITY_GATE_REGENERATION ||
                     $key === self::CONFIG_KEY_REPUTATION_DECAY_ENABLED) {
                     $config[$key] = self::parseBool($value);
                 } elseif (in_array($key, [

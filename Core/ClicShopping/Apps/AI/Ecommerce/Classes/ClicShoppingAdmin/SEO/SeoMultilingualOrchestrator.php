@@ -35,10 +35,11 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\Transl
  *     SeoEntityAdapter::applySeoChanges() against the language-specific row
  *     of products_description.
  *
- * The orchestrator does not yet persist a per-language record in
- * products_seo_embedding for the translated locales — history bookkeeping
- * for the UI's 3-button gating is handled at a later step.  The agentic
- * SERP report written by step 2 is sufficient to mark Phase 2 as complete.
+ * For each translated locale the orchestrator persists BOTH a per-language embedding-history
+ * record (products_seo_embedding, for the UI's 3-button gating) AND a per-language SERP report
+ * row (clic_seo_serp_reports), so per-language readers such as CockpitAI's seo_status report the
+ * locale as analyzed. The translated rows are proxies: they re-use the EN audit + score (the
+ * translated public page is not re-crawled per locale) with the translated SEO fields applied.
  *
  * Notes:
  *  - DB access goes through Registry::get('Db') (this class lives outside
@@ -179,6 +180,9 @@ class SeoMultilingualOrchestrator
       ],
     ];
 
+    // Persist a per-language SERP report row for the translated locales too (proxy: re-uses the
+    $reportRepo = new SeoSerpReportRepository();
+
     foreach ($languages as $code => $info) {
       if ($code === 'en') {
         continue;
@@ -228,6 +232,39 @@ class SeoMultilingualOrchestrator
           triggeredBy:   $triggeredBy,
           benchmark:     $sourceBenchmark
         );
+
+        // Mirror the SERP report into clic_seo_serp_reports for this locale so downstream
+        // per-language readers (CockpitAI seo_status) see the locale as analyzed. Proxy values:
+        // the score/audit are EN-derived (the translated page is not re-crawled here), the
+        // proposed changes are the translated ones. Defensive: never fail the whole run on it.
+        try {
+          $reportRepo->insert([
+            'entity_type'      => $this->entityType,
+            'entity_id'        => $entityId,
+            'language_id'      => $targetLanguageId,
+            'url'              => $this->buildEntityUrl($entityId, $code),
+            'serp_source'      => 'translated_from_en',
+            'serp_query'       => '',
+            'serp_data'        => [],
+            'seo_before'       => [],
+            'seo_after'        => $translated,
+            'proposed_changes' => $translated,
+            'audit_result'     => $sourceAudit,
+            'summary'          => $sourceAudit['summary'] ?? '',
+            'seo_score_before' => $scoreBefore,
+            'seo_score_after'  => $scoreAfter,
+            'status'           => 'applied',
+            'triggered_by'     => $triggeredBy,
+            'benchmark'        => $sourceBenchmark,
+            'pipeline_metrics' => ['proxy_from_language' => 'en'],
+          ]);
+        } catch (\Throwable $e) {
+          $this->logDebug('Per-locale SERP report insert failed', [
+            'language_code' => $code,
+            'language_id'   => $targetLanguageId,
+            'error'         => $e->getMessage(),
+          ]);
+        }
       }
 
       $perLanguage[$code] = [

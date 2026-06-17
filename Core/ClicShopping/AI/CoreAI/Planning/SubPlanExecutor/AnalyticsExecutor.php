@@ -27,6 +27,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightedC
 use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationStore;
 use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationTracker;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
+use ClicShopping\AI\Config\AgentCriticsConfig;
 use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\RegistryAI\ActorRegistry;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
@@ -727,6 +728,11 @@ class AnalyticsExecutor
         null,
         'sql_query'
       );
+
+      // AC (AgentCriticsConfig) controls the critic-of-results on analytics output.
+      if (!AgentCriticsConfig::isEnabled()) {
+        return;
+      }
 
       $criticRegistry = new CriticRegistry();
 

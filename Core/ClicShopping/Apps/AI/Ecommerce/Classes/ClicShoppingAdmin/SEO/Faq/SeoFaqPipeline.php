@@ -70,6 +70,15 @@ class SeoFaqPipeline
   private const GROUNDING_THRESHOLD = 0.7;
   private const MAX_RETRIES         = 2;
 
+  /**
+   * Minimum number of individually-grounded Q/A pairs required to persist a FAQ.
+   * Grounding is verified PER ITEM (not on the whole block): a single weakly
+   * grounded answer used to drag the block average + penalties below the
+   * threshold and reject the ENTIRE FAQ, which made the action fail at random.
+   * We now keep the grounded pairs and drop only the ungrounded ones.
+   */
+  private const MIN_GROUNDED_FAQ_ITEMS = 2;
+
   private string $entityType;
   private SeoEntityAdapter $adapter;
   private TranslationServiceWrapper $translator;
@@ -235,6 +244,11 @@ class SeoFaqPipeline
     $agent = new SeoOptimizationAgent();
     $vars  = $this->buildPromptVars($context);
 
+    // Embed the source documents ONCE (hoisted out of the retry loop) so every
+    // per-item grounding check reuses the same source embeddings.
+    $contextDocs     = $this->contextToSourceDocuments($context);
+    $embeddedSources = $this->embedSourceDocuments($contextDocs);
+
     $lastGrounding = [];
     for ($attempt = 0; $attempt <= self::MAX_RETRIES; $attempt++) {
       $faqCandidate = $agent->generateFaqForVars($vars, $langCode);
@@ -243,22 +257,65 @@ class SeoFaqPipeline
         continue;
       }
 
-      $contextDocs = $this->contextToSourceDocuments($context);
-      $grounding   = $this->verifyFaqGrounding($faqCandidate, $contextDocs);
+      // Per-item grounding: keep the Q/A pairs that are INDIVIDUALLY grounded
+      // (each >= threshold ⇒ still no hallucination) and drop only the weak ones.
+      // The old block-level check rejected the WHOLE FAQ when a single answer was
+      // weakly grounded (it dragged the average + triggered the weak-sentence
+      // penalty below the threshold), which made the action fail at random.
+      $groundedItems = [];
+      $keptScores    = [];
+      $flagged       = [];
 
-      $this->logDebug('FAQ grounding attempt', [
-        'attempt'    => $attempt,
-        'confidence' => $grounding['confidence'] ?? 0,
-        'decision'   => $grounding['decision']   ?? '',
-      ]);
+      foreach ($faqCandidate as $item) {
+        $q = (string)($item['q'] ?? $item['question'] ?? '');
+        $a = (string)($item['a'] ?? $item['answer']   ?? '');
+        if ($q === '' && $a === '') {
+          continue;
+        }
 
-      if (($grounding['confidence'] ?? 0) >= self::GROUNDING_THRESHOLD) {
-        return ['faq' => $faqCandidate, 'grounding' => $grounding];
+        $itemGrounding = $this->grounder->verifyGrounding(trim($q . ' ' . $a), $embeddedSources);
+        $confidence    = (float)($itemGrounding['confidence'] ?? 0);
+
+        if ($confidence >= self::GROUNDING_THRESHOLD) {
+          $groundedItems[] = $item;
+          $keptScores[]    = $confidence;
+        } else {
+          $flagged[] = ['sentence' => trim($q . ' ' . $a), 'score' => $confidence, 'reason' => 'Low grounding score'];
+        }
       }
 
-      $lastGrounding = $grounding;
-      // Inject flagged sentences as feedback for the next attempt.
-      $vars['validation_feedback'] = $this->groundingFeedbackString($grounding);
+      $keptCount = count($groundedItems);
+      $avgKept   = $keptScores ? array_sum($keptScores) / count($keptScores) : 0.0;
+
+      $this->logDebug('FAQ per-item grounding attempt', [
+        'attempt' => $attempt,
+        'kept'    => $keptCount,
+        'dropped' => count($flagged),
+      ]);
+
+      if ($keptCount >= self::MIN_GROUNDED_FAQ_ITEMS) {
+        return [
+          'faq'       => $groundedItems,
+          'grounding' => [
+            'confidence'        => $avgKept,
+            'decision'          => 'ACCEPT',
+            'flagged_sentences' => [],
+            'kept'              => $keptCount,
+            'dropped'           => count($flagged),
+          ],
+        ];
+      }
+
+      $lastGrounding = [
+        'confidence'        => $avgKept,
+        'decision'          => 'REJECT',
+        'flagged_sentences' => $flagged,
+        'kept'              => $keptCount,
+        'dropped'           => count($flagged),
+      ];
+
+      // Feed the ungrounded answers back so the next attempt can correct them.
+      $vars['validation_feedback'] = $this->groundingFeedbackString($lastGrounding);
     }
 
     return ['faq' => [], 'grounding' => $lastGrounding];
