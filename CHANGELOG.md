@@ -3,10 +3,11 @@ version4.31
 - Miscellaneous improvement
 - fix / bug resolution
 - libraries updated
+- Stripe payment updated for latest version  20.2.1 - 2026-06-12
 
 ---------------
 version4.301
-add EncryptedColumnPattern
+- add EncryptedColumnPattern
 - libraries updated
 
 ---------------

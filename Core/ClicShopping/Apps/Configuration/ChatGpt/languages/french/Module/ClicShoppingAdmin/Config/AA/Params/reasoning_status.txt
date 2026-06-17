@@ -1,5 +1,0 @@
-cfg_chatgpt_agent_reasoning_status_title = Enable Reasoning Actor
-cfg_chatgpt_agent_reasoning_status_description = Activate the Reasoning Actor for logical reasoning, problem-solving, and complex decision-making tasks. Excels at multi-step reasoning and causal analysis.
-
-cfg_chatgpt_status_true = True
-cfg_chatgpt_status_false = False

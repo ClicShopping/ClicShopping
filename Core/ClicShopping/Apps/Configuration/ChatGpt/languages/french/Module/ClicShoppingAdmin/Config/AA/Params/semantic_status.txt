@@ -1,5 +1,0 @@
-cfg_chatgpt_agent_semantic_status_title = Enable Semantic Actor
-cfg_chatgpt_agent_semantic_status_description = Activate the Semantic Actor for semantic search, vector embeddings, and RAG-based information retrieval. Uses embeddings for context-aware responses.
-
-cfg_chatgpt_status_true = True
-cfg_chatgpt_status_false = False

@@ -1,5 +1,0 @@
-cfg_chatgpt_agent_validation_status_title = Enable Validation Actor
-cfg_chatgpt_agent_validation_status_description = Activate the Validation Actor for data validation, quality checks, and constraint verification. Ensures data integrity and business rule compliance.
-
-cfg_chatgpt_status_true = True
-cfg_chatgpt_status_false = False

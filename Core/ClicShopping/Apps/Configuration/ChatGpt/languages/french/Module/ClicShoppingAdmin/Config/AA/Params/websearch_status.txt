@@ -1,5 +1,0 @@
-cfg_chatgpt_agent_websearch_status_title = Enable WebSearch Actor
-cfg_chatgpt_agent_websearch_status_description = Activate the WebSearch Actor for external web searches and competitor analysis. Requires WebSearch Global to be enabled. Useful for market research and external data gathering.'
-
-cfg_chatgpt_status_true = True
-cfg_chatgpt_status_false = False

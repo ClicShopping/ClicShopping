@@ -1,5 +1,0 @@
-cfg_chatgpt_agent_analytic_status_title = Enable Analytics Actor'
-cfg_chatgpt_agent_analytic_status_description =Activate the Analytics Actor for data analysis, metrics calculation, and business intelligence queries. Specializes in SQL generation and data interpretation.
-
-cfg_chatgpt_status_true = True
-cfg_chatgpt_status_false = False

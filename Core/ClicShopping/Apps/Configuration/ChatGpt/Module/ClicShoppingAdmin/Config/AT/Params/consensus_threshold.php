@@ -19,7 +19,7 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Confi
  */
 class consensus_threshold extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = '0.8';
+  public $default = '0.7'; // recalibrated 2026-06-16 from 0.8 — 82% of 2195 real critic evals scored <0.8 (clarity-dragged); 0.7 catches only the genuine laggards (<0.7 ≈ 3.8%)
   public int|null $sort_order = 30;
   public bool $app_configured = true;
 

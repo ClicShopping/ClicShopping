@@ -1,6 +1,0 @@
-cfg_chatgpt_status_title = Statut
-cfg_chatgpt_status_description = Souhaitez vous activer ce module à votre boutique
-
-cfg_chatgpt_status_true = True
-cfg_chatgpt_status_false = False
-

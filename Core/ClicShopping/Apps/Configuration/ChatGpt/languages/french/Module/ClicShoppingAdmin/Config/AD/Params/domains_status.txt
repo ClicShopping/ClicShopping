@@ -1,5 +1,0 @@
-cfg_chatgpt_domain_status_title = Enable Domain
-cfg_chatgpt_domain_status_description = Activate agents domain queries including.
-
-cfg_chatgpt_status_true = True
-cfg_chatgpt_status_false = False
