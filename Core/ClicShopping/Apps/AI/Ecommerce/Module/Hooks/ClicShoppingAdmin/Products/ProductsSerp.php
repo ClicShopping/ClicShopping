@@ -11,6 +11,7 @@
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEmbedding;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoReport;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoSerpReportRepository;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ\FaqRepository;
   use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTTP;
@@ -516,6 +517,105 @@
     }
 
     /**
+     * Render the "Delete FAQ" safety button.
+     *
+     * A generated FAQ is published to the catalog as soon as it is created, so
+     * the admin needs a one-click way to remove an unconvincing result. The
+     * button only appears when a FAQ row exists for the product, deletes every
+     * language at once (symmetric with generation, which writes them all) and
+     * guards the destructive action with a confirm() dialog. Handlers are bound
+     * via addEventListener — inline on* attributes are stripped by the HTML
+     * sanitizer.
+     *
+     * @param int $productId
+     * @return string Button + script markup, or '' when no FAQ exists.
+     */
+    private function renderDeleteFaqButton(int $productId): string
+    {
+      if ($productId <= 0) {
+        return '';
+      }
+
+      try {
+        if (empty((new FaqRepository())->getAllFaqsForProduct($productId))) {
+          return '';
+        }
+      } catch (\Throwable $e) {
+        return '';
+      }
+
+      $url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin')
+        . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin')
+        . 'ajax/SEO/delete_product_faq.php';
+      $label    = $this->app->getDef('text_seo_delete_faq') ?: 'Delete FAQ';
+      $confirm  = $this->app->getDef('text_seo_delete_faq_confirm')
+        ?: 'Delete the generated FAQ for this product? It will be removed from the catalog in every language.';
+      $progress = $this->app->getDef('text_seo_progress_delete_faq') ?: 'Deleting FAQ…';
+
+      $btnId = 'btn_delfaq_' . $productId;
+
+      $out  = '<button type="button"';
+      $out .= ' id="' . $btnId . '"';
+      $out .= ' class="btn btn-outline-danger btn-sm me-2 mb-3"';
+      $out .= ' data-url="'              . htmlspecialchars($url)      . '"';
+      $out .= ' data-product-id="'       . $productId                  . '"';
+      $out .= ' data-confirm="'          . htmlspecialchars($confirm)  . '"';
+      $out .= ' data-progress-message="' . htmlspecialchars($progress) . '">';
+      $out .= '<i class="bi bi-trash me-1"></i>' . htmlspecialchars($label);
+      $out .= '</button>';
+
+      $out .= '<script>
+(function () {
+  var btn = document.getElementById(' . json_encode($btnId) . ');
+  if (!btn || btn.dataset.seoBound === "1") return;
+  btn.dataset.seoBound = "1";
+
+  btn.addEventListener("click", function () {
+    if (btn.disabled) return;
+    if (!window.confirm(btn.getAttribute("data-confirm"))) return;
+
+    var formURL   = btn.getAttribute("data-url");
+    var productId = btn.getAttribute("data-product-id");
+    var message   = btn.getAttribute("data-progress-message");
+    var modalApi  = (typeof window.seoOpenProgressModal === "function")
+                  ? window.seoOpenProgressModal(message) : null;
+
+    btn.disabled = true;
+
+    $.ajax({
+      url: formURL,
+      type: "POST",
+      dataType: "json",
+      data: { seo_delete_faq: "1", seo_product_id: productId }
+    }).done(function (payload) {
+      var ok = payload && (payload.success === true || payload.success === 1
+                        || payload.success === "true" || payload.success === "1");
+      if (ok) {
+        if (modalApi) modalApi.showSuccess();
+        setTimeout(function () {
+          if (window.location.hash !== "#section_SEOReportApp_content") {
+            window.location.hash = "section_SEOReportApp_content";
+          }
+          window.location.reload();
+        }, 900);
+      } else {
+        var err = (payload && (payload.error || payload.message)) || "Unknown error";
+        if (modalApi) { modalApi.showError(err); } else { window.alert(err); }
+        btn.disabled = false;
+      }
+    }).fail(function (xhr) {
+      var err = "Request failed (HTTP " + xhr.status + ")";
+      if (modalApi) { modalApi.showError(err); } else { window.alert(err); }
+      btn.disabled = false;
+    });
+  });
+})();
+</script>';
+
+      return $out;
+    }
+
+    /**
      * Render the singleton progress + error modal used by every phase button.
      *
      * The modal is non-dismissible (no close button, no backdrop click, no
@@ -775,6 +875,10 @@
           progressMessage: $this->app->getDef('text_seo_progress_phase3') ?: 'FAQ generation with anti-hallucination grounding in progress…'
         );
       }
+
+      // Safety control: a generated FAQ is published to the catalog immediately,
+      // so the admin must be able to remove an unconvincing result in one click.
+      $out .= $this->renderDeleteFaqButton($productId);
      // $out .= $this->renderReportsButton($productId);
 
       // -- Agentic Audit --

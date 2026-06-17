@@ -66,8 +66,15 @@ class SeoFaqPipeline
    * does not exist yet in this repository (verified) and per AGENTS.md a
    * new constant name must be confirmed with the human coder before being
    * introduced.  Until then, this class constant is the single source.
+   *
+   * Calibrated for the max-similarity scoring mode (see constructor) on
+   * text-embedding-3-large: an empirical benchmark over agnostic products
+   * (electronics + glassware) measured grounded answers at 0.58–0.80 cosine
+   * and plausible hallucinations at ≤0.32, so 0.45 sits in the centre of the
+   * gap with ~0.13 margin on each side. The previous 0.7 was unreachable for
+   * this model (verbatim facts cap around 0.5) and rejected every FAQ.
    */
-  private const GROUNDING_THRESHOLD = 0.7;
+  private const GROUNDING_THRESHOLD = 0.45;
   private const MAX_RETRIES         = 2;
 
   /**
@@ -101,6 +108,9 @@ class SeoFaqPipeline
     $this->faqParser     = new FaqParser();
     $this->faqPrinter    = new FaqPrettyPrinter();
     $this->grounder      = new AnswerGroundingVerifier($this->debug);
+    // Ground each Q/A pair by its similarity to the single best-matching source
+    // field (most robust separation for short product answers)
+    $this->grounder->setScoringMode(AnswerGroundingVerifier::SCORING_MAX_SIMILARITY);
     $this->embeddingHistory = new SeoEmbedding($this->entityType . 's_seo_embedding');
     $this->db = Registry::get('Db');
   }

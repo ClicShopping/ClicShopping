@@ -47,6 +47,12 @@ class AnswerGroundingVerifier
   private int $minSentenceWords = 5;
 
   /**
+  public const SCORING_WEIGHTED = 'weighted';
+  public const SCORING_MAX_SIMILARITY = 'max_similarity';
+
+  private string $scoringMode = self::SCORING_WEIGHTED;
+
+  /**
    * Constructor
    *
    * @param bool $debug Enable debug logging
@@ -58,6 +64,18 @@ class AnswerGroundingVerifier
 
     if ($this->debug) {
       $this->logger->logSecurityEvent("AnswerGroundingVerifier initialized", 'info');
+    }
+  }
+
+  /**
+   * Select the scoring strategy.
+   *
+   * @param string $mode self::SCORING_WEIGHTED (default) or self::SCORING_MAX_SIMILARITY
+   */
+  public function setScoringMode(string $mode): void
+  {
+    if (in_array($mode, [self::SCORING_WEIGHTED, self::SCORING_MAX_SIMILARITY], true)) {
+      $this->scoringMode = $mode;
     }
   }
 
@@ -77,7 +95,9 @@ class AnswerGroundingVerifier
 
     try {
       // Step 1: Extract sentences
-      $sentences = $this->extractSentences($answer);
+      $sentences = $this->scoringMode === self::SCORING_MAX_SIMILARITY
+        ? array_filter([trim($answer)], fn($s) => $s !== '')
+        : $this->extractSentences($answer);
 
       if (empty($sentences)) {
         return $this->createEmptyResult($answer, 'No sentences extracted');
@@ -313,6 +333,17 @@ class AnswerGroundingVerifier
   {
     if (empty($groundingResults)) {
       return 0.0;
+    }
+
+    // Max-similarity mode: confidence is the answer's similarity to its single
+    // best-matching source chunk, with no weak/inconsistency penalty.
+    if ($this->scoringMode === self::SCORING_MAX_SIMILARITY) {
+      $maxScores = array_column($groundingResults, 'max_similarity');
+      if (empty($maxScores)) {
+        return 0.0;
+      }
+
+      return max(0.0, min(1.0, max($maxScores)));
     }
 
     $scores = array_column($groundingResults, 'grounding_score');
