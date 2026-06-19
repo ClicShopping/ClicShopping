@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'adcc7e50f1805d9c5a756f40cf4271a47a487d6b',
+        'reference' => 'dd754c74cb8b09c0d6828017f449ffe301a10636',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'adcc7e50f1805d9c5a756f40cf4271a47a487d6b',
+            'reference' => 'dd754c74cb8b09c0d6828017f449ffe301a10636',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -128,9 +128,9 @@
             'dev_requirement' => false,
         ),
         'guzzlehttp/guzzle' => array(
-            'pretty_version' => '7.12.0',
-            'version' => '7.12.0.0',
-            'reference' => 'eaa81598031cf57a9e36258c8546defffc994cba',
+            'pretty_version' => '7.12.1',
+            'version' => '7.12.1.0',
+            'reference' => 'd34627490fbc03bf5c5d7cfed81f2faa19519425',
             'type' => 'library',
             'install_path' => __DIR__ . '/../guzzlehttp/guzzle',
             'aliases' => array(),
@@ -146,9 +146,9 @@
             'dev_requirement' => false,
         ),
         'guzzlehttp/psr7' => array(
-            'pretty_version' => '2.12.0',
-            'version' => '2.12.0.0',
-            'reference' => '9b38012e7b54f594707e6db52c684dc0a74b3a43',
+            'pretty_version' => '2.12.1',
+            'version' => '2.12.1.0',
+            'reference' => '172ef2f4e9824c1e058b7f30be8ae25a02c0f2b7',
             'type' => 'library',
             'install_path' => __DIR__ . '/../guzzlehttp/psr7',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '6cf5f0de69e31a1ddc9724bf1ee6776beaa827c7',
+            'reference' => 'd59bd7f09761435c5818e64cab019ca56e0137cd',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
