@@ -1,0 +1,2 @@
+tab_seo_report = SEO Report
+info = Work only with the content page (ex: general condition), all the link are not included inside the

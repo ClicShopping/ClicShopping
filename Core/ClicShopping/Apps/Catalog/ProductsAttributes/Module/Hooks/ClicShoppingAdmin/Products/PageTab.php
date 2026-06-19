@@ -12,7 +12,7 @@ use ClicShopping\Apps\Catalog\ProductsAttributes\ProductsAttributes as ProductsA
 use ClicShopping\Apps\Customers\Groups\Classes\ClicShoppingAdmin\GroupsB2BAdmin;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\Modules\HooksInterface;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 /**

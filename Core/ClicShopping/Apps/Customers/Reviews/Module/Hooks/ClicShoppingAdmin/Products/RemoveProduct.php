@@ -9,12 +9,13 @@
 namespace ClicShopping\Apps\Customers\Reviews\Module\Hooks\ClicShoppingAdmin\Products;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
 use function is_null;
 
-class RemoveProduct implements \ClicShopping\OM\Modules\HooksInterface
+class RemoveProduct implements HooksInterface
 {
   public mixed $app;
 

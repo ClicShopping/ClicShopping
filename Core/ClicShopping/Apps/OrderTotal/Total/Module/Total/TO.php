@@ -9,10 +9,10 @@
 namespace ClicShopping\Apps\OrderTotal\Total\Module\Total;
 
 use ClicShopping\OM\Registry;
-
+use ClicShopping\OM\Interfaces\OrderTotalInterface;
 use ClicShopping\Apps\OrderTotal\Total\Total as TotalApp;
 
-class TO implements \ClicShopping\OM\Modules\OrderTotalInterface
+class TO implements OrderTotalInterface
 {
   public string $code;
   public $title;

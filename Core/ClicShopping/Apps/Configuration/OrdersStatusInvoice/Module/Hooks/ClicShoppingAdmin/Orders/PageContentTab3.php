@@ -9,12 +9,13 @@
 namespace ClicShopping\Apps\Configuration\OrdersStatusInvoice\Module\Hooks\ClicShoppingAdmin\Orders;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\OrdersStatusInvoice\OrdersStatusInvoice as OrdersStatusInvoiceApp;
 use ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin\OrderAdmin;
 
-class PageContentTab3 implements \ClicShopping\OM\Modules\HooksInterface
+class PageContentTab3 implements HooksInterface
 {
   public mixed $app;
   public mixed $order;

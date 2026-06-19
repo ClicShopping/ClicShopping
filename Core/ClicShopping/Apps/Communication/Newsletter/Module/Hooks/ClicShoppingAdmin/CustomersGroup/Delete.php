@@ -10,10 +10,11 @@ namespace ClicShopping\Apps\Communication\Newsletter\Module\Hooks\ClicShoppingAd
 
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Communication\Newsletter\Newsletter as NewsletterApp;
 
-class Delete implements \ClicShopping\OM\Modules\HooksInterface
+class Delete implements HooksInterface
 {
   public mixed $app;
 

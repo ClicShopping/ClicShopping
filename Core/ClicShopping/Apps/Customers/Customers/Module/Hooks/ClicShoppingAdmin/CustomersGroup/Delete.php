@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Customers\Customers\Module\Hooks\ClicShoppingAdmin\CustomersGroup;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Customers\Customers as CustomersApp;
 
-class Delete implements \ClicShopping\OM\Modules\HooksInterface
+class Delete implements HooksInterface
 {
   public mixed $app;
 

@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Customers\Groups\Module\Hooks\ClicShoppingAdmin\Favorites;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Groups\Groups as GroupsApp;
 
-class Insert implements \ClicShopping\OM\Modules\HooksInterface
+class Insert implements HooksInterface
 {
   public mixed $app;
 

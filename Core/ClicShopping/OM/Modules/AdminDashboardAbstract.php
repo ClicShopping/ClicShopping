@@ -10,13 +10,14 @@ namespace ClicShopping\OM\Modules;
 
 use ClicShopping\OM\Registry;
 use ReflectionClass;
+use ClicShopping\OM\Interfaces\AdminDashboardInterface;
 
 /**
  * AdminDashboardAbstract defines the structure and behavior for all Admin Dashboard modules.
  * This class provides a foundation for creating customizable administrative dashboard modules
  * and enforces the implementation of specific methods in derived classes.
  */
-abstract class AdminDashboardAbstract implements \ClicShopping\OM\Modules\AdminDashboardInterface
+abstract class AdminDashboardAbstract implements AdminDashboardInterface
 {
   public string $code;
   public $title;

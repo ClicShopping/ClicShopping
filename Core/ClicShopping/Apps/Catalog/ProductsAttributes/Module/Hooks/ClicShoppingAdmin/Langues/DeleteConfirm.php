@@ -10,7 +10,7 @@ namespace ClicShopping\Apps\Catalog\ProductsAttributes\Module\Hooks\ClicShopping
 
 use ClicShopping\Apps\Catalog\ProductsAttributes\ProductsAttributes as ProductsAttributesApp;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\Modules\HooksInterface;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 /**

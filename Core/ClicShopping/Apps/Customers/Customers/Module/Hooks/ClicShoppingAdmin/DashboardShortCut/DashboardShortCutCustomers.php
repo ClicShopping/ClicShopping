@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Customers\Customers\Module\Hooks\ClicShoppingAdmin\D
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Customers\Customers as CustomersApp;
 
-class DashboardShortCutCustomers implements \ClicShopping\OM\Modules\HooksInterface
+class DashboardShortCutCustomers implements HooksInterface
 {
   public mixed $app;
 

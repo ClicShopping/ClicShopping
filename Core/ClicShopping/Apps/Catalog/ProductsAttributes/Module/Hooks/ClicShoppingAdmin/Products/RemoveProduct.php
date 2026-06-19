@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Catalog\ProductsAttributes\Module\Hooks\ClicShoppingAdmin\Products;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\ProductsAttributes\ProductsAttributes as ProductsAttributesApp;
 
-class RemoveProduct implements \ClicShopping\OM\Modules\HooksInterface
+class RemoveProduct implements HooksInterface
 {
   public mixed $app;
 

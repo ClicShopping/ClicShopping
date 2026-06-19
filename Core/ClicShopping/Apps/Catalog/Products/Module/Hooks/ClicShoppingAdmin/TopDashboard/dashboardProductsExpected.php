@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Catalog\Products\Module\Hooks\ClicShoppingAdmin\TopD
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Products\Products as ProductsApp;
 
-class dashboardProductsExpected implements \ClicShopping\OM\Modules\HooksInterface
+class dashboardProductsExpected implements HooksInterface
 {
   public mixed $app;
 

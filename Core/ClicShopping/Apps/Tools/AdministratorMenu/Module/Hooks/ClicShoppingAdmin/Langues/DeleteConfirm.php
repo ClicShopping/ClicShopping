@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Tools\AdministratorMenu\Module\Hooks\ClicShoppingAdmin\Langues;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Tools\AdministratorMenu\AdministratorMenu as AdministratorMenuApp;
 
-class DeleteConfirm implements \ClicShopping\OM\Modules\HooksInterface
+class DeleteConfirm implements HooksInterface
 {
   public mixed $app;
 

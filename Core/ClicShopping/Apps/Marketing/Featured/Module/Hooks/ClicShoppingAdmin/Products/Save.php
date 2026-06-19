@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Marketing\Featured\Module\Hooks\ClicShoppingAdmin\Products;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Marketing\Featured\Featured as FeaturedApp;
 
-class Save implements \ClicShopping\OM\Modules\HooksInterface
+class Save implements HooksInterface
 {
   public mixed $app;
 

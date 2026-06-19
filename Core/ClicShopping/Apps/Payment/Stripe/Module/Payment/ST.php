@@ -14,6 +14,8 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Payment\Stripe\Stripe as StripeApp;
 use ClicShopping\Sites\Common\B2BCommon;
+use ClicShopping\OM\Interfaces\PaymentInterface;
+
 use Stripe\PaymentIntent;
 use Stripe\Stripe as StripeAPI;
 /**
@@ -27,7 +29,7 @@ use Stripe\Stripe as StripeAPI;
  * like custom order statuses, payment zones, and B2B group-based access.
  */
 
-class ST implements \ClicShopping\OM\Modules\PaymentInterface
+class ST implements PaymentInterface
 {
   public string $code;
   public $title;

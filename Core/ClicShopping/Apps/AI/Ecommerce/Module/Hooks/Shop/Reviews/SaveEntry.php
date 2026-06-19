@@ -11,9 +11,10 @@ namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\Shop\Reviews;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Shop\GptShop;
 use ClicShopping\Apps\Customers\reviews\Classes\Shop\ReviewsClass;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
-class SaveEntry implements \ClicShopping\OM\Modules\HooksInterface
+class SaveEntry implements HooksInterface
 {
   protected mixed $productsCommon;
   protected mixed $reviewsShop;

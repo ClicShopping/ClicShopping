@@ -15,6 +15,7 @@ use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\Adm
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
 use function count;
@@ -62,7 +63,7 @@ const SENTIMENT_CRITIC_GPT_TEMPERATURE = 0.3;
  */
 const SENTIMENT_CRITIC_MAX_TOKENS = 800;
 
-class Update implements \ClicShopping\OM\Modules\HooksInterface
+class Update implements HooksInterface
 {
   public mixed $app;
   public mixed $lang;

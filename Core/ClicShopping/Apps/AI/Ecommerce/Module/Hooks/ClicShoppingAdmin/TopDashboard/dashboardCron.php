@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\TopDashb
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
@@ -28,7 +29,7 @@ use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
  *   - any running  → info (blue)
  *   - all clean    → success (green)
  */
-class dashboardCron implements \ClicShopping\OM\Modules\HooksInterface
+class dashboardCron implements HooksInterface
 {
   public mixed $app;
   private mixed $db;

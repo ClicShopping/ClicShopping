@@ -13,13 +13,14 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Payment\MoneyOrder\MoneyOrder as MoneyOrderApp;
 use ClicShopping\Sites\Common\B2BCommon;
+use ClicShopping\OM\Interfaces\PaymentInterface;
 
 /**
  * The MO class represents the Money Order payment module.
  * It implements the PaymentInterface for compatibility with the ClicShopping payment system.
  * This class contains the methods necessary to interact with Money Order payment operations such as setup, status checks, and configurations.
  */
-class MO implements \ClicShopping\OM\Modules\PaymentInterface
+class MO implements PaymentInterface
 {
   public string $code;
   public $title;

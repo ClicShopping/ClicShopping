@@ -11,7 +11,7 @@ namespace ClicShopping\Apps\OrderTotal\TotalTax\Module\Total;
 use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Common\B2BCommon;
 use ClicShopping\Apps\OrderTotal\TotalTax\TotalTax as TotalTaxApp;
-use ClicShopping\OM\Modules\OrderTotalInterface;
+use ClicShopping\OM\Interfaces\OrderTotalInterface;
 
 use function defined;
 

@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Configuration\ProductsQuantityUnit\Module\Hooks\ClicShoppingAdmin\Preview;
 
 use ClicShopping\Apps\Configuration\ProductsQuantityUnit\ProductsQuantityUnit as ProductsQuantityUnitApp;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ProductsQuantityUnit\Classes\ClicShoppingAdmin\ProductsQuantityUnitAdmin;
 
-class PreviewContent implements \ClicShopping\OM\Modules\HooksInterface
+class PreviewContent implements HooksInterface
 {
   public mixed $app;
   protected $qteUnit;

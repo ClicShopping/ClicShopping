@@ -10,6 +10,7 @@
 
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTML;
+  use ClicShopping\OM\Interfaces\HooksInterface;
   use ClicShopping\OM\Registry;
   use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 
@@ -30,7 +31,7 @@
    *
    * @package ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Products
    */
-  class CockpitAI implements \ClicShopping\OM\Modules\HooksInterface
+  class CockpitAI implements HooksInterface
   {
     public mixed $app;
 

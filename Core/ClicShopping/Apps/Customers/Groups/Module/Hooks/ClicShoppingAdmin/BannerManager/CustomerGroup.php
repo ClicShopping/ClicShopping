@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Customers\Groups\Module\Hooks\ClicShoppingAdmin\Bann
 
 use ClicShopping\Apps\Customers\Groups\Groups as GroupsApp;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Groups\Classes\ClicShoppingAdmin\GroupsB2BAdmin;
 
-class CustomerGroup implements \ClicShopping\OM\Modules\HooksInterface
+class CustomerGroup implements HooksInterface
 {
   public mixed $app;
 

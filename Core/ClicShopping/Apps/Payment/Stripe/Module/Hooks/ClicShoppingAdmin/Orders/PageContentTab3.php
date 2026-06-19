@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Payment\Stripe\Module\Hooks\ClicShoppingAdmin\Orders;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Payment\Stripe\Stripe as StripeApp;
@@ -17,7 +18,7 @@ use ClicShopping\Apps\Payment\Stripe\Stripe as StripeApp;
  * Specifically, it adds a Stripe dashboard button tab as a part of the
  * admin interface.
  */
-class PageContentTab3 implements \ClicShopping\OM\Modules\HooksInterface
+class PageContentTab3 implements HooksInterface
 {
   public mixed $app;
 

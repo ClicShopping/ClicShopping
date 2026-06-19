@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Customers\Gdpr\Module\Hooks\ClicShoppingAdmin\TopDas
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Gdpr\Gdpr as GdprApp;
 
-class Gdpr implements \ClicShopping\OM\Modules\HooksInterface
+class Gdpr implements HooksInterface
 {
   /**
    * @var bool|null

@@ -10,13 +10,14 @@ namespace ClicShopping\Apps\Customers\Groups\Module\Hooks\ClicShoppingAdmin\Cust
 
 use ClicShopping\OM\Apps;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\ObjectInfo;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Groups\Classes\ClicShoppingAdmin\GroupsB2BAdmin;
 use ClicShopping\Apps\Customers\Groups\Groups as GroupsApp;
 
-class pageTab4 implements \ClicShopping\OM\Modules\HooksInterface
+class pageTab4 implements HooksInterface
 {
   public mixed $app;
 

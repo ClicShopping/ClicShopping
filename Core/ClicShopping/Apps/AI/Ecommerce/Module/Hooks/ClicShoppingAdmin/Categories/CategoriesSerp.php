@@ -14,6 +14,7 @@
   use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTTP;
+  use ClicShopping\OM\Interfaces\HooksInterface;
   use ClicShopping\OM\Registry;
 
   /**
@@ -23,7 +24,7 @@
    * - If no history exists: Displays initial report + "Run Analysis" button.
    * - If history exists: Displays current report + score delta + AI suggestions + history table.
    */
-  class CategoriesSerp implements \ClicShopping\OM\Modules\HooksInterface
+  class CategoriesSerp implements HooksInterface
   {
     public mixed $app;
     private mixed $lang;

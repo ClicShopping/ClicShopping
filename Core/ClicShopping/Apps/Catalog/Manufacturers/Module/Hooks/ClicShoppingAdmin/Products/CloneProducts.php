@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Catalog\Manufacturers\Module\Hooks\ClicShoppingAdmin\Products;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Manufacturers\Manufacturers as ManufacturersApp;
 
-class CloneProducts implements \ClicShopping\OM\Modules\HooksInterface
+class CloneProducts implements HooksInterface
 {
   public mixed $app;
 

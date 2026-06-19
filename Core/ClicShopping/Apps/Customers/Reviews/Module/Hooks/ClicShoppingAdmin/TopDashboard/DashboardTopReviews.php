@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Customers\Reviews\Module\Hooks\ClicShoppingAdmin\Top
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
 
-class DashboardTopReviews implements \ClicShopping\OM\Modules\HooksInterface
+class DashboardTopReviews implements HooksInterface
 {
   /**
    * @var bool|null

@@ -6,15 +6,16 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\OM\Modules;
+namespace ClicShopping\OM\Interfaces;
 
 /**
- * Interface AdminDashboardInterface
+ * Interface HeaderTagsInterface
  *
- * Defines the structure for an admin dashboard module, including methods
- * for rendering output, installation, configuration, and operational checks.
+ * Defines a contract for managing header tags in a system.
+ * Provides methods for output generation, installation, configuration keys retrieval,
+ * status checking, and removal functionalities.
  */
-interface AdminDashboardInterface
+interface HeaderTagsInterface
 {
   public function getOutput();
 

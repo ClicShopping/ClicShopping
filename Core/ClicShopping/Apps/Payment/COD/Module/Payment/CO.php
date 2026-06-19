@@ -13,6 +13,7 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Payment\COD\COD as CodApp;
 use ClicShopping\Sites\Common\B2BCommon;
+use ClicShopping\OM\Interfaces\PaymentInterface;
 
 /**
  * This class implements the PaymentInterface for the Cash on Delivery (COD) payment module.
@@ -21,7 +22,7 @@ use ClicShopping\Sites\Common\B2BCommon;
  * The CO class includes methods to handle payment-specific operations such as validation,
  * module activation and deactivation, order status updates, and more.
  */
-class CO implements \ClicShopping\OM\Modules\PaymentInterface
+class CO implements PaymentInterface
 {
   public string $code;
   public $title;

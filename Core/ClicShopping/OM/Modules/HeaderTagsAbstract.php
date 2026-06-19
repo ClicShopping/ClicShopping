@@ -8,6 +8,7 @@
 
 namespace ClicShopping\OM\Modules;
 
+use ClicShopping\OM\Interfaces\HeaderTagsInterface;
 use ClicShopping\OM\Registry;
 use ReflectionClass;
 
@@ -34,7 +35,7 @@ use ReflectionClass;
  * - check(): Checks if the sort order is set for the module.
  * - remove(): Deletes configuration keys associated with the module from the database.
  */
-abstract class HeaderTagsAbstract implements \ClicShopping\OM\Modules\HeaderTagsInterface
+abstract class HeaderTagsAbstract implements HeaderTagsInterface
 {
   public string $code;
   public $title;

@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Configuration\ChatGpt\Module\Hooks\ClicShoppingAdmin\PageManager;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\HTML;
 
@@ -18,7 +19,7 @@ use ClicShopping\Apps\Catalog\Manufacturers\Classes\ClicShoppingAdmin\Manufactur
 use ClicShopping\Apps\Configuration\Api\Sites\Shop\Pages\Manufacturers\Manufacturers;
 use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 
-class DeleteAll implements \ClicShopping\OM\Modules\HooksInterface
+class DeleteAll implements HooksInterface
 {
   public mixed $app;
 

@@ -6,7 +6,7 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\OM\Modules;
+namespace ClicShopping\OM\Interfaces;
 
 interface HooksInterface
 {

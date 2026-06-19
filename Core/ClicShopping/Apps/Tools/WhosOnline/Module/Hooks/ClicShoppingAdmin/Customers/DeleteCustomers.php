@@ -10,10 +10,11 @@ namespace ClicShopping\Apps\Tools\WhosOnline\Module\Hooks\ClicShoppingAdmin\Cust
 
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Tools\WhosOnline\WhosOnline as WhosOnlineApp;
 
-class DeleteCustomers implements \ClicShopping\OM\Modules\HooksInterface
+class DeleteCustomers implements HooksInterface
 {
   public mixed $app;
 

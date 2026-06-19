@@ -9,12 +9,13 @@
 namespace ClicShopping\Apps\Catalog\Categories\Module\Hooks\ClicShoppingAdmin\Stats;
 
 use ClicShopping\Apps\Catalog\Categories\Categories as categoriesApp;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 /**
  * Class responsible for managing and displaying statistics related to categories within the application.
  */
-class StatsCategories implements \ClicShopping\OM\Modules\HooksInterface
+class StatsCategories implements HooksInterface
 {
   public mixed $app;
 

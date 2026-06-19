@@ -13,6 +13,7 @@
 namespace ClicShopping\Apps\Tools\MCP\Module\Hooks\ClicShoppingAdmin\Cronjob;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin\McpDecisionAgent;
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
@@ -22,7 +23,7 @@ use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
  * This class serves as the entry point for the scheduled task, delegating the
  * decision-making and action logic to the McpDecisionAgent.
  */
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   /**
    * MCP Agent instance.

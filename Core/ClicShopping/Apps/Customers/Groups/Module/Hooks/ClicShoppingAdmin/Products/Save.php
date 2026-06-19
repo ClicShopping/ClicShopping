@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Customers\Groups\Module\Hooks\ClicShoppingAdmin\Products;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Groups\Groups as GroupsApp;
 
-class Save implements \ClicShopping\OM\Modules\HooksInterface
+class Save implements HooksInterface
 {
   public mixed $app;
   protected $id;

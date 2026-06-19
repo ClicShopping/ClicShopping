@@ -10,9 +10,10 @@ namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Categori
 
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
-class DeleteConfirm implements \ClicShopping\OM\Modules\HooksInterface
+class DeleteConfirm implements HooksInterface
 {
   public mixed $app;
 

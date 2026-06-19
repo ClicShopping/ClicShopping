@@ -9,10 +9,11 @@
 namespace ClicShopping\Apps\Communication\Newsletter\Module\Hooks\ClicShoppingAdmin\Stats;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Communication\Newsletter\Newsletter as NewslettersApp;
 
-class StatsCustomersNewsletterBySex implements \ClicShopping\OM\Modules\HooksInterface
+class StatsCustomersNewsletterBySex implements HooksInterface
 {
   public mixed $app;
 

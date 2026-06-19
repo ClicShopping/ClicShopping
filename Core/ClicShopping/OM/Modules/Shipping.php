@@ -10,6 +10,7 @@
 namespace ClicShopping\OM\Modules;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\Domains\ModulesAbstract;
 
 /**
  * Class Shipping
@@ -17,7 +18,7 @@ use ClicShopping\OM\Apps;
  * This class represents the Shipping module functionality and handles the retrieval
  * of information and class definitions for available shipping modules.
  */
-class Shipping extends \ClicShopping\OM\Domains\ModulesAbstract
+class Shipping extends ModulesAbstract
 {
   /**
    * Retrieves information related to a specific application, key, and data combination.
@@ -33,7 +34,7 @@ class Shipping extends \ClicShopping\OM\Domains\ModulesAbstract
 
     $class = $this->ns . $app . '\\' . $data;
 
-    if (is_subclass_of($class, 'ClicShopping\OM\Modules\\' . $this->code . 'Interface')) {
+    if (is_subclass_of($class, 'ClicShopping\OM\Interfaces\\' . $this->code . 'Interface')) {
       $result[$app . '\\' . $key] = $class;
     }
 

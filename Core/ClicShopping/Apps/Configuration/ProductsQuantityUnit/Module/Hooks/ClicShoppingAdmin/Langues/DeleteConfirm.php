@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Configuration\ProductsQuantityUnit\Module\Hooks\ClicShoppingAdmin\Langues;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ProductsQuantityUnit\ProductsQuantityUnit as ProductsQuantityUnitApp;
 
-class DeleteConfirm implements \ClicShopping\OM\Modules\HooksInterface
+class DeleteConfirm implements HooksInterface
 {
   public mixed $app;
 

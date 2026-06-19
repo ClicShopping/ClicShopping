@@ -10,9 +10,10 @@ namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Supplier
 
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
-class DeleteAll implements \ClicShopping\OM\Modules\HooksInterface
+class DeleteAll implements HooksInterface
 {
   public mixed $app;
 

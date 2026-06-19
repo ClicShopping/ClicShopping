@@ -19,6 +19,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 /**
@@ -49,7 +50,7 @@ use ClicShopping\OM\Registry;
  *   CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_BATCH_SIZE     (default 30)    products per run
  *   CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_LLM_DAILY_LIMIT (default 500)  total LLM-bound runs/day
  */
-class SeoOptimization implements \ClicShopping\OM\Modules\HooksInterface
+class SeoOptimization implements HooksInterface
 {
   private const CRON_CODE = 'productSeoOptimization';
 

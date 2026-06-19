@@ -9,13 +9,14 @@
 namespace ClicShopping\OM\Modules;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\Domains\ModulesAbstract;
 
 /**
  * Class Hooks
  *
  * Provides methods to handle module information retrieval, class resolution, and filtering of modules based on specific criteria.
  */
-class Hooks extends \ClicShopping\OM\Domains\ModulesAbstract
+class Hooks extends ModulesAbstract
 {
   /**
    * Retrieves information about modules that belong to a specific application and key.
@@ -36,7 +37,7 @@ class Hooks extends \ClicShopping\OM\Domains\ModulesAbstract
 
       $class = $this->ns . $app . '\\' . $class;
 
-      if (is_subclass_of($class, 'ClicShopping\OM\Modules\\' . $this->code . 'Interface')) {
+      if (is_subclass_of($class, 'ClicShopping\OM\Interfaces\\' . $this->code . 'Interface')) {
         $result[$app . '\\' . $key . '\\' . $code] = $class;
       }
     }

@@ -10,7 +10,7 @@ namespace ClicShopping\Apps\Configuration\Antispam\Module\Hooks\Shop\Products\Te
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\Modules\HooksInterface;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use function defined;
 

@@ -13,6 +13,7 @@ use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
 
@@ -24,7 +25,7 @@ use ClicShopping\Sites\Common\HTMLOverrideCommon;
  * and also creates categories-related images if specified.
  */
 
-class Insert implements \ClicShopping\OM\Modules\HooksInterface
+class Insert implements HooksInterface
 {
   public mixed $app;
   public mixed $lang;

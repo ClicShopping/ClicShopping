@@ -1,0 +1,3 @@
+tab_seo_report = SEO Report
+info =
+text_seo_view_reports = Voir les rapports SEO

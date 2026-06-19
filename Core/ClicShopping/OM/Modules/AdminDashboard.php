@@ -9,12 +9,13 @@
 namespace ClicShopping\OM\Modules;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\Domains\ModulesAbstract;
 
 /**
  * Represents the AdminDashboard module extending the base functionality of ModulesAbstract.
  * Provides methods to retrieve module information and resolve module classes.
  */
-class AdminDashboard extends \ClicShopping\OM\Domains\ModulesAbstract
+class AdminDashboard extends ModulesAbstract
 {
   /**
    * Retrieves information associated with the given application, key, and data.
@@ -31,7 +32,7 @@ class AdminDashboard extends \ClicShopping\OM\Domains\ModulesAbstract
 
     $class = $this->ns . $app . '\\' . $data;
 
-    if (is_subclass_of($class, 'ClicShopping\OM\Modules\\' . $this->code . 'Interface')) {
+    if (is_subclass_of($class, 'ClicShopping\OM\Interfaces\\' . $this->code . 'Interface')) {
       $result[$app . '\\' . $key] = $class;
     }
 

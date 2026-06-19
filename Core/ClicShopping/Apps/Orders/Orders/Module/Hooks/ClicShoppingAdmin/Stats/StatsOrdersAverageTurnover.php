@@ -8,11 +8,12 @@
 
 namespace ClicShopping\Apps\Orders\Orders\Module\Hooks\ClicShoppingAdmin\Stats;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Orders\Orders\Orders as OrdersApp;
 
-class StatsOrdersAverageTurnover implements \ClicShopping\OM\Modules\HooksInterface
+class StatsOrdersAverageTurnover implements HooksInterface
 {
   public mixed $app;
 

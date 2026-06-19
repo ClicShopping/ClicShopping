@@ -12,8 +12,9 @@ use ClicShopping\Apps\Shipping\Table\Table as TableApp;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Common\B2BCommon;
+use ClicShopping\OM\Interfaces\ShippingInterface;
 
-class TA implements \ClicShopping\OM\Modules\ShippingInterface
+class TA implements ShippingInterface
 {
   public string $code;
   public $title;

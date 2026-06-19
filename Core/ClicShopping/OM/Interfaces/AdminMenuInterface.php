@@ -7,7 +7,7 @@
  */
 
 
-namespace ClicShopping\OM\Modules;
+namespace ClicShopping\OM\Interfaces;
 
 /**
  * Interface AdminMenuInterface
@@ -15,9 +15,20 @@ namespace ClicShopping\OM\Modules;
  * Defines the contract for an admin menu module within the ClicShopping application.
  * Classes implementing this interface must provide functionality to execute specific operations
  * related to the administration menu.
+ * Not used a this moment
  */
 
 interface AdminMenuInterface
 {
-  public static function execute();
+  public function execute();
+
+  public function isEnabled();
+
+  public function check();
+
+  public function install();
+
+  public function remove();
+
+  public function keys();
 }

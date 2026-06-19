@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Configuration\Api\Module\Hooks\Shop\Cronjob;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 /**
@@ -18,7 +19,7 @@ use ClicShopping\OM\Registry;
  * have aged past their configured window, so these tables do not grow
  * unbounded.
  */
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   public function execute(): void
   {

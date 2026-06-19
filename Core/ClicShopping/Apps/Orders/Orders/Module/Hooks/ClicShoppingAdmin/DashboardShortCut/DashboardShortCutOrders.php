@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Orders\Orders\Module\Hooks\ClicShoppingAdmin\Dashboa
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Orders\Orders\Orders as OrdersApp;
 
-class DashboardShortCutOrders implements \ClicShopping\OM\Modules\HooksInterface
+class DashboardShortCutOrders implements HooksInterface
 {
   public mixed $app;
 

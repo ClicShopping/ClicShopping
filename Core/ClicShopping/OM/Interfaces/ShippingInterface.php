@@ -7,7 +7,7 @@
  */
 
 
-namespace ClicShopping\OM\Modules;
+namespace ClicShopping\OM\Interfaces;
 
 /**
  * ShippingInterface provides the blueprint for implementing shipping-related functionalities.

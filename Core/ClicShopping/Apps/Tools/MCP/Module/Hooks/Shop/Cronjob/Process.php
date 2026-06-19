@@ -9,13 +9,14 @@
 namespace ClicShopping\Apps\Tools\MCP\Module\Hooks\Shop\Cronjob;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron;
 use ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin\McpMonitor;
 use ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin\Exceptions\McpConnectionException;
 
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   /**
    * Main cron job execution method.

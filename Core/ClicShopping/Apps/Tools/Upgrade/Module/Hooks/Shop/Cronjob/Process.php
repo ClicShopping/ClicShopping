@@ -12,8 +12,9 @@ use ClicShopping\OM\HTML;
 
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron;
 use ClicShopping\Apps\Tools\Upgrade\Classes\ClicShoppingAdmin\Marketplace;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   /**
    * Constructor method for the class.

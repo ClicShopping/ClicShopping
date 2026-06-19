@@ -9,8 +9,9 @@
 namespace ClicShopping\Apps\Communication\PageManager\Module\Hooks\Shop\Orders;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   public mixed $app;
 

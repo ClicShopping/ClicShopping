@@ -8,12 +8,13 @@
 
 namespace ClicShopping\Apps\Catalog\Products\Module\Hooks\ClicShoppingAdmin\Langues;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Products\Products as ProductsApp;
 use ClicShopping\Apps\Configuration\Langues\Classes\ClicShoppingAdmin\LanguageAdmin;
 
-class Insert implements \ClicShopping\OM\Modules\HooksInterface
+class Insert implements HooksInterface
 {
   public mixed $app;
   private mixed $lang;
