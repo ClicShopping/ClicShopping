@@ -423,7 +423,7 @@ class ActorCriticCoordinator
         $producerId = $result->getProducerAgentId();
         $validCritics = array_filter($qualifiedCritics, fn($c) => $c->getCriticId() !== $producerId);
         
-        $minCriticsRequired = $this->getConfig('min_critics_required', self::DEFAULT_MIN_CRITICS_REQUIRED);
+        $minCriticsRequired = self::DEFAULT_MIN_CRITICS_REQUIRED;
         
         if (count($validCritics) < $minCriticsRequired) {
             throw new InsufficientCriticsException(
@@ -510,7 +510,7 @@ class ActorCriticCoordinator
      */
     private function executeWithRetry(ActorAgentInterface $actor, Action $action): ActionResult
     {
-        $maxRetries = $this->getConfig('actor_retry_attempts', self::DEFAULT_ACTOR_RETRY_ATTEMPTS);
+        $maxRetries = self::DEFAULT_ACTOR_RETRY_ATTEMPTS;
         $lastException = null;
         $attemptedActors = [];
         
@@ -601,7 +601,7 @@ class ActorCriticCoordinator
         throw new Exception(
             "All retry attempts failed for action: {$action->getType()}. " .
             "Attempted actors: " . implode(', ', $attemptedActors) . ". " .
-            "Last error: " . ($lastException ? $lastException->getMessage() : 'Unknown'),
+            "Last error: " . $lastException->getMessage(),
             0,
             $lastException
         );
@@ -617,9 +617,7 @@ class ActorCriticCoordinator
      * - Handle timeouts gracefully
      * - Continue with available evaluations on critic failure
      * - Ensure minimum critics complete successfully
-     *
-     * Requirements: 9.1, 9.2, 9.3, 21.1, 21.2, 21.3, 21.4, 21.5
-     *
+   
      * @param array<CriticAgentInterface> $critics Critics to evaluate
      * @param ActionResult $result Result to evaluate
      * @return array<Evaluation> Evaluations from critics
@@ -627,7 +625,7 @@ class ActorCriticCoordinator
      */
     private function evaluateInParallel(array $critics, ActionResult $result): array
     {
-        $timeout = $this->getConfig('critic_evaluation_timeout', self::DEFAULT_CRITIC_EVALUATION_TIMEOUT);
+        $timeout = self::DEFAULT_CRITIC_EVALUATION_TIMEOUT;
         $evaluations = [];
         $failedCritics = [];
         
@@ -704,7 +702,7 @@ class ActorCriticCoordinator
             }
         }
         
-        $minCriticsRequired = $this->getConfig('min_critics_required', self::DEFAULT_MIN_CRITICS_REQUIRED);
+        $minCriticsRequired = self::DEFAULT_MIN_CRITICS_REQUIRED;
         
         // Check if sufficient evaluations completed (Requirements 21.3, 21.4)
         if (count($evaluations) < $minCriticsRequired) {
@@ -1036,20 +1034,6 @@ class ActorCriticCoordinator
         } catch (Exception $e) {
             return false;
         }
-    }
-    
-    /**
-     * Get configuration value
-     *
-     * @param string $key Configuration key
-     * @param mixed $default Default value if not found
-     * @return mixed Configuration value
-     */
-    private function getConfig(string $key, $default)
-    {
-        // For now, return defaults
-        // Future: load from configuration file or database
-        return $default;
     }
     
     /**

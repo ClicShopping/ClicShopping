@@ -72,9 +72,11 @@ class SubTaskPlannerWebSearch
 
     $steps = [];
 
-    //  Extract clean search query for price_comparison
-    // Search the web with the ENGLISH-translated query when available: the engine (Google/
-    $searchQuery = !empty($intent['translated_query']) ? $intent['translated_query'] : $query;
+    // Hand the engine a query in the USER's language: Google AI Overview (and search
+    // engines generally) return results in the language of the query.
+    $searchQuery = !empty($intent['search_query_native'])
+      ? $intent['search_query_native']
+      : (!empty($intent['translated_query']) ? $intent['translated_query'] : $query);
 
     if (isset($intent['intent']) && $intent['intent'] === 'price_comparison') {
       // Check if intent has extracted product name

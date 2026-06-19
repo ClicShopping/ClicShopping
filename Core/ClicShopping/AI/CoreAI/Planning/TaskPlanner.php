@@ -188,6 +188,25 @@ class TaskPlanner
                 }
             }
 
+            // 1.1 Web-search engines (notably Google AI Overview) return results in the
+            // language of the query they receive. The internal pipeline runs in English,
+            if ($selectedPlanner instanceof SubTaskPlannerWebSearch
+                && !empty($intent['translated_query'])
+                && empty($intent['search_query_native'])) {
+                try {
+                    $nativeQuery = SemanticAgent::translateToLanguage(
+                        (string)$intent['translated_query'],
+                        $this->languageId
+                    );
+
+                    if (trim($nativeQuery) !== '') {
+                        $intent['search_query_native'] = $nativeQuery;
+                    }
+                } catch (\Throwable $e) {
+                    // Non-fatal: fall back to the existing translated_query behaviour.
+                }
+            }
+
             // 2. Delegate plan creation to SubTaskPlanner
             $steps = $selectedPlanner->createPlan($intent, $query);
 

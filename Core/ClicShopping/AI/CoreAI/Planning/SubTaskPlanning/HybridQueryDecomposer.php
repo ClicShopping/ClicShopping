@@ -1016,15 +1016,18 @@ class HybridQueryDecomposer
     private function isPriceComparisonQuery(string $query, array $intent): bool
     {
         try {
-            // PRIMARY: Check intent type (LLM detection)
-            if (isset($intent['intent_type']) && $intent['intent_type'] === 'price_comparison') {
+            // PRIMARY: LLM detection (Pure LLM Mode). The web-search sub-classifier
+            // (rag_intent_router) emits the price-comparison verdict under 'intent';
+            $llmIntent = (string)($intent['intent_type'] ?? '');
+            $llmSubIntent = (string)($intent['intent'] ?? '');
+            if ($llmIntent === 'price_comparison' || $llmSubIntent === 'price_comparison') {
                 if ($this->debug) {
-                    $this->logDebug("Price comparison detected via intent_type");
+                    $this->logDebug("Price comparison detected via LLM intent signal");
                 }
                 return true;
             }
-            
-            // FALLBACK: Pattern matching (when LLM fails)
+
+            // FALLBACK: Pattern matching (when the LLM signal is absent)
             $isMatch = PriceComparisonDetectionPatterns::isPriceComparisonQuery($query);
             
             if ($isMatch && $this->debug) {
