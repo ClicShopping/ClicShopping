@@ -469,10 +469,6 @@ class PlanExecutor
           $result = $this->executeWebSearch($step, $context);
           break;
 
-        case 'synthesis':
-          $result = $this->executeSynthesis($step, $context);
-          break;
-
         case 'domain_tool':
           $result = $this->executeDomainTool($step, $context);
           break;
@@ -1079,26 +1075,6 @@ class PlanExecutor
     }
   }
 
-  /**
-   * Execute a synthesis
-   * 
-   * @param TaskStep $step Step to execute
-   * @param array $context Execution context
-   * @return array Synthesis result
-   */
-  private function executeSynthesis(TaskStep $step, array $context): array
-  {
-    // Get all previous results
-    $previousResults = $context['previous_results'] ?? [];
-
-    // Use ResultSynthesizer to combine results
-    $synthesized = $this->resultSynthesizer->synthesize($previousResults, $context);
-
-    return [
-      'type' => 'synthesis_result',
-      'synthesized' => $synthesized,
-    ];
-  }
 
   /**
    * Synthesize final plan results

@@ -15,14 +15,12 @@
 namespace ClicShopping\AI\CoreAI\Planning;
 
 use ClicShopping\OM\Registry;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerAnalytics;
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerSemanticSearch;
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerWebSearch;
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerStandard;
-use ClicShopping\AI\CoreAI\Planning\TaskPlannerPrompts;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 
 
@@ -33,7 +31,6 @@ use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 class TaskPlanner
 {
     private SecurityLogger $securityLogger;
-    private mixed $chat;
     private bool $debug;
     private int $languageId;
     private MetricsCollector $collector;
@@ -66,9 +63,6 @@ class TaskPlanner
             $this->languageId = $languageId;
         }
 
-        // Initialize chat for planning
-        $this->initializeChat();
-
         // Initialize specialized SubTaskPlanners
         $this->initializeSubTaskPlanners();
 
@@ -100,32 +94,6 @@ class TaskPlanner
                 'info'
             );
         }
-    }
-
-    /**
-     * Initializes chat for planning reasoning
-     */
-    private function initializeChat(): void
-    {
-        $model = defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : 'gpt-5-mini';
-
-        // Use Gpt::getChatForModel which automatically handles all model types
-        $this->chat = Gpt::getChatForModel($model);
-
-        // Verify chat was initialized correctly
-        if ($this->chat === false || $this->chat === null) {
-            // Degraded mode: use predefined plans instead of AI
-            $this->chat = null;
-	    
-            if($this->debug) {
-              error_log('TaskPlannerRefactored: Using fallback mode due to missing API key');
-            }
-	    
-            return;
-        }
-
-        $systemPrompt = TaskPlannerPrompts::getTaskPlannerSystemPrompt();
-        $this->chat->setSystemMessage($systemPrompt);
     }
 
     /**
