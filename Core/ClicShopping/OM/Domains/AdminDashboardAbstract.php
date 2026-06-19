@@ -6,7 +6,7 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\OM\Modules;
+namespace ClicShopping\OM\Domains;
 
 use ClicShopping\OM\Registry;
 use ReflectionClass;

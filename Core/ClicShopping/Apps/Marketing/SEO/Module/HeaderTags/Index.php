@@ -14,8 +14,9 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Marketing\SEO\Classes\Shop\SeoShop as SeoShopIindex;
 use ClicShopping\Apps\Marketing\SEO\SEO as SEOApp;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Index extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Index extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;

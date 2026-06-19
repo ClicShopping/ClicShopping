@@ -13,8 +13,9 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\Cache\Cache as CacheApp;
 use ClicShopping\Apps\Configuration\Cache\Classes\ClicShoppingAdmin\CacheAdmin;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class CheckOpCache extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class CheckOpCache extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

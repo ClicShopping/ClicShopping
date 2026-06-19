@@ -14,8 +14,9 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Tools\Upgrade\Classes\ClicShoppingAdmin\Github;
 use ClicShopping\Apps\Tools\Upgrade\Upgrade as UpgradeApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class Upgrade extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class Upgrade extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

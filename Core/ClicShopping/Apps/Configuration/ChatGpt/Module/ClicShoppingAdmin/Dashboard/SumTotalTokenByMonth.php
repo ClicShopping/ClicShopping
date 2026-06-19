@@ -10,8 +10,9 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Dashb
 
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class SumTotalTokenByMonth extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class SumTotalTokenByMonth extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

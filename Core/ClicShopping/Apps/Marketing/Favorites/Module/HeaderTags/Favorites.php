@@ -11,8 +11,9 @@ namespace ClicShopping\Apps\Marketing\Favorites\Module\HeaderTags;
 use ClicShopping\Apps\Marketing\Favorites\Favorites as FavoritesApp;
 use ClicShopping\Apps\Marketing\SEO\Classes\Shop\SeoShop as SeoShopFavorites;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Favorites extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Favorites extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;

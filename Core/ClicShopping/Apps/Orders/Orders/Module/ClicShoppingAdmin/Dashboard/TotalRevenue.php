@@ -11,8 +11,9 @@ namespace ClicShopping\Apps\Orders\Orders\Module\ClicShoppingAdmin\Dashboard;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Orders\Orders\Orders as OrdersApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class TotalRevenue extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class TotalRevenue extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

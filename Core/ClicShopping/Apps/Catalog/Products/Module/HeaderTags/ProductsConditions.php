@@ -11,8 +11,9 @@ namespace ClicShopping\Apps\Catalog\Products\Module\HeaderTags;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Products\Products as ProductsApp;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class ProductsConditions extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class ProductsConditions extends HeaderTagsAbstract
 {
   public mixed $app;
   public mixed $group;

@@ -10,10 +10,11 @@ namespace ClicShopping\Apps\Orders\Orders\Module\ClicShoppingAdmin\Dashboard;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
 use ClicShopping\Apps\Orders\Orders\Orders as OrdersApp;
 
-class OrderMap extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class OrderMap extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

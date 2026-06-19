@@ -12,8 +12,9 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Tools\WhosOnline\WhosOnline as WhosOnlineApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class WhosOnline extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class WhosOnline extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

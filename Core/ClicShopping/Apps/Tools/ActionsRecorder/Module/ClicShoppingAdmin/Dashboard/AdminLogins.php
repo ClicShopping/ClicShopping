@@ -13,8 +13,9 @@ use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Tools\ActionsRecorder\ActionsRecorder as ActionsRecorderApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class AdminLogins extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class AdminLogins extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

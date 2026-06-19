@@ -12,8 +12,9 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Communication\PageManager\PageManager as PageManagerApp;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Sitemap extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Sitemap extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $template;

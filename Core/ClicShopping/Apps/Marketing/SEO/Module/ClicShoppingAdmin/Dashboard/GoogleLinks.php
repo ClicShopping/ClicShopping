@@ -11,8 +11,9 @@ namespace ClicShopping\Apps\Marketing\SEO\Module\ClicShoppingAdmin\Dashboard;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Marketing\SEO\SEO as SEOApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class GoogleLinks extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class GoogleLinks extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

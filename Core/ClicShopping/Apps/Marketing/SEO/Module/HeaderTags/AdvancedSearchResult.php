@@ -12,8 +12,9 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Marketing\SEO\Classes\Shop\SeoShop as SeoShopSearch;
 use ClicShopping\Apps\Marketing\SEO\SEO as SEOApp;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class AdvancedSearchResult extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class AdvancedSearchResult extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;

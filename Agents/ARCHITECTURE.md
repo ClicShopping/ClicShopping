@@ -88,6 +88,10 @@ Always use `Registry::get('Db')`, `Registry::get('Language')`, etc. No exception
 | `Language` | Multilingual support |
 | `Cookies` | Cookie management |
 | `Hooks` | Events system |
+| `Interfaces` | Interfaces system |
+| `Domains` | Domains abstract |
+| `HttpRequest` | http request, api |
+| `Modules` | modules |
 | `Service` | Modular container |
 | `Template` | Front-office rendering (Shop) |
 | `TemplateAdmin` | Back-office rendering (ClicShoppingAdmin) |
