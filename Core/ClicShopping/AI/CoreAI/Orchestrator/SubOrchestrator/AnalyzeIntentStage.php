@@ -79,7 +79,7 @@ class AnalyzeIntentStage implements OrchestrationStageInterface
 
     $this->logComplexityDetection($complexityDetection);
 
-
+    // Complex/compound queries are handled downstream by the hybrid decomposition pipeline
     //  Route hybrid queries BEFORE ReasoningAgent
     $context->intent = $intent;
     $context->intentType = $intent['type'] ?? $intent['query_type'] ?? 'semantic';

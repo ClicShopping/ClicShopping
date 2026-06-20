@@ -32,10 +32,10 @@ class dashboardProductsOutOfStock implements HooksInterface
   public function Display(): string
   {
     $Qproducts = $this->app->db->prepare('select count(products_id) as count 
-                                             from :table_products 
-                                             where products_quantity = 0
-                                          ');
-
+                                           from :table_products 
+                                           where products_quantity <= :stock_reorder_level
+                                        ');
+    $Qproducts->bindInt(':stock_reorder_level', (int)STOCK_REORDER_LEVEL);
     $Qproducts->execute();
 
     $number_products_out_of_stock = $Qproducts->valueInt('count');

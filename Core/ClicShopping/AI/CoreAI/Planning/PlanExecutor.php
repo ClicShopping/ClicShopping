@@ -75,7 +75,10 @@ class PlanExecutor
 
     // Initialize CalculatorTool if enabled
     if (defined('CLICSHOPPING_APP_CHATGPT_CALCULATOR_ENABLED') && CLICSHOPPING_APP_CHATGPT_CALCULATOR_ENABLED === 'True') {
-      Registry::set('CalculatorTool', new CalculatorTool());
+      if (!Registry::exists('CalculatorTool')) {
+        Registry::set('CalculatorTool', new CalculatorTool());
+      }
+      
       $this->calculatorTool = Registry::get('CalculatorTool');
 
       if ($this->debug) {
@@ -131,7 +134,10 @@ class PlanExecutor
 
     if ($hasValidKey) {
       try {
-        Registry::set('webSearchFacade', new WebSearchFacade());
+        if (!Registry::exists('webSearchFacade')) {
+          Registry::set('webSearchFacade', new WebSearchFacade());
+        }
+	
         $this->webSearchFacade = Registry::get('webSearchFacade');
 
         if ($this->debug) {

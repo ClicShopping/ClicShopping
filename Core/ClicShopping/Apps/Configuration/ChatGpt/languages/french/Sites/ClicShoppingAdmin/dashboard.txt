@@ -218,6 +218,7 @@ feedback_satisfaction_rate = Taux de Satisfaction
 feedback_excellent = 🎉 Excellent
 feedback_good = ✅ Bon
 feedback_to_improve = ⚠️ À améliorer
+feedback_no_data = ⏳ Aucun avis pour le moment
 feedback_ratio = Ratio Feedback
 feedback_positive = Feedbacks Positifs
 feedback_negative = Feedbacks Négatifs

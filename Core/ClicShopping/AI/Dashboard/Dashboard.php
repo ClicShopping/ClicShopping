@@ -453,11 +453,15 @@ class Dashboard
         );
       }
 
-      $feedbackStats['performance_status'] = 'good';
-      if ($feedbackStats['satisfaction_rate'] < 70) {
-        $feedbackStats['performance_status'] = 'critical';
-      } elseif ($feedbackStats['feedback_ratio'] < 20) {
-        $feedbackStats['performance_status'] = 'warning';
+      if ($feedbackStats['total_feedback'] === 0) {
+        $feedbackStats['performance_status'] = 'no_data';
+      } else {
+        $feedbackStats['performance_status'] = 'good';
+        if ($feedbackStats['satisfaction_rate'] < 70) {
+          $feedbackStats['performance_status'] = 'critical';
+        } elseif ($feedbackStats['feedback_ratio'] < 20) {
+          $feedbackStats['performance_status'] = 'warning';
+        }
       }
 
       return $feedbackStats;
@@ -568,36 +572,23 @@ class Dashboard
   public function getSourceStats(int $periodDays = 7): array
   {
     try {
-      // 🔧 MIGRATED TO DOCTRINEORM
       $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-      
-      // First check if metadata column exists
-      $hasMetadataColumn = $this->checkColumnExists($prefix . 'rag_statistics', 'metadata');
-      
-      if (!$hasMetadataColumn) {
-        // Return empty stats if metadata column doesn't exist
-        // User needs to run migration: sql/2025_12_15_add_query_type_metadata_to_rag_statistics.sql
-        return [
-          'sources' => [],
-          'total_queries' => 0,
-          'period_days' => $periodDays,
-          'note' => 'metadata column not found - run migration sql/2025_12_15_add_query_type_metadata_to_rag_statistics.sql'
-        ];
-      }
-      
-      // Get source breakdown
+
+      // Source breakdown is grouped on the populated classification_type column
+      // (hybrid / web_search / analytics / semantic …) using the columns the writer (statisticsTracker)
+
       $sourceResults = DoctrineOrm::select("
-        SELECT 
-          JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.source')) as source,
+        SELECT
+          classification_type as source,
           COUNT(*) as count,
-          AVG(response_time) as avg_time,
-          SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as success_count,
-          SUM(CASE WHEN success = 0 THEN 1 ELSE 0 END) as error_count
+          AVG(response_time_ms) as avg_time,
+          SUM(CASE WHEN error_occurred = 0 THEN 1 ELSE 0 END) as success_count,
+          SUM(CASE WHEN error_occurred = 1 THEN 1 ELSE 0 END) as error_count
         FROM {$prefix}rag_statistics
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
-        AND metadata IS NOT NULL
-        AND JSON_EXTRACT(metadata, '$.source') IS NOT NULL
-        GROUP BY JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.source'))
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
+        AND classification_type IS NOT NULL
+        AND classification_type <> ''
+        GROUP BY classification_type
         ORDER BY count DESC
       ", [$periodDays]);
       
@@ -641,30 +632,6 @@ class Dashboard
         'total_queries' => 0,
         'period_days' => $periodDays
       ];
-    }
-  }
-  
-  /**
-   * Check if a column exists in a table
-   * 
-   * @param string $tableName Table name
-   * @param string $columnName Column name
-   * @return bool True if column exists
-   */
-  private function checkColumnExists(string $tableName, string $columnName): bool
-  {
-    try {
-      $result = DoctrineOrm::select("
-        SELECT COUNT(*) as cnt 
-        FROM information_schema.COLUMNS 
-        WHERE TABLE_SCHEMA = DATABASE() 
-        AND TABLE_NAME = ? 
-        AND COLUMN_NAME = ?
-      ", [$tableName, $columnName]);
-      
-      return isset($result[0]['cnt']) && (int)$result[0]['cnt'] > 0;
-    } catch (\Exception $e) {
-      return false;
     }
   }
 

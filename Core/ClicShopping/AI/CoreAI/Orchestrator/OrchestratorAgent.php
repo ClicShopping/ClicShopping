@@ -732,6 +732,19 @@ class OrchestratorAgent
         if (isset($result['response']) && $result['response'] === $originalResponse) {
           $result['response'] = $result['text_response'];
         }
+
+        // The prose actually rendered for semantic queries comes from the nested 'data' sub-array
+        // (SemanticFormatter renders data['response']), not the top-level field. Propagate the same
+        // translation to every nested copy that still holds the untranslated English prose so this
+        // single restitution chokepoint also covers the field the formatter displays. Reuses the
+        // already-computed translation — no extra LLM call.
+        if (isset($result['data']) && is_array($result['data'])) {
+          foreach (['text_response', 'response', 'interpretation'] as $nestedKey) {
+            if (isset($result['data'][$nestedKey]) && $result['data'][$nestedKey] === $originalResponse) {
+              $result['data'][$nestedKey] = $result['text_response'];
+            }
+          }
+        }
       }
       foreach (['text_response', 'response'] as $brKey) {
         if (isset($result[$brKey]) && is_string($result[$brKey]) && $result[$brKey] !== '') {

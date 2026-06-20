@@ -60,8 +60,9 @@ class AgentTechnicalConfig
     private const CONST_CONSENSUS_THRESHOLD = 'CLICSHOPPING_APP_CHATGPT_AT_CONSENSUS_THRESHOLD';
     private const CONST_LLM_PROVIDER = 'CLICSHOPPING_APP_CHATGPT_AT_LLM_PROVIDER';
     private const CONST_CACHE_TTL = 'CLICSHOPPING_APP_CHATGPT_AT_CACHE_TTL';
+    private const CONST_MAX_RETRIES = 'CLICSHOPPING_APP_CHATGPT_AT_MAX_RETRIES';
     private const CONST_SORT_ORDER = 'CLICSHOPPING_APP_CHATGPT_AT_SORT_ORDER';
-    
+
     /**
      * Default configuration values (fallback if module not installed)
      */
@@ -72,6 +73,7 @@ class AgentTechnicalConfig
         'consensus_threshold' => 0.7, // 0.0 to 1.0 — recalibrated 2026-06-16 from 0.8 (see consensus_threshold param)
         'llm_provider' => 'openai', // openai, ollama, anthropic, LmStudio
         'cache_ttl' => 3600, // seconds (1 hour)
+        'max_retries' => 2, // actor-critic coordination retries (ActorCriticCoordinator)
         'sort_order' => 200
     ];
     
@@ -137,7 +139,11 @@ class AgentTechnicalConfig
         if (\defined(self::CONST_CACHE_TTL)) {
             $config['cache_ttl'] = (int)constant(self::CONST_CACHE_TTL);
         }
-        
+
+        if (\defined(self::CONST_MAX_RETRIES)) {
+            $config['max_retries'] = (int)constant(self::CONST_MAX_RETRIES);
+        }
+
         if (\defined(self::CONST_SORT_ORDER)) {
             $config['sort_order'] = (int)constant(self::CONST_SORT_ORDER);
         }
@@ -225,7 +231,22 @@ class AgentTechnicalConfig
         self::initialize();
         return self::$config['cache_ttl'] ?? 3600;
     }
-    
+
+    /**
+     * Get max retries for actor-critic coordination.
+     *
+     * Number of times the coordinator retries the actor→critics→consensus loop
+     * on transient failure. Reads CLICSHOPPING_APP_CHATGPT_AT_MAX_RETRIES when the
+     * AT module exposes it; falls back to the default otherwise.
+     *
+     * @return int Max retries (default: 2)
+     */
+    public static function getMaxRetries(): int
+    {
+        self::initialize();
+        return self::$config['max_retries'] ?? 2;
+    }
+
     /**
      * Get sort order
      *
