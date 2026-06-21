@@ -159,55 +159,17 @@ class ActorCriticCoordinator
             $evaluations = $this->evaluateInParallel($critics, $actionResult);
             $evaluationTime = microtime(true) - $startTime - $executionTime;
             
-            // Step 4: Build consensus with adaptive weighting if enabled
-            $adaptiveWeights = null;
-            $weightExplanations = null;
-            $domainAnalysis = null;
-            $consensusComparison = null;
-            
-            if ($this->config['ADAPTIVE_WEIGHTING_ENABLED'] && $this->weightingEngine !== null) {
-                // Build evaluation context from action result
-                $evaluationContext = $this->contextBuilder->build($actionResult, $action);
-                
-                // Calculate adaptive weights using LLM
-                $weightResult = $this->weightingEngine->calculateAdaptiveWeights($critics, $evaluationContext);
-                
-                // Build dynamic consensus using adaptive weights
-                $consensusResult = $this->weightedConsensusBuilder->buildDynamicConsensus($evaluations, $weightResult);
-
-                // Build the consensus from the real evaluations (feedback, outliers, agreement) but substitute the dynamic (adaptive-weighted) score.
-                $consensus = $this->consensusBuilder->buildConsensus(
-                    $evaluations,
-                    $consensusResult->getDynamicConsensus()
-                );
-                
-                // Store adaptive weighting data
-                $adaptiveWeights = $weightResult->getNormalizedWeights();
-                $weightExplanations = $weightResult->getExplanations();
-                $domainAnalysis = $weightResult->getFactorAnalysis()['domain_analysis'] ?? [];
-                $consensusComparison = [
-                    'dynamic_consensus' => $consensusResult->getDynamicConsensus(),
-                    'static_consensus' => $consensusResult->getStaticConsensus(),
-                    'difference' => $consensusResult->getConsensusDifference(),
-                    'improvement_percentage' => $consensusResult->getImprovementPercentage()
-                ];
-                
-                if ($this->debug) {
-                    error_log(sprintf(
-                        "ActorCriticCoordinator: Adaptive weighting applied - Dynamic: %.4f, Static: %.4f, Diff: %.4f",
-                        $consensusResult->getDynamicConsensus(),
-                        $consensusResult->getStaticConsensus(),
-                        $consensusResult->getConsensusDifference()
-                    ));
-                }
-            } else {
-                // Use static consensus building (backward compatibility)
-                $consensus = $this->consensusBuilder->buildConsensus($evaluations);
-                
-                if ($this->debug) {
-                    error_log("ActorCriticCoordinator: Using static consensus (adaptive weighting disabled)");
-                }
-            }
+            // Step 4: Build consensus (adaptive weighting if enabled, else static). Extracted to
+            // buildWeightedConsensus() so the quality-gate regeneration (Step 5c) builds the retry
+            // consensus the SAME way — otherwise the "keep the higher-scoring result" comparison
+            // would mix a dynamic original score with a static retry score and the never-worse
+            // guarantee would break when adaptive weighting is on.
+            $built = $this->buildWeightedConsensus($evaluations, $critics, $actionResult, $action);
+            $consensus = $built['consensus'];
+            $adaptiveWeights = $built['adaptiveWeights'];
+            $weightExplanations = $built['weightExplanations'];
+            $domainAnalysis = $built['domainAnalysis'];
+            $consensusComparison = $built['consensusComparison'];
             
             // Step 5: Deliver feedback to actor (Requirement 3.5)
             $feedback = $this->feedbackManager->createFeedback($consensus, $evaluations);
@@ -225,13 +187,22 @@ class ActorCriticCoordinator
                 $retryResult = $this->executeWithRetry($actor, $action);
                 $retryCritics = $this->selectCritics($retryResult, $criticsCount);
                 $retryEvaluations = $this->evaluateInParallel($retryCritics, $retryResult);
-                $retryConsensus = $this->consensusBuilder->buildConsensus($retryEvaluations);
+                // Build the retry consensus the SAME way as the original (adaptive or static) so
+                // the score comparison below is apples-to-apples.
+                $retryBuilt = $this->buildWeightedConsensus($retryEvaluations, $retryCritics, $retryResult, $action);
+                $retryConsensus = $retryBuilt['consensus'];
 
                 if (self::higherScoringConsensus($consensus, $retryConsensus) === $retryConsensus) {
                     $actionResult = $retryResult;
                     $evaluations = $retryEvaluations;
                     $critics = $retryCritics;
                     $consensus = $retryConsensus;
+                    // The regenerated result won — its adaptive-weighting metadata replaces the
+                    // original's so the stored CoordinatedResult reflects the result actually kept.
+                    $adaptiveWeights = $retryBuilt['adaptiveWeights'];
+                    $weightExplanations = $retryBuilt['weightExplanations'];
+                    $domainAnalysis = $retryBuilt['domainAnalysis'];
+                    $consensusComparison = $retryBuilt['consensusComparison'];
                     $feedback = $this->feedbackManager->createFeedback($consensus, $evaluations);
                     $qualityGatePassed = $consensus->meetsQualityThreshold($qualityThreshold);
                     $regenerated = true;
@@ -300,6 +271,70 @@ class ActorCriticCoordinator
     public static function higherScoringConsensus(Consensus $original, Consensus $candidate): Consensus
     {
         return $candidate->getScore() > $original->getScore() ? $candidate : $original;
+    }
+
+    /**
+     * Build the consensus for a set of evaluations — adaptive (LLM-weighted dynamic score) when
+     * enabled, else static. Returns the consensus plus its adaptive-weighting metadata.
+     *
+     * Shared by the original attempt (Step 4) and the quality-gate regeneration (Step 5c) so both
+     * consensuses use the SAME scoring basis; otherwise comparing a dynamic original against a
+     * static retry would break the "keep the higher-scoring result, never worse" guarantee.
+     *
+     * @param array $evaluations Critic evaluations
+     * @param array $critics Critics that produced the evaluations (needed for adaptive weights)
+     * @param ActionResult $actionResult Result under evaluation (evaluation-context source)
+     * @param Action $action Originating action
+     * @return array{consensus: Consensus, adaptiveWeights: ?array, weightExplanations: ?array, domainAnalysis: ?array, consensusComparison: ?array}
+     */
+    private function buildWeightedConsensus(array $evaluations, array $critics, ActionResult $actionResult, Action $action): array
+    {
+        if ($this->config['ADAPTIVE_WEIGHTING_ENABLED'] && $this->weightingEngine !== null) {
+            $evaluationContext = $this->contextBuilder->build($actionResult, $action);
+            $weightResult = $this->weightingEngine->calculateAdaptiveWeights($critics, $evaluationContext);
+            $consensusResult = $this->weightedConsensusBuilder->buildDynamicConsensus($evaluations, $weightResult);
+
+            // Build the consensus from the real evaluations (feedback, outliers, agreement) but
+            // substitute the dynamic (adaptive-weighted) score.
+            $consensus = $this->consensusBuilder->buildConsensus(
+                $evaluations,
+                $consensusResult->getDynamicConsensus()
+            );
+
+            if ($this->debug) {
+                error_log(sprintf(
+                    "ActorCriticCoordinator: Adaptive weighting applied - Dynamic: %.4f, Static: %.4f, Diff: %.4f",
+                    $consensusResult->getDynamicConsensus(),
+                    $consensusResult->getStaticConsensus(),
+                    $consensusResult->getConsensusDifference()
+                ));
+            }
+
+            return [
+                'consensus' => $consensus,
+                'adaptiveWeights' => $weightResult->getNormalizedWeights(),
+                'weightExplanations' => $weightResult->getExplanations(),
+                'domainAnalysis' => $weightResult->getFactorAnalysis()['domain_analysis'] ?? [],
+                'consensusComparison' => [
+                    'dynamic_consensus' => $consensusResult->getDynamicConsensus(),
+                    'static_consensus' => $consensusResult->getStaticConsensus(),
+                    'difference' => $consensusResult->getConsensusDifference(),
+                    'improvement_percentage' => $consensusResult->getImprovementPercentage()
+                ],
+            ];
+        }
+
+        if ($this->debug) {
+            error_log("ActorCriticCoordinator: Using static consensus (adaptive weighting disabled)");
+        }
+
+        return [
+            'consensus' => $this->consensusBuilder->buildConsensus($evaluations),
+            'adaptiveWeights' => null,
+            'weightExplanations' => null,
+            'domainAnalysis' => null,
+            'consensusComparison' => null,
+        ];
     }
 
     /**

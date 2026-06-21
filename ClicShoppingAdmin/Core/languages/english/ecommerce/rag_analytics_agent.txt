@@ -1147,6 +1147,11 @@ Use the aggregate that matches the wording: AVG for "average", SUM for "total"/"
 - 'revenue by month this year' → SELECT MONTH(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = YEAR(CURDATE()) GROUP BY MONTH(o.date_purchased) ORDER BY period
 - 'orders per day last week' → SELECT DATE(o.date_purchased) AS period, COUNT(*) AS total_orders FROM clic_orders o WHERE o.date_purchased >= CURDATE() - INTERVAL 7 DAY GROUP BY DATE(o.date_purchased) ORDER BY period
 
+YEAR-OVER-YEAR COMPARISON (relative years like "this year" vs "last year"):
+For "compare X this year and last year" use a SINGLE query that groups by YEAR with YEAR(CURDATE()) for the current year and YEAR(CURDATE()) - 1 for the previous year. NEVER use correlated subqueries or two separate revenue columns — always GROUP BY YEAR so both years come back as rows.
+- 'compare revenue this year and last year' / 'chiffre d'affaires de cette année et de l'an dernier' / 'revenue this year vs last year' → SELECT YEAR(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(o.date_purchased) ORDER BY period
+- 'compare the number of orders this year and last year' → SELECT YEAR(date_purchased) AS period, COUNT(*) AS total_orders FROM clic_orders WHERE orders_status != 4 AND YEAR(date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(date_purchased) ORDER BY period
+
 text_sql_format_instructions = SQL FORMAT RULES:
 1. ONLY respond with the SQL query, no explanatory text before or after
 2. Always use template variable {{language_id}} where language filter is required
