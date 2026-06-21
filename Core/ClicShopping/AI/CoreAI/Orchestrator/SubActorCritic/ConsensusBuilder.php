@@ -19,9 +19,6 @@ use InvalidArgumentException;
  * Builds consensus from multiple critic evaluations for the Actor-Critic architecture.
  * Calculates weighted consensus scores, detects outliers, initiates discussion phases,
  * and aggregates feedback into categorized strengths and improvements.
- *
- * Requirements: 12.1, 12.2, 12.3, 12.4
- * 
  * @package ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic
  * @version 1.0.0
  * @since 2026-01-30
@@ -62,14 +59,13 @@ class ConsensusBuilder
      * calculates weighted consensus score, identifies outliers, and
      * aggregates feedback into categorized strengths and improvements.
      *
-     * Requirements: 12.1, 12.2, 12.3, 12.4
-     *
      * @param array $evaluations Array of Evaluation objects
+     * @param float|null $consensusScoreOverride Dynamic score to substitute, or null to compute
      * @return Consensus The consensus result
      * @throws InvalidArgumentException If evaluations array is invalid
      * @throws Exception If consensus building fails
      */
-    public function buildConsensus(array $evaluations): Consensus
+    public function buildConsensus(array $evaluations, ?float $consensusScoreOverride = null): Consensus
     {
         // Validate evaluations array
         if (empty($evaluations)) {
@@ -120,11 +116,12 @@ class ConsensusBuilder
                 }
             }
             
-            // Create consensus result
+            // Create consensus result.
+            // Adaptive path: the dynamic (LLM-weighted) score replaces the locally computed one; everything else stays derived from the real evaluations.
             $consensus = new Consensus(
                 $outputId,
                 $evaluations,
-                $consensusScore,
+                $consensusScoreOverride ?? $consensusScore,
                 $consensusReached,
                 $aggregatedFeedback,
                 $outliers
@@ -167,9 +164,6 @@ class ConsensusBuilder
      *
      * Calculates the consensus score as a weighted average of critic scores
      * using dimension-specific weights for accuracy, completeness, efficiency, and clarity.
-     *
-     * Requirement 12.1: Calculate consensus score as weighted average
-     *
      * @param array $evaluations Array of Evaluation objects
      * @return float Weighted consensus score (0.0-1.0)
      */
@@ -203,9 +197,6 @@ class ConsensusBuilder
      * Identifies evaluations with scores that significantly deviate from
      * the mean using z-score analysis. Outliers are evaluations with
      * z-scores exceeding the outlier threshold.
-     *
-     * Requirement 12.2: Detect outlier evaluations
-     *
      * @param array $evaluations Array of Evaluation objects
      * @return array Array of outlier data with evaluator_id, score, and z_score
      */
@@ -299,8 +290,6 @@ class ConsensusBuilder
      *
      * Combines feedback from all evaluations into structured categories:
      * correctness, efficiency, completeness, best_practice, strengths, improvements.
-     *
-     * Requirement 12.4: Aggregate feedback into categorized strengths and improvements
      *
      * @param array $evaluations Array of Evaluation objects
      * @return array Aggregated feedback with categorized content
@@ -403,9 +392,6 @@ class ConsensusBuilder
      *
      * When outliers are detected, initiates a discussion phase to allow
      * critics to reconcile their differences and reach consensus.
-     *
-     * Requirement 12.3: Initiate discussion phase for reconciliation
-     *
      * @param array $evaluations Array of Evaluation objects
      * @param array $outliers Array of outlier data
      * @return array|null Discussion result with score and notes, or null if failed
@@ -498,9 +484,6 @@ class ConsensusBuilder
     
     /**
      * Store consensus as authoritative in database
-     *
-     * Requirement 12.5: Mark consensus as authoritative and store it
-     *
      * @param Consensus $consensus The consensus to store
      * @throws Exception If storage fails
      */

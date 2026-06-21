@@ -101,6 +101,9 @@ class LlmResponseEvaluator
         $evaluationResults['llm_evaluation'] = $llmEvaluation;
       }
 
+      // 5b. Prefer the LLM verdict's relevance over the lexical word-overlap (which penalises good concise answers). No-op when no verdict is available.
+      $evaluationResults['relevance'] = self::deriveRelevanceScore($evaluationResults);
+
       // 6. Overall evaluation score
       $overallScore = self::calculateOverallEvaluationScore($evaluationResults);
       $evaluationResults['overall_score'] = $overallScore;
@@ -411,6 +414,24 @@ class LlmResponseEvaluator
     ];
   }
 
+
+  /**
+   * Final relevance score for display/scoring: the LLM verdict relevance (1-5 -> 0-1) when
+   * available, else the lexical word-overlap fallback. The lexical score penalises good
+   * concise answers (low word overlap with the question), so the verdict is preferred.
+   *
+   * @param array $evaluationResults Evaluation array (may contain llm_evaluation.scores.relevance)
+   * @return float Relevance score 0.0-1.0
+   */
+  private static function deriveRelevanceScore(array $evaluationResults): float
+  {
+    if (isset($evaluationResults['llm_evaluation']['scores']['relevance'])) {
+      return max(0.0, min(1.0, (float) $evaluationResults['llm_evaluation']['scores']['relevance'] / 5));
+    }
+
+    return (float) ($evaluationResults['relevance'] ?? 0.0);
+  }
+
   /**
    * Calculates the overall evaluation score based on individual scores.
    *
@@ -422,12 +443,29 @@ class LlmResponseEvaluator
    */
   private static function calculateOverallEvaluationScore(array $evaluationResults): float
   {
+    // When the LLM critic verdict is available it is the reliable signal (the lexical/regex
+    // heuristics are fooled by on-topic hallucination), so let it dominate; the heuristics
+    // remain only a minor prior. Falls back to the heuristic weighting if no verdict.
+    if (isset($evaluationResults['llm_evaluation']['scores'])) {
+      $s = $evaluationResults['llm_evaluation']['scores'];
+      $llmMean = (array_sum($s) / max(1, count($s))) / 5; // 1-5 scale -> 0-1
+
+      $heur = [];
+      foreach (['relevance', 'accuracy', 'completeness', 'clarity'] as $k) {
+        if (isset($evaluationResults[$k]) && is_numeric($evaluationResults[$k])) {
+          $heur[] = (float) $evaluationResults[$k];
+        }
+      }
+      $heurMean = $heur ? array_sum($heur) / count($heur) : $llmMean;
+
+      return max(0.0, min(1.0, 0.7 * $llmMean + 0.3 * $heurMean));
+    }
+
     $weights = [
       'relevance' => 0.25,
       'accuracy' => 0.3,
       'completeness' => 0.2,
       'clarity' => 0.15,
-      'llm_evaluation' => 0.1
     ];
 
     $total = 0;
@@ -435,10 +473,6 @@ class LlmResponseEvaluator
     foreach ($weights as $k => $w) {
       if (isset($evaluationResults[$k]) && is_numeric($evaluationResults[$k])) {
         $total += $evaluationResults[$k] * $w;
-      } elseif ($k === 'llm_evaluation' && isset($evaluationResults[$k]['scores'])) {
-        $s = $evaluationResults[$k]['scores'];
-        $mean = array_sum($s) / count($s);
-        $total += ($mean / 5) * $w;
       }
     }
 
@@ -542,7 +576,20 @@ class LlmResponseEvaluator
       return $groundingRisk;
     }
 
-    // 🔧 Priority 2: Fall back to heuristic-based detection
+    // Priority 2: derive from the LLM critic verdict. When grounding is absent (the chat
+    // RAG docs carry no exploitable embeddings), reliability/accuracy on the 1-5 scale are
+    // the real fidelity signal — low scores mean high hallucination risk. This is what makes
+    // the chat indicator stop reporting 0 on a hallucinated answer.
+    if (isset($evaluationResults['llm_evaluation']['scores'])) {
+      $s = $evaluationResults['llm_evaluation']['scores'];
+      $reliability = (float) ($s['reliability'] ?? $s['accuracy'] ?? 3);
+      $accuracy = (float) ($s['accuracy'] ?? $reliability);
+      $fidelity = ((($reliability + $accuracy) / 2) - 1) / 4; // 1-5 -> 0-1
+
+      return max(0.0, min(1.0, 1.0 - $fidelity));
+    }
+
+    // 🔧 Priority 3: Fall back to heuristic-based detection
     // This is less accurate but still useful when grounding data is unavailable
     $hallucinationData = $evaluationResults['hallucination'] ?? [];
 

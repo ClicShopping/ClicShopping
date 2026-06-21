@@ -37,8 +37,6 @@ use InvalidArgumentException;
  *
  * This is the main entry point for the Actor-Critic separation architecture,
  * ensuring clean separation between execution (actors) and evaluation (critics).
-
- * 
  * @package ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic
  * @version 1.0.0
  * @since 2026-01-30
@@ -57,6 +55,7 @@ class ActorCriticCoordinator
     private array $config;
     private CoordinationResultStore $resultStore;
     private EvaluationContextBuilder $contextBuilder;
+    private ActorCriticSelector $selector;
     
     // Configuration constants
     private const DEFAULT_CRITICS_PER_EVALUATION = 3;
@@ -92,6 +91,7 @@ class ActorCriticCoordinator
                        CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
         $this->resultStore = new CoordinationResultStore($this->db, $this->debug);
         $this->contextBuilder = new EvaluationContextBuilder($this->debug);
+        $this->selector = new ActorCriticSelector($this->actorRegistry, $this->criticRegistry, $this->debug);
 
         // Load adaptive weighting configuration
         $this->config = (new CoordinatorConfigLoader($this->debug))->load();
@@ -174,9 +174,12 @@ class ActorCriticCoordinator
                 
                 // Build dynamic consensus using adaptive weights
                 $consensusResult = $this->weightedConsensusBuilder->buildDynamicConsensus($evaluations, $weightResult);
-                
-                // Extract consensus for feedback
-                $consensus = $this->createConsensusFromResult($consensusResult);
+
+                // Build the consensus from the real evaluations (feedback, outliers, agreement) but substitute the dynamic (adaptive-weighted) score.
+                $consensus = $this->consensusBuilder->buildConsensus(
+                    $evaluations,
+                    $consensusResult->getDynamicConsensus()
+                );
                 
                 // Store adaptive weighting data
                 $adaptiveWeights = $weightResult->getNormalizedWeights();
@@ -210,11 +213,13 @@ class ActorCriticCoordinator
             $feedback = $this->feedbackManager->createFeedback($consensus, $evaluations);
             $this->deliverFeedback($actor, $feedback);
 
+            // Step 5b: Quality gate — compare the consensus SCORE against the configured AT_CONSENSUS_THRESHOLD (admin-tunable min score), distinct from isReached()
             $qualityThreshold = AgentTechnicalConfig::getConsensusThreshold();
             $qualityGatePassed = $consensus->meetsQualityThreshold($qualityThreshold);
             $regenerated = false;
 
             // Step 5c: Quality-gate regeneration loop (feature flag, default OFF).
+            // On a gate miss, regenerate ONCE: the actor re-executes with the critic feedback, is re-evaluated, and we KEEP THE HIGHER-SCORING of the two results (never worse than the original — guards against the "regenerate-on-rejection degrades" risk).
             if (!$qualityGatePassed && ActorCriticConfig::isQualityGateRegenerationEnabled()) {
                 $this->deliverFeedback($actor, $feedback); // actor learns before retry
                 $retryResult = $this->executeWithRetry($actor, $action);
@@ -298,16 +303,7 @@ class ActorCriticCoordinator
     }
 
     /**
-     * Select best actor for action based on capabilities, confidence, and load
-     *
-     * Implements sophisticated actor selection algorithm considering:
-     * - Capability match for action type
-     * - Domain preference (if specified)
-     * - Actor confidence for specific action
-     * - Current load and availability
-     * - Historical performance
-     *
-     * Requirements: 3.1, 10.1, 10.2, 10.3, 10.4, 10.5, 23.2, 23.3
+     * Select best actor for action (delegates to ActorCriticSelector)
      *
      * @param Action $action Action to execute
      * @param string|null $preferredDomain Preferred domain (null for no preference)
@@ -316,88 +312,11 @@ class ActorCriticCoordinator
      */
     public function selectActor(Action $action, ?string $preferredDomain = null): ActorAgentInterface
     {
-        // Get capable actors with domain preference (Requirements 10.1, 23.2, 23.3)
-        if ($preferredDomain !== null) {
-            $capableActors = $this->actorRegistry->getCapableActorsWithDomainPreference(
-                $action->getType(),
-                $preferredDomain
-            );
-        } else {
-            $capableActors = $this->actorRegistry->getCapableActors($action->getType());
-        }
-        
-        if (empty($capableActors)) {
-            throw new NoCapableActorException(
-                "No capable actor for action type: {$action->getType()}" .
-                ($preferredDomain ? " (preferred domain: {$preferredDomain})" : "")
-            );
-        }
-        
-        // Score actors (Requirements 10.2, 10.3, 10.4, 23.4)
-        $scoredActors = [];
-        foreach ($capableActors as $actor) {
-            $actorId = $actor->getActorId();
-            
-            // Get confidence for this specific action
-            $confidence = $actor->evaluateConfidence($action);
-            
-            // Get current load
-            $load = $this->actorRegistry->getActorLoad($actorId);
-            
-            // Get historical performance (domain-specific if available)
-            if ($preferredDomain !== null) {
-                $performance = $this->actorRegistry->getActorPerformanceForDomain($actorId, $preferredDomain);
-            } else {
-                $performance = $this->actorRegistry->getActorPerformance($actorId);
-            }
-            
-            // Combined score: confidence (50%) + performance (30%) + availability (20%)
-            $score = ($confidence * 0.5) + ($performance * 0.3) + ((1.0 - $load) * 0.2);
-            
-            $scoredActors[$actorId] = [
-                'actor' => $actor,
-                'score' => $score,
-                'confidence' => $confidence,
-                'load' => $load,
-                'performance' => $performance
-            ];
-        }
-        
-        // Sort by score descending
-        uasort($scoredActors, fn($a, $b) => $b['score'] <=> $a['score']);
-        
-        // Select best actor (Requirement 10.5)
-        $selected = reset($scoredActors);
-        $selectedActor = $selected['actor'];
-        
-        if ($this->debug) {
-            error_log(sprintf(
-                "ActorCriticCoordinator: Selected actor %s (score: %.2f, confidence: %.2f, load: %.2f, performance: %.2f) from %d candidates%s",
-                $selectedActor->getActorId(),
-                $selected['score'],
-                $selected['confidence'],
-                $selected['load'],
-                $selected['performance'],
-                count($capableActors),
-                $preferredDomain ? " (domain: {$preferredDomain})" : ""
-            ));
-        }
-        
-        return $selectedActor;
+        return $this->selector->selectActor($action, $preferredDomain);
     }
-    
+
     /**
-     * Select critics for evaluation excluding producing actor
-     *
-     * Implements sophisticated critic selection algorithm with self-evaluation prevention:
-     * - Capability match for output type
-     * - Domain preference (if specified)
-     * - Exclude producing actor (self-evaluation prevention)
-     * - Diverse expertise levels
-     * - Load balancing
-     * - Historical agreement with consensus
-     *
-     * Requirements: 3.2, 11.1, 11.2, 11.3, 11.4, 11.5, 24.2, 24.3
+     * Select critics for evaluation excluding producing actor (delegates to ActorCriticSelector)
      *
      * @param ActionResult $result Result to evaluate
      * @param int $count Number of critics to select
@@ -407,86 +326,7 @@ class ActorCriticCoordinator
      */
     public function selectCritics(ActionResult $result, int $count, ?string $preferredDomain = null): array
     {
-        // Get qualified critics with domain preference (Requirements 11.1, 24.2, 24.3)
-        if ($preferredDomain !== null) {
-            $qualifiedCritics = $this->criticRegistry->getQualifiedCriticsWithDomainPreference(
-                $result->getOutputType(),
-                $preferredDomain
-            );
-        } else {
-            $qualifiedCritics = $this->criticRegistry->getQualifiedCritics($result->getOutputType());
-        }
-        
-        // Exclude producing actor (Requirements 3.2, 11.2)
-        $producerId = $result->getProducerAgentId();
-        $validCritics = array_filter($qualifiedCritics, fn($c) => $c->getCriticId() !== $producerId);
-        
-        $minCriticsRequired = self::DEFAULT_MIN_CRITICS_REQUIRED;
-        
-        if (count($validCritics) < $minCriticsRequired) {
-            throw new InsufficientCriticsException(
-                "Insufficient critics for output type: {$result->getOutputType()}. " .
-                "Required: {$minCriticsRequired}, Available: " . count($validCritics) .
-                " (Excluded producer: {$producerId})" .
-                ($preferredDomain ? " (preferred domain: {$preferredDomain})" : "")
-            );
-        }
-        
-        // Score critics by expertise, agreement, and load (Requirements 11.3, 11.4, 24.4)
-        $scoredCritics = [];
-        foreach ($validCritics as $critic) {
-            $criticId = $critic->getCriticId();
-            
-            // Get evaluation criteria
-            $criteria = $critic->getEvaluationCriteria();
-            $expertise = 0.5; // Default
-            
-            if (isset($criteria[$result->getOutputType()])) {
-                $criterion = $criteria[$result->getOutputType()];
-                if (is_object($criterion) && method_exists($criterion, 'getExpertiseLevel')) {
-                    $expertise = $criterion->getExpertiseLevel();
-                }
-            }
-            
-            // Get current load
-            $load = $this->criticRegistry->getCriticLoad($criticId);
-            
-            // Get agreement with consensus (domain-specific if available)
-            if ($preferredDomain !== null) {
-                $agreement = $this->criticRegistry->getCriticAgreementForDomain($criticId, $preferredDomain);
-            } else {
-                $agreement = $this->criticRegistry->getCriticAgreement($criticId);
-            }
-            
-            // Combined score: expertise (40%) + agreement (40%) + availability (20%)
-            $score = ($expertise * 0.4) + ($agreement * 0.4) + ((1.0 - $load) * 0.2);
-            
-            $scoredCritics[$criticId] = [
-                'critic' => $critic,
-                'score' => $score,
-                'expertise' => $expertise,
-                'load' => $load,
-                'agreement' => $agreement
-            ];
-        }
-        
-        // Sort by score descending
-        uasort($scoredCritics, fn($a, $b) => $b['score'] <=> $a['score']);
-        
-        // Select top N critics with diversity (Requirement 11.5)
-        $selected = $this->selectDiverseCritics($scoredCritics, $count);
-        
-        if ($this->debug) {
-            error_log(sprintf(
-                "ActorCriticCoordinator: Selected %d critics from %d candidates (excluded producer: %s)%s",
-                count($selected),
-                count($validCritics),
-                $producerId,
-                $preferredDomain ? " (domain: {$preferredDomain})" : ""
-            ));
-        }
-        
-        return $selected;
+        return $this->selector->selectCritics($result, $count, $preferredDomain);
     }
     
     /**
@@ -498,9 +338,6 @@ class ActorCriticCoordinator
      * - Select alternative actors
      * - Retry up to configured maximum
      * - Update performance metrics
-     *
-     * Requirements: 20.1, 20.2, 20.3, 20.4, 20.5
-     *
      * @param ActorAgentInterface $actor Actor to execute
      * @param Action $action Action to execute
      * @return ActionResult Execution result
@@ -586,7 +423,7 @@ class ActorCriticCoordinator
                 // Try alternative actor if retries remain (Requirements 20.2, 20.3)
                 if ($attempt < $maxRetries) {
                     try {
-                        $actor = $this->selectAlternativeActor($action, $attemptedActors);
+                        $actor = $this->selector->selectAlternativeActor($action, $attemptedActors);
                     } catch (NoCapableActorException $e) {
                         // No alternative actors available
                         break;
@@ -705,7 +542,7 @@ class ActorCriticCoordinator
         if (count($evaluations) < $minCriticsRequired) {
             // Attempt to select additional critics if available
             try {
-                $additionalCritics = $this->selectAdditionalCritics(
+                $additionalCritics = $this->selector->selectAdditionalCritics(
                     $result,
                     $minCriticsRequired - count($evaluations),
                     array_merge(
@@ -858,107 +695,6 @@ class ActorCriticCoordinator
             }
         }
     }
-    
-    /**
-     * Select diverse critics to ensure balanced evaluation
-     *
-     * @param array $scoredCritics Scored critics with metadata
-     * @param int $count Number to select
-     * @return array<CriticAgentInterface> Selected critics
-     */
-    private function selectDiverseCritics(array $scoredCritics, int $count): array
-    {
-        // For now, select top N by score
-        // Future enhancement: ensure diversity in expertise levels
-        $selected = array_slice($scoredCritics, 0, min($count, count($scoredCritics)));
-        
-        return array_map(fn($s) => $s['critic'], $selected);
-    }
-    
-    /**
-     * Select alternative actor excluding failed ones
-     *
-     * @param Action $action Action to execute
-     * @param array $excludeActorIds Actor IDs to exclude
-     * @return ActorAgentInterface Alternative actor
-     * @throws NoCapableActorException If no alternative actor available
-     */
-    private function selectAlternativeActor(Action $action, array $excludeActorIds): ActorAgentInterface
-    {
-        $capableActors = $this->actorRegistry->getCapableActors($action->getType());
-        $alternatives = array_filter($capableActors, fn($a) => !in_array($a->getActorId(), $excludeActorIds, true));
-        
-        if (empty($alternatives)) {
-            throw new NoCapableActorException("No alternative actor available for action type: {$action->getType()}");
-        }
-        
-        // Select best alternative
-        $scoredActors = [];
-        foreach ($alternatives as $actor) {
-            $actorId = $actor->getActorId();
-            $confidence = $actor->evaluateConfidence($action);
-            $load = $this->actorRegistry->getActorLoad($actorId);
-            $performance = $this->actorRegistry->getActorPerformance($actorId);
-            
-            $score = ($confidence * 0.5) + ($performance * 0.3) + ((1.0 - $load) * 0.2);
-            $scoredActors[$actorId] = ['actor' => $actor, 'score' => $score];
-        }
-        
-        uasort($scoredActors, fn($a, $b) => $b['score'] <=> $a['score']);
-        
-        return reset($scoredActors)['actor'];
-    }
-    
-    /**
-     * Select additional critics when initial selection is insufficient
-     *
-     * @param ActionResult $result Result to evaluate
-     * @param int $count Number of additional critics needed
-     * @param array $excludeCriticIds Critic IDs to exclude
-     * @return array<CriticAgentInterface> Additional critics
-     * @throws InsufficientCriticsException If not enough critics available
-     */
-    private function selectAdditionalCritics(
-        ActionResult $result,
-        int $count,
-        array $excludeCriticIds
-    ): array {
-        $qualifiedCritics = $this->criticRegistry->getQualifiedCritics($result->getOutputType());
-        $validCritics = array_filter($qualifiedCritics, fn($c) => !in_array($c->getCriticId(), $excludeCriticIds, true));
-        
-        if (count($validCritics) < $count) {
-            throw new InsufficientCriticsException(
-                "Insufficient additional critics available. Needed: {$count}, Available: " . count($validCritics)
-            );
-        }
-        
-        // Score and select best available critics
-        $scoredCritics = [];
-        foreach ($validCritics as $critic) {
-            $criticId = $critic->getCriticId();
-            $criteria = $critic->getEvaluationCriteria();
-            $expertise = 0.5;
-            
-            if (isset($criteria[$result->getOutputType()])) {
-                $criterion = $criteria[$result->getOutputType()];
-                if (is_object($criterion) && method_exists($criterion, 'getExpertiseLevel')) {
-                    $expertise = $criterion->getExpertiseLevel();
-                }
-            }
-            
-            $load = $this->criticRegistry->getCriticLoad($criticId);
-            $agreement = $this->criticRegistry->getCriticAgreement($criticId);
-            
-            $score = ($expertise * 0.4) + ($agreement * 0.4) + ((1.0 - $load) * 0.2);
-            $scoredCritics[] = ['critic' => $critic, 'score' => $score];
-        }
-        
-        usort($scoredCritics, fn($a, $b) => $b['score'] <=> $a['score']);
-        
-        $selected = array_slice($scoredCritics, 0, $count);
-        
-        return array_map(fn($s) => $s['critic'], $selected);
-    }
 
     /**
      * Get actor registry
@@ -1058,30 +794,5 @@ class ActorCriticCoordinator
             $this->weightingEngine = null;
             $this->weightedConsensusBuilder = null;
         }
-    }
-    
-    /**
-     * Create Consensus object from ConsensusResult
-     *
-     * Converts the ConsensusResult from weighted consensus builder into
-     * a Consensus object compatible with the existing feedback system.
-     *
-     * @param mixed $consensusResult The consensus result
-     * @return Consensus Consensus object
-     */
-    private function createConsensusFromResult($consensusResult): Consensus
-    {
-        // Extract consensus score (use dynamic consensus)
-        $score = $consensusResult->getDynamicConsensus();
-        
-        // Create a Consensus object with the dynamic score
-        // Note: This assumes Consensus has a constructor or factory method
-        // Adjust based on actual Consensus class implementation
-        return new Consensus(
-            $score,
-            true, // consensus reached
-            [], // outliers (would need to be calculated if needed)
-            [] // aggregated feedback (would need to be extracted if needed)
-        );
     }
 }

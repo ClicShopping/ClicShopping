@@ -1,6 +1,6 @@
 version4.31
-- AI framework improvement
-- Miscellaneous improvement
+- AI framework improvement (fix bug, classe clarification, readability ...)
+- Miscellaneous improvement and core refactoring
 - fix / bug resolution
 - libraries updated
 - Stripe payment updated for latest version  20.2.1 - 2026-06-12
