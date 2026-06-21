@@ -83,7 +83,15 @@ class EntityConfig
         
         // Get ALL fields from table schema using DoctrineOrm
         $allFields = self::getTableColumns($table, $idColumn);
-        
+
+        // Skip AI-internal embedding stores that have NO matching business table:
+        // "table doesn't exist" while building the NL-to-SQL schema. getTableColumns()
+        // returns [] for a non-existent table, so an empty field set means "no real
+        // business table" → skip.
+        if (empty($allFields)) {
+          continue;
+        }
+
         $config[$entityType] = [
           'table' => $table,
           'id_column' => $idColumn,

@@ -12,11 +12,12 @@ use ClicShopping\Apps\Catalog\Categories\Categories as CategoriesApp;
 use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\ProductsAdmin;
 use ClicShopping\Apps\Catalog\Categories\Classes\ClicShoppingAdmin\CategoriesAdmin;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 /**
  * Class responsible  for managing and displaying statistics related to categories within the application.
  */
-class Update implements \ClicShopping\OM\Modules\HooksInterface
+class Update implements HooksInterface
 {
   public mixed $app;
   protected $productsAdmin;

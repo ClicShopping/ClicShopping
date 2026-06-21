@@ -89,6 +89,9 @@ if (!defined('CLICSHOPPING_APP_CHATGPT_RA_CONSISTENCY_PATHS'))
 if (!defined('CLICSHOPPING_APP_CHATGPT_RA_TREE_PATHS'))
   define('CLICSHOPPING_APP_CHATGPT_RA_TREE_PATHS', 3);
 
+if (!defined('CLICSHOPPING_APP_CHATGPT_RA_REASONING_MODE'))
+  define('CLICSHOPPING_APP_CHATGPT_RA_REASONING_MODE', 'chain_of_thought');
+
 // ============================================================================
 // SECURITY TECHNICAL (6 constants)
 // ============================================================================

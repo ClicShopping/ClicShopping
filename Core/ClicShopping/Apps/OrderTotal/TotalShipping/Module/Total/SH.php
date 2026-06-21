@@ -12,8 +12,9 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\OrderTotal\TotalShipping\TotalShipping as TotalShippingApp;
+use ClicShopping\OM\Interfaces\OrderTotalInterface;
 
-class SH implements \ClicShopping\OM\Modules\OrderTotalInterface
+class SH implements OrderTotalInterface
 {
   public string $code;
   public $title;

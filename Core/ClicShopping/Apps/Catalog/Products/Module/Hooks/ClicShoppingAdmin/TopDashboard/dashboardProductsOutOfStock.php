@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Catalog\Products\Module\Hooks\ClicShoppingAdmin\TopD
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Products\Products as ProductsApp;
 
-class dashboardProductsOutOfStock implements \ClicShopping\OM\Modules\HooksInterface
+class dashboardProductsOutOfStock implements HooksInterface
 {
   public mixed $app;
 
@@ -31,10 +32,10 @@ class dashboardProductsOutOfStock implements \ClicShopping\OM\Modules\HooksInter
   public function Display(): string
   {
     $Qproducts = $this->app->db->prepare('select count(products_id) as count 
-                                             from :table_products 
-                                             where products_quantity = 0
-                                          ');
-
+                                           from :table_products 
+                                           where products_quantity <= :stock_reorder_level
+                                        ');
+    $Qproducts->bindInt(':stock_reorder_level', (int)STOCK_REORDER_LEVEL);
     $Qproducts->execute();
 
     $number_products_out_of_stock = $Qproducts->valueInt('count');

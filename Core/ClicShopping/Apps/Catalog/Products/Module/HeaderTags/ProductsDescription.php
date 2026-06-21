@@ -12,8 +12,9 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Products\Products as ProductsApp;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class ProductsDescription extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class ProductsDescription extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;

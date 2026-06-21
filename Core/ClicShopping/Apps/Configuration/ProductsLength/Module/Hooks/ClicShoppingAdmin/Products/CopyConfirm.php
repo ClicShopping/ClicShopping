@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Configuration\ProductsLength\Module\Hooks\ClicShoppingAdmin\Products;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ProductsLength\ProductsLength as ProductsLengthApp;
 
-class CopyConfirm implements \ClicShopping\OM\Modules\HooksInterface
+class CopyConfirm implements HooksInterface
 {
   public mixed $app;
 

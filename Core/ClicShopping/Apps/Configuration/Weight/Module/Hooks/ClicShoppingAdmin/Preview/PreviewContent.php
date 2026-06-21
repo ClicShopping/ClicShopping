@@ -9,12 +9,13 @@
 namespace ClicShopping\Apps\Configuration\Weight\Module\Hooks\ClicShoppingAdmin\Preview;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\Weight\Classes\ClicShoppingAdmin\WeightAdmin;
 use ClicShopping\Apps\Configuration\Weight\Weight as WeightApp;
 
-class PreviewContent implements \ClicShopping\OM\Modules\HooksInterface
+class PreviewContent implements HooksInterface
 {
   public mixed $app;
 

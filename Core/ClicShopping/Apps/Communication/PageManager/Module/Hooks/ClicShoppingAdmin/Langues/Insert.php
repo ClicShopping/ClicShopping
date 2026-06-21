@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Communication\PageManager\Module\Hooks\ClicShoppingAdmin\Langues;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Communication\PageManager\PageManager as PageManagerApp;
 use ClicShopping\Apps\Configuration\Langues\Classes\ClicShoppingAdmin\LanguageAdmin;
 
-class Insert implements \ClicShopping\OM\Modules\HooksInterface
+class Insert implements HooksInterface
 {
   public mixed $app;
   protected $insert_language_id;

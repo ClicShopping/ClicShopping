@@ -11,12 +11,13 @@ namespace ClicShopping\Apps\Catalog\Categories\Module\Hooks\ClicShoppingAdmin\Pr
 use ClicShopping\Apps\Catalog\Categories\Categories as CategoriesApp;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 /**
  * Class responsible for managing and displaying the category selection UI for products.
  */
-class ProductsContentTab1 implements \ClicShopping\OM\Modules\HooksInterface
+class ProductsContentTab1 implements HooksInterface
 {
   public mixed $app;
 

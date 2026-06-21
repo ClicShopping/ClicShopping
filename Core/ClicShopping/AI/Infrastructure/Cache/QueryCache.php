@@ -254,6 +254,13 @@ class QueryCache
       return false;
     }
 
+    // Never cache empty/errored results: a query whose SQL failed or returned no rows must
+    // not be stored, otherwise it is replayed and masks later correct generations. Empty here = no rows (the error path also
+    // falls back to []). Legitimately-empty queries are cheap to re-run.
+    if (empty($results)) {
+      return false;
+    }
+
     try {
       $cacheKey = CacheKeyGenerator::generate($userQuery, $context);
       $ttl = $ttl ?? $this->defaultTTL;

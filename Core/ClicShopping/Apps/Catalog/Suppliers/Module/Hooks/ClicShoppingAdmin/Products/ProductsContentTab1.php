@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\Catalog\Suppliers\Module\Hooks\ClicShoppingAdmin\Pro
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Suppliers\Classes\ClicShoppingAdmin\SupplierAdmin;
@@ -18,7 +19,7 @@ use ClicShopping\Apps\Catalog\Suppliers\Suppliers as SuppliersApp;
 use function count;
 use function is_array;
 
-class ProductsContentTab1 implements \ClicShopping\OM\Modules\HooksInterface
+class ProductsContentTab1 implements HooksInterface
 {
   public mixed $app;
   protected mixed $SupplierAdmin;

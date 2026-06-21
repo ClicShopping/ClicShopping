@@ -8,11 +8,12 @@
 
 namespace ClicShopping\Apps\Catalog\Products\Module\Hooks\ClicShoppingAdmin\StatsDashboard;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Products\Products as ProductsApp;
 
-class PageTabContent implements \ClicShopping\OM\Modules\HooksInterface
+class PageTabContent implements HooksInterface
 {
   public mixed $app;
 

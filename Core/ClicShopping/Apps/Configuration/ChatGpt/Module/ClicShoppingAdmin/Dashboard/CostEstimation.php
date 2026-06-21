@@ -11,8 +11,9 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Dashb
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class CostEstimation extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class CostEstimation extends AdminDashboardAbstract
 {
   public mixed $app;
   public $group;

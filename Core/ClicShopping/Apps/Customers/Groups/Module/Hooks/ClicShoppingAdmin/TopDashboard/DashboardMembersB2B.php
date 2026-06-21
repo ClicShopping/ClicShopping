@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Customers\Groups\Module\Hooks\ClicShoppingAdmin\TopD
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Groups\Groups as GroupsApp;
 
-class DashboardMembersB2B implements \ClicShopping\OM\Modules\HooksInterface
+class DashboardMembersB2B implements HooksInterface
 {
   /**
    * @var bool|null

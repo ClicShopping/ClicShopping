@@ -12,6 +12,7 @@
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTML;
+  use ClicShopping\OM\Interfaces\HooksInterface;
   use ClicShopping\OM\Registry;
   use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Common\CronLogger;
@@ -62,7 +63,7 @@
  *                                               defaults to STORE_OWNER_EMAIL_ADDRESS
  *  CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG       — verbose error_log output
  */
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   private const CRON_USER_ID = 'productCockpitAi';
   private const MAX_PRODUCTS_PER_RUN = 200;

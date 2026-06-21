@@ -11,11 +11,12 @@ namespace ClicShopping\Apps\Marketing\Recommendations\Module\Hooks\ClicShoppingA
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Marketing\Recommendations\Recommendations as RecommendationsApp;
 use function defined;
 
-class DashboardTopRecommendations implements \ClicShopping\OM\Modules\HooksInterface
+class DashboardTopRecommendations implements HooksInterface
 {
   /**
    * @var bool|null

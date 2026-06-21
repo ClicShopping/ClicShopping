@@ -9,12 +9,13 @@
 namespace ClicShopping\Apps\Configuration\ProductsLength\Module\Hooks\ClicShoppingAdmin\Preview;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ProductsLength\Classes\ClicShoppingAdmin\ProductsLengthAdmin;
 use ClicShopping\Apps\Configuration\ProductsLength\ProductsLength as ProductsLengthApp;
 
-class PreviewContent implements \ClicShopping\OM\Modules\HooksInterface
+class PreviewContent implements HooksInterface
 {
   public mixed $app;
 

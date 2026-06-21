@@ -10,10 +10,11 @@ namespace ClicShopping\Apps\Tools\Backup\Module\Hooks\ClicShoppingAdmin\Cronjob;
 
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Tools\Backup\Classes\ClicShoppingAdmin\Backup;
 
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   /**
    * Executes a cron job for handling backup operations.

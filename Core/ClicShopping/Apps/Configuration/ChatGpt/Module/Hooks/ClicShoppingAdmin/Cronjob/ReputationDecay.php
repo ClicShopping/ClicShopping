@@ -14,6 +14,7 @@
 namespace ClicShopping\Apps\Configuration\ChatGpt\Module\Hooks\ClicShoppingAdmin\Cronjob;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
 use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationDecayScheduler;
@@ -27,7 +28,7 @@ use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
  * 
  * Requirements: 4.2
  */
-class ReputationDecay implements \ClicShopping\OM\Modules\HooksInterface
+class ReputationDecay implements HooksInterface
 {
     /**
      * ChatGpt App instance

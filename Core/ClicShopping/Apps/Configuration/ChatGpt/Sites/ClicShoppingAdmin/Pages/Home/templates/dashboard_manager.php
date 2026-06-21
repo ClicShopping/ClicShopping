@@ -284,13 +284,16 @@ include __DIR__ . '/dashboard/_data.php';
                 <div class="col-md-3">
                   <div class="card metric-card" style="background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);">
                     <div class="metric-label">⭐ <?php echo $CLICSHOPPING_ChatGpt->getDef('feedback_satisfaction_rate'); ?></div>
+                    <?php $feedbackNoData = ($feedbackStats['performance_status'] ?? '') === 'no_data'; ?>
                     <div class="metric-value"
-                         style="color: <?php echo $feedbackStats['satisfaction_rate'] >= 85 ? 'var(--success)' : ($feedbackStats['satisfaction_rate'] >= 70 ? 'var(--warning)' : 'var(--danger)'); ?>;">
-                      <?php echo $feedbackStats['satisfaction_rate'] ?>%
+                         style="color: <?php echo $feedbackNoData ? 'var(--text-muted, #999)' : ($feedbackStats['satisfaction_rate'] >= 85 ? 'var(--success)' : ($feedbackStats['satisfaction_rate'] >= 70 ? 'var(--warning)' : 'var(--danger)')); ?>;">
+                      <?php echo $feedbackNoData ? '—' : $feedbackStats['satisfaction_rate'] . '%' ?>
                     </div>
                     <div class="metric-label" style="font-size: 0.8rem;">
                       <?php
-                      if ($feedbackStats['satisfaction_rate'] >= 85) {
+                      if ($feedbackNoData) {
+                        echo $CLICSHOPPING_ChatGpt->getDef('feedback_no_data');
+                      } elseif ($feedbackStats['satisfaction_rate'] >= 85) {
                         echo $CLICSHOPPING_ChatGpt->getDef('feedback_excellent');
                       } elseif ($feedbackStats['satisfaction_rate'] >= 70) {
                         echo $CLICSHOPPING_ChatGpt->getDef('feedback_good');

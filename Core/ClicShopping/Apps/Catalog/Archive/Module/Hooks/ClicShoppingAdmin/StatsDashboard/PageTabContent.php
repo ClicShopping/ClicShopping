@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Catalog\Archive\Module\Hooks\ClicShoppingAdmin\StatsDashboard;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Archive\Archive as ArchiveApp;
@@ -19,7 +20,7 @@ use ClicShopping\Apps\Catalog\Archive\Archive as ArchiveApp;
  * This class handles the initialization of the Archive application, retrieves statistical data for archived products,
  * and generates output to be displayed in the designated area of the admin dashboard.
  */
-class PageTabContent implements \ClicShopping\OM\Modules\HooksInterface
+class PageTabContent implements HooksInterface
 {
   public mixed $app;
 

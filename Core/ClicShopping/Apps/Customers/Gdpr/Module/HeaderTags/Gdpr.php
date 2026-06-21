@@ -12,8 +12,9 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Gdpr\Gdpr as GdprApp;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Gdpr extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Gdpr extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;

@@ -10,12 +10,13 @@
 namespace ClicShopping\OM\Modules;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\Domains\ModulesAbstract;
 
 /**
  * Represents the administrative menu system and provides functionalities
  * to retrieve information about modules and their corresponding class instances.
  */
-class AdminMenu extends \ClicShopping\OM\Domains\ModulesAbstract
+class AdminMenu extends ModulesAbstract
 {
   /**
    * Retrieves information about the specified app and key using the provided data.
@@ -31,7 +32,7 @@ class AdminMenu extends \ClicShopping\OM\Domains\ModulesAbstract
 
     $class = $this->ns . $app . '\\' . $data;
 
-    if (is_subclass_of($class, 'ClicShopping\OM\Modules\\' . $this->code . 'Interface')) {
+    if (is_subclass_of($class, 'ClicShopping\OM\Interfaces\\' . $this->code . 'Interface')) {
       $result[$app . '\\' . $key] = $class;
     }
 

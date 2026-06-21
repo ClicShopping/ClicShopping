@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\Configuration\ChatGpt\Module\Hooks\ClicShoppingAdmin\PageManager;
 
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\HTML;
 
@@ -19,7 +20,7 @@ use ClicShopping\Sites\Common\HTMLOverrideCommon;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 
 
-class Save implements \ClicShopping\OM\Modules\HooksInterface
+class Save implements HooksInterface
 {
   public mixed $app;
   public mixed $lang;

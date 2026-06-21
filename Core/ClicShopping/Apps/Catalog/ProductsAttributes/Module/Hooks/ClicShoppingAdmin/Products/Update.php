@@ -10,7 +10,7 @@ namespace ClicShopping\Apps\Catalog\ProductsAttributes\Module\Hooks\ClicShopping
 
 use ClicShopping\Apps\Catalog\ProductsAttributes\Classes\ClicShoppingAdmin\ProductsAttributesInlineAdmin;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\Modules\HooksInterface;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 /**
  * Persist the inline attributes tab when an existing product is updated.

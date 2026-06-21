@@ -13,8 +13,9 @@ use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Communication\PageManager\PageManager as PageManagerApp;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class RSS extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class RSS extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;

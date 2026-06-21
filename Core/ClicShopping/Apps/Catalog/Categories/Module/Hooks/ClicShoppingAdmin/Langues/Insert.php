@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Catalog\Categories\Module\Hooks\ClicShoppingAdmin\La
 
 use ClicShopping\Apps\Configuration\Langues\Classes\ClicShoppingAdmin\LanguageAdmin;
 use ClicShopping\ClicShopping\Apps\Configuration\Langues\Classes\ClicShoppingAdminApps\Catalog\Categories\Categories as CategoriesApp;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 
 
-class Insert implements \ClicShopping\OM\Modules\HooksInterface
+class Insert implements HooksInterface
 {
   public mixed $app;
   private mixed $lang;

@@ -10,10 +10,11 @@ namespace ClicShopping\Apps\Marketing\BannerManager\Module\Hooks\ClicShoppingAdm
 
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Marketing\BannerManager\BannerManager as BannerManagerApp;
 
-class Delete implements \ClicShopping\OM\Modules\HooksInterface
+class Delete implements HooksInterface
 {
   public mixed $app;
 

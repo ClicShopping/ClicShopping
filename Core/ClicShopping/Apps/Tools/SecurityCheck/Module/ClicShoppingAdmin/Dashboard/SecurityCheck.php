@@ -12,8 +12,9 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Tools\SecurityCheck\SecurityCheck as SecurityCheckApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class SecurityCheck extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class SecurityCheck extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

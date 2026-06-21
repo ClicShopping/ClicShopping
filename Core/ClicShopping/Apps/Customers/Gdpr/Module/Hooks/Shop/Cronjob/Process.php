@@ -10,9 +10,10 @@ namespace ClicShopping\Apps\Customers\Gdpr\Module\Hooks\Shop\Cronjob;
 
 use ClicShopping\Apps\Customers\Gdpr\Gdpr as GdprApp;
 use ClicShopping\Apps\Customers\Gdpr\Classes\ClicShoppingAdmin\Gdpr;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   public mixed $app;
 

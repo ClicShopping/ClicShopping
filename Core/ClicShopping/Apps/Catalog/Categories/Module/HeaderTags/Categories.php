@@ -12,8 +12,9 @@ use ClicShopping\Apps\Catalog\Categories\Categories as CategoriesApp;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Categories extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Categories extends HeaderTagsAbstract
 {
   public mixed $app;
   public mixed $group;

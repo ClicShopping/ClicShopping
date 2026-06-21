@@ -14,8 +14,9 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Manufacturers\Classes\Shop\Manufacturers as ManufacturersShop;
 use ClicShopping\Apps\Catalog\Manufacturers\Manufacturers as ManufacturersApp;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Manufacturers extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Manufacturers extends HeaderTagsAbstract
 {
   private mixed $lang;
   public mixed $app;

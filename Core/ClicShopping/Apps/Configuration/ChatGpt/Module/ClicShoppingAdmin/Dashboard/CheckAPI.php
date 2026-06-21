@@ -13,8 +13,9 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class CheckAPI extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class CheckAPI extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

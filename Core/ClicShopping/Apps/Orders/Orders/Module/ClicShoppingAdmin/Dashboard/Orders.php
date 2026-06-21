@@ -13,10 +13,11 @@ use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
 use ClicShopping\Apps\Orders\Orders\Orders as OrdersApp;
 
-class Orders extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class Orders extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

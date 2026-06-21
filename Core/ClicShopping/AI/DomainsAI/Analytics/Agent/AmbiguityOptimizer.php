@@ -160,31 +160,22 @@ class AmbiguityOptimizer
    */
   public function getOptimalInterpretationCount(string $translatedQuery, array $ambiguityAnalysis): int
   {
-    // Check if clearly non-ambiguous using patterns
-    $clearCheck = $this->isClearlyNonAmbiguous($translatedQuery);
-    if ($clearCheck['is_clear']) {
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "AmbiguityOptimizer: Clear pattern detected, using 1 interpretation",
-          'info'
-        );
-      }
-      return 1;
-    }
+    // Pure LLM Mode: the LLM ambiguity verdict is the source of truth here — the
+    // regex pre-filter is no longer second-guessed for the interpretation count.
+    // Benchmark 2026-06-19 confirmed the LLM at temperature 0.0 is 100% consistent on the temporal/quantitative cases the pre-filter used to guard.
+    $isAmbiguous = (bool)($ambiguityAnalysis['is_ambiguous'] ?? false);
 
-    // Check ambiguity type
-    $ambiguityType = $ambiguityAnalysis['ambiguity_type'] ?? '';
-    $ambiguityTypes = explode('|', $ambiguityType);
-
-    // Default: 2 interpretations (good balance between coverage and performance)
-    // We removed the 3-interpretation case to always optimize performance
     if ($this->debug) {
+      $ambiguityType = (string)($ambiguityAnalysis['ambiguity_type'] ?? '');
       $this->logger->logSecurityEvent(
-        "AmbiguityOptimizer: Ambiguous query ({$ambiguityType}), generating 2 interpretations",
+        $isAmbiguous
+          ? "AmbiguityOptimizer: Ambiguous query ({$ambiguityType}), generating 2 interpretations"
+          : "AmbiguityOptimizer: Non-ambiguous query, using 1 interpretation",
         'info'
       );
     }
-    return 2;
+
+    return $isAmbiguous ? 2 : 1;
   }
 
   /**

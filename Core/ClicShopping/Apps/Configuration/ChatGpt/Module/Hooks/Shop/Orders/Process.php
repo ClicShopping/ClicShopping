@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\Hooks\Shop\Orders;
 
 use AllowDynamicProperties;
 use ClicShopping\OM\Hash;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
@@ -19,7 +20,7 @@ use ClicShopping\Sites\Common\HTMLOverrideCommon;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 
 #[AllowDynamicProperties]
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   public mixed $app;
   public mixed $lang;

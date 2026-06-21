@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Marketing\Recommendations\Module\Hooks\ClicShoppingA
 
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Marketing\Recommendations\Recommendations as RecommendationsApp;
 use function defined;
 
-class RemoveProduct implements \ClicShopping\OM\Modules\HooksInterface
+class RemoveProduct implements HooksInterface
 {
   public mixed $app;
 

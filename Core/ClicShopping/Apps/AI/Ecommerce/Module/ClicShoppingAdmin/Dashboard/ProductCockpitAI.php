@@ -12,8 +12,9 @@
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTML;
   use ClicShopping\OM\Registry;
+  use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-  class ProductCockpitAI extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+  class ProductCockpitAI extends AdminDashboardAbstract
   {
   public mixed $lang;
   public mixed $app;

@@ -12,8 +12,9 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Orders\Orders\Orders as OrdersApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class TotalCaByYear extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class TotalCaByYear extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

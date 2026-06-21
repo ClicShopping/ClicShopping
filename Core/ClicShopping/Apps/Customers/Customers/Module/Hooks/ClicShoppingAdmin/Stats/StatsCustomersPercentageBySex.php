@@ -8,11 +8,12 @@
 
 namespace ClicShopping\Apps\Customers\Customers\Module\Hooks\ClicShoppingAdmin\Stats;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Customers\Customers as CustomersApp;
 
-class StatsCustomersPercentageBySex implements \ClicShopping\OM\Modules\HooksInterface
+class StatsCustomersPercentageBySex implements HooksInterface
 {
   public mixed $app;
 

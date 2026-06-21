@@ -9,12 +9,12 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Specials;
 
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\CockpitAIOrchestrator;
 
-
-class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
+class DeleteAll implements HooksInterface
 {
   public mixed $app;
   public mixed $lang;

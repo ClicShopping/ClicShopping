@@ -242,7 +242,11 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
 
       $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, 600);
 
-      return (is_string($translated) && trim($translated) !== '') ? $translated : $text;
+      if (!is_string($translated) || trim($translated) === '') {
+        return $text;
+      }
+
+      return html_entity_decode($translated, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     } catch (\Throwable $e) {
       self::logSecurityEvent('translateToLanguage failed: ' . $e->getMessage(), 'warning');
 

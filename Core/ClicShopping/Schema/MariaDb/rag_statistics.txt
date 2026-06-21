@@ -22,10 +22,6 @@ session_id varchar(255) default null comment(Session identifier)
 language_id int(11) default 1 comment(Language identifier)
 date_added datetime not_null default(current_timestamp) comment(When the statistics record was created)
 metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(`metadata`))
-query_type varchar(50) default null
-success tinyint(1) default 1
-response_time int(11) default null
-created_at datetime default null
 
 --
 primary id

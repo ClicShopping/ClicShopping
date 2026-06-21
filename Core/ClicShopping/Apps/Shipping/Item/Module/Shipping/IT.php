@@ -13,8 +13,9 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Shipping\Item\Item as ItemApp;
 use ClicShopping\Sites\Common\B2BCommon;
+use ClicShopping\OM\Interfaces\ShippingInterface;
 
-class IT implements \ClicShopping\OM\Modules\ShippingInterface
+class IT implements ShippingInterface
 {
   public string $code;
   public $title;

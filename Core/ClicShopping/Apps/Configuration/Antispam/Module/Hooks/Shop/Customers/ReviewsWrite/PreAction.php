@@ -10,12 +10,13 @@ namespace ClicShopping\Apps\Configuration\Antispam\Module\Hooks\Shop\Customers\R
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\Antispam\Antispam as AntispamApp;
 use ClicShopping\Apps\Configuration\Antispam\Classes\Shop\AntiSpam;
 
-class PreAction implements \ClicShopping\OM\Modules\HooksInterface
+class PreAction implements HooksInterface
 {
   public mixed $app;
   public mixed $messageStack;

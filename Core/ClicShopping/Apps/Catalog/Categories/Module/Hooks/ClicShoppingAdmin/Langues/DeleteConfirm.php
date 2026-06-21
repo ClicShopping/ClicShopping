@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Catalog\Categories\Module\Hooks\ClicShoppingAdmin\La
 
 use ClicShopping\Apps\Catalog\Categories\Categories as CategoriesApp;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 /**
  * The DeleteConfirm class contains the logic for deleting a record from the categories_description table.
  */
-class DeleteConfirm implements \ClicShopping\OM\Modules\HooksInterface
+class DeleteConfirm implements HooksInterface
 {
   public mixed $app;
 

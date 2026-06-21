@@ -11,8 +11,9 @@ namespace ClicShopping\Apps\Marketing\Featured\Module\HeaderTags;
 use ClicShopping\Apps\Marketing\Featured\Featured as FeaturedApp;
 use ClicShopping\Apps\Marketing\SEO\Classes\Shop\SeoShop as SeoShopFeatured;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Featured extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Featured extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;

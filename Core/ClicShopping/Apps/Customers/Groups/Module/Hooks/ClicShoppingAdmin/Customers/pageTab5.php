@@ -9,12 +9,13 @@
 namespace ClicShopping\Apps\Customers\Groups\Module\Hooks\ClicShoppingAdmin\Customers;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\ObjectInfo;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Groups\Groups as GroupsApp;
 
-class pageTab5 implements \ClicShopping\OM\Modules\HooksInterface
+class pageTab5 implements HooksInterface
 {
   public mixed $app;
   protected string $customers_group_name;

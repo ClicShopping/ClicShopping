@@ -6,16 +6,14 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\OM\Modules;
 
-/**
- * Interface OrderTotalInterface
- *
- * Represents the contract for managing and processing order total modules.
- */
-interface OrderTotalInterface
+namespace ClicShopping\OM\Interfaces;
+
+interface ContentInterface
 {
-  public function process();
+  public function execute();
+
+  public function isEnabled();
 
   public function check();
 

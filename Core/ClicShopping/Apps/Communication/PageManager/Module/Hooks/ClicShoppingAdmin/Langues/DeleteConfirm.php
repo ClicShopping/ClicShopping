@@ -10,10 +10,11 @@ namespace ClicShopping\Apps\Communication\PageManager\Module\Hooks\ClicShoppingA
 
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Communication\PageManager\PageManager as PageManagerApp;
 
-class DeleteConfirm implements \ClicShopping\OM\Modules\HooksInterface
+class DeleteConfirm implements HooksInterface
 {
   public mixed $app;
 

@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Orders\ReturnOrders\Module\Hooks\ClicShoppingAdmin\T
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Orders\ReturnOrders\ReturnOrders as ReturnOrdersApp;
 
-class DashboardReturnOrders implements \ClicShopping\OM\Modules\HooksInterface
+class DashboardReturnOrders implements HooksInterface
 {
   public mixed $app;
 

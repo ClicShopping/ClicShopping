@@ -11,11 +11,12 @@ namespace ClicShopping\Apps\Catalog\Categories\Module\Hooks\ClicShoppingAdmin\Da
 use ClicShopping\Apps\Catalog\Categories\Categories as categoriesApp;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 /**
  * The DashboardShortCutCategories class contains the logic for displaying the categories shortcut on the dashboard.
  */
-class DashboardShortCutCategories implements \ClicShopping\OM\Modules\HooksInterface
+class DashboardShortCutCategories implements HooksInterface
 {
   public mixed $app;
 

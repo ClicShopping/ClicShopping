@@ -12,8 +12,9 @@ use ClicShopping\Apps\Marketing\Specials\Specials as SpecialsApp;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Marketing\SEO\Classes\Shop\SeoShop as SeoShopSpecials;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Specials extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Specials extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;

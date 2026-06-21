@@ -14,9 +14,9 @@ use ClicShopping\Apps\Marketing\Recommendations\Classes\Shop\RatingValidator;
 
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
-use function defined;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
-class saveEntry implements \ClicShopping\OM\Modules\HooksInterface
+class saveEntry implements HooksInterface
 {
   private mixed $productsCommon;
   private mixed $recommendationsShop;

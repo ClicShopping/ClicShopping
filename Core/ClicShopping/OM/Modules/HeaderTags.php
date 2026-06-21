@@ -9,12 +9,13 @@
 namespace ClicShopping\OM\Modules;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\Domains\ModulesAbstract;
 
 /**
  * Handles operations related to header tag modules by retrieving module information
  * and constructing proper class names for a given application context.
  */
-class HeaderTags extends \ClicShopping\OM\Domains\ModulesAbstract
+class HeaderTags extends ModulesAbstract
 {
   /**
    * Retrieves information about a specific app and its associated data.
@@ -30,7 +31,7 @@ class HeaderTags extends \ClicShopping\OM\Domains\ModulesAbstract
 
     $class = $this->ns . $app . '\\' . $data;
 
-    if (is_subclass_of($class, 'ClicShopping\OM\Modules\\' . $this->code . 'Interface')) {
+    if (is_subclass_of($class, 'ClicShopping\OM\Interfaces\\' . $this->code . 'Interface')) {
       $result[$app . '\\' . $key] = $class;
     }
 

@@ -8,10 +8,11 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Orders;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 
-class DeleteAll implements \ClicShopping\OM\Modules\HooksInterface
+class DeleteAll implements HooksInterface
 {
   public mixed $app;
 

@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\Customers\Gdpr\Module\Hooks\Shop\Account\Create;
 
 use ClicShopping\Apps\Customers\Gdpr\Gdpr as GdprApp;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 /**
@@ -17,7 +18,7 @@ use ClicShopping\OM\Registry;
  * that is created but never logged into is still covered by the retention purge cron
  * (a NULL last-logon would otherwise never match the cutoff and never be cleaned up).
  */
-class Process implements \ClicShopping\OM\Modules\HooksInterface
+class Process implements HooksInterface
 {
   public mixed $app;
 

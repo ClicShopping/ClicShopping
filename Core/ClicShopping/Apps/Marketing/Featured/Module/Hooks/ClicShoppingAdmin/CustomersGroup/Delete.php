@@ -10,10 +10,11 @@ namespace ClicShopping\Apps\Marketing\Featured\Module\Hooks\ClicShoppingAdmin\Cu
 
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Interfaces\HooksInterface;
 
 use ClicShopping\Apps\Marketing\Featured\Featured as FeaturedApp;
 
-class Delete implements \ClicShopping\OM\Modules\HooksInterface
+class Delete implements HooksInterface
 {
   public mixed $app;
 

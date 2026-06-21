@@ -9,12 +9,13 @@
 namespace ClicShopping\OM\Modules;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\Domains\ModulesAbstract;
 
 /**
  * Represents a payment module extending the abstract functionality provided in the ClicShopping\OM\ModulesAbstract class.
  * This class provides methods for retrieving information and class definitions for specific payment modules.
  */
-class Payment extends \ClicShopping\OM\Domains\ModulesAbstract
+class Payment extends ModulesAbstract
 {
   /**
    * Retrieves and constructs module information based on the given application, key, and data.
@@ -32,7 +33,7 @@ class Payment extends \ClicShopping\OM\Domains\ModulesAbstract
 
     $class = $this->ns . $app . '\\' . $data;
 
-    if (is_subclass_of($class, 'ClicShopping\OM\Modules\\' . $this->code . 'Interface')) {
+    if (is_subclass_of($class, 'ClicShopping\OM\Interfaces\\' . $this->code . 'Interface')) {
       $result[$app . '\\' . $key] = $class;
     }
 

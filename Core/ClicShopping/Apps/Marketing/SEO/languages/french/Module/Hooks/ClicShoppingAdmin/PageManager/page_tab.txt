@@ -1,0 +1,2 @@
+tab_seo_report = SEO Report
+info = Fonctionne uniquement avec les pages de contenu (ex: condition générale), Toutes les liens ne sont pas inclus dans l'analyse

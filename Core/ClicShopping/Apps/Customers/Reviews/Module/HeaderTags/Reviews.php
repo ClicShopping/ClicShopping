@@ -11,8 +11,9 @@ namespace ClicShopping\Apps\Customers\Reviews\Module\HeaderTags;
 use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
 use ClicShopping\Apps\Marketing\SEO\Classes\Shop\SeoShop as SeoShopReviews;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Reviews extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Reviews extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;

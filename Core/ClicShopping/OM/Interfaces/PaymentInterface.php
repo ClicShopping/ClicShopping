@@ -6,7 +6,7 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\OM\Modules;
+namespace ClicShopping\OM\Interfaces;
 
 /**
  * Interface for implementing payment modules.

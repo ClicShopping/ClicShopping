@@ -12,8 +12,9 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Customers\Customers as CustomersApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class TotalCustomers extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class TotalCustomers extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

@@ -10,8 +10,9 @@
 namespace ClicShopping\OM\Modules;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\Domains\ModulesAbstract;
 
-class Content extends \ClicShopping\OM\Domains\ModulesAbstract
+class Content extends ModulesAbstract
 {
   public function getInfo($app, $key, $data)
   {
@@ -20,7 +21,7 @@ class Content extends \ClicShopping\OM\Domains\ModulesAbstract
     foreach ($data as $code => $class) {
       $class = $this->ns . $app . '\\' . $class;
 
-      if (is_subclass_of($class, 'ClicShopping\OM\Modules\\' . $this->code . 'Interface')) {
+      if (is_subclass_of($class, 'ClicShopping\OM\Interfaces\\' . $this->code . 'Interface')) {
         $result[$key . DIRECTORY_SEPARATOR . $app . '\\' . $code] = $class;
       }
     }

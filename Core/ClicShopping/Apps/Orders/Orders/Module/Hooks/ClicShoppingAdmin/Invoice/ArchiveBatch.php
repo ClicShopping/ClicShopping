@@ -9,11 +9,12 @@
 namespace ClicShopping\Apps\Orders\Orders\Module\Hooks\ClicShoppingAdmin\Invoice;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Orders\Orders\Orders as OrdersApp;
 
-class ArchiveBatch implements \ClicShopping\OM\Modules\HooksInterface
+class ArchiveBatch implements HooksInterface
 {
   public mixed $app;
   protected $Id;

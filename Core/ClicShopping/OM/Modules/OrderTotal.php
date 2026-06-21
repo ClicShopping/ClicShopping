@@ -10,6 +10,7 @@
 namespace ClicShopping\OM\Modules;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\Domains\ModulesAbstract;
 
 /**
  * Class OrderTotal
@@ -18,7 +19,7 @@ use ClicShopping\OM\Apps;
  * for retrieving information about modules and returning specific class instances
  * based on the provided module name.
  */
-class OrderTotal extends \ClicShopping\OM\Domains\ModulesAbstract
+class OrderTotal extends ModulesAbstract
 {
   /**
    * Retrieves information based on the specified parameters and validates the class against an interface.
@@ -35,7 +36,7 @@ class OrderTotal extends \ClicShopping\OM\Domains\ModulesAbstract
 
     $class = $this->ns . $app . '\\' . $data;
 
-    if (is_subclass_of($class, 'ClicShopping\OM\Modules\\' . $this->code . 'Interface')) {
+    if (is_subclass_of($class, 'ClicShopping\OM\Interfaces\\' . $this->code . 'Interface')) {
       $result[$app . '\\' . $key] = $class;
     }
 

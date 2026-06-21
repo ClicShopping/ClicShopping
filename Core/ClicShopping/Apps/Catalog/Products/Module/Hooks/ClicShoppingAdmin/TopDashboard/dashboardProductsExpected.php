@@ -10,11 +10,12 @@ namespace ClicShopping\Apps\Catalog\Products\Module\Hooks\ClicShoppingAdmin\TopD
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Products\Products as ProductsApp;
 
-class dashboardProductsExpected implements \ClicShopping\OM\Modules\HooksInterface
+class dashboardProductsExpected implements HooksInterface
 {
   public mixed $app;
 
@@ -30,9 +31,9 @@ class dashboardProductsExpected implements \ClicShopping\OM\Modules\HooksInterfa
 
   public function Display(): string
   {
-    $Qproducts = $this->app->db->prepare('select count(products_id) as count 
-                                            from :table_products 
-                                            where products_date_available <> null
+    $Qproducts = $this->app->db->prepare('select count(products_id) as count
+                                            from :table_products
+                                            where products_date_available > now()
                                             ');
     $Qproducts->execute();
 

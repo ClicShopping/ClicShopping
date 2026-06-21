@@ -1,0 +1,1 @@
+tab_seo_report = Rapport SEO

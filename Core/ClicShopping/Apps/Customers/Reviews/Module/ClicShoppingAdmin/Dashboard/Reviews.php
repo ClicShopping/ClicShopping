@@ -14,8 +14,9 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
+use ClicShopping\OM\Domains\AdminDashboardAbstract;
 
-class Reviews extends \ClicShopping\OM\Modules\AdminDashboardAbstract
+class Reviews extends AdminDashboardAbstract
 {
   public mixed $lang;
   public mixed $app;

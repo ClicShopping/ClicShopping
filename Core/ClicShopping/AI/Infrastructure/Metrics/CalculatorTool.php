@@ -15,6 +15,8 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\InputValidator;
+use ClicShopping\AI\Infrastructure\Metrics\SubMetrics\CalculatorCache;
+use ClicShopping\AI\Infrastructure\Metrics\SubMetrics\CalculatorLogger;
 
 /**
  * CalculatorTool Class
@@ -37,9 +39,11 @@ class CalculatorTool
   private bool $debug;
   private array $calculationHistory = [];
   private int $maxHistorySize = 100;
-  private mixed $db;
+  private mixed $db = null;
   private bool $enableCache = false;
   private bool $enableLogging = false;
+  private CalculatorCache $calculatorCache;
+  private CalculatorLogger $calculatorLogger;
   private int $cacheTTL = 3600;
 
   /**
@@ -138,6 +142,8 @@ class CalculatorTool
 
     $this->cacheTTL = self::CACHE_TTL;
     $this->maxHistorySize = self::MAX_HISTORY_SIZE;
+    $this->calculatorCache = new CalculatorCache($this->db, $this->securityLogger, $this->debug, $this->cacheTTL);
+    $this->calculatorLogger = new CalculatorLogger($this->db, $this->securityLogger, $this->debug, $this->enableLogging);
 
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(
@@ -184,7 +190,7 @@ class CalculatorTool
       $this->variables = array_merge($this->variables, $variables);
 
       if ($this->enableCache) {
-        $cachedResult = $this->getCachedResult($expression, $this->variables);
+        $cachedResult = $this->calculatorCache->getCachedResult($expression, $this->variables);
         if ($cachedResult !== null) {
           if ($this->debug) {
             $this->securityLogger->logSecurityEvent(
@@ -214,11 +220,11 @@ class CalculatorTool
       ];
 
       if ($this->enableCache) {
-        $this->cacheResult($expression, $this->variables, $response);
+        $this->calculatorCache->cacheResult($expression, $this->variables, $response);
       }
 
       if ($this->enableLogging) {
-        $this->logCalculation($expression, $result, true, null, $response['execution_time']);
+        $this->calculatorLogger->logCalculation($expression, $result, true, null, $response['execution_time']);
       }
 
       $this->addToHistory($expression, $result, $response['execution_time']);
@@ -234,7 +240,7 @@ class CalculatorTool
       );
 
       if ($this->enableLogging) {
-        $this->logCalculation($expression, null, false, $e->getMessage(), $executionTime);
+        $this->calculatorLogger->logCalculation($expression, null, false, $e->getMessage(), $executionTime);
       }
 
       return [
@@ -1057,509 +1063,50 @@ class CalculatorTool
   }
 
   /**
-   * Generate cache hash
-   * 
-   * @param string $expression Expression
-   * @param array $variables Variables
-   * @return string Hash
-   */
-  private function generateCacheHash(string $expression, array $variables): string
-  {
-    $data = $expression . json_encode($variables, JSON_UNESCAPED_UNICODE);
-    return hash('sha256', $data);
-  }
-
-  /**
-   * Get cached result
-   * 
-   * @param string $expression Expression
-   * @param array $variables Variables
-   * @return array|null Cached result or null
-   */
-  private function getCachedResult(string $expression, array $variables): ?array
-  {
-    if (!$this->db) {
-      return null;
-    }
-
-    try {
-      $hash = $this->generateCacheHash($expression, $variables);
-
-      $sql = "SELECT * FROM :table_rag_calculator_cache 
-              WHERE expression_hash = :hash 
-              AND created_at > DATE_SUB(NOW(), INTERVAL :ttl SECOND)
-              LIMIT 1";
-
-      $stmt = $this->db->prepare($sql);
-      $stmt->execute([
-        'hash' => $hash,
-        'ttl' => $this->cacheTTL
-      ]);
-
-      $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-      if ($row) {
-        $updateSql = "UPDATE :table_rag_calculator_cache 
-                      SET last_accessed = NOW(), 
-                          access_count = access_count + 1 
-                      WHERE cache_id = :id";
-        $updateStmt = $this->db->prepare($updateSql);
-        $updateStmt->execute(['id' => $row['cache_id']]);
-
-        return [
-          'success' => true,
-          'result' => (float)$row['result'],
-          'expression' => $expression,
-          'prepared_expression' => $expression,
-          'execution_time' => (float)$row['execution_time'],
-          'type' => $row['result_type'],
-          'from_cache' => true,
-          'cache_age' => time() - strtotime($row['created_at']),
-          'access_count' => (int)$row['access_count'] + 1,
-        ];
-      }
-
-      return null;
-    } catch (\Exception $e) {
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Cache retrieval error: " . $e->getMessage(),
-          'error'
-        );
-      }
-      return null;
-    }
-  }
-
-  /**
-   * Cache result
-   * 
-   * @param string $expression Expression
-   * @param array $variables Variables
-   * @param array $result Result
-   * @return bool Success
-   */
-  private function cacheResult(string $expression, array $variables, array $result): bool
-  {
-    if (!$this->db) {
-      return false;
-    }
-
-    try {
-      $hash = $this->generateCacheHash($expression, $variables);
-
-      $sql = "INSERT INTO :table_rag_calculator_cache 
-              (expression, expression_hash, result, result_type, variables, 
-               execution_time, created_at, last_accessed, access_count) 
-              VALUES 
-              (:expression, :hash, :result, :type, :variables, 
-               :exec_time, NOW(), NOW(), 0)
-              ON DUPLICATE KEY UPDATE 
-                result = VALUES(result),
-                result_type = VALUES(result_type),
-                execution_time = VALUES(execution_time),
-                last_accessed = NOW(),
-                access_count = access_count + 1";
-
-      $stmt = $this->db->prepare($sql);
-
-      return $stmt->execute([
-        'expression' => substr($expression, 0, 500),
-        'hash' => $hash,
-        'result' => $result['result'],
-        'type' => $result['type'],
-        'variables' => json_encode($variables, JSON_UNESCAPED_UNICODE),
-        'exec_time' => $result['execution_time'],
-      ]);
-    } catch (\Exception $e) {
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Cache storage error: " . $e->getMessage(),
-          'error'
-        );
-      }
-      return false;
-    }
-  }
-
-  /**
-   * Clean expired cache
-   * 
-   * @return int Number of deleted entries
+   * Remove expired cache entries. Delegates to CalculatorCache.
    */
   public function cleanCache(): int
   {
-    if (!$this->db) {
-      return 0;
-    }
-
-    try {
-      $sql = "DELETE FROM :table_rag_calculator_cache 
-              WHERE created_at < DATE_SUB(NOW(), INTERVAL :ttl SECOND)";
-
-      $stmt = $this->db->prepare($sql);
-      $stmt->execute(['ttl' => $this->cacheTTL]);
-
-      $deleted = $stmt->rowCount();
-
-      if ($this->debug && $deleted > 0) {
-        $this->securityLogger->logSecurityEvent(
-          "Cleaned {$deleted} expired cache entries",
-          'info'
-        );
-      }
-
-      return $deleted;
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Cache cleaning error: " . $e->getMessage(),
-        'error'
-      );
-      return 0;
-    }
+    return $this->calculatorCache->cleanCache();
   }
 
   /**
-   * Clear all cache
-   * 
-   * @return bool Success
+   * Clear all cached calculation results. Delegates to CalculatorCache.
    */
   public function clearCache(): bool
   {
-    if (!$this->db) {
-      return false;
-    }
-
-    try {
-      $this->db->exec("TRUNCATE TABLE calculator_cache");
-
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Calculator cache cleared",
-          'info'
-        );
-      }
-
-      return true;
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Cache clearing error: " . $e->getMessage(),
-        'error'
-      );
-      return false;
-    }
+    return $this->calculatorCache->clearCache();
   }
 
   /**
-   * Get cache statistics
-   * 
-   * @return array Cache statistics
+   * Cache statistics. Delegates to CalculatorCache.
    */
   public function getCacheStats(): array
   {
-    if (!$this->db) {
-      return ['enabled' => false];
-    }
-
-    try {
-      $stats = [];
-
-      $stmt = $this->db->query("SELECT COUNT(*) as total FROM :table_rag_calculator_cache");
-      $stats['total_entries'] = (int)$stmt->fetchColumn();
-
-      $sql = "SELECT COUNT(*) as valid FROM :table_rag_calculator_cache 
-              WHERE created_at > DATE_SUB(NOW(), INTERVAL :ttl SECOND)";
-      $stmt = $this->db->prepare($sql);
-      $stmt->execute(['ttl' => $this->cacheTTL]);
-      $stats['valid_entries'] = (int)$stmt->fetchColumn();
-
-      $stmt = $this->db->query("SELECT SUM(access_count) as total FROM :table_rag_calculator_cache");
-      $stats['total_accesses'] = (int)$stmt->fetchColumn();
-
-      $stmt = $this->db->query(
-        "SELECT expression, 
-                access_count 
-         FROM :table_rag_calculator_cache 
-         ORDER BY access_count DESC 
-         LIMIT 1"
-      );
-      $popular = $stmt->fetch(\PDO::FETCH_ASSOC);
-      $stats['most_popular'] = $popular ? [
-        'expression' => $popular['expression'],
-        'accesses' => (int)$popular['access_count']
-      ] : null;
-
-      if ($stats['total_accesses'] > 0) {
-        $stats['hit_rate'] = round(
-          ($stats['total_accesses'] / ($stats['total_entries'] + $stats['total_accesses'])) * 100,
-          2
-        );
-      } else {
-        $stats['hit_rate'] = 0;
-      }
-
-      $stats['enabled'] = true;
-      $stats['ttl'] = $this->cacheTTL;
-
-      return $stats;
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Cache stats error: " . $e->getMessage(),
-        'error'
-      );
-      return ['enabled' => true, 'error' => $e->getMessage()];
-    }
+    return $this->calculatorCache->getCacheStats();
   }
 
   /**
-   * Log calculation
-   * 
-   * @param string $expression Expression
-   * @param float|null $result Result
-   * @param bool $success Success status
-   * @param string|null $errorMessage Error message
-   * @param float $executionTime Execution time
-   * @param string|null $stepId Step ID
-   * @param string|null $planId Plan ID
-   * @param array|null $metadata Metadata
-   * @return bool Success
-   */
-  private function logCalculation(
-    string $expression,
-    ?float $result,
-    bool $success,
-    ?string $errorMessage,
-    float $executionTime,
-    ?string $stepId = null,
-    ?string $planId = null,
-    ?array $metadata = null
-  ): bool {
-    if (!$this->db || !$this->enableLogging) {
-      return false;
-    }
-
-    try {
-      $sql = "INSERT INTO :table_rag_calculator_logs 
-              (user_id, expression, result, success, error_message, 
-               execution_time, step_id, plan_id, metadata, created_at) 
-              VALUES 
-              (:user_id, :expression, :result, :success, :error, 
-               :exec_time, :step_id, :plan_id, :metadata, NOW())";
-
-      $stmt = $this->db->prepare($sql);
-
-      return $stmt->execute([
-        'user_id' => $this->getUserId(),
-        'expression' => $expression,
-        'result' => $result,
-        'success' => $success ? 1 : 0,
-        'error' => $errorMessage,
-        'exec_time' => $executionTime,
-        'step_id' => $stepId,
-        'plan_id' => $planId,
-        'metadata' => $metadata ? json_encode($metadata, JSON_UNESCAPED_UNICODE) : null,
-      ]);
-    } catch (\Exception $e) {
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Logging error: " . $e->getMessage(),
-          'error'
-        );
-      }
-      return false;
-    }
-  }
-
-  /**
-   * Get calculation logs
-   * 
-   * @param int $limit Number of entries
-   * @param array $filters Filters
-   * @return array Log entries
+   * Recent calculation log entries. Delegates to CalculatorLogger.
    */
   public function getLogs(int $limit = 100, array $filters = []): array
   {
-    if (!$this->db) {
-      return [];
-    }
-
-    try {
-      $where = [];
-      $params = [];
-
-      if (isset($filters['success'])) {
-        $where[] = "success = :success";
-        $params['success'] = $filters['success'] ? 1 : 0;
-      }
-
-      if (isset($filters['user_id'])) {
-        $where[] = "user_id = :user_id";
-        $params['user_id'] = $filters['user_id'];
-      }
-
-      if (isset($filters['plan_id'])) {
-        $where[] = "plan_id = :plan_id";
-        $params['plan_id'] = $filters['plan_id'];
-      }
-
-      if (isset($filters['from_date'])) {
-        $where[] = "created_at >= :from_date";
-        $params['from_date'] = $filters['from_date'];
-      }
-
-      $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-
-      $sql = "SELECT * FROM :table_rag_calculator_logs 
-              {$whereClause}
-              ORDER BY created_at DESC 
-              LIMIT :limit";
-
-      $stmt = $this->db->prepare($sql);
-
-      foreach ($params as $key => $value) {
-        $stmt->bindValue($key, $value);
-      }
-      $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
-
-      $stmt->execute();
-
-      return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Log retrieval error: " . $e->getMessage(),
-        'error'
-      );
-      return [];
-    }
+    return $this->calculatorLogger->getLogs($limit, $filters);
   }
 
   /**
-   * Get log statistics
-   * 
-   * @param array $filters Filters
-   * @return array Log statistics
+   * Calculation log statistics. Delegates to CalculatorLogger.
    */
   public function getLogStats(array $filters = []): array
   {
-    if (!$this->db) {
-      return ['enabled' => false];
-    }
-
-    try {
-      $where = [];
-      $params = [];
-
-      if (isset($filters['user_id'])) {
-        $where[] = "user_id = :user_id";
-        $params['user_id'] = $filters['user_id'];
-      }
-
-      if (isset($filters['from_date'])) {
-        $where[] = "created_at >= :from_date";
-        $params['from_date'] = $filters['from_date'];
-      }
-
-      $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-
-      $sql = "SELECT 
-                COUNT(*) as total_calculations,
-                SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful,
-                SUM(CASE WHEN success = 0 THEN 1 ELSE 0 END) as failed,
-                AVG(execution_time) as avg_execution_time,
-                MIN(execution_time) as min_execution_time,
-                MAX(execution_time) as max_execution_time
-              FROM calculator_logs
-              {$whereClause}";
-
-      $stmt = $this->db->prepare($sql);
-      foreach ($params as $key => $value) {
-        $stmt->bindValue($key, $value);
-      }
-      $stmt->execute();
-
-      $stats = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-      if ($stats['total_calculations'] > 0) {
-        $stats['success_rate'] = round(
-          ($stats['successful'] / $stats['total_calculations']) * 100,
-          2
-        );
-      } else {
-        $stats['success_rate'] = 0;
-      }
-
-      $stats['enabled'] = true;
-
-      return $stats;
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Log stats error: " . $e->getMessage(),
-        'error'
-      );
-      return ['enabled' => true, 'error' => $e->getMessage()];
-    }
+    return $this->calculatorLogger->getLogStats($filters);
   }
 
   /**
-   * Clean old logs
-   * 
-   * @param int $daysToKeep Days to keep
-   * @return int Number of deleted entries
+   * Prune log entries older than N days. Delegates to CalculatorLogger.
    */
   public function cleanLogs(int $daysToKeep = 30): int
   {
-    if (!$this->db) {
-      return 0;
-    }
-
-    try {
-      $sql = "DELETE FROM :table_rag_calculator_logs 
-              WHERE created_at < DATE_SUB(NOW(), INTERVAL :days DAY)";
-
-      $stmt = $this->db->prepare($sql);
-      $stmt->execute(['days' => $daysToKeep]);
-
-      $deleted = $stmt->rowCount();
-
-      if ($this->debug && $deleted > 0) {
-        $this->securityLogger->logSecurityEvent(
-          "Cleaned {$deleted} old log entries",
-          'info'
-        );
-      }
-
-      return $deleted;
-    } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Log cleaning error: " . $e->getMessage(),
-        'error'
-      );
-      return 0;
-    }
-  }
-
-  /**
-   * Get current user ID
-   * 
-   * @return string User ID
-   */
-  private function getUserId(): string
-  {
-    AdministratorAdmin::getUserAdminId();
-
-/*
-    // Try to get user ID from session
-    if (isset($_SESSION['customer_id'])) {
-      return (string)$_SESSION['customer_id'];
-    }
-
-    if (Registry::exists('Customer')) {
-      $customer = Registry::get('Customer');
-      if (method_exists($customer, 'getId')) {
-        return (string)$customer->getId();
-      }
-    }
-*/
-    return 'system';
+    return $this->calculatorLogger->cleanLogs($daysToKeep);
   }
 }

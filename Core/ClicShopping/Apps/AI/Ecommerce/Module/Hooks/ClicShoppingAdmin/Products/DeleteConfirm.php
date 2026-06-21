@@ -10,13 +10,14 @@ namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Products
 
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 /**
  * Class DeleteConfirm
  * Handles the deletion confirmation of products and their associated embeddings
  */
-class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
+class DeleteConfirm implements HooksInterface
 {
   /** @var mixed Reference to the Products application */
   public mixed $app;

@@ -11,8 +11,9 @@ namespace ClicShopping\Apps\Marketing\Recommendations\Module\HeaderTags;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Marketing\Recommendations\Recommendations as RecommendationsApp;
+use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
-class Recommendations extends \ClicShopping\OM\Modules\HeaderTagsAbstract
+class Recommendations extends HeaderTagsAbstract
 {
   public mixed $lang;
   public mixed $app;
