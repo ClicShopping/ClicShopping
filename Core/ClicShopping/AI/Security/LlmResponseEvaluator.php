@@ -57,10 +57,14 @@ class LlmResponseEvaluator
    * @param array $groundingMetadata Optional grounding metadata from AnswerGroundingVerifier
    * @return array Evaluation results including scores and recommendations.
    */
-  public static function evaluateLlmResponse(string $question, string $result, array $groundingMetadata = []): array
+  public static function evaluateLlmResponse(string $question, string $result, array $groundingMetadata = [], array $guardrailsValidation = []): array
   {
     self::initLogger();
     $evaluationResults = [];
+    
+    if (!empty($guardrailsValidation)) {
+      $evaluationResults['guardrails'] = $guardrailsValidation;
+    }
 
     if (!empty($groundingMetadata)) {
       $evaluationResults['grounding_metadata'] = $groundingMetadata;
@@ -430,6 +434,45 @@ class LlmResponseEvaluator
     }
 
     return (float) ($evaluationResults['relevance'] ?? 0.0);
+  }
+
+  /**
+   * Build the observe-first quality signal persisted per interaction from the LLM verdict.
+   *
+   * Turns the evaluation into the fields stored in rag_statistics (response_quality /
+   * security_score) plus a metadata detail (hallucination_risk, reliability, accuracy,
+   * detected_issues) and a derived `to_verify` flag — so a poor answer is surfaced
+   * automatically even when no (sparse) user feedback arrives. Observe-only: no gate, no
+   * regeneration; the human stays the final judge.
+   *
+   * @param array $evaluation Result of evaluateLlmResponse()
+   * @return array{response_quality: float, security_score: float, hallucination_risk: float, reliability: ?int, accuracy: ?int, detected_issues: array, to_verify: bool}
+   */
+  public static function deriveQualitySignal(array $evaluation): array
+  {
+    $overall = (float) ($evaluation['overall_score'] ?? 0.0);
+    $security = (float) ($evaluation['security_analysis']['overall_security_score'] ?? 0.0);
+    $halluRisk = (float) ($evaluation['hallucination_risk'] ?? 0.0);
+
+    $scores = $evaluation['llm_evaluation']['scores'] ?? [];
+    $reliability = isset($scores['reliability']) ? (int) $scores['reliability'] : null;
+    $accuracy = isset($scores['accuracy']) ? (int) $scores['accuracy'] : null;
+    $issues = $evaluation['llm_evaluation']['detected_issues'] ?? [];
+
+    // Flag for human verification when the verdict is poor on any axis (1-5 scale: <=2 weak).
+    $toVerify = $overall < 0.6
+      || $halluRisk >= 0.5
+      || ($reliability !== null && $reliability <= 2);
+
+    return [
+      'response_quality' => $overall,
+      'security_score' => $security,
+      'hallucination_risk' => $halluRisk,
+      'reliability' => $reliability,
+      'accuracy' => $accuracy,
+      'detected_issues' => is_array($issues) ? $issues : [],
+      'to_verify' => $toVerify,
+    ];
   }
 
   /**

@@ -23,6 +23,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\Que
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 use ClicShopping\AI\Security\LlmGuardrails;
+use ClicShopping\AI\Security\LlmResponseEvaluator;
 
 // ============================================
 // INITIALIZATION
@@ -145,6 +146,7 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
 
     StatisticsManager::recordTokenUsage($statsTracker);
 
+    $qualityVerdict = [];
     $guardrailsEval = LlmGuardrails::getLastEvaluation();
     if (is_array($guardrailsEval) && !isset($guardrailsEval['error'])) {
       $securityScore = $guardrailsEval['security_analysis']['overall_security_score'] ?? null;
@@ -153,6 +155,12 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
       $aiResponse['metrics']['hallucination_score'] = (float)($guardrailsEval['hallucination_risk'] ?? 0.1);
       $aiResponse['metrics']['response_quality'] = (float)($guardrailsEval['overall_score'] ?? 0);
       $aiResponse['metrics']['confidence_score'] = (float)($aiResponse['intent']['confidence'] ?? 0);
+
+      // Observe-first (§Z): persist the LLM quality verdict detail (hallucination_risk,
+      // reliability, detected_issues, to_verify) per interaction so it complements sparse
+      // user feedback. No gate / no regeneration — observe only; the human stays final judge.
+      $qualityVerdict = LlmResponseEvaluator::deriveQualitySignal($guardrailsEval);
+      $statsTracker->setQualityVerdict($qualityVerdict);
     }
 
     $metrics = StatisticsManager::calculateFallbackMetrics(
@@ -160,6 +168,11 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
       $formattedResponse['data_to_format'],
       $formatted
     );
+
+    // Observe-first flag surfaced to the chat panel: a discrete "to verify" badge shown only
+    // when the LLM verdict is weak (overall<0.6 OR hallucination>=0.5 OR reliability<=2), so a
+    // correct answer is not undermined by an alarming raw hallucination %. The user stays judge.
+    $metrics['to_verify'] = (bool)($qualityVerdict['to_verify'] ?? false);
 
     $statsTracker->setQualityScores(
       $metrics['response_quality'] * 100,
@@ -171,6 +184,11 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
     // ============================================
     $responseText = MemoryManager::extractResponseText($aiResponse) ?? $formatted;
 
+    // Mint the client-facing token BEFORE persistence so it is stored on rag_interactions
+    // (client_interaction_id) and can later be joined to the user's feedback row
+    // (rag_feedback.interaction_id = this token). The same value is returned to the browser below.
+    $clientInteractionId = 'interaction_' . $userId . '_' . time() . '_' . substr(md5(uniqid()), 0, 8);
+
     $interactionData = StatisticsManager::buildInteractionData(
       $userQuery,
       $responseText,
@@ -181,7 +199,8 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
       $languageId,
       $responseTime,
       $metrics,
-      $statsTracker
+      $statsTracker,
+      $clientInteractionId
     );
 
     $dbInteractionId = StatisticsManager::persistInteraction($interactionData, $statsTracker);
@@ -200,7 +219,7 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
     // ============================================
     // 12. BUILD JSON RESPONSE
     // ============================================
-    $clientInteractionId = 'interaction_' . $userId . '_' . time() . '_' . substr(md5(uniqid()), 0, 8);
+    // $clientInteractionId was minted above (step 11) and persisted on rag_interactions.
 
     $jsonResponse = [
       'success' => true,

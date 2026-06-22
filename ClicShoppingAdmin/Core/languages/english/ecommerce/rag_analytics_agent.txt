@@ -1076,6 +1076,16 @@ COUNT QUERIES WITH FILTERS:
 
 - 'count promotional products' → SELECT COUNT(*) AS total FROM clic_specials WHERE status = 1
 
+AVERAGE RATING QUERIES:
+**PATTERN**: An average review rating joins ONLY clic_reviews → clic_products → clic_products_description. There is NO orders_products (op) table in a rating query — never reference op.* here. GROUP BY p.products_id (the alias that exists in the FROM/JOIN), never an undefined alias.
+
+- 'average rating per product' / 'best rated products' / 'product review scores' → SELECT p.products_id, pd.products_name, AVG(r.reviews_rating) AS average_rating, COUNT(r.reviews_id) AS review_count FROM clic_reviews r JOIN clic_products p ON r.products_id = p.products_id JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} GROUP BY p.products_id, pd.products_name ORDER BY average_rating DESC LIMIT 100
+
+RETURN RATE QUERIES:
+**PATTERN**: Returns live in clic_return_orders (return_id, order_id, date_added). Return rate = returns ÷ orders over the SAME period. Use a self-contained subquery for the order count (never reference the outer alias inside the subquery). Never constrain one date column with both >= and = to the same value. Current-quarter start = MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH.
+
+- 'return rate this quarter' / 'product return rate' → SELECT COUNT(DISTINCT ro.return_id) AS total_returns, (SELECT COUNT(*) FROM clic_orders o WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH) AS total_orders, ROUND(COUNT(DISTINCT ro.return_id) / NULLIF((SELECT COUNT(*) FROM clic_orders o WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH), 0) * 100, 2) AS return_rate_percentage FROM clic_return_orders ro WHERE ro.date_added >= MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH
+
 ORDER VALUE QUERIES:
 **PATTERN**: Use clic_orders_total with class='TO' for total order value
 

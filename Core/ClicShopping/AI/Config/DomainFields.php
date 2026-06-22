@@ -60,7 +60,7 @@ class DomainFields
   {
     // to customize
     $map = [
-      'ecommerce' => 'ecommerce',
+      'ecommerce' => 'Ecommerce',
       'hr' => 'Hr',
       'rh' => 'Hr',
       'finance' => 'Finance',

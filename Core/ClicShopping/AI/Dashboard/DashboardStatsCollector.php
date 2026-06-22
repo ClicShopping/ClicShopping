@@ -134,11 +134,11 @@ class DashboardStatsCollector
         try {
             // Get security scores from interactions
             $results = DoctrineOrm::select("
-                SELECT 
+                SELECT
                     COUNT(*) as total_evaluations,
-                    AVG(CASE WHEN response_quality > 0 THEN response_quality ELSE 50 END) as avg_security_score,
-                    SUM(CASE WHEN response_quality < 50 THEN 1 ELSE 0 END) as low_security_count
-                FROM {$this->prefix}rag_interactions 
+                    AVG(security_score) * 100 as avg_security_score,
+                    SUM(CASE WHEN security_score < 0.5 THEN 1 ELSE 0 END) as low_security_count
+                FROM {$this->prefix}rag_statistics
                 WHERE date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
             ", [$days]);
 

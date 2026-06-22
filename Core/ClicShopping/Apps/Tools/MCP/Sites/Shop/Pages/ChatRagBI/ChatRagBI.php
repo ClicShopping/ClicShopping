@@ -21,6 +21,7 @@ namespace ClicShopping\Apps\Tools\MCP\Sites\Shop\Pages\ChatRagBI;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 use ClicShopping\AI\Security\LlmGuardrails;
+use ClicShopping\AI\Security\LlmResponseEvaluator;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ContextManager;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\EntityExtractor;
@@ -360,6 +361,7 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
           $aiResponse['metrics']['hallucination_score'] = (float)($guardrailsEval['hallucination_risk'] ?? 0.1);
           $aiResponse['metrics']['response_quality'] = (float)($guardrailsEval['overall_score'] ?? 0);
           $aiResponse['metrics']['confidence_score'] = (float)($aiResponse['intent']['confidence'] ?? 0);
+          $statsTracker->setQualityVerdict(LlmResponseEvaluator::deriveQualitySignal($guardrailsEval));
         }
 
         $metrics = StatisticsManager::calculateFallbackMetrics(
@@ -378,6 +380,9 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
           $responseText = $formatted;
         }
 
+        // Mint the client-facing token BEFORE persistence so it is stored on rag_interactions
+        $clientInteractionId = 'interaction_' . $mcpUserId . '_' . time() . '_' . substr(md5(uniqid('', true)), 0, 8);
+
         $interactionData = StatisticsManager::buildInteractionData(
           $prompt,
           $responseText,
@@ -388,7 +393,8 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
           $languageId,
           $responseTime,
           $metrics,
-          $statsTracker
+          $statsTracker,
+          $clientInteractionId
         );
 
         $dbInteractionId = StatisticsManager::persistInteraction($interactionData, $statsTracker);
@@ -427,7 +433,7 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
 
         $validation = ResponseValidator::validate([
           'success' => true,
-          'interaction_id' => 'interaction_' . $mcpUserId . '_' . time() . '_' . substr(md5(uniqid('', true)), 0, 8),
+          'interaction_id' => $clientInteractionId,
           'text_response' => is_string($responseText) ? $responseText : '',
           'type' => $queryType,
           'confidence' => $confidence,
