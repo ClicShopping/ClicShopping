@@ -227,7 +227,8 @@ class StatisticsManager
     int $languageId,
     float $responseTime,
     array $metrics,
-    StatisticsTracker $statsTracker
+    StatisticsTracker $statsTracker,
+    string $clientInteractionId
   ): array {
     $statsSnapshot = $statsTracker->getAllMetrics();
     
@@ -253,6 +254,7 @@ class StatisticsManager
     return [
       'user_id' => $userId,
       'session_id' => $sessionId,
+      'client_interaction_id' => $clientInteractionId,
       'question' => $userQuery,
       'response' => $responseText,
       'request_type' => $resolvedIntentType,

@@ -56,6 +56,9 @@ class StatisticsTracker
     'api_cost_saved_usd' => null,
     'cache_key' => null
   ];
+
+  // Observe-first quality verdict detail (stored in metadata.quality JSON)
+  private array $qualityVerdict = [];
   
   /**
    * Constructeur
@@ -255,7 +258,30 @@ class StatisticsTracker
     }
     return $this;
   }
-  
+
+  /**
+   * Record the observe-first quality verdict DETAIL for this interaction under metadata.quality
+   * (hallucination_risk, reliability, accuracy, detected_issues, to_verify) — so a poor answer is
+   * surfaced even when no user feedback arrives. Headline scores (response_quality / security_score
+   * columns) are set separately via setQualityScores(). Observe-only (no gate). cf
+   * LlmResponseEvaluator::deriveQualitySignal().
+   *
+   * @param array $signal Output of LlmResponseEvaluator::deriveQualitySignal()
+   * @return self
+   */
+  public function setQualityVerdict(array $signal): self
+  {
+    $this->qualityVerdict = [
+      'hallucination_risk' => $signal['hallucination_risk'] ?? null,
+      'reliability' => $signal['reliability'] ?? null,
+      'accuracy' => $signal['accuracy'] ?? null,
+      'detected_issues' => $signal['detected_issues'] ?? [],
+      'to_verify' => (bool) ($signal['to_verify'] ?? false),
+    ];
+
+    return $this;
+  }
+
   /**
    * Enregistre une erreur
    * 
@@ -339,7 +365,12 @@ class StatisticsTracker
       if ($this->cacheMetrics['cache_type'] !== null) {
         $metadata = array_merge($metadata, $this->cacheMetrics);
       }
-      
+
+      // Add observe-first quality verdict if available
+      if (!empty($this->qualityVerdict)) {
+        $metadata['quality'] = $this->qualityVerdict;
+      }
+
       // Convert metadata to JSON (null if empty)
       $metadataJson = !empty($metadata) ? json_encode($metadata) : null;
       

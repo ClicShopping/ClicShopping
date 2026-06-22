@@ -14,7 +14,6 @@ use ClicShopping\AI\Config\AutonomousConfig;
 use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\CoreAI\Orchestrator\CorrectionAgent;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
-use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
 use ClicShopping\AI\CoreAI\Query\QueryClassifier;
@@ -74,7 +73,6 @@ class AnalyticsAgent
   private AmbiguityHandler $ambiguityHandler;
   private CompoundQueryHandler $compoundQueryHandler;
   private AnalyticsErrorHandler $errorHandler;
-  private AnalyticsPeerEvaluator $peerEvaluator;
   private AnalyticsObjectiveRunner $objectiveRunner;
   private mixed $app;
   
@@ -111,10 +109,9 @@ class AnalyticsAgent
     try {
       $this->chat = Gpt::getChatForModel($model);
     } catch (\Exception $e) {
-      // Log error and fallback to default
+      // Log error and fall back to the centralized technical fallback model
       error_log("AnalyticsAgent: Error getting chat for model {$model}: " . $e->getMessage());
-      // Fallback to OpenAI GPT-4 as default
-      $this->chat = Gpt::getOpenAiGpt(['model' => 'gpt-5-mini']);
+      $this->chat = Gpt::getChatForModel(Gpt::getTechnicalFallbackModel());
     }
 
     $this->userId = $userId;
@@ -202,8 +199,8 @@ class AnalyticsAgent
       $this->debug
     );
 
-    // Autonomous-agent concerns extracted from this class (god-class decomposition):
-    $this->peerEvaluator = new AnalyticsPeerEvaluator($this->autonomousConfig);
+    // Autonomous-agent concern extracted from this class (god-class decomposition);
+    // kept for the live createLocalObjective() telemetry path (objective register).
     $this->objectiveRunner = new AnalyticsObjectiveRunner($this->autonomousConfig, $this->debug, $this->securityLogger);
 
     try {
@@ -1346,47 +1343,6 @@ class AnalyticsAgent
   }
 
   /**
-   * Execute an analytics optimization objective
-   *
-   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective
-   * @return mixed Execution results
-   */
-  public function executeObjective(LocalObjective $objective): mixed
-  {
-    return $this->objectiveRunner->executeObjective($objective);
-  }
-
-  /**
-   * Evaluate peer agent output (SQL queries, data analysis)
-   *
-   * @param string $outputType Type of output
-   * @param mixed $output The output to evaluate
-   * @param array $criteria Evaluation criteria
-   * @return \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation
-   */
-  public function evaluatePeerOutput(
-    string $outputType,
-    mixed $output,
-    array $criteria
-  ): AgentEvaluation {
-    return $this->peerEvaluator->evaluatePeerOutput($outputType, $output, $criteria);
-  }
-
-  // ========================================
-  // PRIVATE HELPER METHODS FOR AUTONOMOUS FEATURES
-  // ========================================
-
-  /**
-   * Get evaluation capabilities for AnalyticsAgent
-   *
-   * @return array Mapping of output types to capability levels
-   */
-  public function getEvaluationCapabilities(): array
-  {
-    return $this->peerEvaluator->getEvaluationCapabilities();
-  }
-
-  /**
    * Receive and process feedback from peer agents
    *
    * @param array $feedback Feedback from peer agent
@@ -1410,17 +1366,6 @@ class AnalyticsAgent
 
     // Learn from feedback (future enhancement)
     // Could adjust query generation strategies based on feedback patterns
-  }
-
-  /**
-   * Check if AnalyticsAgent can collaborate on an objective
-   *
-   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective
-   * @return bool True if can collaborate
-   */
-  public function canCollaborate(LocalObjective $objective): bool
-  {
-    return $this->objectiveRunner->canCollaborate($objective);
   }
 
   /**

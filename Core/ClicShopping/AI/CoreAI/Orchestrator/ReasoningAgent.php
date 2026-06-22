@@ -8,7 +8,6 @@
 
 namespace ClicShopping\AI\CoreAI\Orchestrator;
 
-use ClicShopping\AI\Config\AutonomousConfig;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\Infrastructure\Metrics\ReasoningAgentStats;
@@ -27,7 +26,6 @@ class ReasoningAgent
   private mixed $chat;
   private bool $debug;
   private ?ReasoningAgentStats $persistentStats = null;
-  private ?AutonomousConfig $autonomousConfig = null;
   private ?AgentAbstentionManager $abstentionManager = null;
   private ReasoningStrategies $strategies;
 
@@ -86,7 +84,6 @@ class ReasoningAgent
   {
     $this->securityLogger = new SecurityLogger();
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
-    $this->autonomousConfig = new AutonomousConfig($this->debug);
     $this->abstentionManager = new AgentAbstentionManager();
 
     // Initialize persistent stats
@@ -820,245 +817,5 @@ class ReasoningAgent
       'avg_steps' => round($this->stats['avg_steps'], 2),
       'configuration' => $this->getConfiguration(),
     ]);
-  }
-
-  /**
-   * Create a local objective for reasoning improvements
-   *
-   * @param string $goalStatement Clear description of the goal
-   * @param array $successCriteria Measurable success criteria
-   * @param string $priority Priority level
-   * @return \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective
-   */
-  public function createLocalObjective(
-    string $goalStatement,
-    array $successCriteria,
-    string $priority
-  ): \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective {
-
-    if (!$this->autonomousConfig->canAgentCreateObjectives('ReasoningAgent')) {
-      throw new \RuntimeException('ReasoningAgent is not authorized to create objectives (disabled in configuration)');
-    }
-
-    $estimatedTime = match ($priority) {
-      'critical' => 300,
-      'high' => 900,
-      'medium' => 1800,
-      'low' => 3600,
-      default => 1800
-    };
-
-    $objective = new \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective(
-      'ReasoningAgent',
-      $goalStatement,
-      $successCriteria,
-      $priority,
-      $estimatedTime
-    );
-
-    $db = Registry::get('Db');
-    $objectiveRegistry = new \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveRegistry($db, $this->debug);
-    $objectiveRegistry->registerObjective($objective);
-
-    if ($this->debug) {
-      $this->securityLogger->logSecurityEvent(
-        "ReasoningAgent created objective: {$goalStatement}",
-        'info'
-      );
-    }
-
-    return $objective;
-  }
-
-  /**
-   * Execute a reasoning improvement objective
-   *
-   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective
-   * @return mixed Execution results
-   */
-  public function executeObjective(\ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective): mixed
-  {
-    $goalStatement = $objective->getGoalStatement();
-
-    if ($this->debug) {
-      $this->securityLogger->logSecurityEvent(
-        "ReasoningAgent executing objective: {$goalStatement}",
-        'info'
-      );
-    }
-
-    $objective->setStatus('active');
-
-    try {
-      $result = ['message' => 'Reasoning objective execution placeholder'];
-
-      $objective->markCompleted([
-        'execution_time' => time() - strtotime($objective->getCreatedAt()->format('Y-m-d H:i:s')),
-        'result' => $result
-      ]);
-
-      return $result;
-
-    } catch (\Exception $e) {
-      $objective->markFailed($e->getMessage());
-      throw $e;
-    }
-  }
-
-  /**
-   * Evaluate peer agent output (reasoning chains, logic)
-   *
-   * @param string $outputType Type of output
-   * @param mixed $output The output to evaluate
-   * @param array $criteria Evaluation criteria
-   * @return \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation
-   */
-  public function evaluatePeerOutput(
-    string $outputType,
-    mixed $output,
-    array $criteria
-  ): \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation {
-
-    if (!$this->autonomousConfig->canAgentEvaluatePeers('ReasoningAgent')) {
-      throw new \RuntimeException('ReasoningAgent is not authorized to evaluate peers (disabled in configuration)');
-    }
-
-    $capabilities = $this->getEvaluationCapabilities();
-    if (!isset($capabilities[$outputType])) {
-      throw new \InvalidArgumentException(
-        "ReasoningAgent cannot evaluate {$outputType}"
-      );
-    }
-
-    $scores = match ($outputType) {
-      'reasoning_chain' => $this->evaluateReasoningChain($output, $criteria),
-      default => $this->getDefaultScores()
-    };
-
-    return new \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation(
-      'ReasoningAgent',
-      $output['output_id'] ?? uniqid('output_'),
-      $scores,
-      $scores['feedback'] ?? 'Evaluation completed',
-      $scores['strengths'] ?? [],
-      $scores['improvements'] ?? []
-    );
-  }
-
-  /**
-   * Get evaluation capabilities for ReasoningAgent
-   *
-   * @return array Mapping of output types to capability levels
-   */
-  public function getEvaluationCapabilities(): array
-  {
-    return [
-      'reasoning_chain' => 'expert',    // Expert in reasoning evaluation
-      'validation_result' => 'competent', // Competent in validation
-      'sql_query' => 'novice',          // Basic SQL understanding
-      'data_analysis' => 'competent'    // Competent in analysis
-    ];
-  }
-
-  /**
-   * Evaluate reasoning chain quality
-   *
-   * @param mixed $output Reasoning chain output
-   * @param array $criteria Evaluation criteria
-   * @return array Evaluation scores
-   */
-  private function evaluateReasoningChain(mixed $output, array $criteria): array
-  {
-    $chain = $output['reasoning_chain'] ?? [];
-    $stepCount = count($chain);
-
-    $accuracyScore = 0.8;
-    $completenessScore = $stepCount > 0 ? 0.9 : 0.5;
-    $efficiencyScore = $stepCount <= 10 ? 0.9 : 0.7;
-    $clarityScore = 0.8;
-
-    $strengths = [];
-    $improvements = [];
-
-    if ($stepCount > 0) {
-      $strengths[] = 'Reasoning chain has clear steps';
-    } else {
-      $improvements[] = 'Add explicit reasoning steps';
-    }
-
-    if ($stepCount > 10) {
-      $improvements[] = 'Consider simplifying reasoning chain';
-    }
-
-    return [
-      'accuracy_score' => $accuracyScore,
-      'completeness_score' => $completenessScore,
-      'efficiency_score' => $efficiencyScore,
-      'clarity_score' => $clarityScore,
-      'feedback' => 'Reasoning chain evaluation completed',
-      'strengths' => $strengths,
-      'improvements' => $improvements
-    ];
-  }
-
-  /**
-   * Get default evaluation scores
-   *
-   * @return array Default scores
-   */
-  private function getDefaultScores(): array
-  {
-    return [
-      'accuracy_score' => 0.7,
-      'completeness_score' => 0.7,
-      'efficiency_score' => 0.7,
-      'clarity_score' => 0.7,
-      'feedback' => 'Default evaluation',
-      'strengths' => [],
-      'improvements' => []
-    ];
-  }
-
-  /**
-   * Receive and process feedback from peer agents
-   *
-   * @param array $feedback Feedback from peer agent
-   */
-  public function receiveFeedback(array $feedback): void
-  {
-    if ($this->debug) {
-      $this->securityLogger->logSecurityEvent(
-        "ReasoningAgent received feedback from {$feedback['source_agent_id']}",
-        'info'
-      );
-    }
-
-    $db = Registry::get('Db');
-    $feedbackManager = new \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager($db, $this->debug);
-    $feedbackManager->acknowledgeFeedback(
-      $feedback['feedback_id'],
-      'ReasoningAgent',
-      null
-    );
-  }
-
-  /**
-   * Check if ReasoningAgent can collaborate on an objective
-   *
-   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective
-   * @return bool True if can collaborate
-   */
-  public function canCollaborate(\ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective): bool
-  {
-    $goalStatement = strtolower($objective->getGoalStatement());
-    $keywords = ['reasoning', 'logic', 'analysis', 'thinking', 'problem', 'solution'];
-
-    foreach ($keywords as $keyword) {
-      if (str_contains($goalStatement, $keyword)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 }

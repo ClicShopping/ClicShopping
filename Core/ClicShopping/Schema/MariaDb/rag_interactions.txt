@@ -1,6 +1,7 @@
 interaction_id INT not_null auto_increment comment(Primary key - unique interaction identifier)
 user_id INT default null comment(User ID who initiated the interaction)
 session_id VARCHAR(255) default null comment(Session identifier for tracking user sessions)
+client_interaction_id VARCHAR(255) default null comment(Client-facing interaction token returned to the browser and echoed back as rag_feedback.interaction_id - links user feedback to this interaction (managed by code))
 question TEXT not_null comment(User question or query text)
 response TEXT default null comment(System response to the user query)
 request_type VARCHAR(50) default null comment(Type of request: analytics, semantic, error, security_blocked)
@@ -21,6 +22,7 @@ date_added DATETIME not_null default CURRENT_TIMESTAMP comment(Timestamp when th
 primary interaction_id
 idx_user_id user_id
 idx_session_id session_id
+idx_client_interaction_id client_interaction_id
 idx_request_type request_type
 idx_date_added date_added
 idx_response_time response_time

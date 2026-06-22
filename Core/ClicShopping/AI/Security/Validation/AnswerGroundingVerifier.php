@@ -47,7 +47,20 @@ class AnswerGroundingVerifier
   private int $minSentenceWords = 5;
 
   /**
+   * Weighted scoring (default): per-sentence grounding_score blends max/avg-top3/
+   * weighted similarities and subtracts weak/inconsistency penalties. Calibrated
+   * for high-cosine embedding models; tends to under-score short factual answers
+   * with text-embedding-3-large (verbatim facts cap around 0.5 cosine).
+   */
   public const SCORING_WEIGHTED = 'weighted';
+
+  /**
+   * Max-similarity scoring: confidence = cosine of the whole answer against its
+   * single best-matching source chunk, with no penalty. Most robust separation
+   * for short product-description answers (FAQ) on agnostic e-commerce content —
+   * see SeoFaqPipeline. Keeps the answer un-split so the threshold matches the
+   * empirical grounded/hallucinated distribution measured on that text.
+   */
   public const SCORING_MAX_SIMILARITY = 'max_similarity';
 
   private string $scoringMode = self::SCORING_WEIGHTED;

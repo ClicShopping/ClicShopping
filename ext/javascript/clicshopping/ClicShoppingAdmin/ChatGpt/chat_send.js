@@ -393,6 +393,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Ajouter les métriques si disponibles
         if (data.metrics) {
+          const has = (v) => v !== undefined && v !== null && v !== '' && isFinite(parseFloat(v));
           const normalize = (v) => {
             const n = parseFloat(v || 0);
             if (!isFinite(n)) return 0;
@@ -400,46 +401,33 @@ document.addEventListener("DOMContentLoaded", function() {
             if (n < 0) return 0;
             return n;
           };
-
-          // Fallbacks when backend does not provide full metrics
-          const fallbackConfidence = normalize(data.confidence);
-          const m = {
-            confidence: normalize(data.metrics.confidence_score) || fallbackConfidence || 0,
-            security: normalize(data.metrics.security_score),
-            hallucination: normalize(data.metrics.hallucination_score),
-            quality: normalize(data.metrics.response_quality),
-            relevance: normalize(data.metrics.relevance_score),
-          };
-
-          // Heuristic fallbacks to avoid all zeros
-          if (!m.relevance) m.relevance = m.confidence;
-          if (!m.quality) m.quality = normalize((contentDiv.textContent || contentDiv.innerText || '').length > 400 ? 0.8 : 0.6);
-          if (!m.security) m.security = normalize(data.type === 'web_search' ? 0.5 : 0.8);
-          if (!m.hallucination) m.hallucination = 0; // assume low by default
-          console.log('ChatSend: Metrics normalized', m);
+          const pct = (v) => has(v) ? Math.round(normalize(v) * 100) + '%' : '—';
+          const fidelity = has(data.metrics.hallucination_score)
+            ? Math.round((1 - normalize(data.metrics.hallucination_score)) * 100) + '%' : '—';
+          const toVerify = data.metrics.to_verify === true
+            || data.metrics.to_verify === 'true' || data.metrics.to_verify === 1;
 
           const metricsDiv = document.createElement("div");
           metricsDiv.className = "message-metrics mt-2 p-2 bg-light rounded";
           metricsDiv.style.fontSize = "0.85em";
           metricsDiv.style.borderLeft = "3px solid #667eea";
 
+          const verifyBadge = toVerify
+            ? `<span class="badge bg-danger" title="${t('metrics_to_verify_title')}">⚠ ${t('metrics_to_verify_label')}</span>`
+            : '';
+
           const metricsHTML = `
           <div class="d-flex flex-wrap gap-2">
-            <span class="badge bg-primary" title="${t('metrics_confidence_title')}">
-              ${t('metrics_confidence_label')}: ${Math.round(m.confidence * 100)}%
-            </span>
-            <span class="badge bg-success" title="${t('metrics_security_title')}">
-              ${t('metrics_security_label')}: ${Math.round(m.security * 100)}%
-            </span>
-            <span class="badge bg-warning text-dark" title="${t('metrics_hallucination_title')}">
-              ${t('metrics_hallucination_label')}: ${Math.round(m.hallucination * 100)}%
+            <span class="badge bg-primary" title="${t('metrics_fidelity_title')}">
+              ${t('metrics_fidelity_label')}: ${fidelity}
             </span>
             <span class="badge bg-info" title="${t('metrics_quality_title')}">
-              ${t('metrics_quality_label')}: ${Math.round(m.quality * 100)}%
+              ${t('metrics_quality_label')}: ${pct(data.metrics.response_quality)}
             </span>
             <span class="badge bg-secondary" title="${t('metrics_relevance_title')}">
-              ${t('metrics_relevance_label')}: ${Math.round(m.relevance * 100)}%
+              ${t('metrics_relevance_label')}: ${pct(data.metrics.relevance_score)}
             </span>
+            ${verifyBadge}
           </div>
         `;
 

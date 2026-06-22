@@ -98,7 +98,7 @@ class LlmGuardrails
         break;
     }
 
-    $evaluationResults = LlmResponseEvaluator::evaluateLlmResponse($question, $result, $groundingMetadata);
+    $evaluationResults = LlmResponseEvaluator::evaluateLlmResponse($question, $result, $groundingMetadata, $guardrailsValidation);
 
     self::$lastEvaluation = $evaluationResults;
 
@@ -807,16 +807,8 @@ class LlmGuardrails
    */
   private static function resolveGuardrailsConfigClass(?string $domain): ?string
   {
-    $module = DomainFields::getModuleName($domain);
-    if ($module !== null && $module !== '') {
-      $className = 'ClicShopping\\Apps\\AI\\' . $module . '\\Classes\\ClicShoppingAdmin\\GuardrailsConfig';
-      if (class_exists($className)) {
-        return $className;
-      }
-    }
-
-    // Fallback to Ecommerce guardrails when domain-specific config is missing
-    $fallback = 'ClicShopping\\Apps\\AI\\Ecommerce\\Classes\\ClicShoppingAdmin\\GuardrailsConfig';
-    return class_exists($fallback) ? $fallback : null;
+    // Delegate to the shared domain-class resolver instead of re-implementing the
+    // "resolve for active domain, fall back to the default domain" pattern here.
+    return DomainFields::resolveAppClass($domain, 'GuardrailsConfig');
   }
 }

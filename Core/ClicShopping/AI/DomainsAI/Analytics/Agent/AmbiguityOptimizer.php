@@ -162,8 +162,7 @@ class AmbiguityOptimizer
   {
     // Pure LLM Mode: the LLM ambiguity verdict is the source of truth here — the
     // regex pre-filter is no longer second-guessed for the interpretation count.
-    // Benchmark 2026-06-19 confirmed the LLM at temperature 0.0 is 100% consistent on the temporal/quantitative cases the pre-filter used to guard.
-    $isAmbiguous = (bool)($ambiguityAnalysis['is_ambiguous'] ?? false);
+     $isAmbiguous = (bool)($ambiguityAnalysis['is_ambiguous'] ?? false);
 
     if ($this->debug) {
       $ambiguityType = (string)($ambiguityAnalysis['ambiguity_type'] ?? '');

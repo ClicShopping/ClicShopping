@@ -9,12 +9,8 @@
 namespace ClicShopping\AI\CoreAI\Orchestrator;
 
 
-use ClicShopping\AI\Config\AutonomousConfig;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
-use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
-use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
-use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveRegistry;
 use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
@@ -34,7 +30,6 @@ class ValidationAgent
   private mixed $db;
   private bool $debug;
   private array $schemaCache = [];
-  private ?AutonomousConfig $autonomousConfig = null;
   private ?AgentAbstentionManager $abstentionManager = null;
 
   private int $maxRowsWarning = 10000;
@@ -59,7 +54,6 @@ class ValidationAgent
     $this->dbSecurity = new DbSecurity();
     $this->db = Registry::get('Db');
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
-    $this->autonomousConfig = new AutonomousConfig($this->debug);
     $this->abstentionManager = new AgentAbstentionManager();
 
     if ($this->debug) {
@@ -866,247 +860,6 @@ class ValidationAgent
     ]);
   }
 
-  /**
-   * Create a local objective for validation improvements
-   *
-   * @param string $goalStatement Clear description of the goal
-   * @param array $successCriteria Measurable success criteria
-   * @param string $priority Priority level
-   * @return \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective
-   */
-  public function createLocalObjective(
-    string $goalStatement,
-    array $successCriteria,
-    string $priority
-  ): LocalObjective {
-
-    if (!$this->autonomousConfig->canAgentCreateObjectives('ValidationAgent')) {
-      throw new \RuntimeException('ValidationAgent is not authorized to create objectives (disabled in configuration)');
-    }
-
-    $estimatedTime = match ($priority) {
-      'critical' => 300,
-      'high' => 900,
-      'medium' => 1800,
-      'low' => 3600,
-      default => 1800
-    };
-
-    $objective = new LocalObjective(
-      'ValidationAgent',
-      $goalStatement,
-      $successCriteria,
-      $priority,
-      $estimatedTime
-    );
-
-    $objectiveRegistry = new ObjectiveRegistry($this->db, $this->debug);
-    $objectiveRegistry->registerObjective($objective);
-
-    if ($this->debug) {
-      $this->securityLogger->logSecurityEvent(
-        "ValidationAgent created objective: {$goalStatement}",
-        'info'
-      );
-    }
-
-    return $objective;
-  }
-
-  /**
-   * Execute a validation improvement objective
-   *
-   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective
-   * @return mixed Execution results
-   */
-  public function executeObjective(LocalObjective $objective): mixed
-  {
-    $goalStatement = $objective->getGoalStatement();
-
-    if ($this->debug) {
-      $this->securityLogger->logSecurityEvent(
-        "ValidationAgent executing objective: {$goalStatement}",
-        'info'
-      );
-    }
-
-    $objective->setStatus('active');
-
-    try {
-      $result = ['message' => 'Validation objective execution placeholder'];
-
-      $objective->markCompleted([
-        'execution_time' => time() - strtotime($objective->getCreatedAt()->format('Y-m-d H:i:s')),
-        'result' => $result
-      ]);
-
-      return $result;
-
-    } catch (\Exception $e) {
-      $objective->markFailed($e->getMessage());
-      throw $e;
-    }
-  }
-
-  /**
-   * Evaluate peer agent output (validation results, security checks)
-   *
-   * @param string $outputType Type of output
-   * @param mixed $output The output to evaluate
-   * @param array $criteria Evaluation criteria
-   * @return \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation
-   */
-  public function evaluatePeerOutput(
-    string $outputType,
-    mixed $output,
-    array $criteria
-  ): AgentEvaluation {
-
-    if (!$this->autonomousConfig->canAgentEvaluatePeers('ValidationAgent')) {
-      throw new \RuntimeException('ValidationAgent is not authorized to evaluate peers (disabled in configuration)');
-    }
-
-    $capabilities = $this->getEvaluationCapabilities();
-    if (!isset($capabilities[$outputType])) {
-      throw new \InvalidArgumentException(
-        "ValidationAgent cannot evaluate {$outputType}"
-      );
-    }
-
-    $scores = match ($outputType) {
-      'validation_result' => $this->evaluateValidationResult($output, $criteria),
-      'security_check' => $this->evaluateSecurityCheck($output, $criteria),
-      'sql_query' => $this->evaluateSqlQuerySecurity($output, $criteria),
-      default => $this->getDefaultScores()
-    };
-
-    return new AgentEvaluation(
-      'ValidationAgent',
-      $output['output_id'] ?? uniqid('output_'),
-      $scores,
-      $scores['feedback'] ?? 'Evaluation completed',
-      $scores['strengths'] ?? [],
-      $scores['improvements'] ?? []
-    );
-  }
-
-  /**
-   * Get evaluation capabilities for ValidationAgent
-   *
-   * @return array Mapping of output types to capability levels
-   */
-  public function getEvaluationCapabilities(): array
-  {
-    return [
-      'validation_result' => 'expert',  // Expert in validation
-      'security_check' => 'expert',     // Expert in security
-      'sql_query' => 'competent',       // Competent in SQL validation
-      'reasoning_chain' => 'novice'     // Basic reasoning understanding
-    ];
-  }
-
-  /**
-   * Evaluate validation result quality
-   *
-   * @param mixed $output Validation result output
-   * @param array $criteria Evaluation criteria
-   * @return array Evaluation scores
-   */
-  private function evaluateValidationResult(mixed $output, array $criteria): array
-  {
-    $isValid = $output['is_valid'] ?? false;
-    $hasErrors = !empty($output['errors'] ?? []);
-    $hasWarnings = !empty($output['warnings'] ?? []);
-
-    $accuracyScore = $isValid && !$hasErrors ? 0.9 : 0.7;
-    $completenessScore = 0.8;
-    $efficiencyScore = 0.8;
-    $clarityScore = 0.8;
-
-    $strengths = [];
-    $improvements = [];
-
-    if ($isValid) {
-      $strengths[] = 'Validation passed successfully';
-    }
-
-    if ($hasWarnings) {
-      $improvements[] = 'Address validation warnings';
-    }
-
-    return [
-      'accuracy_score' => $accuracyScore,
-      'completeness_score' => $completenessScore,
-      'efficiency_score' => $efficiencyScore,
-      'clarity_score' => $clarityScore,
-      'feedback' => 'Validation result evaluation completed',
-      'strengths' => $strengths,
-      'improvements' => $improvements
-    ];
-  }
-
-  /**
-   * Evaluate security check quality
-   *
-   * @param mixed $output Security check output
-   * @param array $criteria Evaluation criteria
-   * @return array Evaluation scores
-   */
-  private function evaluateSecurityCheck(mixed $output, array $criteria): array
-  {
-    $securityScore = $output['security_score'] ?? 0.5;
-
-    return [
-      'accuracy_score' => $securityScore,
-      'completeness_score' => 0.8,
-      'efficiency_score' => 0.8,
-      'clarity_score' => 0.8,
-      'feedback' => 'Security check evaluation completed',
-      'strengths' => ['Security check performed'],
-      'improvements' => []
-    ];
-  }
-
-  /**
-   * Evaluate SQL query security
-   *
-   * @param mixed $output SQL query output
-   * @param array $criteria Evaluation criteria
-   * @return array Evaluation scores
-   */
-  private function evaluateSqlQuerySecurity(mixed $output, array $criteria): array
-  {
-    $sql = $output['sql_query'] ?? '';
-    $validation = $this->validateSecurity($sql, []);
-
-    return [
-      'accuracy_score' => $validation['score'],
-      'completeness_score' => 0.8,
-      'efficiency_score' => 0.8,
-      'clarity_score' => 0.8,
-      'feedback' => 'SQL security evaluation completed',
-      'strengths' => empty($validation['issues']) ? ['No security issues detected'] : [],
-      'improvements' => $validation['issues']
-    ];
-  }
-
-  /**
-   * Get default evaluation scores
-   *
-   * @return array Default scores
-   */
-  private function getDefaultScores(): array
-  {
-    return [
-      'accuracy_score' => 0.7,
-      'completeness_score' => 0.7,
-      'efficiency_score' => 0.7,
-      'clarity_score' => 0.7,
-      'feedback' => 'Default evaluation',
-      'strengths' => [],
-      'improvements' => []
-    ];
-  }
 
   /**
    * Receive and process feedback from peer agents
@@ -1128,25 +881,5 @@ class ValidationAgent
       'ValidationAgent',
       null
     );
-  }
-
-  /**
-   * Check if ValidationAgent can collaborate on an objective
-   *
-   * @param \ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective $objective
-   * @return bool True if can collaborate
-   */
-  public function canCollaborate(LocalObjective $objective): bool
-  {
-    $goalStatement = strtolower($objective->getGoalStatement());
-    $keywords = ['validation', 'security', 'verify', 'check', 'validate', 'sanitize'];
-
-    foreach ($keywords as $keyword) {
-      if (str_contains($goalStatement, $keyword)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 }

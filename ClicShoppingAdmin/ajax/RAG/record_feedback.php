@@ -83,9 +83,9 @@ try {
   // If original_query not provided, try to get it from rag_interactions table
   if (empty($originalQuery)) {
     $interactionQuery = $CLICSHOPPING_Db->prepare("
-      SELECT question 
-      FROM :table_rag_interactions 
-      WHERE interaction_id = :interaction_id
+      SELECT question
+      FROM :table_rag_interactions
+      WHERE client_interaction_id = :interaction_id
       LIMIT 1
     ");
     $interactionQuery->bindValue(':interaction_id', $interactionId);
