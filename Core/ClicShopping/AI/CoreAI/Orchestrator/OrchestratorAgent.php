@@ -64,6 +64,8 @@ use ClicShopping\OM\Registry;
  * (StageRegistry): intent analysis, hybrid/compound decomposition, planning, execution,
  * response building. It does not execute domain actions itself.
  *
+ * Note: the Actor-Critic framework lives in SubActorCritic and is consumed by the SEO app
+ * (and CockpitAI via SEO), NOT by this orchestrator
  */
 
 class OrchestratorAgent
