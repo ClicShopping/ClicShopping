@@ -35,7 +35,13 @@ $config = [
               echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_configure'), null, $CLICSHOPPING_ChatGpt->link('Configure'), 'primary') . ' ';
               if ($config['chatgpt_enabled']) {
                 echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_help'), null, $CLICSHOPPING_ChatGpt->link('Help'), 'info') . ' ';
+
+                // Competitor (WebSearch) configuration - business-facing, lives in the Manager dashboard
+                if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA_STATUS == 'True') {
+                  echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_rag_websearch_config'), null, $CLICSHOPPING_ChatGpt->link('RagWebSearch'), 'success') . ' ';
+                }
               }
+
               echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_back'), null, $CLICSHOPPING_ChatGpt->link('ChatGpt'), 'primary');
             ?>
           </span>

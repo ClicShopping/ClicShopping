@@ -95,53 +95,7 @@ class WebSearchFormatter extends AbstractFormatter
     $output = "<div class='web-search-results'>";
     $output .= "<h4>" . $this->language->getDef('text_rag_web_search_results_for') . " " . htmlspecialchars($question) . "</h4>";
 
-    // Render domain-injected market analysis FIRST (above mode badges and
-    // product cards) so the user sees the answer to "is my price aligned
-    // with the market?"
-    if (!empty($results['market_analysis']) && is_string($results['market_analysis'])) {
-      $output .= $results['market_analysis'];
-    }
-
-    // Display mode indicator at top (if metadata available)
-    if (isset($results['metadata']) && is_array($results['metadata'])) {
-      $output .= $this->formatModeIndicator($results['metadata']);
-
-      // Display user notification from Mode C fallback (e.g. scraping found 0 results)
-      if (!empty($results['metadata']['user_notification'])) {
-        $notification = $results['metadata']['user_notification'];
-        $alertClass = ($notification['type'] ?? 'warning') === 'warning' ? 'alert-warning' : 'alert-info';
-        $output .= "<div class='alert {$alertClass} mt-2' role='alert'>"
-          . "⚠️ " . htmlspecialchars($notification['message'] ?? '')
-          . "</div>";
-      }
-    }
-
-    // Display Google Trends chart if present (Mode E)
-    if (!empty($results['trends_data'])) {
-      $output .= $this->formatTrendsChart($results['trends_data']);
-    }
-
-    // Display AI Overview first if present
-    if (isset($results['ai_overview']) && !empty($results['ai_overview'])) {
-      $output .= $this->formatAIOverview($results['ai_overview']);
-    }
-
-    // Display shopping results before organic results (if present)
-    if (isset($results['shopping_results']) && is_array($results['shopping_results']) && !empty($results['shopping_results'])) {
-      if ($this->debug) {
-        error_log("[WebSearchFormatter::format] Calling formatShoppingResults() with " . count($results['shopping_results']) . " items");
-      }
-
-
-      $output .= $this->formatShoppingResults($results['shopping_results']);
-
-
-
-    } else {
-      if ($this->debug) {
-        error_log("[WebSearchFormatter::format] NO shopping_results to format");
-      }
-    }
+    $this->renderPrimaryResultSections($results, $output);
 
     // Display source attribution
     if (isset($results['source_attribution'])) {
@@ -236,6 +190,68 @@ class WebSearchFormatter extends AbstractFormatter
       'type' => 'formatted_results',
       'content' => $output
     ];
+  }
+
+  /**
+   * Render the primary top sections of a web-search result into the output buffer.
+   *
+   * Extracted verbatim from format() to cut NPath. Appends, in order: domain market
+   * analysis, mode indicator + Mode C notification, Google Trends chart, AI Overview,
+   * and shopping results.
+   *
+   * @param array $results Web-search result payload
+   * @param string $output Output HTML buffer, mutated by reference
+   * @return void
+   */
+  private function renderPrimaryResultSections(array $results, string &$output): void
+  {
+    // Render domain-injected market analysis FIRST (above mode badges and
+    // product cards) so the user sees the answer to "is my price aligned
+    // with the market?"
+    if (!empty($results['market_analysis']) && is_string($results['market_analysis'])) {
+      $output .= $results['market_analysis'];
+    }
+
+    // Display mode indicator at top (if metadata available)
+    if (isset($results['metadata']) && is_array($results['metadata'])) {
+      $output .= $this->formatModeIndicator($results['metadata']);
+
+      // Display user notification from Mode C fallback (e.g. scraping found 0 results)
+      if (!empty($results['metadata']['user_notification'])) {
+        $notification = $results['metadata']['user_notification'];
+        $alertClass = ($notification['type'] ?? 'warning') === 'warning' ? 'alert-warning' : 'alert-info';
+        $output .= "<div class='alert {$alertClass} mt-2' role='alert'>"
+          . "⚠️ " . htmlspecialchars($notification['message'] ?? '')
+          . "</div>";
+      }
+    }
+
+    // Display Google Trends chart if present (Mode E)
+    if (!empty($results['trends_data'])) {
+      $output .= $this->formatTrendsChart($results['trends_data']);
+    }
+
+    // Display AI Overview first if present
+    if (isset($results['ai_overview']) && !empty($results['ai_overview'])) {
+      $output .= $this->formatAIOverview($results['ai_overview']);
+    }
+
+    // Display shopping results before organic results (if present)
+    if (isset($results['shopping_results']) && is_array($results['shopping_results']) && !empty($results['shopping_results'])) {
+      if ($this->debug) {
+        error_log("[WebSearchFormatter::format] Calling formatShoppingResults() with " . count($results['shopping_results']) . " items");
+      }
+
+
+      $output .= $this->formatShoppingResults($results['shopping_results']);
+
+
+
+    } else {
+      if ($this->debug) {
+        error_log("[WebSearchFormatter::format] NO shopping_results to format");
+      }
+    }
   }
 
   /**
@@ -668,123 +684,138 @@ class WebSearchFormatter extends AbstractFormatter
     $output .= "<div class='row' style='display: flex; flex-wrap: wrap; margin: 0 -10px;'>";
     
     foreach ($shoppingResults as $result) {
-      $title = $result['title'] ?? '';
-      $price = $result['price'] ?? '';
-      $extractedPrice = $result['extracted_price'] ?? null;
-      $oldPrice = $result['old_price'] ?? '';
-      $extractedOldPrice = $result['extracted_old_price'] ?? null;
-      $source = $result['source'] ?? '';
-      $productLink = $result['link'] ?? $result['product_link'] ?? ''; // Try 'link' first, then 'product_link'
-      $productLink = '';
-      foreach (['link', 'product_link'] as $linkKey) {
-        if (!empty($result[$linkKey]) && is_string($result[$linkKey])) {
-          $productLink = $result[$linkKey];
-          break;
-        }
-      }
-      if ($productLink === '' && !empty($title)) {
-        $productLink = 'https://www.google.com/search?tbm=shop&q=' . urlencode($title);
-      }
-
-      $thumbnail = $result['thumbnail'] ?? '';
-      $rating = $result['rating'] ?? null; // rating, when provided by the engine
-      $reviews = $result['reviews'] ?? null; // reviews count, when provided by the engine
-      
-      // CRITICAL DEBUG: Log what we extracted
-      if ($this->debug) {
-        error_log("[WebSearchFormatter::formatShoppingResults] Item: title={$title}, price={$price}, link={$productLink}, source={$source}, thumbnail=" . (!empty($thumbnail) ? 'YES' : 'NO') . ", rating={$rating}, reviews={$reviews}");
-      }
-      
-      // Product card (responsive: col-md-4 = 3 columns desktop, col-sm-6 = 2 columns tablet, col-12 = 1 column mobile)
-      $output .= "<div class='col-12 col-sm-6 col-md-4' style='padding: 10px;'>";
-      $output .= "<div class='product-card' style='border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; height: 100%; display: flex; flex-direction: column; background-color: #fff;'>";
-      
-      // Thumbnail
-      if (!empty($thumbnail)) {
-        $output .= "<div class='product-thumbnail' style='text-align: center; margin-bottom: 10px;'>";
-        $output .= "<img src='" . htmlspecialchars($thumbnail) . "' alt='" . htmlspecialchars($title) . "' style='max-width: 100%; max-height: 150px; object-fit: contain;' />";
-        $output .= "</div>";
-      }
-      
-      // Title
-      $output .= "<div class='product-title' style='font-weight: bold; margin-bottom: 10px; flex-grow: 1;'>";
-      $output .= htmlspecialchars($title);
-      $output .= "</div>";
-      
-      // Rating and Reviews (when the engine provides them)
-      if ($rating !== null || $reviews !== null) {
-        $output .= "<div class='product-rating' style='margin-bottom: 10px; font-size: 0.9em;'>";
-        
-        if ($rating !== null) {
-          // Display stars
-          $fullStars = floor($rating);
-          $halfStar = ($rating - $fullStars) >= 0.5;
-          $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
-          
-          $output .= "<span style='color: #ffa500;'>"; // Orange color for stars
-          for ($i = 0; $i < $fullStars; $i++) {
-            $output .= "★";
-          }
-          if ($halfStar) {
-            $output .= "⯨"; // Half star
-          }
-          for ($i = 0; $i < $emptyStars; $i++) {
-            $output .= "☆";
-          }
-          $output .= "</span> ";
-          $output .= "<span style='color: #666;'>" . number_format($rating, 1) . "</span>";
-        }
-        
-        if ($reviews !== null) {
-          $output .= " <span style='color: #999;'>(" . number_format($reviews) . " avis)</span>";
-        }
-        
-        $output .= "</div>";
-      }
-      
-      // Price section
-      $output .= "<div class='product-price' style='margin-bottom: 10px;'>";
-      
-      // Current price (prominent)
-      if (!empty($price)) {
-        $output .= "<div style='font-size: 1.3em; font-weight: bold; color: #28a745;'>";
-        $output .= htmlspecialchars($price);
-        $output .= "</div>";
-      }
-      
-      // Old price (strikethrough)
-      if (!empty($oldPrice) && $oldPrice !== $price) {
-        $output .= "<div style='font-size: 0.9em; color: #999; text-decoration: line-through;'>";
-        $output .= htmlspecialchars($oldPrice);
-        $output .= "</div>";
-      }
-      
-      $output .= "</div>";
-      
-      // Merchant/Source
-      if (!empty($source)) {
-        $output .= "<div class='product-source' style='font-size: 0.85em; color: #666; margin-bottom: 10px;'>";
-        $output .= "📦 " . htmlspecialchars($source);
-        $output .= "</div>";
-      }
-      
-      // View Product link
-      if (!empty($productLink)) {
-        $output .= "<div class='product-link'>";
-        $output .= "<a href='" . htmlspecialchars($productLink) . "' target='_blank' rel='noopener noreferrer' class='btn btn-sm btn-primary' style='width: 100%; text-align: center;'>";
-        $output .= $this->language->getDef('text_rag_view_product') . " 🔗";
-        $output .= "</a>";
-        $output .= "</div>";
-      }
-      
-      $output .= "</div>"; // .product-card
-      $output .= "</div>"; // .col
+      $this->renderShoppingCard($result, $output);
     }
     
     $output .= "</div>"; // .row
     $output .= "</div>"; // .shopping-results
     
     return $output;
+  }
+
+  /**
+   * Render one shopping-result product card into the output buffer.
+   *
+   * Extracted verbatim from formatShoppingResults to cut NPath. Builds the card
+   * (thumbnail, title, rating stars, price/old price, source, product link).
+   *
+   * @param array $result Single shopping result
+   * @param string $output Output HTML buffer, mutated by reference
+   * @return void
+   */
+  private function renderShoppingCard(array $result, string &$output): void
+  {
+    $title = $result['title'] ?? '';
+    $price = $result['price'] ?? '';
+    $extractedPrice = $result['extracted_price'] ?? null;
+    $oldPrice = $result['old_price'] ?? '';
+    $extractedOldPrice = $result['extracted_old_price'] ?? null;
+    $source = $result['source'] ?? '';
+    $productLink = $result['link'] ?? $result['product_link'] ?? ''; // Try 'link' first, then 'product_link'
+    $productLink = '';
+    foreach (['link', 'product_link'] as $linkKey) {
+      if (!empty($result[$linkKey]) && is_string($result[$linkKey])) {
+        $productLink = $result[$linkKey];
+        break;
+      }
+    }
+    if ($productLink === '' && !empty($title)) {
+      $productLink = 'https://www.google.com/search?tbm=shop&q=' . urlencode($title);
+    }
+
+    $thumbnail = $result['thumbnail'] ?? '';
+    $rating = $result['rating'] ?? null; // rating, when provided by the engine
+    $reviews = $result['reviews'] ?? null; // reviews count, when provided by the engine
+    
+    // CRITICAL DEBUG: Log what we extracted
+    if ($this->debug) {
+      error_log("[WebSearchFormatter::formatShoppingResults] Item: title={$title}, price={$price}, link={$productLink}, source={$source}, thumbnail=" . (!empty($thumbnail) ? 'YES' : 'NO') . ", rating={$rating}, reviews={$reviews}");
+    }
+    
+    // Product card (responsive: col-md-4 = 3 columns desktop, col-sm-6 = 2 columns tablet, col-12 = 1 column mobile)
+    $output .= "<div class='col-12 col-sm-6 col-md-4' style='padding: 10px;'>";
+    $output .= "<div class='product-card' style='border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; height: 100%; display: flex; flex-direction: column; background-color: #fff;'>";
+    
+    // Thumbnail
+    if (!empty($thumbnail)) {
+      $output .= "<div class='product-thumbnail' style='text-align: center; margin-bottom: 10px;'>";
+      $output .= "<img src='" . htmlspecialchars($thumbnail) . "' alt='" . htmlspecialchars($title) . "' style='max-width: 100%; max-height: 150px; object-fit: contain;' />";
+      $output .= "</div>";
+    }
+    
+    // Title
+    $output .= "<div class='product-title' style='font-weight: bold; margin-bottom: 10px; flex-grow: 1;'>";
+    $output .= htmlspecialchars($title);
+    $output .= "</div>";
+    
+    // Rating and Reviews (when the engine provides them)
+    if ($rating !== null || $reviews !== null) {
+      $output .= "<div class='product-rating' style='margin-bottom: 10px; font-size: 0.9em;'>";
+      
+      if ($rating !== null) {
+        // Display stars
+        $fullStars = floor($rating);
+        $halfStar = ($rating - $fullStars) >= 0.5;
+        $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
+        
+        $output .= "<span style='color: #ffa500;'>"; // Orange color for stars
+        for ($i = 0; $i < $fullStars; $i++) {
+          $output .= "★";
+        }
+        if ($halfStar) {
+          $output .= "⯨"; // Half star
+        }
+        for ($i = 0; $i < $emptyStars; $i++) {
+          $output .= "☆";
+        }
+        $output .= "</span> ";
+        $output .= "<span style='color: #666;'>" . number_format($rating, 1) . "</span>";
+      }
+      
+      if ($reviews !== null) {
+        $output .= " <span style='color: #999;'>(" . number_format($reviews) . " avis)</span>";
+      }
+      
+      $output .= "</div>";
+    }
+    
+    // Price section
+    $output .= "<div class='product-price' style='margin-bottom: 10px;'>";
+    
+    // Current price (prominent)
+    if (!empty($price)) {
+      $output .= "<div style='font-size: 1.3em; font-weight: bold; color: #28a745;'>";
+      $output .= htmlspecialchars($price);
+      $output .= "</div>";
+    }
+    
+    // Old price (strikethrough)
+    if (!empty($oldPrice) && $oldPrice !== $price) {
+      $output .= "<div style='font-size: 0.9em; color: #999; text-decoration: line-through;'>";
+      $output .= htmlspecialchars($oldPrice);
+      $output .= "</div>";
+    }
+    
+    $output .= "</div>";
+    
+    // Merchant/Source
+    if (!empty($source)) {
+      $output .= "<div class='product-source' style='font-size: 0.85em; color: #666; margin-bottom: 10px;'>";
+      $output .= "📦 " . htmlspecialchars($source);
+      $output .= "</div>";
+    }
+    
+    // View Product link
+    if (!empty($productLink)) {
+      $output .= "<div class='product-link'>";
+      $output .= "<a href='" . htmlspecialchars($productLink) . "' target='_blank' rel='noopener noreferrer' class='btn btn-sm btn-primary' style='width: 100%; text-align: center;'>";
+      $output .= $this->language->getDef('text_rag_view_product') . " 🔗";
+      $output .= "</a>";
+      $output .= "</div>";
+    }
+    
+    $output .= "</div>"; // .product-card
+    $output .= "</div>"; // .col
   }
 
   /**
@@ -946,54 +977,127 @@ class WebSearchFormatter extends AbstractFormatter
     }
 
     foreach ($products as $product) {
-      $internalPrice = $product['internal_price'] ?? null;
-      $externalPrices = $product['external_prices'] ?? [];
-      $currency = $product['currency'] ?? '€';
-      $productTitle = $product['product_title'] ?? '';
-      
-      $priceBound = PriceBoundFilter::bound($internalPrice !== null ? (float)$internalPrice : null, $externalPrices);
-      $externalPrices = $priceBound['kept'];
-      $priceBoundNotice = '';
-      if ($priceBound['excluded'] > 0) {
-        $priceBoundNotice = "<div class='price-bound-notice' style='font-size:0.85em; color:#856404; background:#fff3cd; border:1px solid #ffeeba; border-radius:4px; padding:6px 10px; margin:8px 0;'>⚠️ "
-          . $this->language->getDef('text_rag_price_bound_notice', ['bound' => $priceBound['bound_percent'], 'excluded' => (int)$priceBound['excluded']])
-          . "</div>";
-      }
+      $this->renderPriceComparisonProduct($product, $output);
+    }
 
-      // Collect all prices for best/worst detection
-      $allPrices = [];
-      if ($internalPrice !== null) {
-        $allPrices[] = (float)$internalPrice;
+    $output .= "</div>"; // .price-comparison-enhanced
+
+    return $output;
+  }
+
+  /**
+   * Render one product's price comparison block into the output buffer.
+   *
+   * Extracted verbatim from formatPriceComparisonEnhanced to cut NPath. Renders the
+   * internal price, the price-bounded competitor list (with best/worst badges and
+   * data-source labels) and the recommendation lines.
+   *
+   * @param array $product Single product price-comparison entry
+   * @param string $output Output HTML buffer, mutated by reference
+   * @return void
+   */
+  private function renderPriceComparisonProduct(array $product, string &$output): void
+  {
+    $internalPrice = $product['internal_price'] ?? null;
+    $externalPrices = $product['external_prices'] ?? [];
+    $currency = $product['currency'] ?? '€';
+    $productTitle = $product['product_title'] ?? '';
+    
+    $priceBound = PriceBoundFilter::bound($internalPrice !== null ? (float)$internalPrice : null, $externalPrices);
+    $externalPrices = $priceBound['kept'];
+    $priceBoundNotice = '';
+    if ($priceBound['excluded'] > 0) {
+      $priceBoundNotice = "<div class='price-bound-notice' style='font-size:0.85em; color:#856404; background:#fff3cd; border:1px solid #ffeeba; border-radius:4px; padding:6px 10px; margin:8px 0;'>⚠️ "
+        . $this->language->getDef('text_rag_price_bound_notice', ['bound' => $priceBound['bound_percent'], 'excluded' => (int)$priceBound['excluded']])
+        . "</div>";
+    }
+
+    // Collect all prices for best/worst detection
+    $allPrices = [];
+    if ($internalPrice !== null) {
+      $allPrices[] = (float)$internalPrice;
+    }
+    foreach ($externalPrices as $ext) {
+      if (isset($ext['price'])) {
+        $allPrices[] = (float)$ext['price'];
       }
-      foreach ($externalPrices as $ext) {
-        if (isset($ext['price'])) {
-          $allPrices[] = (float)$ext['price'];
+    }
+    
+    $bestPrice = !empty($allPrices) ? min($allPrices) : null;
+    $worstPrice = !empty($allPrices) ? max($allPrices) : null;
+
+    // Product title if available
+    if (!empty($productTitle)) {
+      $output .= "<div style='font-weight: bold; margin-top: 15px; margin-bottom: 10px;'>";
+      $output .= htmlspecialchars($productTitle);
+      $output .= "</div>";
+    }
+    $output .= $priceBoundNotice;
+
+    // Internal price (from SQL/database)
+    if ($internalPrice !== null) {
+      $isBest = ($bestPrice !== null && (float)$internalPrice === $bestPrice);
+      $isWorst = ($worstPrice !== null && (float)$internalPrice === $worstPrice && $bestPrice !== $worstPrice);
+      
+      $output .= "<div class='price-item' style='padding: 10px; margin-bottom: 8px; border-left: 3px solid #007bff; background-color: #f8f9fa;'>";
+      $output .= "<div style='display: flex; justify-content: space-between; align-items: center;'>";
+      
+      // Price and source
+      $output .= "<div>";
+      $output .= "<strong>" . $this->language->getDef('text_rag_web_search_our_price') . "</strong> ";
+      $output .= number_format((float)$internalPrice, 2, ',', ' ') . " {$currency}";
+      
+      // Best/Worst badge
+      if ($isBest) {
+        $output .= " <span class='badge badge-success' style='margin-left: 10px;'>✅ " . $this->language->getDef('text_rag_best_price') . "</span>";
+      } elseif ($isWorst) {
+        $output .= " <span class='badge badge-danger' style='margin-left: 10px;'>❌ " . $this->language->getDef('text_rag_worst_price') . "</span>";
+      }
+      
+      $output .= "</div>";
+      $output .= "</div>";
+      $output .= "</div>";
+    }
+
+    // External prices (from web search)
+    if (!empty($externalPrices)) {
+      $shoppingDataCount = 0;
+      $webExtractionCount = 0;
+      
+      foreach ($externalPrices as $competitor) {
+        $name = $competitor['name'] ?? 'Unknown';
+        $price = $competitor['price'] ?? 0;
+        $url = $competitor['url'] ?? '';
+        $thumbnail = $competitor['thumbnail'] ?? '';
+        $dataSource = $competitor['data_source'] ?? 'web_extraction'; // 'shopping_data' or 'web_extraction'
+        $compCurrency = $competitor['currency'] ?? $currency;
+        
+        // Count data sources
+        if ($dataSource === 'shopping_data') {
+          $shoppingDataCount++;
+        } else {
+          $webExtractionCount++;
         }
-      }
-      
-      $bestPrice = !empty($allPrices) ? min($allPrices) : null;
-      $worstPrice = !empty($allPrices) ? max($allPrices) : null;
-
-      // Product title if available
-      if (!empty($productTitle)) {
-        $output .= "<div style='font-weight: bold; margin-top: 15px; margin-bottom: 10px;'>";
-        $output .= htmlspecialchars($productTitle);
-        $output .= "</div>";
-      }
-      $output .= $priceBoundNotice;
-
-      // Internal price (from SQL/database)
-      if ($internalPrice !== null) {
-        $isBest = ($bestPrice !== null && (float)$internalPrice === $bestPrice);
-        $isWorst = ($worstPrice !== null && (float)$internalPrice === $worstPrice && $bestPrice !== $worstPrice);
         
-        $output .= "<div class='price-item' style='padding: 10px; margin-bottom: 8px; border-left: 3px solid #007bff; background-color: #f8f9fa;'>";
-        $output .= "<div style='display: flex; justify-content: space-between; align-items: center;'>";
+        $isBest = ($bestPrice !== null && (float)$price === $bestPrice);
+        $isWorst = ($worstPrice !== null && (float)$price === $worstPrice && $bestPrice !== $worstPrice);
         
-        // Price and source
-        $output .= "<div>";
-        $output .= "<strong>" . $this->language->getDef('text_rag_web_search_our_price') . "</strong> ";
-        $output .= number_format((float)$internalPrice, 2, ',', ' ') . " {$currency}";
+        $output .= "<div class='price-item' style='padding: 10px; margin-bottom: 8px; border-left: 3px solid #17a2b8; background-color: #f8f9fa; display: flex; align-items: center;'>";
+        
+        // Thumbnail if available
+        if (!empty($thumbnail)) {
+          $output .= "<div style='margin-right: 15px;'>";
+          $output .= "<img src='" . htmlspecialchars($thumbnail) . "' alt='" . htmlspecialchars($name) . "' style='width: 60px; height: 60px; object-fit: contain;' />";
+          $output .= "</div>";
+        }
+        
+        // Price details
+        $output .= "<div style='flex-grow: 1;'>";
+        
+        // Competitor name and price
+        $output .= "<div style='margin-bottom: 5px;'>";
+        $output .= "<strong>" . htmlspecialchars($name) . "</strong> : ";
+        $output .= number_format((float)$price, 2, ',', ' ') . " {$compCurrency}";
         
         // Best/Worst badge
         if ($isBest) {
@@ -1003,130 +1107,73 @@ class WebSearchFormatter extends AbstractFormatter
         }
         
         $output .= "</div>";
-        $output .= "</div>";
-        $output .= "</div>";
-      }
-
-      // External prices (from web search)
-      if (!empty($externalPrices)) {
-        $shoppingDataCount = 0;
-        $webExtractionCount = 0;
         
-        foreach ($externalPrices as $competitor) {
-          $name = $competitor['name'] ?? 'Unknown';
-          $price = $competitor['price'] ?? 0;
-          $url = $competitor['url'] ?? '';
-          $thumbnail = $competitor['thumbnail'] ?? '';
-          $dataSource = $competitor['data_source'] ?? 'web_extraction'; // 'shopping_data' or 'web_extraction'
-          $compCurrency = $competitor['currency'] ?? $currency;
-          
-          // Count data sources
-          if ($dataSource === 'shopping_data') {
-            $shoppingDataCount++;
+        // Data source badge
+        $output .= "<div style='font-size: 0.85em;'>";
+        if ($dataSource === 'shopping_data') {
+          $output .= "<span class='badge badge-info'>🛒 " . $this->language->getDef('text_rag_data_source_shopping') . "</span>";
+        } else {
+          $domainProvider = WebSearchEngineRegistry::getInstance()
+            ->findProviderByEngineName((string) $dataSource);
+          if ($domainProvider !== null) {
+            $output .= "<span class='badge badge-info'>🛒 " . htmlspecialchars($domainProvider->getDisplayName()) . "</span>";
           } else {
-            $webExtractionCount++;
+            $output .= "<span class='badge badge-secondary'>🌐 " . $this->language->getDef('text_rag_data_source_web') . "</span>";
           }
+        }
+        $output .= "</div>";
+        
+        // Percentage difference if internal price exists
+        if ($internalPrice !== null) {
+          $diff = (((float)$price - (float)$internalPrice) / (float)$internalPrice) * 100;
+          $diffFormatted = number_format($diff, 1);
           
-          $isBest = ($bestPrice !== null && (float)$price === $bestPrice);
-          $isWorst = ($worstPrice !== null && (float)$price === $worstPrice && $bestPrice !== $worstPrice);
-          
-          $output .= "<div class='price-item' style='padding: 10px; margin-bottom: 8px; border-left: 3px solid #17a2b8; background-color: #f8f9fa; display: flex; align-items: center;'>";
-          
-          // Thumbnail if available
-          if (!empty($thumbnail)) {
-            $output .= "<div style='margin-right: 15px;'>";
-            $output .= "<img src='" . htmlspecialchars($thumbnail) . "' alt='" . htmlspecialchars($name) . "' style='width: 60px; height: 60px; object-fit: contain;' />";
-            $output .= "</div>";
-          }
-          
-          // Price details
-          $output .= "<div style='flex-grow: 1;'>";
-          
-          // Competitor name and price
-          $output .= "<div style='margin-bottom: 5px;'>";
-          $output .= "<strong>" . htmlspecialchars($name) . "</strong> : ";
-          $output .= number_format((float)$price, 2, ',', ' ') . " {$compCurrency}";
-          
-          // Best/Worst badge
-          if ($isBest) {
-            $output .= " <span class='badge badge-success' style='margin-left: 10px;'>✅ " . $this->language->getDef('text_rag_best_price') . "</span>";
-          } elseif ($isWorst) {
-            $output .= " <span class='badge badge-danger' style='margin-left: 10px;'>❌ " . $this->language->getDef('text_rag_worst_price') . "</span>";
-          }
-          
-          $output .= "</div>";
-          
-          // Data source badge
-          $output .= "<div style='font-size: 0.85em;'>";
-          if ($dataSource === 'shopping_data') {
-            $output .= "<span class='badge badge-info'>🛒 " . $this->language->getDef('text_rag_data_source_shopping') . "</span>";
-          } else {
-            $domainProvider = WebSearchEngineRegistry::getInstance()
-              ->findProviderByEngineName((string) $dataSource);
-            if ($domainProvider !== null) {
-              $output .= "<span class='badge badge-info'>🛒 " . htmlspecialchars($domainProvider->getDisplayName()) . "</span>";
-            } else {
-              $output .= "<span class='badge badge-secondary'>🌐 " . $this->language->getDef('text_rag_data_source_web') . "</span>";
-            }
+          $output .= "<div style='font-size: 0.85em; margin-top: 5px;'>";
+          if ($diff > 0) {
+            $output .= "<span class='text-success'>(+{$diffFormatted}%)</span>";
+          } elseif ($diff < 0) {
+            $output .= "<span class='text-danger'>({$diffFormatted}%)</span>";
           }
           $output .= "</div>";
-          
-          // Percentage difference if internal price exists
-          if ($internalPrice !== null) {
-            $diff = (((float)$price - (float)$internalPrice) / (float)$internalPrice) * 100;
-            $diffFormatted = number_format($diff, 1);
-            
-            $output .= "<div style='font-size: 0.85em; margin-top: 5px;'>";
-            if ($diff > 0) {
-              $output .= "<span class='text-success'>(+{$diffFormatted}%)</span>";
-            } elseif ($diff < 0) {
-              $output .= "<span class='text-danger'>({$diffFormatted}%)</span>";
-            }
-            $output .= "</div>";
-          }
-          
-          $output .= "</div>";
-          
-          // View button
-          if (!empty($url)) {
-            $output .= "<div style='margin-left: 15px;'>";
-            $output .= "<a href='" . htmlspecialchars($url) . "' target='_blank' rel='noopener noreferrer' class='btn btn-sm btn-outline-primary'>";
-            $output .= $this->language->getDef('text_rag_web_search_see') . " 🔗";
-            $output .= "</a>";
-            $output .= "</div>";
-          }
-          
-          $output .= "</div>"; // .price-item
         }
         
-        // Recommendation text mentioning data sources
-        if ($shoppingDataCount > 0 || $webExtractionCount > 0) {
-          $output .= "<div class='recommendation' style='margin-top: 15px; padding: 10px; background-color: #e7f3ff; border-radius: 4px; font-size: 0.9em;'>";
-          $output .= "<strong>💡 " . $this->language->getDef('text_rag_web_search_recommendation') . "</strong> ";
-          
-          $parts = [];
-          if ($shoppingDataCount > 0) {
-            $parts[] = $shoppingDataCount . " " . $this->language->getDef('text_rag_data_source_shopping');
-          }
-          if ($webExtractionCount > 0) {
-            $parts[] = $webExtractionCount . " " . $this->language->getDef('text_rag_data_source_web');
-          }
-          
-          $output .= implode(', ', $parts);
+        $output .= "</div>";
+        
+        // View button
+        if (!empty($url)) {
+          $output .= "<div style='margin-left: 15px;'>";
+          $output .= "<a href='" . htmlspecialchars($url) . "' target='_blank' rel='noopener noreferrer' class='btn btn-sm btn-outline-primary'>";
+          $output .= $this->language->getDef('text_rag_web_search_see') . " 🔗";
+          $output .= "</a>";
           $output .= "</div>";
         }
+        
+        $output .= "</div>"; // .price-item
       }
-
-      // Custom recommendation if provided
-      if (isset($product['recommendation'])) {
-        $output .= "<div class='recommendation' style='margin-top: 10px; padding: 8px; background-color: #f8f9fa; border-radius: 4px;'>";
-        $output .= "<strong>💡 " . $this->language->getDef('text_rag_web_search_recommendation') . "</strong> " . htmlspecialchars($product['recommendation']);
+      
+      // Recommendation text mentioning data sources
+      if ($shoppingDataCount > 0 || $webExtractionCount > 0) {
+        $output .= "<div class='recommendation' style='margin-top: 15px; padding: 10px; background-color: #e7f3ff; border-radius: 4px; font-size: 0.9em;'>";
+        $output .= "<strong>💡 " . $this->language->getDef('text_rag_web_search_recommendation') . "</strong> ";
+        
+        $parts = [];
+        if ($shoppingDataCount > 0) {
+          $parts[] = $shoppingDataCount . " " . $this->language->getDef('text_rag_data_source_shopping');
+        }
+        if ($webExtractionCount > 0) {
+          $parts[] = $webExtractionCount . " " . $this->language->getDef('text_rag_data_source_web');
+        }
+        
+        $output .= implode(', ', $parts);
         $output .= "</div>";
       }
     }
 
-    $output .= "</div>"; // .price-comparison-enhanced
-
-    return $output;
+    // Custom recommendation if provided
+    if (isset($product['recommendation'])) {
+      $output .= "<div class='recommendation' style='margin-top: 10px; padding: 8px; background-color: #f8f9fa; border-radius: 4px;'>";
+      $output .= "<strong>💡 " . $this->language->getDef('text_rag_web_search_recommendation') . "</strong> " . htmlspecialchars($product['recommendation']);
+      $output .= "</div>";
+    }
   }
 }
