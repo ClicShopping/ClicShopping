@@ -753,82 +753,7 @@ class PlanExecutor
 
     $query = $step->getMeta('search_query', $step->getDescription());
     
-    // Skip query enrichment for price_comparison queries
-    // For price_comparison, SubTaskPlannerWebSearch already extracts the clean product name
-    // from intent, so we should NOT enrich it again with entity context to avoid duplication
-    // Example: query="iPhone 17 Pro" should stay as-is, not become "iPhone 17 Pro iPhone 17 Pro"
-    $skipEnrichment = false;
-    
-    // Check both 'intent' and 'intent_type' fields (different decomposers use different field names)
-    $intentType = $context['plan_intent']['intent'] ?? $context['plan_intent']['intent_type'] ?? null;
-    
-    if ($intentType === 'price_comparison') {
-      $skipEnrichment = true;
-      
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Skipping query enrichment for price_comparison (query already contains clean product name)",
-          'info'
-        );
-      }
-    }
-    
-    //Enrich query with last_entity context for follow-up queries
-    // This allows web search to use context from previous analytics queries
-    // SKIP enrichment for price_comparison queries (they already have clean product names)
-    
-    if (!$skipEnrichment && $this->conversationMemory !== null) {
-      try {
-        $lastEntity = $this->conversationMemory->getLastEntity();
-        
-        if ($lastEntity !== null) {
-          // Only use entity name, NOT entity ID
-          // Using entity ID (e.g., "103") in web search queries causes Google to return no results
-          // We MUST have the entity name (e.g., "iPhone 17 Pro") for meaningful web searches
-          $entityName = $lastEntity['name'] ?? null;
-          $entityType = $lastEntity['type'] ?? 'entity';
-          
-          // Only enrich if we have a valid entity NAME (not just ID)
-          if ($entityName !== null && !empty(trim($entityName))) {
-            // Enrich the query through the domain-agnostic registry: each
-            // Apps/AI/{Domain} can register a QueryEnricher that injects the
-            $enrichContext = [
-              'entity_name' => $entityName,
-              'entity_type' => $entityType,
-              'intent_type' => $intentType,
-            ];
-
-            foreach (WebSearchEngineRegistry::getInstance()->getQueryEnrichers() as $enricher) {
-              $query = $enricher->enrich($query, $enrichContext);
-            }
-
-            if ($this->debug) {
-              $this->securityLogger->logSecurityEvent(
-                "Enriched web search query with last_entity: {$entityName} ({$entityType})",
-                'info'
-              );
-            }
-          } else {
-            // Log when enrichment is skipped due to missing entity name
-            if ($this->debug) {
-              $entityId = $lastEntity['id'] ?? 'unknown';
-              $this->securityLogger->logSecurityEvent(
-                "Skipped query enrichment: entity name not available (ID: {$entityId}, Type: {$entityType})",
-                'info'
-              );
-            }
-          }
-        }
-      } catch (\Exception $e) {
-        // Don't fail on context enrichment errors - just log and continue
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Error enriching web search query with last_entity: " . $e->getMessage(),
-            'warning'
-          );
-        }
-      }
-    }
+    $query = $this->enrichWebSearchQuery($query, $context);
     
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(
@@ -995,6 +920,99 @@ class PlanExecutor
         'text_response' => "Web search error: " . $e->getMessage(),
       ];
     }
+  }
+
+  /**
+   * Enrich a web-search query with last-entity context for follow-up queries.
+   *
+   * Extracted verbatim from executeWebSearch to cut NPath. Skips enrichment for
+   * price_comparison intents and runs the domain-agnostic QueryEnricher registry
+   * when a usable last-entity name is available.
+   *
+   * @param mixed $query Raw search query
+   * @param array $context Plan execution context
+   * @return mixed The (possibly enriched) query
+   */
+  private function enrichWebSearchQuery(mixed $query, array $context): mixed
+  {
+    // Skip query enrichment for price_comparison queries
+    // For price_comparison, SubTaskPlannerWebSearch already extracts the clean product name
+    // from intent, so we should NOT enrich it again with entity context to avoid duplication
+    // Example: query="iPhone 17 Pro" should stay as-is, not become "iPhone 17 Pro iPhone 17 Pro"
+    $skipEnrichment = false;
+    
+    // Check both 'intent' and 'intent_type' fields (different decomposers use different field names)
+    $intentType = $context['plan_intent']['intent'] ?? $context['plan_intent']['intent_type'] ?? null;
+    
+    if ($intentType === 'price_comparison') {
+      $skipEnrichment = true;
+      
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "Skipping query enrichment for price_comparison (query already contains clean product name)",
+          'info'
+        );
+      }
+    }
+    
+    //Enrich query with last_entity context for follow-up queries
+    // This allows web search to use context from previous analytics queries
+    // SKIP enrichment for price_comparison queries (they already have clean product names)
+    
+    if (!$skipEnrichment && $this->conversationMemory !== null) {
+      try {
+        $lastEntity = $this->conversationMemory->getLastEntity();
+        
+        if ($lastEntity !== null) {
+          // Only use entity name, NOT entity ID
+          // Using entity ID (e.g., "103") in web search queries causes Google to return no results
+          // We MUST have the entity name (e.g., "iPhone 17 Pro") for meaningful web searches
+          $entityName = $lastEntity['name'] ?? null;
+          $entityType = $lastEntity['type'] ?? 'entity';
+          
+          // Only enrich if we have a valid entity NAME (not just ID)
+          if ($entityName !== null && !empty(trim($entityName))) {
+            // Enrich the query through the domain-agnostic registry: each
+            // Apps/AI/{Domain} can register a QueryEnricher that injects the
+            $enrichContext = [
+              'entity_name' => $entityName,
+              'entity_type' => $entityType,
+              'intent_type' => $intentType,
+            ];
+
+            foreach (WebSearchEngineRegistry::getInstance()->getQueryEnrichers() as $enricher) {
+              $query = $enricher->enrich($query, $enrichContext);
+            }
+
+            if ($this->debug) {
+              $this->securityLogger->logSecurityEvent(
+                "Enriched web search query with last_entity: {$entityName} ({$entityType})",
+                'info'
+              );
+            }
+          } else {
+            // Log when enrichment is skipped due to missing entity name
+            if ($this->debug) {
+              $entityId = $lastEntity['id'] ?? 'unknown';
+              $this->securityLogger->logSecurityEvent(
+                "Skipped query enrichment: entity name not available (ID: {$entityId}, Type: {$entityType})",
+                'info'
+              );
+            }
+          }
+        }
+      } catch (\Exception $e) {
+        // Don't fail on context enrichment errors - just log and continue
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Error enriching web search query with last_entity: " . $e->getMessage(),
+            'warning'
+          );
+        }
+      }
+    }
+
+    return $query;
   }
 
   /**

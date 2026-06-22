@@ -196,6 +196,55 @@ class HybridFormatter extends AbstractFormatter
     }
 
     // Render actual results from sub-queries, not just metadata
+    $this->renderSubQueryResults($results, $hasAnalyticsComponent, $hasSemanticComponent, $output);
+
+    // Display sub-query information (optional, for transparency)
+    if (isset($results['sub_queries']) && is_array($results['sub_queries']) && count($results['sub_queries']) > 1) {
+      $output .= "<div class='mt-3'>";
+      $output .= "<details style='font-size: 0.9em; color: #666;'>";
+      $output .= "<summary style='cursor: pointer;'><strong>" . htmlspecialchars($this->language->getDef('source_details_label')) . count($results['sub_queries']) . " " . htmlspecialchars($this->language->getDef('combined_queries_suffix')) . "</strong></summary>";
+      $output .= "<ul style='margin-top: 10px;'>";
+      
+      foreach ($results['sub_queries'] as $idx => $subQuery) {
+        $subType = $subQuery['type'] ?? 'unknown';
+        $subIcon = $this->getIconForType($subType);
+        $output .= "<li>{$subIcon} <strong>" . ucfirst($subType) . "</strong>";
+        
+        // Show brief info about each sub-query
+        if (isset($subQuery['source_attribution']['primary_source'])) {
+          $output .= " - " . htmlspecialchars($subQuery['source_attribution']['primary_source']);
+        }
+        
+        $output .= "</li>";
+      }
+      
+      $output .= "</ul>";
+      $output .= "</details>";
+      $output .= "</div>";
+    }
+
+    $output .= "</div>";
+
+    return [
+      'type' => 'formatted_results',
+      'content' => $output
+    ];
+  }
+
+  /**
+   * Render the per-sub-query result sections (web_search / analytics / semantic).
+   *
+   * Extracted verbatim from format() to cut NPath. Appends HTML to the shared
+   * output buffer; skips analytics/semantic sub-queries already shown as components.
+   *
+   * @param array $results Hybrid result payload
+   * @param bool $hasAnalyticsComponent Whether an analytics component was already rendered
+   * @param bool $hasSemanticComponent Whether a semantic component was already rendered
+   * @param string $output Output HTML buffer, mutated by reference
+   * @return void
+   */
+  private function renderSubQueryResults(array $results, bool $hasAnalyticsComponent, bool $hasSemanticComponent, string &$output): void
+  {
     if (isset($results['sub_queries']) && is_array($results['sub_queries'])) {
       foreach ($results['sub_queries'] as $idx => $subQuery) {
         $subType = $subQuery['type'] ?? 'unknown';
@@ -276,38 +325,6 @@ class HybridFormatter extends AbstractFormatter
         }
       }
     }
-
-    // Display sub-query information (optional, for transparency)
-    if (isset($results['sub_queries']) && is_array($results['sub_queries']) && count($results['sub_queries']) > 1) {
-      $output .= "<div class='mt-3'>";
-      $output .= "<details style='font-size: 0.9em; color: #666;'>";
-      $output .= "<summary style='cursor: pointer;'><strong>" . htmlspecialchars($this->language->getDef('source_details_label')) . count($results['sub_queries']) . " " . htmlspecialchars($this->language->getDef('combined_queries_suffix')) . "</strong></summary>";
-      $output .= "<ul style='margin-top: 10px;'>";
-      
-      foreach ($results['sub_queries'] as $idx => $subQuery) {
-        $subType = $subQuery['type'] ?? 'unknown';
-        $subIcon = $this->getIconForType($subType);
-        $output .= "<li>{$subIcon} <strong>" . ucfirst($subType) . "</strong>";
-        
-        // Show brief info about each sub-query
-        if (isset($subQuery['source_attribution']['primary_source'])) {
-          $output .= " - " . htmlspecialchars($subQuery['source_attribution']['primary_source']);
-        }
-        
-        $output .= "</li>";
-      }
-      
-      $output .= "</ul>";
-      $output .= "</details>";
-      $output .= "</div>";
-    }
-
-    $output .= "</div>";
-
-    return [
-      'type' => 'formatted_results',
-      'content' => $output
-    ];
   }
 
   /**
