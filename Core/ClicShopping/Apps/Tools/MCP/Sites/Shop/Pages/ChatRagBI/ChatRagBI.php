@@ -22,6 +22,8 @@ use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\AI\Security\LlmResponseEvaluator;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ChatCritic\ChatCriticSeam;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ContextManager;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\EntityExtractor;
@@ -361,7 +363,16 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
           $aiResponse['metrics']['hallucination_score'] = (float)($guardrailsEval['hallucination_risk'] ?? 0.1);
           $aiResponse['metrics']['response_quality'] = (float)($guardrailsEval['overall_score'] ?? 0);
           $aiResponse['metrics']['confidence_score'] = (float)($aiResponse['intent']['confidence'] ?? 0);
-          $statsTracker->setQualityVerdict(LlmResponseEvaluator::deriveQualitySignal($guardrailsEval));
+          // dark-launch: when the chat critic seam is enabled (OFF by code default), route the
+          // verdict through the agnostic ActorCriticCoordinator (observe-only, verdict parity). Otherwise
+          // keep the legacy direct path byte-identical.
+          if (ChatCriticSeam::isEnabled()) {
+            $seamAnswer = MemoryManager::extractResponseText($aiResponse) ?? $formatted;
+            $qualityVerdict = ChatCriticSeam::evaluate((string)$seamAnswer, $guardrailsEval, new Context((string)$mcpUserId, $languageId, ['source' => 'chat_mcp']));
+            $statsTracker->setQualityVerdict($qualityVerdict);
+          } else {
+            $statsTracker->setQualityVerdict(LlmResponseEvaluator::deriveQualitySignal($guardrailsEval));
+          }
         }
 
         $metrics = StatisticsManager::calculateFallbackMetrics(

@@ -804,7 +804,7 @@ class OrchestratorAgent
 
       if ($this->debug) {
         $this->securityLogger->logSecurityEvent(
-          "⏱️ TASK 4.4.2.3: Query latency recorded: {$latencyMs}ms (status: {$status})",
+          "⏱️ Query latency recorded: {$latencyMs}ms (status: {$status})",
           'info'
         );
 

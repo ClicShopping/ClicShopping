@@ -12,20 +12,51 @@
 
 namespace ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous;
 
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
+use ClicShopping\AI\Rag\RagEmbeddingGenerator;
+use ClicShopping\AI\Security\SecurityLogger;
+
 class ConflictDetector
 {
   private ObjectiveRegistry $registry;
+  private SecurityLogger $logger;
+  private bool $debug;
   private float $similarityThreshold = 0.75; // Threshold for considering objectives similar
   private float $mergeThreshold = 0.60; // Threshold for suggesting merge
+
+  /**
+   * Subject-overlap gate for goal-conflict detection.
+   *
+   * Two objectives only count as a goal conflict when they address the SAME subject.
+   * Calibrated to the raw embedding-cosine distribution of {@see calculateTextSimilarity}:
+   * unrelated pairs score ~0.17, same-subject pairs ~0.69. 0.50 sits between them with
+   * margin. (The previous Levenshtein/word-overlap engine floored near 0, so this gate
+   * used to be 0.30.)
+   *
+   * @var float
+   */
+  private float $goalConflictSubjectThreshold = 0.50;
+
+  /**
+   * In-memory embedding memo, keyed by md5(text). detectConflicts() compares the new
+   * objective against every existing one and calls calculateSimilarity up to four times
+   * per pair, so the same text would be embedded repeatedly without this cache.
+   *
+   * @var array<string, array>
+   */
+  private array $embeddingCache = [];
 
   /**
    * Constructor
    *
    * @param ObjectiveRegistry $registry The objective registry for querying existing objectives
+   * @param bool $debug Enable debug logging when the embedding path falls back to lexical similarity
    */
-  public function __construct(ObjectiveRegistry $registry)
+  public function __construct(ObjectiveRegistry $registry, bool $debug = false)
   {
     $this->registry = $registry;
+    $this->debug = $debug;
+    $this->logger = new SecurityLogger();
   }
 
   /**
@@ -198,7 +229,7 @@ class ConflictDetector
       if (($has1in1 && $has2in2) || ($has2in1 && $has1in2)) {
         // Check if they're operating on similar subjects
         $similarity = $this->calculateSimilarity($obj1, $obj2);
-        if ($similarity > 0.3) { // Some overlap in subject matter
+        if ($similarity > $this->goalConflictSubjectThreshold) { // Same subject matter
           return true;
         }
       }
@@ -210,8 +241,8 @@ class ConflictDetector
   /**
    * Calculate similarity between two objectives
    *
-   * Uses text similarity algorithms to determine how similar two objectives are.
-   * Combines similarity of goal statements and success criteria.
+   * Uses embedding-based semantic similarity to determine how similar two objectives
+   * are. Combines similarity of goal statements and success criteria.
    *
    * @param LocalObjective $obj1 First objective
    * @param LocalObjective $obj2 Second objective
@@ -392,10 +423,13 @@ class ConflictDetector
   }
 
   /**
-   * Calculate text similarity using multiple algorithms
+   * Calculate semantic text similarity using embeddings
    *
-   * Combines Levenshtein distance and word overlap to calculate
-   * similarity between two text strings.
+   * Embeds both strings and returns their cosine similarity, so paraphrases with
+   * little literal overlap are recognised as similar (the whole point over the former
+   * Levenshtein/word-overlap engine, which could not tell a paraphrase from an
+   * unrelated sentence). Degrades gracefully to {@see fallbackTextSimilarity} when no
+   * embedding model is configured or an embedding call fails.
    *
    * @param string $text1 First text
    * @param string $text2 Second text
@@ -411,7 +445,82 @@ class ConflictDetector
       return 0.0;
     }
 
-    // Exact match
+    // Exact match — short-circuit before any embedding call
+    if ($text1 === $text2) {
+      return 1.0;
+    }
+
+    try {
+      // RagEmbeddingGenerator is the project's embedding seam (adapter over NewVector);
+      // it throws when no model is configured, which the catch routes to the fallback.
+      $generator = new RagEmbeddingGenerator();
+
+      $embedding1 = $this->embedText($generator, $text1);
+      $embedding2 = $this->embedText($generator, $text2);
+
+      // Raw cosine in [-1,1] from the canonical agnostic helper; for text embeddings
+      // it lands in ~0.15 (unrelated) .. 1.0 (identical), which the class thresholds
+      // (similarityThreshold/mergeThreshold/goalConflictSubjectThreshold) assume.
+      return NewVector::cosineSimilarity($embedding1, $embedding2);
+    } catch (\Throwable $e) {
+      $this->logFallback('embedding similarity unavailable: ' . $e->getMessage());
+      return $this->fallbackTextSimilarity($text1, $text2);
+    }
+  }
+
+  /**
+   * Embed a text string, memoised for the lifetime of this detector
+   *
+   * detectConflicts() compares the new objective against every existing one, so the
+   * same text would otherwise be re-embedded many times over.
+   *
+   * @param RagEmbeddingGenerator $generator The project embedding generator
+   * @param string $text The text to embed
+   * @return array Embedding vector
+   */
+  private function embedText(RagEmbeddingGenerator $generator, string $text): array
+  {
+    $key = md5($text);
+
+    if (!isset($this->embeddingCache[$key])) {
+      $this->embeddingCache[$key] = $generator->embedText($text);
+    }
+
+    return $this->embeddingCache[$key];
+  }
+
+  /**
+   * Log a fallback to lexical similarity (debug-gated)
+   *
+   * @param string $reason Why the embedding path was not used
+   */
+  private function logFallback(string $reason): void
+  {
+    if ($this->debug) {
+      $this->logger->logSecurityEvent('ConflictDetector embedding fallback: ' . $reason, 'warning');
+    }
+  }
+
+  /**
+   * Lexical text similarity fallback (Levenshtein + word overlap)
+   *
+   * Used only when no embedding model is available or an embedding call fails. Kept as
+   * a self-contained degraded path so conflict detection still produces a usable signal
+   * offline; not the primary engine — see {@see calculateTextSimilarity}.
+   *
+   * @param string $text1 First text
+   * @param string $text2 Second text
+   * @return float Similarity score between 0.0 and 1.0
+   */
+  private function fallbackTextSimilarity(string $text1, string $text2): float
+  {
+    $text1 = strtolower(trim($text1));
+    $text2 = strtolower(trim($text2));
+
+    if (empty($text1) || empty($text2)) {
+      return 0.0;
+    }
+
     if ($text1 === $text2) {
       return 1.0;
     }

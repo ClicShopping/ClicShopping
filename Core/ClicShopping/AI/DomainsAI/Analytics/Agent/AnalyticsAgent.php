@@ -284,33 +284,10 @@ class AnalyticsAgent
         return $results;
       }
 
-      // Handle unknown or incomplete results
-      // ✅ FIX: Allow ambiguous results which use 'interpretation_results' instead of 'results'
-      $isAmbiguous = isset($results['type']) && $results['type'] === 'analytics_results_ambiguous';
-      $isClarification = isset($results['type']) && $results['type'] === 'clarification_needed';
-      $hasResults = isset($results['results']) && $results['results'] !== null;
-      $hasInterpretationResults = isset($results['interpretation_results']) && !empty($results['interpretation_results']);
-
-      // ✅ FIX: For clarification requests, return them directly
-      if ($isClarification) {
-        $this->debugLog("✅ Clarification needed - returning directly");
-        return $results;
-      }
-
-      // ✅ FIX: For ambiguous results, return them directly without interpretation
-      if ($isAmbiguous && $hasInterpretationResults) {
-        $this->debugLog("✅ Ambiguous results detected - returning directly");
-        return $results;
-      }
-
-      if (!$hasResults && !$hasInterpretationResults && !$isAmbiguous && !$isClarification) {
-        $this->debugLog("WARNING: No results array in executeQuery response");
-        return [
-          'type' => 'error',
-          'error' => 'Query execution failed to return results',
-          'question' => $question,
-          'details' => $results
-        ];
+      // Handle unknown or incomplete results (early returns)
+      $earlyReturn = $this->resolveEarlyResultReturn($results, $question);
+      if ($earlyReturn !== null) {
+        return $earlyReturn;
       }
 
       // 3. Interpret the results
@@ -398,6 +375,51 @@ class AnalyticsAgent
         'question' => $question,
       ];
     }
+  }
+
+  /**
+   * Resolve an early-return response for clarification/ambiguous/empty results.
+   *
+   * Extracted verbatim from processBusinessQuery. Returns the response to send back
+   * directly (clarification, ambiguous, or a no-results error), or null to continue
+   * the normal interpretation flow.
+   *
+   * @param array $results Executed query results
+   * @param string $question Original business question
+   * @return array|null Early response, or null to continue
+   */
+  private function resolveEarlyResultReturn(array $results, string $question): ?array
+  {
+    // Handle unknown or incomplete results
+    // ✅ FIX: Allow ambiguous results which use 'interpretation_results' instead of 'results'
+    $isAmbiguous = isset($results['type']) && $results['type'] === 'analytics_results_ambiguous';
+    $isClarification = isset($results['type']) && $results['type'] === 'clarification_needed';
+    $hasResults = isset($results['results']) && $results['results'] !== null;
+    $hasInterpretationResults = isset($results['interpretation_results']) && !empty($results['interpretation_results']);
+
+    // ✅ FIX: For clarification requests, return them directly
+    if ($isClarification) {
+      $this->debugLog("✅ Clarification needed - returning directly");
+      return $results;
+    }
+
+    // ✅ FIX: For ambiguous results, return them directly without interpretation
+    if ($isAmbiguous && $hasInterpretationResults) {
+      $this->debugLog("✅ Ambiguous results detected - returning directly");
+      return $results;
+    }
+
+    if (!$hasResults && !$hasInterpretationResults && !$isAmbiguous && !$isClarification) {
+      $this->debugLog("WARNING: No results array in executeQuery response");
+      return [
+        'type' => 'error',
+        'error' => 'Query execution failed to return results',
+        'question' => $question,
+        'details' => $results
+      ];
+    }
+
+    return null;
   }
 
   /**

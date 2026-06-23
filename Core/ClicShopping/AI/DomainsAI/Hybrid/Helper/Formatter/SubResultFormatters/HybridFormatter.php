@@ -93,59 +93,7 @@ class HybridFormatter extends AbstractFormatter
     $hasAnalyticsComponent = !empty($analyticsComponents);
     $hasSemanticComponent = isset($results['semantic_component']) && is_array($results['semantic_component']);
 
-    foreach ($analyticsComponents as $analyticsComp) {
-      if (!is_array($analyticsComp)) {
-        continue;
-      }
-      
-      $output .= "<div class='mt-4'>";
-      $output .= "<h5>📊 " . htmlspecialchars($this->language->getDef('hybrid_analytics_results_title')) . "</h5>";
-
-      $analyticsInterpretation = trim((string)($analyticsComp['interpretation'] ?? ''));
-      if ($analyticsInterpretation !== '') {
-        $output .= "<div class='analytics-interpretation mb-3'>" . nl2br(htmlspecialchars($analyticsInterpretation)) . "</div>";
-      }
-
-      // SQL Query (always visible)
-      if (!empty($analyticsComp['sql_query'])) {
-        $output .= "<div class='mb-3' style='background:#f8f9fa; border-left:3px solid #0d6efd; padding:15px; border-radius:4px;'>";
-        $output .= "<div style='font-weight:bold; margin-bottom:8px; color:#0d6efd;'>🔍 Requête SQL :</div>";
-        $output .= "<pre style='margin:0; font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; background:#fff; padding:10px; border-radius:3px; font-family:monospace;'>" . htmlspecialchars($this->formatSqlQuery($analyticsComp['sql_query'])) . "</pre>";
-        $output .= "</div>";
-      }
-
-      
-      // Display results as table
-      if (isset($analyticsComp['results']) && is_array($analyticsComp['results']) && !empty($analyticsComp['results'])) {
-        $tableParts = $this->buildTableOpenTag('table table-sm table-bordered table-striped');
-        $output .= $tableParts['toolbar'] . $tableParts['table'];
-        
-        // Table header
-        $firstRow = $analyticsComp['results'][0];
-        if (is_array($firstRow)) {
-          $output .= "<thead class='table-light'><tr>";
-          foreach (array_keys($firstRow) as $column) {
-            $output .= "<th>" . htmlspecialchars(ucfirst(str_replace('_', ' ', $column))) . "</th>";
-          }
-          $output .= "</tr></thead>";
-          
-          // Table body
-          $output .= "<tbody>";
-          foreach ($analyticsComp['results'] as $row) {
-            $output .= "<tr>";
-          foreach ($row as $column => $value) {
-            $output .= "<td>" . $this->formatCellValue((string)$column, $value) . "</td>";
-          }
-            $output .= "</tr>";
-          }
-          $output .= "</tbody>";
-        }
-        
-        $output .= "</table>";
-      }
-      
-      $output .= "</div>";
-    }
+    $this->renderAnalyticsComponents($analyticsComponents, $output);
     
     // Display semantic component
     if ($hasSemanticComponent) {
@@ -229,6 +177,73 @@ class HybridFormatter extends AbstractFormatter
       'type' => 'formatted_results',
       'content' => $output
     ];
+  }
+
+  /**
+   * Render the analytics component tables (Maillon C) into the output buffer.
+   *
+   * Extracted verbatim from format() to cut NPath. Renders each analytics sub-query
+   * (interpretation, SQL query, result table).
+   *
+   * @param array $analyticsComponents Analytics components to render
+   * @param string $output Output HTML buffer, mutated by reference
+   * @return void
+   */
+  private function renderAnalyticsComponents(array $analyticsComponents, string &$output): void
+  {
+    foreach ($analyticsComponents as $analyticsComp) {
+      if (!is_array($analyticsComp)) {
+        continue;
+      }
+      
+      $output .= "<div class='mt-4'>";
+      $output .= "<h5>📊 " . htmlspecialchars($this->language->getDef('hybrid_analytics_results_title')) . "</h5>";
+
+      $analyticsInterpretation = trim((string)($analyticsComp['interpretation'] ?? ''));
+      if ($analyticsInterpretation !== '') {
+        $output .= "<div class='analytics-interpretation mb-3'>" . nl2br(htmlspecialchars($analyticsInterpretation)) . "</div>";
+      }
+
+      // SQL Query (always visible)
+      if (!empty($analyticsComp['sql_query'])) {
+        $output .= "<div class='mb-3' style='background:#f8f9fa; border-left:3px solid #0d6efd; padding:15px; border-radius:4px;'>";
+        $output .= "<div style='font-weight:bold; margin-bottom:8px; color:#0d6efd;'>🔍 Requête SQL :</div>";
+        $output .= "<pre style='margin:0; font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; background:#fff; padding:10px; border-radius:3px; font-family:monospace;'>" . htmlspecialchars($this->formatSqlQuery($analyticsComp['sql_query'])) . "</pre>";
+        $output .= "</div>";
+      }
+
+      
+      // Display results as table
+      if (isset($analyticsComp['results']) && is_array($analyticsComp['results']) && !empty($analyticsComp['results'])) {
+        $tableParts = $this->buildTableOpenTag('table table-sm table-bordered table-striped');
+        $output .= $tableParts['toolbar'] . $tableParts['table'];
+        
+        // Table header
+        $firstRow = $analyticsComp['results'][0];
+        if (is_array($firstRow)) {
+          $output .= "<thead class='table-light'><tr>";
+          foreach (array_keys($firstRow) as $column) {
+            $output .= "<th>" . htmlspecialchars(ucfirst(str_replace('_', ' ', $column))) . "</th>";
+          }
+          $output .= "</tr></thead>";
+          
+          // Table body
+          $output .= "<tbody>";
+          foreach ($analyticsComp['results'] as $row) {
+            $output .= "<tr>";
+          foreach ($row as $column => $value) {
+            $output .= "<td>" . $this->formatCellValue((string)$column, $value) . "</td>";
+          }
+            $output .= "</tr>";
+          }
+          $output .= "</tbody>";
+        }
+        
+        $output .= "</table>";
+      }
+      
+      $output .= "</div>";
+    }
   }
 
   /**
