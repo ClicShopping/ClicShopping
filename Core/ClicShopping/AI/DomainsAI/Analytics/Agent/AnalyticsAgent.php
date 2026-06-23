@@ -80,6 +80,7 @@ class AnalyticsAgent
   private string $Usecache;
   private ?AutonomousConfig $autonomousConfig = null;
   private ?AgentAbstentionManager $abstentionManager = null;
+  private AnalyticsAbstentionEvaluator $abstentionEvaluator;
 
   /**
    * Constructor for AnalyticsAgent
@@ -202,6 +203,9 @@ class AnalyticsAgent
     // Autonomous-agent concern extracted from this class (god-class decomposition);
     // kept for the live createLocalObjective() telemetry path (objective register).
     $this->objectiveRunner = new AnalyticsObjectiveRunner($this->autonomousConfig, $this->debug, $this->securityLogger);
+
+    // Pre-execution confidence/abstention concern extracted from this class (god-class decomposition).
+    $this->abstentionEvaluator = new AnalyticsAbstentionEvaluator($this->abstentionManager, $this->resultInterpreter, $this->debug);
 
     try {
       $this->schemaManager->initializeTableRelationships();
@@ -656,7 +660,7 @@ class AnalyticsAgent
 
     try {
 
-      $abstainResponse = $this->evaluateAbstention($question, $feedbackContext);
+      $abstainResponse = $this->abstentionEvaluator->evaluate($question, $feedbackContext);
       if ($abstainResponse !== null) {
         return $abstainResponse;
       }
@@ -1090,120 +1094,6 @@ class AnalyticsAgent
       : $this->ambiguityDetector->detectAmbiguity($queryForAmbiguity);
 
     return $ambiguityAnalysis;
-  }
-
-  /**
-   * STEP -1: confidence / abstention evaluation.
-   *
-   * Extracted verbatim from processAnalyticsQuery (core-method decomposition). Returns the
-   * abstain error response when the agent must not execute autonomously, or null to proceed
-   * (the 'delegate' case also proceeds, after logging the delegation intent).
-   *
-   * @param string $question
-   * @param array $feedbackContext
-   * @return array|null Abstain response array, or null to continue execution
-   */
-  private function evaluateAbstention(string $question, array $feedbackContext): ?array
-  {
-    //  Use classification confidence instead of recalculating
-    $this->debugLog("--- STEP -1: Evaluate confidence for abstention ---", "ABSTENTION");
-
-    // FIX 2026-01-29: Configure lower thresholds for AnalyticsAgent
-    // Abstention: 0.15 (was 0.3), Delegation: 0.5 (was 0.7)
-    try {
-      $this->abstentionManager->setThresholds('AnalyticsAgent', 0.15, 0.5);
-      $this->debugLog("Thresholds configured: abstention=0.15, delegation=0.5", "ABSTENTION");
-    } catch (\Exception $e) {
-      $this->debugLog("Failed to set thresholds: " . $e->getMessage(), "ABSTENTION");
-    }
-
-    // Get classification confidence (already calculated in isAnalyticsQuery)
-    $translatedForClassification = SemanticAgent::translateToEnglish($question, 80);
-    $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translatedForClassification);
-    $classifier = new QueryClassifier($this->debug);
-    $classificationResult = $classifier->classify($cleanTranslation, $cleanTranslation);
-
-    $classificationConfidence = $classificationResult['confidence'] ?? 0.0;
-    $this->debugLog("Classification confidence: {$classificationConfidence}", "ABSTENTION");
-
-    // Use classification confidence if high, otherwise calculate complexity-based confidence
-    if ($classificationConfidence >= 0.7) {
-      // High classification confidence - use it directly
-      $confidence = $classificationConfidence;
-      $this->debugLog("Using classification confidence: {$confidence}", "ABSTENTION");
-    } else {
-      // Low classification confidence - calculate based on complexity
-      $complexity = AnalyticsQueryHeuristics::estimateQueryComplexity($question);
-      $this->debugLog("Query complexity: {$complexity}", "ABSTENTION");
-
-      $confidence = $this->abstentionManager->evaluateConfidence(
-        'AnalyticsAgent',
-        $question,
-        [
-          'task_type' => 'analytics_query',
-          'description' => $question,
-          'parameters' => $feedbackContext,
-          'complexity' => $complexity
-        ]
-      );
-      $this->debugLog("Calculated confidence: {$confidence}", "ABSTENTION");
-    }
-
-    $decision = $this->abstentionManager->getAbstentionDecision(
-      'AnalyticsAgent',
-      $confidence,
-      'analytics_query'
-    );
-
-    $this->debugLog("Abstention decision: {$decision['action']}", "ABSTENTION");
-    $this->debugLog("Reason: {$decision['reason']}", "ABSTENTION");
-
-    if ($decision['action'] === 'abstain') {
-      // Log abstention to database
-      $this->abstentionManager->logAbstention(
-        'AnalyticsAgent',
-        md5($question),
-        'analytics_query',
-        $confidence,
-        $decision['reason'],
-        'escalate_human'
-      );
-
-      $this->debugLog("ABSTAINING - Confidence too low", "ABSTENTION");
-
-      // Return error requiring human intervention
-      return [
-        'type' => 'error',
-        'message' => 'Confidence too low for autonomous execution. Human review required.',
-        'reason' => $decision['reason'],
-        'confidence' => $confidence,
-        'requires_human' => true,
-        'query' => $question
-      ];
-    }
-
-    if ($decision['action'] === 'delegate') {
-      // Log delegation intent
-      $this->abstentionManager->logAbstention(
-        'AnalyticsAgent',
-        md5($question),
-        'analytics_query',
-        $confidence,
-        $decision['reason'],
-        'delegate_peer',
-        $decision['suggested_delegate']
-      );
-
-      $this->debugLog("DELEGATING - Medium confidence", "ABSTENTION");
-      $this->debugLog("Suggested delegate: " . ($decision['suggested_delegate'] ?? 'none'), "ABSTENTION");
-
-      // For now, proceed with execution but log the delegation intent
-      // TODO: Implement actual delegation mechanism when peer agents are available
-    }
-
-    $this->debugLog("EXECUTING - Confidence sufficient ({$confidence})", "ABSTENTION");
-
-    return null;
   }
 
   /**

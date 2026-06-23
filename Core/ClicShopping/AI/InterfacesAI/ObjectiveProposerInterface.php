@@ -58,8 +58,8 @@ interface ObjectiveProposerInterface
    *
    * @param array<string, float|int> $baseline
    * @param array<string, float|int> $result
-   * @param array<string, mixed> $successCriteria Domain-defined; e.g. analytics uses
-   *        ['query' => <sql>, 'max_execution_time_ms' => 1000].
+   * @param array<string, mixed> $successCriteria Domain-defined; e.g. a performance domain
+   *        might use ['query' => <sql>, 'max_execution_time_ms' => 1000].
    * @return bool
    */
   public function evaluateSuccess(array $baseline, array $result, array $successCriteria): bool;
