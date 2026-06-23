@@ -15,6 +15,9 @@ use ClicShopping\AI\Infrastructure\Cache\ClassificationCache;
 use ClicShopping\AI\Infrastructure\Cache\RagCache;
 use ClicShopping\AI\Infrastructure\Cache\TranslationCache;
 
+  $CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
+  $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
+
 include __DIR__ . '/dashboard/_data.php';
 ?>
    <div class="contentBody">

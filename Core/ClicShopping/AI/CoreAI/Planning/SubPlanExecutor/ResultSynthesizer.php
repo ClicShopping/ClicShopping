@@ -441,110 +441,7 @@ class ResultSynthesizer
       }
 
       // Aggregate by type
-      switch ($type) {
-        case 'analytics':
-        case 'analytics_response':
-          // Handle analytics result structures
-          if (isset($result['results'])) {
-            // Standard structure: results at root level
-            $aggregated['analytics_results'][] = $result;
-            $aggregated['data'] = array_merge($aggregated['data'], (array)$result['results']);
-          } elseif (isset($result['result']['rows'])) {
-            // Nested structure: results in result.rows
-            $aggregated['analytics_results'][] = $result;
-            $aggregated['data'] = array_merge($aggregated['data'], (array)$result['result']['rows']);
-          } elseif (isset($result['result'])) {
-            // Fallback: collect entire result object
-            $aggregated['analytics_results'][] = $result;
-            if (is_array($result['result'])) {
-              $aggregated['data'] = array_merge($aggregated['data'], [$result['result']]);
-            }
-          }
-          break;
-
-        case 'semantic':
-        case 'semantic_results':
-          // This ensures we preserve the result structure for later processing
-          $aggregated['semantic_results'][] = $result;
-
-          // Collect sources if available
-          if (isset($result['audit_metadata']['sources'])) {
-            $aggregated['sources'] = array_merge($aggregated['sources'], (array)$result['audit_metadata']['sources']);
-          }
-
-          // Also collect from 'sources' field directly
-          if (isset($result['sources']) && is_array($result['sources'])) {
-            $aggregated['sources'] = array_merge($aggregated['sources'], $result['sources']);
-          }
-
-          // Collect from 'results' field (documents)
-          if (isset($result['results']) && is_array($result['results'])) {
-            $aggregated['data'] = array_merge($aggregated['data'], $result['results']);
-          }
-          break;
-
-        case 'calculator':
-          if (isset($result['result'])) {
-            $aggregated['calculations'][] = $result['result'];
-          }
-          break;
-
-        case 'web_search':
-        case 'web_search_response':
-        case 'web':
-          if($this->debug) {
-            error_log("[ResultSynthesizer] web_search result keys: " . implode(', ', array_keys($result)));
-            error_log("[ResultSynthesizer] Has 'result' key: " . (isset($result['result']) ? 'YES' : 'NO'));
-            error_log("[ResultSynthesizer] Has 'results' key: " . (isset($result['results']) ? 'YES' : 'NO'));
-            error_log("[ResultSynthesizer] Has 'text_response' key: " . (isset($result['text_response']) ? 'YES' : 'NO'));
-          }
-          // Web search results have 'result' (singular) not 'results' (plural)
-          if (isset($result['result'])) {
-            $aggregated['web_results'][] = $result;
-
-            // Extract items from result if available
-            if (isset($result['result']['items']) && is_array($result['result']['items'])) {
-              $aggregated['data'] = array_merge($aggregated['data'], $result['result']['items']);
-            }
-
-            // Extract formatted text if available (for price comparisons)
-            if (isset($result['result']['formatted_text']) && !empty($result['result']['formatted_text'])) {
-              $addTextResponse($result['result']['formatted_text']);
-            }
-          }
-
-          // Also check for 'results' (plural) from PlanExecutor
-          if (isset($result['results']) && is_array($result['results'])) {
-            $aggregated['web_results'][] = $result;
-            $aggregated['data'] = array_merge($aggregated['data'], $result['results']);
-          }
-
-          // Extract text_response if available
-          if (isset($result['text_response']) && !empty($result['text_response'])) {
-            $addTextResponse($result['text_response']);
-          }
-          
-          if($this->debug) {
-            error_log("[ResultSynthesizer] web_results count after processing: " . count($aggregated['web_results']));
-          }
-          break;
-
-        case 'clarification_needed':
-          // Clarification requests - add to a special array for type detection
-          if (!isset($aggregated['clarification_results'])) {
-            $aggregated['clarification_results'] = [];
-          }
-          $aggregated['clarification_results'][] = $result;
-          break;
-
-        case 'error':
-          // Error results - add to a special array for type detection
-          if (!isset($aggregated['error_results'])) {
-            $aggregated['error_results'] = [];
-          }
-          $aggregated['error_results'][] = $result;
-          break;
-      }
+      $this->aggregateResultByType($type, $result, $stepId, $aggregated, $addTextResponse);
     }
 
     if ($this->debug) {
@@ -564,6 +461,127 @@ class ResultSynthesizer
     }
 
     return $aggregated;
+  }
+
+  /**
+   * Aggregate a single step result into the accumulator by its declared type.
+   *
+   * Extracted verbatim from aggregateStepResults to cut NPath. Mutates the
+   * accumulator by reference and reuses the caller's deduplicating text collector.
+   *
+   * @param string $type Step result type discriminator
+   * @param array $result Single step result
+   * @param int|string $stepId Step identifier (diagnostics only)
+   * @param array $aggregated Accumulator, mutated by reference
+   * @param callable $addTextResponse Deduplicating text-response collector
+   * @return void
+   */
+  private function aggregateResultByType(string $type, array $result, int|string $stepId, array &$aggregated, callable $addTextResponse): void
+  {
+    switch ($type) {
+      case 'analytics':
+      case 'analytics_response':
+        // Handle analytics result structures
+        if (isset($result['results'])) {
+          // Standard structure: results at root level
+          $aggregated['analytics_results'][] = $result;
+          $aggregated['data'] = array_merge($aggregated['data'], (array)$result['results']);
+        } elseif (isset($result['result']['rows'])) {
+          // Nested structure: results in result.rows
+          $aggregated['analytics_results'][] = $result;
+          $aggregated['data'] = array_merge($aggregated['data'], (array)$result['result']['rows']);
+        } elseif (isset($result['result'])) {
+          // Fallback: collect entire result object
+          $aggregated['analytics_results'][] = $result;
+          if (is_array($result['result'])) {
+            $aggregated['data'] = array_merge($aggregated['data'], [$result['result']]);
+          }
+        }
+        break;
+
+      case 'semantic':
+      case 'semantic_results':
+        // This ensures we preserve the result structure for later processing
+        $aggregated['semantic_results'][] = $result;
+
+        // Collect sources if available
+        if (isset($result['audit_metadata']['sources'])) {
+          $aggregated['sources'] = array_merge($aggregated['sources'], (array)$result['audit_metadata']['sources']);
+        }
+
+        // Also collect from 'sources' field directly
+        if (isset($result['sources']) && is_array($result['sources'])) {
+          $aggregated['sources'] = array_merge($aggregated['sources'], $result['sources']);
+        }
+
+        // Collect from 'results' field (documents)
+        if (isset($result['results']) && is_array($result['results'])) {
+          $aggregated['data'] = array_merge($aggregated['data'], $result['results']);
+        }
+        break;
+
+      case 'calculator':
+        if (isset($result['result'])) {
+          $aggregated['calculations'][] = $result['result'];
+        }
+        break;
+
+      case 'web_search':
+      case 'web_search_response':
+      case 'web':
+        if($this->debug) {
+          error_log("[ResultSynthesizer] web_search result keys: " . implode(', ', array_keys($result)));
+          error_log("[ResultSynthesizer] Has 'result' key: " . (isset($result['result']) ? 'YES' : 'NO'));
+          error_log("[ResultSynthesizer] Has 'results' key: " . (isset($result['results']) ? 'YES' : 'NO'));
+          error_log("[ResultSynthesizer] Has 'text_response' key: " . (isset($result['text_response']) ? 'YES' : 'NO'));
+        }
+        // Web search results have 'result' (singular) not 'results' (plural)
+        if (isset($result['result'])) {
+          $aggregated['web_results'][] = $result;
+
+          // Extract items from result if available
+          if (isset($result['result']['items']) && is_array($result['result']['items'])) {
+            $aggregated['data'] = array_merge($aggregated['data'], $result['result']['items']);
+          }
+
+          // Extract formatted text if available (for price comparisons)
+          if (isset($result['result']['formatted_text']) && !empty($result['result']['formatted_text'])) {
+            $addTextResponse($result['result']['formatted_text']);
+          }
+        }
+
+        // Also check for 'results' (plural) from PlanExecutor
+        if (isset($result['results']) && is_array($result['results'])) {
+          $aggregated['web_results'][] = $result;
+          $aggregated['data'] = array_merge($aggregated['data'], $result['results']);
+        }
+
+        // Extract text_response if available
+        if (isset($result['text_response']) && !empty($result['text_response'])) {
+          $addTextResponse($result['text_response']);
+        }
+        
+        if($this->debug) {
+          error_log("[ResultSynthesizer] web_results count after processing: " . count($aggregated['web_results']));
+        }
+        break;
+
+      case 'clarification_needed':
+        // Clarification requests - add to a special array for type detection
+        if (!isset($aggregated['clarification_results'])) {
+          $aggregated['clarification_results'] = [];
+        }
+        $aggregated['clarification_results'][] = $result;
+        break;
+
+      case 'error':
+        // Error results - add to a special array for type detection
+        if (!isset($aggregated['error_results'])) {
+          $aggregated['error_results'] = [];
+        }
+        $aggregated['error_results'][] = $result;
+        break;
+    }
   }
 
   /**

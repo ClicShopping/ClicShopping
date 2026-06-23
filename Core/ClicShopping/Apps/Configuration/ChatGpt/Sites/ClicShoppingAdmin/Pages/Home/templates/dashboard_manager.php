@@ -11,6 +11,9 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
+$CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
+$CLICSHOPPING_Template = Registry::get('TemplateAdmin');
+
 include __DIR__ . '/dashboard/_data.php';
 ?>
    <div class="contentBody">

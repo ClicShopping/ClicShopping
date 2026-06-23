@@ -1,0 +1,97 @@
+<?php
+/**
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
+
+namespace ClicShopping\AI\Config;
+
+/**
+ * ChatCriticConfig Class
+ *
+ * Dedicated, constant-based configuration for the chat critic seam (§Z Z1).
+ * Independent of the global DB-backed ActorCriticConfig singleton: the chat seam
+ * must NOT inherit SEO's actor_critic / quality_gate_regeneration flags.
+ *
+ * Dark-launch: every flag defaults OFF. Admin tunability can be added later by
+ * defining the CLICSHOPPING_APP_CHATGPT_* constant + a Params file, with no change
+ * to this class.
+ *
+ * @package ClicShopping\AI\Config
+ * @version 1.0.0
+ * @since 2026-06-22
+ */
+class ChatCriticConfig
+{
+    private const CONST_CHAT_SEAM_STATUS = 'CLICSHOPPING_APP_CHATGPT_AC_CHAT_SEAM_STATUS';
+
+    private const DEFAULTS = [
+        'chat_seam_status' => false,
+    ];
+
+    private static ?array $config = null;
+    private static bool $debug = false;
+
+    /**
+     * Whether the chat critic seam is engaged on the chat chokepoint.
+     * Dark-launch default: false.
+     */
+    public static function isSeamEnabled(): bool
+    {
+        self::initialize();
+        return self::$config['chat_seam_status'] ?? false;
+    }
+
+    private static function initialize(): void
+    {
+        if (self::$config !== null) {
+            return;
+        }
+
+        self::$debug = \defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER')
+            && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
+
+        self::$config = self::loadConfigFromConstants();
+
+        if (self::$debug) {
+            error_log('ChatCriticConfig: Initialized with chat_seam_status='
+                . (self::$config['chat_seam_status'] ? 'true' : 'false'));
+        }
+    }
+
+    private static function loadConfigFromConstants(): array
+    {
+        $config = self::DEFAULTS;
+
+        if (\defined(self::CONST_CHAT_SEAM_STATUS)) {
+            $config['chat_seam_status'] = self::parseBool(constant(self::CONST_CHAT_SEAM_STATUS));
+        }
+
+        return $config;
+    }
+
+    private static function parseBool($value): bool
+    {
+        if (\is_bool($value)) {
+            return $value;
+        }
+
+        if (\is_numeric($value)) {
+            return (int)$value === 1;
+        }
+
+        $normalized = \strtolower(\trim((string)$value));
+        return \in_array($normalized, ['1', 'true', 'yes', 'on'], true);
+    }
+
+    /**
+     * Reset cached config (test hook).
+     */
+    public static function reload(): void
+    {
+        self::$config = null;
+        self::initialize();
+    }
+}

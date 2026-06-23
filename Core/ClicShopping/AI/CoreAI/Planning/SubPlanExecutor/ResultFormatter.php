@@ -76,153 +76,182 @@ class ResultFormatter
         ", analytics_count=" . count($aggregated['analytics_results'] ?? []) .
         ", semantic_count=" . count($aggregated['semantic_results'] ?? []));
     }
-    
-    // Handle optional Analytics failure with WebSearch results
-    // If Analytics failed optionally AND we have WebSearch results, use WebSearch as primary
+
+    // Analytics optional failure + WebSearch only -> use WebSearch as primary
     if ($hasOptionalFailures && $hasWeb && !$hasAnalytics) {
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "Analytics optional failure - using WebSearch result only",
-          'info',
-          [
-            'optional_failures' => $aggregated['optional_failures'],
-            'web_results_count' => count($aggregated['web_results']),
-          ]
-        );
-      }
-      
-      // Extract WebSearch result
-      $firstWebResult = $aggregated['web_results'][0];
-      
-      // Build result with WebSearch data
-      $finalResult = [
-        'type' => 'web_search_only',
-        'text_response' => $firstWebResult['text_response'] ?? '',
-        'data' => $firstWebResult['results'] ?? [],
-        'sources' => [],
-        'analytics_status' => 'optional_failure',
-        'analytics_reason' => $aggregated['optional_failures'][0]['reason'] ?? 'unknown',
-        'optional_failures' => $aggregated['optional_failures'],
-      ];
-      
-      // Add source attribution from WebSearch
-      if (isset($firstWebResult['source_attribution'])) {
-        $finalResult['source_attribution'] = $firstWebResult['source_attribution'];
-      }
-      
-      // Add response field for compatibility
-      if (!empty($finalResult['text_response'])) {
-        $finalResult['response'] = $finalResult['text_response'];
-      }
-      
-      // Add web results metadata
-      if (isset($firstWebResult['metadata'])) {
-        $finalResult['metadata'] = $firstWebResult['metadata'];
-      }
-      
-      return $finalResult;
+      return $this->formatWebSearchOnlyResult($aggregated);
     }
 
-    // If we have both analytics and semantic results, use intelligent combination
+    // Analytics + semantic (no web) -> intelligent combination
     if ($hasAnalytics && $hasSemantic && !$hasWeb) {
-      if($this->debug) {
-        error_log("✅ CALLING combineAnalyticsAndSemantic()");
-      }
+      return $this->formatAnalyticsSemanticResult($aggregated, $entityMetadata);
+    }
 
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "TASK 9: Detected hybrid query with analytics + semantic, using combineAnalyticsAndSemantic()",
-          'info'
-        );
-      }
+    // Analytics only (no semantic/web) -> keep hybrid to preserve sub-query tables
+    if ($hasAnalytics && !$hasSemantic && !$hasWeb && count($aggregated['analytics_results']) >= 1) {
+      return $this->formatAnalyticsOnlyResult($aggregated);
+    }
 
-      $finalResult = $this->combineAnalyticsAndSemantic(
-        $aggregated['analytics_results'],
-        $aggregated['semantic_results']
+    // Otherwise, standard aggregation
+    return $this->formatStandardAggregation($aggregated, $entityMetadata);
+  }
+
+  /**
+   * Format a WebSearch-only result (analytics optional failure) (extracted verbatim from formatFinalResult to cut NPath).
+   */
+  private function formatWebSearchOnlyResult(array $aggregated): array
+  {
+    if ($this->debug) {
+      $this->logger->logSecurityEvent(
+        "Analytics optional failure - using WebSearch result only",
+        'info',
+        [
+          'optional_failures' => $aggregated['optional_failures'],
+          'web_results_count' => count($aggregated['web_results']),
+        ]
       );
+    }
+    
+    // Extract WebSearch result
+    $firstWebResult = $aggregated['web_results'][0];
+    
+    // Build result with WebSearch data
+    $finalResult = [
+      'type' => 'web_search_only',
+      'text_response' => $firstWebResult['text_response'] ?? '',
+      'data' => $firstWebResult['results'] ?? [],
+      'sources' => [],
+      'analytics_status' => 'optional_failure',
+      'analytics_reason' => $aggregated['optional_failures'][0]['reason'] ?? 'unknown',
+      'optional_failures' => $aggregated['optional_failures'],
+    ];
+    
+    // Add source attribution from WebSearch
+    if (isset($firstWebResult['source_attribution'])) {
+      $finalResult['source_attribution'] = $firstWebResult['source_attribution'];
+    }
+    
+    // Add response field for compatibility
+    if (!empty($finalResult['text_response'])) {
+      $finalResult['response'] = $finalResult['text_response'];
+    }
+    
+    // Add web results metadata
+    if (isset($firstWebResult['metadata'])) {
+      $finalResult['metadata'] = $firstWebResult['metadata'];
+    }
+    
+    return $finalResult;
+  }
 
-      // Add entity metadata if present
-      if (!empty($entityMetadata['entity_id'])) {
-        $finalResult['entity_id'] = $entityMetadata['entity_id'];
-        $finalResult['entity_type'] = $entityMetadata['entity_type'];
-        $finalResult['_entity_metadata'] = [
-          'entity_id' => $entityMetadata['entity_id'],
-          'entity_type' => $entityMetadata['entity_type'],
+  /**
+   * Format a combined analytics + semantic (hybrid) result (extracted verbatim from formatFinalResult to cut NPath).
+   */
+  private function formatAnalyticsSemanticResult(array $aggregated, array $entityMetadata): array
+  {
+    if($this->debug) {
+      error_log("✅ CALLING combineAnalyticsAndSemantic()");
+    }
+
+    if ($this->debug) {
+      $this->logger->logSecurityEvent(
+        "TASK 9: Detected hybrid query with analytics + semantic, using combineAnalyticsAndSemantic()",
+        'info'
+      );
+    }
+
+    $finalResult = $this->combineAnalyticsAndSemantic(
+      $aggregated['analytics_results'],
+      $aggregated['semantic_results']
+    );
+
+    // Add entity metadata if present
+    if (!empty($entityMetadata['entity_id'])) {
+      $finalResult['entity_id'] = $entityMetadata['entity_id'];
+      $finalResult['entity_type'] = $entityMetadata['entity_type'];
+      $finalResult['_entity_metadata'] = [
+        'entity_id' => $entityMetadata['entity_id'],
+        'entity_type' => $entityMetadata['entity_type'],
+      ];
+    }
+
+    return $finalResult;
+  }
+
+  /**
+   * Format an analytics-only result, kept as hybrid to preserve sub-query tables (extracted verbatim from formatFinalResult to cut NPath).
+   */
+  private function formatAnalyticsOnlyResult(array $aggregated): array
+  {
+    $textResponse = implode("\n\n", array_filter($aggregated['text_responses']));
+
+    $subQueries = array_map(function ($result) {
+      if (!is_array($result)) {
+        return $result;
+      }
+      $normalized = $result;
+      if (($normalized['type'] ?? '') === 'analytics_response') {
+        $normalized['type'] = 'analytics';
+      }
+      return $normalized;
+    }, $aggregated['analytics_results']);
+
+    // Build merged source attribution if available
+    $sourceAttribution = null;
+    if (!empty($aggregated['source_attributions'])) {
+      if (count($aggregated['source_attributions']) === 1) {
+        $sourceAttribution = $aggregated['source_attributions'][0];
+      } else {
+        $sourceTypes = array_unique(array_column($aggregated['source_attributions'], 'source_type'));
+        $sourceAttribution = [
+          'source_type' => 'Hybrid',
+          'source_icon' => '🔀',
+          'source_details' => 'Information combined from multiple sources',
+          'sources' => $sourceTypes,
+          'source_count' => count($aggregated['source_attributions']),
         ];
       }
-
-      return $finalResult;
     }
 
-    // If we have one or more analytics results (no semantic/web), keep hybrid to preserve
-    // sub-query tables (a single analytics sub-query, e.g. product attributes, must still render
-    // as a table, not a text-only synthesis).
-    if ($hasAnalytics && !$hasSemantic && !$hasWeb && count($aggregated['analytics_results']) >= 1) {
-      $textResponse = implode("\n\n", array_filter($aggregated['text_responses']));
-
-      $subQueries = array_map(function ($result) {
-        if (!is_array($result)) {
-          return $result;
-        }
-        $normalized = $result;
-        if (($normalized['type'] ?? '') === 'analytics_response') {
-          $normalized['type'] = 'analytics';
-        }
-        return $normalized;
-      }, $aggregated['analytics_results']);
-
-      // Build merged source attribution if available
-      $sourceAttribution = null;
-      if (!empty($aggregated['source_attributions'])) {
-        if (count($aggregated['source_attributions']) === 1) {
-          $sourceAttribution = $aggregated['source_attributions'][0];
-        } else {
-          $sourceTypes = array_unique(array_column($aggregated['source_attributions'], 'source_type'));
-          $sourceAttribution = [
-            'source_type' => 'Hybrid',
-            'source_icon' => '🔀',
-            'source_details' => 'Information combined from multiple sources',
-            'sources' => $sourceTypes,
-            'source_count' => count($aggregated['source_attributions']),
-          ];
-        }
-      }
-
-      $finalResult = [
-        'type' => 'hybrid',
-        'text_response' => $textResponse,
-        // Provide structured data at root for ResponseFormatter / HybridFormatter
-        'data' => [
-          'sub_queries' => $subQueries,
-          'synthesis' => $textResponse,
-          'sources_used' => array_unique(array_map(function ($a) {
-            return $a['source_type'] ?? 'Unknown';
-          }, $aggregated['source_attributions'] ?? [])),
-        ],
-        // Keep legacy 'result' for backward compatibility
-        'result' => [
-          'sub_queries' => $subQueries,
-          'synthesis' => $textResponse,
-          'sources_used' => array_unique(array_map(function ($a) {
-            return $a['source_type'] ?? 'Unknown';
-          }, $aggregated['source_attributions'] ?? [])),
-        ],
-        // Also expose sub_queries at top-level for hybrid formatter
+    $finalResult = [
+      'type' => 'hybrid',
+      'text_response' => $textResponse,
+      // Provide structured data at root for ResponseFormatter / HybridFormatter
+      'data' => [
         'sub_queries' => $subQueries,
-      ];
+        'synthesis' => $textResponse,
+        'sources_used' => array_unique(array_map(function ($a) {
+          return $a['source_type'] ?? 'Unknown';
+        }, $aggregated['source_attributions'] ?? [])),
+      ],
+      // Keep legacy 'result' for backward compatibility
+      'result' => [
+        'sub_queries' => $subQueries,
+        'synthesis' => $textResponse,
+        'sources_used' => array_unique(array_map(function ($a) {
+          return $a['source_type'] ?? 'Unknown';
+        }, $aggregated['source_attributions'] ?? [])),
+      ],
+      // Also expose sub_queries at top-level for hybrid formatter
+      'sub_queries' => $subQueries,
+    ];
 
-      if (!empty($textResponse)) {
-        $finalResult['response'] = $textResponse;
-      }
-
-      if ($sourceAttribution !== null) {
-        $finalResult['source_attribution'] = $sourceAttribution;
-      }
-
-      return $finalResult;
+    if (!empty($textResponse)) {
+      $finalResult['response'] = $textResponse;
     }
 
-    // Otherwise, use standard aggregation logic
+    if ($sourceAttribution !== null) {
+      $finalResult['source_attribution'] = $sourceAttribution;
+    }
+
+    return $finalResult;
+  }
+
+  /**
+   * Format the standard aggregation (primary-type detection + field assembly) (extracted verbatim from formatFinalResult to cut NPath).
+   */
+  private function formatStandardAggregation(array $aggregated, array $entityMetadata): array
+  {
     // Combine text responses
     $textResponse = implode("\n\n", array_filter($aggregated['text_responses']));
 
@@ -249,65 +278,8 @@ class ResultFormatter
       }
     }
 
-    // Determine primary result type
-    $primaryType = 'mixed';
-
-    // Check for clarification_needed first (all steps need clarification)
-    $allClarification = true;
-    $clarificationCount = 0;
-    $totalResultCount = 0;
-    
-    // Check all result arrays including clarification_results
-    foreach ($aggregated as $key => $value) {
-      if (str_ends_with($key, '_results') && !empty($value)) {
-        foreach ($value as $result) {
-          $totalResultCount++;
-          $resultType = $result['type'] ?? 'unknown';
-          
-          if ($this->debug) {
-            error_log("[ResultSynthesizer] Checking result in {$key}: type={$resultType}");
-          }
-          
-          if ($resultType === 'clarification_needed') {
-            $clarificationCount++;
-          } else {
-            $allClarification = false;
-          }
-        }
-      }
-    }
-
-    if ($this->debug) {
-      error_log("[ResultSynthesizer] Type detection: allClarification={$allClarification}, clarificationCount={$clarificationCount}, totalResultCount={$totalResultCount}");
-    }
-
-    // If ALL results are clarification_needed, set type to clarification_needed
-    if ($allClarification && $totalResultCount > 0) {
-      $primaryType = 'clarification_needed';
-      
-      if ($this->debug) {
-        error_log("[ResultSynthesizer] ✅ Setting primaryType to 'clarification_needed' (all {$totalResultCount} results need clarification)");
-      }
-    }
-    // If we have ONLY clarification results (no other result types)
-    elseif (!empty($aggregated['clarification_results']) && 
-            empty($aggregated['analytics_results']) && 
-            empty($aggregated['semantic_results']) && 
-            empty($aggregated['web_results'])) {
-      $primaryType = 'clarification_needed';
-      
-      if ($this->debug) {
-        error_log("[ResultSynthesizer] ✅ Setting primaryType to 'clarification_needed' (only clarification results present)");
-      }
-    }
-    // Check for web_results first (highest priority for display)
-    elseif (!empty($aggregated['web_results'])) {
-      $primaryType = 'web_search_response';
-    } elseif (!empty($aggregated['analytics_results']) && empty($aggregated['semantic_results'])) {
-      $primaryType = 'analytics_response';
-    } elseif (!empty($aggregated['semantic_results']) && empty($aggregated['analytics_results'])) {
-      $primaryType = 'semantic_results';
-    }
+    // Determine the primary result type from the aggregated step results.
+    $primaryType = $this->determinePrimaryType($aggregated);
 
     $finalResult = [
       'type' => $primaryType,
@@ -443,13 +415,17 @@ class ResultFormatter
         "Final result structure before validation",
         'info',
         [
-          'type' => $finalResult['type'] ?? 'unknown',
-          'has_text_response' => isset($finalResult['text_response']) && !empty($finalResult['text_response']),
+          // type / text_response are always present (set in the build literal above), so
+          // their isset/?? guards are redundant — drop them (kept only on the conditionally
+          // added keys response / source_attribution). Done ahead of extracting
+          // determinePrimaryType, which seals the array shape for PHPStan.
+          'type' => $finalResult['type'],
+          'has_text_response' => !empty($finalResult['text_response']),
           'has_response' => isset($finalResult['response']) && !empty($finalResult['response']),
           'has_source_attribution' => isset($finalResult['source_attribution']),
           'has_data' => isset($finalResult['data']) && !empty($finalResult['data']),
           'has_sources' => isset($finalResult['sources']) && !empty($finalResult['sources']),
-          'text_response_length' => isset($finalResult['text_response']) ? strlen($finalResult['text_response']) : 0,
+          'text_response_length' => strlen((string)$finalResult['text_response']),
           'data_count' => isset($finalResult['data']) ? count($finalResult['data']) : 0,
           'sources_count' => isset($finalResult['sources']) ? count($finalResult['sources']) : 0,
         ]
@@ -775,5 +751,73 @@ class ResultFormatter
     ];
 
     return $finalResult;
+  }
+
+  /**
+   * Determine the primary result type from the aggregated step results
+   * (extracted verbatim from formatStandardAggregation to cut NPath).
+   */
+  private function determinePrimaryType(array $aggregated): string
+  {
+    $primaryType = 'mixed';
+
+    // Check for clarification_needed first (all steps need clarification)
+    $allClarification = true;
+    $clarificationCount = 0;
+    $totalResultCount = 0;
+    
+    // Check all result arrays including clarification_results
+    foreach ($aggregated as $key => $value) {
+      if (str_ends_with($key, '_results') && !empty($value)) {
+        foreach ($value as $result) {
+          $totalResultCount++;
+          $resultType = $result['type'] ?? 'unknown';
+          
+          if ($this->debug) {
+            error_log("[ResultSynthesizer] Checking result in {$key}: type={$resultType}");
+          }
+          
+          if ($resultType === 'clarification_needed') {
+            $clarificationCount++;
+          } else {
+            $allClarification = false;
+          }
+        }
+      }
+    }
+
+    if ($this->debug) {
+      error_log("[ResultSynthesizer] Type detection: allClarification={$allClarification}, clarificationCount={$clarificationCount}, totalResultCount={$totalResultCount}");
+    }
+
+    // If ALL results are clarification_needed, set type to clarification_needed
+    if ($allClarification && $totalResultCount > 0) {
+      $primaryType = 'clarification_needed';
+      
+      if ($this->debug) {
+        error_log("[ResultSynthesizer] ✅ Setting primaryType to 'clarification_needed' (all {$totalResultCount} results need clarification)");
+      }
+    }
+    // If we have ONLY clarification results (no other result types)
+    elseif (!empty($aggregated['clarification_results']) && 
+            empty($aggregated['analytics_results']) && 
+            empty($aggregated['semantic_results']) && 
+            empty($aggregated['web_results'])) {
+      $primaryType = 'clarification_needed';
+      
+      if ($this->debug) {
+        error_log("[ResultSynthesizer] ✅ Setting primaryType to 'clarification_needed' (only clarification results present)");
+      }
+    }
+    // Check for web_results first (highest priority for display)
+    elseif (!empty($aggregated['web_results'])) {
+      $primaryType = 'web_search_response';
+    } elseif (!empty($aggregated['analytics_results']) && empty($aggregated['semantic_results'])) {
+      $primaryType = 'analytics_response';
+    } elseif (!empty($aggregated['semantic_results']) && empty($aggregated['analytics_results'])) {
+      $primaryType = 'semantic_results';
+    }
+
+    return $primaryType;
   }
 }

@@ -93,9 +93,7 @@ if ($config['rag_enabled']) {
     }
 }
 
-// ✅ TASK 4.4.2.3: Retrieve latency metrics
-// 🔧 FIX 2025-12-05: DISABLED - Load via AJAX instead to avoid heavy initialization on every page load
-// The OrchestratorAgent instantiation is too heavy for dashboard loading
+//  Retrieve latency metrics
 // Metrics will be loaded via AJAX when user clicks on Fast-Lane tab
 $latencyMetrics = null;
 

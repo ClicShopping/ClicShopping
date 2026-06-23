@@ -753,82 +753,7 @@ class PlanExecutor
 
     $query = $step->getMeta('search_query', $step->getDescription());
     
-    // Skip query enrichment for price_comparison queries
-    // For price_comparison, SubTaskPlannerWebSearch already extracts the clean product name
-    // from intent, so we should NOT enrich it again with entity context to avoid duplication
-    // Example: query="iPhone 17 Pro" should stay as-is, not become "iPhone 17 Pro iPhone 17 Pro"
-    $skipEnrichment = false;
-    
-    // Check both 'intent' and 'intent_type' fields (different decomposers use different field names)
-    $intentType = $context['plan_intent']['intent'] ?? $context['plan_intent']['intent_type'] ?? null;
-    
-    if ($intentType === 'price_comparison') {
-      $skipEnrichment = true;
-      
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Skipping query enrichment for price_comparison (query already contains clean product name)",
-          'info'
-        );
-      }
-    }
-    
-    //Enrich query with last_entity context for follow-up queries
-    // This allows web search to use context from previous analytics queries
-    // SKIP enrichment for price_comparison queries (they already have clean product names)
-    
-    if (!$skipEnrichment && $this->conversationMemory !== null) {
-      try {
-        $lastEntity = $this->conversationMemory->getLastEntity();
-        
-        if ($lastEntity !== null) {
-          // Only use entity name, NOT entity ID
-          // Using entity ID (e.g., "103") in web search queries causes Google to return no results
-          // We MUST have the entity name (e.g., "iPhone 17 Pro") for meaningful web searches
-          $entityName = $lastEntity['name'] ?? null;
-          $entityType = $lastEntity['type'] ?? 'entity';
-          
-          // Only enrich if we have a valid entity NAME (not just ID)
-          if ($entityName !== null && !empty(trim($entityName))) {
-            // Enrich the query through the domain-agnostic registry: each
-            // Apps/AI/{Domain} can register a QueryEnricher that injects the
-            $enrichContext = [
-              'entity_name' => $entityName,
-              'entity_type' => $entityType,
-              'intent_type' => $intentType,
-            ];
-
-            foreach (WebSearchEngineRegistry::getInstance()->getQueryEnrichers() as $enricher) {
-              $query = $enricher->enrich($query, $enrichContext);
-            }
-
-            if ($this->debug) {
-              $this->securityLogger->logSecurityEvent(
-                "Enriched web search query with last_entity: {$entityName} ({$entityType})",
-                'info'
-              );
-            }
-          } else {
-            // Log when enrichment is skipped due to missing entity name
-            if ($this->debug) {
-              $entityId = $lastEntity['id'] ?? 'unknown';
-              $this->securityLogger->logSecurityEvent(
-                "Skipped query enrichment: entity name not available (ID: {$entityId}, Type: {$entityType})",
-                'info'
-              );
-            }
-          }
-        }
-      } catch (\Exception $e) {
-        // Don't fail on context enrichment errors - just log and continue
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Error enriching web search query with last_entity: " . $e->getMessage(),
-            'warning'
-          );
-        }
-      }
-    }
+    $query = $this->enrichWebSearchQuery($query, $context);
     
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(
@@ -888,51 +813,7 @@ class PlanExecutor
         ];
       }
 
-      // WebSearchFacade returns shopping_results and organic_results, not items
-      // Merge both into a single items array for backward compatibility
-      $items = [];
-      
-      // Add shopping results first (higher priority)
-      if (!empty($searchResult['shopping_results'])) {
-        foreach ($searchResult['shopping_results'] as $result) {
-          $items[] = [
-            'title' => $result['title'] ?? '',
-            'snippet' => $result['snippet'] ?? '',
-            'link' => $result['product_link'] ?? $result['link'] ?? '',
-            'source' => $result['source'] ?? '',
-            'price' => $result['price'] ?? $result['extracted_price'] ?? null,
-            'thumbnail' => $result['thumbnail'] ?? null,
-            'type' => 'shopping'
-          ];
-        }
-      }
-      
-      // Add organic results
-      if (!empty($searchResult['organic_results'])) {
-        foreach ($searchResult['organic_results'] as $result) {
-          $items[] = [
-            'title' => $result['title'] ?? '',
-            'snippet' => $result['snippet'] ?? '',
-            'link' => $result['link'] ?? '',
-            'source' => $result['source'] ?? '',
-            'price' => null,
-            'type' => 'organic'
-          ];
-        }
-      }
-      
-      // Format results for display
-      $formattedResults = [];
-
-      foreach ($items as $item) {
-        $formattedResults[] = [
-          'title' => $item['title'] ?? '',
-          'snippet' => $item['snippet'] ?? '',
-          'link' => $item['link'] ?? '',
-          'source' => $item['source'] ?? '',
-          'price' => $item['price'] ?? null,
-        ];
-      }
+      $formattedResults = $this->buildWebSearchResults($searchResult);
 
       // Extract AI Overview data from search result
       $aiOverview = $searchResult['ai_overview'] ?? null;
@@ -955,47 +836,7 @@ class PlanExecutor
       // Use original user query for display (not the enriched/translated internal query)
       $displayQuery = $context['plan_intent']['original_query'] ?? $query;
 
-      // Prepare formatter data
-      $formatterData = [
-        'type' => 'web_search_response',
-        'query' => $displayQuery,
-        'ai_overview' => $aiOverview,
-        'metadata' => $searchResult['metadata'] ?? [],
-      ];
-
-      // Forward fields injected by WebSearchResultEnhancers (registered by
-      // any Apps/AI/{Domain}/). The formatter consumes them by key name —
-      if (!empty($searchResult['market_analysis'])) {
-        $formatterData['market_analysis'] = $searchResult['market_analysis'];
-      }
-      
-      // Add shopping_results for Mode B and Mode D (use original shopping_results from WebSearchFacade)
-      // Check for 'mode_b_google_shopping' instead of 'B'
-      // Also pass shopping_results for Hybrid mode
-      // Also pass shopping_results for Mode D (domain shopping engine)
-      
-      if (($mode === 'B' || $mode === 'mode_b_google_shopping' || $mode === 'mode_d_amazon_shopping' || $mode === 'D' || $mode === 'hybrid') && !empty($searchResult['shopping_results'])) {
-        $formatterData['shopping_results'] = $searchResult['shopping_results'];
-
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Mode " . $mode . " detected - passing " . count($searchResult['shopping_results']) . " shopping_results to formatter",
-            'info'
-          );
-        }
-      } elseif ($mode === 'mode_e_google_trends' && !empty($searchResult['trends_data'])) {
-        $formatterData['trends_data'] = $searchResult['trends_data'];
-
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Mode E (Google Trends) detected - passing trends_data (" . ($searchResult['trends_data']['point_count'] ?? 0) . " points) to formatter",
-            'info'
-          );
-        }
-      } else {
-        // For non-shopping modes (Mode A, Mode C without shopping), include web results
-        $formatterData['results'] = $formattedResults;
-      }
+      $formatterData = $this->buildWebSearchFormatterData($searchResult, $aiOverview, $mode, $formattedResults, $displayQuery);
 
       // Create text response using WebSearchFormatter
       $formatter = new WebSearchFormatter($this->debug);
@@ -1079,6 +920,219 @@ class PlanExecutor
         'text_response' => "Web search error: " . $e->getMessage(),
       ];
     }
+  }
+
+  /**
+   * Enrich a web-search query with last-entity context for follow-up queries.
+   *
+   * Extracted verbatim from executeWebSearch to cut NPath. Skips enrichment for
+   * price_comparison intents and runs the domain-agnostic QueryEnricher registry
+   * when a usable last-entity name is available.
+   *
+   * @param mixed $query Raw search query
+   * @param array $context Plan execution context
+   * @return mixed The (possibly enriched) query
+   */
+  private function enrichWebSearchQuery(mixed $query, array $context): mixed
+  {
+    // Skip query enrichment for price_comparison queries
+    // For price_comparison, SubTaskPlannerWebSearch already extracts the clean product name
+    // from intent, so we should NOT enrich it again with entity context to avoid duplication
+    // Example: query="iPhone 17 Pro" should stay as-is, not become "iPhone 17 Pro iPhone 17 Pro"
+    $skipEnrichment = false;
+    
+    // Check both 'intent' and 'intent_type' fields (different decomposers use different field names)
+    $intentType = $context['plan_intent']['intent'] ?? $context['plan_intent']['intent_type'] ?? null;
+    
+    if ($intentType === 'price_comparison') {
+      $skipEnrichment = true;
+      
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "Skipping query enrichment for price_comparison (query already contains clean product name)",
+          'info'
+        );
+      }
+    }
+    
+    //Enrich query with last_entity context for follow-up queries
+    // This allows web search to use context from previous analytics queries
+    // SKIP enrichment for price_comparison queries (they already have clean product names)
+    
+    if (!$skipEnrichment && $this->conversationMemory !== null) {
+      try {
+        $lastEntity = $this->conversationMemory->getLastEntity();
+        
+        if ($lastEntity !== null) {
+          // Only use entity name, NOT entity ID
+          // Using entity ID (e.g., "103") in web search queries causes Google to return no results
+          // We MUST have the entity name (e.g., "iPhone 17 Pro") for meaningful web searches
+          $entityName = $lastEntity['name'] ?? null;
+          $entityType = $lastEntity['type'] ?? 'entity';
+          
+          // Only enrich if we have a valid entity NAME (not just ID)
+          if ($entityName !== null && !empty(trim($entityName))) {
+            // Enrich the query through the domain-agnostic registry: each
+            // Apps/AI/{Domain} can register a QueryEnricher that injects the
+            $enrichContext = [
+              'entity_name' => $entityName,
+              'entity_type' => $entityType,
+              'intent_type' => $intentType,
+            ];
+
+            foreach (WebSearchEngineRegistry::getInstance()->getQueryEnrichers() as $enricher) {
+              $query = $enricher->enrich($query, $enrichContext);
+            }
+
+            if ($this->debug) {
+              $this->securityLogger->logSecurityEvent(
+                "Enriched web search query with last_entity: {$entityName} ({$entityType})",
+                'info'
+              );
+            }
+          } else {
+            // Log when enrichment is skipped due to missing entity name
+            if ($this->debug) {
+              $entityId = $lastEntity['id'] ?? 'unknown';
+              $this->securityLogger->logSecurityEvent(
+                "Skipped query enrichment: entity name not available (ID: {$entityId}, Type: {$entityType})",
+                'info'
+              );
+            }
+          }
+        }
+      } catch (\Exception $e) {
+        // Don't fail on context enrichment errors - just log and continue
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Error enriching web search query with last_entity: " . $e->getMessage(),
+            'warning'
+          );
+        }
+      }
+    }
+
+    return $query;
+  }
+
+  /**
+   * Assemble the WebSearchFormatter input payload from a search result by mode.
+   *
+   * Extracted verbatim from executeWebSearch to cut NPath. Forwards mode-specific
+   * fields (shopping_results / trends_data) or falls back to formatted web results.
+   *
+   * @param array $searchResult Raw WebSearchFacade result
+   * @param mixed $aiOverview AI Overview payload, or null
+   * @param string $mode Detected web-search mode
+   * @param array $formattedResults Normalized web result rows
+   * @param mixed $displayQuery Original user query for display
+   * @return array Formatter input payload
+   */
+  private function buildWebSearchFormatterData(array $searchResult, mixed $aiOverview, string $mode, array $formattedResults, mixed $displayQuery): array
+  {
+    // Prepare formatter data
+    $formatterData = [
+      'type' => 'web_search_response',
+      'query' => $displayQuery,
+      'ai_overview' => $aiOverview,
+      'metadata' => $searchResult['metadata'] ?? [],
+    ];
+
+    // Forward fields injected by WebSearchResultEnhancers (registered by
+    // any Apps/AI/{Domain}/). The formatter consumes them by key name —
+    if (!empty($searchResult['market_analysis'])) {
+      $formatterData['market_analysis'] = $searchResult['market_analysis'];
+    }
+    
+    // Add shopping_results for Mode B and Mode D (use original shopping_results from WebSearchFacade)
+    // Check for 'mode_b_google_shopping' instead of 'B'
+    // Also pass shopping_results for Hybrid mode
+    // Also pass shopping_results for Mode D (domain shopping engine)
+    
+    if (($mode === 'B' || $mode === 'mode_b_google_shopping' || $mode === 'mode_d_amazon_shopping' || $mode === 'D' || $mode === 'hybrid') && !empty($searchResult['shopping_results'])) {
+      $formatterData['shopping_results'] = $searchResult['shopping_results'];
+
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "Mode " . $mode . " detected - passing " . count($searchResult['shopping_results']) . " shopping_results to formatter",
+          'info'
+        );
+      }
+    } elseif ($mode === 'mode_e_google_trends' && !empty($searchResult['trends_data'])) {
+      $formatterData['trends_data'] = $searchResult['trends_data'];
+
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "Mode E (Google Trends) detected - passing trends_data (" . ($searchResult['trends_data']['point_count'] ?? 0) . " points) to formatter",
+          'info'
+        );
+      }
+    } else {
+      // For non-shopping modes (Mode A, Mode C without shopping), include web results
+      $formatterData['results'] = $formattedResults;
+    }
+
+    return $formatterData;
+  }
+
+  /**
+   * Normalize a WebSearchFacade result into a flat formatted display list.
+   *
+   * Extracted verbatim from executeWebSearch to cut NPath. Merges shopping_results
+   * (higher priority) and organic_results into a single ordered list of display rows.
+   *
+   * @param array $searchResult Raw WebSearchFacade result
+   * @return array Formatted result rows (title, snippet, link, source, price)
+   */
+  private function buildWebSearchResults(array $searchResult): array
+  {
+    // WebSearchFacade returns shopping_results and organic_results, not items
+    // Merge both into a single items array for backward compatibility
+    $items = [];
+    
+    // Add shopping results first (higher priority)
+    if (!empty($searchResult['shopping_results'])) {
+      foreach ($searchResult['shopping_results'] as $result) {
+        $items[] = [
+          'title' => $result['title'] ?? '',
+          'snippet' => $result['snippet'] ?? '',
+          'link' => $result['product_link'] ?? $result['link'] ?? '',
+          'source' => $result['source'] ?? '',
+          'price' => $result['price'] ?? $result['extracted_price'] ?? null,
+          'thumbnail' => $result['thumbnail'] ?? null,
+          'type' => 'shopping'
+        ];
+      }
+    }
+    
+    // Add organic results
+    if (!empty($searchResult['organic_results'])) {
+      foreach ($searchResult['organic_results'] as $result) {
+        $items[] = [
+          'title' => $result['title'] ?? '',
+          'snippet' => $result['snippet'] ?? '',
+          'link' => $result['link'] ?? '',
+          'source' => $result['source'] ?? '',
+          'price' => null,
+          'type' => 'organic'
+        ];
+      }
+    }
+    
+    // Format results for display
+    $formattedResults = [];
+
+    foreach ($items as $item) {
+      $formattedResults[] = [
+        'title' => $item['title'] ?? '',
+        'snippet' => $item['snippet'] ?? '',
+        'link' => $item['link'] ?? '',
+        'source' => $item['source'] ?? '',
+        'price' => $item['price'] ?? null,
+      ];
+    }
+
+    return $formattedResults;
   }
 
 

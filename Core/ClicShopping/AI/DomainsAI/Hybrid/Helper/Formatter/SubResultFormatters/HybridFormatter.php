@@ -93,6 +93,104 @@ class HybridFormatter extends AbstractFormatter
     $hasAnalyticsComponent = !empty($analyticsComponents);
     $hasSemanticComponent = isset($results['semantic_component']) && is_array($results['semantic_component']);
 
+    $this->renderAnalyticsComponents($analyticsComponents, $output);
+    
+    // Display semantic component
+    if ($hasSemanticComponent) {
+      $semanticComp = $results['semantic_component'];
+      
+      $output .= "<div class='mt-4'>";
+      $output .= "<h5>📚 " . htmlspecialchars($this->language->getDef('semantic_results_title')) . "</h5>";
+      
+      // Display semantic response
+      $semanticText = $semanticComp['response'] ?? $semanticComp['text_response'] ?? '';
+      if (!empty($semanticText)) {
+        $output .= "<div class='semantic-response'>" . nl2br(htmlspecialchars($semanticText)) . "</div>";
+      }
+      
+      // Display sources
+      if (isset($semanticComp['sources']) && is_array($semanticComp['sources']) && !empty($semanticComp['sources'])) {
+        $output .= "<div class='mt-3'>";
+        $output .= "<details>";
+        $output .= "<summary style='cursor: pointer; font-size: 0.9em; color: #666;'><strong>📖 " . htmlspecialchars($this->language->getDef('sources_label')) . " (" . count($semanticComp['sources']) . ")</strong></summary>";
+        $output .= "<ul class='mt-2'>";
+        foreach ($semanticComp['sources'] as $source) {
+          if (is_array($source)) {
+            $sourceText = $source['content'] ?? $source['text'] ?? '';
+            $sourceType = $source['type'] ?? '';
+            if (!empty($sourceText)) {
+              $output .= "<li style='margin-bottom: 10px;'>";
+              if (!empty($sourceType)) {
+                $output .= "<span class='badge bg-secondary'>" . htmlspecialchars($sourceType) . "</span> ";
+              }
+              $output .= htmlspecialchars(substr($sourceText, 0, 200)) . (strlen($sourceText) > 200 ? '...' : '');
+              $output .= "</li>";
+            }
+          }
+        }
+        $output .= "</ul>";
+        $output .= "</details>";
+        $output .= "</div>";
+      }
+      
+      $output .= "</div>";
+    }
+
+    // Display the synthesized response (optional, as summary)
+    if (!empty($responseContent) && (empty($results['analytics_component']) && empty($results['semantic_component']))) {
+      // Only show text_response if we don't have structured components
+      $formattedResponse = nl2br(Hash::displayDecryptedDataText($responseContent));
+      $output .= "<div class='response'><strong>" . htmlspecialchars($this->language->getDef('response_label')) . "</strong><br>" . $formattedResponse . "</div>";
+    }
+
+    // Render actual results from sub-queries, not just metadata
+    $this->renderSubQueryResults($results, $hasAnalyticsComponent, $hasSemanticComponent, $output);
+
+    // Display sub-query information (optional, for transparency)
+    if (isset($results['sub_queries']) && is_array($results['sub_queries']) && count($results['sub_queries']) > 1) {
+      $output .= "<div class='mt-3'>";
+      $output .= "<details style='font-size: 0.9em; color: #666;'>";
+      $output .= "<summary style='cursor: pointer;'><strong>" . htmlspecialchars($this->language->getDef('source_details_label')) . count($results['sub_queries']) . " " . htmlspecialchars($this->language->getDef('combined_queries_suffix')) . "</strong></summary>";
+      $output .= "<ul style='margin-top: 10px;'>";
+      
+      foreach ($results['sub_queries'] as $idx => $subQuery) {
+        $subType = $subQuery['type'] ?? 'unknown';
+        $subIcon = $this->getIconForType($subType);
+        $output .= "<li>{$subIcon} <strong>" . ucfirst($subType) . "</strong>";
+        
+        // Show brief info about each sub-query
+        if (isset($subQuery['source_attribution']['primary_source'])) {
+          $output .= " - " . htmlspecialchars($subQuery['source_attribution']['primary_source']);
+        }
+        
+        $output .= "</li>";
+      }
+      
+      $output .= "</ul>";
+      $output .= "</details>";
+      $output .= "</div>";
+    }
+
+    $output .= "</div>";
+
+    return [
+      'type' => 'formatted_results',
+      'content' => $output
+    ];
+  }
+
+  /**
+   * Render the analytics component tables (Maillon C) into the output buffer.
+   *
+   * Extracted verbatim from format() to cut NPath. Renders each analytics sub-query
+   * (interpretation, SQL query, result table).
+   *
+   * @param array $analyticsComponents Analytics components to render
+   * @param string $output Output HTML buffer, mutated by reference
+   * @return void
+   */
+  private function renderAnalyticsComponents(array $analyticsComponents, string &$output): void
+  {
     foreach ($analyticsComponents as $analyticsComp) {
       if (!is_array($analyticsComp)) {
         continue;
@@ -146,56 +244,22 @@ class HybridFormatter extends AbstractFormatter
       
       $output .= "</div>";
     }
-    
-    // Display semantic component
-    if ($hasSemanticComponent) {
-      $semanticComp = $results['semantic_component'];
-      
-      $output .= "<div class='mt-4'>";
-      $output .= "<h5>📚 " . htmlspecialchars($this->language->getDef('semantic_results_title')) . "</h5>";
-      
-      // Display semantic response
-      $semanticText = $semanticComp['response'] ?? $semanticComp['text_response'] ?? '';
-      if (!empty($semanticText)) {
-        $output .= "<div class='semantic-response'>" . nl2br(htmlspecialchars($semanticText)) . "</div>";
-      }
-      
-      // Display sources
-      if (isset($semanticComp['sources']) && is_array($semanticComp['sources']) && !empty($semanticComp['sources'])) {
-        $output .= "<div class='mt-3'>";
-        $output .= "<details>";
-        $output .= "<summary style='cursor: pointer; font-size: 0.9em; color: #666;'><strong>📖 " . htmlspecialchars($this->language->getDef('sources_label')) . " (" . count($semanticComp['sources']) . ")</strong></summary>";
-        $output .= "<ul class='mt-2'>";
-        foreach ($semanticComp['sources'] as $source) {
-          if (is_array($source)) {
-            $sourceText = $source['content'] ?? $source['text'] ?? '';
-            $sourceType = $source['type'] ?? '';
-            if (!empty($sourceText)) {
-              $output .= "<li style='margin-bottom: 10px;'>";
-              if (!empty($sourceType)) {
-                $output .= "<span class='badge bg-secondary'>" . htmlspecialchars($sourceType) . "</span> ";
-              }
-              $output .= htmlspecialchars(substr($sourceText, 0, 200)) . (strlen($sourceText) > 200 ? '...' : '');
-              $output .= "</li>";
-            }
-          }
-        }
-        $output .= "</ul>";
-        $output .= "</details>";
-        $output .= "</div>";
-      }
-      
-      $output .= "</div>";
-    }
+  }
 
-    // Display the synthesized response (optional, as summary)
-    if (!empty($responseContent) && (empty($results['analytics_component']) && empty($results['semantic_component']))) {
-      // Only show text_response if we don't have structured components
-      $formattedResponse = nl2br(Hash::displayDecryptedDataText($responseContent));
-      $output .= "<div class='response'><strong>" . htmlspecialchars($this->language->getDef('response_label')) . "</strong><br>" . $formattedResponse . "</div>";
-    }
-
-    // Render actual results from sub-queries, not just metadata
+  /**
+   * Render the per-sub-query result sections (web_search / analytics / semantic).
+   *
+   * Extracted verbatim from format() to cut NPath. Appends HTML to the shared
+   * output buffer; skips analytics/semantic sub-queries already shown as components.
+   *
+   * @param array $results Hybrid result payload
+   * @param bool $hasAnalyticsComponent Whether an analytics component was already rendered
+   * @param bool $hasSemanticComponent Whether a semantic component was already rendered
+   * @param string $output Output HTML buffer, mutated by reference
+   * @return void
+   */
+  private function renderSubQueryResults(array $results, bool $hasAnalyticsComponent, bool $hasSemanticComponent, string &$output): void
+  {
     if (isset($results['sub_queries']) && is_array($results['sub_queries'])) {
       foreach ($results['sub_queries'] as $idx => $subQuery) {
         $subType = $subQuery['type'] ?? 'unknown';
@@ -276,38 +340,6 @@ class HybridFormatter extends AbstractFormatter
         }
       }
     }
-
-    // Display sub-query information (optional, for transparency)
-    if (isset($results['sub_queries']) && is_array($results['sub_queries']) && count($results['sub_queries']) > 1) {
-      $output .= "<div class='mt-3'>";
-      $output .= "<details style='font-size: 0.9em; color: #666;'>";
-      $output .= "<summary style='cursor: pointer;'><strong>" . htmlspecialchars($this->language->getDef('source_details_label')) . count($results['sub_queries']) . " " . htmlspecialchars($this->language->getDef('combined_queries_suffix')) . "</strong></summary>";
-      $output .= "<ul style='margin-top: 10px;'>";
-      
-      foreach ($results['sub_queries'] as $idx => $subQuery) {
-        $subType = $subQuery['type'] ?? 'unknown';
-        $subIcon = $this->getIconForType($subType);
-        $output .= "<li>{$subIcon} <strong>" . ucfirst($subType) . "</strong>";
-        
-        // Show brief info about each sub-query
-        if (isset($subQuery['source_attribution']['primary_source'])) {
-          $output .= " - " . htmlspecialchars($subQuery['source_attribution']['primary_source']);
-        }
-        
-        $output .= "</li>";
-      }
-      
-      $output .= "</ul>";
-      $output .= "</details>";
-      $output .= "</div>";
-    }
-
-    $output .= "</div>";
-
-    return [
-      'type' => 'formatted_results',
-      'content' => $output
-    ];
   }
 
   /**

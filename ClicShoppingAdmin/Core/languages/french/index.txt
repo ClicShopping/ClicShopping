@@ -45,8 +45,9 @@ notice_termination_info = 2 mois avant échéance
 space = Stockage total de l'espace disque :
 backup_site = Sauvegarde du site :
 backup_site_info = journalière
-ask_informations = Demande Informations :
+ask_informations = Bogue :
 bandwidth = Bande passante totale par mois
+report_issue = Rapporter un bug
 
 onglet_stat_generales = Statistiques Générales
 onglet_stat_ca = Chiffre d Affaires

@@ -45,8 +45,9 @@ notice_termination_info = 2 months before deadline
 space = Total storage space :
 backup_site = backup Site :
 backup_site_info = Daily
-ask_informations = Request Information :
+ask_informations = Bug :
 bandwidth = Bandwidth by month
+report_issue = Report Issue
 
 onglet_stat_generales = General statistics
 onglet_stat_ca = Turn Over

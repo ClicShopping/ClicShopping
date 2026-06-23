@@ -24,6 +24,8 @@ use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\Adm
 use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\AI\Security\LlmResponseEvaluator;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ChatCritic\ChatCriticSeam;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 
 // ============================================
 // INITIALIZATION
@@ -156,10 +158,15 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
       $aiResponse['metrics']['response_quality'] = (float)($guardrailsEval['overall_score'] ?? 0);
       $aiResponse['metrics']['confidence_score'] = (float)($aiResponse['intent']['confidence'] ?? 0);
 
-      // Observe-first (§Z): persist the LLM quality verdict detail (hallucination_risk,
-      // reliability, detected_issues, to_verify) per interaction so it complements sparse
-      // user feedback. No gate / no regeneration — observe only; the human stays final judge.
-      $qualityVerdict = LlmResponseEvaluator::deriveQualitySignal($guardrailsEval);
+      // dark-launch: when the chat critic seam is enabled (OFF by code default), route the
+      // verdict through the agnostic ActorCriticCoordinator (observe-only, verdict parity). Otherwise
+      // keep the legacy direct path byte-identical.
+      if (ChatCriticSeam::isEnabled()) {
+        $seamAnswer = MemoryManager::extractResponseText($aiResponse) ?? $formatted;
+        $qualityVerdict = ChatCriticSeam::evaluate((string)$seamAnswer, $guardrailsEval, new Context((string)$userId, $languageId, ['source' => 'chat']));
+      } else {
+        $qualityVerdict = LlmResponseEvaluator::deriveQualitySignal($guardrailsEval);
+      }
       $statsTracker->setQualityVerdict($qualityVerdict);
     }
 
