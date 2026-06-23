@@ -85,6 +85,11 @@ class ConflictDetector
     $existingObjectives = array_merge($activeObjectives, $pendingObjectives, $approvedObjectives);
 
     foreach ($existingObjectives as $existing) {
+      // An objective cannot conflict with itself — skip self-comparison.
+      if ($existing->getId() === $newObjective->getId()) {
+        continue;
+      }
+
       // Skip if same agent (agents can have multiple objectives)
       // But check for duplicates from same agent
       if ($existing->getAgentId() === $newObjective->getAgentId()) {

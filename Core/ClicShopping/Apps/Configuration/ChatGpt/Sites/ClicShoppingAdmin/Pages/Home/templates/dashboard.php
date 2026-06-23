@@ -8,12 +8,15 @@
  * Dashboard selector: landing page routing to the three metier dashboards
  * (Manager / Developper / Data Scientist). Kept lightweight — no heavy data load.
  */
-use ClicShopping\OM\HTML;
+
+  use ClicShopping\AI\Infrastructure\Metrics\Statistics;
+  use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+  use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 $CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
 $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
-
+  $CLICSHOPPING_Hooks = Registry::get('Hooks');
 // Safe configuration state detection (graceful degradation, no Dashboard data load)
 $config = [
     'chatgpt_installed' => defined('CLICSHOPPING_APP_CHATGPT_CH_STATUS'),
@@ -50,14 +53,122 @@ $config = [
       </div>
     </div>
     <div class="mt-1"></div>
+
+     <div class="mt-1"></div>
+     <!-- ################# -->
+     <!-- Hooks Stats - just use execute function to display the hook-->
+     <!-- ################# -->
+     <div class="row">
+       <div class="col-md-12">
+         <div class="card card-block headerCard">
+           <div class="row" style="padding-top:0.9rem;">
+             <?php
+               $stat_result = Statistics::getTotalTokenByMonth();
+
+               if(is_array($stat_result)) {
+                 if ($stat_result['promptTokens'] > 0) {
+                   ?>
+                   <div class="col-md-3 col-12">
+                     <div class="card bg-danger">
+                       <div class="card-body">
+                         <h6
+                           class="card-title text-white"><?php echo $CLICSHOPPING_ChatGpt->getDef('stat_prompt_tokens'); ?></h6>
+                         <div class="card-text">
+                           <div class="col-sm-12">
+                          <span class="float-start">
+                            <i class="bi bi-clipboard2-pulse-fill text-white"></i>
+                          </span>
+                             <span class="float-end">
+                          <div class="col-sm-12 text-white"><?php echo $stat_result['promptTokens']; ?></div>
+                          </span>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                   <?php
+                 }
+
+                 if ($stat_result['completionTokens'] > 0) {
+                   ?>
+                   <div class="col-md-3 col-12">
+                     <div class="card bg-success">
+                       <div class="card-body">
+                         <h6
+                           class="card-title text-white"><?php echo $CLICSHOPPING_ChatGpt->getDef('stat_completion_tokens'); ?></h6>
+                         <div class="card-text">
+                           <div class="col-sm-12">
+                          <span class="float-start">
+                            <i class="bi bi-bar-chart-fill text-white"></i>
+                          </span>
+                             <span class="float-end">
+                          <div class="col-sm-12 text-white"><?php echo $stat_result['completionTokens']; ?></div>
+                          </span>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                   <?php
+                 }
+
+                 if ($stat_result['totalTokens'] > 0) {
+                   ?>
+                   <div class="col-md-3 col-12">
+                     <div class="card bg-primary">
+                       <div class="card-body">
+                         <h6
+                           class="card-title text-white"><?php echo $CLICSHOPPING_ChatGpt->getDef('stat_total_tokens'); ?></h6>
+                         <div class="card-text">
+                           <div class="col-sm-12">
+                          <span class="float-start">
+                            <i class="bi bi-graph-up text-white"></i>
+                          </span>
+                             <span class="float-end">
+                          <div class="col-sm-12 text-white"><?php echo $stat_result['totalTokens']; ?></div>
+                          </span>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                   <?php
+                 }
+               }
+
+               if (Gpt::getErrorRateGpt() !== false) {
+                 ?>
+                 <div class="col-md-3 col-12">
+                   <div class="card bg-warning">
+                     <div class="card-body">
+                       <h6
+                         class="card-title text-white"><?php echo $CLICSHOPPING_ChatGpt->getDef('stat_total_no_response'); ?></h6>
+                       <div class="card-text">
+                         <div class="col-sm-12">
+                      <span class="float-start">
+                        <i class="bi bi-graph-up text-white"></i>
+                      </span>
+                           <span class="float-end">
+                        <div
+                          class="col-sm-12 text-white"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_rate_error_gpt') . ' ' . Gpt::getErrorRateGpt(); ?></div>
+                      </span>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+                 <?php
+               }
+
+               echo $CLICSHOPPING_Hooks->output('Stats', 'StatsGpt', null, 'display');
+             ?>
+           </div>
+         </div>
+       </div>
+     </div>
+
+
    <?php
-       // ============================================================================
-       // INFORMATIONAL MESSAGES FOR DISABLED FEATURES
-       // ============================================================================
-       // Display actionable guidance when features are not installed or disabled
-       // Requirements: 1.4, 5.1, 5.4
-       
-       // ChatGPT Module Not Installed (Requirement 1.4)
        if (!$config['chatgpt_installed']) {
    ?>
      <div class="alert alert-warning" role="alert">
@@ -90,8 +201,7 @@ $config = [
      </div>
    <?php
        }
-       
-       // RAG BI Not Installed (Requirement 5.1)
+
        if ($config['chatgpt_enabled'] && !$config['rag_installed']) {
    ?>
      <div class="alert alert-warning" role="alert">
