@@ -1,0 +1,66 @@
+{
+    "name": "stolt/llms-txt-php",
+    "description": "A library for writing, reading, and validating llms.txt Markdown files.",
+    "keywords": [
+        "llms-txt",
+        "php",
+        "port",
+        "llms"
+    ],
+    "authors": [
+        {
+            "name": "Raphael Stolt",
+            "email": "raphael.stolt@gmail.com"
+        }
+    ],
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Stolt\\LlmsTxt\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Stolt\\LlmsTxt\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": ">=8.1",
+        "ext-dom": "*",
+        "ext-libxml": "*"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.70.1",
+        "peckphp/peck": "^0.1.2",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.4.4",
+        "shipmonk/composer-dependency-analyser": "^1.8",
+        "stolt/lean-package-validator": "^4.4"
+    },
+    "suggest": {
+        "stolt/llms-txt-php-cli": "Allows interaction with a llms.txt file from the console."
+    },
+    "scripts": {
+        "test": "phpunit",
+        "cs-fix": "php-cs-fixer --allow-risky=yes fix . -vv || true",
+        "cs-lint": "php-cs-fixer fix --diff --stop-on-violation --verbose --dry-run --allow-risky=yes",
+        "spell-check": "./vendor/bin/peck",
+        "validate-gitattributes": "./vendor/bin/lean-package-validator validate",
+        "test-with-coverage": "export XDEBUG_MODE=coverage && phpunit --coverage-html coverage-reports",
+        "static-analyse": "phpstan analyse --configuration phpstan.neon.dist",
+        "dependency-analyse": "./vendor/bin/composer-dependency-analyser",
+        "pre-commit-check": [
+            "@test",
+            "@cs-lint",
+            "@static-analyse",
+            "@spell-check",
+            "@validate-gitattributes"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true
+    }
+}

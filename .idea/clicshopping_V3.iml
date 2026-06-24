@@ -59,6 +59,7 @@
       <excludeFolder url="file://$MODULE_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php85" />
       <excludeFolder url="file://$MODULE_DIR$/.claude" />
       <excludeFolder url="file://$MODULE_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php80" />
+      <excludeFolder url="file://$MODULE_DIR$/Core/ClicShopping/External/vendor/stolt/llms-txt-php" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

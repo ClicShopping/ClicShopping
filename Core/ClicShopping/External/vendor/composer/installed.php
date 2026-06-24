@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '30bc4303e83dcb6d921254b3667bd1dc2574facf',
+        'reference' => '8034c85d504e859258368eba32c2f8fe9d188c1c',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '30bc4303e83dcb6d921254b3667bd1dc2574facf',
+            'reference' => '8034c85d504e859258368eba32c2f8fe9d188c1c',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '23afac1b181cebf9a272d9cb3423c6c39f3710d9',
+            'reference' => '6c54e0520e210e3889b0b3bff4d256bfa19bdc52',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -381,6 +381,15 @@
             'reference' => '2cfa0d92bd557875c9f52a75fde0e8392302a354',
             'type' => 'library',
             'install_path' => __DIR__ . '/../smalot/pdfparser',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'stolt/llms-txt-php' => array(
+            'pretty_version' => 'v3.4.0',
+            'version' => '3.4.0.0',
+            'reference' => '48ffa6e902a536696468d8197ec0115f69dbdd2e',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../stolt/llms-txt-php',
             'aliases' => array(),
             'dev_requirement' => false,
         ),

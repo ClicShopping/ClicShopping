@@ -73,6 +73,7 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpmailer/phpmailer" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stripe/stripe-php" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/setasign/fpdf" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stolt/llms-txt-php" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.5">

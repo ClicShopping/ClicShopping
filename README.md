@@ -5,14 +5,14 @@
 ClicShopping™ AI is a powerful, open-source e-commerce platform designed for B2B, B2C, and hybrid B2B-B2C businesses with autonomous agent (agentic). Built on modern, responsive design principles, it delivers excellent performance across all devices — mobile, tablet, and desktop — while keeping your data, your infrastructure, and your business logic fully under your control.
 
 ###What Makes It Different
-Unlike cloud-hosted platforms, ClicShopping AI™ is designed for businesses that require data sovereignty, GDPR compliance, and full ownership of their e-commerce stack. Deploy it on your own server, your own infrastructure, or any standard hosting environment — including shared hosting via Softaculous — without vendor lock-in.
+Unlike cloud-hosted platforms, ClicShopping™ AI is designed for businesses that require data sovereignty, GDPR compliance, and full ownership of their e-commerce stack. Deploy it on your own server, your own infrastructure, or any standard hosting environment — including shared hosting via Softaculous — without vendor lock-in.
 Generative AI Integration
 
 ClicShopping™ AI integrates with leading Generative AI systems including GPT, Ollama, and Anthropic...
 It leverages Retrieval-Augmented Generation (RAG) and Business Intelligence pipelines to improve product discovery, customer interaction, inventory optimization, and sales performance.
 
 ### What Makes It Different
-Unlike cloud-hosted platforms, ClicShopping AI™ is designed for businesses that require data sovereignty, GDPR compliance, and full ownership of their e-commerce stack. Deploy it on your own server, your own infrastructure, or any standard hosting environment — including shared hosting via Softaculous — without vendor lock-in. No third-party plugin, no additional subscription, no data
+Unlike cloud-hosted platforms, ClicShopping™ AI is designed for businesses that require data sovereignty, GDPR compliance, and full ownership of their e-commerce stack. Deploy it on your own server, your own infrastructure, or any standard hosting environment — including shared hosting via Softaculous — without vendor lock-in. No third-party plugin, no additional subscription, no data
 leaving your server without your explicit configuration.
 
 Designed for **data sovereignty and GDPR compliance**, it deploys on your own server, any standard hosting environment, or shared
@@ -21,7 +21,7 @@ hosting via Softaculous and Fantastico — without vendor lock-in.
 ### Key Features
 - **Easy Installation** — Deploy in just a few clicks on any server, local machine, or shared hosting environment
 - **Built-in AI & RAG** — Integrated Retrieval-Augmented Generation (RAG) engine with support for OpenAI, Anthropic, Mistral, and self-hosted models (Ollama). Query your own store data in natural language, with no data sent to third-party services without your explicit configuration
-- **Agentic Architecture** — Actor-Critic agent system for intelligent analytics, semantic search, and automated business insights
+- **Agentic Architecture** — Actor-Critic agent system for intelligent analytics, semantic search, and automated business intelligence - insight
 - **MCP Integration** — Connect your store to ERPs, CRMs, and accounting platforms via a secure, auditable, read-only data bus. Compatible with self-hosted AI interfaces such as LM Studio and AnythingLLM
 - **Multi-Model & Multi-Domain** — Supports multiple AI providers and multiple business domains (e-commerce, finance, HR) within a single installation
 - **Modern Architecture** — Modular framework based on ConfigureActionsAbstract and ConfigurableAppAbstract for standardized, maintainable development
@@ -46,11 +46,11 @@ The system implements a multi-agent reasoning architecture with more than eight 
 The modular architecture allows precise customization and extension, supporting both small deployments and large-scale enterprise environments without architectural changes.
 
 ## Built for Everyone :
-Easy, Lightweight Installation : Set up your store quickly and easily. ClicShopping AI™ installs in just a few clicks, uses minimal server resources, and offers full customization to fit your needs.
+Easy, Lightweight Installation : Set up your store quickly and easily. ClicShopping™ AI installs in just a few clicks, uses minimal server resources, and offers full customization to fit your needs.
 
-Driven by Community Support : ClicShopping AI™ is powered by its community. Donations and contributions help drive continuous improvements, keeping your platform innovative and competitive.
+Driven by Community Support : ClicShopping™ AI is powered by its community. Donations and contributions help drive continuous improvements, keeping your platform innovative and competitive.
 
-Get Started Today : Use the Artificial Intelligence to your Ecommerce business with ClicShopping AI™. Fast setup, powerful features, and a vibrant community — all completely free.
+Get Started Today : Use the Artificial Intelligence to your Ecommerce business with ClicShopping™ AI. Fast setup, powerful features, and a vibrant community — all completely free.
 
 #Analyse
 -  [![SymfonyInsight](https://insight.symfony.com/projects/417b7cb7-2fd4-44eb-b0cd-e97c4b96fcc1/mini.svg)](https://insight.symfony.com/projects/417b7cb7-2fd4-44eb-b0cd-e97c4b96fcc1)
@@ -61,7 +61,7 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 
 ## Table of Contents
 
-* [What is ClicShopping AI™](https://github.com/ClicShopping#ClicShopping)
+* [What is ClicShopping™ AI](https://github.com/ClicShopping#ClicShopping)
   - [Demo Site](https://www.clicshopping.org)
 * [Solution](https://github.com/ClicShopping#Solution) 
 * [Marketplace](https://github.com/ClicShopping#Marketplace)  
@@ -129,8 +129,8 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 - Server MCP (model context Protocol) for ecommerce agentic approach
   - Chat Rab - BI - WebSearch Connexion
   - Anthropic Ecommerce Connexion
-- Agentic Commerce Protocol (ACP / UDP, UCP).
-- Agentic SEO Analysis (Cokpit AI and Agentic SEO Text optimization)
+- Agentic Commerce Protocol (ACP / UDP, UCP) and WebMCP protocol
+- Agentic SEO Analysis (Cokpit AI and Agentic SEO Text optimization) and LLM SEO implementation
 - Product cockpit AI with forecasting metrics and customers recommendations
 - AI product recommendation
 
