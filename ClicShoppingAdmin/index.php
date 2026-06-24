@@ -58,7 +58,7 @@ if (CLICSHOPPING::hasSitePage()) {
 
 main_sub3: // Sites and Apps skip to here
 
-$bottomFile = $CLICSHOPPING_Template->getTemplateHeaderFooterAdmin('application_bottom.php');
+$bottomFile = $CLICSHOPPING_Template->getTemplateHeaderFooterAdmin('template_bottom.php');
 if (is_file($bottomFile)) {
   require_once($bottomFile);
 }

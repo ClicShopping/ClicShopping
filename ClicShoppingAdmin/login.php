@@ -642,4 +642,4 @@
   <div class="clearfix"></div>
 <?php
   require_once($CLICSHOPPING_Template->getTemplateHeaderFooterAdmin('footer.php'));
-  require_once($CLICSHOPPING_Template->getTemplateHeaderFooterAdmin('application_bottom.php'));
+  require_once($CLICSHOPPING_Template->getTemplateHeaderFooterAdmin('template_bottom.php'));
