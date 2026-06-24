@@ -1,10 +1,10 @@
 <?php
   /**
- * Copyright (c) 2008–2026 Loic Richard
- *
- * Licensed under AGPLv3 or commercial license.
- * See LICENSE file.
- */
+   * Copyright (c) 2008–2026 Loic Richard
+   *
+   * Licensed under AGPLv3 or commercial license.
+   * See LICENSE file.
+   */
 
   namespace ClicShopping\Sites\Shop;
 
@@ -16,33 +16,25 @@
   {
     protected $cache;
 
-    /**
-     * BotDetector constructor.
-     * Initializes cache dependency to optimize spider list loading
-     */
     public function __construct()
     {
       if (!Registry::exists('Cache')) {
-        // Provide an identifier to the constructor to avoid ArgumentCountError
         Registry::set('Cache', new Cache('BotDetector'));
       }
       $this->cache = Registry::get('Cache');
     }
 
     /**
-     * Check if the current visitor is a bot/crawler
-     * @return bool
+     * Vérifie si le visiteur est un robot (général)
      */
     public function isBot(): bool
     {
       $user_agent = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
 
-      // If no User Agent is provided, we assume it's a suspicious bot or malformed request
       if (empty($user_agent)) {
         return true;
       }
 
-      // Retrieve the spider list from cache or flat file
       $spiders = $this->getSpidersList();
 
       foreach ($spiders as $spider) {
@@ -55,19 +47,62 @@
     }
 
     /**
-     * Retrieve the spiders list with cache management
-     * @return array
+     * RECOMMANDÉ POUR LE SEO : Détecte UNIQUEMENT les vrais moteurs de recherche légitimes
+     */
+    public function isSearchEngine(): bool
+    {
+      $user_agent = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
+
+      if (empty($user_agent)) {
+        return false;
+      }
+
+      // Liste stricte des moteurs majeurs pour le SEO de votre boutique
+      $search_engines = ['googlebot', 'bingbot', 'yandex', 'baiduspider', 'duckduckgo'];
+
+      foreach ($search_engines as $engine) {
+        if (str_contains($user_agent, $engine)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    /**
+     * Détecte UNIQUEMENT les robots d'Intelligence Artificielle et LLM
+     */
+    public function isAiBot(): bool
+    {
+      $user_agent = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
+
+      if (empty($user_agent)) {
+        return false;
+      }
+
+      // Liste basée sur la fin de votre fichier spiders.txt
+      $ai_bots = ['gptbot', 'chatgpt-user', 'oai-searchbot', 'claudebot', 'claude-web', 'anthropic-ai', 'perplexitybot', 'google-extended'];
+
+      foreach ($ai_bots as $bot) {
+        if (str_contains($user_agent, $bot)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    /**
+     * Récupère la liste globale depuis le fichier ou le cache
      */
     private function getSpidersList(): array
     {
       $cache_key = 'bot_detector_spiders_list';
 
-      // Try to fetch data from cache first
       if ($this->cache->exists($cache_key)) {
         return $this->cache->get($cache_key);
       }
 
-      // Fallback: read the spiders.txt configuration file
       $spiders_file = CLICSHOPPING::BASE_DIR . 'Sites/' . CLICSHOPPING::getSite() . '/Assets/spiders.txt';
       $spiders_array = [];
 
@@ -76,16 +111,37 @@
 
         foreach ($content as $line) {
           $line = trim($line);
-          // Ignore empty lines and comments starting with '#'
           if (!empty($line) && !str_starts_with($line, '#')) {
             $spiders_array[] = strtolower($line);
           }
         }
 
-        // Save processed list to cache for future requests
         $this->cache->save($cache_key, $spiders_array);
       }
 
       return $spiders_array;
+    }
+
+    /**
+     * Détecte si le robot est un agent spécifiquement connu pour exécuter ou chercher du WebMCP
+     */
+    public function isWebMcpAgent(): bool
+    {
+      $user_agent = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
+
+      if (empty($user_agent)) {
+        return false;
+      }
+
+      // Signatures des agents de navigation IA de nouvelle génération
+      $webmcp_agents = ['oai-searchbot', 'chatgpt-user', 'google-extended', 'claudebot', 'perplexitybot'];
+
+      foreach ($webmcp_agents as $agent) {
+        if (str_contains($user_agent, $agent)) {
+          return true;
+        }
+      }
+
+      return false;
     }
   }

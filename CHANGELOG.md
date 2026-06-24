@@ -4,7 +4,8 @@ version4.31
 - fix / bug resolution
 - libraries updated
 - Stripe payment updated for latest version  20.2.1 - 2026-06-12
-
+- WebMCP protocol integrated
+- 
 ---------------
 version4.301
 - add EncryptedColumnPattern
