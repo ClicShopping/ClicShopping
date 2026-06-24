@@ -25,18 +25,24 @@ namespace ClicShopping\AI\Config;
  */
 class ChatCriticConfig
 {
+    /** @var string Global core constant identifier mapped to the active chat seam status toggle. */
     private const CONST_CHAT_SEAM_STATUS = 'CLICSHOPPING_APP_CHATGPT_AC_CHAT_SEAM_STATUS';
 
+    /** @var array{chat_seam_status: bool} Internal fallback default array states. */
     private const DEFAULTS = [
         'chat_seam_status' => false,
     ];
 
+    /** @var array<string, bool>|null Static runtime cache store housing the resolved configuration settings. */
     private static ?array $config = null;
+
+    /** @var bool Internal debug level flag mapping whether to emit logging messages to standard error logs. */
     private static bool $debug = false;
 
     /**
      * Whether the chat critic seam is engaged on the chat chokepoint.
      * Dark-launch default: false.
+     * * @return bool True if the chat chokepoint integration is active, false otherwise.
      */
     public static function isSeamEnabled(): bool
     {
@@ -44,6 +50,10 @@ class ChatCriticConfig
         return self::$config['chat_seam_status'] ?? false;
     }
 
+    /**
+     * Bootstraps configuration parameters and resolves environmental logger flags.
+     * * @return void
+     */
     private static function initialize(): void
     {
         if (self::$config !== null) {
@@ -61,6 +71,10 @@ class ChatCriticConfig
         }
     }
 
+    /**
+     * Evaluates global context constants to construct the current configuration map state.
+     * * @return array<string, bool> Map containing loaded runtime state attributes.
+     */
     private static function loadConfigFromConstants(): array
     {
         $config = self::DEFAULTS;
@@ -72,6 +86,11 @@ class ChatCriticConfig
         return $config;
     }
 
+    /**
+     * Converts varied configuration input datatypes cleanly into scalar boolean types.
+     * * @param mixed $value Configuration values parsing target.
+     * @return bool Normalized true or false state.
+     */
     private static function parseBool($value): bool
     {
         if (\is_bool($value)) {
@@ -88,6 +107,7 @@ class ChatCriticConfig
 
     /**
      * Reset cached config (test hook).
+     * * @return void
      */
     public static function reload(): void
     {

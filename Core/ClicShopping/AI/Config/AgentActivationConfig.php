@@ -9,12 +9,6 @@
  *
  * Provides flexible configuration for enabling/disabling individual agents.
  * Supports both actor and critic agents with domain-specific activation.
- *
- * Requirements: 19.5, 23.5, 24.5
- *
- * @package ClicShopping\AI\Config
- * @version 1.0.0
- * @since 2026-01-31
  */
 
 namespace ClicShopping\AI\Config;
@@ -136,9 +130,6 @@ class AgentActivationConfig
     
     /**
      * Check if an agent is enabled
-     *
-     * Requirements: 19.5
-     *
      * @param string $agentId Agent identifier
      * @return bool True if enabled, false otherwise
      */
@@ -239,9 +230,6 @@ class AgentActivationConfig
     
     /**
      * Enable an agent
-     *
-     * Requirements: 19.5
-     *
      * @param string $agentId Agent identifier
      * @return bool True if successful
      */
