@@ -20,12 +20,6 @@ use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
  * Collects comprehensive critic profiles including reputation history,
  * domain expertise, confidence patterns, and recent performance data.
  * Integrates with existing ReputationStore and CriticRegistry.
- * 
- * Requirements: 1.3, 2.1, 3.1, 4.1, 5.1, 6.1
- * 
- * @package ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine
- * @version 1.0.0
- * @since 2026-02-06
  */
 class CriticDataCollector
 {
@@ -50,9 +44,6 @@ class CriticDataCollector
      * 
      * Gathers reputation, domain expertise, confidence, and recent evaluations
      * for each critic. Handles missing data with sensible defaults.
-     * 
-     * Requirements: 1.3, 2.1, 3.1, 4.1, 5.1, 6.1
-     * 
      * @param array<CriticAgentInterface> $critics Array of critic agents
      * @return array<string, array> Map of critic_id => critic data
      */
@@ -91,9 +82,6 @@ class CriticDataCollector
      * 
      * Extracts domain and expertise level from EvaluationCriteria.
      * Uses CriticRegistry to get critic capabilities.
-     * 
-     * Requirements: 3.1
-     * 
      * @param string $criticId Critic identifier
      * @return array Critic profile data
      */
@@ -144,9 +132,6 @@ class CriticDataCollector
      * 
      * Retrieves historical reputation data for trend analysis.
      * Calls ReputationStore->getHistory() with configurable time window.
-     * 
-     * Requirements: 2.1, 6.1
-     * 
      * @param string $criticId Critic identifier
      * @param int $days Number of days of history (default: 90)
      * @return array Reputation history data
@@ -194,10 +179,7 @@ class CriticDataCollector
     
     /**
      * Get reputation data for a critic
-     * 
-     * Requirements: 2.1
-     * 
-     * @param string $criticId Critic identifier
+      * @param string $criticId Critic identifier
      * @return array Reputation data
      */
     private function getReputationData(string $criticId): array
@@ -243,9 +225,6 @@ class CriticDataCollector
     
     /**
      * Get domain expertise from critic's evaluation criteria
-     * 
-     * Requirements: 3.1
-     * 
      * @param CriticAgentInterface $critic Critic agent
      * @return array List of domain specializations
      */
@@ -268,9 +247,6 @@ class CriticDataCollector
     
     /**
      * Get expertise level from critic's evaluation criteria
-     * 
-     * Requirements: 3.1
-     * 
      * @param CriticAgentInterface $critic Critic agent
      * @return float Average expertise level (0.0-1.0)
      */
@@ -294,9 +270,6 @@ class CriticDataCollector
     
     /**
      * Get confidence data for a critic
-     * 
-     * Requirements: 4.1
-     * 
      * @param string $criticId Critic identifier
      * @return array Confidence data
      */
@@ -315,9 +288,6 @@ class CriticDataCollector
     
     /**
      * Get recent evaluations for a critic
-     * 
-     * Requirements: 5.1
-     * 
      * @param string $criticId Critic identifier
      * @return array Recent evaluation data
      */
@@ -350,9 +320,6 @@ class CriticDataCollector
     
     /**
      * Get last evaluation date for a critic
-     * 
-     * Requirements: 5.1
-     * 
      * @param string $criticId Critic identifier
      * @return string|null Last evaluation date or null
      */
@@ -375,9 +342,6 @@ class CriticDataCollector
     
     /**
      * Get total evaluations count for a critic
-     * 
-     * Requirements: 5.1
-     * 
      * @param string $criticId Critic identifier
      * @return int Total evaluations count
      */
@@ -417,10 +381,7 @@ class CriticDataCollector
     
     /**
      * Calculate reputation trend from history
-     * 
-     * Requirements: 6.1
-     * 
-     * @param array $historyData Reputation history data
+      * @param array $historyData Reputation history data
      * @return string Trend description (improving, stable, declining)
      */
     private function calculateReputationTrend(array $historyData): string
@@ -459,9 +420,6 @@ class CriticDataCollector
     
     /**
      * Calculate reputation stability from history
-     * 
-     * Requirements: 6.1
-     * 
      * @param array $historyData Reputation history data
      * @return float Stability score (0.0-1.0, higher is more stable)
      */

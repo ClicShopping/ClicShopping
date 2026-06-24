@@ -32,10 +32,6 @@ use ClicShopping\OM\Registry;
  * - Convert validator output to Evaluation/Feedback format
  * - Register in CriticRegistry
  * - NO business logic (pure delegation)
- * 
- * @package ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Critics
- * @version 1.0.0
- * @since 2026-05-03
  */
 class SqlQualityCriticWrapper implements CriticAgentInterface
 {

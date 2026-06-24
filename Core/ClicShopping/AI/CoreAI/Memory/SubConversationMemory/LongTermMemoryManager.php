@@ -13,7 +13,6 @@ use ClicShopping\OM\Registry;
 use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\DocumentSplitter\DocumentSplitter;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
-use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\EntityMatcher;
@@ -41,6 +40,8 @@ class LongTermMemoryManager
   private float $similarityThreshold;
   private int $maxChunkSize = 2000; // Max characters per chunk (reduced chunking to avoid perceived duplicates)
   private EntityMatcher $entityMatcher;
+  private MemoryDeduplicator $deduplicator;
+  private MemorySimilarityRetriever $retriever;
 
   /**
    * Constructor
@@ -62,6 +63,8 @@ class LongTermMemoryManager
     $this->debug = $debug;
     $this->logger = new SecurityLogger();
     $this->entityMatcher = new EntityMatcher($debug);
+    $this->deduplicator = new MemoryDeduplicator($debug);
+    $this->retriever = new MemorySimilarityRetriever($vectorStore, $debug);
 
     if ($this->debug) {
       $this->logger->logSecurityEvent(
@@ -96,29 +99,8 @@ class LongTermMemoryManager
         // Check 1: By interaction_id (if provided) - use direct column if available, else JSON
         $interactionId = $metadata['interaction_id'] ?? null;
         if ($interactionId !== null && !empty($interactionId)) {
-          // Check if interaction_id column exists
-          $hasColumn = DoctrineOrm::columnExists($tableName, 'interaction_id');
-          
-          if ($hasColumn) {
-            // Use direct column (fast)
-            $sql = "SELECT COUNT(*) as count 
-                    FROM `{$tableName}`
-                    WHERE interaction_id = :interaction_id
-                    LIMIT 1";
-            $existingCount = DoctrineOrm::selectValue($sql, [
-              'interaction_id' => $interactionId
-            ]);
-          } else {
-            // Fallback to JSON search
-            $sql = "SELECT COUNT(*) as count 
-                    FROM `{$tableName}`
-                    WHERE metadata LIKE :pattern
-                    LIMIT 1";
-            $existingCount = DoctrineOrm::selectValue($sql, [
-              'pattern' => '%' . addcslashes($interactionId, '%_') . '%'
-            ]);
-          }
-          
+          $existingCount = $this->deduplicator->interactionIdDuplicateCount($tableName, $interactionId);
+
           if ($existingCount > 0) {
             if ($this->debug) {
               $this->logger->logSecurityEvent(
@@ -129,38 +111,10 @@ class LongTermMemoryManager
             return true; // Return true since it's already stored
           }
         }
-        
+
         // Check 2: By exact content hash + user_id + language_id
-        $hasUserIdColumn = DoctrineOrm::columnExists($tableName, 'user_id');
-        
-        // Build user_id condition based on column availability
-        if ($hasUserIdColumn) {
-          $userIdCondition = "user_id = :user_id";
-          $params = [
-            'language_id' => $languageId,
-            'content_hash' => $contentHash,
-            'user_id' => $userId
-          ];
-        } else {
-          $userIdCondition = "(JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.user_id')) = :user_id OR sourcename = :user_id)";
-          $params = [
-            'language_id' => $languageId,
-            'content_hash' => $contentHash,
-            'user_id' => $userId
-          ];
-        }
-        
-        // Check if exact same content exists for this user/language (within last 7 days)
-        $sql = "SELECT COUNT(*) as count 
-                FROM `{$tableName}`
-                WHERE language_id = :language_id
-                AND MD5(content) = :content_hash
-                AND {$userIdCondition}
-                AND date_modified > DATE_SUB(NOW(), INTERVAL 7 DAY)
-                LIMIT 1";
-        
-        $existingCount = DoctrineOrm::selectValue($sql, $params);
-        
+        $existingCount = $this->deduplicator->contentHashDuplicateCount($tableName, $contentHash, $userId, $languageId);
+
         if ($existingCount > 0) {
           if ($this->debug) {
             $this->logger->logSecurityEvent(
@@ -286,133 +240,11 @@ class LongTermMemoryManager
         );
       }
       
-      // 🔧 FIX: Create filter for user_id and language_id if provided
-      $filter = null;
-      if ($userId !== null || $languageId !== null) {
-        $debug = $this->debug; // Capture debug flag for closure
-        $filter = function(array $metadata) use ($userId, $languageId, $debug) {
-          // Check user_id filter - handle both string and int types
-          if ($userId !== null) {
-            $docUserId = $metadata['user_id'] ?? null;
-            // Normalize both to string for comparison
-            $docUserIdStr = (string)$docUserId;
-            $userIdStr = (string)$userId;
-            
-            if ($docUserIdStr !== $userIdStr && $docUserId != $userId) {
-              if ($debug) {
-                error_log("[INFO] FILTER: user_id mismatch - doc: {$docUserIdStr} (type: " . gettype($docUserId) . "), filter: {$userIdStr} (type: " . gettype($userId) . ")");
-              }
-              return false;
-            }
-          }
-          
-          // Check language_id filter - handle both int and string types
-          if ($languageId !== null) {
-            $docLanguageId = $metadata['language_id'] ?? null;
-            // Normalize both to int for comparison
-            $docLanguageIdInt = (int)$docLanguageId;
-            $languageIdInt = (int)$languageId;
-            
-            if ($docLanguageIdInt !== $languageIdInt) {
-              if ($debug) {
-                error_log("[INFO] FILTER: language_id mismatch - doc: {$docLanguageIdInt}, filter: {$languageIdInt}");
-              }
-              return false;
-            }
-          }
-          
-          if ($debug) {
-            $userMatch = $userId === null ? 'N/A' : ($metadata['user_id'] ?? 'missing');
-            $langMatch = $languageId === null ? 'N/A' : ($metadata['language_id'] ?? 'missing');
-            error_log("[INFO] FILTER: Document passed filter (user_id: {$userMatch}, language_id: {$langMatch})");
-          }
-          
-          return true;
-        };
-      }
+      // Build the per-user / per-language metadata filter (null = no filter).
+      $filter = $this->retriever->buildMetadataFilter($userId, $languageId);
 
-      // 🔧 FIX: Start with a very low threshold to get maximum results, then filter
-      // Use much lower initial threshold to ensure we get results
-      $initialThreshold = 0.1; // Very permissive
-      $results = $this->vectorStore->similaritySearch($query, $limit * 10, $initialThreshold, $filter);
-
-      // Convert results to array if it's an iterable
-      $resultsArray = is_array($results) ? $results : iterator_to_array($results);
-      
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "Initial search with threshold {$initialThreshold}: found " . count($resultsArray) . " results",
-          'info'
-        );
-      }
-
-      // If no results with filter, try without filter to see if filter is blocking everything
-      if (empty($resultsArray) && $filter !== null) {
-        if ($this->debug) {
-          $this->logger->logSecurityEvent(
-            "No per-user history matched the filter yet; checking unfiltered availability",
-            'info'
-          );
-        }
-        
-        // Try without filter to see if there are ANY results
-        $resultsNoFilter = $this->vectorStore->similaritySearch($query, $limit * 10, $initialThreshold, null);
-        $resultsNoFilterArray = is_array($resultsNoFilter) ? $resultsNoFilter : iterator_to_array($resultsNoFilter);
-        
-        if (!empty($resultsNoFilterArray)) {
-          if ($this->debug) {
-            $this->logger->logSecurityEvent(
-              "No matching per-user history yet for this user - using unfiltered fallback (" . count($resultsNoFilterArray) . " candidates available)",
-              'info'
-            );
-          }
-          
-          // Apply manual filtering on unfiltered results (less strict)
-          $manuallyFiltered = [];
-          foreach ($resultsNoFilterArray as $doc) {
-            $docMeta = isset($doc->metadata) ? $doc->metadata : [];
-            $docUserId = (string)($docMeta['user_id'] ?? $docMeta['sourceName'] ?? '');
-            $docLangId = (int)($docMeta['language_id'] ?? 0);
-            
-            $userIdMatch = $userId === null || $docUserId === (string)$userId || empty($docUserId);
-            $langIdMatch = $languageId === null || $docLangId === (int)$languageId;
-            
-            if ($userIdMatch && $langIdMatch) {
-              $manuallyFiltered[] = $doc;
-              if (count($manuallyFiltered) >= $limit) break;
-            }
-          }
-          
-          // Use manually filtered if we have results, otherwise use all unfiltered
-          $resultsArray = !empty($manuallyFiltered) ? $manuallyFiltered : array_slice($resultsNoFilterArray, 0, $limit);
-        } else {
-          // No results even without filter - try with even lower threshold
-          $ultraLowThreshold = 0.05;
-          $resultsUltra = $this->vectorStore->similaritySearch($query, $limit * 20, $ultraLowThreshold, null);
-          $resultsUltraArray = is_array($resultsUltra) ? $resultsUltra : iterator_to_array($resultsUltra);
-          $resultsArray = array_slice($resultsUltraArray, 0, $limit);
-          
-          if ($this->debug) {
-            $this->logger->logSecurityEvent(
-              "Tried ultra-low threshold {$ultraLowThreshold}: found " . count($resultsArray) . " results",
-              'info'
-            );
-          }
-        }
-      }
-      
-      // Filter by similarity score if we have many results
-      if (count($resultsArray) > $limit) {
-        // Sort by score (higher is better) and keep best matches
-        usort($resultsArray, function($a, $b) {
-          $scoreA = (isset($a->metadata) && isset($a->metadata['score'])) ? $a->metadata['score'] : 0;
-          $scoreB = (isset($b->metadata) && isset($b->metadata['score'])) ? $b->metadata['score'] : 0;
-          return $scoreB <=> $scoreA;
-        });
-      }
-
-      // Limit to requested number of results
-      $resultsArray = array_slice($resultsArray, 0, $limit);
+      // Fetch + rank candidate documents (initial search, fallback cascade, score-sort, limit).
+      $resultsArray = $this->retriever->fetchRanked($query, $limit, $filter, $userId, $languageId);
 
       // Apply entity-specific filtering to prevent context pollution
       // This ensures "article 4" doesn't return "article 3" content
@@ -500,29 +332,8 @@ class LongTermMemoryManager
         // Check by interaction_id (if provided)
         $interactionId = $metadata['interaction_id'] ?? null;
         if ($interactionId !== null && !empty($interactionId)) {
-          // Check if interaction_id column exists
-          $hasColumn = DoctrineOrm::columnExists($tableName, 'interaction_id');
-          
-          if ($hasColumn) {
-            // Use direct column (fast)
-            $sql = "SELECT COUNT(*) as count 
-                    FROM `{$tableName}`
-                    WHERE interaction_id = :interaction_id
-                    LIMIT 1";
-            $existingCount = DoctrineOrm::selectValue($sql, [
-              'interaction_id' => $interactionId
-            ]);
-          } else {
-            // Fallback to JSON search
-            $sql = "SELECT COUNT(*) as count 
-                    FROM `{$tableName}`
-                    WHERE metadata LIKE :pattern
-                    LIMIT 1";
-            $existingCount = DoctrineOrm::selectValue($sql, [
-              'pattern' => '%' . addcslashes($interactionId, '%_') . '%'
-            ]);
-          }
-          
+          $existingCount = $this->deduplicator->interactionIdDuplicateCount($tableName, $interactionId);
+
           if ($existingCount > 0) {
             if ($this->debug) {
               $this->logger->logSecurityEvent(
@@ -656,82 +467,6 @@ class LongTermMemoryManager
    */
   public function cleanDuplicates(): array
   {
-    try {
-      $tableName = $this->vectorStore->getTableName();
-      
-      $stats = [
-        'by_interaction_id' => 0,
-        'by_content_hash' => 0,
-        'total_cleaned' => 0
-      ];
-      
-      // Check if columns exist
-      $hasInteractionIdColumn = DoctrineOrm::columnExists($tableName, 'interaction_id');
-      $hasUserIdColumn = DoctrineOrm::columnExists($tableName, 'user_id');
-      
-      // Clean duplicates by interaction_id (keep the first one)
-      if ($hasInteractionIdColumn) {
-        $sql = "DELETE t1 FROM `{$tableName}` t1
-                INNER JOIN `{$tableName}` t2
-                WHERE t1.id > t2.id
-                AND t1.interaction_id = t2.interaction_id
-                AND t1.interaction_id IS NOT NULL
-                AND t1.interaction_id != ''";
-      } else {
-        $sql = "DELETE t1 FROM `{$tableName}` t1
-                INNER JOIN `{$tableName}` t2
-                WHERE t1.id > t2.id
-                AND JSON_UNQUOTE(JSON_EXTRACT(t1.metadata, '$.interaction_id')) = JSON_UNQUOTE(JSON_EXTRACT(t2.metadata, '$.interaction_id'))
-                AND JSON_UNQUOTE(JSON_EXTRACT(t1.metadata, '$.interaction_id')) IS NOT NULL
-                AND JSON_UNQUOTE(JSON_EXTRACT(t1.metadata, '$.interaction_id')) != ''";
-      }
-      $stats['by_interaction_id'] = DoctrineOrm::execute($sql);
-      
-      // Clean duplicates by content hash (keep the oldest one)
-      if ($hasUserIdColumn) {
-        $sql = "DELETE t1 FROM `{$tableName}` t1
-                INNER JOIN `{$tableName}` t2
-                WHERE t1.id > t2.id
-                AND t1.language_id = t2.language_id
-                AND t1.user_id = t2.user_id
-                AND JSON_UNQUOTE(JSON_EXTRACT(t1.metadata, '$.content_hash')) = JSON_UNQUOTE(JSON_EXTRACT(t2.metadata, '$.content_hash'))
-                AND JSON_UNQUOTE(JSON_EXTRACT(t1.metadata, '$.content_hash')) IS NOT NULL";
-      } else {
-        $sql = "DELETE t1 FROM `{$tableName}` t1
-                INNER JOIN `{$tableName}` t2
-                WHERE t1.id > t2.id
-                AND t1.language_id = t2.language_id
-                AND (
-                  JSON_UNQUOTE(JSON_EXTRACT(t1.metadata, '$.user_id')) = JSON_UNQUOTE(JSON_EXTRACT(t2.metadata, '$.user_id'))
-                  OR t1.sourcename = t2.sourcename
-                )
-                AND JSON_UNQUOTE(JSON_EXTRACT(t1.metadata, '$.content_hash')) = JSON_UNQUOTE(JSON_EXTRACT(t2.metadata, '$.content_hash'))
-                AND JSON_UNQUOTE(JSON_EXTRACT(t1.metadata, '$.content_hash')) IS NOT NULL";
-      }
-      $stats['by_content_hash'] = DoctrineOrm::execute($sql);
-      
-      $stats['total_cleaned'] = $stats['by_interaction_id'] + $stats['by_content_hash'];
-      
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "Cleaned duplicates: " . json_encode($stats),
-          'info'
-        );
-      }
-      
-      return $stats;
-      
-    } catch (\Exception $e) {
-      $this->logger->logSecurityEvent(
-        "Error cleaning duplicates: " . $e->getMessage(),
-        'error'
-      );
-      return [
-        'by_interaction_id' => 0,
-        'by_content_hash' => 0,
-        'total_cleaned' => 0,
-        'error' => $e->getMessage()
-      ];
-    }
+    return $this->deduplicator->cleanDuplicates($this->vectorStore->getTableName());
   }
 }
