@@ -1,0 +1,2 @@
+module_header_tags_llms_txt_title = Llms TXT - Génération IA (claude, perplexity...)
+module_header_tags_llms_txt_description = Génère automatiquement les fichiers llms.txt et llms-full.txt pour les systèmes d’intelligence artificielle.

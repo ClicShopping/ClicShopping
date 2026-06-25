@@ -239,14 +239,14 @@ class CategoryTree
             if (in_array($category_id, $this->cpath_array)) {
               $result .= $this->buildBranch($category_id, $level + 1);
             }
-} else {
+          } else {
             $result .= $this->buildBranch($category_id, $level + 1);
           }
-}
+        }
 
         $result .= $this->child_end_string;
       }
-}
+    }
 
     $result .= ((($level === 0) && ($this->parent_group_apply_to_root === true)) || ($level > 0)) ? $this->parent_group_end_string : null;
 
@@ -286,12 +286,12 @@ class CategoryTree
             if (in_array($category_id, $this->cpath_array, true)) {
               $result = $this->buildBranchArray($category_id, $level + 1, $result);
             }
-} else {
+          } else {
             $result = $this->buildBranchArray($category_id, $level + 1, $result);
           }
-}
+        }
       }
-}
+    }
 
     return $result;
   }
@@ -398,7 +398,7 @@ class CategoryTree
         if ($id == $category_id) {
           return true;
         }
-}
+      }
     }
 
     return false;
@@ -421,7 +421,7 @@ class CategoryTree
           $array[] = $id;
           $this->getChildren($id, $array);
         }
-}
+      }
     }
 
     return $array;
@@ -529,13 +529,13 @@ class CategoryTree
 
                   break 2;
                 }
-}
+              }
             }
-}
+          }
         }
-}
+      }
     }
-}
+  }
 
   /**
    * Retrieves the number of products associated with a given category ID.
@@ -553,7 +553,7 @@ class CategoryTree
         if ($id == $category_id) {
           return $info['count'];
         }
-}
+      }
     }
 
     return false;

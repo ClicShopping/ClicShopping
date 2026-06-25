@@ -931,11 +931,9 @@ class Template
     $CLICSHOPPING_Language = Registry::get('Language');
     $langDir = $CLICSHOPPING_Language->get('directory');
 
-    $themaPath = $this->getPathRoot() . $this->getPathDirectoryTemplateThema() .
-      $this->directoryTemplateLanguages . $langDir . DIRECTORY_SEPARATOR . $name . '.php';
+    $themaPath = $this->getPathRoot() . $this->getPathDirectoryTemplateThema() .  $this->directoryTemplateLanguages . $langDir . DIRECTORY_SEPARATOR . $name . '.php';
 
-    $sitePath = $this->getPathRoot() . $this->getSiteTemplateLanguageDirectory() .
-      $langDir . DIRECTORY_SEPARATOR . $name . '.php';
+    $sitePath = $this->getPathRoot() . $this->getSiteTemplateLanguageDirectory() . $langDir . DIRECTORY_SEPARATOR . $name . '.php';
 
     // First check thema path
     if (is_file($themaPath)) {
@@ -943,8 +941,7 @@ class Template
       if (is_file($sitePath)) {
         return $this->getSiteTemplateLanguageDirectory() . $langDir . DIRECTORY_SEPARATOR . $name . '.php';
       }
-      return $this->getPathDirectoryTemplateThema() . $this->directoryTemplateLanguages .
-        $langDir . DIRECTORY_SEPARATOR . $name . '.php';
+      return $this->getPathDirectoryTemplateThema() . $this->directoryTemplateLanguages . $langDir . DIRECTORY_SEPARATOR . $name . '.php';
     }
 
     // Fallback to site template path
@@ -960,7 +957,8 @@ class Template
    */
   public function getTemplateDefaultJavaScript(string $name): string
   {
-    $javascript = CLICSHOPPING::getSite('Shop') . DIRECTORY_SEPARATOR . $this->directoryTemplateSources . $this->directoryJavascript . $name;
+    $path = CLICSHOPPING::getConfig('http_path', 'Shop');
+    $javascript = $path . $this->directoryTemplateSources . $this->directoryJavascript . $name;
 
     return $javascript;
   }
