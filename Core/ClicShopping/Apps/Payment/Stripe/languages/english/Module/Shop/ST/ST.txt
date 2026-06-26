@@ -2,7 +2,7 @@ module_stripe_title = Payment by Stripe
 module_stripe_short_title = Payment by Stripe
 module_stripe_public_title = Payment by Stripe
 
-text_stripe_title = Stripe Payment : Fill the fields
+text_stripe_title = Stripe Payment : Fill the fields (Transaction secured and certified by Stripe)
 text_stripe_credit_card_owner = Owner name
 text_stripe_credit_card_type = Card type
 text_stripe_alert_mode_test = Mode test selected

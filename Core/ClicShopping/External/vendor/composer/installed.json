@@ -3703,17 +3703,17 @@
         },
         {
             "name": "stripe/stripe-php",
-            "version": "v20.2.1",
-            "version_normalized": "20.2.1.0",
+            "version": "v20.3.0",
+            "version_normalized": "20.3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stripe/stripe-php.git",
-                "reference": "c628cfa0b3de4ef5110b2c2bfbf881a33a52fdd5"
+                "reference": "266f0b05890172184cca66a0688abaf1a96b08d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/c628cfa0b3de4ef5110b2c2bfbf881a33a52fdd5",
-                "reference": "c628cfa0b3de4ef5110b2c2bfbf881a33a52fdd5",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/266f0b05890172184cca66a0688abaf1a96b08d8",
+                "reference": "266f0b05890172184cca66a0688abaf1a96b08d8",
                 "shasum": ""
             },
             "require": {
@@ -3727,7 +3727,7 @@
                 "phpstan/phpstan": "^1.2",
                 "phpunit/phpunit": "^8.0 || ^9.0"
             },
-            "time": "2026-06-12T22:41:56+00:00",
+            "time": "2026-06-24T22:45:28+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -3762,7 +3762,7 @@
             ],
             "support": {
                 "issues": "https://github.com/stripe/stripe-php/issues",
-                "source": "https://github.com/stripe/stripe-php/tree/v20.2.1"
+                "source": "https://github.com/stripe/stripe-php/tree/v20.3.0"
             },
             "install-path": "../stripe/stripe-php"
         },

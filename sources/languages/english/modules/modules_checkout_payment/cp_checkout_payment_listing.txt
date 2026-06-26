@@ -2,7 +2,7 @@
  module_checkout_payment_listing_title = Do you want to display a payment method ?
  module_checkout_payment_listing_description = Display a payment method
 
- module_checkout_payment_listing_table_heading_payment_method = Payment Method
+ module_checkout_payment_listing_table_heading_payment_method = Payment Method (SSL)
  module_checkout_payment_listing_title_please_select = Please Select
  module_checkout_payment_listing_text_enter_payment_information = This is currently the only payment method available to use on this order
- module_checkout_payment_listing_text_select_payment_method = Please, select a payment method
+ module_checkout_payment_listing_text_select_payment_method = Please, select a secure payment method (SSL)

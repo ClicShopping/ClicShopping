@@ -2,7 +2,7 @@ module_stripe_title = Paiement par Stripe
 module_stripe_short_title = Paiement par Stripe
 module_stripe_public_title = Paiement par Stripe
 
-text_stripe_title = Stripe paiement : Veuillez remplir les champs
+text_stripe_title = Stripe paiement : Veuillez remplir les champs (la transaction sécurisée et certifiée est assurée par Stripe)
 text_stripe_credit_card_owner = Nom du propriétaire
 text_stripe_credit_card_type = Type de carte
 text_stripe_alert_mode_test = Mode test sélectionné
