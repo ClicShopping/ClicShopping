@@ -591,22 +591,8 @@ class ProductsFunctionTemplate
   {
     $CLICSHOPPING_Reviews = Registry::get('Reviews');
 
-    if ($this->productsCommon->getProductsStock($products_id) > 0) {
-      $stock = 'InStock';
-    } else {
-      $stock = 'OutofStock';
-    }
-
-    if (\defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'true') {
-      $stock = 'InStock';
-    }
-
-    $products_packaging = $this->productsCommon->getProductsPackaging($products_id);
-
-    if ($products_packaging == 0) $products_packaging = 'https://schema.org/NewCondition'; // default newCondition
-    if ($products_packaging == 1) $products_packaging = 'https://schema.org/NewCondition';
-    if ($products_packaging == 2) $products_packaging = 'https://schema.org/RefurbishedCondition';
-    if ($products_packaging == 3) $products_packaging = 'https://schema.org/UsedCondition';
+    $stock = $this->resolveAvailability($products_id);
+    $products_packaging = $this->resolveItemCondition($this->productsCommon->getProductsPackaging($products_id));
 
     $price = $this->productsCommon->getDisplayPriceGroupWithoutCurrencies($products_id);
 
@@ -679,5 +665,49 @@ class ProductsFunctionTemplate
       . '</script>';
 
     return $output;
+  }
+
+  /**
+   * Resolve the schema.org availability token for the JSON-LD offer: in stock
+   * when the product has stock, out of stock otherwise, but always in stock
+   * when checkout is allowed on empty stock. Extracted verbatim from
+   * getProductJsonLd to keep that method under the complexity gate.
+   *
+   * @param int $products_id The product id.
+   * @return string 'InStock' or 'OutofStock'.
+   */
+  private function resolveAvailability(int $products_id): string
+  {
+    if ($this->productsCommon->getProductsStock($products_id) > 0) {
+      $stock = 'InStock';
+    } else {
+      $stock = 'OutofStock';
+    }
+
+    if (\defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'true') {
+      $stock = 'InStock';
+    }
+
+    return $stock;
+  }
+
+  /**
+   * Resolve the schema.org item-condition fragment from the raw packaging code.
+   * Extracted verbatim from getProductJsonLd, including its original quirk: the
+   * four checks are independent reassignments (not a match), so only codes 0-3
+   * map to a condition and any other value is returned unchanged — the caller
+   * then keeps it only when not empty. Kept as-is to preserve behaviour exactly.
+   *
+   * @param mixed $products_packaging The raw products_packaging code.
+   * @return mixed The schema.org condition fragment, or the original value when unmapped.
+   */
+  private function resolveItemCondition(mixed $products_packaging): mixed
+  {
+    if ($products_packaging == 0) $products_packaging = 'https://schema.org/NewCondition'; // default newCondition
+    if ($products_packaging == 1) $products_packaging = 'https://schema.org/NewCondition';
+    if ($products_packaging == 2) $products_packaging = 'https://schema.org/RefurbishedCondition';
+    if ($products_packaging == 3) $products_packaging = 'https://schema.org/UsedCondition';
+
+    return $products_packaging;
   }
 }

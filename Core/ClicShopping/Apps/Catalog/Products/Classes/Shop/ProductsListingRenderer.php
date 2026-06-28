@@ -355,6 +355,178 @@ final class ProductsListingRenderer
     );
     $avg_reviews = '<span class="ModulesReviews">' . HTML::stars($reviews->getAverageProductReviews($products_id)) . '</span>';
 
+    [$submit_button, $form, $endform, $min_quantity] = $this->renderCartForm($products_id, $stock_quantity, $show_qty_input, $products_name_url);
+
+    $products_quantity_unit = $context->shows('quantityUnit') ? $productsFunctionTemplate->getProductQuantityUnitType($products_id) : '';
+
+    [
+      $submit_button,
+      $form,
+      $endform,
+      $min_quantity,
+      $input_quantity,
+      $min_order_quantity_products_display,
+    ] = $this->applySubmitButtonOverrides($products_id, $products_name_url, $submit_button, $form, $endform, $min_quantity, $input_quantity, $min_order_quantity_products_display);
+
+    $button_small_view_details = $productsFunctionTemplate->getButtonViewDetails($details_legacy_flag, $products_id);
+
+    $products_image = $productsFunctionTemplate->getImage($image_size, $products_id);
+
+    //bug
+    $products_image .= $productsFunctionTemplate->getTicker(
+      $ticker_flag,
+      $products_id,
+      $context->tickerClasses['special'] ?? '',
+      $context->tickerClasses['favorite'] ?? '',
+      $context->tickerClasses['featured'] ?? '',
+      $context->tickerClasses['new'] ?? ''
+    );
+
+    $ticker = $productsFunctionTemplate->getTickerPourcentage(
+      $percentage_ticker_flag,
+      $products_id,
+      $context->tickerPercentageClass
+    );
+
+    [
+      'products_model' => $products_model,
+      'products_manufacturers' => $products_manufacturers,
+      'product_price_kilo' => $product_price_kilo,
+      'products_date_available' => $products_date_available,
+      'products_only_shop' => $products_only_shop,
+      'products_only_web' => $products_only_web,
+      'products_packaging' => $products_packaging,
+      'products_shipping_delay' => $products_shipping_delay,
+      'products_tag' => $products_tag,
+      'products_volume' => $products_volume,
+      'products_weight' => $products_weight,
+    ] = $this->collectDisplayFields($products_id);
+
+    // Manufacturer name link (products-listing templates display it in place of
+    // the product name; getManufacturerName already embeds the product name link).
+    // Always assigned so any template referencing it stays warning-free.
+    $manufacturer_name = $productsFunctionTemplate->getManufacturerName($products_id);
+    $manufacturer_image = $productsFunctionTemplate->getManufacturerImage($products_id, $products_image);
+
+    $jsonLtd = $productsFunctionTemplate->getProductJsonLd($products_id);
+
+    if (!is_file($filename)) {
+      echo CLICSHOPPING::getDef('template_does_not_exist') . '<br /> ' . $filename;
+      exit;
+    }
+
+    ob_start();
+    require($filename);
+
+    return (string)ob_get_clean();
+  }
+
+  /**
+   * Applies the free-product and sold-out overrides on the submit-button state
+   * (each forces the button/form and resets the quantity helpers). Extracted
+   * verbatim from renderItem; returns the updated state for re-binding.
+   *
+   * @return array{0:string,1:string,2:string,3:int|null,4:string,5:string}
+   */
+  private function applySubmitButtonOverrides(int $products_id, string $products_name_url, string $submit_button, string $form, string $endform, ?int $min_quantity, string $input_quantity, string $min_order_quantity_products_display): array
+  {
+    $productsCommon = $this->productsCommon;
+
+    // Free button must run before sold-out: a free product is never sold-out logic-wise.
+    if ($productsCommon->getProductsOrdersView($products_id) != 1
+        && \defined('NOT_DISPLAY_PRICE_ZERO') && NOT_DISPLAY_PRICE_ZERO == 'false') {
+      $submit_button = HTML::button(CLICSHOPPING::getDef('text_products_free'), '', $products_name_url, 'danger');
+      $min_quantity = 0;
+      $form = '';
+      $endform = '';
+      $input_quantity = '';
+      $min_order_quantity_products_display = '';
+    }
+
+    $soldOutMessage = $productsCommon->getProductsSoldOut($products_id);
+
+    if (!empty($soldOutMessage)) {
+      $submit_button = $soldOutMessage;
+      $form = '';
+      $endform = '';
+      $min_quantity = 0;
+      $input_quantity = '';
+      $min_order_quantity_products_display = '';
+    }
+
+    return [$submit_button, $form, $endform, $min_quantity, $input_quantity, $min_order_quantity_products_display];
+  }
+
+  /**
+   * Collects the optional display fields for a listing item — each is always
+   * assigned (empty when its display toggle is off) so the template scope stays
+   * intact. Extracted verbatim from renderItem to drain the per-field
+   * $context->shows() ternaries from its NPath.
+   *
+   * @return array<string,string> Keyed by template variable name
+   */
+  private function collectDisplayFields(int $products_id): array
+  {
+    $context = $this->context;
+    $productsFunctionTemplate = $this->productsFunctionTemplate;
+
+    // [template var => [Context::shows() flag, ProductsFunctionTemplate getter]].
+    // Driven by a map so the per-field "show ? lookup : ''" stops multiplying the
+    // method's NPath (one loop instead of N independent ternaries).
+    $simpleFields = [
+      'products_model' => ['model', 'getProductsModel'],
+      'products_manufacturers' => ['manufacturer', 'getProductsManufacturer'],
+      'product_price_kilo' => ['priceByWeight', 'getProductsPriceByWeight'],
+      'products_date_available' => ['dateAvailable', 'getProductsDateAvailable'],
+      'products_only_shop' => ['onlyShop', 'getProductsOnlyTheShop'],
+      'products_only_web' => ['onlyWeb', 'getProductsOnlyOnTheWebSite'],
+      'products_packaging' => ['packaging', 'getProductsPackaging'],
+      'products_shipping_delay' => ['shippingDelay', 'getProductsShippingDelay'],
+      'products_volume' => ['volume', 'getProductsVolume'],
+      'products_weight' => ['weight', 'getProductsWeight'],
+    ];
+
+    $fields = [];
+
+    foreach ($simpleFields as $var => [$flag, $method]) {
+      $fields[$var] = $context->shows($flag) ? $productsFunctionTemplate->$method($products_id) : '';
+    }
+
+    // Tags are multi-value (linked spans), so they keep a dedicated build.
+    $fields['products_tag'] = '';
+
+    if ($context->shows('tags')) {
+      $tag = $productsFunctionTemplate->getProductsHeadTag($products_id);
+
+      if (\is_array($tag)) {
+        foreach ($tag as $value) {
+          $encoded = mb_convert_encoding($value, 'UTF-8', mb_detect_encoding($value, 'auto'));
+          $fields['products_tag'] .= '#<span class="productTag">'
+            . HTML::link(
+              CLICSHOPPING::link(null, 'Search&keywords=' . HTML::outputProtected($encoded . '&search_in_description=1&categories_id=&inc_subcat=1'), 'rel="nofollow"'),
+              $value
+            )
+            . '</span> ';
+        }
+      }
+    }
+
+    return $fields;
+  }
+
+  /**
+   * Resolves the add-to-cart submit button / form state for a listing item.
+   * Extracted verbatim from renderItem (its most branchy block) to drain the
+   * method's NPath.
+   *
+   * @return array{0:string,1:string,2:string,3:int|null} [submit_button, form, endform, min_quantity]
+   */
+  private function renderCartForm(int $products_id, int $stock_quantity, bool $show_qty_input, string $products_name_url): array
+  {
+    $context = $this->context;
+    $productsCommon = $this->productsCommon;
+    $productsAttributes = $this->productsAttributes;
+
     // Default state: no cart submit, no form wrapper.
     $submit_button = '';
     $form = '';
@@ -397,99 +569,6 @@ final class ProductsListingRenderer
       }
     }
 
-    $products_quantity_unit = $context->shows('quantityUnit') ? $productsFunctionTemplate->getProductQuantityUnitType($products_id) : '';
-
-    // Free button must run before sold-out: a free product is never sold-out logic-wise.
-    if ($productsCommon->getProductsOrdersView($products_id) != 1
-        && \defined('NOT_DISPLAY_PRICE_ZERO') && NOT_DISPLAY_PRICE_ZERO == 'false') {
-      $submit_button = HTML::button(CLICSHOPPING::getDef('text_products_free'), '', $products_name_url, 'danger');
-      $min_quantity = 0;
-      $form = '';
-      $endform = '';
-      $input_quantity = '';
-      $min_order_quantity_products_display = '';
-    }
-
-    $soldOutMessage = $productsCommon->getProductsSoldOut($products_id);
-
-    if (!empty($soldOutMessage)) {
-      $submit_button = $soldOutMessage;
-      $form = '';
-      $endform = '';
-      $min_quantity = 0;
-      $input_quantity = '';
-      $min_order_quantity_products_display = '';
-    }
-
-    $button_small_view_details = $productsFunctionTemplate->getButtonViewDetails($details_legacy_flag, $products_id);
-
-    $products_image = $productsFunctionTemplate->getImage($image_size, $products_id);
-
-    //bug
-    $products_image .= $productsFunctionTemplate->getTicker(
-      $ticker_flag,
-      $products_id,
-      $context->tickerClasses['special'] ?? '',
-      $context->tickerClasses['favorite'] ?? '',
-      $context->tickerClasses['featured'] ?? '',
-      $context->tickerClasses['new'] ?? ''
-    );
-
-    $ticker = $productsFunctionTemplate->getTickerPourcentage(
-      $percentage_ticker_flag,
-      $products_id,
-      $context->tickerPercentageClass
-    );
-
-    // Optional display fields — every legacy template references them, so each
-    // is always assigned (empty when its display toggle is off) to keep the
-    // template scope intact while skipping the lookup when not shown.
-    $products_model = $context->shows('model') ? $productsFunctionTemplate->getProductsModel($products_id) : '';
-    $products_manufacturers = $context->shows('manufacturer') ? $productsFunctionTemplate->getProductsManufacturer($products_id) : '';
-    $product_price_kilo = $context->shows('priceByWeight') ? $productsFunctionTemplate->getProductsPriceByWeight($products_id) : '';
-    $products_date_available = $context->shows('dateAvailable') ? $productsFunctionTemplate->getProductsDateAvailable($products_id) : '';
-    $products_only_shop = $context->shows('onlyShop') ? $productsFunctionTemplate->getProductsOnlyTheShop($products_id) : '';
-    $products_only_web = $context->shows('onlyWeb') ? $productsFunctionTemplate->getProductsOnlyOnTheWebSite($products_id) : '';
-    $products_packaging = $context->shows('packaging') ? $productsFunctionTemplate->getProductsPackaging($products_id) : '';
-    $products_shipping_delay = $context->shows('shippingDelay') ? $productsFunctionTemplate->getProductsShippingDelay($products_id) : '';
-
-    $products_tag = '';
-
-    if ($context->shows('tags')) {
-      $tag = $productsFunctionTemplate->getProductsHeadTag($products_id);
-
-      if (\is_array($tag)) {
-        foreach ($tag as $value) {
-          $encoded = mb_convert_encoding($value, 'UTF-8', mb_detect_encoding($value, 'auto'));
-          $products_tag .= '#<span class="productTag">'
-            . HTML::link(
-              CLICSHOPPING::link(null, 'Search&keywords=' . HTML::outputProtected($encoded . '&search_in_description=1&categories_id=&inc_subcat=1'), 'rel="nofollow"'),
-              $value
-            )
-            . '</span> ';
-        }
-      }
-    }
-
-    $products_volume = $context->shows('volume') ? $productsFunctionTemplate->getProductsVolume($products_id) : '';
-    $products_weight = $context->shows('weight') ? $productsFunctionTemplate->getProductsWeight($products_id) : '';
-
-    // Manufacturer name link (products-listing templates display it in place of
-    // the product name; getManufacturerName already embeds the product name link).
-    // Always assigned so any template referencing it stays warning-free.
-    $manufacturer_name = $productsFunctionTemplate->getManufacturerName($products_id);
-    $manufacturer_image = $productsFunctionTemplate->getManufacturerImage($products_id, $products_image);
-
-    $jsonLtd = $productsFunctionTemplate->getProductJsonLd($products_id);
-
-    if (!is_file($filename)) {
-      echo CLICSHOPPING::getDef('template_does_not_exist') . '<br /> ' . $filename;
-      exit;
-    }
-
-    ob_start();
-    require($filename);
-
-    return (string)ob_get_clean();
+    return [$submit_button, $form, $endform, $min_quantity];
   }
 }

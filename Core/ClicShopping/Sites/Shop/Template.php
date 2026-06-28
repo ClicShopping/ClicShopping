@@ -957,8 +957,7 @@ class Template
    */
   public function getTemplateDefaultJavaScript(string $name): string
   {
-    $path = CLICSHOPPING::getConfig('http_path', 'Shop');
-    $javascript = $path . $this->directoryTemplateSources . $this->directoryJavascript . $name;
+    $javascript = $this->directoryTemplateSources . $this->directoryJavascript . $name;
 
     return $javascript;
   }
