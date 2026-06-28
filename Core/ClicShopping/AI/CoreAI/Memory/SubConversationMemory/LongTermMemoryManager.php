@@ -11,7 +11,6 @@ namespace ClicShopping\AI\CoreAI\Memory\SubConversationMemory;
 
 use ClicShopping\OM\Registry;
 use LLPhant\Embeddings\Document;
-use LLPhant\Embeddings\DocumentSplitter\DocumentSplitter;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
@@ -42,6 +41,7 @@ class LongTermMemoryManager
   private EntityMatcher $entityMatcher;
   private MemoryDeduplicator $deduplicator;
   private MemorySimilarityRetriever $retriever;
+  private MemoryDocumentChunker $chunker;
 
   /**
    * Constructor
@@ -65,6 +65,7 @@ class LongTermMemoryManager
     $this->entityMatcher = new EntityMatcher($debug);
     $this->deduplicator = new MemoryDeduplicator($debug);
     $this->retriever = new MemorySimilarityRetriever($vectorStore, $debug);
+    $this->chunker = new MemoryDocumentChunker($this->maxChunkSize);
 
     if ($this->debug) {
       $this->logger->logSecurityEvent(
@@ -357,44 +358,8 @@ class LongTermMemoryManager
       // Add content_hash to metadata for future duplicate detection
       $metadata['content_hash'] = $contentHash;
 
-      // Create base document
-      $baseDocument = new Document();
-      $baseDocument->content = $content;
-      $baseDocument->sourceType = 'conversation';
-      $baseDocument->sourceName = $metadata['user_id'] ?? 'system';
-
-      // Store metadata in the metadata property (not as dynamic properties)
-      // This avoids PHP 8.x deprecated warnings
-      // Check property existence before assignment
-      if (!property_exists($baseDocument, 'metadata')) {
-        @$baseDocument->metadata = [];
-      }
-      $baseDocument->metadata = $metadata;
-
-      // Split document with cascading separators to guarantee maxChunkSize
-      $chunks = DocumentSplitter::splitDocument($baseDocument, $this->maxChunkSize, "\n\n");
-
-      // Re-split any oversized chunks with smaller separator
-      $safeChunks = [];
-      foreach ($chunks as $chunk) {
-        if (strlen($chunk->content) > $this->maxChunkSize) {
-          $subDoc = new Document();
-          $subDoc->content = $chunk->content;
-          $subDoc->sourceType = $chunk->sourceType ?? 'conversation';
-          $subDoc->sourceName = $chunk->sourceName ?? '';
-          if (!property_exists($subDoc, 'metadata')) {
-            @$subDoc->metadata = [];
-          }
-          $subDoc->metadata = get_object_vars($chunk)['metadata'] ?? [];
-          $subChunks = DocumentSplitter::splitDocument($subDoc, $this->maxChunkSize, " ");
-          foreach ($subChunks as $sub) {
-            $safeChunks[] = $sub;
-          }
-        } else {
-          $safeChunks[] = $chunk;
-        }
-      }
-      $chunks = $safeChunks;
+      // Split the long content into safe-sized chunk documents.
+      $chunks = $this->chunker->splitIntoChunks($content, $metadata);
 
       // Store each chunk
       $storedCount = 0;

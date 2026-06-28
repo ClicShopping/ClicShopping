@@ -2431,12 +2431,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "6c54e0520e210e3889b0b3bff4d256bfa19bdc52"
+                "reference": "c5afdab923ee443a1aadcdd52543132e5d92db90"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/6c54e0520e210e3889b0b3bff4d256bfa19bdc52",
-                "reference": "6c54e0520e210e3889b0b3bff4d256bfa19bdc52",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/c5afdab923ee443a1aadcdd52543132e5d92db90",
+                "reference": "c5afdab923ee443a1aadcdd52543132e5d92db90",
                 "shasum": ""
             },
             "conflict": {
@@ -2715,7 +2715,7 @@
                 "feehi/feehicms": "<=2.1.1",
                 "fenom/fenom": "<=2.12.1",
                 "filament/actions": ">=3.2,<3.2.123|>=4,<=4.11.3|>=5,<=5.6.3",
-                "filament/filament": ">=3,<=3.3.51|>=4,<=4.11.4|>=5,<=5.6.4",
+                "filament/filament": ">=3,<=3.3.51|>=4,<4.11.5|>=5,<5.6.5",
                 "filament/forms": ">=3,<=3.3.52",
                 "filament/infolists": ">=3,<3.2.115|>=4,<=4.11.4|>=5,<=5.6.4",
                 "filament/tables": ">=3,<=3.3.50|>=4,<=4.11.4|>=5,<=5.6.4",
@@ -3497,7 +3497,7 @@
                 "zoujingli/thinkadmin": "<=6.1.53",
                 "zumba/json-serializer": "<3.2.3"
             },
-            "time": "2026-06-24T09:11:09+00:00",
+            "time": "2026-06-25T18:49:05+00:00",
             "default-branch": true,
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",

@@ -11,7 +11,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
-use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVectorEmbeddingAdapter;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\LearningStatistics;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\CorrectionValidator;
@@ -20,7 +20,6 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\PatternLearner;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\CorrectionStrategyManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\CorrectionMemory;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\FeedbackLearner;
-use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 
 /**
@@ -65,7 +64,7 @@ class CorrectionAgent
     $languageId ??= $language->getId();
 
     // Initialize embedding generator and vector store
-    $embeddingGenerator = $this->createEmbeddingGenerator();
+    $embeddingGenerator = new NewVectorEmbeddingAdapter();
     $correctionStore = new MariaDBVectorStore($embeddingGenerator, $tableName);
     $cache = new Cache(true);
 
@@ -323,47 +322,5 @@ class CorrectionAgent
     }
     
     return $result;
-  }
-
-  /**
-   * Create embedding generator
-   * 
-   * Creates an anonymous class implementing EmbeddingGeneratorInterface.
-   * Uses NewVector for actual embedding generation.
-   * 
-   * @return EmbeddingGeneratorInterface Embedding generator instance
-   */
-  private function createEmbeddingGenerator(): EmbeddingGeneratorInterface
-  {
-    return new class implements EmbeddingGeneratorInterface {
-      public function embedText(string $text): array
-      {
-        $generator = NewVector::gptEmbeddingsModel();
-        if (!$generator) {
-          throw new \RuntimeException('Embedding generator not initialized');
-        }
-        return $generator->embedText($text);
-      }
-
-      public function embedDocument(Document $document): Document
-      {
-        $document->embedding = $this->embedText($document->content);
-        return $document;
-      }
-
-      public function embedDocuments(array $documents): array
-      {
-        $results = [];
-        foreach ($documents as $document) {
-          $results[] = $this->embedDocument($document);
-        }
-        return $results;
-      }
-
-      public function getEmbeddingLength(): int
-      {
-        return NewVector::getEmbeddingLength();
-      }
-    };
   }
 }
