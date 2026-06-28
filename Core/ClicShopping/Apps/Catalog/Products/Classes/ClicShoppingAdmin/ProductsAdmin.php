@@ -17,6 +17,10 @@ use ClicShopping\OM\Registry;
 use ClicShopping\OM\Upload;
 
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
+use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\SubProductAdmin\ProductSaveDataBuilder;
+use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\SubProductAdmin\ProductDescriptionSaver;
+use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\SubProductAdmin\ProductCloner;
+use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\SubProductAdmin\ProductRemover;
 use function call_user_func;
 use function count;
 use function is_array;
@@ -77,68 +81,12 @@ class ProductsAdmin
   }
 
   /**
-   * Save the description details of a product for multiple languages.
-   * @param int $id - The unique identifier of the product.
-   * @param string $action - The action to be performed, either 'Insert' or 'Update'.
-   * @return void
-   */
-  private function saveProductsDescription(int $id, string $action)
-  {
-    $languages = $this->lang->getLanguages();
-
-    for ($i = 0, $n = count($languages); $i < $n; $i++) {
-      $language_id = $languages[$i]['id'];
-
-      $sql_data_array = [
-        'products_name' => HTML::sanitize($_POST['products_name'][$language_id]),
-        'products_description' => $_POST['products_description'][$language_id] ?? '',
-        'products_seo_url' => isset($_POST['products_seo_url'][$language_id]) ? HTML::sanitize(strip_tags($_POST['products_seo_url'][$language_id])) : '',
-        'products_head_title_tag' => isset($_POST['products_head_title_tag'][$language_id]) ? HTML::sanitize(strip_tags($_POST['products_head_title_tag'][$language_id])) : '',
-        'products_head_desc_tag' => isset($_POST['products_head_desc_tag'][$language_id]) ? HTML::sanitize($_POST['products_head_desc_tag'][$language_id]) : '',
-        'products_head_keywords_tag' => isset($_POST['products_head_keywords_tag'][$language_id]) ? HTML::sanitize(strip_tags($_POST['products_head_keywords_tag'][$language_id])) : '',
-        'products_url' => isset($_POST['products_url'][$language_id]) ? HTML::sanitize($_POST['products_url'][$language_id]) : '',
-        'products_head_tag' => isset($_POST['products_head_tag'][$language_id]) ? HTML::sanitize(strip_tags($_POST['products_head_tag'][$language_id])) : '',
-        'products_shipping_delay' => isset($_POST['products_shipping_delay'][$language_id]) ? HTML::sanitize($_POST['products_shipping_delay'][$language_id]) : '',
-        'products_shipping_delay_out_of_stock' => isset($_POST['products_shipping_delay_out_of_stock'][$language_id]) ? HTML::sanitize($_POST['products_shipping_delay_out_of_stock'][$language_id]) : '',
-        'products_description_summary' => isset($_POST['products_description_summary'][$language_id]) ? HTML::sanitize(strip_tags($_POST['products_description_summary'][$language_id])) : '',
-      ];
-
-      if (is_numeric($id) && $action == 'Insert') {
-        $insert_sql_data = [
-          'products_id' => (int)$id,
-          'language_id' => (int)$language_id
-        ];
-
-        $sql_data_array = array_merge($sql_data_array, $insert_sql_data);
-
-        $this->db->save('products_description', $sql_data_array);
-//update products
-      } else {
-        $update_sql_data = [
-          'products_id' => (int)$id,
-          'language_id' => (int)$language_id
-        ];
-
-        $this->db->save('products_description', $sql_data_array, $update_sql_data);
-      } // end action
-    } //end for
-  }
-
-  /**
    * Retrieves the product model from the input or generates a random one if not provided.
    * @return string The sanitized or generated product model.
    */
   public function getProductModel(): string
   {
-    if (empty($_POST['products_model'])) {
-      $model = HTML::generateRandomNumber(9); //create a random number
-
-      $products_model = \defined('CONFIGURATION_PREFIX_MODEL') ? CONFIGURATION_PREFIX_MODEL . $model : '';
-    } else {
-      $products_model = HTML::sanitize($_POST['products_model']);
-    }
-
-    return $products_model;
+    return (new ProductSaveDataBuilder())->getProductModel();
   }
 
   /**
@@ -147,15 +95,7 @@ class ProductsAdmin
    */
   public function getProductSKU(): string
   {
-    if (empty($_POST['products_sku'])) {
-      $products_sku = $this->getProductModel();
-    } elseif ($_POST['products_sku'] != $this->getProductModel()) {
-      $products_sku = HTML::sanitize($_POST['products_sku']);
-    } else {
-      $products_sku = $this->getProductModel();
-    }
-
-    return $products_sku;
+    return (new ProductSaveDataBuilder())->getProductSKU();
   }
 
   /**
@@ -167,15 +107,7 @@ class ProductsAdmin
    */
   public function getProductEAN(): string
   {
-    if (empty($_POST['products_ean'])) {
-      $products_ean = $this->getProductSKU();
-    } elseif ($_POST['products_ean'] != $this->getProductSKU()) {
-      $products_ean = HTML::sanitize($_POST['products_ean']);
-    } else {
-      $products_ean = $this->getProductSKU();
-    }
-
-    return $products_ean;
+    return (new ProductSaveDataBuilder())->getProductEAN();
   }
 
   /**
@@ -539,258 +471,16 @@ class ProductsAdmin
   }
 
   /**
-   * Check for duplicate product images in the database
-   * @param $id - product id of the product
-   * @return int - total count of duplicate images
-   */
-  public function checkProductImage(int $id): int
-  {
-    $Qimage = $this->getImage($id);
-
-    $QduplicateImage = $this->db->prepare('select count(*) as total
-                                           from :table_products
-                                           where products_image = :products_image
-                                           or products_image_zoom = :products_image_zoom
-                                           or products_image_medium = :products_image_medium
-                                           or products_image_small = :products_image_small
-                                          ');
-    $QduplicateImage->bindValue(':products_image', $Qimage['products_image']);
-    $QduplicateImage->bindValue(':products_image_zoom', $Qimage['products_image_zoom']);
-    $QduplicateImage->bindValue(':products_image_medium', $Qimage['products_image_medium']);
-    $QduplicateImage->bindValue(':products_image_small', $Qimage['products_image_small']);
-
-    $QduplicateImage->execute();
-
-    return $QduplicateImage->valueInt('total');
-  }
-
-  /**
-   * Checks and counts the number of categories using the same product image.
-   * @param $id - the ID of the product
-   * @return int - the total count of categories sharing the same image
-   */
-  public function checkCategoriesImage(int $id): int
-  {
-    $Qimage = $this->getImage($id);
-
-    $Qchek = $this->db->prepare('select count(*) as total
-                                 from :table_categories
-                                 where categories_image = :products_image
-                                 or categories_image = :products_image_zoom
-                                 or categories_image = :products_image_medium
-                                 or categories_image = :products_image_small
-                                ');
-    $Qchek->bindValue(':products_image', $Qimage['products_image']);
-    $Qchek->bindValue(':products_image_zoom', $Qimage['products_image_zoom']);
-    $Qchek->bindValue(':products_image_medium', $Qimage['products_image_medium']);
-    $Qchek->bindValue(':products_image_small', $Qimage['products_image_small']);
-
-    $Qchek->execute();
-
-    return $Qchek->valueint('total');
-  }
-
-  /**
-   * Check for duplicate image descriptions in the products description table
+   * Removes a product and all its associated data. Delegates to ProductRemover;
+   * the product image row (getImage, kept here for its many callers) is resolved
+   * once and passed in.
    *
-   * @param $id - The ID of the product whose image descriptions are being checked
-   * @return int - The total count of duplicate occurrences found
-   */
-  public function checkImagesDescription($id): int
-  {
-    $Qimage = $this->getImage($id);
-
-    $Qchek = $this->db->prepare('select count(*) as total
-                                                               from :table_products_description
-                                                               where products_description like :products_description
-                                                               or products_description like :products_description1
-                                                               or products_description like :products_description2
-                                                               or products_description like :products_description3
-                                                              ');
-    $Qchek->bindValue(':products_description', '%' . $Qimage['products_image'] . '%');
-    $Qchek->bindValue(':products_description1', '%' . $Qimage['products_image_zoom'] . '%');
-    $Qchek->bindValue(':products_description2', '%' . $Qimage['products_image_medium'] . '%');
-    $Qchek->bindValue(':products_description3', '%' . $Qimage['products_image_small'] . '%');
-
-    $Qchek->execute();
-
-    return $Qchek->valueInt('total');
-  }
-
-  /**
-   * Checks for duplicate banner images associated with a specified product.
-   * @param $id - ID of the product
-   * @return int - Count of duplicate banner images
-   */
-  public function checkBannerImages($id): int
-  {
-    $Qimage = $this->getImage($id);
-
-    $Qchek = $this->db->prepare('select count(*) as total
-                                                     from :table_banners
-                                                     where banners_image = :products_image
-                                                     or banners_image = :products_image_zoom
-                                                     or banners_image = :products_image_medium
-                                                     or banners_image = :products_image_small
-                                                    ');
-
-    $Qchek->bindValue(':products_image', $Qimage['products_image']);
-    $Qchek->bindValue(':products_image_zoom', $Qimage['products_image_zoom']);
-    $Qchek->bindValue(':products_image_medium', $Qimage['products_image_medium']);
-    $Qchek->bindValue(':products_image_small', $Qimage['products_image_small']);
-
-    $Qchek->execute();
-
-    return $Qchek->valueInt('total');
-  }
-
-  /**
-   * Checks for duplicate manufacturer images in the database
-   *
-   * @param $id - The ID of the product to check associated manufacturer images
-   * @return int - Returns the count of manufacturers that have a duplicate image
-   */
-  public function checkManufacturerImages($id): int
-  {
-    $Qimage = $this->getImage($id);
-
-    $Qchek = $this->db->prepare('select count(*) as total
-                                                         from :table_manufacturers
-                                                         where manufacturers_image = :products_image
-                                                         or manufacturers_image = :products_image_zoom
-                                                         or manufacturers_image = :products_image_medium
-                                                         or manufacturers_image = :products_image_small
-                                                        ');
-    $Qchek->bindValue(':products_image', $Qimage['products_image']);
-    $Qchek->bindValue(':products_image_zoom', $Qimage['products_image_zoom']);
-    $Qchek->bindValue(':products_image_medium', $Qimage['products_image_medium']);
-    $Qchek->bindValue(':products_image_small', $Qimage['products_image_small']);
-
-    $Qchek->execute();
-
-    return $Qchek->valueInt('total');
-  }
-
-  /**
-   * Checks for duplicate supplier images in the database.
-   *
-   * @param mixed $id The identifier of the supplier whose images are being checked.
-   * @return int The count of duplicate images found in the suppliers table.
-   */
-  public function checkSupplierImages($id): int
-  {
-    $Qimage = $this->getImage($id);
-
-    $Qchek = $this->db->prepare('select count(*) as total
-                                                     from :table_suppliers
-                                                     where suppliers_image  = :products_image
-                                                     or suppliers_image  = :products_image_zoom
-                                                     or suppliers_image  = :products_image_medium
-                                                     or suppliers_image  = :products_image_small
-                                                    ');
-    $Qchek->bindValue(':products_image', $Qimage['products_image']);
-    $Qchek->bindValue(':products_image_zoom', $Qimage['products_image_zoom']);
-    $Qchek->bindValue(':products_image_medium', $Qimage['products_image_medium']);
-    $Qchek->bindValue(':products_image_small', $Qimage['products_image_small']);
-
-    $Qchek->execute();
-
-    return $Qchek->valueInt('total');
-  }
-
-  /**
-   * Removes a product and its associated data from the system.
-   *
-   * @param int $id The unique identifier of the product to be removed.
+   * @param int $id The product id to remove
    * @return void
    */
   public function removeProduct(int $id): void
   {
-    $Qimage = $this->getImage($id);
-
-    $check_image_total = $this->checkProductImage($id);
-    $check_image_categories_total = $this->checkCategoriesImage($id);
-    $check_image_product_description_total = $this->checkImagesDescription($id);
-    $check_image_banners_total = $this->checkBannerImages($id);
-    $check_image_manufacturers_total = $this->checkManufacturerImages($id);
-    $check_image_suppliers_total = $this->checkSupplierImages($id);
-
-    if (($check_image_total < 2) &&
-      ($check_image_categories_total == 0) &&
-      ($check_image_product_description_total == 0) &&
-      ($check_image_banners_total == 0) &&
-      ($check_image_manufacturers_total == 0) &&
-      ($check_image_suppliers_total == 0)) {
-
-      if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image'])) {
-        unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image']);
-      }
-
-      if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_zoom'])) {
-        unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_zoom']);
-      }
-
-      if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_medium'])) {
-        unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_medium']);
-      }
-
-      if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_small'])) {
-        unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_small']);
-      }
-    }
-
-    $Qimages = $this->db->get('products_images', 'image', ['products_id' => $id]);
-
-    if ($Qimages->fetch() !== false) {
-      do {
-        $sql_array = [
-          'image' => $Qimages->value('image'),
-          'products_id' => [
-            'op' => '!=',
-            'val' => (int)$id
-          ]
-        ];
-
-        $QcheckImage = $this->db->get('products_images', 'id', $sql_array, null, 1);
-
-        if ($QcheckImage->fetch() === false) {
-          if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimages->value('image'))) {
-            unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimages->value('image'));
-          }
-        }
-      } while ($Qimages->fetch());
-
-      $this->db->delete('products_images', ['products_id' => $id]);
-    }
-
-    $this->db->delete('products', ['products_id' => $id]);
-    $this->db->delete('products_description', ['products_id' => $id]);
-    $this->db->delete('products_to_categories', ['products_id' => $id]);
-    $this->db->delete('products_notifications', ['products_id' => $id]);
-
-    $Qdelete = $this->db->prepare('delete
-                                   from :table_customers_basket
-                                   where products_id = :products_id
-                                   or products_id like :products_id_att
-                                ');
-    $Qdelete->bindInt(':products_id', $id);
-    $Qdelete->bindInt(':products_id_att', $id . '{%');
-    $Qdelete->execute();
-
-    $Qdel = $this->db->prepare('delete
-                                from :table_customers_basket_attributes
-                                where products_id = :products_id
-                                or products_id like :products_id_att
-                               ');
-    $Qdel->bindInt(':products_id', $id);
-    $Qdel->bindInt(':products_id_att', $id . '{%');
-    $Qdel->execute();
-
-    $this->hooks->call('Products', 'RemoveProduct', ['products_id' => $id]);
-
-    Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('upcoming');
+    (new ProductRemover())->remove($id, $this->getImage($id));
   }
 
   /**
@@ -858,294 +548,16 @@ class ProductsAdmin
   }
 
   /**
-   * Prepares the cloning of products into other categories.
+   * Clones a product into another category (or categories), including its images,
+   * descriptions and customer-group pricing. Delegates to ProductCloner.
    *
-   * @param int $id The ID of the product to be cloned.
-   * @param int $categories_id The ID of the category or categories where the product will be cloned.
-   *
-   * @return void
-   */
-  private function prepareCloneProducts(int $id, int $categories_id): void
-  {
-    $new_category = $categories_id;
-
-    if (is_array($new_category) && isset($new_category)) {
-      foreach ($new_category as $value_id) {
-        $this->cloneProductsInOtherCategory($id, $value_id);
-      }
-    }
-  }
-
-  /**
-   * Clones a product into a specified category or multiple categories, including associated data such as attributes,
-   * images, and descriptions. This ensures that the product is replicated in the desired category with all its
-   * properties preserved.
-   *
-   * @param int $id The ID of the product to be cloned.
-   * @param mixed $new_categories_id The ID of the category (or categories) where the product will be cloned. Can be an integer or string.
-   *
+   * @param int $id The product id to clone
+   * @param mixed $new_categories_id Target category id(s)
    * @return void
    */
   public function cloneProductsInOtherCategory(int $id, mixed $new_categories_id): void
   {
-    if (!is_numeric($new_categories_id)) {
-      $new_categories_id = 0;
-    }
-
-    $multi_clone_categories_id_to = [];
-
-    $multi_clone_categories_id_to[] = $new_categories_id;
-
-    $Qproducts = $this->db->prepare('select *
-                                      from :table_products
-                                      where products_id = :products_id
-                                     ');
-    $Qproducts->bindInt(':products_id', $id);
-
-    $Qproducts->execute();
-
-    for ($i = 0, $iMax = count($multi_clone_categories_id_to); $i < $iMax; $i++) {
-      $clone_categories_id_to = $multi_clone_categories_id_to[$i];
-
-      $sql_array = [
-        'parent_id' => (int)$Qproducts->valueInt('parent_id'),
-        'has_children' => (int)$Qproducts->valueInt('has_children'),
-        'products_quantity' => (int)$Qproducts->valueInt('products_quantity'),
-        'products_model' => $Qproducts->value('products_model'),
-        'products_ean' => $Qproducts->value('products_ean'),
-        'products_sku' => $Qproducts->value('products_sku'),
-        'products_jan' => $Qproducts->value('products_jan'),
-        'products_isbn' => $Qproducts->value('products_isbn'),
-        'products_mpn' => $Qproducts->value('products_mpn'),
-        'products_upc' => $Qproducts->value('products_upc'),
-        'products_image' => $Qproducts->value('products_image'),
-        'products_image_zoom' => $Qproducts->value('products_image_zoom'),
-        'products_price' => (float)$Qproducts->value('products_price'),
-        'products_date_added' => 'now()',
-        'products_date_available' => (empty($Qproducts->value('products_date_available')) ? "null" : "'" . $Qproducts->value('products_date_available') . "'"),
-        'products_weight' => (float)$Qproducts->value('products_weight'),
-        'products_price_kilo' => (float)$Qproducts->value('products_price_kilo'),
-        'products_status' => $Qproducts->value('products_status'),
-        'products_tax_class_id' => (int)$Qproducts->valueInt('products_tax_class_id'),
-        'products_view' => (int)$Qproducts->valueInt('products_view'),
-        'orders_view' => (int)$Qproducts->valueInt('orders_view'),
-        'products_min_qty_order' => (int)$Qproducts->valueInt('products_min_qty_order'),
-        'admin_user_name' => AdministratorAdmin::getUserAdmin(),
-        'products_only_online' => (int)$Qproducts->valueInt('products_only_online'),
-        'products_image_medium' => $Qproducts->value('products_image_medium'),
-        'products_cost' => (float)$Qproducts->value('products_cost'),
-        'products_handling' => (int)$Qproducts->value('products_handling'),
-        'products_packaging' => (int)$Qproducts->valueInt('products_packaging'),
-        'products_sort_order' => (int)$Qproducts->valueInt('products_sort_order'),
-        'products_quantity_alert' => (int)$Qproducts->valueInt('products_quantity_alert'),
-        'products_image_small' => $Qproducts->value('products_image_small'),
-        'products_type' => $Qproducts->value('products_type')
-      ];
-
-// copy du produit
-      $this->db->save('products', $sql_array);
-      $dup_products_id = $this->db->lastInsertId();
-
-      // ---------------------
-      // gallery
-      // ----------------------
-      $QproductImage = $this->db->prepare('select *
-                                            from :table_products_images
-                                            where products_id = :products_id
-                                          ');
-      $QproductImage->bindInt(':products_id', $id);
-
-      $QproductImage->execute();
-
-      while ($QproductImage->fetch()) {
-        $sql_array = [
-          'products_id' => (int)$dup_products_id,
-          'image' => $QproductImage->value('image'),
-          'htmlcontent' => $QproductImage->value('htmlcontent'),
-          'sort_order' => $QproductImage->valueInt('sort_order')
-        ];
-
-        $this->db->save('products_images', $sql_array);
-      }
-
-      // ---------------------
-      // Description clonage
-      // ----------------------
-      $Qdescription = $this->db->prepare('select language_id,
-                                                    products_name,
-                                                    products_description,
-                                                    products_description_summary,
-                                                    products_seo_url,
-                                                    products_head_title_tag,
-                                                    products_head_desc_tag,
-                                                    products_head_keywords_tag,
-                                                    products_url,
-                                                    products_head_tag,
-                                                    products_shipping_delay,
-                                                    products_shipping_delay_out_of_stock
-                                             from :table_products_description
-                                             where products_id = :products_id
-                                            ');
-      $Qdescription->bindInt(':products_id', $id);
-
-      $Qdescription->execute();
-
-      while ($Qdescription->fetch()) {
-        $sql_array = [
-          'products_id' => (int)$dup_products_id,
-          'language_id' => (int)$Qdescription->valueInt('language_id'),
-          'products_name' => $Qdescription->value('products_name'),
-          'products_description' => $Qdescription->value('products_description'),
-          'products_seo_url' => $Qdescription->value('products_seo_url'),
-          'products_head_title_tag' => $Qdescription->value('products_head_title_tag'),
-          'products_head_desc_tag' => $Qdescription->value('products_head_desc_tag'),
-          'products_head_keywords_tag' => $Qdescription->value('products_head_keywords_tag'),
-          'products_url' => $Qdescription->value('products_url'),
-          'products_viewed' => 0,
-          'products_head_tag' => $Qdescription->value('products_head_tag'),
-          'products_shipping_delay' => $Qdescription->value('products_shipping_delay'),
-          'products_shipping_delay_out_of_stock' => $Qdescription->value('products_shipping_delay_out_of_stock'),
-          'products_description_summary' => $Qdescription->value('products_description_summary')
-        ];
-
-        $this->db->save('products_description', $sql_array);
-      }
-
-      // ---------------------
-      // insertion table
-      // ----------------------
-      $sql_array = [
-        'products_id' => (int)$dup_products_id,
-        'categories_id' => (int)$clone_categories_id_to
-      ];
-
-      $this->db->save('products_to_categories', $sql_array);
-
-      $clone_products_id = $dup_products_id;
-
-      // ---------------------
-      // groupe client clonage
-      // ----------------------
-      $QcustomersGroup = $this->db->prepare('select distinct customers_group_id,
-                                                               customers_group_name,
-                                                               customers_group_discount
-                                               from :table_customers_groups
-                                               where customers_group_id >  0
-                                               order by customers_group_id
-                                              ');
-      $QcustomersGroup->execute();
-
-      while ($QcustomersGroup->fetch()) {
-        $Qattributes = $this->db->prepare('select g.customers_group_id,
-                                                     g.customers_group_price,
-                                                     p.products_price
-                                              from :table_products_groups g,
-                                                   :table_products p
-                                              where p.products_id = :products_id
-                                              and p.products_id =g.products_id
-                                              and g.customers_group_id = :customers_group_id
-                                              order by g.customers_group_id
-                                            ');
-        $Qattributes->bindInt(':products_id', (int)$clone_products_id);
-        $Qattributes->bindInt(':customers_group_id', (int)$QcustomersGroup->valueInt('customers_group_id'));
-
-        $Qattributes->execute();
-
-        if ($Qattributes->rowCount() > 0) {
-            // Definir la position 0 ou 1 pour --> Affichage Prix public + Affichage Produit + Autorisation Commande
-            // L'Affichage des produits, autorisation de commander et affichage des prix mis par defaut en valeur 1 dans la cas de la B2B desactive.
-          if (MODE_B2B_B2C == 'True') {
-            if (HTML::sanitize($_POST['price_group_view' . $QcustomersGroup->valueInt('customers_group_id')]) == 1) {
-              $price_group_view = 1;
-            } else {
-              $price_group_view = 0;
-            }
-
-            if (HTML::sanitize($_POST['products_group_view' . $QcustomersGroup->valueInt('customers_group_id')]) == 1) {
-              $products_group_view = 1;
-            } else {
-              $products_group_view = 0;
-            }
-
-            if (HTML::sanitize($_POST['orders_group_view' . $QcustomersGroup->valueInt('customers_group_id')]) == 1) {
-              $orders_group_view = 1;
-            } else {
-              $orders_group_view = 0;
-            }
-
-            $products_quantity_unit_id_group = HTML::sanitize($_POST['products_quantity_unit_id_group' . $QcustomersGroup->valueInt('customers_group_id')]);
-            $products_model_group = HTML::sanitize($_POST['products_model_group' . $QcustomersGroup->valueInt('customers_group_id')]);
-            $products_quantity_fixed_group = HTML::sanitize($_POST['products_quantity_fixed_group' . $QcustomersGroup->valueInt('customers_group_id')]);
-          } else {
-            $price_group_view = 1;
-            $products_group_view = 1;
-            $orders_group_view = 1;
-            $products_quantity_unit_id_group = 0;
-            $products_model_group = '';
-            $products_quantity_fixed_group = 1;
-          }
-
-          $Qupdate = $this->db->prepare('update :table_products_groups
-                                            set price_group_view = :price_group_view,
-                                                products_group_view = :products_group_view,
-                                                orders_group_view = :orders_group_view,
-                                                products_quantity_unit_id_group = :products_quantity_unit_id_group,
-                                                products_model_group = :products_model_group,
-                                                products_quantity_fixed_group = :products_quantity_fixed_group
-                                            where customers_group_id = :customers_group_id
-                                            and products_id = :products_id
-                                            ');
-          $Qupdate->bindInt(':price_group_view', $price_group_view);
-          $Qupdate->bindInt(':products_group_view', $products_group_view);
-          $Qupdate->bindInt(':orders_group_view', $orders_group_view);
-          $Qupdate->bindInt(':products_quantity_unit_id_group', $products_quantity_unit_id_group);
-          $Qupdate->bindValue(':products_model_group', $products_model_group);
-          $Qupdate->bindValue(':products_quantity_fixed_group', $products_quantity_fixed_group);
-          $Qupdate->bindInt(':customers_group_id', (int)$Qattributes->valueInt('customers_group_id'));
-          $Qupdate->bindInt(':products_id', (int)$clone_products_id);
-
-          $Qupdate->execute();
-
-          // Prix TTC B2B ----------
-          if ($_POST['price' . $QcustomersGroup->valueInt('customers_group_id')] <> $Qattributes->valueDecimal('customers_group_price') && $Qattributes->valueInt('customers_group_id') == $QcustomersGroup->valueInt('customers_group_id')) {
-            $Qupdate = $this->db->prepare('update :table_products_groups
-                                             set customers_group_price = :customers_group_price,
-                                                 products_price = :products_price
-                                             where customers_group_id = :customers_group_id
-                                             and products_id = :products_id
-                                          ');
-            $Qupdate->bindInt(':customers_group_price', $_POST['price' . $QcustomersGroup->valueInt('customers_group_id')]);
-            $Qupdate->bindInt(':products_price', $_POST['products_price']);
-            $Qupdate->bindInt(':customers_group_id', (int)$Qattributes->valueInt('customers_group_id'));
-            $Qupdate->bindInt(':products_id', (int)$clone_products_id);
-
-            $Qupdate->execute();
-          } elseif ($_POST['price' . $QcustomersGroup->valueInt('customers_group_id')] == $Qattributes->valueInt('customers_group_id')) {
-            //              $attributes = $Qattributes->fetch();
-          }
-        // Prix + Afficher Prix public + Afficher Produit + Autoriser Commande
-        } elseif (is_array($_POST['price' . $QcustomersGroup->valueInt('customers_group_id')])) {
-          if ($_POST['price' . $QcustomersGroup->valueInt('customers_group_id')] != '') {
-            $sql_array = [
-              'products_id' => (int)$clone_products_id,
-              'products_price' => (float)$_POST['products_price'],
-              'customers_group_id' => (int)$QcustomersGroup->valueInt('customers_group_id'),
-              'customers_group_price' => (float)$_POST['price' . $QcustomersGroup->valueInt('customers_group_id')],
-              'price_group_view' => (int)$_POST['price_group_view' . $QcustomersGroup->valueInt('customers_group_id')],
-              'products_group_view' => (int)$_POST['products_group_view' . $QcustomersGroup->valueInt('customers_group_id')],
-              'orders_group_view' => (int)$_POST['orders_group_view' . $QcustomersGroup->valueInt('customers_group_id')],
-              'products_quantity_unit_id_group' => (int)$_POST['products_quantity_unit_id_group' . $QcustomersGroup->valueInt('customers_group_id')],
-              'products_model_group' => $_POST['products_model_group' . $QcustomersGroup->valueInt('customers_group_id')],
-              'products_quantity_fixed_group' => (int)$_POST['products_quantity_fixed_group' . $QcustomersGroup->valueInt('customers_group_id')],
-            ];
-
-            $this->db->save('products_groups', $sql_array);
-          }
-        }
-      } // end while
-
-      $this->hooks->call('Products', 'CloneProducts', ['clone_products_id' => $clone_products_id]);
-    } //End for
+    (new ProductCloner())->cloneToCategory($id, $new_categories_id);
   }
 
   /**
@@ -1251,107 +663,7 @@ class ProductsAdmin
    */
   public function save(string|int|null $id, $action)
   {
-    if (isset($_POST['products_date_available']) && !empty($_POST['products_date_available'])) {
-      $products_date_available = HTML::sanitize($_POST['products_date_available']);
-      $products_date_available = (date('Y-m-d') < $products_date_available) ? $products_date_available : 'null';
-    } else {
-      $products_date_available = null;
-    }
-
-    if (isset($_POST['products_view']) && HTML::sanitize($_POST['products_view']) == 1) {
-      $products_view = 1;
-    } else {
-      $products_view = 0;
-    }
-
-    if (isset($_POST['orders_view']) && HTML::sanitize($_POST['orders_view']) == 1) {
-      $orders_view = 1;
-    } else {
-      $orders_view = 0;
-    }
-
-// display price / kg
-    if (isset($_POST['products_price_kilo']) && HTML::sanitize($_POST['products_price_kilo']) == 1) {
-      $products_price_kilo = 1;
-    } else {
-      $products_price_kilo = 0;
-    }
-
-// display products online
-    if (isset($_POST['products_only_online']) && HTML::sanitize($_POST['products_only_online']) == 1) {
-      $products_only_online = 1;
-    } else {
-      $products_only_online = 0;
-    }
-
-// display products store (physical)
-    if (isset($_POST['products_only_shop']) && HTML::sanitize($_POST['products_only_shop']) == 1) {
-      $products_only_shop = 1;
-    } else {
-      $products_only_shop = 0;
-    }
-
-// display products file public or private
-    if (isset($_POST['products_download_public']) && HTML::sanitize($_POST['products_download_public']) == 1) {
-      $products_download_public = 1;
-    } else {
-      $products_download_public = 0;
-    }
-
-// manual price B2B
-    if (isset($_POST['products_percentage']) && $_POST['products_percentage'] == 'on') {
-      $products_percentage = 0;
-    } else {
-      $products_percentage = 1;
-    }
-
-    if (MODE_B2B_B2C == 'False') {
-      $products_view = 1;
-      $orders_view = 1;
-      $products_percentage = 1;
-    }
-
-    $products_model = $this->getProductModel();
-
-    $products_sku = $this->getProductSKU();
-    $products_ean = $this->getProductEAN();
-
-    if (isset($_POST['products_status'])) {
-      $products_status = HTML::sanitize($_POST['products_status']);
-    } else {
-      $products_status = 0;
-    }
-
-    $sql_data_array = [
-      'products_quantity' => (int)HTML::sanitize($_POST['products_quantity'] ?? ''),
-      'products_ean' => HTML::sanitize($products_ean),
-      'products_model' => HTML::sanitize($products_model),
-      'products_sku' => HTML::sanitize($products_sku),
-      'products_price' => (float)HTML::sanitize($_POST['products_price'] ?? ''),
-      'products_date_available' => $products_date_available,
-      'products_weight' => (float)HTML::sanitize($_POST['products_weight'] ?? ''),
-      'products_price_kilo' => HTML::sanitize($products_price_kilo),
-      'products_status' => (int)HTML::sanitize($products_status),
-      'products_percentage' => (int)$products_percentage,
-      'products_view' => (int)$products_view,
-      'orders_view' => (int)$orders_view,
-      'products_tax_class_id' => (int)HTML::sanitize($_POST['products_tax_class_id'] ?? ''),
-      'products_min_qty_order' => (int)($_POST['products_min_qty_order'] ?? ''),
-      'admin_user_name' => AdministratorAdmin::getUserAdmin(),
-      'products_only_online' => (int)HTML::sanitize($products_only_online),
-      'products_cost' => (float)HTML::sanitize($_POST['products_cost'] ?? ''),
-      'products_handling' => (float)HTML::sanitize($_POST['products_handling'] ?? ''),
-      'products_packaging' => (int)HTML::sanitize($_POST['products_packaging'] ?? ''),
-      'products_sort_order' => (int)HTML::sanitize($_POST['products_sort_order'] ?? ''),
-      'products_quantity_alert' => (int)HTML::sanitize($_POST['products_quantity_alert'] ?? ''),
-      'products_only_shop' => (int)HTML::sanitize($products_only_shop),
-      'products_download_public' => (int)HTML::sanitize($products_download_public),
-      'products_type' => HTML::sanitize($_POST['products_type'] ?? ''),
-      'products_jan' => HTML::sanitize($_POST['products_jan'] ?? ''),
-      'products_isbn' => HTML::sanitize($_POST['products_isbn'] ?? ''),
-      'products_mpn' => HTML::sanitize($_POST['products_mpn'] ?? ''),
-      'products_upc' => HTML::sanitize($_POST['products_upc'] ?? '')
-    ];
+    $sql_data_array = (new ProductSaveDataBuilder())->build();
 
 // Download file
     $sql_data_array['products_download_filename'] = $this->saveFileUpload();
@@ -1382,11 +694,11 @@ class ProductsAdmin
     }
 
     $this->image->saveGalleryImage($id);
-    $this->saveProductsDescription($id, $action);
+    (new ProductDescriptionSaver())->save($id, $action);
 
     if (isset($_POST['clone_categories_id_to'])) {
       $categories_id = $_POST['clone_categories_id_to'];
-      $this->prepareCloneProducts($id, $categories_id);
+      (new ProductCloner())->prepareClone($id, $categories_id);
     }
 
     $this->hooks->call('Products', 'Save', ['products_id' => $id]);
