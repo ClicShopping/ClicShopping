@@ -16,11 +16,11 @@
  * ----------------------------------------------------------------------------------------------------------------------------------------
  * | Method | Path/Query Parameter                                        | Function in GptRetailersUCP.php       | Description                                                                 |
  * ----------------------------------------------------------------------------------------------------------------------------------------
- * | GET    | ...?UCP&retailers/products                                  | getProducts()                         | Retrieves the product catalog.                                             |
- * | POST   | ...?UCP&retailers/checkout_sessions                         | createSession()                       | Creates a new checkout session.                                            |
- * | PATCH  | ...?UCP&retailers/checkout_sessions/{id}                    | updateSession()                       | Updates an existing checkout session.                                      |
- * | POST   | ...?UCP&retailers/checkout_sessions/{id}/complete           | completeSession()                     | Completes checkout and creates the order.                                  |
- * | POST   | ...?UCP&retailers/webhook                                   | handleWebhook()                       | Handles payment webhooks.                                                  |
+ * | GET    | ...?Google&UCP&retailers/products                                  | getProducts()                         | Retrieves the product catalog.                                             |
+ * | POST   | ...?Google&UCP&retailers/checkout_sessions                         | createSession()                       | Creates a new checkout session.                                            |
+ * | PATCH  | ...?Google&UCP&retailers/checkout_sessions/{id}                    | updateSession()                       | Updates an existing checkout session.                                      |
+ * | POST   | ...?Google&UCP&retailers/checkout_sessions/{id}/complete           | completeSession()                     | Completes checkout and creates the order.                                  |
+ * | POST   | ...?Google&UCP&retailers/webhook                                   | handleWebhook()                       | Handles payment webhooks.                                                  |
  * ----------------------------------------------------------------------------------------------------------------------------------------
  */
 namespace ClicShopping\Apps\AI\Ecommerce\Sites\Shop\Pages\UCP;
@@ -111,29 +111,42 @@ class UCP extends \ClicShopping\OM\Domains\PagesAbstract
       'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
     ]);
 
-    // Simple auth (shared key)
-    try {
-      if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
-        $authHeader = trim($_SERVER['HTTP_AUTHORIZATION']);
-      $expectedSecret = \defined('CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL') ? CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL : '';
+    // The read-only product catalog can be browsed without a Bearer key
+    // (config-gated, default ON) so AI agents discovering llms.txt can read it.
+    // Transactional endpoints (checkout / webhook) always keep the Bearer auth.
+    $publicCatalogEnabled = !\defined('CLICSHOPPING_APP_ECOMMERCE_UCP_PUBLIC_CATALOG')
+      || CLICSHOPPING_APP_ECOMMERCE_UCP_PUBLIC_CATALOG === 'True';
+    $isCatalogRequest = ($method === 'GET')
+      && (isset($_GET['products']) || isset($_GET['retailers/products']) || str_contains($path, '/products'));
+    $skipAuth = $publicCatalogEnabled && $isCatalogRequest;
 
-        $expectedHeader = $expectedSecret !== '' ? 'Bearer ' . $expectedSecret : '';
+    $expectedSecret = '';
 
-        if ($expectedHeader === '' || $authHeader !== $expectedHeader) {
+    // Simple auth (shared key) — skipped for the public read-only catalog
+    if (!$skipAuth) {
+      try {
+        if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+          $authHeader = trim($_SERVER['HTTP_AUTHORIZATION']);
+          $expectedSecret = \defined('CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL') ? CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL : '';
+
+          $expectedHeader = $expectedSecret !== '' ? 'Bearer ' . $expectedSecret : '';
+
+          if ($expectedHeader === '' || $authHeader !== $expectedHeader) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
+            exit;
+          }
+        } else {
           http_response_code(401);
           echo json_encode(['error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
           exit;
         }
-      } else {
-        http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
-        exit;
+      } catch (\Throwable $e) {
+        $errorResponse('INTERNAL_ERROR', 'Authorization error', [], 500);
       }
-    } catch (\Throwable $e) {
-      $errorResponse('INTERNAL_ERROR', 'Authorization error', [], 500);
     }
 
-    // Rate limiting (per API key or IP)
+    // Rate limiting (per API key or IP — applies to the public catalog too)
     $identifier = $expectedSecret !== '' ? $expectedSecret : ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
     $maxRequests = \defined('CLICSHOPPING_APP_ECOMMERCE_UCP_RATE_LIMIT') ? (int)CLICSHOPPING_APP_ECOMMERCE_UCP_RATE_LIMIT : 100;
     $rateLimiter = new RateLimit('ucp', $maxRequests, 60);

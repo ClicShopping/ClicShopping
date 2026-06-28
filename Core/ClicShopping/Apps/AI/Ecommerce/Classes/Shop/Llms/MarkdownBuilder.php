@@ -8,7 +8,7 @@
 
   declare(strict_types=1);
 
-  namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\Shop\Llms;
+  namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shop\Llms;
 
   use ClicShopping\OM\CLICSHOPPING;
 
