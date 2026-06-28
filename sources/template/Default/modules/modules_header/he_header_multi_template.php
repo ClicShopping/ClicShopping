@@ -60,7 +60,8 @@ class he_header_multi_template
     $content_width = \defined('MODULES_HEADER_MULTI_TEMPLATE_TEMPLATE_CONTENT_WIDTH') ? (int)MODULES_HEADER_MULTI_TEMPLATE_TEMPLATE_CONTENT_WIDTH : 12;
     $login = HTML::button(CLICSHOPPING::getDef('modules_header_multi_template_account_login'), null, null, 'primary', null, 'sm');
 
-    $form_advanced_result = HTML::form('searchData', CLICSHOPPING::link(null, 'Search&Q'), 'post', 'id="searchData"', ['session_id' => true]);
+      // Intégration des attributs structurés pour le protocole WebMCP (IA)
+     $form_advanced_result = '<form name="searchData" action="' . CLICSHOPPING::link(null, 'Search&Q') . '" method="post" id="searchData" mcp-tool="searchProducts" mcp-description="Recherche les produits et catégories de la boutique e-commerce par mots-clés">';
     $form = HTML::form('loginForm', CLICSHOPPING::link(null, 'Account&LogIn&Process'), 'post', 'id="loginForm"', ['tokenize' => true]);
     $endform = '</form>';
 
