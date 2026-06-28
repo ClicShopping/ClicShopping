@@ -9,7 +9,6 @@
   namespace ClicShopping\Sites\Shop;
 
   use ClicShopping\OM\CLICSHOPPING;
-  use ClicShopping\OM\Registry;
   use ClicShopping\OM\Cache;
 
   /**
@@ -20,24 +19,6 @@
    */
   class BotDetector
   {
-    /**
-     * @var Cache The cache instance used to store the parsed spiders list.
-     */
-    protected $cache;
-
-    /**
-     * BotDetector constructor.
-     *
-     * Initializes and registers the dedicated Cache instance for the bot detector.
-     */
-    public function __construct()
-    {
-      if (!Registry::exists('Cache')) {
-        Registry::set('Cache', new Cache('BotDetector'));
-      }
-      $this->cache = Registry::get('Cache');
-    }
-
     /**
      * Checks if the visitor is a generic web robot or automated scraper.
      *
@@ -125,11 +106,16 @@
      */
     private function getSpidersList(): array
     {
-      $cache_key = 'bot_detector_spiders_list';
+      // OM\Cache is an instance-per-key store: the key lives in the constructor,
+      // exists()/get()/save() operate on that key (no key argument).
+      $cache = new Cache('bot_detector_spiders_list');
 
-      // Return the cached list immediately if available
-      if ($this->cache->exists($cache_key)) {
-        return $this->cache->get($cache_key);
+      // Return the cached list if it is still fresh (24h TTL).
+      if ($cache->exists('1440')) {
+        $cached = $cache->get();
+        if (\is_array($cached) && $cached !== []) {
+          return $cached;
+        }
       }
 
       $spiders_file = CLICSHOPPING::BASE_DIR . 'Sites/' . CLICSHOPPING::getSite() . '/Assets/spiders.txt';
@@ -148,7 +134,7 @@
         }
 
         // Cache the clean dataset for future requests
-        $this->cache->save($cache_key, $spiders_array);
+        $cache->save($spiders_array);
       }
 
       return $spiders_array;
