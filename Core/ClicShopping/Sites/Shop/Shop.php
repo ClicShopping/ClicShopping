@@ -14,6 +14,7 @@ use ClicShopping\OM\Apps;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Cookies;
 use ClicShopping\OM\Db;
+use ClicShopping\OM\Domains\SitesAbstract;
 use ClicShopping\OM\Hooks;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Language;
@@ -21,6 +22,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\OM\Service;
 use ClicShopping\OM\Session;
 
+use ClicShopping\Security\RequestSanitizer;
 use ClicShopping\Apps\Tools\WhosOnline\Classes\Shop\WhosOnlineShop;
 use ClicShopping\Apps\Configuration\Cache\Classes\ClicShoppingAdmin\CacheAdmin;
 
@@ -35,7 +37,7 @@ use function define;
  * Initializes key components and services required for the Shop site and manages page routing.
  * Extends the SitesAbstract class to utilize base site functionality.
  */
-class Shop extends \ClicShopping\OM\Domains\SitesAbstract
+class Shop extends SitesAbstract
 {
   protected static ?string $_application;
   protected array $ignored_actions;
@@ -175,18 +177,11 @@ class Shop extends \ClicShopping\OM\Domains\SitesAbstract
       HTTP::redirect($url_req, 301);
     }
 
-// Security
-      $securityFile = dirname(CLICSHOPPING::BASE_DIR) . '/Module/SecurityPro/Security.php';
-
-      if (is_file($securityFile)) {
-        require_once $securityFile;
-      }
-
-    $security_pro = new \Security();
-
 // If you need to exclude a file from cleansing then you can add it like below
-//$security_pro->addExclusion( 'some_file.php' );
-    $security_pro->cleanse(CLICSHOPPING::getBaseNameIndex());
+//$request_sanitizer->addExclusion( 'some_file.php' );
+    Registry::set('RequestSanitizer', new RequestSanitizer());
+    $request_sanitizer = Registry::get('RequestSanitizer');
+    $request_sanitizer->cleanse(CLICSHOPPING::getBaseNameIndex());
 
 //template
     Registry::set('Template', new Template());

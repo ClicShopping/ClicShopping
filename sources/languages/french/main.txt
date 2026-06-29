@@ -142,6 +142,7 @@ text_display_number_of_reviews = Afficher <strong>{{listing_from}}</strong> à <
 prevnext_title_first_page = Première page
 prevnext_title_previous_page = Page précédente
 prevnext_title_next_page = Page suivante
+prevnext_title_goto_page = Aller à la page
 prevnext_title_last_page = Dernière page
 prevnext_title_page_no = Page %d
 prevnext_title_prev_set_of_no_page = Ensemble précédent de {{page_set_total_rows}}  pages

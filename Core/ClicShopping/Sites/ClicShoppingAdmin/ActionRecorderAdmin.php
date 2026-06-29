@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Sites\ClicShoppingAdmin;
 
+use ClicShopping\Apps\Tools\ActionsRecorder\Classes\Shop\ActionRecorder;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
@@ -20,7 +21,7 @@ use function is_null;
  * This class extends the Shop ActionRecorder functionality and acts as the admin side representation of the action recorder module within the ClicShoppingAdmin site.
  * It handles initialization, validation checks to ensure modules are installed, and sets user attributes for tracking.
  */
-class ActionRecorderAdmin extends \ClicShopping\Apps\Tools\ActionsRecorder\Classes\Shop\ActionRecorder
+class ActionRecorderAdmin extends ActionRecorder
 {
   private mixed $lang;
 

@@ -13,7 +13,7 @@ namespace ClicShopping\AI\CoreAI\Memory;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\Rag\MultiDBRAGManager;
+use ClicShopping\AI\Rag\EmbeddingTableDiscovery;
 
 /**
  * EntityTypeRegistry Class
@@ -22,11 +22,11 @@ use ClicShopping\AI\Rag\MultiDBRAGManager;
  * Replaces hardcoded entity type lists with automatic discovery.
  *
  * Features:
- * - Auto-discovery of embedding tables from MultiDBRAGManager
+ * - Auto-discovery of embedding tables from EmbeddingTableDiscovery
  * - Caching for performance
  * - Mapping between table names and entity types
  * - Support for custom entity types
- * - No code duplication - uses existing MultiDBRAGManager
+ * - No code duplication - uses the lightweight EmbeddingTableDiscovery
  */
 
 class EntityTypeRegistry
@@ -39,7 +39,7 @@ class EntityTypeRegistry
   private array $entityToTableMap = [];
   private bool $initialized = false;
   private string $prefix;
-  private ?MultiDBRAGManager $ragManager = null;
+  private ?EmbeddingTableDiscovery $ragManager = null;
 
   /**
    * Private constructor for singleton pattern
@@ -50,12 +50,12 @@ class EntityTypeRegistry
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
     $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
     
-    // Initialize MultiDBRAGManager for accessing embedding tables
+    // MultiDBRAGManager god-class, instantiated here only to list embedding tables).
     try {
-      $this->ragManager = new MultiDBRAGManager();
+      $this->ragManager = new EmbeddingTableDiscovery($this->debug, $this->logger);
     } catch (\Exception $e) {
       $this->logger->logSecurityEvent(
-        "Failed to initialize MultiDBRAGManager: " . $e->getMessage(),
+        "Failed to initialize EmbeddingTableDiscovery: " . $e->getMessage(),
         'warning'
       );
       $this->ragManager = null;
@@ -141,9 +141,9 @@ class EntityTypeRegistry
   }
 
   /**
-   * Discover embedding tables from MultiDBRAGManager
+   * Discover embedding tables from EmbeddingTableDiscovery
    *
-   * Uses the existing knownEmbeddingTable() method instead of duplicating code
+   * Uses EmbeddingTableDiscovery::discover() instead of duplicating code
    *
    * @return array List of embedding table names
    */
@@ -153,8 +153,8 @@ class EntityTypeRegistry
 
     try {
       if ($this->ragManager !== null) {
-        // Use MultiDBRAGManager's knownEmbeddingTable() method
-        $allTables = $this->ragManager->knownEmbeddingTable(true);
+        // Discover embedding tables via the lightweight service
+        $allTables = $this->ragManager->discover(true);
 
         // Filter out system tables
         foreach ($allTables as $tableName) {
@@ -165,17 +165,17 @@ class EntityTypeRegistry
 
         if ($this->debug) {
           $this->logger->logSecurityEvent(
-            "Discovered " . count($tables) . " embedding tables from MultiDBRAGManager (filtered from " . count($allTables) . " total)",
+            "Discovered " . count($tables) . " embedding tables from EmbeddingTableDiscovery (filtered from " . count($allTables) . " total)",
             'info'
           );
         }
       } else {
-        throw new \Exception("MultiDBRAGManager not available");
+        throw new \Exception("EmbeddingTableDiscovery not available");
       }
 
     } catch (\Exception $e) {
       $this->logger->logSecurityEvent(
-        "Error discovering embedding tables from MultiDBRAGManager: " . $e->getMessage(),
+        "Error discovering embedding tables from EmbeddingTableDiscovery: " . $e->getMessage(),
         'warning'
       );
 
@@ -279,9 +279,9 @@ class EntityTypeRegistry
   }
 
   /**
-   * Initialize with fallback using MultiDBRAGManager
+   * Initialize with fallback using EmbeddingTableDiscovery
    *
-   * Uses MultiDBRAGManager's knownEmbeddingTable() as fallback
+   * Uses EmbeddingTableDiscovery's discover() as fallback
    * No more hardcoded lists!
    *
    * @return void
@@ -289,9 +289,9 @@ class EntityTypeRegistry
   private function initializeFallback(): void
   {
     try {
-      // Try to get tables from MultiDBRAGManager
+      // Try to get tables from EmbeddingTableDiscovery
       if ($this->ragManager !== null) {
-        $knownTables = $this->ragManager->knownEmbeddingTable(false); // Don't use cache for fallback
+        $knownTables = $this->ragManager->discover(false); // Don't use cache for fallback
       } else {
         // Last resort: direct database query
         $knownTables = $this->discoverEmbeddingTablesDirectly();
@@ -320,7 +320,7 @@ class EntityTypeRegistry
 
       if ($this->debug) {
         $this->logger->logSecurityEvent(
-          "EntityTypeRegistry initialized with fallback from MultiDBRAGManager: " . implode(', ', $this->entityTypes),
+          "EntityTypeRegistry initialized with fallback from EmbeddingTableDiscovery: " . implode(', ', $this->entityTypes),
           'warning'
         );
       }

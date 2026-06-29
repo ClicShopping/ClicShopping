@@ -50,7 +50,9 @@ class RagEmbeddingGenerator implements EmbeddingGeneratorInterface
    */
   public function embedDocument(Document $document): Document
   {
-    $document->embedding = NewVector::createEmbedding(null, $document->content);
+    // Assign the actual embedding vector (NewVector::createEmbedding returns a
+    // split Document[], not a vector — it must not be stored in ->embedding).
+    $document->embedding = $this->embedText($document->content);
 
     return $document;
   }

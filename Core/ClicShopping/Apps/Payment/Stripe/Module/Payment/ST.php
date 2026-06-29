@@ -330,13 +330,52 @@ class ST implements PaymentInterface
     $this->upsertPaymentActionBuffer($stripe_payment_intent_id, (int)$customer_id, $CLICSHOPPING_Order);
 
     $content = '';
+    $content .= '<div class="py-2"></div>';
 
     if (CLICSHOPPING_APP_STRIPE_ST_SERVER_PROD == 'False') {
       $content .= '<div class="alert alert-warning"> ' . $this->app->getDef('text_stripe_alert_mode_test') . '</div>';
+      $content .= '<div class="py-2"></div>';
     }
 
-    $content .= $this->app->getDef('text_stripe_title');
-    $content .= '<div class="mt-1"></div>';
+    $content .= '<div class="card">';
+    $content .= '<div class="card-header">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      ' . $this->app->getDef('text_stripe_title') . '
+    </div>
+    
+    <div class="col-md-6 d-flex justify-content-end">
+      <style>
+        .stripe-secure-step-image {
+          display: flex;
+          align-items: center; /* Aligne verticalement les images et le texte */
+          gap: 8px;            /* Un peu d\'espace entre les éléments */
+        }
+        .stripe-secureTextWrapper {
+          display: flex;
+          flex-direction: column;
+          line-height: 1.2;
+          font-size: 12px;
+          font-weight: 600;
+          color: #686868;
+          text-align: left;    /* Le texte reste aligné à gauche dans son propre bloc */
+        }
+      </style>
+      
+      <div class="stripe-secure-step-image">
+        ' . HTML::image('images/page_securise.svg') . ' 
+        ' . HTML::image('images/bank_card.png') . '
+        
+        <div class="stripe-secureTextWrapper">
+          <div>Pages</div>
+          <div>sécurisées</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>';
+    $content .= '<div class="card-body">';
+
 // have to create intent before loading the javascript because it needs the intent id
     $content .= '<input type="hidden" id="intent_id" name="intent_id" value="' . HTML::output($stripe_payment_intent_id) . '" />' .
       '<input type="hidden" id="secret" value="' . HTML::output($this->intent->client_secret) . '" />';
@@ -347,14 +386,8 @@ class ST implements PaymentInterface
       '<div class="mt-1"></div>' .
       '<div><label for="card-element" class="control-label">' . $this->app->getDef('text_stripe_credit_card_type') . '</label>' .
       '<div id="card-element" class="stripeCardElement"></div>
-                  </div>';
+       </div>';
 
-    /*
-          if (MODULE_PAYMENT_STRIPE_SCA_TOKENS == 'True') {
-            $content .= '<div class="form-check">' .
-                '<div>' . tep_draw_checkbox_field('card-save', 'true', null, 'class="form-check-input') . '<label class="form-check-label">' . MODULE_PAYMENT_STRIPE_SCA_CREDITCARD_SAVE . '</label></div></div>';
-          }
-    */
 
     $content .= '<div id="card-errors" role="alert" class="messageStackError payment-errors"></div></div>';
     // Billing PII is stored AES-encrypted on the Order object; decrypt it before sending the
@@ -368,7 +401,11 @@ class ST implements PaymentInterface
     $content .= '<input type="hidden" id="email_address" value="' . HTML::output(Hash::displayDecryptedEmail($CLICSHOPPING_Order->customer['email_address'])) . '" />';
     $content .= '<input type="hidden" id="customer_id" value="' . HTML::output($customer_id) . '" />';
 
+    $content .= '<div class="py-1"></div>';
     $content .= $this->getSubmitCardDetailsJavascript();
+    $content .= '</div>';
+    $content .= '</div>';
+    $content .= '<div class="py-2"></div>';
 
     // Return the markup under 'content' (not 'title'): the confirmation content module renders a
     // 'title' inside a <table>, which foster-parents the Stripe <div id="card-element"> and its

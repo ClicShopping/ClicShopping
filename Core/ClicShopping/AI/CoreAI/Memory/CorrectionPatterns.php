@@ -12,7 +12,7 @@ namespace ClicShopping\AI\CoreAI\Memory;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
-use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVectorEmbeddingAdapter;
 use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 
@@ -39,7 +39,7 @@ class CorrectionPatterns
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER')&& CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
     $this->languageId = $languageId ?? Registry::get('Language')->getId();
-    $this->embeddingGenerator = $this->createEmbeddingGenerator();
+    $this->embeddingGenerator = new NewVectorEmbeddingAdapter();
     $this->vectorStore = new MariaDBVectorStore($this->embeddingGenerator, $tableName);
 
     if ($this->debug) {
@@ -50,41 +50,6 @@ class CorrectionPatterns
     }
   }
 
-  /**
-   * Create an embedding generator using NewVector's GPT embeddings model.
-   *
-   * @return EmbeddingGeneratorInterface
-   */
-  private function createEmbeddingGenerator(): EmbeddingGeneratorInterface
-  {
-    return new class implements EmbeddingGeneratorInterface
-    {
-      public function embedText(string $text): array
-      {
-        $generator = NewVector::gptEmbeddingsModel();
-        if (!$generator) {
-          throw new \RuntimeException('Embedding generator not initialized.');
-        }
-        return $generator->embedText($text);
-      }
-
-      public function embedDocument(Document $document): Document
-      {
-        $document->embedding = $this->embedText($document->content);
-        return $document;
-      }
-
-      public function embedDocuments(array $documents): array
-      {
-        return array_map($this->embedDocument(...), $documents);
-      }
-
-      public function getEmbeddingLength(): int
-      {
-        return NewVector::getEmbeddingLength();
-      }
-    };
-  }
 
   /**
    * Store a correction pattern in the vector store.

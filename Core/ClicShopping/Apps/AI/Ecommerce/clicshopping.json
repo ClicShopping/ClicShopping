@@ -22,6 +22,9 @@
     "Config": {
       "EcommerceDomain": "Module\\ClicShoppingAdmin\\Config\\EcommerceDomain"
     },
+    "HeaderTags": {
+      "LlmsTxt": "Module\\HeaderTags\\LlmsTxt"
+    },
     "Hooks": {
       "ClicShoppingAdmin/Langues": {
         "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm"

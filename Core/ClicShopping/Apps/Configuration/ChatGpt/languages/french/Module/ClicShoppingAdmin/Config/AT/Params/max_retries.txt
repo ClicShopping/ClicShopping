@@ -1,0 +1,2 @@
+cfg_chatgpt_max_retries_title = Tentatives maximales
+cfg_chatgpt_max_retries_description = Nombre de fois où la coordination acteur-critique réessaie après une erreur transitoire avant d'abandonner. Plus élevé = plus robuste mais plus lent et plus coûteux. Recommandé : 2.

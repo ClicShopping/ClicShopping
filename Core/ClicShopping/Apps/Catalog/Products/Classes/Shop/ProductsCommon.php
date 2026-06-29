@@ -15,6 +15,9 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Products\Classes\Shop\DynamicPricingRules;
+use ClicShopping\Apps\Catalog\Products\Classes\Shop\SubProduct\ProductSoldOutRenderer;
+use ClicShopping\Apps\Catalog\Products\Classes\Shop\SubProduct\ProductSortHeadingRenderer;
+use ClicShopping\Apps\Catalog\Products\Classes\Shop\SubProduct\ProductVisibilityPolicy;
 
 use function is_null;
 use function strlen;
@@ -1304,15 +1307,17 @@ class ProductsCommon extends Prod
       $product_price_kilo_display = '';
     }
 
-    if ((\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true') && !$this->customer->isLoggedOn()) {
-      $product_price_kilo_display = '';
-    }
+    $prices_logged_in = \defined('PRICES_LOGGED_IN') ? PRICES_LOGGED_IN : null;
+    $not_display_price_zero = \defined('NOT_DISPLAY_PRICE_ZERO') ? NOT_DISPLAY_PRICE_ZERO : null;
 
-    if (\defined('NOT_DISPLAY_PRICE_ZERO') && NOT_DISPLAY_PRICE_ZERO == 'false' && $products_price == 0) {
-      $product_price_kilo_display = '';
-    }
-
-    if ($this->getPriceGroupView() == 0 && $this->customer->getCustomersGroupID() != 0) {
+    if ((new ProductVisibilityPolicy())->hidesPriceByWeight(
+      $prices_logged_in,
+      $this->customer->isLoggedOn(),
+      $not_display_price_zero,
+      $products_price,
+      $this->getPriceGroupView(),
+      $this->customer->getCustomersGroupID()
+    )) {
       $product_price_kilo_display = '';
     }
 
@@ -1604,35 +1609,64 @@ class ProductsCommon extends Prod
     $customers_group_id = $this->customer->getCustomersGroupID();
 
     if ($customers_group_id == 0) {
-      $QproductMinOrder = $this->db->get('products', ['products_min_qty_order'], ['products_id' => (int)$id]);
+      return $this->resolvePublicMinimumQuantity((int)$id);
+    }
 
-      if ($QproductMinOrder->valueInt('products_min_qty_order') > 0.1) {
-        $min_quantity_order = $QproductMinOrder->valueInt('products_min_qty_order');
-      } else {
-        $max_min_in_cart = \defined('MAX_MIN_IN_CART') ? (int)MAX_MIN_IN_CART : 0;
-        $max_qty_in_cart = \defined('MAX_QTY_IN_CART') ? (int)MAX_QTY_IN_CART : 0;
-        $min_quantity_order = $max_min_in_cart;
-        // Cap the per-cart minimum by the per-cart maximum when both are set
-        // and the minimum would exceed the maximum.
-        if ($max_min_in_cart > $max_qty_in_cart && $max_qty_in_cart > 0) {
-          $min_quantity_order = $max_qty_in_cart;
-        }
-}
-    } else {
-      $QcustomersGroupMinOrder = $this->db->get('customers_groups', ['customers_group_quantity_default'], ['customers_group_id' => (int)$customers_group_id]);
+    return $this->resolveGroupMinimumQuantity((int)$customers_group_id);
+  }
 
-      $QcustomersProductsGroupMinOrder = $this->db->get('products_groups', ['products_quantity_fixed_group'], ['customers_group_id' => (int)$customers_group_id]);
+  /**
+   * Resolve the minimum order quantity for a public (anonymous group) visitor:
+   * the product's own products_min_qty_order when set, otherwise the per-cart
+   * MAX_MIN_IN_CART config value capped by MAX_QTY_IN_CART. Extracted verbatim
+   * from setProductsMinimumQuantity to keep that method under the complexity gate.
+   *
+   * @param int $id The product id.
+   * @return int The resolved minimum order quantity.
+   */
+  private function resolvePublicMinimumQuantity(int $id): int
+  {
+    $QproductMinOrder = $this->db->get('products', ['products_min_qty_order'], ['products_id' => $id]);
 
-      if ($QcustomersProductsGroupMinOrder->valueInt('products_quantity_fixed_group') > 1) {
-        $min_quantity_order = $QcustomersProductsGroupMinOrder->valueInt('products_quantity_fixed_group');
-      } elseif ($QcustomersGroupMinOrder->valueInt('customers_group_quantity_default') > 1) {
-        $min_quantity_order = $QcustomersGroupMinOrder->valueInt('customers_group_quantity_default');
-      } else {
-        $min_quantity_order = 1;
-      }
-}
+    if ($QproductMinOrder->valueInt('products_min_qty_order') > 0.1) {
+      return $QproductMinOrder->valueInt('products_min_qty_order');
+    }
+
+    $max_min_in_cart = \defined('MAX_MIN_IN_CART') ? (int)MAX_MIN_IN_CART : 0;
+    $max_qty_in_cart = \defined('MAX_QTY_IN_CART') ? (int)MAX_QTY_IN_CART : 0;
+    $min_quantity_order = $max_min_in_cart;
+    // Cap the per-cart minimum by the per-cart maximum when both are set
+    // and the minimum would exceed the maximum.
+    if ($max_min_in_cart > $max_qty_in_cart && $max_qty_in_cart > 0) {
+      $min_quantity_order = $max_qty_in_cart;
+    }
 
     return $min_quantity_order;
+  }
+
+  /**
+   * Resolve the minimum order quantity for a customer group: the product's
+   * fixed group quantity when > 1, otherwise the group default when > 1, else 1.
+   * Extracted verbatim from setProductsMinimumQuantity.
+   *
+   * @param int $customers_group_id The customer group id.
+   * @return int The resolved minimum order quantity.
+   */
+  private function resolveGroupMinimumQuantity(int $customers_group_id): int
+  {
+    $QcustomersGroupMinOrder = $this->db->get('customers_groups', ['customers_group_quantity_default'], ['customers_group_id' => $customers_group_id]);
+
+    $QcustomersProductsGroupMinOrder = $this->db->get('products_groups', ['products_quantity_fixed_group'], ['customers_group_id' => $customers_group_id]);
+
+    if ($QcustomersProductsGroupMinOrder->valueInt('products_quantity_fixed_group') > 1) {
+      return $QcustomersProductsGroupMinOrder->valueInt('products_quantity_fixed_group');
+    }
+
+    if ($QcustomersGroupMinOrder->valueInt('customers_group_quantity_default') > 1) {
+      return $QcustomersGroupMinOrder->valueInt('customers_group_quantity_default');
+    }
+
+    return 1;
   }
 
   /**
@@ -1663,23 +1697,19 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    if ($this->getProductsMinimumQuantity($id) >= 1) {
-      if ($this->getOrdersGroupView() != 0 && $this->customer->getCustomersGroupID() != 0) {
-        $min_order_quantity_products_display = $this->getProductsMinimumQuantity($id);
-      } elseif ($this->getProductsOrdersView() != 0 && $this->customer->getCustomersGroupID() == 0) {
-        $min_order_quantity_products_display = $this->getProductsMinimumQuantity($id);
-      } else {
-        $min_order_quantity_products_display = '';
-      }
-} else {
-      $min_order_quantity_products_display = '';
-    }
+    $min_quantity = $this->getProductsMinimumQuantity($id);
+    $prices_logged_in = \defined('PRICES_LOGGED_IN') ? PRICES_LOGGED_IN : null;
 
-    if (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true' && !$this->customer->isLoggedOn()) {
-      $min_order_quantity_products_display = '';
-    }
+    $allowed = $min_quantity >= 1
+      && (new ProductVisibilityPolicy())->allowsMinimumQuantityDisplay(
+        $this->getOrdersGroupView(),
+        $this->getProductsOrdersView(),
+        $this->customer->getCustomersGroupID(),
+        $prices_logged_in,
+        $this->customer->isLoggedOn()
+      );
 
-    return $min_order_quantity_products_display;
+    return $allowed ? $min_quantity : '';
   }
 
   /*
@@ -1716,30 +1746,30 @@ class ProductsCommon extends Prod
     $min_qty = max(1, (int)$this->getProductsMinimumQuantity($id));
     $input_params = 'id="Quantity' . $id . '" placeholder="qty" class="input-small" maxlength="4" size="4" min="' . $min_qty . '"';
 
-    if ($this->customer->getCustomersGroupID() != 0 && $this->getOrdersGroupView() != 0) {
-      $input_quantity = '<label for="Quantity' . $id . '" class="visually-hidden"></label>';
-      $input_quantity .= HTML::inputField('cart_quantity', (int)$this->setProductsMinimumQuantityToTakeAnOrder($id), $input_params) . '&nbsp;&nbsp;';
-    } else {
-      $input_quantity = '';
-    }
+    $prices_logged_in = \defined('PRICES_LOGGED_IN') ? PRICES_LOGGED_IN : null;
 
-    if ($this->customer->getCustomersGroupID() == 0 && $this->getProductsOrdersView() != 0) {
-      if (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'false') {
-        $input_quantity = '<label for="Quantity' . $id . '" class="visually-hidden"></label>';
-        $input_quantity .= HTML::inputField('cart_quantity', (int)$this->setProductsMinimumQuantityToTakeAnOrder($id), $input_params) . '&nbsp;&nbsp;';
-      } elseif (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true' && $this->customer->isLoggedOn()) {
-        $input_quantity = '<label for="Quantity' . $id . '" class="visually-hidden"></label>';
-        $input_quantity .= HTML::inputField('cart_quantity', (int)$this->setProductsMinimumQuantityToTakeAnOrder($id), $input_params) . '&nbsp;&nbsp;';
-      } else {
-        $input_quantity = '';
-      }
-}
+    $show_input = (new ProductVisibilityPolicy())->showsQuantityInput(
+      $this->customer->getCustomersGroupID(),
+      $this->getOrdersGroupView(),
+      $this->getProductsOrdersView(),
+      $prices_logged_in,
+      $this->customer->isLoggedOn()
+    );
 
-    if ($this->setProductsMinimumQuantityToTakeAnOrder($id) == 0 && \defined('MAX_MIN_IN_CART') && MAX_MIN_IN_CART == 0) {
-      $input_quantity = '';
+    $min_order_quantity = $this->setProductsMinimumQuantityToTakeAnOrder($id);
+
+    if ($min_order_quantity == 0 && \defined('MAX_MIN_IN_CART') && MAX_MIN_IN_CART == 0) {
+      $show_input = false;
     }
 
     if ($this->getPriceGroupView() == 0 && $this->customer->getCustomersGroupID() != 0) {
+      $show_input = false;
+    }
+
+    if ($show_input) {
+      $input_quantity = '<label for="Quantity' . $id . '" class="visually-hidden"></label>';
+      $input_quantity .= HTML::inputField('cart_quantity', (int)$min_order_quantity, $input_params) . '&nbsp;&nbsp;';
+    } else {
       $input_quantity = '';
     }
 
@@ -1824,27 +1854,7 @@ class ProductsCommon extends Prod
     $is_logged_in = $this->customer->isLoggedOn();
     $prices_logged_in = \defined('PRICES_LOGGED_IN') ? PRICES_LOGGED_IN : null;
 
-    if ($prices_logged_in === 'true' && !$is_logged_in) {
-      $buy_button = '';
-    } elseif ($orders_view === 0 && $customers_group_id === 0) {
-      $buy_button = '';
-    }
-
-    if ($prices_logged_in === 'true' && $is_logged_in) {
-      if ($orders_view === 0 && $customers_group_id === 0) {
-        $buy_button = '';
-      } elseif ($orders_group_view === 0 && $customers_group_id !== 0) {
-        $buy_button = '';
-      }
-    } elseif ($prices_logged_in === 'false' && $is_logged_in) {
-      if ($orders_view === 0 && $customers_group_id === 0) {
-        $buy_button = '';
-      } elseif ($orders_group_view === 0 && $customers_group_id !== 0) {
-        $buy_button = '';
-      }
-    }
-
-    if ($price_group_view === 0 && $customers_group_id !== 0) {
+    if ((new ProductVisibilityPolicy())->hidesBuyButton($prices_logged_in, $is_logged_in, $orders_view, $orders_group_view, $price_group_view, $customers_group_id)) {
       $buy_button = '';
     }
 
@@ -1913,65 +1923,6 @@ class ProductsCommon extends Prod
     ];
   }
 
-  /**
-   * Generates the HTML for a "sold out" button based on the specified or default button type.
-   *
-   * @param string|null $button_type Optional CSS classes for the button. Defaults to 'btn-warning btn-sm' if not provided.
-   * @return string The HTML string for the "sold out" button. Returns an empty string if "PRE_ORDER_AUTORISATION" is set to 'false'.
-   */
-  private function getProductButtonSoldOut($button_type = null): string
-  {
-    $product_button_sold_out = '';
-
-    if (is_null($button_type)) {
-      $button_type = 'btn-warning btn-sm';
-    }
-
-    if (\defined('PRE_ORDER_AUTORISATION') && PRE_ORDER_AUTORISATION == 'false') {
-      $product_button_sold_out = '<button type="button" class="btn ' . $button_type . '">' . CLICSHOPPING::getDef('button_sold_out') . '</button>';
-    }
-
-    return $product_button_sold_out;
-  }
-
-  /**
-   * Determines the "sold out" status of a product based on stock level and configuration settings.
-   *
-   * @param int|null $id The ID of the product. If null, the method will use the current ID.
-   * @param string|null $button_type Optional button type to be used when generating the "sold out" display.
-   * @return string The appropriate "sold out" representation or an empty string if no action is required.
-   */
-
-  private function setProductsSoldOut($id, $button_type = null): string
-  {
-    if (is_null($id)) {
-      $id = $this->getID();
-    }
-    $product_sold_out = '';
-
-    $QproductSoldOut = $this->db->prepare('select products_quantity
-                                              from :table_products
-                                              where products_id = :products_id
-                                              and products_quantity < 1
-                                             ');
-
-    $QproductSoldOut->bindInt(':products_id', $id);
-    $QproductSoldOut->execute();
-
-    if ($QproductSoldOut->fetch()) {
-      if (\defined('STOCK_CHECK') && STOCK_CHECK == 'true' && \defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false' && \defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'false') {
-        $product_sold_out = $this->getProductButtonSoldOut($button_type);
-      } elseif (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true' && $this->customer->getCustomersGroupID() == 0 && !$this->customer->isLoggedOn() && \defined('STOCK_CHECK') && STOCK_CHECK == 'true' && \defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') {
-        $product_sold_out = ' ';
-      } elseif (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true' && $this->customer->getCustomersGroupID() != 0 && \defined('STOCK_CHECK') && STOCK_CHECK == 'true' && \defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') {
-        $product_sold_out = $this->getProductButtonSoldOut($button_type);
-      } elseif (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true' && $this->customer->getCustomersGroupID() == 0 && $this->customer->isLoggedOn() && \defined('STOCK_CHECK') && STOCK_CHECK == 'true' && \defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') {
-        $product_sold_out = $this->getProductButtonSoldOut($button_type);
-      }
-}
-
-    return $product_sold_out;
-  }
 
   /**
    * Retrieves the status of products that are sold out, based on the provided product ID and button type.
@@ -1982,7 +1933,7 @@ class ProductsCommon extends Prod
    */
   public function getProductsSoldOut($id = null, $button_type = null): string
   {
-    return $this->setProductsSoldOut($id, $button_type);
+    return (new ProductSoldOutRenderer())->setProductsSoldOut($id ?? $this->getID(), $button_type);
   }
 
 // =======================================================================================================================================================
@@ -1998,11 +1949,10 @@ class ProductsCommon extends Prod
 
   private function setCustomersPrice($id = null)
   {
-
-    if (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'false') {
-      $product_price = $this->setCalculPrice($id);
-    }
-
+    // When prices require login and the visitor is anonymous, show a login
+    // prompt; otherwise compute the price. The else covers every other
+    // PRICES_LOGGED_IN state ('false', 'true'+logged-in, undefined), so a
+    // single setCalculPrice() call is enough (it is a pure, idempotent read).
     if (\defined('PRICES_LOGGED_IN') && PRICES_LOGGED_IN == 'true' && (!$this->customer->isLoggedOn())) {
       $product_price = HTML::link(CLICSHOPPING::link(null, 'Account&LogIn'), CLICSHOPPING::getDef('prices_logged_in_text')) . '&nbsp;';
     } else {
@@ -2930,7 +2880,7 @@ class ProductsCommon extends Prod
       }
 }
 
-    if (!is_null($new_discount_price) || !empty($new_discount_price)) {
+    if (!is_null($new_discount_price)) {
       return $new_discount_price;
     } else {
       return false;
@@ -2996,28 +2946,7 @@ class ProductsCommon extends Prod
    */
   public function createSortHeading($sortby, $column, $heading)
   {
-    if (isset($_POST['keywords'])) {
-      $keywords = HTML::sanitize($_POST['keywords']);
-    } elseif (isset($_GET['keywords'])) {
-      $keywords = HTML::sanitize($_GET['keywords']);
-    } else {
-      $keywords = '';
-    }
-
-    if (isset($sortby)) {
-      if (isset($_POST['keywords']) || isset($_GET['keywords'])) {
-        $sort_prefix = '<a href="' . CLICSHOPPING::link(null, CLICSHOPPING::getAllGET(array('page', 'info', 'sort')) . '&keywords=' . $keywords . '&page=1&sort=' . $column . ($sortby == $column . 'a' ? 'd' : 'a')) . '" title="' . HTML::output(CLICSHOPPING::getDef('text_sort_products') . ' ' . ($sortby == $column . 'd' || substr($sortby, 0, 1) != $column ? CLICSHOPPING::getDef('text_ascendingly') : CLICSHOPPING::getDef('text_descendingly')) . ' ' . trim(CLICSHOPPING::getDef('text_by')) . ' ' . $heading) . '" class="productListing-heading">';
-        $sort_suffix = ' ' . (substr($sortby, 0, 1) == $column ? (substr($sortby, 1, 1) == 'a' ? '+' : '-') : '') . '</a>';
-      } else {
-        $sort_prefix = '<a href="' . CLICSHOPPING::link(null, CLICSHOPPING::getAllGET(array('page', 'info', 'sort')) . '&page=1&sort=' . $column . ($sortby == $column . 'a' ? 'd' : 'a')) . '" title="' . HTML::output(CLICSHOPPING::getDef('text_sort_products') . ' ' . ($sortby == $column . 'd' || substr($sortby, 0, 1) != $column ? CLICSHOPPING::getDef('text_ascendingly') : CLICSHOPPING::getDef('text_descendingly')) . ' ' . trim(CLICSHOPPING::getDef('text_by')) . ' ' . $heading) . '" class="productListing-heading">';
-        $sort_suffix = ' ' . (substr($sortby, 0, 1) == $column ? (substr($sortby, 1, 1) == 'a' ? '+' : '-') : '') . '</a>';
-      }
-} else {
-      $sort_prefix = '<a href="' . CLICSHOPPING::link(null, CLICSHOPPING::getAllGET(array('page', 'info', 'sort')) . '&keywords=' . $keywords . '&page=1&sort=' . $column . ($sortby == $column . 'a' ? 'd' : 'a')) . '" title="' . HTML::output(CLICSHOPPING::getDef('text_sort_products') . ' ' . ($sortby == $column . 'd' || substr($sortby, 0, 1) != $column ? CLICSHOPPING::getDef('text_ascendingly') : CLICSHOPPING::getDef('text_descendingly')) . ' ' . trim(CLICSHOPPING::getDef('text_by')) . ' ' . $heading) . '" class="productListing-heading">';
-      $sort_suffix = ' ' . (substr($sortby, 0, 1) == $column ? (substr($sortby, 1, 1) == 'a' ? '+' : '-') : '') . '</a>';
-    }
-
-    return $sort_prefix . $heading . $sort_suffix;
+    return (new ProductSortHeadingRenderer())->createSortHeading($sortby, $column, $heading);
   }
 
   /*

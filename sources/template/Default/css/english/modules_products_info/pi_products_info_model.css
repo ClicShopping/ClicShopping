@@ -6,9 +6,9 @@
 
  */
 
-div.modulesProductsInfoModel, span.modulesProductsInfoModel h3 {
+div.modulesProductsInfoModel, span.modulesProductsInfoModel {
 }
 
-h3.modulesProductsInfoModel {
+span.modulesProductsInfoModel {
   font-size: 1rem;
 }

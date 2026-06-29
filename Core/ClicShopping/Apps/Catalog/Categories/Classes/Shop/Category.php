@@ -64,7 +64,7 @@ class Category
       } else {
         $this->category_depth = 0;
       }
-}
+    }
 
     if (!Registry::exists('RewriteUrl')) {
       Registry::set('RewriteUrl', new RewriteUrl());
@@ -478,7 +478,7 @@ class Category
    * @param int|string $categories_id The ID of the category whose image URL is to be retrieved.
    * @return string The URL of the category image.
    */
-  public function getCategoryImageUrl($categories_id)
+  public function getCategoryImageUrl($categories_id): string
   {
     $category = $this->getPathCategories($categories_id);
 
@@ -494,7 +494,7 @@ class Category
    *
    * @return string The title of the category.
    */
-  public function getCategoryTitle($categories_name)
+  public function getCategoryTitle(string $categories_name): string
   {
     $category_name = $this->rewriteUrl->getCategoryTreeTitle($categories_name);
 

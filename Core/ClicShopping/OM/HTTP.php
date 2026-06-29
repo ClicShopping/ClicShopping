@@ -376,7 +376,7 @@ class HTTP
    */
   public static function getFullPath(string $path = '', string $separator = '/'): string
   {
-    $systemroot = CLICSHOPPING::getSite('Shop');
+    $systemroot = CLICSHOPPING::getSite();
 
     // Normalize system root and base paths
     $systemroot = rtrim($systemroot, $separator) . $separator;
@@ -406,7 +406,7 @@ class HTTP
       }
       $arrn[0] = rtrim($base, $separator);
       
-      return join($separator, $arrn);
+      return implode($separator, $arrn);
     }
 
     return $path;

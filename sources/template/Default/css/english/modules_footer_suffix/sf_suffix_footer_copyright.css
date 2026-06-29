@@ -51,3 +51,8 @@ div.footerClicShopping {
   color: #000;
   font-size: 0.6875rem;
 }
+
+.footerSuffixCopyright a,
+.footerSuffixTrademark a {
+  text-decoration: underline;
+}

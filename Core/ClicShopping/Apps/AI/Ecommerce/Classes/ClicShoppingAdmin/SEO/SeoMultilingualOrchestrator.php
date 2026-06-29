@@ -181,6 +181,7 @@ class SeoMultilingualOrchestrator
     ];
 
     // Persist a per-language SERP report row for the translated locales too (proxy: re-uses the
+    // EN audit + score, the same approach already used for the embedding history below). Without  this, CockpitAI's per-language SEO status lookup 
     $reportRepo = new SeoSerpReportRepository();
 
     foreach ($languages as $code => $info) {

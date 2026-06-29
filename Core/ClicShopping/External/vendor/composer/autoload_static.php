@@ -48,6 +48,7 @@ class ComposerStaticInit559d5c9b702bf740c3f0e192226eea14
             'Symfony\\Component\\Console\\' => 26,
             'Symfony\\Component\\Cache\\' => 24,
             'Stripe\\' => 7,
+            'Stolt\\LlmsTxt\\' => 14,
         ),
         'P' =>
         array (
@@ -186,6 +187,10 @@ class ComposerStaticInit559d5c9b702bf740c3f0e192226eea14
         'Stripe\\' =>
         array (
             0 => __DIR__ . '/..' . '/stripe/stripe-php/lib',
+        ),
+        'Stolt\\LlmsTxt\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/stolt/llms-txt-php/src',
         ),
         'Psr\\Log\\' =>
         array (

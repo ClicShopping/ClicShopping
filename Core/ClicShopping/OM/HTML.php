@@ -244,6 +244,38 @@ class HTML
       $image .= ' title="' . static::output($alt) . '"';
     }
 
+    // Catalog (Shop) only: when CONFIG_CALCULATE_IMAGE_SIZE is enabled, fill in
+    // any missing width/height from the resized file's REAL dimensions so the
+    // browser can reserve the exact box before lazy-loading (lozad) swaps the
+    // src — this removes the Cumulative Layout Shift without deforming the
+    // image (the emitted ratio is the file's own ratio). The file is already
+    // resized at upload per the admin SMALL/MEDIUM/BIG settings, so reading it
+    // back honours that configuration automatically. Admin rendering is left
+    // untouched (this branch is Shop-only). No cache yet — measured first.
+    if (CLICSHOPPING::getSite() == 'Shop'
+        && \defined('CONFIG_CALCULATE_IMAGE_SIZE') && CONFIG_CALCULATE_IMAGE_SIZE == 'true'
+        && (empty($width) || empty($height))) {
+      $image_file = CLICSHOPPING::getConfig('dir_root', 'Shop') . $src;
+
+      if (is_file($image_file)) {
+        $real_size = @getimagesize($image_file);
+
+        if ($real_size !== false && $real_size[0] > 0 && $real_size[1] > 0) {
+          $real_width = (int)$real_size[0];
+          $real_height = (int)$real_size[1];
+
+          if (!empty($width) && empty($height)) {
+            $height = (string)(int)round((int)$width * $real_height / $real_width);
+          } elseif (empty($width) && !empty($height)) {
+            $width = (string)(int)round((int)$height * $real_width / $real_height);
+          } else {
+            $width = (string)$real_width;
+            $height = (string)$real_height;
+          }
+        }
+      }
+    }
+
     if (isset($width) && (strlen($width) > 0)) {
       $image .= ' width="' . static::output($width) . '"';
     }

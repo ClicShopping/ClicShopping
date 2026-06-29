@@ -49,8 +49,8 @@ if (empty($description)) {
   $description = HTML::removeFileAccents(STORE_NAME);
 }
 
-$scope = HTTP::getFullPath();
-$start_url = HTTP::getFullPath();
+$scope = CLICSHOPPING::getConfig('http_path', 'Shop');
+$start_url = HTTP::getShopUrlDomain();
 
 $image_192 = HTTP::getShopUrlDomain() . 'sources/images/logos/manifest/logo_192.png';
 $image_512 = HTTP::getShopUrlDomain() . 'sources/images/logos/manifest/logo_512.png';

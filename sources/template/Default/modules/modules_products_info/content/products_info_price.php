@@ -26,7 +26,7 @@ use ClicShopping\OM\CLICSHOPPING;
         <div class="mt-1"></div>
         <div class="ModulesProductsInfoMinOrderQuandityProductsDisplay">
           <span
-            class="ModulesProductsInfoMinOrderQuandityProductsDisplay"><h3><?php echo $min_order_quantity_products_display; ?></h3></span>
+            class="ModulesProductsInfoMinOrderQuandityProductsDisplay"><?php echo $min_order_quantity_products_display; ?></span>
         </div>
         <div class="mt-1"></div>
         <div class="text-end ModulesProductsInfoQuantityMinOrderProductInfo">

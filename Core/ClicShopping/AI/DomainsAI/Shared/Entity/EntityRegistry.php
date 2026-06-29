@@ -12,7 +12,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
-use ClicShopping\AI\Rag\MultiDBRAGManager;
+use ClicShopping\AI\Rag\EmbeddingTableDiscovery;
 
 /**
  * EntityRegistry Class
@@ -160,7 +160,7 @@ class EntityRegistry
   /**
    * Get static list of known embedding tables
    *
-   * Uses MultiDBRAGManager::knownEmbeddingTable() which already provides
+   * Uses EmbeddingTableDiscovery::discover() which already provides
    * a comprehensive static list with dynamic discovery fallback
    *
    * @return array List of embedding table names
@@ -168,13 +168,11 @@ class EntityRegistry
   private function getStaticEmbeddingTables(): array
   {
     try {
-      // Use existing MultiDBRAGManager method which already handles
-      // dynamic discovery + static fallback
-      $ragManager = new MultiDBRAGManager();
-      return $ragManager->knownEmbeddingTable(false); // false = bypass cache for fresh data
+      $discovery = new EmbeddingTableDiscovery($this->debug, $this->securityLogger);
+      return $discovery->discover(false); // false = bypass cache for fresh data
     } catch (\Exception $e) {
       $this->securityLogger->logSecurityEvent(
-        "Failed to get embedding tables from MultiDBRAGManager: " . $e->getMessage(),
+        "Failed to get embedding tables from EmbeddingTableDiscovery: " . $e->getMessage(),
         'warning'
       );
       

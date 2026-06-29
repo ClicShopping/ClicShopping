@@ -8,9 +8,8 @@
 
 namespace ClicShopping\AI\Security\Validation;
 
-
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVectorEmbeddingAdapter;
 use ClicShopping\AI\DomainsAI\Shared\Embedding\VectorStatistics;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 
@@ -123,15 +122,7 @@ class AnswerGroundingVerifier
 
       // Initialize embedding generator if needed (lazy loading)
       if ($this->embeddingGenerator === null) {
-        try {
-          $this->embeddingGenerator = $this->createEmbeddingGenerator();
-        } catch (\Exception $e) {
-          $this->logger->logSecurityEvent(
-            "Failed to initialize embedding generator: " . $e->getMessage(),
-            'error'
-          );
-          return $this->createErrorResult($answer, 'Embedding generator initialization failed: ' . $e->getMessage());
-        }
+        $this->embeddingGenerator = new NewVectorEmbeddingAdapter();
       }
 
       // Step 2: Verify grounding for each sentence
@@ -508,58 +499,6 @@ class AnswerGroundingVerifier
     return null;
   }
 
-  /**
-   * Create embedding generator
-   *
-   * @return EmbeddingGeneratorInterface
-   */
-  private function createEmbeddingGenerator(): EmbeddingGeneratorInterface
-  {
-    return new class implements EmbeddingGeneratorInterface
-    {
-      public function embedText(string $text): array
-      {
-        $generator = NewVector::gptEmbeddingsModel();
-        if (!$generator) {
-          throw new \RuntimeException('Embedding generator not initialized.');
-        }
-        return $generator->embedText($text);
-      }
-
-      public function embedDocument(\LLPhant\Embeddings\Document $document): \LLPhant\Embeddings\Document
-      {
-        $document->embedding = $this->embedText($document->content);
-        return $document;
-      }
-
-      /**
-       * Embed multiple documents
-       * Required by EmbeddingGeneratorInterface
-       *
-       * @param array<\LLPhant\Embeddings\Document> $documents
-       * @return array<\LLPhant\Embeddings\Document>
-       */
-      public function embedDocuments(array $documents): array
-      {
-        foreach ($documents as $document) {
-          $this->embedDocument($document);
-        }
-        return $documents;
-      }
-
-      /**
-       * Get embedding vector length
-       * Required by EmbeddingGeneratorInterface
-       * OpenAI text-embedding-3-small uses 1536 dimensions
-       *
-       * @return int
-       */
-      public function getEmbeddingLength(): int
-      {
-        return 1536; // OpenAI text-embedding-3-small dimension
-      }
-    };
-  }
 
   /**
    * Create empty result

@@ -11,6 +11,7 @@ namespace ClicShopping\Apps\Tools\WhosOnline\Classes\Shop;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Shop\BotDetector;
 
 use ClicShopping\Apps\Customers\Customers\Classes\Shop\CustomerShop as NewCustomer;
 
@@ -58,6 +59,17 @@ class WhosOnlineShop
       $Qcustomer->execute();
 
       $wo_full_name = $Qcustomer->value('customers_firstname') . ' ' . $Qcustomer->value('customers_lastname');
+    } else {
+      // Label crawlers/bots so they don't pollute the "who's online" list as plain guests.
+      $botDetector = new BotDetector();
+
+      if ($botDetector->isSearchEngine()) {
+        $wo_full_name = 'Search Engine (SEO)';
+      } elseif ($botDetector->isWebMcpAgent() || $botDetector->isAiBot()) {
+        $wo_full_name = 'AI Bot (WebMCP)';
+      } elseif ($botDetector->isBot()) {
+        $wo_full_name = 'Other Robot / Spider';
+      }
     }
 
     $wo_session_id = session_id();

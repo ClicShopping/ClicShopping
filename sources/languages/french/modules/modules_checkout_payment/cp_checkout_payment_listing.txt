@@ -1,7 +1,7 @@
 module_checkout_payment_listing_title = Souhaitez-vous afficher le listing des modules de paiement ?
 module_checkout_payment_listing_description = Affiche le listing des modules de paiement
 
-module_checkout_payment_listing_table_heading_payment_method = Méthode de paiement
+module_checkout_payment_listing_table_heading_payment_method = Méthode de paiement  sécurisé (SSL)
 module_checkout_payment_listing_title_please_select = Veuillez choisir
 module_checkout_payment_listing_text_enter_payment_information = C'est actuellement la seule méthode de paiement disponible pour cette commande
-module_checkout_payment_listing_text_select_payment_method = Veuillez sélectionner une méthode paiement
+module_checkout_payment_listing_text_select_payment_method = Veuillez sélectionner une méthode paiement sécurisé (SSL)

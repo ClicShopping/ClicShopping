@@ -48,8 +48,7 @@ class MigrationManager
      */
     private function loadConfig(): array
     {
-        $configPath = CLICSHOPPING::getConfig('dir_root', 'Shop') . 
-                     'Core/ClicShopping/Apps/Configuration/ChatGpt/config/adaptive_weighting.php';
+        $configPath = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/ClicShopping/Apps/Configuration/ChatGpt/config/adaptive_weighting.php';
         
         if (file_exists($configPath)) {
             return require $configPath;

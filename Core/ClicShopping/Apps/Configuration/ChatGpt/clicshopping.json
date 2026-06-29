@@ -20,6 +20,9 @@
       "SumTotalTokenByMonth": "Module\\ClicShoppingAdmin\\Dashboard\\SumTotalTokenByMonth",
       "CostEstimation": "Module\\ClicShoppingAdmin\\Dashboard\\CostEstimation"
     },
+    "HeaderTags": {
+      "LlmsTxt": "Module\\HeaderTags\\LlmsTxt"
+    },
     "Hooks": {
       "ClicShoppingAdmin/Cronjob": {
         "Process": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\Process",

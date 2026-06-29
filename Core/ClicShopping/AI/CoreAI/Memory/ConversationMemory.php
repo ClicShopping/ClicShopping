@@ -13,8 +13,6 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
-use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
-use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\DocumentSplitter\DocumentSplitter;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 use LLPhant\Chat\Message; // Use the specific LLPhant class for type hinting
@@ -25,6 +23,10 @@ use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ContextResolver;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\EntityTracker;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ChunkReconstructor;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\MemoryQualityTracker;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\MemoryInteractionFormatter;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVectorEmbeddingAdapter;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\MemoryContextSwitchDetector;
 use ClicShopping\AI\Infrastructure\Metrics\MemoryStatistics;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\FeedbackManager;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
@@ -126,6 +128,9 @@ class ConversationMemory
   private MemoryStatistics $memoryStats;
   private FeedbackManager $feedbackManager;
   private ChunkReconstructor $chunkReconstructor;
+  private MemoryQualityTracker $qualityTracker;
+  private MemoryInteractionFormatter $interactionFormatter;
+  private MemoryContextSwitchDetector $contextSwitchDetector;
 
   /**
    * Constructor
@@ -163,7 +168,7 @@ class ConversationMemory
     $this->similarityThreshold = (float) $memoryConfig['similarity_threshold'];
 
     // Initialize the LLPhant-compatible embedding generator
-    $this->embeddingGenerator = $this->createEmbeddingGenerator();
+    $this->embeddingGenerator = new NewVectorEmbeddingAdapter();
 
     $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
 
@@ -181,6 +186,9 @@ class ConversationMemory
     $this->memoryStats = new MemoryStatistics($this->debug);
     $this->feedbackManager = new FeedbackManager($this->debug);
     $this->chunkReconstructor = new ChunkReconstructor();
+    $this->qualityTracker = new MemoryQualityTracker();
+    $this->interactionFormatter = new MemoryInteractionFormatter();
+    $this->contextSwitchDetector = new MemoryContextSwitchDetector($this->securityLogger, $this->debug);
 
     // Get ConversationHistory from ShortTermMemoryManager for compatibility
     $this->conversationHistory = $this->shortTermManager->getConversationHistory();
@@ -211,51 +219,10 @@ class ConversationMemory
     
     try {
       
-      if (!isset($metadata['query_type'])) {
-        $metadata['query_type'] = 'unknown';
-        
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "[WARNING] query_type not provided in metadata, defaulting to 'unknown'",
-            'warning'
-          );
-        }
-      }
-      
-      if (!isset($metadata['classification_confidence'])) {
-        $metadata['classification_confidence'] = 0.0;
-      }
-      
-      if (!isset($metadata['detected_entities'])) {
-        $metadata['detected_entities'] = [];
-      }
-      
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "[INFO] Storing interaction with metadata - query_type: {$metadata['query_type']}, " .
-          "confidence: {$metadata['classification_confidence']}, " .
-          "entities: " . json_encode($metadata['detected_entities']),
-          'info'
-        );
-      }
-      
-      if (isset($metadata['query_type'])) {
-        $contextSwitch = $this->detectContextSwitch($metadata['query_type']);
-        
-        if ($contextSwitch) {
-          $this->clearLastEntity();
-          
-          if ($this->debug) {
-            $this->securityLogger->logSecurityEvent(
-              "TASK 6.3: Context switch detected - clearing last entity",
-              'info'
-            );
-          }
-        }
-        
-        $this->lastQueryType = $metadata['query_type'];
-      }
-      
+      $metadata = $this->normalizeInteractionMetadata($metadata);
+
+      $this->applyContextSwitch($metadata);
+
       // 1. Add to short-term memory via ShortTermMemoryManager
       $shortTermStart = microtime(true);
       $this->shortTermManager->addMessage(new Message('user', $userMessage));
@@ -270,7 +237,7 @@ class ConversationMemory
 
       // 2. Store in long-term memory via LongTermMemoryManager (includes embedding)
       $longTermStart = microtime(true);
-      $fullContent = $this->formatInteractionForStorage($userMessage, $systemResponse);
+      $fullContent = $this->interactionFormatter->formatInteractionForStorage($userMessage, $systemResponse);
       if ($this->debug) {
         error_log(sprintf("[PERF] ConversationMemory: long-term store START — content: %d chars",
           strlen($fullContent)));
@@ -283,32 +250,7 @@ class ConversationMemory
       }
 
       // Periodically clean duplicates (every 20 interactions)
-      static $cleanupCounter = 0;
-      if (++$cleanupCounter % 20 === 0) {
-        $cleanupStart = microtime(true);
-        try {
-          $cleanupStats = $this->longTermManager->cleanDuplicates();
-          if ($this->debug) {
-            error_log(sprintf("[PERF] ConversationMemory: cleanDuplicates took %.3fs (cleaned: %d)",
-              microtime(true) - $cleanupStart,
-              $cleanupStats['total_cleaned'] ?? 0));
-          }
-          if ($this->debug && $cleanupStats['total_cleaned'] > 0) {
-            $this->securityLogger->logSecurityEvent(
-              "Cleaned {$cleanupStats['total_cleaned']} duplicate entries (by interaction_id: {$cleanupStats['by_interaction_id']}, by content_hash: {$cleanupStats['by_content_hash']})",
-              'info'
-            );
-          }
-        } catch (\Exception $e) {
-          // Don't fail on cleanup errors
-          if ($this->debug) {
-            $this->securityLogger->logSecurityEvent(
-              "Error during duplicate cleanup: " . $e->getMessage(),
-              'warning'
-            );
-          }
-        }
-      }
+      $this->maybeCleanDuplicates();
 
       // 3. Record statistics
       $this->memoryStats->recordOperation('interactions_stored', $success, microtime(true) - $startTime);
@@ -316,7 +258,7 @@ class ConversationMemory
       // 4. Learn from successful interactions
       if ($success && ($metadata['success'] ?? true)) {
         $learnStart = microtime(true);
-        $this->learnFromSuccessfulInteraction($userMessage, $systemResponse, $metadata);
+        $this->qualityTracker->learnFromSuccessfulInteraction($userMessage, $systemResponse, $metadata, $this->stats);
         if ($this->debug) {
           error_log(sprintf("[PERF] ConversationMemory: learnFromSuccessfulInteraction took %.3fs",
             microtime(true) - $learnStart));
@@ -337,8 +279,108 @@ class ConversationMemory
       );
       
       $this->memoryStats->recordOperation('interactions_stored', false, microtime(true) - $startTime);
-      
+
       return false;
+    }
+  }
+
+  /**
+   * Fills in the default interaction metadata keys (query_type, classification
+   * confidence, detected entities) and logs the resolved metadata.
+   *
+   * @param array $metadata Raw interaction metadata
+   * @return array Metadata with defaults applied
+   */
+  private function normalizeInteractionMetadata(array $metadata): array
+  {
+    if (!isset($metadata['query_type'])) {
+      $metadata['query_type'] = 'unknown';
+
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "[WARNING] query_type not provided in metadata, defaulting to 'unknown'",
+          'warning'
+        );
+      }
+    }
+
+    if (!isset($metadata['classification_confidence'])) {
+      $metadata['classification_confidence'] = 0.0;
+    }
+
+    if (!isset($metadata['detected_entities'])) {
+      $metadata['detected_entities'] = [];
+    }
+
+    if ($this->debug) {
+      $this->securityLogger->logSecurityEvent(
+        "[INFO] Storing interaction with metadata - query_type: {$metadata['query_type']}, " .
+        "confidence: {$metadata['classification_confidence']}, " .
+        "entities: " . json_encode($metadata['detected_entities']),
+        'info'
+      );
+    }
+
+    return $metadata;
+  }
+
+  /**
+   * Detects a query-type context switch and, when one occurs, clears the last
+   * tracked entity. Records the current query type for the next comparison.
+   *
+   * @param array $metadata Interaction metadata (reads query_type)
+   */
+  private function applyContextSwitch(array $metadata): void
+  {
+    if (isset($metadata['query_type'])) {
+      $contextSwitch = $this->contextSwitchDetector->detectContextSwitch($metadata['query_type'], $this->lastQueryType, $this->userId, $this->languageId);
+
+      if ($contextSwitch) {
+        $this->clearLastEntity();
+
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "TASK 6.3: Context switch detected - clearing last entity",
+            'info'
+          );
+        }
+      }
+
+      $this->lastQueryType = $metadata['query_type'];
+    }
+  }
+
+  /**
+   * Periodically cleans duplicate long-term entries (every 20 interactions).
+   * Cleanup failures are swallowed so they never break the interaction store.
+   */
+  private function maybeCleanDuplicates(): void
+  {
+    static $cleanupCounter = 0;
+    if (++$cleanupCounter % 20 === 0) {
+      $cleanupStart = microtime(true);
+      try {
+        $cleanupStats = $this->longTermManager->cleanDuplicates();
+        if ($this->debug) {
+          error_log(sprintf("[PERF] ConversationMemory: cleanDuplicates took %.3fs (cleaned: %d)",
+            microtime(true) - $cleanupStart,
+            $cleanupStats['total_cleaned'] ?? 0));
+        }
+        if ($this->debug && $cleanupStats['total_cleaned'] > 0) {
+          $this->securityLogger->logSecurityEvent(
+            "Cleaned {$cleanupStats['total_cleaned']} duplicate entries (by interaction_id: {$cleanupStats['by_interaction_id']}, by content_hash: {$cleanupStats['by_content_hash']})",
+            'info'
+          );
+        }
+      } catch (\Exception $e) {
+        // Don't fail on cleanup errors
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Error during duplicate cleanup: " . $e->getMessage(),
+            'warning'
+          );
+        }
+      }
     }
   }
 
@@ -398,7 +440,7 @@ class ConversationMemory
       
       $contextSwitch = false;
       if ($currentQueryType !== null) {
-        $contextSwitch = $this->detectContextSwitch($currentQueryType);
+        $contextSwitch = $this->contextSwitchDetector->detectContextSwitch($currentQueryType, $this->lastQueryType, $this->userId, $this->languageId);
         
         if ($contextSwitch && $this->debug) {
           $this->securityLogger->logSecurityEvent(
@@ -534,204 +576,6 @@ class ConversationMemory
     }
   }
 
-  /**
-   * Learns from successful interactions by storing metadata for future analysis.
-   *
-   * @param string $userMessage User message
-   * @param string $systemResponse System response
-   * @param array $metadata Interaction metadata
-   */
-  private function learnFromSuccessfulInteraction(string $userMessage, string $systemResponse, array $metadata): void
-  {
-    // Identify successful patterns
-    $pattern = [
-      'query_type' => $metadata['agent_type'] ?? 'unknown',
-      'intent_confidence' => $metadata['intent_confidence'] ?? 0,
-      'execution_time' => $metadata['execution_time'] ?? 0,
-      'user_query_length' => str_word_count($userMessage),
-      'response_quality' => $this->assessResponseQuality($systemResponse),
-    ];
-
-    // Store in stats for future analysis
-    $this->stats['successful_patterns'][] = $pattern;
-
-    // Limit the size of the patterns array
-    if (count($this->stats['successful_patterns']) > 100) {
-      array_shift($this->stats['successful_patterns']);
-    }
-  }
-
-  /**
-   * Assesses the quality of a response based on word count.
-   *
-   * @param string $response The response to evaluate
-   * @return string Quality (high, medium, low)
-   */
-  private function assessResponseQuality(string $response): string
-  {
-    $wordCount = str_word_count($response);
-
-    if ($wordCount < 10) return 'low';
-    if ($wordCount < 50) return 'medium';
-    return 'high';
-  }
-
-  /**
-   * 
-   * Compares the current query type with the last stored query type.
-   * Since LLPhant Message objects don't natively support metadata,
-   * we track query types separately in the ConversationMemory class.
-   * Hybrid queries are excluded from context switch detection as they can contain both types.
-   *
-   * @param string $currentQueryType Current query type (analytics, semantic, hybrid, web_search)
-   * @return bool True if context switch detected, false otherwise
-   */
-  private function detectContextSwitch(string $currentQueryType): bool
-  {
-    try {
-      // Check if we have a last query type stored
-      if ($this->lastQueryType === null) {
-        // No previous query type, so no switch
-        
-        if ($this->debug) {
-          $this->securityLogger->logStructured(
-            'info',
-            'ConversationMemory',
-            'first_query_in_conversation',
-            [
-              'current_query_type' => $currentQueryType,
-              'user_id' => $this->userId,
-              'language_id' => $this->languageId,
-              'note' => 'No previous query type - this is the first query in conversation'
-            ]
-          );
-        }
-        return false;
-      }
-      
-      $lastQueryType = $this->lastQueryType;
-      
-      // Context switch if types differ (excluding hybrid)
-      // Hybrid queries don't trigger context switches because they can contain both types
-      $isSwitch = $lastQueryType !== $currentQueryType && 
-                  $lastQueryType !== 'hybrid' && 
-                  $currentQueryType !== 'hybrid';
-      
-      
-      if ($isSwitch) {
-        if ($this->debug) {
-          $this->securityLogger->logStructured(
-            'info',
-            'ConversationMemory',
-            'context_switch_detected',
-            [
-              'previous_query_type' => $lastQueryType,
-              'current_query_type' => $currentQueryType,
-              'switch_direction' => "{$lastQueryType} → {$currentQueryType}",
-              'user_id' => $this->userId,
-              'language_id' => $this->languageId,
-              'entity_will_be_cleared' => true,
-              'timestamp' => date('Y-m-d H:i:s'),
-              'note' => 'Context switch detected - entity tracking will be cleared'
-            ]
-          );
-        }
-      } else {
-        
-        if ($this->debug) {
-          $this->securityLogger->logStructured(
-            'info',
-            'ConversationMemory',
-            'context_continuation',
-            [
-              'query_type' => $currentQueryType,
-              'previous_query_type' => $lastQueryType,
-              'user_id' => $this->userId,
-              'language_id' => $this->languageId,
-              'note' => 'No context switch - continuing with same query type'
-            ]
-          );
-        }
-      }
-      
-      return $isSwitch;
-      
-    } catch (\Exception $e) {
-      
-      if ($this->debug) {
-        $this->securityLogger->logStructured(
-          'error',
-          'ConversationMemory',
-          'context_switch_detection_error',
-          [
-            'current_query_type' => $currentQueryType,
-            'last_query_type' => $this->lastQueryType ?? 'null',
-            'error_message' => $e->getMessage(),
-            'error_file' => $e->getFile(),
-            'error_line' => $e->getLine(),
-            'user_id' => $this->userId,
-            'note' => 'Error detecting context switch - defaulting to no switch'
-          ]
-        );
-      }
-      return false;
-    }
-  }
-
-   /**
-   * Formats an interaction for vector store storage.
-   *
-   * @param string $userMessage User message
-   * @param string $systemResponse System response
-   * @return string Formatted content
-   */
-  private function formatInteractionForStorage(
-    string $userMessage,    string $systemResponse): string {
-    $cleanedResponse = self::cleanResponseForEmbedding($systemResponse);
-
-    return "User: {$userMessage}\n\nAssistant: {$cleanedResponse}";
-  }
-
-  /**
-   * Reduces an assistant response to the plain semantic text the embedding
-   * model needs. Strips HTML, decodes entities, collapses whitespace and
-   * caps the result so a runaway answer never poisons the embedding cost.
-   *
-   * The default cap (32 000 chars) is well above the typical text content of
-   * a Hybrid response (≈ 5 KB) yet keeps even large pages inside one chunk.
-   * Override via CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS.
-   */
-  private static function cleanResponseForEmbedding(string $response): string
-  {
-    if ($response === '') {
-      return $response;
-    }
-
-    // If there are no HTML tags at all, skip the work
-    $hasTags = str_contains($response, '<');
-
-    if ($hasTags) {
-      $response = \strip_tags($response);
-      $response = \html_entity_decode($response, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    }
-
-    $response = \preg_replace('/\s+/u', ' ', $response);
-    $response = \trim($response);
-
-    $maxChars = 32000;
-    if (\defined('CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS')) {
-      $override = (int) \constant('CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS');
-      if ($override > 0) {
-        $maxChars = $override;
-      }
-    }
-
-    if (\mb_strlen($response) > $maxChars) {
-      $response = \mb_substr($response, 0, $maxChars);
-    }
-
-    return $response;
-  }
 
 
   /**
@@ -1001,7 +845,7 @@ class ConversationMemory
 
       if ($success) {
         // Update quality metrics based on feedback
-        $this->updateQualityMetrics($feedbackType);
+        $this->qualityTracker->updateQualityMetrics($feedbackType, $this->stats);
 
         if ($this->debug) {
           $this->securityLogger->logSecurityEvent(
@@ -1052,83 +896,6 @@ class ConversationMemory
     }
   }
 
-  /**
-   * Creates an embedding generator compatible with LLPhant
-   * 
-   * @return EmbeddingGeneratorInterface
-   */
-  private function createEmbeddingGenerator(): EmbeddingGeneratorInterface
-  {
-    return new class implements EmbeddingGeneratorInterface
-    {
-      public function embedText(string $text): array
-      {
-        $generator = NewVector::gptEmbeddingsModel();
-        if (!$generator) {
-          throw new \RuntimeException('Embedding generator not initialized.');
-        }
-        return $generator->embedText($text);
-      }
-
-      public function embedDocument(Document $document): Document
-      {
-        $document->embedding = $this->embedText($document->content);
-        return $document;
-      }
-
-      public function embedDocuments(array $documents): array
-      {
-        return array_map($this->embedDocument(...), $documents);
-      }
-
-      public function getEmbeddingLength(): int
-      {
-        return NewVector::getEmbeddingLength();
-      }
-    };
-  }
-
-  /**
-   * Updates quality metrics based on feedback
-   * 
-   * @param string $feedbackType Type of feedback received
-   * @return void
-   */
-  private function updateQualityMetrics(string $feedbackType): void
-  {
-    // Initialize metrics if not exists
-    if (!isset($this->stats['feedback_metrics'])) {
-      $this->stats['feedback_metrics'] = [
-        'positive_count' => 0,
-        'negative_count' => 0,
-        'correction_count' => 0,
-        'total_feedback' => 0,
-        'positive_rate' => 0.0,
-      ];
-    }
-
-    // Update counts
-    $this->stats['feedback_metrics']['total_feedback']++;
-    
-    switch ($feedbackType) {
-      case 'positive':
-        $this->stats['feedback_metrics']['positive_count']++;
-        break;
-      case 'negative':
-        $this->stats['feedback_metrics']['negative_count']++;
-        break;
-      case 'correction':
-        $this->stats['feedback_metrics']['correction_count']++;
-        break;
-    }
-
-    // Calculate positive rate
-    $total = $this->stats['feedback_metrics']['total_feedback'];
-    if ($total > 0) {
-      $positive = $this->stats['feedback_metrics']['positive_count'];
-      $this->stats['feedback_metrics']['positive_rate'] = round(($positive / $total) * 100, 2);
-    }
-  }
 
 
   //**********

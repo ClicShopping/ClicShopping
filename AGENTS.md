@@ -165,6 +165,11 @@ wasted time** — treat documentation as part of every deliverable.
 ✗ Direct LLM API calls without LLPhant abstraction
 ✗ Direct agent instantiation from business code (use Orchestrator)
 ✗ Bypassing AI guardrails (prompt injection detection, rate limiting)
+✗ Executing a self-optimization objective WITHOUT a passing critic gate
+  (would allow unsupervised self-modification). The objective loop
+  (`ObjectiveExecutor`) MUST gate every proposal through the actor-critic
+  consensus before apply; a rejected proposal is never applied. Analyse the
+  gate result, never bypass it.
 ✗ Direct PDO connection outside Registry::get('Db')
   (exception: Core/ClicShopping/AI/ uses Doctrine ORM)
 ✗ Mixing Doctrine ORM and Registry Db in the same file
