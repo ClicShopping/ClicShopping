@@ -21,6 +21,7 @@ modules_header_multi_template_account_password = Password
 modules_header_multi_template_title_advanced_search = Advanced search
 
 modules_header_multi_template_header_search = Search
+modules_header_multi_template_currency = Currency
 modules_header_multi_template_title_contact_us = Contact us
 modules_header_multi_template_header_email_address = Email
 modules_header_multi_template_password_forgotten = lost password

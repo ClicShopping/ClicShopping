@@ -450,6 +450,14 @@
   height: 40px;
   border-radius: 50%;
   transition: all 0.3s ease;
+  /* normalize the <button> variant (login) so it matches the sibling <a> icons */
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 .multiTemplateDefault-mobile-login-icon-link:hover {
   background-color: var(--bg-light);

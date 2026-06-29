@@ -2880,7 +2880,7 @@ class ProductsCommon extends Prod
       }
 }
 
-    if (!is_null($new_discount_price) || !empty($new_discount_price)) {
+    if (!is_null($new_discount_price)) {
       return $new_discount_price;
     } else {
       return false;

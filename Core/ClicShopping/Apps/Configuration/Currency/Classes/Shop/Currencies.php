@@ -306,9 +306,10 @@ class Currencies
    * Generates a dropdown for selecting currencies if multiple currencies are available.
    *
    * @param string $class Optional CSS class to apply to the dropdown element.
+   * @param string $aria_label Optional accessible name (localised) for the select; emitted as aria-label when non-empty.
    * @return string A string containing the HTML markup for the currency dropdown or an empty string if conditions are not met.
    */
-  public function getCurrenciesDropDown(string $class = '')
+  public function getCurrenciesDropDown(string $class = '', string $aria_label = '')
   {
     if ((count($this->currencies) > 1)) {
       reset($this->currencies);
@@ -326,8 +327,8 @@ class Currencies
 
       if (!isset($_GET['Checkout'])) {
         $currency_header .= HTML::form('currencies', CLICSHOPPING::link(), 'get', null, ['session_id' => true]);
-        $currency_header .= '<label for="CurrencyDropDown" class="visually-hidden"></label>';
-        $currency_header .= HTML::selectField('currency', $currencies_array, HTML::sanitize($_SESSION['currency']), 'id="CurrencyDropDown" class="' . $class . '" onchange="this.form.submit();"') . $hidden_get_variables;
+        $aria = $aria_label !== '' ? ' aria-label="' . HTML::outputProtected($aria_label) . '"' : '';
+        $currency_header .= HTML::selectField('currency', $currencies_array, HTML::sanitize($_SESSION['currency']), 'class="' . $class . '"' . $aria . ' onchange="this.form.submit();"') . $hidden_get_variables;
         $currency_header .= '</form>';
       } else {
         $currency_header = '';

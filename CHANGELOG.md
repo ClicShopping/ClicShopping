@@ -6,6 +6,8 @@ version4.31
 - Stripe payment updated for latest version  20.2.1 - 2026-06-12
 - WebMCP protocol integrated via llms.txt et llms-full.txt
 - LLM SEO implementation - for AI search (front office)
+- Products Classes refactored
+
 
 ---------------
 version4.301

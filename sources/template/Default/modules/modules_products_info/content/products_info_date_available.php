@@ -2,7 +2,7 @@
   <div class="mt-1"></div>
   <div style="float: <?php echo MODULE_PRODUCTS_INFO_DATE_AVAILABLE_POSITION; ?>;">
     <div class="ModulesProducsInfoDateAvailable">
-      <span class="ModulesProducsInfoDateAvailable"><h3><?php echo $products_date_available; ?></h3></span>
+      <span class="ModulesProducsInfoDateAvailable"><?php echo $products_date_available; ?></span>
     </div>
   </div>
 </div>

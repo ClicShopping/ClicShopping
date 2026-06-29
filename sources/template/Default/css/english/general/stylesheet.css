@@ -79,6 +79,7 @@ form {
 
 span.normalPrice {
   font-weight: normal;
+  color: #595959;
 }
 
 span.specialPrice {

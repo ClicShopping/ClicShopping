@@ -693,20 +693,26 @@ class ProductsFunctionTemplate
 
   /**
    * Resolve the schema.org item-condition fragment from the raw packaging code.
-   * Extracted verbatim from getProductJsonLd, including its original quirk: the
-   * four checks are independent reassignments (not a match), so only codes 0-3
-   * map to a condition and any other value is returned unchanged — the caller
-   * then keeps it only when not empty. Kept as-is to preserve behaviour exactly.
+   * Returns the bare condition name (NewCondition / RefurbishedCondition /
+   * UsedCondition); the caller prepends the https://schema.org/ prefix. Only
+   * codes 0-3 map (the four checks are independent reassignments, not a match,
+   * relying on PHP 8 string-vs-int loose comparison being false to stop after
+   * the first match); any other value is returned unchanged and the caller
+   * keeps it only when not empty.
+   *
+   * Fixes the previous double-prefix bug where this returned a full
+   * https://schema.org/... URL that the caller then prefixed again, yielding an
+   * invalid 'https://schema.org/https://schema.org/NewCondition' itemCondition.
    *
    * @param mixed $products_packaging The raw products_packaging code.
-   * @return mixed The schema.org condition fragment, or the original value when unmapped.
+   * @return mixed The schema.org condition name, or the original value when unmapped.
    */
   private function resolveItemCondition(mixed $products_packaging): mixed
   {
-    if ($products_packaging == 0) $products_packaging = 'https://schema.org/NewCondition'; // default newCondition
-    if ($products_packaging == 1) $products_packaging = 'https://schema.org/NewCondition';
-    if ($products_packaging == 2) $products_packaging = 'https://schema.org/RefurbishedCondition';
-    if ($products_packaging == 3) $products_packaging = 'https://schema.org/UsedCondition';
+    if ($products_packaging == 0) $products_packaging = 'NewCondition'; // default newCondition
+    if ($products_packaging == 1) $products_packaging = 'NewCondition';
+    if ($products_packaging == 2) $products_packaging = 'RefurbishedCondition';
+    if ($products_packaging == 3) $products_packaging = 'UsedCondition';
 
     return $products_packaging;
   }

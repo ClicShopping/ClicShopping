@@ -38,5 +38,5 @@ $CLICSHOPPING_Customer = Registry::get('Customer');
       ?>
     </header>
     <div class="d-flex flex-wrap frameWork" id="frameWork">
-      <div id="bodyContent"
+      <div id="bodyContent" role="main"
            class="col-12 col-lg-<?php echo $CLICSHOPPING_Template->getGridContentWidth(); ?> order-xs-1 order-lg-2 m-1">

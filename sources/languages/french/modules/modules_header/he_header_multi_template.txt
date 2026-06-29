@@ -22,6 +22,7 @@ modules_header_multi_template_account_password = Mot de passe
 modules_header_multi_template_title_advanced_search = Recherche Avançée
 
 modules_header_multi_template_header_search = Rechercher
+modules_header_multi_template_currency = Devise
 modules_header_multi_template_title_contact_us = Nous contacter
 modules_header_multi_template_header_email_address = Email
 modules_header_multi_template_password_forgotten = Mot de passe perdu

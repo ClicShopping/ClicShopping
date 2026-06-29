@@ -17,6 +17,8 @@ class FooterOutputServiceWorker
    */
   public function display(): string
   {
+    $base_path = \ClicShopping\OM\CLICSHOPPING::getConfig('http_path', 'Shop');
+
     $output = '<script defer>
 // This is the "Offline page" service worker
 // Add this below content to your HTML page, or add the js file to your page at the very top to register service worker
@@ -28,8 +30,8 @@ if ("serviceWorker" in navigator) {
   } else {
     // Register the service worker
     navigator.serviceWorker
-      .register("pwabuilder-sw.js", {
-        scope: "./"
+      .register("' . $base_path . 'pwabuilder-sw.js", {
+        scope: "' . $base_path . '"
       })
       .then(function (reg) {
         console.log("[PWA Builder] Service worker has been registered for scope: " + reg.scope);

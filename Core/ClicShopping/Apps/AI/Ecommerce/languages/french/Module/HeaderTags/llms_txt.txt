@@ -1,3 +1,4 @@
 module_header_tags_llms_txt_title = Llms TXT - Génération IA (claude, perplexity...)
 module_header_tags_llms_txt_description = Génère automatiquement les fichiers llms.txt et llms-full.txt pour les systèmes d’intelligence artificielle.<br>
-Soumettez le llmTxt : website.com/llms.txt et website.com/llms-full.txt à : directory.llmstxt.cloud et llmstxt.org
+Soumettez le llmTxt : website.com/llms.txt et website.com/llms-full.txt à : directory.llmstxt.cloud et llmstxt.org<br>
+<br>Navigation agentique &amp; Core Web Vitals : pour réduire le Cumulative Layout Shift (CLS) mesuré sur le catalogue et permettre aux agents IA de parcourir une page visuellement stable, activez « Calcul automatique de la taille des images » (CONFIG_CALCULATE_IMAGE_SIZE) dans Configuration &gt; Images. Cela renseigne la largeur/hauteur de chaque image du catalogue d’après son ratio réel, afin que la page ne bouge plus pendant le chargement des images.

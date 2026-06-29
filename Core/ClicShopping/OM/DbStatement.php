@@ -570,7 +570,7 @@ class DbStatement extends \PDOStatement
     if (is_null($site)) {
 //admin
       if ($number_of_pages > 1) {
-        $output .= '<li class="page-item">' . HTML::selectField('pageset' . $this->page_set_keyword, $pages, $this->page_set, 'style="vertical-align: top; display: inline-block; float-start;" data-pageseturl="' . HTML::output(CLICSHOPPING::link(null, 'A&' . $parameters . $this->page_set_keyword . '=PAGESETGOTO')) . '"') . '</li>';
+        $output .= '<li class="page-item">' . HTML::selectField('pageset' . $this->page_set_keyword, $pages, $this->page_set, 'aria-label="' . HTML::output(CLICSHOPPING::getDef('prevnext_title_goto_page')) . '" style="vertical-align: top; display: inline-block; float-start;" data-pageseturl="' . HTML::output(CLICSHOPPING::link(null, 'A&' . $parameters . $this->page_set_keyword . '=PAGESETGOTO')) . '"') . '</li>';
       } else {
         $output .= '<li class="page-item disabled"><a class="text-center page-link sr-only">1</a></li>';
       }
@@ -590,7 +590,7 @@ class DbStatement extends \PDOStatement
       }
     } else {
       if ($number_of_pages > 1) {
-        $output .= '<li class="page-item">' . HTML::selectField('pageset' . $this->page_set_keyword, $pages, $this->page_set, 'style="vertical-align: top; display: inline-block; float-start; height: 32px; width: 80px;" data-pageseturl="' . HTML::output(CLICSHOPPING::link(null, $parameters . $this->page_set_keyword . '=PAGESETGOTO')) . '"') . '</li>';
+        $output .= '<li class="page-item">' . HTML::selectField('pageset' . $this->page_set_keyword, $pages, $this->page_set, 'aria-label="' . HTML::output(CLICSHOPPING::getDef('prevnext_title_goto_page')) . '" style="vertical-align: top; display: inline-block; float-start; height: 32px; width: 80px;" data-pageseturl="' . HTML::output(CLICSHOPPING::link(null, $parameters . $this->page_set_keyword . '=PAGESETGOTO')) . '"') . '</li>';
       } else {
         $output .= '<li class="page-item disabled"><a class="text-center page-link sr-only">1</a></li>';
       }

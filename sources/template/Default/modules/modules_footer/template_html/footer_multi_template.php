@@ -13,7 +13,7 @@ use ClicShopping\OM\HTML;
 <div class="d-flex flex-wrap footerTemplate text-start">
   <div class="col-md-<?php echo $content_width; ?>">
     <div class="footerTemplateBox footerTemplateAccount">
-      <h4><?php echo CLICSHOPPING::getDef('module_footer_multi_template_account_heading_title'); ?></h4>
+      <h2><?php echo CLICSHOPPING::getDef('module_footer_multi_template_account_heading_title'); ?></h2>
       <ul class="list-unstyled">
         <?php
         if ($CLICSHOPPING_Customer->isLoggedOn()) {
@@ -43,14 +43,14 @@ use ClicShopping\OM\HTML;
 
   <div class="col-md-<?php echo $content_width; ?>">
     <div class="footerTemplateBox">
-      <h4><?php echo CLICSHOPPING::getDef('module_footer_multi_template_text_heading_title'); ?></h4>
+      <h2><?php echo CLICSHOPPING::getDef('module_footer_multi_template_text_heading_title'); ?></h2>
       <?php echo CLICSHOPPING::getDef('module_footer_multi_template_text_text'); ?>
     </div>
   </div>
 
   <div class="col-md-<?php echo $content_width; ?>">
     <div class="footerTemplateBox footerTemplateInformation">
-      <h4><?php echo CLICSHOPPING::getDef('module_footer_multi_template_information_heading_title'); ?></h4>
+      <h2><?php echo CLICSHOPPING::getDef('module_footer_multi_template_information_heading_title'); ?></h2>
       <span itemscope itemtype="https://schema.org/Organization">
           <link itemprop="url" href="<?php echo CLICSHOPPING::getConfig('http_server', 'Shop'); ?>">
             <ul class="footerTemplateSocial">
@@ -91,14 +91,14 @@ if (!empty($whatsapp_url)) {
 
   <div class="col-md-<?php echo $content_width; ?>">
     <div class="footerTemplateBox footerTemplateContact">
-      <h4><?php echo CLICSHOPPING::getDef('module_footer_multi_template_contact_us_email_link'); ?></h4>
+      <h2><?php echo CLICSHOPPING::getDef('module_footer_multi_template_contact_us_email_link'); ?></h2>
       <address>
         <strong><?php echo HTML::outputProtected(STORE_NAME); ?></strong><br/>
         <?php echo nl2br(STORE_NAME_ADDRESS); ?><br/>
       </address>
       <ul class="list-unstyled">
         <li><label
-            for="buttonFooterContactUs"><?php echo HTML::button(CLICSHOPPING::getDef('module_footer_multi_template_contact_us_email_link'), 'bi bi-person-lines-fill', 'index.php?Info&Contact', 'info'); ?></label>
+            for="buttonFooterContactUs"><?php echo HTML::button(CLICSHOPPING::getDef('module_footer_multi_template_contact_us_email_link'), 'bi bi-person-lines-fill', 'index.php?Info&Contact', 'primary'); ?></label>
         </li>
       </ul>
     </div>

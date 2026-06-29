@@ -3,7 +3,7 @@
   <div style=" float: <?php echo MODULE_PRODUCTS_INFO_MODEL_POSITION; ?>;">
     <div class="modulesProductsInfoModel">
       <span class="modulesProductsInfoModel">
-          <h3 class="modulesProductsInfoModel"><?php echo $products_model; ?></h3>
+          <?php echo $products_model; ?>
       </span>
     </div>
   </div>

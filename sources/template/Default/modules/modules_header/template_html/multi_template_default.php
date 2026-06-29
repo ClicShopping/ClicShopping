@@ -20,18 +20,19 @@ use ClicShopping\OM\HTML;
       <div class="multiTemplateDefault-search">
         <?php echo $form_advanced_result; ?>
         <div class="input-group multiTemplateDefault-search-criteria">
-          <label for="inputKeywordsSearchLogin" class="visually-hidden"></label>
+          <label for="inputKeywordsSearchLogin" class="visually-hidden"><?php echo CLICSHOPPING::getDef('modules_header_multi_template_header_search'); ?></label>
           <?php
             // Ajout du paramètre MCP sur l'input pour la détection agentique
             echo HTML::inputField('keywords', null, 'required aria-required="true" id="inputKeywordsSearchLogin" placeholder="' . CLICSHOPPING::getDef('modules_header_multi_template_header_search') . '" mcp-parameter="query" mcp-parameter-description="Le mot-clé, nom ou marque du produit recherché"', 'search');
           ?>
           <span id="buttonKeywordsSearch">
-            <label for="buttonKeywordsSearch">
-              <?php
-                // Correction Accessibilité : Ajout de l'aria-label pour un "discernible text"
-                echo HTML::button(null, 'bi bi-search', null, 'primary', ['params' => 'aria-label="Rechercher"'], 'sm');
-              ?>
-            </label>
+            <?php
+              // Accessibilité : bouton de recherche avec aria-label (texte discernible),
+              // libellé via getDef (i18n). Pas de <label for> ici : il pointait vers le
+              // <span> parent (pas un contrôle de formulaire) => arbre d'accessibilité
+              // mal formé signalé par l'audit Navigation agentique.
+              echo HTML::button(null, 'bi bi-search', null, 'primary', ['params' => 'aria-label="' . HTML::outputProtected(CLICSHOPPING::getDef('modules_header_multi_template_header_search')) . '"'], 'sm');
+            ?>
           </span>
         </div>
         <?php echo HTML::hiddenField('search_in_description', '1'); ?>
@@ -134,16 +135,16 @@ use ClicShopping\OM\HTML;
         <?php
           if (!$CLICSHOPPING_Customer->isLoggedOn()) {
             ?>
-            <a data-bs-toggle="modal" class="multiTemplateDefault-mobile-login-icon-link" data-bs-target="#loginModal" aria-label="Connexion">
+            <button type="button" data-bs-toggle="modal" class="multiTemplateDefault-mobile-login-icon-link" data-bs-target="#loginModal" aria-label="<?php echo CLICSHOPPING::getDef('modules_header_multi_template_account_login'); ?>">
               <i class="bi bi-person-fill multiTemplateDefault-icon"></i>
-            </a>
+            </button>
             <?php
           } else {
             ?>
-            <a class="multiTemplateDefault-mobile-login-icon-link" href="<?php echo CLICSHOPPING::link(null, 'Account&Main'); ?>" aria-label="Mon compte">
+            <a class="multiTemplateDefault-mobile-login-icon-link" href="<?php echo CLICSHOPPING::link(null, 'Account&Main'); ?>" aria-label="<?php echo CLICSHOPPING::getDef('modules_header_multi_template_my_account'); ?>">
               <i class="bi bi-person-circle multiTemplateDefault-icon"></i>
             </a>
-            <a class="multiTemplateDefault-mobile-login-icon-link" href="<?php echo CLICSHOPPING::link(null, 'Account&LogOff'); ?>" aria-label="Déconnexion">
+            <a class="multiTemplateDefault-mobile-login-icon-link" href="<?php echo CLICSHOPPING::link(null, 'Account&LogOff'); ?>" aria-label="<?php echo CLICSHOPPING::getDef('modules_header_multi_template_account_logoff'); ?>">
               <i class="bi bi-box-arrow-right multiTemplateDefault-icon"></i>
             </a>
             <?php
@@ -153,7 +154,7 @@ use ClicShopping\OM\HTML;
           <?php
             if ($CLICSHOPPING_ShoppingCart->getCountContents() > 0) {
               echo '<ul><li class="dropdown multiTemplateDefault-shopping-cart">';
-              echo '<a class="dropdown-toggle multiTemplateDefault-shopping-cart-toggle" data-bs-toggle="modal" data-bs-target="#headerModalShoppingCart" href="#" aria-label="Panier">';
+              echo '<a class="dropdown-toggle multiTemplateDefault-shopping-cart-toggle" data-bs-toggle="modal" data-bs-target="#headerModalShoppingCart" href="#" aria-label="' . CLICSHOPPING::getDef('modules_header_multi_template_shopping_cart_view_cart') . '">';
               echo '<i class="bi bi-cart-fill multiTemplateDefault-icon"></i>';
               if ($CLICSHOPPING_ShoppingCart->getCountContents() > 0) {
                 echo '&nbsp;&nbsp;<span class="multiTemplateDefault-cart-count d-md-none">' . $CLICSHOPPING_ShoppingCart->getCountContents() . '</span>';
@@ -210,7 +211,7 @@ use ClicShopping\OM\HTML;
         <h4 class="modal-title"
             id="myModalLabel"><?php echo CLICSHOPPING::getDef('modules_header_multi_template_account_login') ?></h4>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                aria-label="Fermer"></button>
+                aria-label="Close"></button>
       </div>
       <div class="modal-body text-center">
         <?php echo $form; ?>

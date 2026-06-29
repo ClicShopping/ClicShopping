@@ -94,7 +94,7 @@ class he_header_multi_template
     }
 
     if (substr(CLICSHOPPING::getBaseNameIndex(), 0, 8) != 'checkout') {
-      $currency_header = $CLICSHOPPING_Currencies->getCurrenciesDropDown('headerMultiTemplateDefaultCurrencies');
+      $currency_header = $CLICSHOPPING_Currencies->getCurrenciesDropDown('headerMultiTemplateDefaultCurrencies', CLICSHOPPING::getDef('modules_header_multi_template_currency'));
     }
 
     $header_template = '<!-- header template start -->' . "\n";
