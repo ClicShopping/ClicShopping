@@ -8,6 +8,8 @@
 
 namespace ClicShopping\OM\Module\Hooks\Shop\Footer;
 
+use ClicShopping\OM\CLICSHOPPING;
+
 class FooterOutputServiceWorker
 {
   /**
@@ -17,7 +19,7 @@ class FooterOutputServiceWorker
    */
   public function display(): string
   {
-    $base_path = \ClicShopping\OM\CLICSHOPPING::getConfig('http_path', 'Shop');
+    $base_path = CLICSHOPPING::getConfig('http_path', 'Shop');
 
     $output = '<script defer>
 // This is the "Offline page" service worker

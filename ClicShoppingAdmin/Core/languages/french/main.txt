@@ -312,6 +312,7 @@ prevnext_button_next = &gt;&gt;
 
 prevnext_title_previous_page = Page précédente
 prevnext_title_next_page = Nouvelle page
+prevnext_title_goto_page = Aller à la page
 prevnext_title_page_no = Page %d
 prevnext_title_next_set_of_no_page = Next Set of %d Pages
 

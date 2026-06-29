@@ -281,6 +281,7 @@ prevnext_button_prev = &lt;&lt;
 prevnext_button_next = &gt;&gt;
 prevnext_title_previous_page = Previous Page
 prevnext_title_next_page = Next Page
+prevnext_title_goto_page = Go to page
 prevnext_title_page_no = Page %d
 prevnext_title_next_set_of_no_page = Next Set of %d Pages
 text_search = Search

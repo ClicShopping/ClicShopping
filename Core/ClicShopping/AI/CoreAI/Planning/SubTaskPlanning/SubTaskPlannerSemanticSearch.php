@@ -11,19 +11,20 @@ namespace ClicShopping\AI\CoreAI\Planning\SubTaskPlanning;
 
 use ClicShopping\AI\CoreAI\Planning\TaskStep;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\Rag\MultiDBRAGManager;
+use ClicShopping\AI\Rag\EmbeddingTableDiscovery;
 
 
 class SubTaskPlannerSemanticSearch
 {
   private bool $debug;
   private ?SecurityLogger $securityLogger;
+  private EmbeddingTableDiscovery $ragManager;
 
   public function __construct(bool $debug = false, ?SecurityLogger $securityLogger = null)
   {
     $this->debug = $debug;
     $this->securityLogger = $securityLogger;
-    $this->ragManager = new MultiDBRAGManager();
+    $this->ragManager = new EmbeddingTableDiscovery($debug, $securityLogger);
   }
 
   /**
@@ -48,7 +49,7 @@ class SubTaskPlannerSemanticSearch
 
     $steps = [];
 
-    $embeddingTables = $this->ragManager->knownEmbeddingTable();
+    $embeddingTables = $this->ragManager->discover();
 
     // Step unique: Recherche sémantique
     $step1 = new TaskStep(
@@ -81,7 +82,7 @@ class SubTaskPlannerSemanticSearch
    */
   public function getMetadata(): array
   {
-    $embeddingTables = $this->ragManager->knownEmbeddingTable();
+    $embeddingTables = $this->ragManager->discover();
 
     return [
       'name' => 'Semantic Search Planner',

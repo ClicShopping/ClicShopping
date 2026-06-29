@@ -20,6 +20,7 @@ use Doctrine\ORM\ORMSetup;
 use Doctrine\DBAL\Types\Type;
 use ClicShopping\AI\DomainsAI\Shared\Embedding\VectorType;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
+use ClicShopping\AI\Rag\EmbeddingTableDiscovery;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\Config\DomainFields;
@@ -574,7 +575,7 @@ class DoctrineOrm
    */
   private static function getFallbackEmbeddingTables(): array
   {
-    $knownTables = (new MultiDBRAGManager)->knownEmbeddingTable();
+    $knownTables = (new EmbeddingTableDiscovery())->discover();
 
     $validTables = [];
 

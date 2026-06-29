@@ -10,7 +10,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin;
 
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\AI\Rag\MultiDBRAGManager;
+use ClicShopping\AI\Rag\EmbeddingTableDiscovery;
 use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 
@@ -20,7 +20,7 @@ use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
  * Provides DYNAMIC analytics configuration for the Ecommerce domain.
  * 
  * DESIGN PRINCIPLES:
- * - DRY: Reuses MultiDBRAGManager::knownEmbeddingTable() for table discovery
+ * - DRY: Reuses EmbeddingTableDiscovery::discover() for table discovery
  * - DRY: Reuses EntityRegistry::getIdColumnForEntityType() for ID columns
  * - DRY: Reuses DoctrineOrm for schema introspection
  * - SIMPLE: Uses relevant analytics fields (no restrictive filtering)
@@ -38,14 +38,14 @@ use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 class AnalyticsConfig
 {
   private static ?array $configCache = null;
-  private static ?MultiDBRAGManager $ragManager = null;
+  private static ?EmbeddingTableDiscovery $ragManager = null;
   private static ?EntityRegistry $entityRegistry = null;
 
   /**
    * Get analytics entity mappings for the Ecommerce domain
    *
    * DYNAMIC DISCOVERY:
-   * 1. Uses MultiDBRAGManager::knownEmbeddingTable() to discover tables
+   * 1. Uses EmbeddingTableDiscovery::discover() to discover tables
    * 2. Uses EntityRegistry::getIdColumnForEntityType() for ID columns
    * 3. Uses DoctrineOrm to introspect table schema
    * 4. Returns analytics-relevant fields (numeric, date, text fields)
@@ -66,8 +66,8 @@ class AnalyticsConfig
       $ragManager = self::getRAGManager();
       $entityRegistry = self::getEntityRegistry();
       
-      // Use MultiDBRAGManager to discover all embedding tables
-      $embeddingTables = $ragManager->knownEmbeddingTable(false);
+      // Discover all embedding tables via the lightweight service
+      $embeddingTables = $ragManager->discover(false);
       
       if (empty($embeddingTables)) {
         return [];
@@ -203,12 +203,13 @@ class AnalyticsConfig
   }
 
   /**
-   * Get or create MultiDBRAGManager instance
+   * Get or create the lightweight embedding-table discovery service
+   * (was MultiDBRAGManager, instantiated only to list embedding tables).
    */
-  private static function getRAGManager(): MultiDBRAGManager
+  private static function getRAGManager(): EmbeddingTableDiscovery
   {
     if (self::$ragManager === null) {
-      self::$ragManager = new MultiDBRAGManager();
+      self::$ragManager = new EmbeddingTableDiscovery();
     }
     return self::$ragManager;
   }
