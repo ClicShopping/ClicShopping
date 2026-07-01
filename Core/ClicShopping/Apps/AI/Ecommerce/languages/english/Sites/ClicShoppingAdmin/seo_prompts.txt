@@ -86,23 +86,28 @@ Requirements:
 Write the output in {{output_language}}.
 Output only the comma-separated list.
 
-seo_prompt_faq = You are a senior SEO content strategist.
-Internal processing must be in English.
-Create a FAQ for an {{entity_type}} named "{{entity_name}}".
-If entity_type is product, include questions about warranty, compatibility, usage, dimensions, materials, and available variants.
-If entity_type is category, include questions about product selection criteria, price range, differences between subcategories, and typical use cases.
-Primary keyword: {{primary_keyword}}.
-Topics: {{topics}}.
-People Also Ask: {{people_also_ask}}.
-AI overview insights: {{ai_overview_insights}}.
-Validation feedback: {{validation_feedback}}.
+seo_prompt_faq = You are a senior e-commerce FAQ writer. Reason internally in English.
+FACT CONTRACT — read this first, it overrides every other instruction.
+The PRODUCT DATA block below is the ONLY source of factual claims. You may NOT state any attribute — warranty terms, guarantee duration, dimensions, weight, capacity, material, certification, compatibility, included accessory, package contents, available variant, colour, country of origin, or any numeric value — that is not explicitly present in that block.
+If the PRODUCT DATA says nothing about a topic (for example warranty, dimensions, or variants), you MUST NOT create a question about it. Returning fewer questions is REQUIRED and always better than inventing an answer.
+Never put a price figure, currency amount, stock count, SKU or model number inside an answer unless that exact value appears in the PRODUCT DATA.
+PRODUCT DATA (source of truth):
+- Name: {{entity_name}}
+- Brand: {{product_brand}}
+- Model: {{product_model}}
+- Category: {{product_category}}
+- Availability: {{availability}}
+- Description: {{entity_description}}
+TASK: create a FAQ for this {{entity_type}} using ONLY the PRODUCT DATA above.
+People Also Ask (optional external questions, may be empty): {{people_also_ask}}.
+Validation feedback (unsupported claims from a previous attempt — do NOT repeat them): {{validation_feedback}}.
 Requirements:
-- If People Also Ask is not empty, use those questions as a primary source and enrich answers with context from {{topics}} and {{ai_overview_insights}}.
-- If People Also Ask is empty, infer 3-5 realistic questions from {{topics}} and {{search_intent}}.
-- Each answer must include the primary keyword or a close synonym at least once.
-- Integrate at least one secondary entity (brand, material, compatible item, use case) per answer to strengthen topical authority.
-- Answers must be concise: 1-3 sentences maximum, factual, no promotional language.
-Return a JSON array of 3-5 objects with keys "q" and "a".
+- Derive 2 to 5 questions whose answers are FULLY supported by the PRODUCT DATA. Prefer genuine buyer questions about usage, care, materials, features and use cases that the Description actually covers.
+- If People Also Ask is not empty, keep only the questions you can answer strictly from the PRODUCT DATA and discard the rest. If none qualify, ignore People Also Ask entirely.
+- Each answer: 1 to 3 sentences, factual, neutral, no promotional language, no invented specifics.
+- Use the primary keyword or a close synonym naturally when it fits, never at the expense of accuracy: {{primary_keyword}}.
+- Final self-check before output: for every answer, confirm each concrete claim traces back to the PRODUCT DATA. Remove any claim you cannot trace, and drop the whole Q/A pair if nothing factual remains.
+Return a JSON array of 2 to 5 objects with keys "q" and "a".
 Write questions and answers in {{output_language}}.
 Output only the JSON array.
 
@@ -140,7 +145,13 @@ B) LEXICON — within the factual envelope of the source, you MUST enrich semant
    - Cover EVERY usage the source mentions (e.g. coffee, tea, cocktails, beer) with related entity terms ("hot beverages", "cold drinks", "espresso", "latte glass" when applicable).
    - Use {{topics}} as a SYNONYM POOL for concepts already in the source — never as a source of new facts.
 
-In short: rephrase richly, but never extend the fact set.
+C) COVERAGE CONTRACT (critical — measured, and decisive for SEO ranking):
+   - Treat EVERY significant content word in the source as a mandatory keyword: materials, components, parts, attributes, named measurements, product type, and use cases.
+   - KEEP each source term VERBATIM at least once. You may add synonyms and paraphrases ALONGSIDE it (that is the enrichment), but you must NEVER replace a source term with only a synonym, and NEVER drop one. Enrichment means ADDING vocabulary around the source words, never substituting them.
+   - A synonym that omits the original word LOSES the keyword. Example of the WRONG move: source says "stainless steel" and you write only "metal alloy" — the words "stainless"/"steel" must still appear.
+   - Final self-check before output: scan the source word by word and confirm every significant word is present in your text. Any missing source word means information loss and the result is rejected.
+
+In short: rephrase richly and ADD vocabulary, keep every source keyword verbatim, never extend the fact set.
 
 Write an enriched description for an {{entity_type}} named "{{entity_name}}".
 Primary keyword (use sparingly and naturally): {{primary_keyword}}.
@@ -155,7 +166,7 @@ Requirements:
 - Primary keyword appears 2-3 times, naturally placed. Do not stuff variants — but DO use semantic synonyms freely (they are not "the same keyword").
 - Tone: factual, neutral, vocabulary-rich, no marketing superlatives, no emotional claims about user experience.
 - Structure: paragraph 1 — what the product is and who it is for; paragraph 2 — every concrete feature the source states, rephrased and paraphrased richly; paragraph 3 — usage notes EXPLICITLY mentioned in the source (beverage types, dishwasher safety, etc.) with their semantic variants.
-- Insert a line break at the beginning of each paragraph.
+- FORMATTING (mandatory): wrap EACH paragraph in its own <p>...</p> block, and put EACH block on its OWN line — insert a real newline between a closing </p> and the next <p>. The output MUST span multiple lines (one paragraph per line); NEVER return all paragraphs concatenated on a single line.
 - BANNED phrases — do not use any of these or semantically equivalent expressions:
   * "enhance your experience", "elevate your", "perfect for", "premium quality", "functional design"
   * "daily rituals", "entertaining moments", "refined experience", "ideal solution"
@@ -163,7 +174,37 @@ Requirements:
 - No emojis, no quotes, no marketing superlatives, no closing CTA mentioning price or stock.
 - Return HTML using <p> paragraphs only (no <h2>, no <ul>, no <div>).
 Write the output in {{output_language}}.
-Output only the HTML.
+Output only the HTML, with one <p>...</p> paragraph per line (multi-line, never a single line).
+
+seo_prompt_fidelity_check = You are a meticulous SEO fidelity auditor. Reason internally in English; the two texts may be in ANY language (French, German, Italian, English, etc.) — evaluate them in their own language.
+You are given a SOURCE product description and an OPTIMIZED rewrite. Verify that the optimized text preserves EVERY factual attribute of the source: materials, components, parts, dimensions, capacities, certifications, intended uses, compatibility, brand, and any concrete characteristic.
+A fact counts as PRESERVED if it appears in the optimized text in ANY equivalent wording — synonym, paraphrase, or morphological variant. Do NOT require the same words. A fact is MISSING only when its meaning is absent from the optimized text.
+Do NOT penalise added enrichment, and do NOT invent facts that are not in the source.
+SOURCE:
+{{source}}
+OPTIMIZED:
+{{optimized}}
+Treat as facts only concrete business entities: brands, model names, components, materials, dimensions, capacities, numeric values with units, certifications, compatibilities and distinctive features. Ignore function words, headings and sentence fragments.
+STRICT on numbers: every numeric value with a unit — a measurement, dimension, capacity, weight, power, voltage, torque, or a size/height threshold (a value introduced by "under", "over", "up to", "at least", "<" or ">") — is a HARD FACT. It is PRESERVED only when its specific value AND unit appear in the optimized text in any equivalent form. Replacing it with a generic phrase that omits the exact value (for example "various sizes" or "different heights" instead of the stated threshold) counts as MISSING. This rule applies to every product, not any single example.
+Return ONLY a JSON object and nothing else:
+{"total_entities": the count of distinct source facts you identified, "preservation_score": a number from 0.0 to 1.0 equal to the fraction of those facts preserved, "missing_entities": ["a short label for each source fact absent from the optimized text"]}
+preservation_score is 1.0 when nothing was lost. List every missing fact in missing_entities.
+
+seo_prompt_faq_fidelity = You are a meticulous product-FAQ fact auditor. Reason internally in English; the text may be in ANY language (French, German, Italian, English, etc.) — evaluate it in its own language.
+You are given the PRODUCT DATA (the only source of truth) and one FAQ question with its answer. Decide whether EVERY factual claim in the answer is supported by the PRODUCT DATA.
+A claim is SUPPORTED when the PRODUCT DATA states it explicitly or it follows directly and unambiguously from it, in any equivalent wording (synonym, paraphrase, morphological variant).
+A claim is UNSUPPORTED when it asserts a specific attribute — warranty or guarantee terms, dimensions, weight, capacity, material, certification, compatibility, included accessory, package contents, available variant, colour, country of origin, or any numeric value — that is absent from the PRODUCT DATA.
+Generic non-factual guidance that asserts no specific product attribute (for example "contact the manufacturer for details") is allowed and counts as SUPPORTED.
+Do NOT reward or penalise wording, SEO quality or style — judge factual support only.
+PRODUCT DATA:
+{{source}}
+FAQ QUESTION:
+{{question}}
+FAQ ANSWER:
+{{answer}}
+Return ONLY a JSON object and nothing else:
+{"supported": true when every claim is supported else false, "support_score": a number from 0.0 to 1.0 equal to the fraction of factual claims that are supported, "unsupported_claims": ["a short label for each specific claim in the answer that is absent from the PRODUCT DATA"]}
+support_score is 1.0 when every claim is supported. List every unsupported claim in unsupported_claims.
 
 seo_prompt_internal_links = You are a senior SEO internal linking specialist.
 Internal processing must be in English.
@@ -234,3 +275,15 @@ Requirements:
 Return HTML using <p> paragraphs only.
 Write the output in {{output_language}}.
 Output only the HTML.
+
+seo_prompt_semantic_enhancement = You are an SEO keyword-coverage analyst. Reason internally in English; the texts may be in any language — evaluate them in their own language.
+You are given a target KEYWORDS list, a target TOPICS list (LSI / semantically related terms), the PRIMARY keyword, and two texts: SOURCE and OPTIMIZED.
+A term is COVERED in a text when its meaning is present — exact match, synonym, morphological variant, or close paraphrase. Do not require the same words. Do not invent coverage.
+KEYWORDS: {{serp_keywords}}
+TOPICS: {{serp_topics}}
+PRIMARY: {{primary_keyword}}
+SOURCE: {{source}}
+OPTIMIZED: {{optimized}}
+Count, for SOURCE and for OPTIMIZED separately: how many distinct KEYWORDS are covered (secondary count) and how many distinct TOPICS are covered (LSI count); and whether the PRIMARY keyword is covered.
+Return ONLY a JSON object and nothing else:
+{"primary_source": true or false, "primary_optimized": true or false, "secondary_source": a number, "secondary_optimized": a number, "lsi_source": a number, "lsi_optimized": a number}

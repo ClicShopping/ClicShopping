@@ -424,7 +424,8 @@
       string $url,
       string $postName,
       string $buttonClass = 'btn-primary',
-      string $progressMessage = ''
+      string $progressMessage = '',
+      string $confirmMessage = ''
     ): string {
       // Unique suffix per (postName, productId) so several buttons on the
       // same tab (Phase 1 / 2 / 3) bind independent click handlers.
@@ -452,6 +453,12 @@
 
   btn.addEventListener("click", function () {
     if (btn.disabled) return;
+    var confirmMsg = ' . json_encode($confirmMessage) . ';
+    if (confirmMsg !== "" && !window.confirm(confirmMsg)) { return; }
+
+    var notAppliedMsg = ' . json_encode($this->app->getDef('text_seo_not_applied_regression') ?: 'Optimization not applied: it would drop source facts (fidelity regression).') . ';
+    var notAppliedSeoMsg = ' . json_encode($this->app->getDef('text_seo_not_applied_seo_regression') ?: 'Optimization rolled back: it would degrade the page SEO structure.') . ';
+    var missingLabel  = ' . json_encode($this->app->getDef('text_seo_missing_facts') ?: 'Missing facts') . ';
 
     var formURL   = btn.getAttribute("data-url");
     var postName  = btn.getAttribute("data-post-name");
@@ -496,6 +503,15 @@
           }
           window.location.reload();
         }, 900);
+      } else if (payload.status === "not_applied_regression") {
+        var miss = (payload.missing_entities && payload.missing_entities.length)
+          ? (" — " + missingLabel + ": " + payload.missing_entities.join(", "))
+          : "";
+        modalApi.showError(notAppliedMsg + miss);
+        btn.disabled = false;
+      } else if (payload.status === "not_applied_seo_regression") {
+        modalApi.showError(notAppliedSeoMsg);
+        btn.disabled = false;
       } else {
         modalApi.showError(payload.error || payload.message || "Unknown error");
         btn.disabled = false;
@@ -748,6 +764,51 @@
       return $out;
     }
 
+    /**
+     * Accept / Reject (post-optimization) + "Revenir au texte initial" buttons.
+     * Shown only once an original snapshot exists (i.e. an optimization has run).
+     */
+    private function renderSeoDecisionButtons(int $productId): string
+    {
+      $snapshot = new \ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoOriginalSnapshotRepository();
+      if (!$snapshot->exists('product', $productId)) {
+        return '';
+      }
+
+      $base = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/SEO/';
+
+      $out  = $this->renderActionButton(
+        $productId,
+        label: $this->app->getDef('text_seo_accept') ?: 'Accept',
+        url: $base . 'accept_product_seo.php',
+        postName: 'seo_accept',
+        buttonClass: 'btn-outline-success',
+        progressMessage: $this->app->getDef('text_seo_progress_accept') ?: 'Saving acceptance…'
+      );
+
+      $out .= $this->renderActionButton(
+        $productId,
+        label: $this->app->getDef('text_seo_reject') ?: 'Reject',
+        url: $base . 'reject_product_seo.php',
+        postName: 'seo_reject',
+        buttonClass: 'btn-outline-warning',
+        progressMessage: $this->app->getDef('text_seo_progress_reject') ?: 'Restoring original…',
+        confirmMessage: $this->app->getDef('text_seo_reject_confirm') ?: 'Reject the optimization and restore the original content in every language?'
+      );
+
+      $out .= $this->renderActionButton(
+        $productId,
+        label: $this->app->getDef('text_seo_revert_initial') ?: 'Revert to initial text',
+        url: $base . 'revert_product_seo.php',
+        postName: 'seo_revert_initial',
+        buttonClass: 'btn-outline-danger',
+        progressMessage: $this->app->getDef('text_seo_progress_revert') ?: 'Restoring original and clearing analysis…',
+        confirmMessage: $this->app->getDef('text_seo_revert_initial_confirm') ?: 'Restore the original text and DELETE all SEO analysis for this product (every language)? This cannot be undone.'
+      );
+
+      return $out;
+    }
+
     // ============================================================
     // HELPERS
     // ============================================================
@@ -779,6 +840,12 @@
       $deltaIcon = $delta > 0 ? 'bi-arrow-up-circle-fill' : ($delta === 0 ? 'bi-dash-circle' : 'bi-arrow-down-circle-fill');
       $suggestions = $prevMeta['suggestions'] ?? [];
       $auditResult = $prevMeta['audit_result'] ?? [];
+
+      // Original (pre-optimization) text from the write-once snapshot, surfaced
+      // inside the history "view" modal (replaces the standalone history button).
+      $snapshot = new \ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoOriginalSnapshotRepository();
+      $snapOriginal = $snapshot->get('product', $productId, $languageId);
+      $initialText = is_array($snapOriginal) ? (string)($snapOriginal['description'] ?? '') : '';
 
       $out = '';
 
@@ -822,6 +889,11 @@
         $out .= $this->renderBenchmarkTable($benchmark);
       }
 
+      // -- Structural enhancement table (source vs optimized) --
+      if (!empty($prevMeta['enhancement']) && is_array($prevMeta['enhancement'])) {
+        $out .= $this->renderEnhancementTable($prevMeta['enhancement']);
+      }
+
       // -- Suggestions --
       if (!empty($suggestions)) {
         $out .= '<div class="card mb-3"><div class="card-header d-flex align-items-center gap-2">';
@@ -860,6 +932,7 @@
         buttonClass: 'btn-success',
         progressMessage: $this->app->getDef('text_seo_progress_phase2') ?: 'SEO content optimization across all languages in progress…'
       );
+      $out .= $this->renderSeoDecisionButtons($productId);
 
       // Phase 3 — FAQ generation with anti-hallucination grounding.
       // Visible once Phase 2 has produced at least one optimized_report row
@@ -891,7 +964,7 @@
       }
 
       if (!empty($history)) {
-        $out .= $this->renderHistory($history, $languageId);
+        $out .= $this->renderHistory($history, $languageId, $initialText);
       }
 
       return $out;
@@ -915,7 +988,7 @@
     /**
      * Render the side-by-side benchmark comparison table (source vs generated).
      *
-     * Pulls every metric the SeoQualityBenchmark exposes so the admin can
+     * Pulls every metric SeoObservability exposes so the admin can
      * see at a glance which axis improved, which one regressed and by how
      * much — complements the textual verdict / diagnostics with a numeric
      * evolution view.
@@ -1021,11 +1094,63 @@
     }
 
     /**
+     * Second table: structural SEO enhancement (source vs optimized).
+     * @param array $enhancement Output of SeoEnhancementScorer::score().
+     */
+    private function renderEnhancementTable(array $enhancement): string
+    {
+      $metrics = $enhancement['metrics'] ?? [];
+      if (empty($metrics)) {
+        return '';
+      }
+      $title  = $this->app->getDef('text_seo_enh_title') ?: 'SEO enhancement (structure)';
+      $scoreB = (int)($enhancement['seo_score']['before'] ?? 0);
+      $scoreA = (int)($enhancement['seo_score']['after']  ?? 0);
+
+      $out  = '<div class="card mb-3"><div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">';
+      $out .= '<div><i class="bi bi-diagram-3 text-primary me-1"></i><strong>' . htmlspecialchars($title) . '</strong></div>';
+      $out .= '<div class="text-muted small">SEO score ' . $scoreB . ' → ' . $scoreA . '</div></div>';
+      $out .= '<div class="table-responsive"><table class="table table-sm table-hover mb-0 align-middle"><thead class="table-light"><tr>';
+      $out .= '<th>' . htmlspecialchars($this->app->getDef('text_seo_enh_metric') ?: 'Metric') . '</th>';
+      $out .= '<th class="text-end">' . htmlspecialchars($this->app->getDef('text_seo_enh_source') ?: 'Source') . '</th>';
+      $out .= '<th class="text-end">' . htmlspecialchars($this->app->getDef('text_seo_enh_optimized') ?: 'Optimized') . '</th>';
+      $out .= '<th class="text-end">Δ</th></tr></thead><tbody>';
+
+      foreach ($metrics as $m) {
+        $before = (float)($m['before'] ?? 0);
+        $after  = (float)($m['after'] ?? 0);
+        $delta  = $after - $before;
+        $higher = $m['higher_is_better'] ?? true;   // null = neutral (muted Δ)
+        $cls = 'text-muted';
+        if ($higher !== null && abs($delta) > 1e-9) {
+          $good = $higher ? $delta > 0 : $delta < 0;
+          $cls = $good ? 'text-success' : 'text-danger';
+        }
+        $label = htmlspecialchars((string)($m['label'] ?? $m['key'] ?? ''));
+        if (!empty($m['critical'])) {
+          $label .= ' <span class="badge bg-danger">!</span>';
+        }
+        $out .= '<tr><td>' . $label . '</td>'
+              . '<td class="text-end">' . $this->fmtNum($before) . '</td>'
+              . '<td class="text-end">' . $this->fmtNum($after) . '</td>'
+              . '<td class="text-end ' . $cls . '">' . ($delta > 0 ? '+' : '') . $this->fmtNum($delta) . '</td></tr>';
+      }
+      $out .= '</tbody></table></div></div>';
+      return $out;
+    }
+
+    /** Trim trailing .0 for integer-like values. */
+    private function fmtNum(float $n): string
+    {
+      return (abs($n - round($n)) < 1e-9) ? (string)(int)round($n) : (string)round($n, 1);
+    }
+
+    /**
      * Renders the history table of previous SEO actions.
      * * @param array $history
      * @return string
      */
-    private function renderHistory(array $history, int $languageId = 0): string
+    private function renderHistory(array $history, int $languageId = 0, string $initialText = ''): string
     {
       $langName = (string)$languageId;
 
@@ -1088,6 +1213,8 @@
 </div>
 <script>
 (function () {
+  var SEO_INITIAL_TEXT  = ' . json_encode($initialText !== '' ? mb_substr($initialText, 0, 8000) : '', JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';
+  var SEO_INITIAL_LABEL = ' . json_encode($this->app->getDef('text_seo_initial_text') ?: 'Initial text') . ';
   document.addEventListener("click", function (e) {
     var btn = e.target.closest(".seo-view-btn");
     if (!btn) return;
@@ -1100,6 +1227,10 @@
 
   function buildSeoDetail(m) {
     var h = "";
+    if (SEO_INITIAL_TEXT) {
+      h += "<div class=\"mb-3\"><button class=\"btn btn-outline-secondary btn-sm\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#seoInitialText\"><i class=\"bi bi-file-text me-1\"></i>" + esc(SEO_INITIAL_LABEL) + "</button>"
+        + "<div class=\"collapse mt-2\" id=\"seoInitialText\"><div class=\"border rounded p-2 bg-light small\" style=\"max-height:400px;overflow:auto;white-space:pre-wrap\">" + esc(SEO_INITIAL_TEXT) + "</div></div></div>";
+    }
     var sb = m.seo_score_before != null ? m.seo_score_before : null;
     var sa = m.seo_score_after  != null ? m.seo_score_after  : null;
     if (sb !== null || sa !== null) {
@@ -1114,6 +1245,7 @@
       h += "<div class=\"alert alert-light border d-flex align-items-start gap-2 mb-3\"><i class=\"bi " + ico + " fs-5 mt-1\"></i><div><strong>Audit</strong><br>" + esc(audit.summary) + "</div></div>";
     }
     h += renderBenchmark(m.benchmark);
+    h += renderEnhancement(m.enhancement);
     var sugg = m.suggestions || null;
     if (sugg && typeof sugg === "object" && Object.keys(sugg).length) {
       h += "<div class=\"card mb-3\"><div class=\"card-header\"><i class=\"bi bi-lightbulb-fill text-warning me-1\"></i><strong>Suggestions</strong></div><ul class=\"list-group list-group-flush\">";
@@ -1201,6 +1333,23 @@
     }
     html += "</div>";
     return html;
+  }
+  function renderEnhancement(e) {
+    if (!e || !e.metrics || !e.metrics.length) return "";
+    var sb = (e.seo_score && e.seo_score.before) || 0;
+    var sa = (e.seo_score && e.seo_score.after) || 0;
+    var h = "<div class=\"card mb-3\"><div class=\"card-header d-flex justify-content-between\"><strong>SEO enhancement (structure)</strong><span class=\"text-muted small\">SEO score " + sb + " &rarr; " + sa + "</span></div>";
+    h += "<div class=\"table-responsive\"><table class=\"table table-sm mb-0\"><thead class=\"table-light\"><tr><th>Metric</th><th class=\"text-end\">Source</th><th class=\"text-end\">Optimized</th><th class=\"text-end\">&Delta;</th></tr></thead><tbody>";
+    e.metrics.forEach(function (m) {
+      var b = Number(m.before || 0), a = Number(m.after || 0), d = a - b;
+      var hib = m.higher_is_better;   // null/undefined = neutral (muted)
+      var cls = "text-muted";
+      if (hib !== null && hib !== undefined && Math.abs(d) > 1e-9) { cls = ((hib && d > 0) || (!hib && d < 0)) ? "text-success" : "text-danger"; }
+      var lbl = esc(String(m.label || m.key || ""));
+      if (m.critical) lbl += " <span class=\"badge bg-danger\">!</span>";
+      h += "<tr><td>" + lbl + "</td><td class=\"text-end\">" + b + "</td><td class=\"text-end\">" + a + "</td><td class=\"text-end " + cls + "\">" + (d > 0 ? "+" : "") + d + "</td></tr>";
+    });
+    return h + "</tbody></table></div></div>";
   }
 })();
 </script>';

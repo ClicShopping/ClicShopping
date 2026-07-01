@@ -40,27 +40,32 @@ class SeoAuditAgent implements ActorAgentInterface
 {
   /**
    * Unique runtime identifier for this agent instance.
+   * @var string
    */
   private string $actorId;
 
   /**
    * Debug flag controlling logging verbosity.
+   * @var bool
    */
   private bool $debug;
 
   /**
    * Wrapper around the Large Language Model service.
+   * @var LLMServiceWrapper
    */
   private LLMServiceWrapper $llm;
 
   /**
    * Wrapper around translation service.
    * Used for bidirectional language normalization.
+   * @var TranslationServiceWrapper
    */
   private TranslationServiceWrapper $translator;
 
   /**
    * Prompt builder specific to audit tasks.
+   * @var AuditPrompts|null
    */
   private ?AuditPrompts $prompts = null;
 
@@ -68,15 +73,18 @@ class SeoAuditAgent implements ActorAgentInterface
    * Constructor.
    *
    * - Generates unique actor ID.
-   * - Enables debug mode if configured.
-   * - Instantiates LLM and translation services.
+   * - Enables debug mode if configured via application constants.
+   * - Instantiates LLM and translation services with the debug state.
    */
   public function __construct()
   {
+    // Generate a unique actor identifier for log tracing and orchestration identification.
     $this->actorId = 'seo_audit_actor_' . uniqid();
 
+    // Determine debug state based on the specific ClicShopping ChatGPT application constant.
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
 
+    // Initialize dependencies passing down the global debugging state.
     $this->llm = new LLMServiceWrapper($this->debug);
     $this->translator = new TranslationServiceWrapper($this->debug);
   }
@@ -94,54 +102,58 @@ class SeoAuditAgent implements ActorAgentInterface
    * 7. Return ActionResult.
    *
    * Any failure in AI generation falls back to deterministic summary.
+   * * @param Action $action The action context containing parameters and metadata.
+   * @return ActionResult The finalized execution result.
    */
   public function executeAction(Action $action): ActionResult
   {
     $start = microtime(true);
     $params = $action->getParameters();
 
-    $before  = $params['seo_before'] ?? [];
-    $after   = $params['seo_after']  ?? [];
-    $changes = $params['changes']    ?? [];
+    // Extract parameters from the incoming action signature.
+    $before     = $params['seo_before'] ?? [];
+    $after      = $params['seo_after']  ?? [];
+    $changes    = $params['changes']    ?? [];
     $excludeFaq = (bool)($params['exclude_faq'] ?? false);
+    $benchmark  = $params['benchmark']  ?? [];
+    
+    // If FAQ handling is delegated elsewhere, strip it from the delta evaluations.
     if ($excludeFaq) {
       unset($changes['faq']);
     }
 
+    // Performance/Score comparison delta analytics.
     $scoreBefore = (int)($before['seo_score'] ?? 0);
     $scoreAfter  = (int)($after['seo_score']  ?? 0);
     $delta       = $scoreAfter - $scoreBefore;
     $improved    = $delta > 0;
 
+    // Resolve system context and language preferences.
     $context      = $action->getContext();
     $languageId   = $context->getLanguageId() ?? 1;
     $languageCode = $this->translator->getLanguageCode($languageId);
     $entityType   = (string)($context->getSystemState()['entity_type'] ?? '');
 
+    // Instantiate localized prompts based on the target system language.
     $this->prompts = new AuditPrompts($languageCode);
 
+    // Initialize report structure properties.
     $summary = '';
     $improvements = [];
     $recommendations = [];
 
     try {
-      /**
-       * Step 1: Normalize input to English for LLM coherence.
-       */
+      // Step 1: Normalize input to English for LLM coherence.
       $beforeEn = $this->translateAuditData($before, $languageCode);
       $afterEn = $this->translateAuditData($after, $languageCode);
       $changesEn = $this->translateAuditData($changes, $languageCode);
 
-      /**
-       * Step 2: Generate AI outputs.
-       */
-      $summary = $this->generateSummary($beforeEn, $afterEn, $changesEn, $excludeFaq);
-      $improvements = $this->analyzeImprovements($beforeEn, $afterEn, $changesEn, $excludeFaq);
-      $recommendations = $this->generateRecommendations($beforeEn, $afterEn, $changesEn, $excludeFaq);
+      // Step 2: Generate AI outputs via LLM.
+      $summary = $this->generateSummary($beforeEn, $afterEn, $changesEn, $excludeFaq, $benchmark);
+      $improvements = $this->analyzeImprovements($beforeEn, $afterEn, $changesEn, $excludeFaq, $benchmark);
+      $recommendations = $this->generateRecommendations($beforeEn, $afterEn, $changesEn, $excludeFaq, $benchmark);
 
-      /**
-       * Step 3: Translate AI output back to target language if required.
-       */
+      // Step 3: Translate AI output back to target language if required.
       $translated = $this->translateReport([
         'summary' => $summary,
         'improvements' => $improvements,
@@ -153,7 +165,7 @@ class SeoAuditAgent implements ActorAgentInterface
       $recommendations = $translated['recommendations'];
 
     } catch (\Throwable $e) {
-
+      // Log errors if debug mode is active.
       if ($this->debug) {
         error_log('[SeoAuditAgent] Error: ' . $e->getMessage());
         error_log('[SeoAuditAgent] Trace: ' . $e->getTraceAsString());
@@ -161,6 +173,7 @@ class SeoAuditAgent implements ActorAgentInterface
 
       /**
        * Deterministic fallback summary.
+       * Triggered if translation services or LLM pipelines fail.
        */
       $summary = $this->buildSummary($scoreBefore, $scoreAfter, $delta, $changes);
     }
@@ -176,7 +189,7 @@ class SeoAuditAgent implements ActorAgentInterface
     ]);
 
     /**
-     * Final normalized output.
+     * Final normalized output compilation.
      */
     $thinContentBefore = (bool)($before['thin_content']           ?? false);
     $thinContentAfter  = (bool)($after['thin_content']            ?? false);
@@ -184,7 +197,7 @@ class SeoAuditAgent implements ActorAgentInterface
     $schemaTypes       = $after['schema_org']['types']            ?? [];
     $wordcountAfter    = (int)($after['wordcount_body']           ?? 0);
 
-    // Append thin-content and schema signals to recommendations when present
+    // Append thin-content and schema signals to recommendations when present.
     $thinContentWarnings = [];
     if ($thinContentAfter) {
       $thinContentWarnings[] = sprintf(
@@ -202,6 +215,7 @@ class SeoAuditAgent implements ActorAgentInterface
       $recommendations = array_merge($recommendations, $thinContentWarnings);
     }
 
+    // Merge structured report metrics into the flat output payload array.
     $output = array_merge($report->toArray(), [
       'improved'           => $improved,
       'approved'           => $improved,
@@ -215,10 +229,12 @@ class SeoAuditAgent implements ActorAgentInterface
       'wordcount_after'    => $wordcountAfter,
     ]);
 
+    // Measure operation execution time for agent analytics.
     $metrics = [
       'execution_time_ms' => (int)((microtime(true) - $start) * 1000),
     ];
 
+    // Return the action result payload indicating whether an improvement was hit.
     return new ActionResult(
       $action->getActionId(),
       $this->actorId,
@@ -232,6 +248,9 @@ class SeoAuditAgent implements ActorAgentInterface
 
   /**
    * Normalizes audit input data into English.
+   * @param array $data Raw parameter metrics array.
+   * @param string $languageCode Source language code.
+   * @return array Normalized array data in English.
    */
   private function translateAuditData(array $data, string $languageCode): array
   {
@@ -244,6 +263,9 @@ class SeoAuditAgent implements ActorAgentInterface
 
   /**
    * Recursively translates string values inside arrays.
+   * @param array $data Target array with potential nested strings.
+   * @param string $languageCode Source language code.
+   * @return array Translated structure array.
    */
   private function translateArrayStrings(array $data, string $languageCode): array
   {
@@ -264,14 +286,24 @@ class SeoAuditAgent implements ActorAgentInterface
 
   /**
    * Generates LLM summary text.
+   * @param array $before Metric metadata state prior to changes.
+   * @param array $after Metric metadata state following changes.
+   * @param array $changes Map of optimizations committed.
+   * @param bool $excludeFaq Workflow bypass flag for FAQ sections.
+   * @param array $benchmark Extra algorithmic grading signals.
+   * @return string Raw text narrative summary from the LLM.
    */
-  private function generateSummary(array $before, array $after, array $changes, bool $excludeFaq = false): string
+  private function generateSummary(array $before, array $after, array $changes, bool $excludeFaq = false, array $benchmark = []): string
   {
     $prompt = $this->prompts->getSummaryPrompt([
-      'before' => json_encode($before, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'after' => json_encode($after, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'changes' => json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'scope_note' => $this->scopeNote($excludeFaq),
+      'before'              => json_encode($before, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'after'               => json_encode($after, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'changes'             => json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'scope_note'          => $this->scopeNote($excludeFaq),
+      'preservation_score'  => (float)($benchmark['preservation_score'] ?? 1.0),
+      'missing_entities'    => implode('; ', (array)($benchmark['missing_entities'] ?? [])),
+      'composite_delta'     => (float)($benchmark['composite_delta'] ?? 0),
+      'semantic_regressed'  => !empty($benchmark['semantic_regressed']) ? 'yes' : 'no',
     ]);
 
     return $this->llm->generateResponse($prompt, [
@@ -282,14 +314,24 @@ class SeoAuditAgent implements ActorAgentInterface
 
   /**
    * Generates structured improvements list.
+   * @param array $before Metric metadata state prior to changes.
+   * @param array $after Metric metadata state following changes.
+   * @param array $changes Map of optimizations committed.
+   * @param bool $excludeFaq Workflow bypass flag for FAQ sections.
+   * @param array $benchmark Extra algorithmic grading signals.
+   * @return array Array list mapping identified optimization paths.
    */
-  private function analyzeImprovements(array $before, array $after, array $changes, bool $excludeFaq = false): array
+  private function analyzeImprovements(array $before, array $after, array $changes, bool $excludeFaq = false, array $benchmark = []): array
   {
     $prompt = $this->prompts->getImprovementsPrompt([
-      'before' => json_encode($before, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'after' => json_encode($after, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'changes' => json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'scope_note' => $this->scopeNote($excludeFaq),
+      'before'              => json_encode($before, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'after'               => json_encode($after, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'changes'             => json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'scope_note'          => $this->scopeNote($excludeFaq),
+      'preservation_score'  => (float)($benchmark['preservation_score'] ?? 1.0),
+      'missing_entities'    => implode('; ', (array)($benchmark['missing_entities'] ?? [])),
+      'composite_delta'     => (float)($benchmark['composite_delta'] ?? 0),
+      'semantic_regressed'  => !empty($benchmark['semantic_regressed']) ? 'yes' : 'no',
     ]);
 
     return $this->llm->generateStructuredResponse($prompt, [
@@ -300,14 +342,24 @@ class SeoAuditAgent implements ActorAgentInterface
 
   /**
    * Generates structured recommendations list.
+   * @param array $before Metric metadata state prior to changes.
+   * @param array $after Metric metadata state following changes.
+   * @param array $changes Map of optimizations committed.
+   * @param bool $excludeFaq Workflow bypass flag for FAQ sections.
+   * @param array $benchmark Extra algorithmic grading signals.
+   * @return array Array list containing further structural proposals.
    */
-  private function generateRecommendations(array $before, array $after, array $changes, bool $excludeFaq = false): array
+  private function generateRecommendations(array $before, array $after, array $changes, bool $excludeFaq = false, array $benchmark = []): array
   {
     $prompt = $this->prompts->getRecommendationsPrompt([
-      'before' => json_encode($before, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'after' => json_encode($after, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'changes' => json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'scope_note' => $this->scopeNote($excludeFaq),
+      'before'              => json_encode($before, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'after'               => json_encode($after, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'changes'             => json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'scope_note'          => $this->scopeNote($excludeFaq),
+      'preservation_score'  => (float)($benchmark['preservation_score'] ?? 1.0),
+      'missing_entities'    => implode('; ', (array)($benchmark['missing_entities'] ?? [])),
+      'composite_delta'     => (float)($benchmark['composite_delta'] ?? 0),
+      'semantic_regressed'  => !empty($benchmark['semantic_regressed']) ? 'yes' : 'no',
     ]);
 
     return $this->llm->generateStructuredResponse($prompt, [
@@ -318,9 +370,11 @@ class SeoAuditAgent implements ActorAgentInterface
 
   /**
    * Build the phase-scope hint injected as {{scope_note}} into every audit
-   * prompt.  When Phase 2 runs with exclude_faq, the LLM must NOT recommend
+   * prompt. When Phase 2 runs with exclude_faq, the LLM must NOT recommend
    * adding a FAQ (Phase 3 handles it separately with grounding checks) and
    * must NOT count the missing FAQ as a regression.
+   * @param bool $excludeFaq Flag controlling notice inclusion.
+   * @return string Constraint rules instructions for the prompt.
    */
   private function scopeNote(bool $excludeFaq): string
   {
@@ -332,9 +386,12 @@ class SeoAuditAgent implements ActorAgentInterface
   /**
    * Translates report output to target language if needed.
    *
-   * improvements and recommendations are arrays of objects (e.g. [{title, description}])
+   * Improvements and recommendations are arrays of objects (e.g. [{title, description}])
    * or flat string arrays, depending on the LLM response format.
    * We handle both cases to avoid TypeError when translateBatch receives arrays.
+   * @param array $report The raw English analysis maps.
+   * @param string $targetLang Target locale indicator string.
+   * @return array Translated audit content structure.
    */
   private function translateReport(array $report, string $targetLang): array
   {
@@ -342,8 +399,10 @@ class SeoAuditAgent implements ActorAgentInterface
       return $report;
     }
 
+    // Convert the primary narrative block back to the application language context.
     $report['summary'] = $this->translator->translate((string)$report['summary'], 'en', $targetLang);
 
+    // Process lists iteratively to safely secure nested keys or strings.
     if (!empty($report['improvements']) && is_array($report['improvements'])) {
       $report['improvements'] = $this->translateItemList($report['improvements'], 'en', $targetLang);
     }
@@ -358,6 +417,10 @@ class SeoAuditAgent implements ActorAgentInterface
   /**
    * Translates a list that may contain either plain strings or associative arrays.
    * Handles both formats returned by generateStructuredResponse().
+   * @param array $items Array collection of string or object tokens.
+   * @param string $fromLang Source language.
+   * @param string $toLang Target language.
+   * @return array Localized items collection.
    */
   private function translateItemList(array $items, string $fromLang, string $toLang): array
   {
@@ -365,10 +428,10 @@ class SeoAuditAgent implements ActorAgentInterface
 
     foreach ($items as $item) {
       if (is_string($item)) {
-        // Flat string list
+        // Flat string list processing
         $out[] = $this->translator->translate($item, $fromLang, $toLang);
       } elseif (is_array($item)) {
-        // Structured object — translate every string value inside
+        // Structured object — translate every string value inside dynamically
         $translated = [];
         foreach ($item as $key => $value) {
           $translated[$key] = is_string($value) && $value !== ''
@@ -387,6 +450,11 @@ class SeoAuditAgent implements ActorAgentInterface
   /**
    * Deterministic fallback summary builder.
    * Called when LLM generation fails. Incorporates thin-content and schema signals.
+   * @param int $before Score before.
+   * @param int $after Score after.
+   * @param int $delta Score arithmetic discrepancy.
+   * @param array $changes Target configurations handled.
+   * @return string Formatted static audit evaluation summary text.
    */
   private function buildSummary(int $before, int $after, int $delta, array $changes): string
   {
@@ -416,7 +484,9 @@ class SeoAuditAgent implements ActorAgentInterface
   }
 
   /**
-   * Proposes default SEO audit action.
+   * Proposes default SEO audit action configuration options.
+   * @param Context $context Core pipeline execution state information.
+   * @return Action Standard ready-to-run scheduled Action instance.
    */
   public function proposeAction(Context $context): Action
   {
@@ -424,7 +494,8 @@ class SeoAuditAgent implements ActorAgentInterface
   }
 
   /**
-   * Declares audit capability.
+   * Declares audit capability parameters for registration.
+   * @return array Capability mapping profile dictionary arrays.
    */
   public function getCapabilities(): array
   {
@@ -440,7 +511,9 @@ class SeoAuditAgent implements ActorAgentInterface
   }
 
   /**
-   * Returns confidence score for audit actions.
+   * Returns confidence score for executing audit actions.
+   * @param Action $action Evaluation criteria object.
+   * @return float Reliability score factor index.
    */
   public function evaluateConfidence(Action $action): float
   {
@@ -449,7 +522,9 @@ class SeoAuditAgent implements ActorAgentInterface
 
   /**
    * Receives critic feedback.
-   * Currently not used.
+   * Currently not used in this agent configuration module.
+   * @param Feedback $feedback Performance critique evaluation data maps.
+   * @return void
    */
   public function receiveFeedback(Feedback $feedback): void
   {
@@ -458,6 +533,7 @@ class SeoAuditAgent implements ActorAgentInterface
 
   /**
    * Returns unique actor identifier.
+   * @return string Runtime actor identification name tracker string.
    */
   public function getActorId(): string
   {

@@ -143,6 +143,10 @@ class SeoMultilingualOrchestrator
       return [
         'success' => false,
         'error'   => 'Source-language optimization failed: ' . ($sourceResult['error'] ?? 'unknown error'),
+        // Propagate the preservation-gate abort so the UI can show a localized
+        // "not applied — regression" notice with the dropped facts.
+        'status'           => $sourceResult['status'] ?? null,
+        'missing_entities' => $sourceResult['missing_entities'] ?? [],
         'source_language' => ['id' => $sourceLanguageId, 'code' => 'en'],
         'source_result'   => $sourceResult,
         'languages' => [],
@@ -152,6 +156,7 @@ class SeoMultilingualOrchestrator
     $proposal       = $sourceResult['proposal'] ?? [];
     $sourceAudit    = (array)($sourceResult['audit'] ?? []);
     $sourceBenchmark = (array)($sourceResult['benchmark'] ?? []);
+    $sourceEnhancement = (array)($sourceResult['enhancement'] ?? []);
     $scoreBefore    = (int)($sourceResult['seo_score_before'] ?? 0);
     $scoreAfter     = (int)($sourceResult['seo_score_after']  ?? 0);
     $sourceApplied  = $this->extractAppliedFields($proposal);
@@ -169,7 +174,8 @@ class SeoMultilingualOrchestrator
       appliedFields: $sourceApplied,
       auditResult:   $sourceAudit,
       triggeredBy:   $triggeredBy,
-      benchmark:     $sourceBenchmark
+      benchmark:     $sourceBenchmark,
+      enhancement:   $sourceEnhancement
     );
 
     $perLanguage = [
@@ -231,7 +237,8 @@ class SeoMultilingualOrchestrator
           appliedFields: $translated,
           auditResult:   $sourceAudit,
           triggeredBy:   $triggeredBy,
-          benchmark:     $sourceBenchmark
+          benchmark:     $sourceBenchmark,
+          enhancement:   $sourceEnhancement
         );
 
         // Mirror the SERP report into clic_seo_serp_reports for this locale so downstream
@@ -351,6 +358,11 @@ class SeoMultilingualOrchestrator
         $fromLang,
         $toLang
       );
+    }
+
+    // add paragraph
+    if (isset($changes['description']) && $changes['description'] !== '') {
+      $changes['description'] = (new SeoDescriptionFormatter())->format((string)$changes['description']);
     }
 
     // FAQ is not produced here in Phase 2 — it lives in Phase 3 with its

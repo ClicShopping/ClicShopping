@@ -1,0 +1,14 @@
+id int(11) not_null auto_increment comment(Primary key)
+entity_type varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci not_null comment(product | category | cms)
+entity_id int(11) not_null comment(FK to the entity table (products / categories / …))
+language_id int(11) not_null comment(FK to languages)
+original_content longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null comment(JSON snapshot of the full original SEO content (name, description, summary, meta_title, meta_description, meta_keywords) captured once before the first optimization) CHECK (json_valid(`original_content`))
+created_at datetime default current_timestamp() comment(Capture timestamp - write-once, never overwritten or purged)
+--
+primary id
+unique uq_entity_lang entity_type entity_id language_id
+idx_entity entity_type entity_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

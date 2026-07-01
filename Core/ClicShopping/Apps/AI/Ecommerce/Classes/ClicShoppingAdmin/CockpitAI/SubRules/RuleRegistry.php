@@ -205,7 +205,7 @@
       // ────────────────────────────────────────────────────────────────────
       // Rule 2b: seo_quality_regression (new — Phase 2 benchmark)
       // Fires when the latest SEO optimization attempt regressed the content
-      // quality vs the source description (SeoQualityBenchmark verdict =
+      // quality vs the source description (SeoFidelityChecker-derived verdict =
       // 'regression', or coverage < 60 %, or repetition > 20 %).  Triggers
       // a re-optimize action so the regression is addressed before the
       // catalog drifts.  Higher specificity than seo_low_score so it wins

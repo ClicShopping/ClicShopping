@@ -48,6 +48,7 @@ class DeleteConfirm implements HooksInterface
       $this->app->db->delete('products_description_faq', ['language_id' => $id]);
       $this->app->db->delete('products_description_faq_embedding', ['language_id' => $id]);
       $this->app->db->delete('seo_serp_reports', ['language_id' => $id]);
+      $this->app->db->delete('seo_original_snapshot', ['entity_id' => $id]);
     }
   }
 

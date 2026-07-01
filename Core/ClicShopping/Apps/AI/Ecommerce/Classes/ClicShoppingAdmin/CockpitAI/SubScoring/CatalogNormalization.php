@@ -14,7 +14,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\Sub
  * Carries catalog-wide distribution statistics used for count-type factor normalization.
  * Computed once per analysis pipeline run (Step 2) and shared across both scoring axes.
  *
- * ── Properties per dimension ─────────────────────────────────────────────────
+ * Properties per dimension
  *
  * Each catalog dimension (views, orders, reviews, tracking) exposes:
  *
@@ -23,8 +23,6 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\Sub
  *   {dim}Median  — Median (P50) value
  *   {dim}Mean    — Arithmetic mean
  *   {dim}Std     — Population standard deviation
- *
- * ── Normalization formula (plan 1.1/1.2) ─────────────────────────────────────
  *
  * CountFactor now applies winsorization then log scaling:
  *
@@ -83,7 +81,7 @@ readonly class CatalogNormalization
     public float $trackingMedian = 8.0,
     public float $trackingMean   = 22.0,
     public float $trackingStd    = 35.0,
-    private float $ageMax        = 365.0
+    public float $ageMax         = 365.0
   ) {
   }
 

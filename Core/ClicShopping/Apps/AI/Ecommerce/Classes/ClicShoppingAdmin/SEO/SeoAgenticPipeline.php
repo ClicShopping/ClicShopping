@@ -26,7 +26,7 @@ class SeoAgenticPipeline
 {
   private SeoEntityAdapter $adapter;
   private SeoSerpReportRepository $reportRepo;
-  private SeoQualityBenchmark $qualityBenchmark;
+  private SeoObservability $observability;
   private bool $debug;
   private ?SeoOptimizationAgent $seoAgentOverride   = null;
   private ?SeoCodeValidationAgent $codeAgentOverride = null;
@@ -36,7 +36,6 @@ class SeoAgenticPipeline
 
   // T6.4 — pipeline metrics accumulated during optimize()
   private int  $llmCallCount     = 0;
-  private int  $totalTimeMs      = 0;
   private int  $attemptCount     = 0;
   private bool $actorCriticUsed  = false;
 
@@ -48,7 +47,7 @@ class SeoAgenticPipeline
   {
     $this->adapter = new SeoEntityAdapter($entityType);
     $this->reportRepo = new SeoSerpReportRepository();
-    $this->qualityBenchmark = new SeoQualityBenchmark();
+    $this->observability = new SeoObservability();
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
     $this->seoAgentOverride = $seoAgentOverride;
     $this->codeAgentOverride = $codeAgentOverride;
@@ -213,6 +212,10 @@ class SeoAgenticPipeline
     // fallback rather than wasting the 60-90s of LLM generation.
     $bestAttempt = null; // ['proposal'=>..., 'normalized'=>..., 'quality_score'=>int, 'audit'=>...]
 
+    // Agentic, language-agnostic source-fidelity check (Pure LLM Mode). Built once
+    // per run (language is fixed); used as the PRIMARY anti-regression signal below.
+    $fidelityChecker = new SeoFidelityChecker($this->adapter->getLanguage($languageId), $this->debug);
+
     for ($attempt = 1; $attempt <= 3; $attempt++) {
       $this->attemptCount = $attempt;   // T6.4
       $array_seo_optimize = [
@@ -297,27 +300,74 @@ class SeoAgenticPipeline
       if (($codeValidation['approved'] ?? false) === true) {
         // Anti-regression guard.  The validator may approve a proposal that
         // is syntactically clean (right lengths, no spam, valid schema) but
-        // SEO-poorer than the source — too much repetition, lost entities,
-        // bland vocabulary.  SeoQualityBenchmark compares lexical entropy,
-        // diversity, source-entity coverage and repetition against the
-        // source description.  When the verdict is "regression" we treat it
-        // as a validation failure and feed the diagnostics back to the next
-        // attempt so the LLM can broaden vocabulary / re-introduce missing
-        // attributes.  If every attempt regresses, the pipeline ultimately
-        // refuses to apply and keeps the original content intact.
-        $benchmark = $this->qualityBenchmark->compare(
-          (string)($current['description'] ?? ''),
-          (string)($proposal['description'] ?? '')
-        );
-        $benchmark['attempt'] = $attempt;
-        $this->lastBenchmark  = $benchmark;
-        $this->logDebug('Quality benchmark', $benchmark);
+        // SEO-poorer than the source — lost source facts, keyword stuffing.
+        //
+        // GATE = agentic LLM fidelity check (Pure LLM Mode, language-agnostic:
+        // EN/FR/DE/IT/…). It judges semantically whether the optimized text
+        // still preserves every source fact — robust to synonyms/paraphrase.
+        // When fidelity fails we treat it as a validation failure and feed the
+        // missing facts back to the next attempt so the LLM can re-introduce
+        // them. If every attempt regresses, the pipeline ultimately refuses to
+        // apply and keeps the original content intact. When the LLM is
+        // unavailable the fidelity gate is skipped (NO language-coupled
+        // fallback) — the code-validation gate still guards quality.
+        //
+        // SeoObservability is NOT a gate: it produces language-agnostic
+        // metrics (entropy / diversity / repetition / word-count) for the
+        // report / UI / analytics only. Source-entity coverage comes from the
+        // fidelity check's LLM `coverage_estimate`, never a keyword heuristic.
+        $source    = (string)($current['description'] ?? '');
+        $generated = (string)($proposal['description'] ?? '');
 
-        // Persist the benchmark for THIS attempt — even if it succeeds or
-        // fails — so analytics queries can rebuild the full retry sequence
-        // by joining on pipeline_run_uuid.  The feedback snapshot captures
-        // exactly what was injected into the next LLM call so the loop is
-        // auditable end-to-end.
+        $fidelity = $fidelityChecker->check($source, $generated);
+
+        if ($fidelity['available']) {
+          $isRegression     = !$fidelity['fidelity_ok'];
+          $missingFeedback  = $fidelity['missing_facts'];
+          $regressionWhy    = $fidelity['fidelity_ok'] ? 'fidelity_ok' : 'fidelity_missing_facts';
+          $coverageEstimate = (float)$fidelity['coverage_estimate'];
+        } else {
+          // LLM fidelity unavailable → skip the fidelity gate for this attempt;
+          // the code-validation gate still guards quality.
+          $isRegression     = false;
+          $missingFeedback  = [];
+          $regressionWhy    = 'fidelity_unavailable_skipped';
+          $coverageEstimate = 1.0;
+        }
+
+        // Observability metrics (language-agnostic). Coverage is sourced from
+        // the agentic fidelity check, NOT a keyword/stem heuristic.
+        $sourceScore    = $this->observability->scoreText($source);
+        $generatedScore = $this->observability->scoreText($generated, $coverageEstimate);
+        $delta          = round($generatedScore['score'] - $sourceScore['score'], 3);
+
+        $verdict = $isRegression
+          ? 'regression'
+          : ($delta > 0.05 ? 'improvement' : 'parity');
+
+        $benchmark = [
+          'source_score'      => $sourceScore,
+          'generated_score'   => $generatedScore,
+          'delta'             => $delta,
+          'verdict'           => $verdict,
+          'regression_reason' => $isRegression ? $regressionWhy : 'none',
+          'is_regression'     => $isRegression,
+          'diagnostics'       => [
+            'critical'      => $isRegression,
+            'coverage'      => round($coverageEstimate, 3),
+            'repetition'    => (float)($generatedScore['breakdown']['repetition'] ?? 0),
+            'missing_facts' => $missingFeedback,
+            'messages'      => [],
+          ],
+          'fidelity'          => $fidelity,
+          'attempt'           => $attempt,
+        ];
+        $this->lastBenchmark = $benchmark;
+        $this->logDebug('Observability + fidelity benchmark', $benchmark);
+
+        // Persist the benchmark for THIS attempt so analytics can rebuild the
+        // full retry sequence; the feedback snapshot captures exactly what was
+        // injected into the next LLM call so the loop is auditable end-to-end.
         try {
           $this->persistBenchmarkLog(
             $entityId,
@@ -325,37 +375,39 @@ class SeoAgenticPipeline
             $benchmark,
             $triggeredBy,
             $attempt,
-            $benchmark['is_regression'] ? $validationFeedback : []
+            $isRegression ? $validationFeedback : []
           );
         } catch (\Throwable $e) {
           $this->logDebug('Benchmark log insert failed', ['error' => $e->getMessage()]);
         }
 
-        if (!$benchmark['is_regression']) {
-          $this->logDebug('Code validation ok', [
-            'attempt' => $attempt,
-            'notes' => $codeValidation['notes'] ?? '',
-          ]);
+        if (!$isRegression) {
+          $this->logDebug('Fidelity/quality ok', ['attempt' => $attempt, 'why' => $regressionWhy]);
           break;
         }
 
-        $this->logDebug('Quality benchmark regression — retrying', [
-          'attempt' => $attempt,
-          'delta'   => $benchmark['delta'],
-          'verdict' => $benchmark['verdict'],
-          'reason'  => $benchmark['regression_reason'],
+        $this->logDebug('Fidelity regression — retrying', [
+          'attempt'       => $attempt,
+          'why'           => $regressionWhy,
+          'missing_facts' => $missingFeedback,
         ]);
+
+        $missingLine = empty($missingFeedback)
+          ? ''
+          : 'The optimized text is MISSING these source facts — re-include EACH one (the source wording verbatim, or an equivalent paraphrase): ' . implode('; ', array_slice($missingFeedback, 0, 40)) . '.';
+
         $validationFeedback = [
           'issues'      => array_merge(
             $codeValidation['feedback']['issues'] ?? [],
-            $benchmark['diagnostics']['messages'] ?? []
+            $missingFeedback
           ),
           'suggestions' => array_merge(
             $codeValidation['feedback']['suggestions'] ?? [],
-            [
-              'Match the source attribute coverage: re-introduce every entity the source mentions (e.g. material, base / accessory, usage variants) as semantic paraphrases.',
+            array_values(array_filter([
+              $missingLine,
+              'Preserve 100% of the source facts: add enrichment AROUND them, never replace or drop a source attribute.',
               'Broaden vocabulary — avoid over-repeating any single word.',
-            ]
+            ]))
           ),
           'attempt' => $attempt,
         ];
@@ -382,7 +434,7 @@ class SeoAgenticPipeline
         $lengthRecoverable = $titleChars > 0 && $titleChars <= 70;
       }
       $isUsable = !$hasPlaceholder && !$hasSpam && $schemaOk && $lengthRecoverable && $quality >= 70;
-      if ($isUsable && ($bestAttempt === null || $quality > ($bestAttempt['quality_score'] ?? 0))) {
+      if ($isUsable && ($bestAttempt === null || $quality > $bestAttempt['quality_score'])) {
         $bestAttempt = [
           'attempt'         => $attempt,
           'quality_score'   => $quality,
@@ -426,6 +478,7 @@ class SeoAgenticPipeline
 
       return [
         'success'   => false,
+        'status'    => 'not_applied_regression',
         // Surface a clearer message when the failure comes from the
         // anti-regression guard rather than the structural validator.
         'error'     => $isBenchmarkRegression
@@ -438,6 +491,32 @@ class SeoAgenticPipeline
     }
 
     $originalData = $current;
+
+    // HARD PRESERVATION GATE — never apply content that drops source facts,
+    // regardless of which path (approved or best-attempt) selected it. Re-check
+    // the final proposal against the source; abort (keep original) on regression.
+    $finalSource    = (string)($current['description'] ?? '');
+    $finalGenerated = (string)($proposal['description'] ?? '');
+    $finalFidelity  = $fidelityChecker->check($finalSource, $finalGenerated);
+
+    // FAIL-CLOSED: abort when the optimized text drops facts (fidelity_ok=false)
+    // OR when preservation could not be verified at all (available=false). We never
+    // apply content we could not prove faithful — the original is kept intact.
+    if ($finalFidelity['available'] === false || $finalFidelity['fidelity_ok'] === false) {
+      $missingEntities = $finalFidelity['missing_entities'] ?? [];
+      $this->logDebug('Preservation gate: aborting apply (regression)', [
+        'preservation_score' => $finalFidelity['preservation_score'] ?? null,
+        'missing_entities'   => $missingEntities,
+      ]);
+      return [
+        'success'          => false,
+        'status'           => 'not_applied_regression',
+        'error'            => 'Optimisation non appliquée : régression de fidélité — des faits de la source seraient perdus.',
+        'missing_entities' => $missingEntities,
+        'benchmark'        => $this->lastBenchmark,
+        'proposal'         => $proposal,
+      ];
+    }
 
     $applied = $this->adapter->applySeoChanges($entityId, $languageId, $normalizedChanges, true);
 
@@ -456,13 +535,60 @@ class SeoAgenticPipeline
 
     $seoAfter = $seoReport->getSeoData(true, $this->adapter->getEntityType());
 
+    // STRUCTURAL ENHANCEMENT GATE (Lot 2a). Compute the structural SEO before/after
+    // and ROLL BACK on a critical regression (schema removed / headings zeroed /
+    // word-count collapse). Non-critical metrics are informational only.
+    $enhancement = (new SeoEnhancementScorer())->score(
+      $seoBefore,
+      $seoAfter,
+      (string)($current['description'] ?? ''),
+      (string)($proposal['description'] ?? '')
+    );
+
+    if ($enhancement['critical_regression'] === true) {
+      $this->adapter->applySeoChanges($entityId, $languageId, $originalData, false);
+      $this->logDebug('Enhancement gate: critical structural regression — rolled back', [
+        'reasons' => $enhancement['critical_reasons'],
+      ]);
+      return [
+        'success'     => false,
+        'status'      => 'not_applied_seo_regression',
+        'error'       => 'Optimisation annulée : régression SEO structurelle (' . implode(', ', $enhancement['critical_reasons']) . ').',
+        'enhancement' => $enhancement,
+        'benchmark'   => $this->lastBenchmark,
+      ];
+    }
+
+    // SEMANTIC ENHANCEMENT (Lot 2b) — informational keyword/LSI coverage rows + a
+    // soft advisory. One LLM call; fail-open (no rows, no advisory on error/empty).
+    $semantic = (new SeoSemanticEnhancementScorer($this->adapter->getLanguage($languageId), $this->debug))->score(
+      (array)($serpResult['keywords'] ?? []),
+      (array)($serpResult['topics'] ?? []),
+      (string)($proposal['meta_keywords'] ?? $current['name'] ?? ''),
+      (string)($current['description'] ?? ''),
+      (string)($proposal['description'] ?? '')
+    );
+    $semanticRegressed = false;
+    if ($semantic['available'] === true) {
+      $enhancement['metrics'] = array_merge($enhancement['metrics'], $semantic['metrics']);
+      $semanticRegressed = (bool)$semantic['regressed'];
+    }
+
     $auditAgent = new SeoAuditAgent();
 
     $audit_array = [
-      'seo_before' => $seoBefore,
-      'seo_after' => $seoAfter,
-      'changes' => $normalizedChanges,
+      'seo_before'  => $seoBefore,
+      'seo_after'   => $seoAfter,
+      'changes'     => $normalizedChanges,
       'exclude_faq' => $excludeFaq,
+      // De-bias the audit: give it the objective preservation/quality metrics so
+      // it reports removals/regressions, not only additions.
+      'benchmark'   => [
+        'preservation_score' => (float)($finalFidelity['preservation_score'] ?? 1.0),
+        'missing_entities'   => $finalFidelity['missing_entities'] ?? [],
+        'composite_delta'    => (float)($this->lastBenchmark['delta'] ?? 0),
+        'semantic_regressed' => $semanticRegressed,
+      ],
     ];
 
     $auditAction = new Action('seo_audit', $audit_array, $context, 'medium', 60);
@@ -544,6 +670,7 @@ class SeoAgenticPipeline
       'serp'            => $serpResult,
       'report_id'       => $reportId,
       'benchmark'       => $this->lastBenchmark,
+      'enhancement'     => $enhancement,
       // T6.4 — visible in UI agentic audit panel
       'pipeline_metrics'=> [
         'llm_calls'         => $this->llmCallCount,
@@ -561,9 +688,8 @@ class SeoAgenticPipeline
    *
    *   - attempt              SMALLINT     — 1-based attempt index
    *   - pipeline_run_uuid    CHAR(36)     — identifies the optimize() call
-   *   - regression_reason    VARCHAR(50)  — low_coverage | repetition |
-   *                                          entropy_drop | diversity_drop |
-   *                                          delta_drop  | multiple | none
+   *   - regression_reason    VARCHAR(50)  — fidelity_missing_facts | none
+   *                                          (derived from SeoFidelityChecker)
    *   - critical             TINYINT(1)   — same as diagnostics.critical,
    *                                          materialised for index speed
    *   - feedback_snapshot    TEXT         — exact payload that was injected
@@ -727,8 +853,10 @@ class SeoAgenticPipeline
       }
     }
 
-    $issues = array_values(array_unique(array_filter($issues)));
-    $suggestions = array_values(array_unique(array_filter($suggestions)));
+    // Values are already guarded by !empty() above, so array_filter would be a
+    // no-op — just dedupe and re-index.
+    $issues = array_values(array_unique($issues));
+    $suggestions = array_values(array_unique($suggestions));
 
     return [
       'issues' => $issues,

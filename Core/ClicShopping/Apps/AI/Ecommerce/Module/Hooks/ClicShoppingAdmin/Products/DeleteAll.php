@@ -50,18 +50,16 @@ class DeleteAll implements HooksInterface
         if (isset($items)) {
           // Delete product embeddings
           $this->app->delete('products_embedding', 'entity_id', $items);
-          
-          // Delete FAQ and FAQ embeddings for all languages
+
           try {
-            // Delete FAQ content
             $deletedFaq = $this->app->db->delete('products_description_faq', ['products_id' => (int)$items]);
-            
-            // Delete FAQ embeddings
             $deletedFaqEmbeddings = $this->app->db->delete('products_description_faq_embedding', ['entity_id' => (int)$items]);
+
+            $seo_original_snapshot = $this->app->db->delete('seo_original_snapshot', ['entity_id' => (int)$items]);
             
-            if ($deletedFaq || $deletedFaqEmbeddings) {
+            if ($deletedFaq || $deletedFaqEmbeddings || $seo_original_snapshot) {
               if($this->debug) {
-                error_log("Products/DeleteAll: Deleted FAQ and embeddings for product {$items}");
+                error_log("Products/DeleteAll: Deleted FAQ / embeddings / SEO Original for product {$items}");
               }
             }
           } catch (\Exception $e) {

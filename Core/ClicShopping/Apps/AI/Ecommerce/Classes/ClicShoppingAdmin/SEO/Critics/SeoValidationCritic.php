@@ -20,27 +20,48 @@ use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SeoCodeValidationAgent;
 
 /**
- * SeoValidationCritic
+ * Class SeoValidationCritic
  *
- * Critic that evaluates SEO proposals using SeoCodeValidationAgent.
+ * An evaluation agent that utilizes an underlying SeoCodeValidationAgent to 
+ * analyze content changes against detailed SEO criteria, technical boundaries, 
+ * and operational constraints.
+ *
+ * Implements a fault-tolerant strategy to prevent execution gaps within the 
+ * orchestration layout by returning safe low scores during runtime exceptions.
  */
 class SeoValidationCritic implements CriticAgentInterface
 {
+  /** @var string Unique identifier for this critic instance. */
   private string $criticId;
+
+  /** @var bool Flag to toggle verbose debugging features. */
   private bool $debug;
+
+  /** @var SeoCodeValidationAgent The underlying validation micro-agent. */
   private SeoCodeValidationAgent $validator;
+
+  /** @var SecurityLogger Instance utilized to record system tracking and safety exceptions. */
   private SecurityLogger $securityLogger;
+
+  /** @var array Audit trail storing structured historical output data of performed evaluations. */
   private array $evaluationHistory = [];
 
+  /**
+   * SeoValidationCritic constructor.
+   *
+   * @param bool $debug Enables debugging mode if set to true.
+   * @param CriticRegistry|null $registry Optional registry instance to auto-enroll this critic.
+   * @param SeoCodeValidationAgent|null $validator Optional pre-configured validator instance.
+   */
   public function __construct(
     bool $debug = false,
     ?CriticRegistry $registry = null,
     ?SeoCodeValidationAgent $validator = null
   )
   {
-    $this->criticId = 'seo_validation_critic_' . uniqid();
-    $this->debug = $debug;
-    $this->validator = $validator ?? new SeoCodeValidationAgent();
+    $this->criticId       = 'seo_validation_critic_' . uniqid();
+    $this->debug          = $debug;
+    $this->validator      = $validator ?? new SeoCodeValidationAgent();
     $this->securityLogger = new SecurityLogger();
 
     if ($registry !== null) {
@@ -48,6 +69,17 @@ class SeoValidationCritic implements CriticAgentInterface
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // CriticAgentInterface Implementation
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Performs a pre-flight risk evaluation to guess the likelihood of a successful run 
+   * based purely on the inputs available in the initial Action payload.
+   *
+   * @param Action $action The action payload containing target parameters.
+   * @return Prediction The calculated readiness assurance profile and associated risks.
+   */
   public function predictOutcome(Action $action): Prediction
   {
     $params = $action->getParameters();
@@ -76,6 +108,11 @@ class SeoValidationCritic implements CriticAgentInterface
     );
   }
 
+  /**
+   * Retrieves the standard weighted baseline matrix used to grade SEO validations.
+   *
+   * @return array<string, EvaluationCriteria> Keyed array defining the targeted SEO constraints.
+   */
   public function getEvaluationCriteria(): array
   {
     return [
@@ -90,6 +127,12 @@ class SeoValidationCritic implements CriticAgentInterface
     ];
   }
 
+  /**
+   * Transforms raw Evaluation output into an actionable, categorized feedback object.
+   *
+   * @param ActionResult $result The production result containing metrics to interpret.
+   * @return Feedback Detailed breakdown of critical vulnerabilities and strong aspects.
+   */
   public function provideFeedback(ActionResult $result): Feedback
   {
     $evaluation = $this->evaluateAction($result);
@@ -120,6 +163,18 @@ class SeoValidationCritic implements CriticAgentInterface
     );
   }
 
+  /**
+   * Evaluates the absolute readiness of the action's final payload by sub-allocating 
+   * validation targets to the internal validation agent.
+   *
+   * @note Fault-tolerant: This critic must NEVER throw an unhandled exception. 
+   * If any inner execution step fails, it recovers gracefully with a minimal baseline 
+   * score to guarantee that the agent pipeline can maintain its required consensus rules 
+   * (§V "marge critic SEO = zéro") and safe structural fallbacks.
+   *
+   * @param ActionResult $result The executed result content to scan.
+   * @return Evaluation Complete scoring matrices along with strengths/improvements notes.
+   */
   public function evaluateAction(ActionResult $result): Evaluation
   {
     $outputType = $result->getOutputType();
@@ -133,36 +188,48 @@ class SeoValidationCritic implements CriticAgentInterface
       ['critic_id' => $this->criticId, 'output_type' => $outputType]
     );
 
-    $changes = $this->extractChanges($output);
+    try {
+      $changes = $this->extractChanges($output);
 
-    $validationOutput = [
-      'approved' => false,
-      'quality_score' => 0,
-      'issues' => ['Empty output'],
-      'suggestions' => ['Generate meta title and meta description'],
-      'is_spam' => false,
-      'lengths' => ['passed' => false],
-    ];
+      $validationOutput = [
+        'approved' => false,
+        'quality_score' => 0,
+        'issues' => ['Empty output'],
+        'suggestions' => ['Generate meta title and meta description'],
+        'is_spam' => false,
+        'lengths' => ['passed' => false],
+      ];
 
-    if (!empty($changes)) {
-      $validationAction = new Action(
-        'seo_code_validation',
-        [
-          'entity_type' => $entityType,
-          'changes' => $changes,
-        ],
-        $context,
-        'medium',
-        30
+      if (!empty($changes)) {
+        $validationAction = new Action(
+          'seo_code_validation',
+          [
+            'entity_type' => $entityType,
+            'changes' => $changes,
+          ],
+          $context,
+          'medium',
+          30
+        );
+
+        $validationOutput = $this->validator->executeAction($validationAction)->getOutput();
+      }
+
+      $scores = $this->calculateScores($changes, $validationOutput);
+      $feedback = $this->buildFeedbackSummary($validationOutput, $scores);
+      $strengths = $this->buildStrengths($validationOutput, $scores);
+      $improvements = $this->buildImprovements($validationOutput, $scores);
+    } catch (\Throwable $e) {
+      $this->securityLogger->logSecurityEvent(
+        'SeoValidationCritic evaluation error (fault-tolerant low score)',
+        'warning',
+        ['critic_id' => $this->criticId, 'error' => $e->getMessage()]
       );
-
-      $validationOutput = $this->validator->executeAction($validationAction)->getOutput();
+      $scores = ['accuracy' => 0.2, 'completeness' => 0.2, 'efficiency' => 0.2, 'clarity' => 0.2];
+      $feedback = 'SEO code validation could not complete on this proposal.';
+      $strengths = [];
+      $improvements = ['Regenerate the SEO content: the proposal could not be validated.'];
     }
-
-    $scores = $this->calculateScores($changes, $validationOutput);
-    $feedback = $this->buildFeedbackSummary($validationOutput, $scores);
-    $strengths = $this->buildStrengths($validationOutput, $scores);
-    $improvements = $this->buildImprovements($validationOutput, $scores);
 
     $evaluation = new Evaluation(
       $this->criticId,
@@ -183,6 +250,23 @@ class SeoValidationCritic implements CriticAgentInterface
     return $evaluation;
   }
 
+  /**
+   * Returns the identification string assigned to this critic.
+   *
+   * @return string Unique critic UUID.
+   */
+  public function getCriticId(): string
+  {
+    return $this->criticId;
+  }
+
+  /**
+   * Safely unpacks the mixed payload result into a normalized schema structure 
+   * required by the sub-validation processes.
+   *
+   * @param mixed $output The raw unparsed content object.
+   * @return array Extracted associative map of structural modifications.
+   */
   private function extractChanges(mixed $output): array
   {
     if (!is_array($output)) {
@@ -201,6 +285,13 @@ class SeoValidationCritic implements CriticAgentInterface
     ];
   }
 
+  /**
+   * Compiles validation metric signals into a final criteria performance breakdown.
+   *
+   * @param array $changes Extracted dataset modifications map.
+   * @param array $validation Structural response array from the validation runner.
+   * @return array<string, float> Keyed scoring metrics mapped between 0.0 and 1.0.
+   */
   private function calculateScores(array $changes, array $validation): array
   {
     $qualityScore = (float)($validation['quality_score'] ?? 0);
@@ -232,6 +323,13 @@ class SeoValidationCritic implements CriticAgentInterface
     ];
   }
 
+  /**
+   * Aggregates runtime flags, exceptions, and scores into a human-readable summary block.
+   *
+   * @param array $validation Structural response array from the validation runner.
+   * @param array $scores Keyed assessment vectors mapping metrics.
+   * @return string Normalized text log overview.
+   */
   private function buildFeedbackSummary(array $validation, array $scores): string
   {
     $parts = [];
@@ -260,6 +358,13 @@ class SeoValidationCritic implements CriticAgentInterface
     return implode(' | ', $parts);
   }
 
+  /**
+   * Evaluates validation flags and quality profiles to report strong content factors.
+   *
+   * @param array $validation Structural response array from the validation runner.
+   * @param array $scores Keyed assessment vectors mapping metrics.
+   * @return array<int, string> List of verified structural strengths.
+   */
   private function buildStrengths(array $validation, array $scores): array
   {
     $strengths = [];
@@ -283,6 +388,13 @@ class SeoValidationCritic implements CriticAgentInterface
     return $strengths;
   }
 
+  /**
+   * Analyzes issues, omissions, and tips to construct a recovery guideline payload.
+   *
+   * @param array $validation Structural response array from the validation runner.
+   * @param array $scores Keyed assessment vectors mapping metrics.
+   * @return array<int, string> Extracted error messages targeting corrections.
+   */
   private function buildImprovements(array $validation, array $scores): array
   {
     $improvements = [];
@@ -296,10 +408,5 @@ class SeoValidationCritic implements CriticAgentInterface
     }
 
     return array_values(array_unique(array_filter($improvements)));
-  }
-
-  public function getCriticId(): string
-  {
-    return $this->criticId;
   }
 }

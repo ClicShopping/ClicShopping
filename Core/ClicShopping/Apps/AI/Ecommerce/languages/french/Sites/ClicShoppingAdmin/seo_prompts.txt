@@ -86,23 +86,28 @@ Exigences :
 Write the output in {{output_language}}.
 Retournez uniquement la liste séparée par des virgules.
 
-seo_prompt_faq = Vous êtes un stratège de contenu SEO senior.
-Le traitement interne doit se faire en anglais.
-Créez une FAQ pour un {{entity_type}} nommé {{entity_name}}.
-Si entity_type est product, incluez des questions sur la garantie, la compatibilité, l'usage, les dimensions, les matériaux et les variantes disponibles.
-Si entity_type est category, incluez des questions sur les critères de sélection, la fourchette de prix, les différences entre sous-catégories et les cas d'usage typiques.
-Mot-clé principal : {{primary_keyword}}.
-Sujets : {{topics}}.
-Questions fréquentes (PAA) : {{people_also_ask}}.
-Insights AI Overview : {{ai_overview_insights}}.
-Retour de validation : {{validation_feedback}}.
+seo_prompt_faq = Vous êtes un rédacteur de FAQ e-commerce senior. Raisonnez en interne en anglais.
+CONTRAT FACTUEL — à lire en premier, il prime sur toute autre instruction.
+Le bloc DONNÉES PRODUIT ci-dessous est l'UNIQUE source des affirmations factuelles. Vous ne DEVEZ énoncer aucun attribut — conditions de garantie, durée de garantie, dimensions, poids, capacité, matériau, certification, compatibilité, accessoire inclus, contenu de l'emballage, variante disponible, couleur, pays d'origine, ou toute valeur numérique — qui ne figure pas explicitement dans ce bloc.
+Si les DONNÉES PRODUIT ne disent rien d'un sujet (par exemple garantie, dimensions ou variantes), vous ne DEVEZ PAS créer de question à ce propos. Rendre moins de questions est EXIGÉ et toujours préférable à l'invention d'une réponse.
+Ne mettez jamais un prix, un montant, un niveau de stock, un SKU ou un numéro de modèle dans une réponse, sauf si cette valeur exacte figure dans les DONNÉES PRODUIT.
+DONNÉES PRODUIT (source de vérité) :
+- Nom : {{entity_name}}
+- Marque : {{product_brand}}
+- Modèle : {{product_model}}
+- Catégorie : {{product_category}}
+- Disponibilité : {{availability}}
+- Description : {{entity_description}}
+TÂCHE : créez une FAQ pour ce {{entity_type}} en utilisant UNIQUEMENT les DONNÉES PRODUIT ci-dessus.
+Questions fréquentes (PAA, optionnelles, peuvent être vides) : {{people_also_ask}}.
+Retour de validation (affirmations non étayées d'une tentative précédente — ne les répétez PAS) : {{validation_feedback}}.
 Exigences :
-- Si PAA n'est pas vide, utilisez ces questions comme source principale et enrichissez les réponses avec {{topics}} et {{ai_overview_insights}}.
-- Si PAA est vide, déduisez 3-5 questions réalistes à partir de {{topics}} et {{search_intent}}.
-- Chaque réponse doit contenir le mot-clé principal ou un synonyme proche au moins une fois.
-- Intégrez au moins une entité secondaire (marque, matériau, produit compatible, cas d'usage) par réponse.
-- Réponses concises : 1-3 phrases maximum, factuelles, sans langage promotionnel.
-Retournez un tableau JSON de 3-5 objets avec les clés "q" et "a".
+- Déduisez 2 à 5 questions dont les réponses sont ENTIÈREMENT étayées par les DONNÉES PRODUIT. Privilégiez de vraies questions d'acheteur sur l'usage, l'entretien, les matériaux, les caractéristiques et les cas d'usage réellement couverts par la Description.
+- Si PAA n'est pas vide, ne gardez que les questions auxquelles vous pouvez répondre strictement à partir des DONNÉES PRODUIT et écartez le reste. Si aucune ne convient, ignorez PAA entièrement.
+- Chaque réponse : 1 à 3 phrases, factuelle, neutre, sans langage promotionnel, sans détail inventé.
+- Utilisez le mot-clé principal ou un synonyme proche naturellement lorsque cela convient, jamais au détriment de l'exactitude : {{primary_keyword}}.
+- Auto-vérification finale avant la sortie : pour chaque réponse, confirmez que chaque affirmation concrète remonte aux DONNÉES PRODUIT. Retirez toute affirmation non traçable, et supprimez la paire Q/R entière s'il ne reste rien de factuel.
+Retournez un tableau JSON de 2 à 5 objets avec les clés "q" et "a".
 Write questions and answers in {{output_language}}.
 Retournez uniquement le tableau JSON.
 
@@ -140,7 +145,13 @@ B) LEXIQUE — à l'intérieur de l'enveloppe factuelle de la source, vous DEVEZ
    - Couvrez CHAQUE usage mentionné par la source (ex. café, thé, cocktails, bière) avec leurs entités liées ("boissons chaudes", "boissons froides", "espresso", "verre à latte" si applicable).
    - Utilisez {{topics}} comme un POOL DE SYNONYMES pour des concepts déjà présents dans la source — jamais comme source de nouveaux faits.
 
-En résumé : reformulez richement, mais n'étendez JAMAIS l'ensemble des faits.
+C) CONTRAT DE COUVERTURE (critique — mesuré, et décisif pour le référencement SERP) :
+   - Traitez CHAQUE mot de contenu significatif de la source comme un mot-clé obligatoire : matériaux, composants, pièces, attributs, mesures nommées, type de produit, cas d'usage.
+   - CONSERVEZ chaque terme source VERBATIM au moins une fois. Vous pouvez ajouter des synonymes et paraphrases À CÔTÉ (c'est l'enrichissement), mais vous ne devez JAMAIS remplacer un terme source uniquement par un synonyme, ni en supprimer un. Enrichir, c'est AJOUTER du vocabulaire autour des mots source, sans jamais les substituer.
+   - Un synonyme qui omet le mot d'origine PERD le mot-clé. Exemple du MAUVAIS geste : la source dit "acier inoxydable" et vous n'écrivez que "alliage métallique" — les mots "acier"/"inoxydable" doivent rester présents.
+   - Auto-vérification finale avant sortie : parcourez la source mot à mot et confirmez que chaque mot significatif est présent dans votre texte. Tout mot source manquant constitue une perte d'information et entraîne un rejet.
+
+En résumé : reformulez richement et AJOUTEZ du vocabulaire, conservez chaque mot-clé source verbatim, n'étendez JAMAIS l'ensemble des faits.
 
 Rédigez une description enrichie pour un {{entity_type}} nommé "{{entity_name}}".
 Mot-clé principal (utilisez-le avec parcimonie et de façon naturelle) : {{primary_keyword}}.
@@ -155,7 +166,7 @@ Exigences :
 - Le mot-clé principal apparaît 2-3 fois, placé naturellement. Pas de bourrage de variantes — mais utilisez librement les synonymes sémantiques (ils ne sont PAS "le même mot-clé").
 - Ton : factuel, neutre, lexique riche, pas de superlatifs marketing, pas d'affirmations émotionnelles sur l'expérience utilisateur.
 - Structure : paragraphe 1 — ce qu'est le produit et à qui il s'adresse ; paragraphe 2 — chaque caractéristique concrète énoncée par la source, reformulée et paraphrasée avec richesse ; paragraphe 3 — notes d'usage EXPLICITEMENT mentionnées (types de boissons, lavage, etc.) avec leurs variantes sémantiques.
-- À chaque paragraphe, faire un retour à la ligne.
+- FORMATAGE (obligatoire) : encapsulez CHAQUE paragraphe dans son propre bloc <p>...</p>, et placez CHAQUE bloc sur sa PROPRE ligne — insérez un vrai retour à la ligne entre une balise </p> fermante et la balise <p> suivante. La sortie DOIT s'étendre sur plusieurs lignes (un paragraphe par ligne) ; ne JAMAIS renvoyer tous les paragraphes concaténés sur une seule ligne.
 - EXPRESSIONS INTERDITES — ne pas utiliser ces formules ni leurs équivalents sémantiques :
   * "améliorer votre expérience", "sublimez votre", "parfait pour", "qualité premium", "design fonctionnel"
   * "rituels quotidiens", "moments de convivialité", "expérience raffinée", "solution idéale"
@@ -163,7 +174,37 @@ Exigences :
 - Pas d'emojis, pas de guillemets, pas de superlatifs marketing, pas de CTA de clôture mentionnant le prix ou le stock.
 - Retournez du HTML avec des balises <p> uniquement (pas de <h2>, pas de <ul>, pas de <div>).
 Write the output in {{output_language}}.
-Retournez uniquement le HTML.
+Retournez uniquement le HTML, avec un paragraphe <p>...</p> par ligne (plusieurs lignes, jamais une seule ligne).
+
+seo_prompt_fidelity_check = Vous êtes un auditeur de fidélité SEO méticuleux. Raisonnez en interne en anglais ; les deux textes peuvent être dans N'IMPORTE QUELLE langue (français, allemand, italien, anglais, etc.) — évaluez-les dans leur propre langue.
+On vous fournit une description produit SOURCE et une réécriture OPTIMISÉE. Vérifiez que le texte optimisé préserve CHAQUE attribut factuel de la source : matériaux, composants, pièces, dimensions, capacités, certifications, usages prévus, compatibilité, marque, et toute caractéristique concrète.
+Un fait est PRÉSERVÉ s'il apparaît dans le texte optimisé sous N'IMPORTE QUELLE forme équivalente — synonyme, paraphrase ou variante morphologique. N'exigez PAS les mêmes mots. Un fait est MANQUANT seulement lorsque son sens est absent du texte optimisé.
+Ne pénalisez PAS l'enrichissement ajouté, et n'inventez PAS de faits absents de la source.
+SOURCE :
+{{source}}
+OPTIMISÉ :
+{{optimized}}
+Traitez comme faits uniquement les entités commerciales concrètes : marques, noms de modèles, composants, matériaux, dimensions, capacités, valeurs numériques avec unités, certifications, compatibilités et caractéristiques distinctives. Ignorez les mots grammaticaux, les titres et les fragments de phrases.
+STRICT sur les nombres : toute valeur numérique avec une unité — une mesure, une dimension, une capacité, un poids, une puissance, une tension, un couple, ou un seuil de taille/hauteur (une valeur introduite par "moins de", "plus de", "jusqu'à", "au moins", "<" ou ">") — est un FAIT FORT. Elle est PRÉSERVÉE seulement lorsque sa valeur précise ET son unité apparaissent dans le texte optimisé sous une forme équivalente. La remplacer par une formulation générique qui omet la valeur exacte (par exemple "différentes tailles" ou "diverses hauteurs" au lieu du seuil indiqué) compte comme MANQUANTE. Cette règle s'applique à tous les produits, pas à un seul exemple.
+Retournez UNIQUEMENT un objet JSON et rien d'autre :
+{"total_entities": le nombre de faits source distincts identifiés, "preservation_score": un nombre de 0.0 à 1.0 égal à la fraction de ces faits préservés, "missing_entities": ["un libellé court pour chaque fait source absent du texte optimisé"]}
+preservation_score vaut 1.0 quand rien n'a été perdu. Listez chaque fait manquant dans missing_entities.
+
+seo_prompt_faq_fidelity = Vous êtes un auditeur factuel de FAQ produit méticuleux. Raisonnez en interne en anglais ; le texte peut être dans N'IMPORTE QUELLE langue (français, allemand, italien, anglais, etc.) — évaluez-le dans sa propre langue.
+On vous fournit les DONNÉES PRODUIT (l'unique source de vérité) et une question de FAQ avec sa réponse. Déterminez si CHAQUE affirmation factuelle de la réponse est étayée par les DONNÉES PRODUIT.
+Une affirmation est ÉTAYÉE lorsque les DONNÉES PRODUIT l'énoncent explicitement ou qu'elle en découle directement et sans ambiguïté, dans une formulation équivalente (synonyme, paraphrase, variante morphologique).
+Une affirmation est NON ÉTAYÉE lorsqu'elle avance un attribut spécifique — garantie, dimensions, poids, capacité, matériau, certification, compatibilité, accessoire inclus, contenu de l'emballage, variante disponible, couleur, pays d'origine, ou toute valeur numérique — absent des DONNÉES PRODUIT.
+Un conseil générique non factuel qui n'avance aucun attribut produit spécifique (par exemple « contactez le fabricant pour plus de détails ») est autorisé et compte comme ÉTAYÉ.
+Ne récompensez ni ne pénalisez la formulation, la qualité SEO ou le style — jugez uniquement l'étai factuel.
+DONNÉES PRODUIT :
+{{source}}
+QUESTION FAQ :
+{{question}}
+RÉPONSE FAQ :
+{{answer}}
+Retournez UNIQUEMENT un objet JSON et rien d'autre :
+{"supported": true si chaque affirmation est étayée sinon false, "support_score": un nombre de 0.0 à 1.0 égal à la fraction des affirmations factuelles étayées, "unsupported_claims": ["un libellé court pour chaque affirmation spécifique de la réponse absente des DONNÉES PRODUIT"]}
+support_score vaut 1.0 quand chaque affirmation est étayée. Listez chaque affirmation non étayée dans unsupported_claims.
 
 seo_prompt_internal_links = Vous êtes un spécialiste senior du maillage interne SEO.
 Le traitement interne doit se faire en anglais.
@@ -234,3 +275,15 @@ Exigences :
 Retournez du HTML avec des balises <p> uniquement.
 Write the output in {{output_language}}.
 Retournez uniquement le HTML.
+
+seo_prompt_semantic_enhancement = Vous êtes analyste de couverture de mots-clés SEO. Raisonnez en interne en anglais ; les textes peuvent être dans n'importe quelle langue — évaluez-les dans leur langue.
+On vous donne une liste de KEYWORDS cibles, une liste de TOPICS cibles (termes LSI / sémantiquement liés), le mot-clé PRIMARY, et deux textes : SOURCE et OPTIMIZED.
+Un terme est COUVERT dans un texte lorsque son sens est présent — correspondance exacte, synonyme, variante morphologique ou paraphrase proche. N'exigez pas les mêmes mots. N'inventez pas de couverture.
+KEYWORDS : {{serp_keywords}}
+TOPICS : {{serp_topics}}
+PRIMARY : {{primary_keyword}}
+SOURCE : {{source}}
+OPTIMIZED : {{optimized}}
+Comptez, pour SOURCE puis pour OPTIMIZED séparément : combien de KEYWORDS distincts sont couverts (nombre secondary) et combien de TOPICS distincts sont couverts (nombre LSI) ; et si le mot-clé PRIMARY est couvert.
+Retournez UNIQUEMENT un objet JSON et rien d'autre :
+{"primary_source": true ou false, "primary_optimized": true ou false, "secondary_source": un nombre, "secondary_optimized": un nombre, "lsi_source": un nombre, "lsi_optimized": un nombre}

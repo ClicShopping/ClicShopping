@@ -14,6 +14,7 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Faq\SeoFaqPipel
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoCronStrategy;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEmbedding;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoMultilingualOrchestrator;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoOriginalSnapshotRepository;
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
@@ -324,6 +325,14 @@ class SeoOptimization implements HooksInterface
   private function runPhase2(int $productId, string $baseUrl, array &$errors): bool
   {
     try {
+      // HARD PRECONDITION (same as the manual optimize endpoint): preserve the genuine original (write-once, all languages) BEFORE the orchestrator overwrites anything
+      try {
+        SeoOriginalSnapshotRepository::captureEntityOriginals('product', $productId);
+      } catch (\Throwable $e) {
+        $errors[] = sprintf('phase2 product %d: original snapshot failed, skipped: %s', $productId, $e->getMessage());
+        return false;
+      }
+
       $orchestrator = new SeoMultilingualOrchestrator('product');
       $r = $orchestrator->run($productId, $baseUrl, 'cron');
       if (($r['success'] ?? false) === true) {

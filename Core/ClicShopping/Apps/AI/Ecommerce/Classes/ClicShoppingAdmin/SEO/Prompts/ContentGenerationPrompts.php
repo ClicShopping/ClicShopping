@@ -68,6 +68,46 @@ class ContentGenerationPrompts
     return $this->app->getDef('seo_prompt_enriched_description', $vars);
   }
 
+  /**
+   * Agentic (Pure LLM Mode) source-fidelity audit prompt: compares a SOURCE
+   * description against the OPTIMIZED rewrite and reports the source facts that
+   * were lost. Language-agnostic (the LLM judges semantically, so it works for
+   * FR/DE/IT/EN alike) — replaces the brittle keyword/stem coverage heuristic.
+   *
+   * @param array $vars Expects 'source' and 'optimized'.
+   */
+  public function getFidelityCheckPrompt(array $vars = []): string
+  {
+    return $this->app->getDef('seo_prompt_fidelity_check', $vars);
+  }
+
+  /**
+   * Agentic (Pure LLM Mode) per-answer FAQ fact-audit prompt: given the product
+   * data (source of truth) and one FAQ question + answer, reports whether every
+   * factual claim in the answer is supported by the product data. Complements
+   * the topical cosine grounding — which cannot detect a plausible invented fact
+   * (a fabricated warranty or dimension) that still shares product vocabulary.
+   *
+   * @param array $vars Expects 'source', 'question' and 'answer'.
+   */
+  public function getFaqFidelityCheckPrompt(array $vars = []): string
+  {
+    return $this->app->getDef('seo_prompt_faq_fidelity', $vars);
+  }
+
+  /**
+   * Semantic enhancement keyword-coverage analyst prompt: counts keyword/LSI
+   * coverage in SOURCE vs OPTIMIZED text. Returns a JSON object with coverage
+   * metrics: primary_source/primary_optimized, secondary_source/secondary_optimized
+   * (KEYWORDS count), and lsi_source/lsi_optimized (TOPICS count).
+   *
+   * @param array $vars Expects 'serp_keywords', 'serp_topics', 'primary_keyword', 'source', 'optimized'.
+   */
+  public function getSemanticEnhancementPrompt(array $vars = []): string
+  {
+    return $this->app->getDef('seo_prompt_semantic_enhancement', $vars);
+  }
+
   public function getSummaryPrompt(array $vars = []): string
   {
     return $this->app->getDef('seo_prompt_summary', $vars);
