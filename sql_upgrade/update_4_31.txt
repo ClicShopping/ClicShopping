@@ -1,2 +1,14 @@
 ALTER TABLE `clic_products` CHANGE `products_handling` `products_handling` DECIMAL(15,2) NOT NULL DEFAULT '0.00' COMMENT '(Handling fee that is part of the total cost basis for margin calculations together with products_cost';
 ALTER TABLE `clic_rag_interactions` ADD COLUMN client_interaction_id VARCHAR(255) DEFAULT NULL COMMENT 'Client-facing interaction token echoed back as rag_feedback.interaction_id - links feedback to this interaction'  AFTER session_id, ADD INDEX idx_client_interaction_id (client_interaction_id);
+
+    CREATE TABLE IF NOT EXISTS :table_seo_original_snapshot (
+      id               INT(11)   NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+      entity_type      VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'product | category | cms',
+      entity_id        INT(11)   NOT NULL COMMENT 'FK to the entity table',
+      language_id      INT(11)   NOT NULL COMMENT 'FK to languages',
+      original_content LONGTEXT  CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'JSON snapshot of the full original SEO content captured once before the first optimization' CHECK (json_valid(`original_content`)),
+      created_at       DATETIME  DEFAULT CURRENT_TIMESTAMP COMMENT 'Capture timestamp - write-once',
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_entity_lang (entity_type, entity_id, language_id),
+      KEY idx_entity (entity_type, entity_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

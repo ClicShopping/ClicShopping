@@ -3,6 +3,35 @@
 Please refer to [UPGRADING](UPGRADING.md) guide for upgrading to a major version.
 
 
+## 7.13.1 - 2026-06-29
+
+### Fixed
+
+- Allow middleware to rewrite partial URIs before transports validate them
+
+
+## 7.13.0 - 2026-06-29
+
+### Added
+
+- Added the `crypto_method_max` request option to cap the maximum TLS protocol version
+- Added HTTP QUERY redirect support, preserving method and body on 301 and 302
+
+### Changed
+
+- Section proxy tunnel connection reuse by credential so distinct credentials never share a tunnel
+- Isolate concurrent foreign cURL proxy tunnels added while another owner's tunnel is active
+- Route credentialed HTTP(S) proxy Proxy-Authorization headers through cURL proxy header handling
+- Reject request-level `CURLOPT_SHARE` when combined with authenticated HTTP/HTTPS proxy tunnel configuration
+- Remove deprecation for raw cURL `CURLOPT_PREREQFUNCTION` callbacks when defined by PHP cURL
+- Route TLS 1.2 `crypto_method` requests to the stream handler when cURL cannot select TLS 1.2
+- Reject final request URIs missing a scheme or host before transfer
+
+### Deprecated
+
+- Deprecate invalid protocols, force_ip_resolve, delay, cookies, and allow_redirects values
+
+
 ## 7.12.3 - 2026-06-23
 
 ### Changed

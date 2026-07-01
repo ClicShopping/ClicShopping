@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '4024b4ecc8869fc3b94a3b56d9a089d5b14b0bd3',
+        'reference' => '7187b38ce39e9dec7ec5d292c152fe48cf4cf38c',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '4024b4ecc8869fc3b94a3b56d9a089d5b14b0bd3',
+            'reference' => '7187b38ce39e9dec7ec5d292c152fe48cf4cf38c',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -128,9 +128,9 @@
             'dev_requirement' => false,
         ),
         'guzzlehttp/guzzle' => array(
-            'pretty_version' => '7.12.3',
-            'version' => '7.12.3.0',
-            'reference' => '9aa17bcdd777ee31df9fc83c337ca4ca2340def3',
+            'pretty_version' => '7.13.1',
+            'version' => '7.13.1.0',
+            'reference' => '55901a76dfd2006a0cc012b9e3c5b487f796478d',
             'type' => 'library',
             'install_path' => __DIR__ . '/../guzzlehttp/guzzle',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '36ba91e82e1b493faef2c13277d6bd2669ea9f31',
+            'reference' => '9eb7881a3ed4824d580790ef7d52d9bf14dac23d',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
