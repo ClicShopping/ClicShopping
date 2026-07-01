@@ -54,7 +54,6 @@ class DeleteAll implements HooksInterface
           try {
             $deletedFaq = $this->app->db->delete('products_description_faq', ['products_id' => (int)$items]);
             $deletedFaqEmbeddings = $this->app->db->delete('products_description_faq_embedding', ['entity_id' => (int)$items]);
-
             $seo_original_snapshot = $this->app->db->delete('seo_original_snapshot', ['entity_id' => (int)$items]);
             
             if ($deletedFaq || $deletedFaqEmbeddings || $seo_original_snapshot) {

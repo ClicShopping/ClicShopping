@@ -706,6 +706,7 @@ class SeoFaqPipeline
     if (empty($flagged)) {
       return 'Previous attempt failed grounding: stay strictly within the provided product description and attributes.';
     }
+
     $msg = 'Previous attempt produced answers not supported by the product data. Do NOT restate these unsupported claims: ';
     $samples = [];
     
@@ -718,6 +719,7 @@ class SeoFaqPipeline
         ? '"' . $sentence . '" (' . $reason . ')'
         : '"' . $sentence . '"';
     }
+
     return $msg . implode('; ', $samples);
   }
 

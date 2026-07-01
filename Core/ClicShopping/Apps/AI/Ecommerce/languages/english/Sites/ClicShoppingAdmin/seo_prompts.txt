@@ -1,8 +1,9 @@
 seo_prompt_meta_title = You are a senior SEO copywriter.
 Internal processing must be in English.
 Generate an SEO meta title for an {{entity_type}} named "{{entity_name}}".
-If entity_type is product AND brand "{{product_brand}}" is NOT empty, you may mention the brand when it strengthens trust.
-If "{{product_brand}}" is EMPTY, omit any brand mention entirely. Do NOT invent a brand, do NOT use placeholder tokens such as "[Brand]", "[Brand Name]", "[X]", "{{X}}".
+- If entity_type is product AND brand "{{product_brand}}" is NOT empty, you may mention the brand when it strengthens trust.
+- If "{{product_brand}}" is EMPTY, omit any brand mention entirely. Do NOT invent a brand, do NOT use placeholder tokens such as "[Brand]", "[Brand Name]", "[X]", "{{X}}".
+- If technical specifications are given, they must be preserved and presented in the form of a table.
 Primary keyword: {{primary_keyword}}.
 Search intent: {{search_intent}}.
 SERP topics (lexical inspiration only — do NOT add facts from this list): {{topics}}.
@@ -24,7 +25,9 @@ Output only the title.
 seo_prompt_meta_description = You are a senior SEO copywriter.
 Internal processing must be in English.
 Generate a meta description for an {{entity_type}} named "{{entity_name}}".
-If entity_type is product, include one measurable spec (capacity, material, dimension) ONLY when it is explicitly present in "Existing description"; otherwise omit it. Brand {{product_brand}} may be mentioned once when it strengthens trust.
+- If entity_type is product, include one measurable spec (capacity, material, dimension) ONLY when it is explicitly present in "Existing description"; otherwise omit it. Brand {{product_brand}} may be mentioned once when it strengthens trust.
+If technical specifications are provided, one must be included in text form (e.g., 1200W, 72km) to enrich the description.
+
 Primary keyword: {{primary_keyword}}.
 Search intent: {{search_intent}}.
 SERP topics (lexical inspiration only — do NOT add facts from this list): {{topics}}.
@@ -135,6 +138,7 @@ Internal processing must be in English.
 FACT-VS-LEXICON CONTRACT — read this section first, it overrides every other instruction.
 
 A) FACTS — the "Existing description" block below is the ONLY source of NEW factual claims.
+   - You are explicitly authorized and required to fix all spelling, typographical, and grammatical errors found in the source data (e.g., correcting "Byclicle" to "Bicycle", "byclicle electric" to "electric bicycle"). Correcting obvious typos does NOT count as introducing new facts or violating factual fidelity.
    - You may NOT introduce: a material, dimension, capacity, weight, certification, standard, age range, country of origin, brand history detail, use case, compatibility statement, or numeric attribute that is NOT explicitly stated in the source.
    - Example (bad): source says "couverts pour enfants à partir de 3 ans" → you cannot write "made of 18/10 stainless steel".
    - Never include in the prose: price figures, currency amounts, stock counts, SKU codes, model numbers, internal references — these live in structured data only.
@@ -146,8 +150,10 @@ B) LEXICON — within the factual envelope of the source, you MUST enrich semant
    - Use {{topics}} as a SYNONYM POOL for concepts already in the source — never as a source of new facts.
 
 C) COVERAGE CONTRACT (critical — measured, and decisive for SEO ranking):
-   - Treat EVERY significant content word in the source as a mandatory keyword: materials, components, parts, attributes, named measurements, product type, and use cases.
-   - KEEP each source term VERBATIM at least once. You may add synonyms and paraphrases ALONGSIDE it (that is the enrichment), but you must NEVER replace a source term with only a synonym, and NEVER drop one. Enrichment means ADDING vocabulary around the source words, never substituting them.
+  - Treat every significant source term as mandatory. This includes product types, materials, components, parts, features, attributes, dimensions, measurements, technical specifications, brands, models, named values, and use cases.
+  - Preserve every mandatory source term VERBATIM at least once in the optimized text. The only exception is obvious spelling or typographical errors, which must be corrected to their standard form as permitted in Section A.
+  - Never replace a source term with only a synonym or paraphrase. Synonyms, related terms, and semantic enrichments may be added alongside the original term, but the original source term must always remain present.
+  - Enrichment means expanding the vocabulary around the original content, never substituting or omitting any mandatory source term.
    - A synonym that omits the original word LOSES the keyword. Example of the WRONG move: source says "stainless steel" and you write only "metal alloy" — the words "stainless"/"steel" must still appear.
    - Final self-check before output: scan the source word by word and confirm every significant word is present in your text. Any missing source word means information loss and the result is rejected.
 
@@ -160,13 +166,19 @@ Brand (factual mention only, no embellishment): {{product_brand}}.
 Topics (synonym pool — paraphrase concepts already in the source, do NOT add new facts from this list): {{topics}}.
 Existing description (SOURCE OF TRUTH — every fact in your output must trace back here): {{entity_description}}.
 Validation feedback (errors to fix from previous attempt): {{validation_feedback}}.
+if technical specifications are given, they must be preserved and presented in the form of a table.
+
 Requirements:
 - Length: roughly 1.0x to 1.5x the source word count. Use the extra room for lexical enrichment, NOT for adding facts.
 - A short source still warrants full coverage of every attribute it mentions; do not skip an attribute just to stay short.
 - Primary keyword appears 2-3 times, naturally placed. Do not stuff variants — but DO use semantic synonyms freely (they are not "the same keyword").
 - Tone: factual, neutral, vocabulary-rich, no marketing superlatives, no emotional claims about user experience.
 - Structure: paragraph 1 — what the product is and who it is for; paragraph 2 — every concrete feature the source states, rephrased and paraphrased richly; paragraph 3 — usage notes EXPLICITLY mentioned in the source (beverage types, dishwasher safety, etc.) with their semantic variants.
-- FORMATTING (mandatory): wrap EACH paragraph in its own <p>...</p> block, and put EACH block on its OWN line — insert a real newline between a closing </p> and the next <p>. The output MUST span multiple lines (one paragraph per line); NEVER return all paragraphs concatenated on a single line.
+- FORMATTING (mandatory):
+  - wrap EACH paragraph in its own <p>...</p> block, and put EACH block on its OWN line — insert a real newline between a closing </p> and the next <p>. The output MUST span multiple lines (one paragraph per line); NEVER return all paragraphs concatenated on a single line.
+  - if a paragraph has a title : use <bold>...</bold>
+  - If a technical table is generated, use only standard HTML tags (<table>, <tr>, <td>) and place it at the very end of the content. No other HTML tags (<h2>, <ul>, <div>) are allowed.
+
 - BANNED phrases — do not use any of these or semantically equivalent expressions:
   * "enhance your experience", "elevate your", "perfect for", "premium quality", "functional design"
   * "daily rituals", "entertaining moments", "refined experience", "ideal solution"

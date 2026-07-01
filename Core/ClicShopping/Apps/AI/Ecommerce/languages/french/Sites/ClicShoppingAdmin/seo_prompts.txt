@@ -1,8 +1,9 @@
 seo_prompt_meta_title = Vous êtes un rédacteur SEO senior.
 Le traitement interne doit se faire en anglais.
 Générez un meta title SEO pour un {{entity_type}} nommé "{{entity_name}}".
-Si entity_type est product ET que la marque "{{product_brand}}" n'est PAS vide, vous pouvez la mentionner quand elle renforce la confiance.
-Si "{{product_brand}}" est VIDE, omettez complètement toute mention de marque. N'INVENTEZ PAS de marque, n'utilisez PAS de jetons placeholder tels que "[Marque]", "[Brand]", "[X]", "{{X}}".
+- Si entity_type est product ET que la marque "{{product_brand}}" n'est PAS vide, vous pouvez la mentionner quand elle renforce la confiance.
+- Si "{{product_brand}}" est VIDE, omettez complètement toute mention de marque. N'INVENTEZ PAS de marque, n'utilisez PAS de jetons placeholder tels que "[Marque]", "[Brand]", "[X]", "{{X}}".
+- Si des caractéristiques techniques sont donnèes, il faut les préserver et le mettre sous forme d'un tableau.
 Mot-clé principal : {{primary_keyword}}.
 Intention de recherche : {{search_intent}}.
 Sujets SERP (inspiration lexicale uniquement — n'ajoutez PAS de faits depuis cette liste) : {{topics}}.
@@ -24,7 +25,9 @@ Retournez uniquement le titre.
 seo_prompt_meta_description = Vous êtes un rédacteur SEO senior.
 Le traitement interne doit se faire en anglais.
 Générez une meta description pour un {{entity_type}} nommé "{{entity_name}}".
-Si entity_type est product, incluez une spécification mesurable (capacité, matériau, dimension) UNIQUEMENT si elle apparaît explicitement dans "Description existante" ; sinon omettez-la. La marque {{product_brand}} peut être mentionnée une fois quand elle renforce la confiance.
+- Si entity_type est product, incluez une spécification mesurable (capacité, matériau, dimension) UNIQUEMENT si elle apparaît explicitement dans "Description existante" ; sinon omettez-la. La marque {{product_brand}} peut être mentionnée une fois quand elle renforce la confiance.
+- Si des caractéristiques techniques sont données, il faut impérativement en inclure une de manière textuelle (ex: 1200W, 72km) pour enrichir la description.
+
 Mot-clé principal : {{primary_keyword}}.
 Intention de recherche : {{search_intent}}.
 Sujets SERP (inspiration lexicale uniquement — n'ajoutez PAS de faits depuis cette liste) : {{topics}}.
@@ -135,6 +138,7 @@ Le traitement interne doit se faire en anglais.
 CONTRAT FAITS / LEXIQUE — lisez cette section en premier, elle prime sur toutes les autres instructions.
 
 A) FAITS — le bloc "Description existante" ci-dessous est la SEULE source de NOUVELLES affirmations factuelles.
+   - Vous êtes expressément autorisé et tenu de corriger toutes les erreurs d'orthographe, de typographie et de grammaire présentes dans les données sources (par exemple, remplacer « Byclicle » par « Bicycle » ou « byclicle electric » par « electric bicycle »). La correction de coquilles évidentes ne constitue ni l'ajout de faits nouveaux ni une violation de la fidélité aux faits.
    - Vous ne pouvez PAS introduire : un matériau, une dimension, une capacité, un poids, une certification, une norme, une tranche d'âge, un pays d'origine, un détail d'histoire de marque, un cas d'usage, une affirmation de compatibilité ou un attribut numérique qui n'est PAS explicitement énoncé dans la source.
    - Exemple (mauvais) : si la source dit "couverts pour enfants à partir de 3 ans", vous ne pouvez PAS écrire "fabriqué en acier inoxydable 18/10".
    - N'incluez JAMAIS dans la prose : montants, devises, niveaux de stock, codes SKU, références modèles — ces données vivent uniquement dans les données structurées.
@@ -146,10 +150,11 @@ B) LEXIQUE — à l'intérieur de l'enveloppe factuelle de la source, vous DEVEZ
    - Utilisez {{topics}} comme un POOL DE SYNONYMES pour des concepts déjà présents dans la source — jamais comme source de nouveaux faits.
 
 C) CONTRAT DE COUVERTURE (critique — mesuré, et décisif pour le référencement SERP) :
-   - Traitez CHAQUE mot de contenu significatif de la source comme un mot-clé obligatoire : matériaux, composants, pièces, attributs, mesures nommées, type de produit, cas d'usage.
-   - CONSERVEZ chaque terme source VERBATIM au moins une fois. Vous pouvez ajouter des synonymes et paraphrases À CÔTÉ (c'est l'enrichissement), mais vous ne devez JAMAIS remplacer un terme source uniquement par un synonyme, ni en supprimer un. Enrichir, c'est AJOUTER du vocabulaire autour des mots source, sans jamais les substituer.
-   - Un synonyme qui omet le mot d'origine PERD le mot-clé. Exemple du MAUVAIS geste : la source dit "acier inoxydable" et vous n'écrivez que "alliage métallique" — les mots "acier"/"inoxydable" doivent rester présents.
-   - Auto-vérification finale avant sortie : parcourez la source mot à mot et confirmez que chaque mot significatif est présent dans votre texte. Tout mot source manquant constitue une perte d'information et entraîne un rejet.
+  - Considérez chaque terme source important comme obligatoire. Cela inclut les types de produits, les matériaux, les composants, les pièces, les caractéristiques, les attributs, les dimensions, les mesures, les spécifications techniques, les marques, les modèles, les valeurs nommées et les cas d'utilisation.
+  - Conservez chaque terme source obligatoire à l'identique au moins une fois dans le texte optimisé. La seule exception concerne les fautes d'orthographe ou de frappe évidentes, qui doivent être corrigées conformément à la norme autorisée dans la section A.
+  - Ne remplacez jamais un terme source par un simple synonyme ou une paraphrase. Les synonymes, les termes apparentés et les enrichissements sémantiques peuvent être ajoutés avec le terme original, mais ce dernier doit toujours être présent.
+  - Enrichir le vocabulaire consiste à développer le vocabulaire autour du contenu original, sans jamais substituer ni omettre un terme source obligatoire.
+  - Un synonyme qui omet le mot original perd le mot-clé. Exemple d'erreur : la source indique « acier inoxydable » et vous écrivez seulement « alliage métallique » — les mots « inox »/« acier » doivent toujours apparaître. — Dernière vérification avant l’impression : examinez le texte source mot à mot et assurez-vous que chaque mot important y figure. Tout mot manquant entraîne une perte d’information et le résultat est rejeté.
 
 En résumé : reformulez richement et AJOUTEZ du vocabulaire, conservez chaque mot-clé source verbatim, n'étendez JAMAIS l'ensemble des faits.
 
@@ -160,13 +165,18 @@ Marque (mention factuelle uniquement, sans embellissement) : {{product_brand}}.
 Sujets (pool de synonymes — paraphrasez les concepts déjà dans la source, n'ajoutez PAS de nouveaux faits depuis cette liste) : {{topics}}.
 Description existante (SOURCE DE VÉRITÉ — chaque fait de votre sortie doit pouvoir s'y retrouver) : {{entity_description}}.
 Retour de validation (erreurs à corriger depuis la tentative précédente) : {{validation_feedback}}.
+Si des caractéristiques techniques sont donnèes, il faut les préserver et le mettre sous forme d'un tableau.
+
 Exigences :
 - Longueur : environ 1,0x à 1,5x le compteur de mots de la source. Utilisez l'espace supplémentaire pour l'enrichissement lexical, PAS pour ajouter des faits.
 - Une source courte mérite quand même une couverture intégrale de chaque attribut qu'elle mentionne ; ne sautez pas un attribut pour rester court.
 - Le mot-clé principal apparaît 2-3 fois, placé naturellement. Pas de bourrage de variantes — mais utilisez librement les synonymes sémantiques (ils ne sont PAS "le même mot-clé").
 - Ton : factuel, neutre, lexique riche, pas de superlatifs marketing, pas d'affirmations émotionnelles sur l'expérience utilisateur.
 - Structure : paragraphe 1 — ce qu'est le produit et à qui il s'adresse ; paragraphe 2 — chaque caractéristique concrète énoncée par la source, reformulée et paraphrasée avec richesse ; paragraphe 3 — notes d'usage EXPLICITEMENT mentionnées (types de boissons, lavage, etc.) avec leurs variantes sémantiques.
-- FORMATAGE (obligatoire) : encapsulez CHAQUE paragraphe dans son propre bloc <p>...</p>, et placez CHAQUE bloc sur sa PROPRE ligne — insérez un vrai retour à la ligne entre une balise </p> fermante et la balise <p> suivante. La sortie DOIT s'étendre sur plusieurs lignes (un paragraphe par ligne) ; ne JAMAIS renvoyer tous les paragraphes concaténés sur une seule ligne.
+- FORMATAGE (obligatoire) :
+   - encapsulez CHAQUE paragraphe dans son propre bloc <p>...</p>, et placez CHAQUE bloc sur sa PROPRE ligne — insérez un vrai retour à la ligne entre une balise </p> fermante et la balise <p> suivante. La sortie DOIT s'étendre sur plusieurs lignes (un paragraphe par ligne) ; ne JAMAIS renvoyer tous les paragraphes concaténés sur une seule ligne.
+   - Si un paragraphe a un titre : utiliser <bold>...</bold>
+   - Si un tableau technique est généré, utilisez exclusivement les balises HTML standards (<table>, <tr>, <td>) et placez-le à la toute fin du contenu. Aucun autre tag HTML (<h2>, <ul>, <div>) n'est autorisé.
 - EXPRESSIONS INTERDITES — ne pas utiliser ces formules ni leurs équivalents sémantiques :
   * "améliorer votre expérience", "sublimez votre", "parfait pour", "qualité premium", "design fonctionnel"
   * "rituels quotidiens", "moments de convivialité", "expérience raffinée", "solution idéale"
