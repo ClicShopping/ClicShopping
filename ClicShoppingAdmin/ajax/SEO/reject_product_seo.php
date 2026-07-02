@@ -12,6 +12,7 @@
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEntityAdapter;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoOriginalSnapshotRepository;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoSerpReportRepository;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoActionLogRepository;
 
   define('CLICSHOPPING_BASE_DIR', realpath(__DIR__ . '/../../../Core/ClicShopping/') . DIRECTORY_SEPARATOR);
   require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
@@ -52,6 +53,19 @@
 
     $repo->restoreAllLanguages($adapter, 'product', $productId, $languageIds);
     (new SeoSerpReportRepository())->markLatestStatus('product', $productId, 'rejected');
+
+    // Best-effort audit trail (never fails the action).
+    try {
+      (new SeoActionLogRepository())->record(
+        'product',
+        $productId,
+        0,
+        'rejected',
+        AdministratorAdmin::getUserAdminId(),
+        (string)($_SESSION['admin']['username'] ?? '')
+      );
+    } catch (\Throwable $ignored) {
+    }
 
     echo json_encode(['success' => true, 'mode' => 'rejected']);
   } catch (\Throwable $e) {

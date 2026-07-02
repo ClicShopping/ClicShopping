@@ -1,10 +1,10 @@
 <?php
   /**
- * Copyright (c) 2008–2026 Loic Richard
- *
- * Licensed under AGPLv3 or commercial license.
- * See LICENSE file.
- */
+   * Copyright (c) 2008–2026 Loic Richard
+   *
+   * Licensed under AGPLv3 or commercial license.
+   * See LICENSE file.
+   */
 
   namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Products;
 
@@ -100,6 +100,13 @@
       } catch (\Throwable $e) {
         $latest = null;
         $history = [];
+      }
+
+      try {
+        $actionLog = (new \ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoActionLogRepository())
+          ->getForEntity('product', $productId, 20);
+        $history = $this->mergeActionLog($history, $actionLog);
+      } catch (\Throwable $ignored) {
       }
 
       // -- Load latest agentic audit (advanced AI) --
@@ -753,14 +760,14 @@
      */
     private function renderReportsButton(int $productId): string
     {
-    $out = '';
-    /*
-      $link = CLICSHOPPING::link(null, 'A&Marketing\\SEO&Reports&scope=products&entity_id=' . (int)$productId);
+      $out = '';
+      /*
+        $link = CLICSHOPPING::link(null, 'A&Marketing\\SEO&Reports&scope=products&entity_id=' . (int)$productId);
 
-      $out  = '<a class="btn btn-outline-secondary btn-sm mb-3" href="' . htmlspecialchars($link) . '">';
-      $out .= '<i class="bi bi-bar-chart-line me-1"></i>' . htmlspecialchars($this->app->getDef('text_seo_view_reports'));
-      $out .= '</a>';
-     */
+        $out  = '<a class="btn btn-outline-secondary btn-sm mb-3" href="' . htmlspecialchars($link) . '">';
+        $out .= '<i class="bi bi-bar-chart-line me-1"></i>' . htmlspecialchars($this->app->getDef('text_seo_view_reports'));
+        $out .= '</a>';
+       */
       return $out;
     }
 
@@ -875,13 +882,13 @@
       // T3.5 — Schema.org badge
       $out .= $this->renderSchemaBadge($seoData, 'product');
 
-      if (!empty($auditResult['summary'])) {
-        $auditIcon = ($auditResult['improved'] ?? false) ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning';
-        $out .= '<div class="alert alert-light border d-flex align-items-start gap-2 mb-3">';
-        $out .= '<i class="bi ' . $auditIcon . ' fs-5 mt-1"></i>';
-        $out .= '<div><strong>' . $this->app->getDef('text_seo_ai_audit') . '</strong><br />' . htmlspecialchars($auditResult['summary']) . '</div>';
-        $out .= '</div>';
-      }
+      // -- Audit (single approach) --
+      // $agenticLatest (SeoSerpReportRepository) is the richer, more current
+      // source (status + score delta + summary) and takes priority; the
+      // legacy $auditResult embedded in the optimization metadata is only
+      // used as a fallback until an agentic audit row exists for this
+      // product/language.
+      $out .= $this->renderAuditBlock($auditResult, $agenticLatest);
 
       // -- Benchmark comparison table (source vs generated) --
       $benchmark = $prevMeta['benchmark'] ?? [];
@@ -953,15 +960,7 @@
       // Safety control: a generated FAQ is published to the catalog immediately,
       // so the admin must be able to remove an unconvincing result in one click.
       $out .= $this->renderDeleteFaqButton($productId);
-     // $out .= $this->renderReportsButton($productId);
-
-      // -- Agentic Audit --
-      if (!empty($agenticLatest)) {
-        $out .= '<div class="alert alert-light border d-flex align-items-start gap-2 mb-3"><i class="bi bi-robot fs-5 mt-1"></i>';
-        $out .= '<div><strong>' . $this->app->getDef('text_seo_agentic_audit') . '</strong><br />' . $this->app->getDef('text_seo_status_label') . ': <span class="badge bg-secondary">' . htmlspecialchars($agenticLatest['status']) . '</span> ';
-        $out .= $this->app->getDef('text_seo_score_label') . ': <strong>' . (int)$agenticLatest['seo_score_before'] . ' -> ' . (int)$agenticLatest['seo_score_after'] . '</strong><br />';
-        $out .= htmlspecialchars($agenticLatest['summary'] ?? '') . '</div></div>';
-      }
+      // $out .= $this->renderReportsButton($productId);
 
       if (!empty($history)) {
         $out .= $this->renderHistory($history, $languageId, $initialText);
@@ -1131,9 +1130,9 @@
           $label .= ' <span class="badge bg-danger">!</span>';
         }
         $out .= '<tr><td>' . $label . '</td>'
-              . '<td class="text-end">' . $this->fmtNum($before) . '</td>'
-              . '<td class="text-end">' . $this->fmtNum($after) . '</td>'
-              . '<td class="text-end ' . $cls . '">' . ($delta > 0 ? '+' : '') . $this->fmtNum($delta) . '</td></tr>';
+          . '<td class="text-end">' . $this->fmtNum($before) . '</td>'
+          . '<td class="text-end">' . $this->fmtNum($after) . '</td>'
+          . '<td class="text-end ' . $cls . '">' . ($delta > 0 ? '+' : '') . $this->fmtNum($delta) . '</td></tr>';
       }
       $out .= '</tbody></table></div></div>';
       return $out;
@@ -1153,6 +1152,7 @@
     private function renderHistory(array $history, int $languageId = 0, string $initialText = ''): string
     {
       $langName = (string)$languageId;
+//      $initialText = html_entity_decode($initialText, ENT_QUOTES, 'UTF-8');
 
       try {
         foreach ($this->lang->getAll() as $l) {
@@ -1355,6 +1355,44 @@
 </script>';
 
       return $out;
+    }
+
+    /**
+     * Renders a single, unified "audit" alert box.
+     * Two data sources historically produced two separate, visually
+     * near-identical alert boxes on this page (an "AI audit" summary stored
+     * in the optimization metadata, and an "agentic audit" row from
+     * SeoSerpReportRepository). This helper consolidates both into one
+     * block and one visual position: the agentic audit — which carries a
+     * status, a before/after score, and a summary — is preferred whenever
+     * it exists; the legacy audit_result is shown only as a fallback for
+     * products/languages that have not yet produced an agentic audit row.
+     * * @param array $auditResult Legacy audit summary from optimization metadata (fallback)
+     * @param array|null $agenticLatest Latest agentic audit report (preferred)
+     * @return string
+     */
+    private function renderAuditBlock(array $auditResult, ?array $agenticLatest): string
+    {
+      if (!empty($agenticLatest)) {
+        $out = '<div class="alert alert-light border d-flex align-items-start gap-2 mb-3">';
+        $out .= '<i class="bi bi-robot fs-5 mt-1"></i>';
+        $out .= '<div><strong>' . $this->app->getDef('text_seo_agentic_audit') . '</strong><br />';
+        $out .= $this->app->getDef('text_seo_status_label') . ': <span class="badge bg-secondary">' . htmlspecialchars($agenticLatest['status']) . '</span> ';
+        $out .= $this->app->getDef('text_seo_score_label') . ': <strong>' . (int)$agenticLatest['seo_score_before'] . ' -> ' . (int)$agenticLatest['seo_score_after'] . '</strong><br />';
+        $out .= htmlspecialchars($agenticLatest['summary'] ?? '') . '</div></div>';
+        return $out;
+      }
+
+      if (!empty($auditResult['summary'])) {
+        $auditIcon = ($auditResult['improved'] ?? false) ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning';
+        $out = '<div class="alert alert-light border d-flex align-items-start gap-2 mb-3">';
+        $out .= '<i class="bi ' . $auditIcon . ' fs-5 mt-1"></i>';
+        $out .= '<div><strong>' . $this->app->getDef('text_seo_ai_audit') . '</strong><br />' . htmlspecialchars($auditResult['summary']) . '</div>';
+        $out .= '</div>';
+        return $out;
+      }
+
+      return '';
     }
 
     /**

@@ -59,11 +59,11 @@ class SeoOriginalSnapshotRepository
    */
   public function get(string $entityType, int $entityId, int $languageId): ?array
   {
-    $stmt = $this->db->prepare(
-      'SELECT original_content FROM :table_seo_original_snapshot
-       WHERE entity_type = :entity_type AND entity_id = :entity_id AND language_id = :language_id
-       LIMIT 1'
-    );
+    $stmt = $this->db->prepare('SELECT original_content 
+                                FROM :table_seo_original_snapshot
+                                WHERE entity_type = :entity_type AND entity_id = :entity_id AND language_id = :language_id
+                                LIMIT 1
+                              ');
     $stmt->bindValue(':entity_type', $entityType);
     $stmt->bindInt(':entity_id', $entityId);
     $stmt->bindInt(':language_id', $languageId);
@@ -81,10 +81,10 @@ class SeoOriginalSnapshotRepository
   /** Whether a snapshot exists for the entity in any language. */
   public function exists(string $entityType, int $entityId): bool
   {
-    $stmt = $this->db->prepare(
-      'SELECT 1 FROM :table_seo_original_snapshot
-       WHERE entity_type = :entity_type AND entity_id = :entity_id LIMIT 1'
-    );
+    $stmt = $this->db->prepare('SELECT 1 FROM :table_seo_original_snapshot
+                                WHERE entity_type = :entity_type 
+                                AND entity_id = :entity_id LIMIT 1
+                                ');
     $stmt->bindValue(':entity_type', $entityType);
     $stmt->bindInt(':entity_id', $entityId);
     $stmt->execute();

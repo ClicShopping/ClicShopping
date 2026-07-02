@@ -12,6 +12,7 @@
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEntityAdapter;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoOriginalSnapshotRepository;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoSerpReportRepository;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoActionLogRepository;
 
   define('CLICSHOPPING_BASE_DIR', realpath(__DIR__ . '/../../../Core/ClicShopping/') . DIRECTORY_SEPARATOR);
   require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
@@ -65,6 +66,20 @@
       $stmt->execute();
     } catch (\Throwable $ignored) {
       // benchmark table absent on this environment — nothing to purge.
+    }
+
+    // Best-effort audit trail (never fails the action). Recorded even though the
+    // SERP reports were just purged, so the "reverted" action stays traceable.
+    try {
+      (new SeoActionLogRepository())->record(
+        'product',
+        $productId,
+        0,
+        'reverted',
+        AdministratorAdmin::getUserAdminId(),
+        (string)($_SESSION['admin']['username'] ?? '')
+      );
+    } catch (\Throwable $ignored) {
     }
 
     echo json_encode(['success' => true, 'mode' => 'reset']);

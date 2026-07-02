@@ -350,6 +350,9 @@ class SeoMultilingualOrchestrator
     $changes = $this->adapter->normalizeChanges($proposal);
 
     foreach (self::TRANSLATABLE_FIELDS as $field) {
+      if ($field === 'description') {
+        continue;
+      }
       if (!isset($changes[$field]) || $changes[$field] === '') {
         continue;
       }
@@ -360,9 +363,13 @@ class SeoMultilingualOrchestrator
       );
     }
 
-    // add paragraph
+    // Description: translate the prose and the specs-table cells SEPARATELY and
     if (isset($changes['description']) && $changes['description'] !== '') {
-      $changes['description'] = (new SeoDescriptionFormatter())->format((string)$changes['description']);
+      $changes['description'] = $this->translateDescription(
+        (string)$changes['description'],
+        $fromLang,
+        $toLang
+      );
     }
 
     // FAQ is not produced here in Phase 2 — it lives in Phase 3 with its
@@ -375,6 +382,107 @@ class SeoMultilingualOrchestrator
     unset($changes['faq'], $changes['h2'], $changes['schema_org_json'], $changes['primary_keyword']);
 
     return $changes;
+  }
+
+  /**
+   * Translate a structured product description while KEEPING its construction
+   * identical across languages.
+   *
+   * The EN description is prose paragraphs (<p>) followed by a deterministic
+   * specs <table> (built in PHP by SeoOptimizationAgent::buildSpecsTable). Both
+   * are rebuilt here rather than translated as an HTML blob:
+   *   1. the specs table is pulled out first so it is never mangled by the LLM;
+   *   2. the prose is translated as plain text (no embedding clean, no token
+   *      truncation) and re-wrapped into clean <p> paragraphs by the formatter;
+   *   3. the table cells are translated and the table is rebuilt with the exact
+   *      same markup as buildSpecsTable().
+   *
+   * @param string $description Assembled EN description (<p>… + <table>…).
+   * @param string $fromLang    Source language code.
+   * @param string $toLang      Target language code.
+   * @return string Translated description with identical structure.
+   */
+  private function translateDescription(string $description, string $fromLang, string $toLang): string
+  {
+    $formatter = new SeoDescriptionFormatter();
+
+    // 1. Split the specs table(s) out so they are never translated as a blob.
+    if (preg_match_all('#<table\b[^>]*>.*?</table>#is', $description, $tableMatches)) {
+      $tables = $tableMatches[0];
+      $prose  = (string)preg_replace('#<table\b[^>]*>.*?</table>#is', '', $description);
+    } else {
+      $tables = [];
+      $prose  = $description;
+    }
+
+    // 2. Prose → plain text → translate → rebuild clean <p> paragraphs.
+    $proseText = trim((string)preg_replace('#</?p\b[^>]*>#i', ' ', $prose));
+    if ($proseText !== '') {
+      $proseText = $this->translator->translatePlain($proseText, $fromLang, $toLang);
+    }
+    $body = $formatter->format($proseText);
+
+    // 3. Specs table(s) → translate cells → rebuild with identical construction.
+    $tableHtml = '';
+    foreach ($tables as $table) {
+      $tableHtml .= ($tableHtml === '' ? '' : "\n")
+        . $this->rebuildTranslatedSpecsTable($table, $fromLang, $toLang);
+    }
+
+    return match (true) {
+      $body === ''      => $tableHtml,
+      $tableHtml === '' => $body,
+      default           => $body . "\n" . $tableHtml,
+    };
+  }
+
+  /**
+   * Translate the cells of a specs <table> and rebuild it with the SAME markup
+   * as SeoOptimizationAgent::buildSpecsTable(). Rows whose shape is unexpected,
+   * or whose translation cannot be resolved 1:1, are kept verbatim so the table
+   * is never lost or desynchronised.
+   *
+   * @param string $tableHtml A single <table>…</table> block.
+   * @param string $fromLang  Source language code.
+   * @param string $toLang    Target language code.
+   * @return string Rebuilt <table> with translated cells (or the input verbatim).
+   */
+  private function rebuildTranslatedSpecsTable(string $tableHtml, string $fromLang, string $toLang): string
+  {
+    if (!preg_match_all('#<tr>\s*<td[^>]*>(.*?)</td>\s*<td[^>]*>(.*?)</td>\s*</tr>#is', $tableHtml, $rowMatches, PREG_SET_ORDER)) {
+      return $tableHtml; // unknown shape → keep verbatim, never lose the table
+    }
+
+    $cells = [];
+    foreach ($rowMatches as $row) {
+      $cells[] = html_entity_decode(trim(strip_tags($row[1])), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+      $cells[] = html_entity_decode(trim(strip_tags($row[2])), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
+    $translated = $this->translator->translateLines($cells, $fromLang, $toLang);
+    if (count($translated) !== count($cells)) {
+      $translated = $cells; // safety: keep source cells rather than misalign
+    }
+
+    // Rebuild IDENTICALLY to SeoOptimizationAgent::buildSpecsTable().
+    $rows = [];
+    for ($i = 0, $n = count($rowMatches); $i < $n; $i++) {
+      $label = trim((string)$translated[$i * 2]);
+      $value = trim((string)$translated[$i * 2 + 1]);
+
+      if ($label === '' || $value === '') {
+        continue;
+      }
+
+      $rows[] = '<tr><td>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</td><td>'
+        . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '</td></tr>';
+    }
+
+    if ($rows === []) {
+      return $tableHtml;
+    }
+
+    return '<table>' . "\n" . implode("\n", $rows) . "\n" . '</table>';
   }
 
   /**

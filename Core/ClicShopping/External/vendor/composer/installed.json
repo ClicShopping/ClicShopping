@@ -2431,12 +2431,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "9eb7881a3ed4824d580790ef7d52d9bf14dac23d"
+                "reference": "9262c2edda6411e4141fe83a75530de48b39ff5a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/9eb7881a3ed4824d580790ef7d52d9bf14dac23d",
-                "reference": "9eb7881a3ed4824d580790ef7d52d9bf14dac23d",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/9262c2edda6411e4141fe83a75530de48b39ff5a",
+                "reference": "9262c2edda6411e4141fe83a75530de48b39ff5a",
                 "shasum": ""
             },
             "conflict": {
@@ -2870,7 +2870,7 @@
                 "kelvinmo/simplexrd": "<3.1.1",
                 "kevinpapst/kimai2": "<1.16.7",
                 "khodakhah/nodcms": "<=3.4.1",
-                "kimai/kimai": "<=2.55",
+                "kimai/kimai": "<=2.57",
                 "kitodo/presentation": "<3.2.3|>=3.3,<3.3.4",
                 "klaviyo/magento2-extension": ">=1,<3",
                 "knplabs/knp-snappy": "<=1.7",
@@ -3502,7 +3502,7 @@
                 "zoujingli/thinkadmin": "<=6.1.53",
                 "zumba/json-serializer": "<3.2.3"
             },
-            "time": "2026-06-30T19:37:35+00:00",
+            "time": "2026-07-01T20:38:27+00:00",
             "default-branch": true,
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",

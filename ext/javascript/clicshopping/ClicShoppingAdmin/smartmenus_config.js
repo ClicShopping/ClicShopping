@@ -31,8 +31,8 @@ $(function () {
         });
       }
     });
-    // hide mobile menu beforeunload
-    $(window).bind('beforeunload unload', function () {
+    // reset mobile menu state on page hide (pagehide replaces the deprecated unload event and also covers bfcache)
+    $(window).on('pagehide', function () {
       if ($mainMenuState[0].checked) {
         $mainMenuState[0].click();
       }

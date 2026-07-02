@@ -3,7 +3,6 @@ Le traitement interne doit se faire en anglais.
 Générez un meta title SEO pour un {{entity_type}} nommé "{{entity_name}}".
 - Si entity_type est product ET que la marque "{{product_brand}}" n'est PAS vide, vous pouvez la mentionner quand elle renforce la confiance.
 - Si "{{product_brand}}" est VIDE, omettez complètement toute mention de marque. N'INVENTEZ PAS de marque, n'utilisez PAS de jetons placeholder tels que "[Marque]", "[Brand]", "[X]", "{{X}}".
-- Si des caractéristiques techniques sont donnèes, il faut les préserver et le mettre sous forme d'un tableau.
 Mot-clé principal : {{primary_keyword}}.
 Intention de recherche : {{search_intent}}.
 Sujets SERP (inspiration lexicale uniquement — n'ajoutez PAS de faits depuis cette liste) : {{topics}}.
@@ -132,11 +131,11 @@ Exigences :
 Write the headings in {{output_language}}.
 Retournez uniquement le tableau JSON.
 
+
 seo_prompt_enriched_description = Vous êtes un rédacteur de contenu SEO senior spécialisé dans les fiches produit e-commerce.
 Le traitement interne doit se faire en anglais.
 
 CONTRAT FAITS / LEXIQUE — lisez cette section en premier, elle prime sur toutes les autres instructions.
-
 A) FAITS — le bloc "Description existante" ci-dessous est la SEULE source de NOUVELLES affirmations factuelles.
    - Vous êtes expressément autorisé et tenu de corriger toutes les erreurs d'orthographe, de typographie et de grammaire présentes dans les données sources (par exemple, remplacer « Byclicle » par « Bicycle » ou « byclicle electric » par « electric bicycle »). La correction de coquilles évidentes ne constitue ni l'ajout de faits nouveaux ni une violation de la fidélité aux faits.
    - Vous ne pouvez PAS introduire : un matériau, une dimension, une capacité, un poids, une certification, une norme, une tranche d'âge, un pays d'origine, un détail d'histoire de marque, un cas d'usage, une affirmation de compatibilité ou un attribut numérique qui n'est PAS explicitement énoncé dans la source.
@@ -146,6 +145,11 @@ A) FAITS — le bloc "Description existante" ci-dessous est la SEULE source de N
 B) LEXIQUE — à l'intérieur de l'enveloppe factuelle de la source, vous DEVEZ enrichir sémantiquement :
    - Exprimez chaque attribut source avec plusieurs termes équivalents lorsque c'est naturel ("double paroi" ↔ "double-walled" ↔ "isolant" ↔ "thermique" ↔ "verre isolant" ↔ "verre thermique").
    - Couvrez CHAQUE attribut mentionné par la source : ne supprimez pas une caractéristique parce qu'elle est technique. Si la source parle d'une base en liège, votre sortie doit la mentionner (ou la paraphraser : "base anti-dérapante en liège", "embase liège", etc.).
+   - Alternez entre le mot-clé principal, des synonymes, des hyperonymes, des termes d'entité et des formulations contextuelles.
+   - Exemple : "vélo électrique" → "VAE", "vélo à assistance électrique", "ce vélo", "ce modèle", "ce deux-roues électrique", "ce cycle électrique".
+   - Les synonymes ne doivent jamais modifier les faits ni supprimer les termes source obligatoires définis dans le contrat de couverture.
+   - Réduisez les répétitions immédiates : un même groupe nominal ne doit généralement pas apparaître deux fois dans des phrases consécutives lorsqu'une reformulation naturelle existe.
+   - Favorisez une diversité lexicale élevée tout en conservant une lecture fluide.
    - Couvrez CHAQUE usage mentionné par la source (ex. café, thé, cocktails, bière) avec leurs entités liées ("boissons chaudes", "boissons froides", "espresso", "verre à latte" si applicable).
    - Utilisez {{topics}} comme un POOL DE SYNONYMES pour des concepts déjà présents dans la source — jamais comme source de nouveaux faits.
 
@@ -154,37 +158,78 @@ C) CONTRAT DE COUVERTURE (critique — mesuré, et décisif pour le référencem
   - Conservez chaque terme source obligatoire à l'identique au moins une fois dans le texte optimisé. La seule exception concerne les fautes d'orthographe ou de frappe évidentes, qui doivent être corrigées conformément à la norme autorisée dans la section A.
   - Ne remplacez jamais un terme source par un simple synonyme ou une paraphrase. Les synonymes, les termes apparentés et les enrichissements sémantiques peuvent être ajoutés avec le terme original, mais ce dernier doit toujours être présent.
   - Enrichir le vocabulaire consiste à développer le vocabulaire autour du contenu original, sans jamais substituer ni omettre un terme source obligatoire.
-  - Un synonyme qui omet le mot original perd le mot-clé. Exemple d'erreur : la source indique « acier inoxydable » et vous écrivez seulement « alliage métallique » — les mots « inox »/« acier » doivent toujours apparaître. — Dernière vérification avant l’impression : examinez le texte source mot à mot et assurez-vous que chaque mot important y figure. Tout mot manquant entraîne une perte d’information et le résultat est rejeté.
+  - Un synonyme qui omet le mot original perd le mot-clé. Exemple d'erreur: la source indique «acier inoxydable» et vous écrivez seulement «alliage métallique» — les mots «inox»/«acier» doivent toujours apparaître. — Dernière vérification avant l’impression: examinez le texte source mot à mot et assurez-vous que chaque mot important y figure. Tout mot manquant entraîne une perte d’information et le résultat est rejeté.
+
+D) CRITIQUE :OBJECTIF DE QUALITÉ .
+  - Maximiser la diversité du vocabulaire, pas de redondance.
+  - Réduire les répétitions lexicales.
+  - Augmenter l'entropie lexicale sans ajouter de nouveaux faits.
+  - Conserver 100 % des entités et caractéristiques de la description source.
+  - Gardez une longueur de phrase variée (alternez phrases courtes et longues) pour garantir une excellente lisibilité et un rythme fluide.
+
+E) EXTRACTION OBLIGATOIRE (TABLEAU DE SPECS JSON, PAS DE HTML) :
+  - CRITIQUE : Vous DEVEZ extraire la liste des données brutes, caractéristiques et spécifications figurant à la fin ou dans le corps du texte source (telles que la marque, le matériau, la vitesse, la taille, la couleur, la suspension, la tranche d'âge, etc.).
+  - Chaque spécification extraite devient UN objet {"label": ..., "value": ...} dans le tableau JSON "specs" décrit dans la section FORMATAGE ci-dessous.
+  - N'essayez PAS de construire un tableau HTML vous-même. Ne laissez PAS non plus les spécifications en texte brut ou en paires libellé/valeur non ponctuées dans "body_html". Chaque spécification trouvée va dans "specs" et NULLE PART ailleurs — le tableau est construit par l'application, pas par vous.
+  - "label" est le nom court de l'attribut (ex. "Autonomie", "Battery") ; "value" est tout ce qui l'accompagne, verbatim depuis la source (unités, noms de marque dans la valeur, qualificatifs).
+  - Conservez l'ordre d'apparition des spécifications dans le tableau "specs".
 
 En résumé : reformulez richement et AJOUTEZ du vocabulaire, conservez chaque mot-clé source verbatim, n'étendez JAMAIS l'ensemble des faits.
 
 Rédigez une description enrichie pour un {{entity_type}} nommé "{{entity_name}}".
-Mot-clé principal (utilisez-le avec parcimonie et de façon naturelle) : {{primary_keyword}}.
+Mot-clé principal (utilisez-le avec parcimonie et de façon naturelle et non répétitive) : {{primary_keyword}}.
 Intention de recherche : {{search_intent}}.
 Marque (mention factuelle uniquement, sans embellissement) : {{product_brand}}.
 Sujets (pool de synonymes — paraphrasez les concepts déjà dans la source, n'ajoutez PAS de nouveaux faits depuis cette liste) : {{topics}}.
 Description existante (SOURCE DE VÉRITÉ — chaque fait de votre sortie doit pouvoir s'y retrouver) : {{entity_description}}.
 Retour de validation (erreurs à corriger depuis la tentative précédente) : {{validation_feedback}}.
-Si des caractéristiques techniques sont donnèes, il faut les préserver et le mettre sous forme d'un tableau.
 
-Exigences :
-- Longueur : environ 1,0x à 1,5x le compteur de mots de la source. Utilisez l'espace supplémentaire pour l'enrichissement lexical, PAS pour ajouter des faits.
+
+Exigences IMPORTANTES :
+- CRITIQUE : Un terme ou expression ne doivent pas etre répétés plus de 2 fois.
+- Longueur : environ 1,0x à 1,5x le compteur de mots de la source (hors tableau HTML). Utilisez l'espace supplémentaire pour l'enrichissement lexical, PAS pour ajouter des faits.
 - Une source courte mérite quand même une couverture intégrale de chaque attribut qu'elle mentionne ; ne sautez pas un attribut pour rester court.
 - Le mot-clé principal apparaît 2-3 fois, placé naturellement. Pas de bourrage de variantes — mais utilisez librement les synonymes sémantiques (ils ne sont PAS "le même mot-clé").
-- Ton : factuel, neutre, lexique riche, pas de superlatifs marketing, pas d'affirmations émotionnelles sur l'expérience utilisateur.
-- Structure : paragraphe 1 — ce qu'est le produit et à qui il s'adresse ; paragraphe 2 — chaque caractéristique concrète énoncée par la source, reformulée et paraphrasée avec richesse ; paragraphe 3 — notes d'usage EXPLICITEMENT mentionnées (types de boissons, lavage, etc.) avec leurs variantes sémantiques.
+
+- CONTRAINTES DE STYLE (ESSENTIELLES) :
+  * Un terme technique ou une expression commerciale spécifique ne doit pas être répété plus de deux fois dans toute la description.
+  * Utilisez un vocabulaire riche et varié, des synonymes et un vocabulaire technique afin de limiter la répétition et d'optimiser l'entropie lexicale.
+
+- TON ET QUALITÉ (NORMES E-E-A-T) :
+  * Expérience et expertise : Rédigez avec l'assurance d'un testeur de produits professionnel. Utilisez un vocabulaire technique précis et expert concernant les matériaux, la mécanique et les contextes d'utilisation, sans explications superflues.
+  * Ton : Autorité et fiabilité : Adoptez un ton strictement neutre, factuel et commercial, riche en vocabulaire, sans superlatifs marketing ni affirmations émotionnelles concernant l'expérience utilisateur et le professionnalisme. Évitez le jargon marketing creux, les clichés (par exemple, « révolutionnez votre quotidien », « qualité premium ») et les points d'exclamation. La confiance repose sur l'exactitude des faits et la clarté technique.
+
+- Diversité textuelle :
+  * Cherchez à maximiser la diversité lexicale.
+  * Utilisez des formulations différentes pour désigner le produit lorsque le contexte le permet.
+  * Évitez les répétitions rapprochées d'un même nom ou groupe nominal.
+  * Chaque paragraphe doit introduire de nouvelles formulations plutôt que de recycler les mêmes expressions.
+- Structure :
+  - paragraphe 1 : ce qu'est le produit et à qui il s'adresse ;
+  - paragraphe 2 : chaque caractéristique concrète énoncée par la source, reformulée et paraphrasée avec richesse ;
+  - paragraphe 3 : notes d'usage EXPLICITEMENT mentionnées (types de boissons, lavage, etc.) avec leurs variantes sémantiques.
+
 - FORMATAGE (obligatoire) :
-   - encapsulez CHAQUE paragraphe dans son propre bloc <p>...</p>, et placez CHAQUE bloc sur sa PROPRE ligne — insérez un vrai retour à la ligne entre une balise </p> fermante et la balise <p> suivante. La sortie DOIT s'étendre sur plusieurs lignes (un paragraphe par ligne) ; ne JAMAIS renvoyer tous les paragraphes concaténés sur une seule ligne.
-   - Si un paragraphe a un titre : utiliser <bold>...</bold>
-   - Si un tableau technique est généré, utilisez exclusivement les balises HTML standards (<table>, <tr>, <td>) et placez-le à la toute fin du contenu. Aucun autre tag HTML (<h2>, <ul>, <div>) n'est autorisé.
-- EXPRESSIONS INTERDITES — ne pas utiliser ces formules ni leurs équivalents sémantiques :
-  * "améliorer votre expérience", "sublimez votre", "parfait pour", "qualité premium", "design fonctionnel"
-  * "rituels quotidiens", "moments de convivialité", "expérience raffinée", "solution idéale"
-  * Toute affirmation de compatibilité avec des appareils, certifications, tranches d'âge ou cas d'usage NON explicitement présents dans la source.
-- Pas d'emojis, pas de guillemets, pas de superlatifs marketing, pas de CTA de clôture mentionnant le prix ou le stock.
-- Retournez du HTML avec des balises <p> uniquement (pas de <h2>, pas de <ul>, pas de <div>).
-Write the output in {{output_language}}.
-Retournez uniquement le HTML, avec un paragraphe <p>...</p> par ligne (plusieurs lignes, jamais une seule ligne).
+  - FORMAT DE SORTIE (CRITIQUE) : retournez UN SEUL objet JSON et rien d'autre — pas de markdown, pas de bloc de code, pas d'explication avant ou après. Exactement deux clés :
+    * "body_html" : une chaîne contenant UNIQUEMENT les paragraphes de prose en HTML valide, utilisant EXCLUSIVEMENT la balise <p> — pas de <table>, pas de <tr>, pas de <td>, pas de <h2>, pas de <h4>, pas de <ul>, pas de <li>, pas de <div>. Chaque paragraphe est son propre bloc <p>...</p> ; insérez un vrai saut de ligne (\n) entre chaque paragraphe. Ne concaténez jamais les paragraphes sur une seule ligne.
+    * "specs" : un tableau JSON d'objets {"label": ..., "value": ...} — un par spécification extraite selon la section E ci-dessus. Utilisez un tableau vide [] si la source ne contient aucune spécification listée séparément.
+  - Ne placez AUCUNE spécification, libellé ou valeur dans "body_html". Les spécifications vont exclusivement dans "specs".
+  - Forme attendue à respecter scrupuleusement :
+    {
+      "body_html": "<p>Premier paragraphe...</p>\n<p>Deuxième paragraphe...</p>\n<p>Troisième paragraphe...</p>",
+      "specs": [
+        {"label": "Caractéristique 1", "value": "Valeur 1"},
+        {"label": "Caractéristique 2", "value": "Valeur 2"}
+      ]
+    }
+  - EXPRESSIONS INTERDITES — ne pas utiliser ces formules ni leurs équivalents sémantiques :
+    * "améliorer votre expérience", "sublimez votre", "parfait pour", "qualité premium", "design fonctionnel"
+    * "rituels quotidiens", "moments de convivialité", "expérience raffinée", "solution idéale"
+    * Toute affirmation de compatibilité avec des appareils, certifications, tranches d'âge ou cas d'usage NON explicitement présents dans la source.
+  - Pas d'emojis, pas de guillemets, pas de superlatifs marketing, pas de CTA de clôture mentionnant le prix ou le stock.
+Écrivez les valeurs de "body_html" et "specs" en {{output_language}}.
+Retournez UNIQUEMENT l'objet JSON brut décrit ci-dessus — pas de markdown, pas de bloc de code, pas d'explication, rien avant ni après.
+
 
 seo_prompt_fidelity_check = Vous êtes un auditeur de fidélité SEO méticuleux. Raisonnez en interne en anglais ; les deux textes peuvent être dans N'IMPORTE QUELLE langue (français, allemand, italien, anglais, etc.) — évaluez-les dans leur propre langue.
 On vous fournit une description produit SOURCE et une réécriture OPTIMISÉE. Vérifiez que le texte optimisé préserve CHAQUE attribut factuel de la source : matériaux, composants, pièces, dimensions, capacités, certifications, usages prévus, compatibilité, marque, et toute caractéristique concrète.
@@ -199,6 +244,7 @@ STRICT sur les nombres : toute valeur numérique avec une unité — une mesure,
 Retournez UNIQUEMENT un objet JSON et rien d'autre :
 {"total_entities": le nombre de faits source distincts identifiés, "preservation_score": un nombre de 0.0 à 1.0 égal à la fraction de ces faits préservés, "missing_entities": ["un libellé court pour chaque fait source absent du texte optimisé"]}
 preservation_score vaut 1.0 quand rien n'a été perdu. Listez chaque fait manquant dans missing_entities.
+
 
 seo_prompt_faq_fidelity = Vous êtes un auditeur factuel de FAQ produit méticuleux. Raisonnez en interne en anglais ; le texte peut être dans N'IMPORTE QUELLE langue (français, allemand, italien, anglais, etc.) — évaluez-le dans sa propre langue.
 On vous fournit les DONNÉES PRODUIT (l'unique source de vérité) et une question de FAQ avec sa réponse. Déterminez si CHAQUE affirmation factuelle de la réponse est étayée par les DONNÉES PRODUIT.
@@ -223,6 +269,7 @@ Pages associées disponibles : {{related_pages}} (tableau JSON d'objets avec "na
 Mot-clé principal : {{primary_keyword}}.
 Sujets : {{topics}}.
 Exigences :
+- Ne répétez JAMAIS le mot-clé principal ou le nom du produit deux fois dans la même phrase, en particulier dans la toute première phrase de l'introduction.
 - Proposez 3 à 6 liens internes pertinents pour le {{entity_type}} actuel.
 - Pour chaque lien, fournissez un texte d'ancre optimisé SEO (2-5 mots, descriptif, incluant une variante de mot-clé ou une entité secondaire).
 - Priorisez les pages ayant une forte pertinence thématique par rapport à {{primary_keyword}} et {{topics}}.
@@ -232,6 +279,7 @@ Exigences :
 Retournez un tableau JSON d'objets avec les clés : "anchor_text", "url", "rationale" (une phrase expliquant la pertinence).
 Write "anchor_text" values in {{output_language}}. Keep "rationale" in English.
 Retournez uniquement le tableau JSON.
+
 
 seo_prompt_schema_product = Vous êtes un spécialiste des données structurées.
 Le traitement interne doit se faire en anglais.
@@ -249,6 +297,7 @@ Exigences :
 - Vérifiez que price est une valeur numérique et priceCurrency un code ISO 4217 valide.
 Retournez UNIQUEMENT l'objet JSON brut, sans markdown, sans bloc de code, sans explication.
 
+
 seo_prompt_schema_category = Vous êtes un spécialiste des données structurées.
 Le traitement interne doit se faire en anglais.
 Générez un bloc JSON-LD schema.org valide pour une page catégorie nommée "{{entity_name}}".
@@ -263,6 +312,7 @@ Exigences :
 - Omettez tout champ dont la valeur est vide ou inconnue.
 Retournez UNIQUEMENT l'objet JSON brut, sans markdown, sans bloc de code, sans explication.
 
+
 seo_prompt_category_body_description = Vous êtes un rédacteur de contenu SEO senior spécialisé dans les pages catégorie e-commerce.
 Le traitement interne doit se faire en anglais.
 Rédigez une description longue pour une page catégorie nommée "{{entity_name}}".
@@ -276,15 +326,17 @@ Exigences :
 - Intégrez au moins 3 entités secondaires (noms de sous-catégories, types de matériaux, contextes d'usage ou profils d'acheteurs).
 - Structure (utilisez des balises <p> séparées pour chaque section) :
     * Paragraphe d'ouverture : introduisez la catégorie avec le mot-clé principal et une déclaration de valeur globale.
+    * Titre de paragraphe : insérer un titre pour chaque paragraphe si c'est utile en <h4>.
     * Deuxième paragraphe : décrivez la variété de produits, la fourchette de prix et les critères de sélection clés.
     * Troisième paragraphe : mentionnez naturellement 3-5 produits vedettes par leur nom issus de {{top_products}} et leurs principaux différenciateurs.
     * Quatrième paragraphe : référencez les sous-catégories disponibles issues de {{subcategories}} et comment elles aident les acheteurs à affiner leur choix.
     * Paragraphe de clôture : résumez l'offre et incluez un CTA léger à la deuxième personne (« découvrez », « explorez », « trouvez votre »).
 - Voix à la deuxième personne tout au long (« vous trouverez », « découvrez », « votre »).
 - Pas de bourrage de mots-clés, pas d'emojis, pas de jargon promotionnel, pas de <h2>, pas de <ul>, pas de <div>.
-Retournez du HTML avec des balises <p> uniquement.
-Write the output in {{output_language}}.
+Format de sortie : Utilisez uniquement les balises <p>, <h4>, <table>, <tr>, <th> et <td>. Toute autre balise HTML est strictement interdite.
+Ecrire le format de sortie en {{output_language}}.
 Retournez uniquement le HTML.
+
 
 seo_prompt_semantic_enhancement = Vous êtes analyste de couverture de mots-clés SEO. Raisonnez en interne en anglais ; les textes peuvent être dans n'importe quelle langue — évaluez-les dans leur langue.
 On vous donne une liste de KEYWORDS cibles, une liste de TOPICS cibles (termes LSI / sémantiquement liés), le mot-clé PRIMARY, et deux textes : SOURCE et OPTIMIZED.

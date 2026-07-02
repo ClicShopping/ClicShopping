@@ -34,7 +34,7 @@ class CopyConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $this->copyAs = $_POST['copy_as'];
 
     if ( isset($_POST['categories_id'])) {
-      $this->categoriesId = isset($_POST['categories_id']);
+      $this->categoriesId = HTML::sanitize($_POST['categories_id']);
     } else {
       $this->messageStack->add($this->app->getDef('alert_copy_category'), 'warning');
       $this->app->redirect('Products&cPath=' . $this->currentCategoryId . '&pID=' . $this->Id);

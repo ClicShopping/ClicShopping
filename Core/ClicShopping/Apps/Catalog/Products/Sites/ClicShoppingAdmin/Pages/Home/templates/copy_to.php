@@ -75,12 +75,12 @@ $current_category_id = HTML::sanitize($_GET['cPath']);
       <div class="col-md-12">
         <span class="col-sm-2"><?php echo $CLICSHOPPING_Products->getDef('text_how_to_copy'); ?></span>
         <div class="col-sm-4 custom-control custom-radio">
-          <?php echo HTML::radioField('copy_as', 'link', true, 'class="custom-control-input" id="link" name="copy_to"'); ?>
+          <?php echo HTML::radioField('copy_as', 'link', true, 'class="custom-control-input" id="link"'); ?>
           <label class="custom-control-label"
                  for="link"><?php echo $CLICSHOPPING_Products->getDef('text_copy_as_link'); ?></label>
         </div>
         <div class="col-sm-4 custom-control custom-radio">
-          <?php echo HTML::radioField('copy_as', 'duplicate', false, 'class="custom-control-input" id="duplicate" name="copy_to"'); ?>
+          <?php echo HTML::radioField('copy_as', 'duplicate', false, 'class="custom-control-input" id="duplicate"'); ?>
           <label class="custom-control-label"
                  for="duplicate"><?php echo $CLICSHOPPING_Products->getDef('text_copy_as_duplicate'); ?></label>
         </div>

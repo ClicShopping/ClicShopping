@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO;
 
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticFactory;
+use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCriticCoordinator;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 use ClicShopping\AI\Config\ActorCriticConfig;
 use ClicShopping\AI\RegistryAI\ActorRegistry;
@@ -21,6 +22,8 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SeoOptim
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SerpAgent;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Critics\SeoValidationCritic;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Critics\SeoContentReadinessCritic;
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 
 class SeoAgenticPipeline
 {
@@ -105,7 +108,7 @@ class SeoAgenticPipeline
       'entity_id' => $entityId,
     ]);
 
-    $current = $this->adapter->getCurrentData($entityId, $languageId);
+    $current = $this->loadEntityData($entityId, $languageId);
     if ($current === null) {
       $this->logDebug('Pipeline stop: entity not found', [
         'entity_id' => $entityId,
@@ -115,10 +118,6 @@ class SeoAgenticPipeline
         'success' => false,
         'error' => 'Entity data not found for SEO optimization.',
       ];
-    }
-    $additionalContext = $this->adapter->getAdditionalContext($entityId, $languageId);
-    if (!empty($additionalContext)) {
-      $current = array_merge($additionalContext, $current);
     }
 
     $this->logDebug('Loaded entity data', [
@@ -143,18 +142,7 @@ class SeoAgenticPipeline
       'seo_score_before' => $seoBefore['seo_score'] ?? 0,
     ]);
 
-    $serpAgent = new SerpAgent();
-
-    $serp_analysis =  [
-      'query' => $current['name'] ?? '',
-      'entity_name' => $current['name'] ?? '',
-      'base_url' => $baseUrl,
-      'language' => $this->adapter->getLanguage($languageId),
-    ];
-
-    $serpAction = new Action('serp_analysis',$serp_analysis, $context, 'medium', 60);
-
-    $serpResult = $serpAgent->executeAction($serpAction)->getOutput();
+    $serpResult = $this->runSerpAnalysis($current, $baseUrl, $languageId, $context);
 
     if (!($serpResult['success'] ?? false)) {
       $this->logDebug('Pipeline stop: SERP failed', [
@@ -176,14 +164,8 @@ class SeoAgenticPipeline
     $seoAgent = $this->seoAgentOverride ?? new SeoOptimizationAgent();
     $codeAgent = $this->codeAgentOverride ?? new SeoCodeValidationAgent();
 
-    $proposal = [];
-    $normalizedChanges = [];
-    $codeValidation = [];
-    $validationFeedback = [];
-
     $useActorCritic = ActorCriticConfig::isEnabled();
     $coordinator = null;
-    $actorCriticFeedback = [];
 
     if ($useActorCritic) {
       try {
@@ -203,18 +185,372 @@ class SeoAgenticPipeline
       }
     }
 
-    // Best-attempt tracking — when every retry fails the validator with only
-    // non-critical issues (length 66, soft keyword density, mild spam), the
-    // pipeline would otherwise return "Source content kept" and the admin
-    // sees nothing applied.  We track the attempt with the highest
-    // quality_score that did not raise a CRITICAL flag (placeholder, schema
-    // invalid, fatal length breach) so we can apply it as a graceful
-    // fallback rather than wasting the 60-90s of LLM generation.
-    $bestAttempt = null; // ['proposal'=>..., 'normalized'=>..., 'quality_score'=>int, 'audit'=>...]
-
     // Agentic, language-agnostic source-fidelity check (Pure LLM Mode). Built once
     // per run (language is fixed); used as the PRIMARY anti-regression signal below.
     $fidelityChecker = new SeoFidelityChecker($this->adapter->getLanguage($languageId), $this->debug);
+
+    $loopResult = $this->runOptimizationRetryLoop(
+      $serpResult,
+      $current,
+      $context,
+      $excludeFaq,
+      $seoAgent,
+      $codeAgent,
+      $useActorCritic,
+      $coordinator,
+      $fidelityChecker,
+      $entityId,
+      $languageId,
+      $triggeredBy
+    );
+    $proposal          = $loopResult['proposal'];
+    $normalizedChanges = $loopResult['normalized'];
+    $codeValidation    = $loopResult['codeValidation'];
+    $bestAttempt       = $loopResult['bestAttempt'];
+
+    return $this->finalizeOptimization(
+      $proposal,
+      $normalizedChanges,
+      $codeValidation,
+      $bestAttempt,
+      $current,
+      $fidelityChecker,
+      $seoReport,
+      $seoBefore,
+      $serpResult,
+      $context,
+      $entityId,
+      $languageId,
+      $url,
+      $triggeredBy,
+      $excludeFaq,
+      $pipelineStart
+    );
+  }
+
+  /**
+   * Load the entity's current SEO data merged with any adapter-specific
+   * additional context. Returns null when the entity is not found. Extracted
+   * verbatim from optimize().
+   *
+   * @return array<string, mixed>|null
+   */
+  private function loadEntityData(int $entityId, int $languageId): ?array
+  {
+    $current = $this->adapter->getCurrentData($entityId, $languageId);
+    if ($current === null) {
+      return null;
+    }
+    $additionalContext = $this->adapter->getAdditionalContext($entityId, $languageId);
+    if (!empty($additionalContext)) {
+      $current = array_merge($additionalContext, $current);
+    }
+    return $current;
+  }
+
+  /**
+   * Run the SERP analysis agent for the entity and return its raw output
+   * (the caller checks the 'success' flag). Extracted verbatim from optimize().
+   *
+   * @return array<string, mixed>
+   */
+  private function runSerpAnalysis(array $current, string $baseUrl, int $languageId, Context $context): array
+  {
+    $serpAgent = new SerpAgent();
+
+    $serp_analysis =  [
+      'query' => $current['name'] ?? '',
+      'entity_name' => $current['name'] ?? '',
+      'base_url' => $baseUrl,
+      'language' => $this->adapter->getLanguage($languageId),
+    ];
+
+    $serpAction = new Action('serp_analysis',$serp_analysis, $context, 'medium', 60);
+
+    return $serpAgent->executeAction($serpAction)->getOutput();
+  }
+
+  /**
+   * Finalize the optimization after the retry loop: best-attempt fallback,
+   * not-applied / preservation gate, apply to the CMS, structural + semantic
+   * enhancement gates, audit (with rollback), persist the report and build the
+   * result. Every path returns the optimize() result array. Extracted verbatim
+   * from optimize() to shrink it.
+   *
+   * @return array<string, mixed>
+   */
+  private function finalizeOptimization(
+    array $proposal,
+    array $normalizedChanges,
+    array $codeValidation,
+    ?array $bestAttempt,
+    array $current,
+    SeoFidelityChecker $fidelityChecker,
+    SeoReport $seoReport,
+    array $seoBefore,
+    array $serpResult,
+    Context $context,
+    int $entityId,
+    int $languageId,
+    string $url,
+    string $triggeredBy,
+    bool $excludeFaq,
+    float $pipelineStart
+  ): array {
+    // Best-attempt fallback: when no attempt reached approved=true but at
+    // least one produced usable content (no critical flag), apply it.  The
+    // alternative is "Source content kept" — the admin sees nothing
+    // changed after 60-90 seconds of LLM work, which is the worse UX.
+    if (!($codeValidation['approved'] ?? false) && $bestAttempt !== null) {
+      $this->logDebug('Falling back to best attempt', [
+        'attempt'       => $bestAttempt['attempt'],
+        'quality_score' => $bestAttempt['quality_score'],
+      ]);
+      $proposal          = $bestAttempt['proposal'];
+      $normalizedChanges = $bestAttempt['normalized'];
+      $codeValidation    = $bestAttempt['code_validation'];
+      $codeValidation['approved'] = true;        // mark as soft-approved
+      $codeValidation['fallback'] = true;        // surfaced in the return
+    }
+
+    if (!($codeValidation['approved'] ?? false)) {
+      $isBenchmarkRegression = !empty($this->lastBenchmark)
+        && ($this->lastBenchmark['is_regression'] ?? false);
+
+      return [
+        'success'   => false,
+        'status'    => 'not_applied_regression',
+        // Surface a clearer message when the failure comes from the
+        // anti-regression guard rather than the structural validator.
+        'error'     => $isBenchmarkRegression
+          ? 'Source content kept: every optimization attempt regressed the SEO quality score.'
+          : 'Code validation failed after retries.',
+        'validation' => $codeValidation,
+        'benchmark'  => $this->lastBenchmark,
+        'proposal'   => $proposal,
+      ];
+    }
+
+    $originalData = $current;
+
+    // HARD PRESERVATION GATE — never apply content that drops source facts,
+    // regardless of which path (approved or best-attempt) selected it. Re-check
+    // the final proposal against the source; abort (keep original) on regression.
+    $finalSource    = (string)($current['description'] ?? '');
+    $finalGenerated = (string)($proposal['description'] ?? '');
+    $finalFidelity  = $fidelityChecker->check($finalSource, $finalGenerated);
+
+    // FAIL-CLOSED: abort when the optimized text drops facts (fidelity_ok=false)
+    // OR when preservation could not be verified at all (available=false). We never
+    // apply content we could not prove faithful — the original is kept intact.
+    if ($finalFidelity['available'] === false || $finalFidelity['fidelity_ok'] === false) {
+      $missingEntities = $finalFidelity['missing_entities'] ?? [];
+      $this->logDebug('Preservation gate: aborting apply (regression)', [
+        'preservation_score' => $finalFidelity['preservation_score'] ?? null,
+        'missing_entities'   => $missingEntities,
+      ]);
+      return [
+        'success'          => false,
+        'status'           => 'not_applied_regression',
+        'error'            => 'Optimisation non appliquée : régression de fidélité — des faits de la source seraient perdus.',
+        'missing_entities' => $missingEntities,
+        'benchmark'        => $this->lastBenchmark,
+        'proposal'         => $proposal,
+      ];
+    }
+
+    $applied = $this->adapter->applySeoChanges($entityId, $languageId, $normalizedChanges, true);
+
+    if (!$applied) {
+      $this->logDebug('Pipeline stop: apply changes failed', [
+        'changes' => $normalizedChanges,
+      ]);
+      return [
+        'success' => false,
+        'error' => 'Failed to apply SEO changes to CMS.',
+      ];
+    }
+    $this->logDebug('Changes applied', [
+      'changes' => $normalizedChanges,
+    ]);
+
+    $seoAfter = $seoReport->getSeoData(true, $this->adapter->getEntityType());
+
+    // STRUCTURAL ENHANCEMENT GATE (Lot 2a). Compute the structural SEO before/after
+    // and ROLL BACK on a critical regression (schema removed / headings zeroed /
+    // word-count collapse). Non-critical metrics are informational only.
+    $enhancement = (new SeoEnhancementScorer())->score(
+      $seoBefore,
+      $seoAfter,
+      (string)($current['description'] ?? ''),
+      (string)($proposal['description'] ?? '')
+    );
+
+    if ($enhancement['critical_regression'] === true) {
+      $this->adapter->applySeoChanges($entityId, $languageId, $originalData, false);
+      $this->logDebug('Enhancement gate: critical structural regression — rolled back', [
+        'reasons' => $enhancement['critical_reasons'],
+      ]);
+      return [
+        'success'     => false,
+        'status'      => 'not_applied_seo_regression',
+        'error'       => 'Optimisation annulée : régression SEO structurelle (' . implode(', ', $enhancement['critical_reasons']) . ').',
+        'enhancement' => $enhancement,
+        'benchmark'   => $this->lastBenchmark,
+      ];
+    }
+
+    // SEMANTIC ENHANCEMENT (Lot 2b) — informational keyword/LSI coverage rows + a
+    // soft advisory. One LLM call; fail-open (no rows, no advisory on error/empty).
+    $semantic = (new SeoSemanticEnhancementScorer($this->adapter->getLanguage($languageId), $this->debug))->score(
+      (array)($serpResult['keywords'] ?? []),
+      (array)($serpResult['topics'] ?? []),
+      (string)($proposal['meta_keywords'] ?? $current['name'] ?? ''),
+      (string)($current['description'] ?? ''),
+      (string)($proposal['description'] ?? '')
+    );
+    $semanticRegressed = false;
+    if ($semantic['available'] === true) {
+      $enhancement['metrics'] = array_merge($enhancement['metrics'], $semantic['metrics']);
+      $semanticRegressed = (bool)$semantic['regressed'];
+    }
+
+    $auditAgent = new SeoAuditAgent();
+
+    $audit_array = [
+      'seo_before'  => $seoBefore,
+      'seo_after'   => $seoAfter,
+      'changes'     => $normalizedChanges,
+      'exclude_faq' => $excludeFaq,
+      // De-bias the audit: give it the objective preservation/quality metrics so
+      // it reports removals/regressions, not only additions.
+      'benchmark'   => [
+        'preservation_score' => (float)($finalFidelity['preservation_score'] ?? 1.0),
+        'missing_entities'   => $finalFidelity['missing_entities'] ?? [],
+        'composite_delta'    => (float)($this->lastBenchmark['delta'] ?? 0),
+        'semantic_regressed' => $semanticRegressed,
+      ],
+    ];
+
+    $auditAction = new Action('seo_audit', $audit_array, $context, 'medium', 60);
+
+    $audit = $auditAgent->executeAction($auditAction)->getOutput();
+    $this->logDebug('Audit result', $audit);
+
+    $auditApproved = (bool)($audit['approved'] ?? false);
+    $scoreBefore = (int)($audit['score_before'] ?? 0);
+    $scoreAfter = (int)($audit['score_after'] ?? 0);
+    $changesApplied = $audit['changes_applied'] ?? [];
+    $contentImproved = ($scoreAfter >= $scoreBefore) && !empty($changesApplied);
+
+    if (!$auditApproved && $contentImproved) {
+      $this->logDebug('Audit soft-accepted (score unchanged but content improved)', [
+        'score_before' => $scoreBefore,
+        'score_after' => $scoreAfter,
+        'changes_applied' => $changesApplied,
+      ]);
+      $auditApproved = true;
+    }
+
+    if (!$auditApproved) {
+      // rollback
+      $this->adapter->applySeoChanges($entityId, $languageId, $originalData, false);
+      $this->logDebug('Rollback applied', [
+        'original' => $originalData,
+      ]);
+
+      return [
+        'success' => false,
+        'error' => 'Audit SEO non valide. Rollback effectue.',
+        'audit' => $audit,
+        'seo_score_before' => $scoreBefore,
+        'seo_score_after' => $scoreAfter,
+      ];
+    }
+
+    $reportId = $this->reportRepo->insert([
+      'entity_type'      => $this->adapter->getEntityType(),
+      'entity_id'        => $entityId,
+      'language_id'      => $languageId,
+      'url'              => $url,
+      'serp_source'      => $serpResult['source'] ?? 'serpapi',
+      'serp_query'       => $serpResult['query']  ?? '',
+      'serp_data'        => $serpResult,
+      'seo_before'       => $seoBefore,
+      'seo_after'        => $seoAfter,
+      'proposed_changes' => $normalizedChanges,
+      'audit_result'     => $audit,
+      'summary'          => $audit['summary'] ?? '',
+      'seo_score_before' => $audit['score_before'] ?? 0,
+      'seo_score_after'  => $audit['score_after']  ?? 0,
+      'status'           => 'applied',
+      'triggered_by'     => $triggeredBy,
+      'benchmark'        => $this->lastBenchmark,
+      // T6.4 — pipeline metrics
+      'pipeline_metrics' => [
+        'llm_calls'          => $this->llmCallCount,
+        'total_time_ms'      => (int)((microtime(true) - $pipelineStart) * 1000),
+        'attempts'           => $this->attemptCount,
+        'actor_critic_used'  => $this->actorCriticUsed,
+      ],
+    ]);
+    $this->logDebug('Report stored', [
+      'report_id' => $reportId,
+    ]);
+
+    return [
+      'success'         => true,
+      'mode'            => 'agentic_optimization',
+      'seo_score_before'=> $audit['score_before'] ?? 0,
+      'seo_score_after' => $audit['score_after']  ?? 0,
+      'improved'        => $audit['improved']      ?? false,
+      'message'         => $audit['summary']       ?? 'Optimization applied.',
+      'audit_summary'   => $audit['summary']       ?? '',
+      'audit'           => $audit,
+      'proposal'        => $proposal,
+      'serp'            => $serpResult,
+      'report_id'       => $reportId,
+      'benchmark'       => $this->lastBenchmark,
+      'enhancement'     => $enhancement,
+      // T6.4 — visible in UI agentic audit panel
+      'pipeline_metrics'=> [
+        'llm_calls'         => $this->llmCallCount,
+        'total_time_ms'     => (int)((microtime(true) - $pipelineStart) * 1000),
+        'attempts'          => $this->attemptCount,
+        'actor_critic_used' => $this->actorCriticUsed,
+      ],
+    ];
+  }
+
+  /**
+   * Retry loop (max 3 attempts): generate a SEO proposal, validate it and enforce
+   * the agentic fidelity gate, injecting feedback into the next attempt on failure.
+   * Returns the last proposal / normalized changes / code-validation and the best
+   * usable attempt seen, for optimize() to apply or fall back to. Extracted verbatim
+   * from optimize() to shrink it; loop-internal state stays local to this method.
+   *
+   * @return array{proposal: array, normalized: array, codeValidation: array, bestAttempt: ?array}
+   */
+  private function runOptimizationRetryLoop(
+    array $serpResult,
+    array $current,
+    Context $context,
+    bool $excludeFaq,
+    SeoOptimizationAgent $seoAgent,
+    SeoCodeValidationAgent $codeAgent,
+    bool $useActorCritic,
+    ?ActorCriticCoordinator $coordinator,
+    SeoFidelityChecker $fidelityChecker,
+    int $entityId,
+    int $languageId,
+    string $triggeredBy
+  ): array {
+    $proposal = [];
+    $normalizedChanges = [];
+    $codeValidation = [];
+    $validationFeedback = [];
+    $actorCriticFeedback = [];
+    $bestAttempt = null;
 
     for ($attempt = 1; $attempt <= 3; $attempt++) {
       $this->attemptCount = $attempt;   // T6.4
@@ -456,228 +792,11 @@ class SeoAgenticPipeline
       $this->logDebug('Validation feedback injected', $validationFeedback);
     }
 
-    // Best-attempt fallback: when no attempt reached approved=true but at
-    // least one produced usable content (no critical flag), apply it.  The
-    // alternative is "Source content kept" — the admin sees nothing
-    // changed after 60-90 seconds of LLM work, which is the worse UX.
-    if (!($codeValidation['approved'] ?? false) && $bestAttempt !== null) {
-      $this->logDebug('Falling back to best attempt', [
-        'attempt'       => $bestAttempt['attempt'],
-        'quality_score' => $bestAttempt['quality_score'],
-      ]);
-      $proposal          = $bestAttempt['proposal'];
-      $normalizedChanges = $bestAttempt['normalized'];
-      $codeValidation    = $bestAttempt['code_validation'];
-      $codeValidation['approved'] = true;        // mark as soft-approved
-      $codeValidation['fallback'] = true;        // surfaced in the return
-    }
-
-    if (!($codeValidation['approved'] ?? false)) {
-      $isBenchmarkRegression = !empty($this->lastBenchmark)
-        && ($this->lastBenchmark['is_regression'] ?? false);
-
-      return [
-        'success'   => false,
-        'status'    => 'not_applied_regression',
-        // Surface a clearer message when the failure comes from the
-        // anti-regression guard rather than the structural validator.
-        'error'     => $isBenchmarkRegression
-          ? 'Source content kept: every optimization attempt regressed the SEO quality score.'
-          : 'Code validation failed after retries.',
-        'validation' => $codeValidation,
-        'benchmark'  => $this->lastBenchmark,
-        'proposal'   => $proposal,
-      ];
-    }
-
-    $originalData = $current;
-
-    // HARD PRESERVATION GATE — never apply content that drops source facts,
-    // regardless of which path (approved or best-attempt) selected it. Re-check
-    // the final proposal against the source; abort (keep original) on regression.
-    $finalSource    = (string)($current['description'] ?? '');
-    $finalGenerated = (string)($proposal['description'] ?? '');
-    $finalFidelity  = $fidelityChecker->check($finalSource, $finalGenerated);
-
-    // FAIL-CLOSED: abort when the optimized text drops facts (fidelity_ok=false)
-    // OR when preservation could not be verified at all (available=false). We never
-    // apply content we could not prove faithful — the original is kept intact.
-    if ($finalFidelity['available'] === false || $finalFidelity['fidelity_ok'] === false) {
-      $missingEntities = $finalFidelity['missing_entities'] ?? [];
-      $this->logDebug('Preservation gate: aborting apply (regression)', [
-        'preservation_score' => $finalFidelity['preservation_score'] ?? null,
-        'missing_entities'   => $missingEntities,
-      ]);
-      return [
-        'success'          => false,
-        'status'           => 'not_applied_regression',
-        'error'            => 'Optimisation non appliquée : régression de fidélité — des faits de la source seraient perdus.',
-        'missing_entities' => $missingEntities,
-        'benchmark'        => $this->lastBenchmark,
-        'proposal'         => $proposal,
-      ];
-    }
-
-    $applied = $this->adapter->applySeoChanges($entityId, $languageId, $normalizedChanges, true);
-
-    if (!$applied) {
-      $this->logDebug('Pipeline stop: apply changes failed', [
-        'changes' => $normalizedChanges,
-      ]);
-      return [
-        'success' => false,
-        'error' => 'Failed to apply SEO changes to CMS.',
-      ];
-    }
-    $this->logDebug('Changes applied', [
-      'changes' => $normalizedChanges,
-    ]);
-
-    $seoAfter = $seoReport->getSeoData(true, $this->adapter->getEntityType());
-
-    // STRUCTURAL ENHANCEMENT GATE (Lot 2a). Compute the structural SEO before/after
-    // and ROLL BACK on a critical regression (schema removed / headings zeroed /
-    // word-count collapse). Non-critical metrics are informational only.
-    $enhancement = (new SeoEnhancementScorer())->score(
-      $seoBefore,
-      $seoAfter,
-      (string)($current['description'] ?? ''),
-      (string)($proposal['description'] ?? '')
-    );
-
-    if ($enhancement['critical_regression'] === true) {
-      $this->adapter->applySeoChanges($entityId, $languageId, $originalData, false);
-      $this->logDebug('Enhancement gate: critical structural regression — rolled back', [
-        'reasons' => $enhancement['critical_reasons'],
-      ]);
-      return [
-        'success'     => false,
-        'status'      => 'not_applied_seo_regression',
-        'error'       => 'Optimisation annulée : régression SEO structurelle (' . implode(', ', $enhancement['critical_reasons']) . ').',
-        'enhancement' => $enhancement,
-        'benchmark'   => $this->lastBenchmark,
-      ];
-    }
-
-    // SEMANTIC ENHANCEMENT (Lot 2b) — informational keyword/LSI coverage rows + a
-    // soft advisory. One LLM call; fail-open (no rows, no advisory on error/empty).
-    $semantic = (new SeoSemanticEnhancementScorer($this->adapter->getLanguage($languageId), $this->debug))->score(
-      (array)($serpResult['keywords'] ?? []),
-      (array)($serpResult['topics'] ?? []),
-      (string)($proposal['meta_keywords'] ?? $current['name'] ?? ''),
-      (string)($current['description'] ?? ''),
-      (string)($proposal['description'] ?? '')
-    );
-    $semanticRegressed = false;
-    if ($semantic['available'] === true) {
-      $enhancement['metrics'] = array_merge($enhancement['metrics'], $semantic['metrics']);
-      $semanticRegressed = (bool)$semantic['regressed'];
-    }
-
-    $auditAgent = new SeoAuditAgent();
-
-    $audit_array = [
-      'seo_before'  => $seoBefore,
-      'seo_after'   => $seoAfter,
-      'changes'     => $normalizedChanges,
-      'exclude_faq' => $excludeFaq,
-      // De-bias the audit: give it the objective preservation/quality metrics so
-      // it reports removals/regressions, not only additions.
-      'benchmark'   => [
-        'preservation_score' => (float)($finalFidelity['preservation_score'] ?? 1.0),
-        'missing_entities'   => $finalFidelity['missing_entities'] ?? [],
-        'composite_delta'    => (float)($this->lastBenchmark['delta'] ?? 0),
-        'semantic_regressed' => $semanticRegressed,
-      ],
-    ];
-
-    $auditAction = new Action('seo_audit', $audit_array, $context, 'medium', 60);
-
-    $audit = $auditAgent->executeAction($auditAction)->getOutput();
-    $this->logDebug('Audit result', $audit);
-
-    $auditApproved = (bool)($audit['approved'] ?? false);
-    $scoreBefore = (int)($audit['score_before'] ?? 0);
-    $scoreAfter = (int)($audit['score_after'] ?? 0);
-    $changesApplied = $audit['changes_applied'] ?? [];
-    $contentImproved = ($scoreAfter >= $scoreBefore) && !empty($changesApplied);
-
-    if (!$auditApproved && $contentImproved) {
-      $this->logDebug('Audit soft-accepted (score unchanged but content improved)', [
-        'score_before' => $scoreBefore,
-        'score_after' => $scoreAfter,
-        'changes_applied' => $changesApplied,
-      ]);
-      $auditApproved = true;
-    }
-
-    if (!$auditApproved) {
-      // rollback
-      $this->adapter->applySeoChanges($entityId, $languageId, $originalData, false);
-      $this->logDebug('Rollback applied', [
-        'original' => $originalData,
-      ]);
-
-      return [
-        'success' => false,
-        'error' => 'Audit SEO non valide. Rollback effectue.',
-        'audit' => $audit,
-        'seo_score_before' => $scoreBefore,
-        'seo_score_after' => $scoreAfter,
-      ];
-    }
-
-    $reportId = $this->reportRepo->insert([
-      'entity_type'      => $this->adapter->getEntityType(),
-      'entity_id'        => $entityId,
-      'language_id'      => $languageId,
-      'url'              => $url,
-      'serp_source'      => $serpResult['source'] ?? 'serpapi',
-      'serp_query'       => $serpResult['query']  ?? '',
-      'serp_data'        => $serpResult,
-      'seo_before'       => $seoBefore,
-      'seo_after'        => $seoAfter,
-      'proposed_changes' => $normalizedChanges,
-      'audit_result'     => $audit,
-      'summary'          => $audit['summary'] ?? '',
-      'seo_score_before' => $audit['score_before'] ?? 0,
-      'seo_score_after'  => $audit['score_after']  ?? 0,
-      'status'           => 'applied',
-      'triggered_by'     => $triggeredBy,
-      'benchmark'        => $this->lastBenchmark,
-      // T6.4 — pipeline metrics
-      'pipeline_metrics' => [
-        'llm_calls'          => $this->llmCallCount,
-        'total_time_ms'      => (int)((microtime(true) - $pipelineStart) * 1000),
-        'attempts'           => $this->attemptCount,
-        'actor_critic_used'  => $this->actorCriticUsed,
-      ],
-    ]);
-    $this->logDebug('Report stored', [
-      'report_id' => $reportId,
-    ]);
-
     return [
-      'success'         => true,
-      'mode'            => 'agentic_optimization',
-      'seo_score_before'=> $audit['score_before'] ?? 0,
-      'seo_score_after' => $audit['score_after']  ?? 0,
-      'improved'        => $audit['improved']      ?? false,
-      'message'         => $audit['summary']       ?? 'Optimization applied.',
-      'audit_summary'   => $audit['summary']       ?? '',
-      'audit'           => $audit,
-      'proposal'        => $proposal,
-      'serp'            => $serpResult,
-      'report_id'       => $reportId,
-      'benchmark'       => $this->lastBenchmark,
-      'enhancement'     => $enhancement,
-      // T6.4 — visible in UI agentic audit panel
-      'pipeline_metrics'=> [
-        'llm_calls'         => $this->llmCallCount,
-        'total_time_ms'     => (int)((microtime(true) - $pipelineStart) * 1000),
-        'attempts'          => $this->attemptCount,
-        'actor_critic_used' => $this->actorCriticUsed,
-      ],
+      'proposal'       => $proposal,
+      'normalized'     => $normalizedChanges,
+      'codeValidation' => $codeValidation,
+      'bestAttempt'    => $bestAttempt,
     ];
   }
 
@@ -712,8 +831,8 @@ class SeoAgenticPipeline
       return;
     }
 
-    $db = \ClicShopping\OM\Registry::get('Db');
-    $prefix = \ClicShopping\OM\CLICSHOPPING::getConfig('db_table_prefix');
+    $db = Registry::get('Db');
+    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
     $table  = $prefix . 'seo_quality_benchmark_log';
 
     // Detect table existence once; silently skip if the migration has not

@@ -3,7 +3,6 @@ Internal processing must be in English.
 Generate an SEO meta title for an {{entity_type}} named "{{entity_name}}".
 - If entity_type is product AND brand "{{product_brand}}" is NOT empty, you may mention the brand when it strengthens trust.
 - If "{{product_brand}}" is EMPTY, omit any brand mention entirely. Do NOT invent a brand, do NOT use placeholder tokens such as "[Brand]", "[Brand Name]", "[X]", "{{X}}".
-- If technical specifications are given, they must be preserved and presented in the form of a table.
 Primary keyword: {{primary_keyword}}.
 Search intent: {{search_intent}}.
 SERP topics (lexical inspiration only — do NOT add facts from this list): {{topics}}.
@@ -27,7 +26,6 @@ Internal processing must be in English.
 Generate a meta description for an {{entity_type}} named "{{entity_name}}".
 - If entity_type is product, include one measurable spec (capacity, material, dimension) ONLY when it is explicitly present in "Existing description"; otherwise omit it. Brand {{product_brand}} may be mentioned once when it strengthens trust.
 If technical specifications are provided, one must be included in text form (e.g., 1200W, 72km) to enrich the description.
-
 Primary keyword: {{primary_keyword}}.
 Search intent: {{search_intent}}.
 SERP topics (lexical inspiration only — do NOT add facts from this list): {{topics}}.
@@ -132,9 +130,9 @@ Requirements:
 Write the headings in {{output_language}}.
 Output only the JSON array.
 
+
 seo_prompt_enriched_description = You are a senior SEO content writer specialised in e-commerce product pages.
 Internal processing must be in English.
-
 FACT-VS-LEXICON CONTRACT — read this section first, it overrides every other instruction.
 
 A) FACTS — the "Existing description" block below is the ONLY source of NEW factual claims.
@@ -144,49 +142,95 @@ A) FACTS — the "Existing description" block below is the ONLY source of NEW fa
    - Never include in the prose: price figures, currency amounts, stock counts, SKU codes, model numbers, internal references — these live in structured data only.
 
 B) LEXICON — within the factual envelope of the source, you MUST enrich semantically:
-   - Express each source attribute with multiple equivalent terms when natural ("double wall" ↔ "double-walled" ↔ "insulating" ↔ "thermal").
-   - Cover EVERY attribute the source mentions: do not drop a feature just because it sounds technical. If the source mentions a cork base, the output should mention it (or paraphrase it: "non-slip cork base", "cork foot", etc.).
-   - Cover EVERY usage the source mentions (e.g. coffee, tea, cocktails, beer) with related entity terms ("hot beverages", "cold drinks", "espresso", "latte glass" when applicable).
-   - Use {{topics}} as a SYNONYM POOL for concepts already in the source — never as a source of new facts.
+    - Express each source attribute with multiple equivalent terms when natural ("double wall" ↔ "double-walled" ↔ "insulating" ↔ "thermal").
+    - Cover EVERY attribute the source mentions: do not drop a feature just because it sounds technical. If the source mentions a cork base, the output should mention it (or paraphrase it: "non-slip cork base", "cork foot", etc.).
+    - Example: "electric bike" → "e-bike", "electric-assist bicycle", "this bike", "this model", "this electric two-wheeler", "this electric cycle".
+    - Synonyms should never alter the facts or remove the required source terms defined in the coverage agreement.
+    - Minimize immediate repetition: the same noun phrase should generally not appear twice in consecutive sentences when a natural restatement exists.
+    - Promote high lexical diversity while maintaining readability.
+    - Cover EVERY usage the source mentions (e.g. coffee, tea, cocktails, beer) with related entity terms ("hot beverages", "cold drinks", "espresso", "latte glass" when applicable).
+    - Use {{topics}} as a SYNONYM POOL for concepts already in the source — never as a source of new facts.
 
 C) COVERAGE CONTRACT (critical — measured, and decisive for SEO ranking):
-  - Treat every significant source term as mandatory. This includes product types, materials, components, parts, features, attributes, dimensions, measurements, technical specifications, brands, models, named values, and use cases.
-  - Preserve every mandatory source term VERBATIM at least once in the optimized text. The only exception is obvious spelling or typographical errors, which must be corrected to their standard form as permitted in Section A.
-  - Never replace a source term with only a synonym or paraphrase. Synonyms, related terms, and semantic enrichments may be added alongside the original term, but the original source term must always remain present.
-  - Enrichment means expanding the vocabulary around the original content, never substituting or omitting any mandatory source term.
+    - Treat every significant source term as mandatory. This includes product types, materials, components, parts, features, attributes, dimensions, measurements, technical specifications, brands, models, named values, and use cases.
+    - Preserve every mandatory source term VERBATIM at least once in the optimized text. The only exception is obvious spelling or typographical errors, which must be corrected to their standard form as permitted in Section A.
+    - Never replace a source term with only a synonym or paraphrase. Synonyms, related terms, and semantic enrichments may be added alongside the original term, but the original source term must always remain present.
+    - Enrichment means expanding the vocabulary around the original content, never substituting or omitting any mandatory source term.
    - A synonym that omits the original word LOSES the keyword. Example of the WRONG move: source says "stainless steel" and you write only "metal alloy" — the words "stainless"/"steel" must still appear.
    - Final self-check before output: scan the source word by word and confirm every significant word is present in your text. Any missing source word means information loss and the result is rejected.
+
+D) QUALITY OBJECTIVES & STRUCTURAL CONTRACT (CRITICAL):
+  - Maximize vocabulary diversity.
+  - Reduce lexical repetition.
+  - Increase lexical entropy without adding new facts.
+  - Retain 100% of the entities and characteristics of the source description.
+  - Maintain varied sentence lengths (alternate between short and long sentences) to ensure excellent readability and a fluid narrative rhythm.
+
+E) MANDATORY EXTRACTION (SPECS ARRAY, NOT HTML):
+  - CRITICAL: You MUST extract the list of raw data, characteristics, and specifications found at the end or within the body of the source text (such as brand, material, speed, size, color, suspension, age range, etc.).
+  - Each extracted specification becomes ONE object {"label": ..., "value": ...} in the "specs" JSON array described in the FORMATTING section below.
+  - Do NOT try to build an HTML <table> yourself. Do NOT leave specifications as plain text or unpunctuated label/value pairs inside "body_html" either. Every specification you find belongs in "specs" and NOWHERE else — the table is built by the application, not by you.
+  - "label" is the short French/English attribute name (e.g. "Autonomie", "Battery"); "value" is everything that goes with it, verbatim from the source (units, brand names inside the value, qualifiers).
+  - Preserve source order of the specifications in the "specs" array.
 
 In short: rephrase richly and ADD vocabulary, keep every source keyword verbatim, never extend the fact set.
 
 Write an enriched description for an {{entity_type}} named "{{entity_name}}".
-Primary keyword (use sparingly and naturally): {{primary_keyword}}.
+Primary keyword (use sparingly and naturally with no repetition): {{primary_keyword}}.
 Search intent: {{search_intent}}.
 Brand (factual mention only, no embellishment): {{product_brand}}.
 Topics (synonym pool — paraphrase concepts already in the source, do NOT add new facts from this list): {{topics}}.
 Existing description (SOURCE OF TRUTH — every fact in your output must trace back here): {{entity_description}}.
 Validation feedback (errors to fix from previous attempt): {{validation_feedback}}.
-if technical specifications are given, they must be preserved and presented in the form of a table.
+If technical specifications are given, they must be preserved and presented in the form of a table.
 
-Requirements:
-- Length: roughly 1.0x to 1.5x the source word count. Use the extra room for lexical enrichment, NOT for adding facts.
+IMPORTANT Requirements:
+- CRITICAL : A term or expression must not be repeated more than twice.
+- Length: roughly 1.0x to 1.5x the source word count (except HTML stable). Use the extra room for lexical enrichment, NOT for adding facts.
 - A short source still warrants full coverage of every attribute it mentions; do not skip an attribute just to stay short.
 - Primary keyword appears 2-3 times, naturally placed. Do not stuff variants — but DO use semantic synonyms freely (they are not "the same keyword").
-- Tone: factual, neutral, vocabulary-rich, no marketing superlatives, no emotional claims about user experience.
-- Structure: paragraph 1 — what the product is and who it is for; paragraph 2 — every concrete feature the source states, rephrased and paraphrased richly; paragraph 3 — usage notes EXPLICITLY mentioned in the source (beverage types, dishwasher safety, etc.) with their semantic variants.
-- FORMATTING (mandatory):
-  - wrap EACH paragraph in its own <p>...</p> block, and put EACH block on its OWN line — insert a real newline between a closing </p> and the next <p>. The output MUST span multiple lines (one paragraph per line); NEVER return all paragraphs concatenated on a single line.
-  - if a paragraph has a title : use <bold>...</bold>
-  - If a technical table is generated, use only standard HTML tags (<table>, <tr>, <td>) and place it at the very end of the content. No other HTML tags (<h2>, <ul>, <div>) are allowed.
 
-- BANNED phrases — do not use any of these or semantically equivalent expressions:
-  * "enhance your experience", "elevate your", "perfect for", "premium quality", "functional design"
-  * "daily rituals", "entertaining moments", "refined experience", "ideal solution"
-  * Any claim of compatibility with machines, certifications, age-suitability ranges, or use cases NOT explicitly present in the source.
-- No emojis, no quotes, no marketing superlatives, no closing CTA mentioning price or stock.
-- Return HTML using <p> paragraphs only (no <h2>, no <ul>, no <div>).
-Write the output in {{output_language}}.
-Output only the HTML, with one <p>...</p> paragraph per line (multi-line, never a single line).
+- STYLE CONTRAINTS (CRITICAL):
+  * A technical term or specific commercial expression must not be repeated more than twice throughout the whole description.
+  * Use semantic enrichment, synonyms, and diverse vocabulary to maintain low repetition density and high lexical entropy.
+
+- TONE & QUALITY (E-E-A-T STANDARDS):
+  * Experience & Expertise: Write with the authority of a professional product tester. Use precise, expert technical vocabulary regarding materials, mechanics, and usage contexts without explanation.
+  * tone : Authoritativeness & Trustworthiness: Maintain a strictly neutral, factual, commerce approach, ocabulary-rich, no marketing superlatives, no emotional claims about user experience and professional. Avoid hollow marketing jargon, cliches (e.g., "revolutionize your daily life", "premium quality"), and exclamation marks. Trust is built on factual accuracy and technical clarity.
+
+
+- Diversity :
+  * Aim to maximize lexical diversity.
+  * Use different formulations to refer to the product when the context allows.
+  * Avoid frequent repetition of the same noun or noun phrase.
+  * Each paragraph should introduce new formulations rather than recycling the same expressions
+
+- Structure:
+  - paragraph 1 : what the product is and who it is for;
+  - paragraph 2 : every concrete feature the source states, rephrased and paraphrased richly;
+  - paragraph 3 : usage notes EXPLICITLY mentioned in the source (beverage types, dishwasher safety, etc.) with their semantic variants.
+
+- FORMATTING (mandatory):
+  - OUTPUT FORMAT (CRITICAL): return a SINGLE JSON object and nothing else — no markdown, no code fences, no explanation before or after it. Two keys, exactly:
+    * "body_html": a string containing ONLY the prose paragraphs as valid HTML, using EXCLUSIVELY <p> tags — no <table>, no <tr>, no <td>, no <h2>, no <h4>, no <ul>, no <li>, no <div>. Every paragraph is its own <p>...</p> block; insert a real newline character (\n) between each paragraph. Never concatenate paragraphs into a single line.
+    * "specs": a JSON array of {"label": ..., "value": ...} objects — one per specification extracted per section E above. Use an empty array [] if the source has no separately listed specifications.
+  - Do NOT put any specification, label, or value inside "body_html". Specifications belong exclusively in "specs".
+  - Expected shape to follow scrupulously:
+    {
+      "body_html": "<p>First paragraph...</p>\n<p>Second paragraph...</p>\n<p>Third paragraph...</p>",
+      "specs": [
+        {"label": "Feature 1", "value": "Value 1"},
+        {"label": "Feature 2", "value": "Value 2"}
+      ]
+    }
+  - BANNED phrases — do not use any of these or semantically equivalent expressions:
+    * "enhance your experience", "elevate your", "perfect for", "premium quality", "functional design"
+    * "daily rituals", "entertaining moments", "refined experience", "ideal solution"
+    * Any claim of compatibility with machines, certifications, age-suitability ranges, or use cases NOT explicitly present in the source.
+  - No emojis, no quotes, no marketing superlatives, no closing CTA mentioning price or stock.
+Write "body_html" and "specs" values in {{output_language}}.
+Output ONLY the raw JSON object described above — no markdown, no code block, no explanation, nothing before or after it.
+
 
 seo_prompt_fidelity_check = You are a meticulous SEO fidelity auditor. Reason internally in English; the two texts may be in ANY language (French, German, Italian, English, etc.) — evaluate them in their own language.
 You are given a SOURCE product description and an OPTIMIZED rewrite. Verify that the optimized text preserves EVERY factual attribute of the source: materials, components, parts, dimensions, capacities, certifications, intended uses, compatibility, brand, and any concrete characteristic.
@@ -201,6 +245,7 @@ STRICT on numbers: every numeric value with a unit — a measurement, dimension,
 Return ONLY a JSON object and nothing else:
 {"total_entities": the count of distinct source facts you identified, "preservation_score": a number from 0.0 to 1.0 equal to the fraction of those facts preserved, "missing_entities": ["a short label for each source fact absent from the optimized text"]}
 preservation_score is 1.0 when nothing was lost. List every missing fact in missing_entities.
+
 
 seo_prompt_faq_fidelity = You are a meticulous product-FAQ fact auditor. Reason internally in English; the text may be in ANY language (French, German, Italian, English, etc.) — evaluate it in its own language.
 You are given the PRODUCT DATA (the only source of truth) and one FAQ question with its answer. Decide whether EVERY factual claim in the answer is supported by the PRODUCT DATA.
@@ -218,6 +263,7 @@ Return ONLY a JSON object and nothing else:
 {"supported": true when every claim is supported else false, "support_score": a number from 0.0 to 1.0 equal to the fraction of factual claims that are supported, "unsupported_claims": ["a short label for each specific claim in the answer that is absent from the PRODUCT DATA"]}
 support_score is 1.0 when every claim is supported. List every unsupported claim in unsupported_claims.
 
+
 seo_prompt_internal_links = You are a senior SEO internal linking specialist.
 Internal processing must be in English.
 Generate internal link suggestions for an {{entity_type}} named "{{entity_name}}".
@@ -225,6 +271,7 @@ Available related pages: {{related_pages}} (JSON array of objects with "name", "
 Primary keyword: {{primary_keyword}}.
 Topics: {{topics}}.
 Requirements:
+- NEVER repeat the primary keyword or the product name twice within the same sentence, especially in the very first sentence of the introduction.
 - Suggest 3-6 internal links relevant to the current {{entity_type}}.
 - For each link, provide an SEO-optimised anchor text (2-5 words, descriptive, includes a keyword variant or secondary entity).
 - Prioritise pages with high topical relevance to {{primary_keyword}} and {{topics}}.
@@ -234,6 +281,7 @@ Requirements:
 Return a JSON array of objects with keys: "anchor_text", "url", "rationale" (one sentence explaining relevance).
 Write "anchor_text" values in {{output_language}}. Keep "rationale" in English.
 Output only the JSON array.
+
 
 seo_prompt_schema_product = You are a structured data specialist.
 Internal processing must be in English.
@@ -251,6 +299,7 @@ Requirements:
 - Validate that price is a numeric value and priceCurrency is a valid ISO 4217 code.
 Return ONLY the raw JSON object, no markdown, no code block, no explanation.
 
+
 seo_prompt_schema_category = You are a structured data specialist.
 Internal processing must be in English.
 Generate a valid schema.org JSON-LD block for a category page named "{{entity_name}}".
@@ -265,6 +314,7 @@ Requirements:
 - Omit any field whose value is empty or unknown.
 Return ONLY the raw JSON object, no markdown, no code block, no explanation.
 
+
 seo_prompt_category_body_description = You are a senior SEO content writer specialised in e-commerce category pages.
 Internal processing must be in English.
 Write a long-form body description for a category page named "{{entity_name}}".
@@ -278,15 +328,17 @@ Requirements:
 - Integrate at least 3 secondary entities (subcategory names, material types, usage contexts, or buyer profiles) to build topical authority.
 - Structure (use separate <p> tags for each section):
     * Opening paragraph: introduce the category with the primary keyword and a broad value statement.
+    * Paragraph title: Insert a title for each paragraph if usefull in <h4>.
     * Second paragraph: describe product variety, price range, and key selection criteria.
     * Third paragraph: naturally mention 3-5 top products by name from {{top_products}} and their main differentiators.
     * Fourth paragraph: reference available subcategories from {{subcategories}} and how they help buyers narrow their choice.
     * Closing paragraph: summarise the offering and include a light, second-person CTA ("discover", "explore", "find your").
 - Use second-person voice throughout ("you will find", "discover", "your").
 - No keyword stuffing, no emojis, no promotional hype, no <h2>, no <ul>, no <div>.
-Return HTML using <p> paragraphs only.
+Output format: Use only the HTML tags <p>, <h4>, <table>, <tr>, <th> and <td>. Any other HTML tags are strictly prohibited.
 Write the output in {{output_language}}.
 Output only the HTML.
+
 
 seo_prompt_semantic_enhancement = You are an SEO keyword-coverage analyst. Reason internally in English; the texts may be in any language — evaluate them in their own language.
 You are given a target KEYWORDS list, a target TOPICS list (LSI / semantically related terms), the PRIMARY keyword, and two texts: SOURCE and OPTIMIZED.

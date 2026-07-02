@@ -60,8 +60,10 @@ class DeleteConfirm implements HooksInterface
         
         // Delete FAQ embeddings
         $deletedFaqEmbeddings = $this->app->db->delete('products_description_faq_embedding', ['entity_id' => (int)$this->Id]);
-        
-        if ($deletedFaq || $deletedFaqEmbeddings) {
+        $seo_original_snapshot = $this->app->db->delete('seo_original_snapshot', ['entity_id' => (int)$this->Id]);
+        $seo_seo_quality_benchmark_log = $this->app->db->delete('clic_seo_quality_benchmark_log', ['entity_id' => (int)$this->Id]);
+
+        if ($deletedFaq || $deletedFaqEmbeddings || $seo_original_snapshot || $seo_seo_quality_benchmark_log) {
           error_log("Products/DeleteConfirm: Deleted FAQ and embeddings for product {$this->Id}");
         }
       } catch (\Exception $e) {
