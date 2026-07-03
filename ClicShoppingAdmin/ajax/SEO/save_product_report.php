@@ -27,7 +27,7 @@
 
   header('Content-Type: application/json; charset=utf-8');
   AdministratorAdmin::hasUserAccess();
-  
+
   if (!Gpt::checkGptStatus()) {
     echo json_encode(['success' => false, 'error' => 'ChatGPT is not enabled.']);
     exit;
@@ -43,6 +43,8 @@
   $baseUrl    = HTTP::getShopUrlDomain();
   $repository = new SeoEmbedding('products_seo_embedding');
 
+  // Walk every enabled language: a single click on "Run initial analysis" must produce one initial_report row per locale, mirroring the
+  // SeoEmbedding::process() itself decides whether the row is an initial_report or an optimized_report depending on whether that locale already has history.
   try {
     $languages = Registry::get('Language')->getAll();
   } catch (\Throwable $e) {

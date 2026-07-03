@@ -53,7 +53,7 @@ class SeoCronStrategy
       }
     }
 
-    // ── B. Modified since last analysis ─────────────────────────────────
+    // B. Modified since last analysis
     foreach ($this->fetchModifiedSinceLastAnalysis($limit) as $pid) {
       if (isset($picked[$pid])) {
         continue;
@@ -64,7 +64,7 @@ class SeoCronStrategy
       }
     }
 
-    // ── C. Recent benchmark regressions (critical=1 last 7 days) ────────
+    // C. Recent benchmark regressions (critical=1 last 7 days) ─
     foreach ($this->fetchRecentRegressions($limit) as $pid) {
       if (isset($picked[$pid])) {
         continue;
@@ -105,7 +105,7 @@ class SeoCronStrategy
         ORDER BY p.products_date_added DESC
         LIMIT :lim
       ');
-      $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
+      $stmt->bindInt(':lim', $limit);
       $stmt->execute();
       return array_map(fn($r) => (int)$r['products_id'], $stmt->fetchAll() ?: []);
     } catch (\Throwable $e) {
@@ -137,7 +137,7 @@ class SeoCronStrategy
         ORDER BY p.products_last_modified DESC
         LIMIT :lim
       ');
-      $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
+      $stmt->bindInt(':lim', $limit);
       $stmt->execute();
       return array_map(fn($r) => (int)$r['products_id'], $stmt->fetchAll() ?: []);
     } catch (\Throwable $e) {
@@ -164,7 +164,7 @@ class SeoCronStrategy
         ORDER BY date_modified DESC
         LIMIT :lim
       ');
-      $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
+      $stmt->bindInt(':lim', $limit);
       $stmt->execute();
       return array_map(fn($r) => (int)$r['products_id'], $stmt->fetchAll() ?: []);
     } catch (\Throwable $e) {

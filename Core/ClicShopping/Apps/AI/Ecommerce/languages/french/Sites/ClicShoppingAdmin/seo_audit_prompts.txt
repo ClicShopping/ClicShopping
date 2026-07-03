@@ -11,6 +11,9 @@ Rédigez un résumé d'audit détaillé en 2-3 paragraphes couvrant :
 (3) Améliorations structurelles — les titres H2/H3, les ancres de liens internes ou les données structurées ont-ils été enrichis ?
 (4) Delta de qualité global — justification de l'évolution du score, lacunes restantes et risque de sur-optimisation.
 Concentrez-vous sur des observations factuelles et mesurables. Évitez les généralités.
+Métriques objectives de préservation pour cette optimisation : preservation_score vaut {{preservation_score}} (1.0 vaut aucun fait source perdu), faits manquants : {{missing_entities}}, delta de qualité composite vaut {{composite_delta}}.
+Vous DEVEZ signaler ce qui a été supprimé ou affaibli, pas seulement ce qui a été ajouté. Si preservation_score est inférieur à 0,95 ou si des faits manquants sont listés, indiquez clairement que l'optimisation a PERDU des informations et ne doit pas être décrite comme un succès sans réserve.
+La couverture des mots-clés sémantiques/LSI a régressé par rapport à la source : {{semantic_regressed}}. Lorsque cette valeur est « yes », indiquez que le texte optimisé couvre moins de mots-clés cibles ou de termes liés (LSI) que la source et recommandez de les réintégrer — ceci est indicatif, l'optimisation est tout de même appliquée.
 Retournez uniquement le texte du résumé.
 
 seo_audit_improvements_prompt = Vous êtes un auditeur SEO senior.
@@ -25,6 +28,9 @@ Identifiez 3-6 améliorations spécifiques et mesurables. Pour chacune, précise
 - Pourquoi cela est important pour la performance SEO
 - Si cela comble une lacune précédemment identifiée
 N'énumérez pas de déclarations génériques comme « le contenu a été amélioré ». Soyez précis et technique.
+Métriques objectives de préservation pour cette optimisation : preservation_score vaut {{preservation_score}} (1.0 vaut aucun fait source perdu), faits manquants : {{missing_entities}}, delta de qualité composite vaut {{composite_delta}}.
+Vous DEVEZ signaler ce qui a été supprimé ou affaibli, pas seulement ce qui a été ajouté. Si preservation_score est inférieur à 0,95 ou si des faits manquants sont listés, indiquez clairement que l'optimisation a PERDU des informations et ne doit pas être décrite comme un succès sans réserve.
+La couverture des mots-clés sémantiques/LSI a régressé par rapport à la source : {{semantic_regressed}}. Lorsque cette valeur est « yes », indiquez que le texte optimisé couvre moins de mots-clés cibles ou de termes liés (LSI) que la source et recommandez de les réintégrer — ceci est indicatif, l'optimisation est tout de même appliquée.
 Retournez un tableau JSON de chaînes d'amélioration.
 Retournez uniquement du JSON.
 
@@ -39,6 +45,9 @@ Pour chaque recommandation :
 - Soyez spécifique et actionnable (évitez « améliorer la qualité du contenu » — dites plutôt « ajoutez 2-3 liens internes vers des pages de sous-catégories liées en utilisant des textes d'ancre riches en mots-clés »).
 - Priorisez selon l'impact SEO attendu (élevé, moyen, faible).
 - Adressez les lacunes dans : densité/distribution des mots-clés, maillage interne, couverture sémantique, complétude des données structurées, hiérarchie des titres (H2/H3) ou autorité thématique.
+Métriques objectives de préservation pour cette optimisation : preservation_score vaut {{preservation_score}} (1.0 vaut aucun fait source perdu), faits manquants : {{missing_entities}}, delta de qualité composite vaut {{composite_delta}}.
+Vous DEVEZ signaler ce qui a été supprimé ou affaibli, pas seulement ce qui a été ajouté. Si preservation_score est inférieur à 0,95 ou si des faits manquants sont listés, indiquez clairement que l'optimisation a PERDU des informations et ne doit pas être décrite comme un succès sans réserve.
+La couverture des mots-clés sémantiques/LSI a régressé par rapport à la source : {{semantic_regressed}}. Lorsque cette valeur est « yes », indiquez que le texte optimisé couvre moins de mots-clés cibles ou de termes liés (LSI) que la source et recommandez de les réintégrer — ceci est indicatif, l'optimisation est tout de même appliquée.
 Retournez un tableau JSON de chaînes de recommandations, classées du plus grand au plus faible impact attendu.
 Retournez uniquement du JSON.
 

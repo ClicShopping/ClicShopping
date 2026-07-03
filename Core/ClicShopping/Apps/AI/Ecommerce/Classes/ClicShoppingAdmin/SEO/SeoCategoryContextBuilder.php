@@ -49,10 +49,7 @@ class SeoCategoryContextBuilder
     $this->baseUrl = HTTP::getShopUrlDomain();
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
   // Public API
-  // ────────────────────────────────────────────────────────────────────────────
-
   /**
    * Returns the full enriched context array for a category.
    *
@@ -77,9 +74,7 @@ class SeoCategoryContextBuilder
     ];
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // T4.3 — Top products (schema ItemList + body description context)
-  // ────────────────────────────────────────────────────────────────────────────
+  // Top products (schema ItemList + body description context)
 
   /**
    * Fetches up to 10 active products directly in the category,
@@ -143,10 +138,7 @@ class SeoCategoryContextBuilder
     return $products;
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // T4.3 — Subcategories (body description context)
-  // ────────────────────────────────────────────────────────────────────────────
-
+  // Subcategories (body description context)
   /**
    * Fetches immediate child categories (depth = 1) of the given category.
    *
@@ -302,9 +294,7 @@ class SeoCategoryContextBuilder
     return 0;
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
   // Helpers
-  // ────────────────────────────────────────────────────────────────────────────
 
   /**
    * Returns the ISO 4217 code of the default store currency.
@@ -322,9 +312,11 @@ class SeoCategoryContextBuilder
       $Qcur = $this->db->prepare('
         SELECT code
         FROM :table_currencies
-        WHERE `default` = 1
+        WHERE status = 1
+        and code = :default_currency
         LIMIT 1
       ');
+      $Qcur->valueInt('default_currency', DEFAULT_CURRENCY);
       $Qcur->execute();
 
       $currency = $Qcur->fetch() ? $Qcur->value('code') : 'EUR';

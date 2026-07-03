@@ -1,0 +1,19 @@
+id INT(11) not_null auto_increment comment(Primary key - unique identifier for each recorded action)
+entity_type VARCHAR(50) default null comment(Type of entity the action applies to: product, category)
+entity_id INT(11) not_null comment(Foreign key - ID of the entity the action applies to)
+language_id INT(11) not_null default 0 comment(Language context (0 = every language, e.g. revert restores all languages))
+action VARCHAR(30) not_null comment(Manual action performed: accepted, rejected, reverted, optimized)
+admin_id INT(11) not_null default 0 comment(Administrator id who performed the action)
+admin_name VARCHAR(190) default null comment(Administrator username, kept for display/traceability)
+metadata LONGTEXT default null comment(JSON context of the action: mode, scores, etc.)
+date_added DATETIME default null comment(Timestamp when the action occurred)
+
+--
+primary id
+idx_entity entity_type entity_id
+idx_date date_added
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

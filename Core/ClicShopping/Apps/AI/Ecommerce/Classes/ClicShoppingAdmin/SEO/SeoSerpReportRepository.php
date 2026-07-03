@@ -33,25 +33,13 @@
     /**
      * Insert a new SEO/SERP report into the database.
      *
-     * @param array $report {
-     * The report data structure.
-     * @var string $entity_type      The type of entity (e.g., 'product', 'category')
-     * @var int    $entity_id        The unique identifier of the entity
-     * @var int    $language_id      The language ID for the report
-     * @var string $url              The analyzed URL
-     * @var string $serp_source      Source of the SERP data (e.g., 'Google', 'Bing')
-     * @var string $serp_query       The search query used for analysis
-     * @var array  $serp_data        Raw SERP results data
-     * @var array  $seo_before       SEO metadata state before AI optimization
-     * @var array  $seo_after        SEO metadata state after AI optimization
-     * @var array  $proposed_changes List of optimizations suggested by the AI
-     * @var array  $audit_result     Detailed audit metrics and findings
-     * @var string $summary          Brief text summary of the SEO analysis
-     * @var int    $seo_score_before SEO score before optimization (0-100)
-     * @var int    $seo_score_after  SEO score after optimization (0-100)
-     * @var string $status           Report status (e.g., 'processed', 'error')
-     * @var string $triggered_by     Trigger source (e.g., 'manual', 'api', 'webhook')
-     * }
+     * Accepted keys in $report: entity_type (string), entity_id (int), language_id (int),
+     * url (string), serp_source (string), serp_query (string), serp_data (array),
+     * seo_before (array), seo_after (array), proposed_changes (array), audit_result (array),
+     * summary (string), seo_score_before (int), seo_score_after (int),
+     * status (string), triggered_by (string), pipeline_metrics (array).
+     *
+     * @param array<string, mixed> $report The report data structure.
      * @return int The ID of the newly inserted report.
      */
     public function insert(array $report): int
@@ -81,6 +69,53 @@
       $this->db->save('seo_serp_reports', $data);
 
       return (int)$this->db->lastInsertId();
+    }
+
+    /**
+     * Set `status` on the most recent report row per language for the entity.
+     * Used by Accept ('accepted') and Reject ('rejected'). Returns rows updated.
+     */
+    public function markLatestStatus(string $entityType, int $entityId, string $status): int
+    {
+      $Q = $this->db->prepare(
+        'SELECT MAX(id) AS id FROM :table_seo_serp_reports
+         WHERE entity_type = :entity_type AND entity_id = :entity_id
+         GROUP BY language_id'
+      );
+      $Q->bindValue(':entity_type', $entityType);
+      $Q->bindInt(':entity_id', $entityId);
+      $Q->execute();
+      $rows = $Q->fetchAll() ?: [];
+
+      $updated = 0;
+      foreach ($rows as $row) {
+        $id = (int)($row['id'] ?? 0);
+        if ($id <= 0) {
+          continue;
+        }
+        $U = $this->db->prepare(
+          'UPDATE :table_seo_serp_reports SET status = :status, updated_at = NOW() WHERE id = :id'
+        );
+        $U->bindValue(':status', $status);
+        $U->bindInt(':id', $id);
+        $U->execute();
+        $updated++;
+      }
+
+      return $updated;
+    }
+
+    /** Delete every report row for the entity (all languages). Returns rows deleted. */
+    public function deleteForEntity(string $entityType, int $entityId): int
+    {
+      $stmt = $this->db->prepare(
+        'DELETE FROM :table_seo_serp_reports WHERE entity_type = :entity_type AND entity_id = :entity_id'
+      );
+      $stmt->bindValue(':entity_type', $entityType);
+      $stmt->bindInt(':entity_id', $entityId);
+      $stmt->execute();
+
+      return (int)$stmt->rowCount();
     }
 
     /**

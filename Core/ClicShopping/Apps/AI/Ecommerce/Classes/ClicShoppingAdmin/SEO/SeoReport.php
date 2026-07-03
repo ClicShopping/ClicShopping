@@ -217,6 +217,8 @@
       foreach ($imgs as $i) if (!empty(trim($i->getAttribute('alt')))) $alts++;
       $report['images'] = ['totImgs' => $imgs->length, 'totAlts' => $alts, 'diff' => $imgs->length - $alts];
 
+      $report['internal_links'] = self::countInternalLinks($grabbedHTML, (string)parse_url($this->linkUrl, PHP_URL_HOST));
+
       $report['googleanalytics'] = (str_contains($grabbedHTML, 'gtag(') || str_contains($grabbedHTML, 'google-analytics.com'));
       $report['pageloadtime']    = $this->getPageLoadTime();
       $report['flashtest']       = ($xpath->query('//embed|//object')->length > 0);
@@ -396,6 +398,40 @@
 
     private function getPageLoadTime(): float {
       return ($this->start && $this->end) ? round($this->end - $this->start, 3) : 0.0;
+    }
+
+    /**
+     * Count internal links: <a href> that are root-relative or point at $shopHost.
+     * Excludes external hosts, pure anchors (#...), mailto:/tel:, and javascript:.
+     */
+    public static function countInternalLinks(string $html, string $shopHost): int
+    {
+      if ($html === '') {
+        return 0;
+      }
+      if (!preg_match_all('/<a\b[^>]*\bhref\s*=\s*["\']([^"\']+)["\']/i', $html, $m)) {
+        return 0;
+      }
+      $host = strtolower($shopHost);
+      $count = 0;
+      foreach ($m[1] as $href) {
+        $href = trim($href);
+        if ($href === '' || $href[0] === '#'
+          || stripos($href, 'mailto:') === 0
+          || stripos($href, 'tel:') === 0
+          || stripos($href, 'javascript:') === 0) {
+          continue;
+        }
+        if ($href[0] === '/') {            // root-relative → internal
+          $count++;
+          continue;
+        }
+        $h = strtolower((string)parse_url($href, PHP_URL_HOST));
+        if ($h !== '' && ($h === $host || str_ends_with($h, '.' . $host))) {
+          $count++;
+        }
+      }
+      return $count;
     }
 
     public function calculateSeoScore(array $report): int

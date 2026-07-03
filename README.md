@@ -125,6 +125,7 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
   - Generative artificial Intelligence Automated review tagging
   - Generative artificial Intelligence product automation
   - Generative artificial Intelligence Web Search
+  - WebMCP - GEO integrated
 - Real time safety stock predictive (AI)
 - Server MCP (model context Protocol) for ecommerce agentic approach
   - Chat Rab - BI - WebSearch Connexion

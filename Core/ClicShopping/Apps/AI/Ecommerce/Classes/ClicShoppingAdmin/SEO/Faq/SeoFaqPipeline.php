@@ -33,11 +33,19 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\Transl
  *   2. Asks SeoOptimizationAgent::generateFaqForVars() to draft a FAQ in
  *      English from that context (no SERP, no re-crawl — the FAQ relies on
  *      first-party facts, not search results).
- *   3. Validates the draft with Core/ClicShopping/AI/Security/Validation/
- *      AnswerGroundingVerifier: each Q/A pair is concatenated and the
- *      verifier's `decision` (ACCEPT / FLAG / REJECT) drives whether we
- *      persist or retry.  Up to two retries; on persistent REJECT we keep
- *      no FAQ rather than persist a hallucinated one.
+ *   3. Screens every Q/A pair through TWO complementary gates and keeps only
+ *      the pairs that clear BOTH:
+ *        (a) Core/ClicShopping/AI/Security/Validation/AnswerGroundingVerifier
+ *            (cosine) — a TOPICAL check: is the answer on-subject for the
+ *            product? Catches off-topic drift.
+ *        (b) SeoFaqFactChecker (Pure LLM Mode) — a PRECISION check: is every
+ *            concrete claim in the answer entailed by the product data? Catches
+ *            plausible-yet-fabricated facts (invented warranty / dimensions /
+ *            variants) that cosine lets through because they share the product
+ *            vocabulary. Fail-open if the auditor is offline (cosine remains).
+ *      Ungrounded/unsupported pairs are dropped; the named claims are fed back
+ *      into the next attempt. Up to two retries; if fewer than
+ *      MIN_GROUNDED_FAQ_ITEMS survive we keep no FAQ rather than a hallucinated one.
  *   4. Persists the accepted EN FAQ via FaqRepository::saveFaq().
  *   5. Propagates to every other enabled language by translating each Q/A
  *      pair via TranslationServiceWrapper, then re-runs grounding on the
@@ -258,6 +266,16 @@ class SeoFaqPipeline
     $contextDocs     = $this->contextToSourceDocuments($context);
     $embeddedSources = $this->embedSourceDocuments($contextDocs);
 
+    // Plain-text source of truth for the LLM precision gate (see below). Cosine
+    // grounding scores TOPICAL overlap and cannot tell a fabricated-yet-plausible
+    // fact (an invented warranty/dimension) from a real one; the fact checker
+    // reads the same product data and drops any answer with an unsupported claim.
+    $sourceText  = trim(implode("\n", array_map(
+      static fn(array $d): string => (string)($d['content'] ?? ''),
+      $contextDocs
+    )));
+    $factChecker = new SeoFaqFactChecker($langCode, $this->debug);
+
     $lastGrounding = [];
     for ($attempt = 0; $attempt <= self::MAX_RETRIES; $attempt++) {
       $faqCandidate = $agent->generateFaqForVars($vars, $langCode);
@@ -285,12 +303,27 @@ class SeoFaqPipeline
         $itemGrounding = $this->grounder->verifyGrounding(trim($q . ' ' . $a), $embeddedSources);
         $confidence    = (float)($itemGrounding['confidence'] ?? 0);
 
-        if ($confidence >= self::GROUNDING_THRESHOLD) {
-          $groundedItems[] = $item;
-          $keptScores[]    = $confidence;
-        } else {
-          $flagged[] = ['sentence' => trim($q . ' ' . $a), 'score' => $confidence, 'reason' => 'Low grounding score'];
+        if ($confidence < self::GROUNDING_THRESHOLD) {
+          $flagged[] = ['sentence' => trim($q . ' ' . $a), 'score' => $confidence, 'reason' => 'Low grounding score (off-topic)'];
+          continue;
         }
+
+        // Second gate — LLM precision audit. The cosine score above only proves
+        // the answer is on-topic; this proves every concrete claim in it is
+        // actually entailed by the product data. A fabricated warranty/dimension
+        // passes cosine (shared vocabulary) but is rejected here.
+        $factAudit = $factChecker->verify($sourceText, $q, $a);
+        if (!$factAudit['supported']) {
+          $flagged[] = [
+            'sentence' => trim($q . ' ' . $a),
+            'score'    => (float)$factAudit['support_score'],
+            'reason'   => 'Unsupported factual claim(s): ' . implode('; ', $factAudit['unsupported_claims']),
+          ];
+          continue;
+        }
+
+        $groundedItems[] = $item;
+        $keptScores[]    = $confidence;
       }
 
       $keptCount = count($groundedItems);
@@ -627,6 +660,7 @@ class SeoFaqPipeline
       'competitor_titles'   => '',
       'competitor_snippets' => '',
       'product_brand'       => $context['manufacturer_name']  ?? '',
+      'product_category'    => $context['category_name']      ?? '',
       'product_model'       => $context['model']              ?? '',
       'product_price'       => $context['price']              ?? '',
       'product_currency'    => $context['currency']           ?? 'EUR',
@@ -672,11 +706,20 @@ class SeoFaqPipeline
     if (empty($flagged)) {
       return 'Previous attempt failed grounding: stay strictly within the provided product description and attributes.';
     }
-    $msg = 'Previous attempt failed grounding (confidence ' . round((float)($grounding['confidence'] ?? 0), 2) . '). Avoid these unsupported statements: ';
+
+    $msg = 'Previous attempt produced answers not supported by the product data. Do NOT restate these unsupported claims: ';
     $samples = [];
+    
     foreach (array_slice($flagged, 0, 3) as $f) {
-      $samples[] = '"' . trim((string)($f['sentence'] ?? '')) . '"';
+      $sentence = trim((string)($f['sentence'] ?? ''));
+      $reason   = trim((string)($f['reason'] ?? ''));
+      // Surface the specific unsupported claim the auditor named, not just the Q/A,
+      // so the next generation can drop the exact fabricated fact.
+      $samples[] = $reason !== ''
+        ? '"' . $sentence . '" (' . $reason . ')'
+        : '"' . $sentence . '"';
     }
+
     return $msg . implode('; ', $samples);
   }
 

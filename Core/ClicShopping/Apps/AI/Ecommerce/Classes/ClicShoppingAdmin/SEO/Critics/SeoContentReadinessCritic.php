@@ -39,11 +39,19 @@ use ClicShopping\AI\Security\SecurityLogger;
  * Together they satisfy the ActorCriticCoordinator's requirement of ≥ 2 critics
  * covering the "seo_proposal" output type.
  */
+
 class SeoContentReadinessCritic implements CriticAgentInterface
 {
+  /** @var string Unique identifier for this critic instance. */
   private string $criticId;
+
+  /** @var bool Flag to toggle verbose debugging features. */
   private bool $debug;
+
+  /** @var SecurityLogger Instance utilized to record system tracking and safety exceptions. */
   private SecurityLogger $securityLogger;
+
+  /** @var array Audit trail storing structured historical output data of performed evaluations. */
   private array $evaluationHistory = [];
 
   /**
@@ -58,13 +66,19 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     '/\{[a-z_]+\}/',   // single-brace template variables
   ];
 
+  /**
+   * SeoContentReadinessCritic constructor.
+   *
+   * @param bool $debug Enables debugging mode if set to true.
+   * @param CriticRegistry|null $registry Optional registry instance to auto-enroll this critic.
+   */
   public function __construct(
     bool $debug = false,
     ?CriticRegistry $registry = null
   )
   {
-    $this->criticId    = 'seo_content_readiness_critic_' . uniqid();
-    $this->debug       = $debug;
+    $this->criticId       = 'seo_content_readiness_critic_' . uniqid();
+    $this->debug          = $debug;
     $this->securityLogger = new SecurityLogger();
 
     if ($registry !== null) {
@@ -72,10 +86,15 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     }
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
   // CriticAgentInterface
-  // ──────────────────────────────────────────────────────────────────────────
 
+  /**
+   * Performs a pre-flight risk evaluation to guess the likelihood of a successful run 
+   * based purely on the inputs available in the initial Action payload.
+   *
+   * @param Action $action The action payload payload containing target parameters.
+   * @return Prediction The calculated readiness assurance profile and associated risks.
+   */
   public function predictOutcome(Action $action): Prediction
   {
     $params = $action->getParameters();
@@ -104,6 +123,11 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     );
   }
 
+  /**
+   * Retrieves the standard weighted baseline matrix used to grade SEO evaluations.
+   *
+   * @return array<string, EvaluationCriteria> Keyed array defining the targeted SEO constraints.
+   */
   public function getEvaluationCriteria(): array
   {
     return [
@@ -118,6 +142,12 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     ];
   }
 
+  /**
+   * Transforms raw Evaluation output into an actionable, categorized feedback object.
+   *
+   * @param ActionResult $result The production result containing metrics to interpret.
+   * @return Feedback Detailed breakdown of critical vulnerabilities and strong aspects.
+   */
   public function provideFeedback(ActionResult $result): Feedback
   {
     $evaluation = $this->evaluateAction($result);
@@ -147,6 +177,17 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     );
   }
 
+  /**
+   * Evaluates the absolute readiness of the action's final payload.
+   *
+   * @note Fault-tolerant: This critic must NEVER throw an unhandled exception. 
+   * If a structural error breaks parsing, it defaults cleanly to a minimal score 
+   * to guarantee the orchestration layer preserves the 2-critic minimum requirements 
+   * (§V "marge critic SEO = zéro") instead of defaulting to complete failure.
+   *
+   * @param ActionResult $result The executed result content to scan.
+   * @return Evaluation Complete scoring matrices along with strengths/improvements notes.
+   */
   public function evaluateAction(ActionResult $result): Evaluation
   {
     $output  = $result->getOutput();
@@ -158,11 +199,23 @@ class SeoContentReadinessCritic implements CriticAgentInterface
       ['critic_id' => $this->criticId, 'output_type' => $outputType]
     );
 
-    $checks   = $this->runChecks($output);
-    $scores   = $this->buildScores($checks);
-    $feedback = $this->buildFeedback($checks);
-    $strengths    = $this->buildStrengths($checks);
-    $improvements = $this->buildImprovements($checks);
+    try {
+      $checks   = $this->runChecks($output);
+      $scores   = $this->buildScores($checks);
+      $feedback = $this->buildFeedback($checks);
+      $strengths    = $this->buildStrengths($checks);
+      $improvements = $this->buildImprovements($checks);
+    } catch (\Throwable $e) {
+      $this->securityLogger->logSecurityEvent(
+        'SeoContentReadinessCritic evaluation error (fault-tolerant low score)',
+        'warning',
+        ['critic_id' => $this->criticId, 'error' => $e->getMessage()]
+      );
+      $scores = ['accuracy' => 0.2, 'completeness' => 0.2, 'efficiency' => 0.2, 'clarity' => 0.2];
+      $feedback = 'Content-readiness evaluation could not complete on this proposal.';
+      $strengths = [];
+      $improvements = ['Regenerate the SEO content: the proposal could not be parsed for readiness checks.'];
+    }
 
     $evaluation = new Evaluation(
       $this->criticId,
@@ -183,18 +236,25 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     return $evaluation;
   }
 
+  /**
+   * Returns the identification string assigned to this critic.
+   *
+   * @return string Unique critic UUID.
+   */
   public function getCriticId(): string
   {
     return $this->criticId;
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // Internal helpers
-  // ──────────────────────────────────────────────────────────────────────────
+  // Internal Structural Helpers
 
   /**
-   * Run all rule-based checks on the proposal output.
-   * Returns a keyed array of check results: ['passed' => bool, 'message' => string].
+   * Runs all specific rule-based structural checks on the raw content payload.
+   * Verifies required attributes, minimum length constraints, FAQs, schema arrays,
+   * and blocks any residual developer placeholders.
+   *
+   * @param mixed $output Expected to be an associative array containing the SEO results.
+   * @return array<string, array{passed: bool, message: string}> Normalized test outcome maps.
    */
   private function runChecks(mixed $output): array
   {
@@ -217,7 +277,7 @@ class SeoContentReadinessCritic implements CriticAgentInterface
       ];
     }
 
-    // ── Description minimum length ────────────────────────────────────────
+    // Description minimum length
     $descWords = str_word_count(strip_tags((string)($output['description'] ?? '')));
     $checks['description_length'] = [
       'passed'  => $descWords >= 50,
@@ -226,7 +286,7 @@ class SeoContentReadinessCritic implements CriticAgentInterface
         : "Description too short: {$descWords} words (minimum 50).",
     ];
 
-    // ── H2 headings ───────────────────────────────────────────────────────
+    // H2 headings
     $h2 = $output['h2'] ?? [];
     $h2Valid = is_array($h2) && count($h2) > 0;
     if ($h2Valid) {
@@ -242,7 +302,7 @@ class SeoContentReadinessCritic implements CriticAgentInterface
         : 'H2 headings array is empty or contains no valid text entries.',
     ];
 
-    // ── FAQ ───────────────────────────────────────────────────────────────
+    // FAQ
     $faq = $output['faq'] ?? [];
     $faqValid = is_array($faq) && count($faq) > 0;
     if ($faqValid) {
@@ -261,7 +321,7 @@ class SeoContentReadinessCritic implements CriticAgentInterface
         : 'FAQ array is empty or entries lack question/answer.',
     ];
 
-    // ── schema_org_json ───────────────────────────────────────────────────
+    // schema_org_json
     $schemaJson = trim((string)($output['schema_org_json'] ?? ''));
     $schemaPresent = $schemaJson !== '';
     $schemaValid   = false;
@@ -282,7 +342,7 @@ class SeoContentReadinessCritic implements CriticAgentInterface
         : 'schema_org_json contains invalid JSON: ' . json_last_error_msg(),
     ];
 
-    // ── Placeholder detection ─────────────────────────────────────────────
+    // Placeholder detection
     $placeholdersFound = [];
     $criticalFields = [
       'meta_title'       => (string)($output['meta_title']       ?? ''),
@@ -308,12 +368,15 @@ class SeoContentReadinessCritic implements CriticAgentInterface
   }
 
   /**
-   * Build score array from check results.
-   * Weights:
-   *   accuracy     = required fields all present + no placeholders
-   *   completeness = h2 + faq + schema present
-   *   efficiency   = schema valid JSON (syntax)
-   *   clarity      = description length adequate
+   * Compiles and converts structural check results into weighted criteria metrics.
+   *
+   * - Accuracy: Integrity of mandatory metadata elements + absence of placeholders.
+   * - Completeness: Breadth of document elements (H2 tags, FAQs, Schema modules).
+   * - Efficiency: Verification of standard data validation schemas (JSON parse checks).
+   * - Clarity: Reading flow targets (Text structural lengths).
+   *
+   * @param array $checks Evaluation pass/fail map compiled during runChecks().
+   * @return array<string, float> Keyed scoring metrics mapped between 0.0 and 1.0.
    */
   private function buildScores(array $checks): array
   {
@@ -343,6 +406,12 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     ];
   }
 
+  /**
+   * Consolidates error descriptions into a summarized feedback logline.
+   *
+   * @param array $checks Evaluation metrics map.
+   * @return string A user-readable summary status or a concatenated string of blockers.
+   */
   private function buildFeedback(array $checks): string
   {
     $failed = array_filter($checks, fn(array $c) => !($c['passed'] ?? true));
@@ -355,6 +424,12 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     return 'Readiness issues: ' . implode(' | ', $messages);
   }
 
+  /**
+   * Identifies elements that performed perfectly to compile positive evaluation remarks.
+   *
+   * @param array $checks Evaluation metrics map.
+   * @return array<int, string> List of verified structural strengths.
+   */
   private function buildStrengths(array $checks): array
   {
     $strengths = [];
@@ -368,6 +443,12 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     return array_values(array_unique($strengths));
   }
 
+  /**
+   * Compiles error logs generated by structural checks into an improvement action list.
+   *
+   * @param array $checks Evaluation metrics map.
+   * @return array<int, string> Extracted error messages targeting corrections.
+   */
   private function buildImprovements(array $checks): array
   {
     $improvements = [];

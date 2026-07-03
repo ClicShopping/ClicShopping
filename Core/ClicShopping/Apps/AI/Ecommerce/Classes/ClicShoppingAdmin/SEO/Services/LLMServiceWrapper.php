@@ -56,9 +56,9 @@ class LLMServiceWrapper
     if ($defaultModel !== '') {
       $this->defaultModel = $defaultModel;
     } elseif (\defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') && CLICSHOPPING_APP_CHATGPT_CH_MODEL !== '') {
-      $this->defaultModel = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+      $this->defaultModel = GPT::defaultModel();
     } else {
-      $this->defaultModel = 'gpt-4o';
+      $this->defaultModel = GPT::getTechnicalFallbackModel();
     }
   }
 

@@ -187,25 +187,20 @@ class pi_products_info_also_purchased
             if ($CLICSHOPPING_ProductsAttributes->getHasProductAttributes($products_id) === false) {
               $minQty = (int)$CLICSHOPPING_ProductsCommon->getProductsMinimumQuantity($products_id);
 
-              if (!$show_qty_input && $minQty > 1) {
-// Hidden input + minimum order quantity > 1: link to the product page (shows the min-qty notice).
-                $submit_button = HTML::button(CLICSHOPPING::getDef('button_buy_now'), null, $products_name_url, 'primary', null, 'sm');
-              } else {
-                $form = HTML::form('cart_quantity', CLICSHOPPING::link(null, 'Cart&Add'), 'post', 'class="justify-content-center"', ['tokenize' => true]) . "\n";
-                $form .= HTML::hiddenField('products_id', $products_id);
+              $form = HTML::form('cart_quantity', CLICSHOPPING::link(null, 'Cart&Add'), 'post', 'class="justify-content-center"', ['tokenize' => true]) . "\n";
+              $form .= HTML::hiddenField('products_id', $products_id);
 
-                if (isset($_GET['Id']) || isset($_GET['products_id'])) {
-                  $form .= HTML::hiddenField('url', 'Products&Description');
-                }
-
-// When the visible field is hidden, still submit the (minimum) quantity.
-                if (!$show_qty_input) {
-                  $form .= HTML::hiddenField('cart_quantity', max(1, $minQty));
-                }
-
-                $endform = '</form>';
-                $submit_button = $CLICSHOPPING_ProductsCommon->getProductsBuyButton($products_id);
+              if (isset($_GET['Id']) || isset($_GET['products_id'])) {
+                $form .= HTML::hiddenField('url', 'Products&Description');
               }
+
+// When the visible quantity field is hidden, still submit the (minimum) quantity so the button adds to cart.
+              if (!$show_qty_input) {
+                $form .= HTML::hiddenField('cart_quantity', max(1, $minQty));
+              }
+
+              $endform = '</form>';
+              $submit_button = $CLICSHOPPING_ProductsCommon->getProductsBuyButton($products_id);
             }
           }
 // Quantity type
@@ -236,7 +231,7 @@ class pi_products_info_also_purchased
           }
 
 // See the button more view details
-          $button_small_view_details = HTML::button(CLICSHOPPING::getDef('button_details'), null, CLICSHOPPING::link($products_name_url), 'info', null, 'sm');
+          $button_small_view_details = HTML::button(CLICSHOPPING::getDef('button_details'), null, $products_name_url, 'info', null, 'sm');
 // 10 - Display the image
           $products_image = HTML::link($products_name_url, HTML::image($CLICSHOPPING_Template->getDirectoryTemplateImages() . $Qproducts->value('products_image'), HTML::outputProtected($Qproducts->value('products_name')), MODULE_PRODUCTS_INFO_ALSO_PURCHASED_IMAGE_WIDTH, MODULE_PRODUCTS_INFO_ALSO_PURCHASED_IMAGE_HEIGHT, null, true));
 //Ticker Image

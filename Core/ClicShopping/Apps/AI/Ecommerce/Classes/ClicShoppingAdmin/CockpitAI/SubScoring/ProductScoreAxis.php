@@ -70,7 +70,7 @@
     // Weights re-balanced to accommodate the SEO Quality Benchmark factor.
     // seo_score is the crawler-side score (HTML output); seo_quality is the
     // content-vs-source benchmark (entropy, diversity, entity coverage,
-    // repetition) produced by SeoQualityBenchmark.  The two cover
+    // repetition) produced by SeoObservability.  The two cover
     // complementary aspects of SEO health and are weighted accordingly:
     // crawler score keeps the higher weight as it reflects what Google sees.
     private array $weights = [

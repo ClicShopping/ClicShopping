@@ -23,6 +23,7 @@ use ClicShopping\Apps\Marketing\SEO\Classes\ClicShoppingAdmin\SeoAdmin;
  */
 class SeoEntityAdapter
 {
+  // Mapping configuration for database structures matching each entity type
   private const ENTITY_MAP = [
     'category' => [
       'table' => 'categories_description',
@@ -52,6 +53,7 @@ class SeoEntityAdapter
       ],
     ],
   ];
+
   private mixed $db;
   private string $entityType;
   private array $config;
@@ -74,11 +76,17 @@ class SeoEntityAdapter
     $this->apps->loadDefinitions('Sites/ClicShoppingAdmin/seo_structured_content');
   }
 
+  /**
+   * Get the current entity type name.
+   */
   public function getEntityType(): string
   {
     return $this->entityType;
   }
 
+  /**
+   * Retrieves the current data for an entity in a specific language.
+   */
   public function getCurrentData(int $entityId, int $languageId): ?array
   {
     if (!$this->isSupported()) {
@@ -120,11 +128,17 @@ class SeoEntityAdapter
     return $data;
   }
 
+  /**
+   * Checks whether the current entity type is registered and supported.
+   */
   public function isSupported(): bool
   {
     return !empty($this->config);
   }
 
+  /**
+   * Inspects the database schema to return only fields that actually exist in the table.
+   */
   public function getAvailableFieldMap(): array
   {
     if ($this->cachedFieldMap !== null) {
@@ -154,6 +168,9 @@ class SeoEntityAdapter
     return $available;
   }
 
+  /**
+   * Saves SEO modifications to the target entity description table.
+   */
   public function applySeoChanges(int $entityId, int $languageId, array $changes, bool $normalize = true): bool
   {
     if (!$this->isSupported()) {
@@ -171,6 +188,7 @@ class SeoEntityAdapter
 
     $sqlData = [];
 
+    // Filter changes and apply formatting rules if normalization is active
     foreach ($changes as $key => $value) {
       if (!isset($fieldMap[$key])) {
         continue;
@@ -204,7 +222,7 @@ class SeoEntityAdapter
     }
 
     // Build an explicit UPDATE with BOTH the entity id AND the language_id in the
-    // WHERE clause.  Using db->save() is intentionally avoided here: ClicShopping's
+    // WHERE clause. Using db->save() is intentionally avoided here: ClicShopping's
     // save() helper may generate a WHERE that only uses the primary key without the
     // language column, which would overwrite every language row for this entity
     // (e.g. erasing the EN row when saving FR content).
@@ -268,8 +286,8 @@ class SeoEntityAdapter
    * ```php
    * $adapter = new SeoEntityAdapter('product');
    * $faqData = [
-   *   ['q' => 'What is this product?', 'a' => 'This is a great product.'],
-   *   ['q' => 'How to use it?', 'a' => 'Follow the instructions.']
+   * ['q' => 'What is this product?', 'a' => 'This is a great product.'],
+   * ['q' => 'How to use it?', 'a' => 'Follow the instructions.']
    * ];
    * $success = $adapter->saveFaqContent(123, 1, $faqData);
    * ```
@@ -325,8 +343,8 @@ class SeoEntityAdapter
    * @example
    * ```php
    * $faqData = [
-   *   ['q' => 'What is this?', 'a' => 'A product.'],
-   *   ['q' => 'How to use?', 'a' => 'Read manual.']
+   * ['q' => 'What is this?', 'a' => 'A product.'],
+   * ['q' => 'How to use?', 'a' => 'Read manual.']
    * ];
    * $description = $this->generateFaqDescription($faqData);
    * // Returns: "What is this? A product. How to use? Read manual."
@@ -343,6 +361,9 @@ class SeoEntityAdapter
     return trim($description);
   }
 
+  /**
+   * Normalizes incoming agent proposals into a standard format.
+   */
   public function normalizeChanges(array $proposal): array
   {
     $out = [];
@@ -360,6 +381,7 @@ class SeoEntityAdapter
       $out['summary'] = (string)$proposal['summary'];
     }
     if (isset($proposal['description'])) {
+      // Paragraph block
       $out['description'] = (string)$proposal['description'];
     }
     if (isset($proposal['name'])) {

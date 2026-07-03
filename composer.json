@@ -23,10 +23,10 @@
         "mattketmo/email-checker": "^3.0",
         "theodo-group/llphant": "^0.11.21",
         "phpmailer/phpmailer": "^7.1",
-        "stripe/stripe-php": "^20.2",
         "setasign/fpdf": "^1.9",
-        "guzzlehttp/guzzle": "^7.11",
-        "stolt/llms-txt-php": "^3.4"
+        "stolt/llms-txt-php": "^3.4",
+        "guzzlehttp/guzzle": "^7.13",
+        "stripe/stripe-php": "^20.3"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"

@@ -13,6 +13,7 @@
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
   use ClicShopping\AI\Rag\MultiDBRAGManager;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoReport;
+  
   class SeoEmbedding
   {
     private mixed               $db;
@@ -21,9 +22,9 @@
     private string              $prefix;
 
     /**
-     * @param string $dbTable  Nom de la table embedding passé depuis le hook
-     *                         (ex: 'categories_seo_embedding').
-     *                         Le préfixe ClicShopping est appliqué automatiquement.
+     * @param string $dbTable   Embedding table name passed from the hook
+     * (e.g., 'categories_seo_embedding').
+     * The ClicShopping prefix is applied automatically.
      */
     public function __construct(string $dbTable)
     {
@@ -37,12 +38,10 @@
       }
     }
 
-    // ============================================================
-    // POINT D'ENTRÉE PRINCIPAL
-    // ============================================================
+    // MAIN ENTRY POINT
 
     /**
-     * Orchestre la décision : analyse initiale OU optimisation.
+     * Orchestrates the decision: initial analysis OR optimization loop.
      */
     public function process(
       int    $entityId,
@@ -61,17 +60,15 @@
       return $this->runOptimizationCycle($entityId, $languageId, $url, $baseUrl, $pageType, $triggeredBy, $existing);
     }
 
-    // ============================================================
-    // LECTURE DB
-    // ============================================================
+    // DATABASE READING
 
     /**
-     * Récupère le rapport le plus récent pour une entité/langue.
-     * Retourne null si aucun enregistrement → déclenchera l'analyse initiale.
+     * Retrieves the most recent report for an entity/language.
+     * Returns null if no record is found → triggers initial analysis.
      *
-     * FIX SQL : la table ne peut pas être un paramètre PDO bindé.
-     * On utilise $this->dbTableFull interpolé dans la chaîne,
-     * et on retire la syntaxe invalide ':table_xxx'.
+     * SQL FIX: The table name cannot be a bound PDO parameter.
+     * We use interpolated $this->dbTableFull in the string,
+     * and removed the invalid ':table_xxx' syntax.
      */
     public function getLatestReport(int $entityId, int $languageId): ?array
     {
@@ -82,11 +79,11 @@
                                          sourcename, 
                                          date_modified, 
                                          metadata
-                                 FROM ' . $this->dbTableFull . '
-                                 WHERE  entity_id   = :entity_id
-                                   AND  language_id = :language_id
-                                 ORDER BY date_modified DESC
-                                 LIMIT 1'
+                                  FROM ' . $this->dbTableFull . '
+                                  WHERE  entity_id   = :entity_id
+                                    AND  language_id = :language_id
+                                  ORDER BY date_modified DESC
+                                  LIMIT 1'
                                 );
 
       $stmt->bindInt(':entity_id',   $entityId);
@@ -97,6 +94,8 @@
 
       return $row ?: null;
     }
+
+    // INITIAL ANALYSIS — no history found
 
     private function runInitialAnalysis(
       int    $entityId,
@@ -113,7 +112,7 @@
         return [
           'success' => false,
           'mode'    => 'initial',
-          'error'   => 'Page inaccessible : ' . ($data['error'] ?? 'HTTP ' . ($data['http_code'] ?? '?')),
+          'error'   => 'Page inaccessible: ' . ($data['error'] ?? 'HTTP ' . ($data['http_code'] ?? '?')),
         ];
       }
 
@@ -171,9 +170,9 @@
         'success'             => true,
         'mode'                => 'initial',
         'embedding_id'        => $id,
-        'seo_score'           => $data['seo_score']           ?? 0,
+        'seo_score'           => $data['seo_score']            ?? 0,
         'report'              => $reportHtml,
-        'message'             => 'Analyse initiale effectuée. Score SEO : ' . ($data['seo_score'] ?? 0) . '/100.',
+        'message'             => 'Initial analysis completed. SEO Score: ' . ($data['seo_score'] ?? 0) . '/100.',
         'thin_content'        => (bool)($data['thin_content']       ?? false),
         'thin_content_level'  => (string)($data['thin_content_level'] ?? 'ok'),
         'thin_content_msg'    => (string)($data['thin_content_msg']   ?? ''),
@@ -181,10 +180,6 @@
         'source_wordcount'    => (int)($data['source_wordcount']      ?? 0),
       ];
     }
-
-    // ============================================================
-    // ANALYSE INITIALE — aucun historique trouvé
-    // ============================================================
 
     private function filterRawReport(array $data): array
     {
@@ -205,9 +200,9 @@
      * @return array{word_count:int, level:string, thin_content:bool, message:string}|null
      */
     private function evaluateSourceThinForEntity(
-      int       $entityId,
-      int       $languageId,
-      string    $pageType,
+      int        $entityId,
+      int        $languageId,
+      string     $pageType,
       SeoReport $seoReport
     ): ?array {
       $table  = match ($pageType) {
@@ -265,13 +260,11 @@
       };
     }
 
-    // ============================================================
-    // CYCLE D'OPTIMISATION — historique existant
-    // ============================================================
+    // EMBEDDING STORAGE — RAG pipeline
 
     /**
-     * Insère un embedding via le pipeline AI (RAG / addDocument).
-     * Retourne l'ID de la ligne insérée.
+     * Inserts an embedding via the AI pipeline (RAG / addDocument).
+     * Returns the ID of the inserted row.
      */
     private function storeEmbedding(
       string $content,
@@ -284,10 +277,9 @@
       array  $metadata
     ): int {
 
-      // On exclut report_raw du metadata passé à addDocument :
-      // il est très lourd (tout le DOM parsé) et peut dépasser les limites
-      // de sérialisation JSON de MariaDBVectorStore.
-      // Il reste disponible dans $metadata pour d'autres usages si nécessaire.
+      // We exclude 'report_raw' from the metadata passed to addDocument:
+      // it is heavy (entire parsed DOM) and could exceed JSON serialization limits
+      // in MariaDBVectorStore. It remains available in $metadata for other uses if needed.
       $metadataForDoc = array_diff_key($metadata, array_flip(['report_raw']));
 
       $ok = $this->getRagManager()->addDocument(
@@ -303,7 +295,7 @@
       );
 
       if (!$ok) {
-        // Récupérer le vrai message d'erreur depuis le security log
+        // Retrieve the actual error message from the security log
         throw new \RuntimeException(
           'Failed to store SEO embedding via AI pipeline. ' .
           'Table: ' . $this->dbTableFull . ' | ' .
@@ -315,10 +307,6 @@
 
       return (int) ($latest['id'] ?? 0);
     }
-
-    // ============================================================
-    // STOCKAGE EMBEDDING — pipeline RAG
-    // ============================================================
 
     /**
      * @return MultiDBRAGManager
@@ -333,6 +321,8 @@
 
       return $this->ragManager;
     }
+
+    // OPTIMIZATION CYCLE — existing history
 
     private function runOptimizationCycle(
       int    $entityId,
@@ -350,7 +340,7 @@
         return [
           'success' => false,
           'mode'    => 'optimization',
-          'error'   => 'Page inaccessible lors du re-crawl.',
+          'error'   => 'Page inaccessible during re-crawl.',
         ];
       }
 
@@ -410,60 +400,56 @@
       ];
     }
 
-    // ============================================================
-    // SUGGESTIONS IA (stub → AgentSeo)
-    // ============================================================
+    // AI SUGGESTIONS (stub → AgentSeo)
 
     private function buildAiSuggestions(array $current, array $prevMeta): array
     {
       $suggestions = [];
 
       if (empty($current['titletext'])) {
-        $suggestions['title'] = '[À générer par AgentSeo] — Titre manquant';
+        $suggestions['title'] = '[To be generated by AgentSeo] — Missing title';
       } elseif (\strlen($current['titletext']) < 30) {
-        $suggestions['title'] = '[À optimiser] — Titre trop court (' . \strlen($current['titletext']) . ' car.)';
+        $suggestions['title'] = '[To optimize] — Title too short (' . \strlen($current['titletext']) . ' chars)';
       }
 
       if (empty($current['description'])) {
-        $suggestions['description'] = '[À générer par AgentSeo] — Description manquante';
+        $suggestions['description'] = '[To be generated by AgentSeo] — Missing description';
       } elseif (\strlen($current['description']) < 120 || \strlen($current['description']) > 160) {
-        $suggestions['description'] = '[À optimiser] — Description : ' . \strlen($current['description']) . ' car. (idéal 120-160)';
+        $suggestions['description'] = '[To optimize] — Description: ' . \strlen($current['description']) . ' chars (ideal 120-160)';
       }
 
       if (empty($current['h1'])) {
-        $suggestions['h1'] = '[À créer] — Balise H1 absente';
+        $suggestions['h1'] = '[To create] — Missing H1 tag';
       }
 
       if (empty($current['h2'])) {
-        $suggestions['h2'] = '[Recommandé] — Aucune balise H2 détectée';
+        $suggestions['h2'] = '[Recommended] — No H2 tag detected';
       }
 
       if (($current['googleanalytics'] ?? false) === false) {
-        $suggestions['analytics'] = 'Intégrer Google Analytics (GA4) ou GTM';
+        $suggestions['analytics'] = 'Integrate Google Analytics (GA4) or GTM';
       }
 
       if (($current['images']['diff'] ?? 0) > 0) {
-        $suggestions['images_alt'] = $current['images']['diff'] . ' image(s) sans attribut ALT';
+        $suggestions['images_alt'] = $current['images']['diff'] . ' image(s) missing ALT attribute';
       }
 
       if (!empty($current['css']['cssNotMinFiles'])) {
-        $suggestions['css_minify'] = count($current['css']['cssNotMinFiles']) . ' fichier(s) CSS à minifier';
+        $suggestions['css_minify'] = count($current['css']['cssNotMinFiles']) . ' CSS file(s) to minify';
       }
 
       if (!empty($current['js']['jsNotMinFiles'])) {
-        $suggestions['js_minify'] = count($current['js']['jsNotMinFiles']) . ' fichier(s) JS à minifier';
+        $suggestions['js_minify'] = count($current['js']['jsNotMinFiles']) . ' JS file(s) to minify';
       }
 
       if (($current['pageloadtime'] ?? 0) > 3) {
-        $suggestions['performance'] = 'Temps de chargement élevé : ' . round($current['pageloadtime'], 2) . 's (seuil : 3s)';
+        $suggestions['performance'] = 'High load time: ' . round($current['pageloadtime'], 2) . 's (threshold: 3s)';
       }
 
       return $suggestions;
     }
 
-    // ============================================================
-    // AUDIT COMPARATIF (stub → AgentAuditSeo)
-    // ============================================================
+    // COMPARATIVE AUDIT (stub → AgentAuditSeo)
 
     private function buildAuditResult(int $scoreBefore, int $scoreNow, array $current, array $prevMeta): array
     {
@@ -472,17 +458,17 @@
 
       if ($improved) {
         $summary = sprintf(
-          'Score SEO amélioré : %d → %d (+%d pts). La page progresse.',
+          'SEO Score improved: %d → %d (+%d pts). The page is progressing.',
           $scoreBefore, $scoreNow, $delta
         );
       } elseif ($delta === 0) {
         $summary = sprintf(
-          'Score SEO stable : %d/100. Aucune régression, mais des optimisations restent possibles.',
+          'SEO Score stable: %d/100. No regression, but further optimizations are still possible.',
           $scoreNow
         );
       } else {
         $summary = sprintf(
-          'Score SEO en baisse : %d → %d (%d pts). Analyse des régressions recommandée.',
+          'SEO Score decreased: %d → %d (%d pts). Analysis of regressions is recommended.',
           $scoreBefore, $scoreNow, $delta
         );
       }
@@ -510,14 +496,12 @@
       ];
     }
 
-    // ============================================================
     // HELPERS
-    // ============================================================
 
     private function serializeSuggestions(array $suggestions): string
     {
       if (empty($suggestions)) {
-        return 'Aucune suggestion.';
+        return 'No suggestions.';
       }
 
       $lines = [];
@@ -535,8 +519,8 @@
      * The agentic pipeline writes its own audit row in products_seo_serp_report
      * but does NOT touch products_seo_embedding.  Phase 2 needs a per-language
      * trace in the embedding history so the display hook (ProductsSerp) can:
-     *   - mark Phase 2 as completed (getLatestReport != initial_report),
-     *   - render the per-language history table.
+     * - mark Phase 2 as completed (getLatestReport != initial_report),
+     * - render the per-language history table.
      *
      * This method goes through the same MultiDBRAGManager pipeline as the
      * existing initial / cycle writers — it does NOT bypass the RAG layer,
@@ -549,7 +533,7 @@
      * @param int    $scoreBefore SEO score captured before the run.
      * @param int    $scoreAfter  SEO score captured after the run.
      * @param array  $appliedFields Subset of SeoEntityAdapter::normalizeChanges()
-     *                             that was actually saved to products_description.
+     * that was actually saved to products_description.
      * @param array  $auditResult Audit payload produced by SeoAuditAgent (or compatible shape).
      * @param string $triggeredBy 'manual' | 'ajax' | 'cron' | ...
      * @param string $sourceName  Identifier for the writer: defaults to 'SeoMultilingualOrchestrator'.
@@ -567,7 +551,8 @@
       string $triggeredBy = 'manual',
       string $sourceName  = 'SeoMultilingualOrchestrator',
       string $type        = 'optimized_report',
-      array  $benchmark   = []
+      array  $benchmark   = [],
+      array  $enhancement = []
     ): int {
       // Build the textual payload that the RAG layer will embed.  We embed
       // the applied SEO fields so semantic search over the history makes
@@ -605,6 +590,8 @@
         // Benchmark verdict + breakdown so the history modal can render
         // a side-by-side source-vs-generated comparison table.
         'benchmark'        => $benchmark,
+        // Structural SEO enhancement (Lot 2a) — second table beside the benchmark.
+        'enhancement'      => $enhancement,
       ];
 
       try {
@@ -625,10 +612,10 @@
     }
 
     /**
-     * Récupère l'historique complet pour une entité/langue.
+     * Retrieves the complete history for an entity/language.
      *
-     * FIX SQL : même correction que getLatestReport — table interpolée,
-     * pas de ':table_xxx'. bindValue pour :lim car bindInt n'existe pas toujours.
+     * SQL FIX: Same fix as getLatestReport — interpolated table, no ':table_xxx'.
+     * bindValue used for :lim because bindInt isn't always available.
      */
     public function getHistory(int $entityId, int $languageId, int $limit = 10): array
     {
@@ -637,11 +624,11 @@
                                          sourcename, 
                                          date_modified, 
                                          metadata
-                                 FROM ' . $this->dbTableFull . '
-                                 WHERE  entity_id   = :entity_id
-                                   AND  language_id = :language_id
-                                 ORDER BY date_modified DESC
-                                 LIMIT :lim'
+                                  FROM ' . $this->dbTableFull . '
+                                  WHERE  entity_id   = :entity_id
+                                    AND  language_id = :language_id
+                                  ORDER BY date_modified DESC
+                                  LIMIT :lim'
                                 );
 
       $stmt->bindInt(':entity_id',   $entityId);

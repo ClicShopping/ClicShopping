@@ -81,7 +81,12 @@ class PageTab implements HooksInterface
     $help_title = $this->app->getDef('text_help_general');
     $help_text = $this->app->getDef('text_help_attributes_inline');
     $button_add = $this->app->getDef('button_add');
-    $help_icon = HTML::image($this->template->getImageDirectory() . 'icons/help.gif', $help_title);
+    $help_icon =
+    '<div class="list-group-item d-flex align-items-center gap-2">
+       <i class="bi bi-question-circle fs-4" title="' . $help_title . '"></i>
+       <span>' . $help_title . '</span>
+    </div> ';
+
     $b2b_visible_class = (\defined('MODE_B2B_B2C') && MODE_B2B_B2C === 'True') ? '' : 'd-none';
     $headers = $this->renderHeaders();
 
@@ -124,7 +129,7 @@ class PageTab implements HooksInterface
     </div>
     <div class="mt-1"></div>
     <div class="alert alert-info" role="alert">
-      <div>{$help_icon}&nbsp;{$help_title}</div>
+      <div>{$help_icon}</div>
       <div class="mt-1"></div>
       <div>{$help_text}</div>
     </div>

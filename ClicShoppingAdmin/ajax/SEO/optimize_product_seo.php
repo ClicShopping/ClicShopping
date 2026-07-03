@@ -8,9 +8,12 @@
 
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTTP;
+  use ClicShopping\OM\Registry;
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
   use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoMultilingualOrchestrator;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEntityAdapter;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoOriginalSnapshotRepository;
 
   set_time_limit(0);
   ini_set('max_execution_time', '0');
@@ -41,6 +44,34 @@
 
   if ($productId <= 0) {
     echo json_encode(['success' => false, 'error' => 'Invalid product id.']);
+    exit;
+  }
+
+  // HARD PRECONDITION: preserve the genuine original (write-once) for EVERY enabled
+  // language BEFORE the orchestrator overwrites anything. If we cannot save the
+  // original, abort — never optimize a description we could not roll back.
+  try {
+    $snapshotAdapter = new SeoEntityAdapter('product');
+    $snapshotRepo    = new SeoOriginalSnapshotRepository();
+
+    foreach (Registry::get('Language')->getAll() as $languageRow) {
+      $lid = (int)($languageRow['id'] ?? 0);
+      if ($lid <= 0) {
+        continue;
+      }
+      $currentContent = $snapshotAdapter->getCurrentData($productId, $lid);
+      if ($currentContent !== null) {
+        $snapshotRepo->captureIfAbsent('product', $productId, $lid, $currentContent);
+      }
+    }
+    
+    //    SeoOriginalSnapshotRepository::captureEntityOriginals('product', $productId);
+
+  } catch (\Throwable $e) {
+    echo json_encode([
+      'success' => false,
+      'error'   => 'Could not preserve the original content; optimization aborted. ' . $e->getMessage(),
+    ]);
     exit;
   }
 

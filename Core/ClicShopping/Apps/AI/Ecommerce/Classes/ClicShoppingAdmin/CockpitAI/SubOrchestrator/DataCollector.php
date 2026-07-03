@@ -366,8 +366,9 @@
         }
 
         // ── SEO Quality Benchmark — latest entry per (product, language) ───
-        // The new Phase 2 anti-regression guard (SeoQualityBenchmark) writes
-        // one row per optimization attempt in clic_seo_quality_benchmark_log.
+        // The Phase 2 SEO pipeline (gate = SeoFidelityChecker, metrics =
+        // SeoObservability) writes one row per optimization attempt in
+        // clic_seo_quality_benchmark_log.
         // We read the most recent non-unknown verdict so CockpitAI can:
         //   - factor benchmark composite into Score_X (semantic quality),
         //   - flag regressions in rules / autopilot decisions,

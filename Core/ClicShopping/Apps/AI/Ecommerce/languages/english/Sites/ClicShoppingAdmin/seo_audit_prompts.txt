@@ -11,6 +11,9 @@ Write a detailed audit summary in 2-3 paragraphs covering:
 (3) Structural improvements — were H2/H3 headings, internal link anchors, or schema markup enhanced?
 (4) Overall quality delta — score improvement rationale, remaining gaps, and risk of over-optimisation.
 Focus on factual, measurable observations. Avoid generic statements.
+Objective preservation metrics for this optimization: preservation_score equals {{preservation_score}} (1.0 equals no source fact lost), missing facts: {{missing_entities}}, composite quality delta equals {{composite_delta}}.
+You MUST report what was removed or weakened, not only what was added. If preservation_score is below 0.95 or missing facts are listed, state clearly that the optimization LOST information and must not be described as an unqualified success.
+Semantic keyword/LSI coverage regressed versus the source: {{semantic_regressed}}. When this is "yes", note that the optimized text covers fewer target keywords or related (LSI) terms than the source and recommend re-adding them — this is advisory, the optimization is still applied.
 Return only the summary text.
 
 seo_audit_improvements_prompt = You are a senior SEO auditor.
@@ -25,6 +28,9 @@ Identify 3-6 specific, measurable improvements. For each, specify:
 - Why it matters for SEO performance
 - Whether it addresses a previously identified gap
 Do not list generic statements like "content was improved". Be precise and technical.
+Objective preservation metrics for this optimization: preservation_score equals {{preservation_score}} (1.0 equals no source fact lost), missing facts: {{missing_entities}}, composite quality delta equals {{composite_delta}}.
+You MUST report what was removed or weakened, not only what was added. If preservation_score is below 0.95 or missing facts are listed, state clearly that the optimization LOST information and must not be described as an unqualified success.
+Semantic keyword/LSI coverage regressed versus the source: {{semantic_regressed}}. When this is "yes", note that the optimized text covers fewer target keywords or related (LSI) terms than the source and recommend re-adding them — this is advisory, the optimization is still applied.
 Return a JSON array of improvement strings.
 Return only JSON.
 
@@ -39,6 +45,9 @@ For each recommendation:
 - Be specific and actionable (avoid "improve content quality" — say instead "add 2-3 internal links to related subcategory pages using keyword-rich anchor text").
 - Prioritise by expected SEO impact (high, medium, low).
 - Address gaps in: keyword density/distribution, internal linking, semantic coverage, schema markup completeness, heading hierarchy (H2/H3), or topical authority.
+Objective preservation metrics for this optimization: preservation_score equals {{preservation_score}} (1.0 equals no source fact lost), missing facts: {{missing_entities}}, composite quality delta equals {{composite_delta}}.
+You MUST report what was removed or weakened, not only what was added. If preservation_score is below 0.95 or missing facts are listed, state clearly that the optimization LOST information and must not be described as an unqualified success.
+Semantic keyword/LSI coverage regressed versus the source: {{semantic_regressed}}. When this is "yes", note that the optimized text covers fewer target keywords or related (LSI) terms than the source and recommend re-adding them — this is advisory, the optimization is still applied.
 Return a JSON array of recommendation strings, ordered from highest to lowest expected impact.
 Return only JSON.
 
