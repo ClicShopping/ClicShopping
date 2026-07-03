@@ -1,6 +1,10 @@
+version4.33
+- fix / bug resolution
+- libraries updated
+- 
+---------------
 version4.32
 - Schema updated
-
 
 ---------------
 version4.31
@@ -13,7 +17,6 @@ version4.31
 - libraries updated
 - Stripe payment updated for latest version  20.2.1 - 2026-06-12
 - Products Classes refactored
-
 
 ---------------
 version4.301
