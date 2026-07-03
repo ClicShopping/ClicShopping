@@ -1,5 +1,11 @@
+version4.32
+- fix / bug resolution
+- libraries updated
+
+
+---------------
 version4.31
-- AI framework refqctorign qnd improvement (fix bug, classe clarification, readabilitym speed, response quality ...)
+- AI framework refactored and improvement (fix bug, classe clarification, readability speed, response quality ...)
 - AI SEO Product SEO Agentic improvement
 - AQ WebMCP protocol integrated for AI robot via llms.txt et llms-full.txt
 - AI LLM SEO implementation - for AI search (front office) - GEO implemented
@@ -8,7 +14,6 @@ version4.31
 - libraries updated
 - Stripe payment updated for latest version  20.2.1 - 2026-06-12
 - Products Classes refactored
-
 
 
 ---------------
