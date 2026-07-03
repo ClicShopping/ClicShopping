@@ -15,7 +15,7 @@ namespace ClicShopping\Apps\Catalog\Products\Classes\Shop\SubProduct;
  * CLICSHOPPING_APP_CATALOG_PRODUCTS_DEBUG constant as the admin-side trait.
  */
 if (!\defined('CLICSHOPPING_APP_CATALOG_PRODUCTS_DEBUG')) {
-  \define('CLICSHOPPING_APP_CATALOG_PRODUCTS_DEBUG', true);
+  \define('CLICSHOPPING_APP_CATALOG_PRODUCTS_DEBUG', false);
 }
 
 /**

@@ -15,7 +15,7 @@ namespace ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\SubProduc
  * Whether it stays after the refactoring is decided later.
  */
 if (!\defined('CLICSHOPPING_APP_CATALOG_PRODUCTS_DEBUG')) {
-  \define('CLICSHOPPING_APP_CATALOG_PRODUCTS_DEBUG', true);
+  \define('CLICSHOPPING_APP_CATALOG_PRODUCTS_DEBUG', false);
 }
 
 /**

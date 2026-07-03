@@ -1,6 +1,5 @@
 version4.32
-- fix / bug resolution
-- libraries updated
+- Schema updated
 
 
 ---------------
