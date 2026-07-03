@@ -102,6 +102,8 @@
         $history = [];
       }
 
+      // -- Merge the manual-action audit trail (accept / reject / revert) so the
+      //    history table shows a full, attributable trace of what was done. --
       try {
         $actionLog = (new \ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoActionLogRepository())
           ->getForEntity('product', $productId, 20);
@@ -1406,8 +1408,49 @@
         'initial_report'   => '<span class="badge bg-info text-dark">' . $this->app->getDef('text_seo_type_initial') . '</span>',
         'optimized_report' => '<span class="badge bg-primary">' . $this->app->getDef('text_seo_type_optimized') . '</span>',
         'faq_generated'    => '<span class="badge bg-info">' . ($this->app->getDef('text_seo_type_faq') ?: 'FAQ') . '</span>',
+        'seo_action'       => '<span class="badge bg-dark">' . ($this->app->getDef('text_seo_type_action') ?: 'Action') . '</span>',
         default            => '<span class="badge bg-light text-dark">' . htmlspecialchars($type) . '</span>',
       };
+    }
+
+    /**
+     * Merges the manual-action audit trail (accept / reject / revert) into the
+     * embedding-history list so both show, newest first, in the same table.
+     * Action rows are normalised to the shape the history renderer expects, with
+     * the action carried as the row status and the administrator as the source.
+     *
+     * @param array<int, array<string, mixed>> $history   Embedding-history rows.
+     * @param array<int, array<string, mixed>> $actionLog Rows from SeoActionLogRepository.
+     * @return array<int, array<string, mixed>> Merged list, newest first.
+     */
+    private function mergeActionLog(array $history, array $actionLog): array
+    {
+      foreach ($actionLog as $a) {
+        $meta    = [];
+        $rawMeta = $a['metadata'] ?? '';
+        if (is_string($rawMeta) && $rawMeta !== '') {
+          $decoded = json_decode($rawMeta, true);
+          if (is_array($decoded)) {
+            $meta = $decoded;
+          }
+        }
+        $meta['status']       = (string)($a['action'] ?? '');
+        $meta['action_admin'] = (string)($a['admin_name'] ?? '');
+
+        $history[] = [
+          'id'            => 'action_' . ($a['id'] ?? 0),
+          'type'          => 'seo_action',
+          'sourcename'    => (string)($a['admin_name'] ?? ''),
+          'date_modified' => (string)($a['date_added'] ?? ''),
+          'metadata'      => json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ];
+      }
+
+      usort($history, static fn (array $x, array $y): int =>
+        strcmp((string)($y['date_modified'] ?? ''), (string)($x['date_modified'] ?? ''))
+      );
+
+      return $history;
     }
 
     /**
@@ -1422,6 +1465,9 @@
         'completed' => '<span class="badge bg-primary">'           . $this->app->getDef('text_seo_status_completed') . '</span>',
         'pending'   => '<span class="badge bg-warning text-dark">' . $this->app->getDef('text_seo_status_pending')   . '</span>',
         'initial'   => '<span class="badge bg-info text-dark">'    . $this->app->getDef('text_seo_status_initial')   . '</span>',
+        'accepted'  => '<span class="badge bg-success">'           . ($this->app->getDef('text_seo_status_accepted') ?: 'Accepted') . '</span>',
+        'rejected'  => '<span class="badge bg-danger">'            . ($this->app->getDef('text_seo_status_rejected') ?: 'Rejected') . '</span>',
+        'reverted'  => '<span class="badge bg-secondary">'         . ($this->app->getDef('text_seo_status_reverted') ?: 'Reverted') . '</span>',
         default     => '<span class="badge bg-light text-dark">'   . htmlspecialchars($status)                       . '</span>',
       };
     }

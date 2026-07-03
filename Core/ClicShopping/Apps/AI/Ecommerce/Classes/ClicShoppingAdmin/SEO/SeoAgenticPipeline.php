@@ -19,7 +19,6 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Actors\SeoOptim
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SeoAuditAgent;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SeoCodeValidationAgent;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SeoOptimizationAgent;
-use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SerpAgent;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Critics\SeoValidationCritic;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Critics\SeoContentReadinessCritic;
 use ClicShopping\OM\CLICSHOPPING;
@@ -142,24 +141,7 @@ class SeoAgenticPipeline
       'seo_score_before' => $seoBefore['seo_score'] ?? 0,
     ]);
 
-    $serpResult = $this->runSerpAnalysis($current, $baseUrl, $languageId, $context);
-
-    if (!($serpResult['success'] ?? false)) {
-      $this->logDebug('Pipeline stop: SERP failed', [
-        'error' => $serpResult['error'] ?? '',
-        'query' => $serpResult['query'] ?? '',
-      ]);
-      return [
-        'success' => false,
-        'error' => $serpResult['error'] ?? 'SERP analysis failed.',
-      ];
-    }
-    $this->logDebug('SERP ok', [
-      'query' => $serpResult['query'] ?? '',
-      'intent' => $serpResult['intent_dominant'] ?? '',
-      'features' => $serpResult['features_visible'] ?? [],
-      'types' => $serpResult['types_of_pages'] ?? [],
-    ]);
+    $serpResult = $this->noSerpResult($current, $languageId);
 
     $seoAgent = $this->seoAgentOverride ?? new SeoOptimizationAgent();
     $codeAgent = $this->codeAgentOverride ?? new SeoCodeValidationAgent();
@@ -249,25 +231,29 @@ class SeoAgenticPipeline
   }
 
   /**
-   * Run the SERP analysis agent for the entity and return its raw output
-   * (the caller checks the 'success' flag). Extracted verbatim from optimize().
+   * Empty SERP-shaped result. SEO optimization no longer queries any external
+   * SERP source (removed: no measurable quality/fidelity value, slower, could
+   * fail at runtime). This keeps the report/enrichment shape so downstream
+   * consumers and the stored report columns are unchanged, with no enrichment.
    *
+   * @param array<string, mixed> $current
    * @return array<string, mixed>
    */
-  private function runSerpAnalysis(array $current, string $baseUrl, int $languageId, Context $context): array
+  private function noSerpResult(array $current, int $languageId): array
   {
-    $serpAgent = new SerpAgent();
-
-    $serp_analysis =  [
-      'query' => $current['name'] ?? '',
-      'entity_name' => $current['name'] ?? '',
-      'base_url' => $baseUrl,
-      'language' => $this->adapter->getLanguage($languageId),
+    return [
+      'success'             => true,
+      'source'              => 'none',
+      'query'               => (string)($current['name'] ?? ''),
+      'language'            => $this->adapter->getLanguage($languageId),
+      'intent_dominant'     => 'unknown',
+      'features_visible'    => [],
+      'types_of_pages'      => [],
+      'topics'              => [],
+      'keywords'            => [],
+      'competitor_insights' => [],
+      'top_results'         => [],
     ];
-
-    $serpAction = new Action('serp_analysis',$serp_analysis, $context, 'medium', 60);
-
-    return $serpAgent->executeAction($serpAction)->getOutput();
   }
 
   /**

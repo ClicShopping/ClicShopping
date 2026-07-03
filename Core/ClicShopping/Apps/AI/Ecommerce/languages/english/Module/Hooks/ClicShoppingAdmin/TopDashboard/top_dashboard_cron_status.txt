@@ -1,5 +1,6 @@
 top_dashboard_cron_title = Cron status (24h)
 top_dashboard_cron_view = View logs
+top_dashboard_cron_review = %d to review
 
 top_dashboard_cron_relative_seconds = %d s ago
 top_dashboard_cron_relative_minutes = %d min ago

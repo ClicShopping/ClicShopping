@@ -75,6 +75,21 @@ class dashboardCron implements HooksInterface
 
       $tooltip = sprintf('%s — %s', $this->statusLabel($status), $finished);
 
+      // Products the run could not auto-accept (SEO cron): surface the count so
+      // the admin knows a manual review is waiting, and can open the logs.
+      $reviewCount = $this->reviewCount($row['metadata'] ?? null);
+      $reviewLine  = '';
+      if ($reviewCount > 0) {
+        $reviewLabel = $this->app->getDef('top_dashboard_cron_review') ?: '%d to review';
+        $reviewLine  = '
+        <div class="small mb-2">
+          <span class="badge bg-warning text-dark">
+            <i class="bi bi-exclamation-triangle-fill"></i> '
+          . HTML::outputProtected(sprintf($reviewLabel, $reviewCount)) . '
+          </span>
+        </div>';
+      }
+
       $lines .= '
         <div class="d-flex justify-content-between align-items-center mb-1">
           <span class="text-white small text-truncate me-2"
@@ -85,7 +100,8 @@ class dashboardCron implements HooksInterface
             ' . HTML::outputProtected($this->statusLabel($status)) . '
           </span>
         </div>
-        <div class="text-white-50 small mb-2">' . HTML::outputProtected($relative) . '</div>';
+        <div class="text-white-50 small mb-2">' . HTML::outputProtected($relative) . '</div>'
+        . $reviewLine;
     }
 
     return '
@@ -118,7 +134,8 @@ class dashboardCron implements HooksInterface
         SELECT cl.origin,
                cl.status,
                cl.started_at,
-               cl.finished_at
+               cl.finished_at,
+               cl.metadata
         FROM :table_cron_log cl
         INNER JOIN (
           SELECT origin,
@@ -138,6 +155,26 @@ class dashboardCron implements HooksInterface
       // (e.g. fresh install before MariaDb.php has been applied).
       return [];
     }
+  }
+
+  /**
+   * Number of products a run flagged for manual review (SEO cron writes them
+   * to metadata.failed_products). Defensive: any decode issue yields 0 so the
+   * dashboard never breaks on a legacy/empty metadata payload.
+   */
+  private function reviewCount(mixed $metadata): int
+  {
+    if (!is_string($metadata) || $metadata === '') {
+      return 0;
+    }
+
+    $decoded = json_decode($metadata, true);
+
+    if (!is_array($decoded) || !isset($decoded['failed_products']) || !is_array($decoded['failed_products'])) {
+      return 0;
+    }
+
+    return count($decoded['failed_products']);
   }
 
   /**
