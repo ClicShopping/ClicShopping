@@ -79,6 +79,8 @@ class pi_products_info_reviews
 
 //senitment
       $Qsentiment = $CLICSHOPPING_Db->prepare('select rsd.description,
+                                                      rsd.analysis_json,
+                                                      rs.review_count,
                                                       rs.sentiment_approved
                                                 from :table_reviews_sentiment rs,
                                                      :table_reviews_sentiment_description rsd
@@ -119,7 +121,46 @@ class pi_products_info_reviews
        if ($Qsentiment->valueInt('sentiment_approved') == 1) {
           $products_reviews_content .= '<div class="alert alert-info" role="alert">';
           $products_reviews_content .= '<span class="moduleProductsInfoReviewsTitleAiSentiment"><h4>' . CLICSHOPPING::getDef('modules_products_reviews_info_content_text_customers_ai_sentiment') . ' ' . $CLICSHOPPING_ProductsCommon->getProductsName() . '</h4></span>';
-          $products_reviews_content .= '<span class="moduleProductsInfoReviewsTitleAiSentimentDescription"><h5>' . $Qsentiment->value('description') . '</h5></span>';
+
+          $analysis = \ClicShopping\Apps\Customers\Reviews\Classes\ClicShoppingAdmin\SentimentAnalysisData::fromJson(
+            $Qsentiment->value('analysis_json'),
+            $Qsentiment->value('description')
+          );
+          $reviewCount = $Qsentiment->valueInt('review_count');
+
+          $products_reviews_content .= '<div class="moduleProductsInfoAiSentiment">';
+          $products_reviews_content .= '<p class="aiSentimentMeta"><em>' . CLICSHOPPING::getDef('module_products_reviews_ai_based_on', ['count' => $reviewCount]) . '</em></p>';
+
+          if ($analysis->isStructured()) {
+            $products_reviews_content .= '<span class="badge text-bg-secondary moduleProductsInfoAiSentimentBadge">' . HTML::outputProtected($analysis->getDominantSentiment()) . '</span>';
+
+            if ($analysis->getStrengths() !== []) {
+              $products_reviews_content .= '<p class="mt-2"><strong>' . CLICSHOPPING::getDef('module_products_reviews_ai_strengths') . '</strong></p><ul>';
+              foreach ($analysis->getStrengths() as $strength) {
+                $products_reviews_content .= '<li>' . HTML::outputProtected($strength) . '</li>';
+              }
+              $products_reviews_content .= '</ul>';
+            }
+
+            if ($analysis->getIssues() !== []) {
+              $products_reviews_content .= '<p><strong>' . CLICSHOPPING::getDef('module_products_reviews_ai_issues') . '</strong></p><ul>';
+              foreach ($analysis->getIssues() as $issue) {
+                $products_reviews_content .= '<li>' . HTML::outputProtected($issue) . '</li>';
+              }
+              $products_reviews_content .= '</ul>';
+            }
+
+            if ($analysis->getThemes() !== []) {
+              $products_reviews_content .= '<p class="moduleProductsInfoAiSentimentThemes">';
+              foreach ($analysis->getThemes() as $theme) {
+                $products_reviews_content .= ' <span class="badge text-bg-light">' . HTML::outputProtected($theme['label']) . '</span>';
+              }
+              $products_reviews_content .= '</p>';
+            }
+          }
+
+          $products_reviews_content .= '<p class="aiSentimentSummary">' . nl2br(HTML::outputProtected($analysis->getSummary())) . '</p>';
+          $products_reviews_content .= '</div>';
           $products_reviews_content .= '<div class="mt-1"></div>';
 
          // Uniq ID for every button

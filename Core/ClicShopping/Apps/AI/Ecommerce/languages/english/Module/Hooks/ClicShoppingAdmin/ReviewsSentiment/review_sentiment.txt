@@ -1,19 +1,35 @@
-text_sentiment = TASK: Write a structured sentiment analysis for the product "{{products_name}}" based on the customer reviews provided below.
+text_sentiment = TASK: Analyze the customer reviews for the product "{{products_name}}" and return ONLY a JSON object, no prose, no code fences.
 CONSTRAINTS:
-  - Write in English.
-  - Maximum 300 words.
-  - Use ONLY the provided reviews. No speculation.
-  - Do not mention usernames or personal information.
-
-EXPECTED STRUCTURE:
-  DOMINANT SENTIMENT: [positive | negative | neutral | mixed]
-  STRENGTHS: [2–3 recurring appreciated elements]
-  CRITICAL ISSUES: [2–3 frequent problems or complaints, or "none"]
-  RECURRING THEMES: [short list of topics that appear repeatedly]
-  SUMMARY: [synthesis paragraph in 3–5 sentences]
-
+  - Use ONLY the provided reviews. No speculation. No usernames or personal data.
+  - Weight reviews annotated with more "[helpful: X yes / Y no]" votes more heavily.
+  - Respond in English.
+JSON SHAPE (return exactly this shape):
+{"dominant_sentiment":"positive|negative|neutral|mixed","strengths":["..."],"issues":["..."],"themes":[{"label":"...","frequency":0,"sentiment":"positive|neutral|negative"}],"quotes":{"positive":["..."],"negative":["..."]},"summary":"3-5 sentence paragraph"}
 === CUSTOMER REVIEWS ===
 {{text_reviews}}
+
+
+
+text_fidelity_check = TASK: You are a strict fact-checker. The CUSTOMER REVIEWS below are the ONLY ground truth. For the ANALYSIS CLAIMS, return ONLY a JSON object, no prose, no code fences.
+CONSTRAINTS:
+  - A claim is "supported" only if the reviews state it or clearly imply it.
+  - List every claim that is NOT supported by the reviews.
+  - Respond in English.
+JSON SHAPE (return exactly this shape):
+{"supported_fraction":0.0,"unsupported_claims":["..."]}
+=== CUSTOMER REVIEWS ===
+{{text_reviews}}
+=== ANALYSIS CLAIMS ===
+{{claims}}
+
+
+
+text_translate_analysis = TASK: Translate ONLY the human-readable string values of the JSON below into {{language}}. Return ONLY the JSON object, exactly the same shape and keys, no prose, no code fences.
+CONSTRAINTS:
+  - Do NOT change field names, the "dominant_sentiment" value, any theme "sentiment" value, or the "frequency" numbers.
+  - Keep the exact same structure and array lengths.
+JSON:
+{{analysis_json}}
 
 
 
@@ -60,4 +76,5 @@ text_review_sentiment_customer_id = customer id (vote)
 text_review_sentiment_vote_sentiment = vote sentiment
 text_review_sentiment_description = sentiment description
 text_warning_mesage = Sentiment reviews not analysed: you need at least {{review_number}} to be analysed.
+text_warning_gpt_disabled = ChatGPT must be enabled and configured to generate the sentiment analysis.
 text_succes_mesage = Sentiment reviews successfully updated.

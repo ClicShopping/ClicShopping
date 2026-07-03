@@ -2076,6 +2076,7 @@ INSERT INTO cron VALUES(6, 'McpHealthCron', 'All 5 minutes', 'minute', 'McpHealt
 INSERT INTO cron VALUES(7, 'reputationUpdateProcessor', 'Reputation update queue processor - processes pending reputation update jobs every 5 minutes (batch size: 50, max attempts: 3)', 'minutes', 'ReputationUpdateProcessor', 0, '2026-02-08 09:59:22', '2026-02-22 19:52:40');
 INSERT INTO cron VALUES(8, 'productCockpitAi', 'Analyse quotidienne CockpitAI - score les produits commandés du jour, modifiés depuis la dernière analyse, et jamais analysés (en stock). Activable via CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_STATUS. Exécution recommandée à 02h00.', 'day', 'productCockpitAi', 0, NOW(), NOW());
 INSERT INTO cron VALUES(9, 'productSeoOptimization', 'Cron SEO quotidien - exécute la Phase 1 (Audit), la Phase 2 (Optimisation multilingue) et la Phase 3 optionnelle (FAQ ancrée) sur les produits commandés du jour, modifiés depuis la dernière analyse, ou jamais analysés. Activable via CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS / EC_CRON_SEO_FAQ_STATUS. Exécution recommandée à 02h00.', 'day', 'productSeoOptimization', 0, NOW(), NOW());
+INSERT INTO cron VALUES(10, 'productReviewSentiment', 'Daily AI review sentiment analysis - auto-accept reliable analyses, note the rest for the administrator', 'day', 'productReviewSentiment', 0, '2026-07-03 14:56:18', '2026-07-03 15:02:16');
 
 
 INSERT INTO currencies VALUES(1, 'Euro', 'EUR', '', 'EUR', '.', ',', '2', 1.00000000, '2008-09-13 18:02:35', 1, 0);

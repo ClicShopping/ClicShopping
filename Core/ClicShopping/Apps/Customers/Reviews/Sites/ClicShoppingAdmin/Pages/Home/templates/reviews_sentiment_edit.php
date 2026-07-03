@@ -26,8 +26,15 @@ $Qreviews = $CLICSHOPPING_Reviews->db->prepare('select r.reviews_id,
                                                        rs.id,
                                                        rs.sentiment_status,
                                                        rs.sentiment_approved,
-                                                       rsd.description
-                                                from :table_reviews r 
+                                                       rs.review_count,
+                                                       rs.positive_pct,
+                                                       rs.neutral_pct,
+                                                       rs.negative_pct,
+                                                       rs.rating_stddev,
+                                                       rs.date_modified,
+                                                       rsd.description,
+                                                       rsd.critic_verdict
+                                                from :table_reviews r
                                                         left join :table_reviews_sentiment rs on (r.reviews_id = rs.reviews_id)
                                                         left join :table_reviews_sentiment_description rsd on (rs.id = rsd.id),
                                                      :table_products p
@@ -71,6 +78,8 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
     <ul class="nav nav-tabs flex-column flex-sm-row" role="tablist" id="myTab">
       <li
         class="nav-item"><?php echo '<a href="#tab1" role="tab" data-bs-toggle="tab" class="nav-link active">' . $CLICSHOPPING_Reviews->getDef('tab_general') . '</a>'; ?></li>
+      <li
+        class="nav-item"><?php echo '<a href="#tab2" role="tab" data-bs-toggle="tab" class="nav-link">' . $CLICSHOPPING_Reviews->getDef('tab_analysis') . '</a>'; ?></li>
     </ul>
     <div class="tabsClicShopping">
       <div class="tab-content">
@@ -125,6 +134,100 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
               }
               ?>
             </div>
+          </div>
+        </div>
+        <?php
+        // -------------------------------------------------------------------
+        //          ONGLET Analyse / Indicateurs (ABSA)
+        // -------------------------------------------------------------------
+        $sentiment_id  = (int)$Qreviews->valueInt('id');
+        $analysis_products_id = (int)$Qreviews->valueInt('products_id');
+        $review_count  = (int)$Qreviews->valueInt('review_count');
+        $rating_stddev = (float)$Qreviews->value('rating_stddev');
+        $confidence    = \ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentMetrics::confidenceLevel($review_count);
+        $polarized     = $rating_stddev >= \ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentMetrics::POLARIZATION_STDDEV_THRESHOLD;
+        $critic_verdict = $Qreviews->value('critic_verdict');
+
+        // Engagement (read-only) — helpful votes on the AI summary (reviews_id = 0)
+        $Qai = $CLICSHOPPING_Reviews->db->prepare('select
+                    sum(case when vote = 1 then 1 else 0 end) as yes,
+                    sum(case when vote = 0 then 1 else 0 end) as no
+                  from :table_reviews_vote
+                  where products_id = :products_id and reviews_id = 0');
+        $Qai->bindInt(':products_id', $analysis_products_id);
+        $Qai->execute();
+        $ai_yes = (int)$Qai->valueInt('yes');
+        $ai_no  = (int)$Qai->valueInt('no');
+        ?>
+        <div class="tab-pane" id="tab2">
+          <div class="col-md-12 mainTitle">
+            <span><?php echo $CLICSHOPPING_Reviews->getDef('tab_analysis'); ?></span>
+          </div>
+          <div class="adminformTitle">
+            <table class="table table-striped">
+              <tbody>
+                <tr><td><?php echo $CLICSHOPPING_Reviews->getDef('text_reviews_analysed'); ?></td><td><?php echo $review_count; ?></td></tr>
+                <tr><td><?php echo $CLICSHOPPING_Reviews->getDef('text_positive_pct'); ?></td><td><?php echo $Qreviews->valueInt('positive_pct'); ?>&nbsp;%</td></tr>
+                <tr><td><?php echo $CLICSHOPPING_Reviews->getDef('text_neutral_pct'); ?></td><td><?php echo $Qreviews->valueInt('neutral_pct'); ?>&nbsp;%</td></tr>
+                <tr><td><?php echo $CLICSHOPPING_Reviews->getDef('text_negative_pct'); ?></td><td><?php echo $Qreviews->valueInt('negative_pct'); ?>&nbsp;%</td></tr>
+                <tr><td><?php echo $CLICSHOPPING_Reviews->getDef('text_confidence'); ?></td><td><?php echo $CLICSHOPPING_Reviews->getDef('text_confidence_' . $confidence); ?></td></tr>
+                <tr><td><?php echo $CLICSHOPPING_Reviews->getDef('text_dispersion'); ?></td><td><?php echo $CLICSHOPPING_Reviews->getDef($polarized ? 'text_polarized' : 'text_homogeneous') . ' (σ=' . number_format($rating_stddev, 2) . ')'; ?></td></tr>
+                <tr><td><?php echo $CLICSHOPPING_Reviews->getDef('text_critic_verdict'); ?></td><td><?php echo $critic_verdict !== '' ? $CLICSHOPPING_Reviews->getDef('text_verdict_' . $critic_verdict) : '-'; ?></td></tr>
+                <tr><td><?php echo $CLICSHOPPING_Reviews->getDef('text_last_updated'); ?></td><td><?php echo HTML::outputProtected((string)$Qreviews->value('date_modified')); ?></td></tr>
+                <tr><td><?php echo $CLICSHOPPING_Reviews->getDef('text_ai_engagement'); ?></td><td><?php echo $CLICSHOPPING_Reviews->getDef('modules_products_reviews_text_useful_vote_yes') . ' (' . $ai_yes . ') / ' . $CLICSHOPPING_Reviews->getDef('modules_products_reviews_text_useful_vote_no') . ' (' . $ai_no . ')'; ?></td></tr>
+              </tbody>
+            </table>
+            <?php
+            if ($ai_no > $ai_yes) {
+              echo '<div class="alert alert-warning" role="alert">' . $CLICSHOPPING_Reviews->getDef('text_ai_engagement_alert') . '</div>';
+            }
+
+            for ($i = 0, $n = \count($languages); $i < $n; $i++) {
+              $languages_id = (int)$languages[$i]['id'];
+
+              $Qjson = $CLICSHOPPING_Reviews->db->prepare('select analysis_json
+                          from :table_reviews_sentiment_description
+                          where id = :id and language_id = :language_id');
+              $Qjson->bindInt(':id', $sentiment_id);
+              $Qjson->bindInt(':language_id', $languages_id);
+              $Qjson->execute();
+
+              $analysis = \ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentAnalysisData::fromJson($Qjson->value('analysis_json'), '');
+
+              if (!$analysis->isStructured()) {
+                continue;
+              }
+
+              echo '<div class="card mt-2"><div class="card-body">';
+              echo '<h6>' . $CLICSHOPPING_Language->getImage($languages[$i]['code']) . '</h6>';
+
+              if ($analysis->getThemes() !== []) {
+                echo '<p><strong>' . $CLICSHOPPING_Reviews->getDef('text_themes') . '</strong></p><p>';
+                foreach ($analysis->getThemes() as $theme) {
+                  echo ' <span class="badge text-bg-light">' . HTML::outputProtected($theme['label']) . ' (' . (int)$theme['frequency'] . ', ' . HTML::outputProtected($theme['sentiment']) . ')</span>';
+                }
+                echo '</p>';
+              }
+
+              $quotes = $analysis->getQuotes();
+              if ($quotes['positive'] !== []) {
+                echo '<p><strong>' . $CLICSHOPPING_Reviews->getDef('text_quotes_positive') . '</strong></p><ul>';
+                foreach ($quotes['positive'] as $quote) {
+                  echo '<li>' . HTML::outputProtected($quote) . '</li>';
+                }
+                echo '</ul>';
+              }
+              if ($quotes['negative'] !== []) {
+                echo '<p><strong>' . $CLICSHOPPING_Reviews->getDef('text_quotes_negative') . '</strong></p><ul>';
+                foreach ($quotes['negative'] as $quote) {
+                  echo '<li>' . HTML::outputProtected($quote) . '</li>';
+                }
+                echo '</ul>';
+              }
+
+              echo '</div></div>';
+            }
+            ?>
           </div>
         </div>
         <div class="mt-1"></div>

@@ -7,6 +7,10 @@ date_added datetime default null comment(Timestamp when sentiment analysis was p
 date_modified datetime default null comment(Timestamp of last modification to sentiment record)
 user_admin varchar(255) default null comment(Administrator username who reviewed or modified the sentiment)
 review_count int unsigned not_null default(0) comment(Comment number when the analyse start)
+positive_pct int not_null default(0) comment(Computed share of positive reviews (stars 4-5), percent)
+neutral_pct int not_null default(0) comment(Computed share of neutral reviews (stars 3), percent)
+negative_pct int not_null default(0) comment(Computed share of negative reviews (stars 1-2), percent)
+rating_stddev decimal(5,3) not_null default(0) comment(Std-dev of star ratings - dispersion/polarization signal)
 --
 primary id
 idx_reviews_reviews_id reviews_id

@@ -36,6 +36,12 @@
       "ClicShoppingAdmin/Langues": {
         "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
         "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"
+      },
+      "ClicShoppingAdmin/Cronjob": {
+        "Process": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\Process"
+      },
+      "Shop/Cronjob": {
+        "Process": "Module\\Hooks\\Shop\\Cronjob\\Process"
       }
     }
   },

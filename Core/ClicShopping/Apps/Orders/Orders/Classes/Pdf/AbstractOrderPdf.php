@@ -154,7 +154,7 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetTextColor(...$rgb);
     $this->Ln(0);
     $this->Cell(-3);
-    $this->MultiCell(100, 3.5, $this->def('entry_http_site') . ' ' . HTTP::typeUrlDomain(), 0, 'L');
+    $this->MultiCell(100, 3.5, $this->def('entry_http_site') . ' ' . CLICSHOPPING::getConfig('http_server', 'Shop'), 0, 'L');
   }
 
   /**

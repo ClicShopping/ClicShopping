@@ -169,8 +169,8 @@ class PatternLearner
       preg_match_all('/GROUP BY\s+(.+?)(?:\s+ORDER BY|\s+HAVING|\s*$)/i', $corrected, $corrMatches)
     ) {
 
-      $origCols = array_map('trim', explode(',', $origMatches[1][0] ?? ''));
-      $corrCols = array_map('trim', explode(',', $corrMatches[1][0] ?? ''));
+      $origCols = array_map('trim', explode(',', $origMatches[1][0]));
+      $corrCols = array_map('trim', explode(',', $corrMatches[1][0]));
 
       $addedCols = array_diff($corrCols, $origCols);
 

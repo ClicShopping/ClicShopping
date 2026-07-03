@@ -25,9 +25,35 @@ You must use Gpt to create a customer review sentiment analyse.
 
 text_description_sentiment = AI sentiment generated
 tab_general = General
+tab_analysis = Analysis / Indicators
+text_reviews_analysed = Reviews analysed
+text_positive_pct = Positive (from stars)
+text_neutral_pct = Neutral (from stars)
+text_negative_pct = Negative (from stars)
+text_confidence = Analysis confidence
+text_confidence_very_low = Very low
+text_confidence_low = Low
+text_confidence_medium = Medium
+text_confidence_high = High
+text_dispersion = Dispersion
+text_polarized = Polarized opinions
+text_homogeneous = Homogeneous opinions
+text_critic_verdict = Critic verdict
+text_verdict_reliable = Reliable
+text_verdict_partial = Partial
+text_verdict_unreliable = Unreliable
+text_last_updated = Last updated
+text_ai_engagement = Was the AI summary helpful?
+text_ai_engagement_alert = More visitors found the AI summary unhelpful — consider regenerating.
+text_themes = Detected themes
+text_quotes_positive = Representative positive quotes
+text_quotes_negative = Representative negative quotes
+modules_products_reviews_text_useful_vote_yes = Yes
+modules_products_reviews_text_useful_vote_no = No
 
 help_info_warning = Vous devez aussi avoir plus de {{nb_comment}} commentaires pour pouvoir faire une analyse
 Pour utiliser cette page et les fonctionnalités, vous devez avoir une clef secréte OpenAI<br />
 
 text_result_page = Page {{listing_from}} of {{listing_total}}
 text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)
+button_view_analysis = View analysis

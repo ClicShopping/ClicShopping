@@ -25,6 +25,31 @@ Vous devez utiliser Gpt pour réaliser les analyses de sentiment de commentaires
 
 text_description_sentiment = AI sentiment généré
 tab_general = General
+tab_analysis = Analyse / Indicateurs
+text_reviews_analysed = Avis analysés
+text_positive_pct = Positif (d'après les notes)
+text_neutral_pct = Neutre (d'après les notes)
+text_negative_pct = Négatif (d'après les notes)
+text_confidence = Confiance de l'analyse
+text_confidence_very_low = Très faible
+text_confidence_low = Faible
+text_confidence_medium = Moyenne
+text_confidence_high = Élevée
+text_dispersion = Dispersion
+text_polarized = Avis polarisés
+text_homogeneous = Avis homogènes
+text_critic_verdict = Verdict du critique
+text_verdict_reliable = Fiable
+text_verdict_partial = Partiel
+text_verdict_unreliable = Peu fiable
+text_last_updated = Dernière mise à jour
+text_ai_engagement = Le résumé IA a-t-il été utile ?
+text_ai_engagement_alert = Plus de visiteurs ont jugé le résumé IA inutile — envisagez une régénération.
+text_themes = Thèmes détectés
+text_quotes_positive = Citations positives représentatives
+text_quotes_negative = Citations négatives représentatives
+modules_products_reviews_text_useful_vote_yes = Oui
+modules_products_reviews_text_useful_vote_no = Non
 
 help_info_warning = You must at least {{nb_comment}} customer reviews to make an analyse<br />
 to use this page you must have an OpenAi secret key
@@ -32,3 +57,4 @@ to use this page you must have an OpenAi secret key
 
 text_result_page = Page {{listing_from}} sur {{listing_total}}
 text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+button_view_analysis = Voir l'analyse

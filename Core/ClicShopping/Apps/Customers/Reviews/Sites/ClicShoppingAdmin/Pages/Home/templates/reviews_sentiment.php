@@ -293,6 +293,8 @@ $review_number = (int)CLICSHOPPING_APP_REVIEWS_RV_REVIEW_NUMBER ?? 1;
 
               if($Qreviews->valueInt('sentiment_status') == 1) {
                 echo HTML::link($CLICSHOPPING_Reviews->link('ReviewsSentimentEdit&page=' . $page . '&rID=' . $Qreviews->valueInt('reviews_id')), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_Reviews->getDef('icon_edit') . '"></i></h4>');
+                echo '&nbsp;';
+                echo HTML::link($CLICSHOPPING_Reviews->link('ReviewsSentimentEdit&page=' . $page . '&rID=' . $Qreviews->valueInt('reviews_id')) . '#tab2', '<h4><i class="bi bi-eye" title="' . $CLICSHOPPING_Reviews->getDef('button_view_analysis') . '"></i></h4>');
               }
             ?>
           </td>
