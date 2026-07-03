@@ -1,59 +1,3 @@
-text_sentiment = TÂCHE : Analyse les commentaires clients pour le produit "{{products_name}}" et renvoie UNIQUEMENT un objet JSON, sans prose, sans balises de code.
-CONTRAINTES :
-  - Base-toi UNIQUEMENT sur les commentaires fournis. Aucune spéculation. Aucun nom d'utilisateur ni donnée personnelle.
-  - Pondère davantage les commentaires annotés avec plus de votes "[helpful: X yes / Y no]".
-  - Réponds en français.
-FORME JSON (renvoie exactement cette forme) :
-{"dominant_sentiment":"positive|negative|neutral|mixed","strengths":["..."],"issues":["..."],"themes":[{"label":"...","frequency":0,"sentiment":"positive|neutral|negative"}],"quotes":{"positive":["..."],"negative":["..."]},"summary":"paragraphe de 3 à 5 phrases"}
-=== COMMENTAIRES CLIENTS ===
-{{text_reviews}}
-
-
-text_fidelity_check = TÂCHE : Tu es un vérificateur de faits strict. Les COMMENTAIRES CLIENTS ci-dessous sont la SEULE vérité terrain. Pour les AFFIRMATIONS D'ANALYSE, renvoie UNIQUEMENT un objet JSON, sans prose, sans balises de code.
-CONTRAINTES :
-  - Une affirmation est « supportée » seulement si les commentaires l'énoncent ou l'impliquent clairement.
-  - Liste chaque affirmation qui n'est PAS supportée par les commentaires.
-  - Réponds en français.
-FORME JSON (renvoie exactement cette forme) :
-{"supported_fraction":0.0,"unsupported_claims":["..."]}
-=== COMMENTAIRES CLIENTS ===
-{{text_reviews}}
-=== AFFIRMATIONS D'ANALYSE ===
-{{claims}}
-
-
-
-text_prompt_critic = RÔLE : Tu es un agent de contrôle qualité spécialisé dans l'analyse de sentiment e-commerce.
-CONTEXTE : Une analyse de sentiment a été générée automatiquement pour le produit "{{products_name}}"
-à partir de {{reviewCount}} commentaires clients.
-
-TA MISSION : Évaluer la fiabilité et la qualité de cette analyse.
-
-CONTRAINTES STRICTES :
-- Tu dois fonder ton évaluation UNIQUEMENT sur les commentaires bruts fournis.
-- Ne spécule pas sur des informations absentes des commentaires.
-- Sois précis et concis (150 mots maximum).
-- Écris en français.
-
-CRITÈRES D'ÉVALUATION :
-1. Ancrage factuel : le résumé est-il fidèle aux commentaires bruts ? (hallucinations ?)
-2. Biais de tonalité : le résumé sur-représente-t-il le positif ou le négatif ?
-3. Couverture thématique : des thèmes importants sont-ils absents ou sous-représentés ?
-4. Représentativité : le résumé reflète-t-il l'ensemble des commentaires ou seulement certains ?
-
-FORMAT DE RÉPONSE OBLIGATOIRE :
-VERDICT: [reliable | partial | unreliable]
-JUSTIFICATION: [ton analyse en 2–4 phrases]
-POINTS MANQUANTS: [liste courte ou "aucun"]
-
-=== COMMENTAIRES BRUTS ===
-{{text_reviews}}
-
-=== ANALYSE À ÉVALUER ===
-{{sentimentSummary}}
-
-
-
 text_review_sentiment_products_id = product_id
 text_review_sentiment_review_id = review_id
 text_review_sentiment_language_id = language_id
@@ -64,7 +8,6 @@ text_review_sentiment_description = Description sentiment
 text_review_sentiment_vote = Vote
 text_review_sentiment_customer_id = ID du client (vote)
 text_review_sentiment_vote_sentiment = Sentiment du vote
-text_review_sentiment_description = Description du sentiment
 text_warning_mesage = Analyse des sentiments des consommateurs non realisés: vous devez avoir au moins {{review_number}} commentaire(s) pour être analysé(s).
 text_warning_gpt_disabled = ChatGPT doit être activé et configuré pour générer l'analyse de sentiment.
 text_succes_mesage = Analyse des sentiments effectués.

@@ -41,6 +41,9 @@ class ReviewsInfo extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $product_not_sell = '';
 
       if ($review !== false) {
+        // Count this single-review view (the counter was never incremented before).
+        $CLICSHOPPING_Reviews->incrementReadCount((int)$_GET['reviews_id']);
+
         $date_added = $review['date_added'];
         $customers_name = HTML::outputProtected(substr($review['customers_name'], 0, -4)) . ' ...';
         $reviews_rating = $review['reviews_rating'];

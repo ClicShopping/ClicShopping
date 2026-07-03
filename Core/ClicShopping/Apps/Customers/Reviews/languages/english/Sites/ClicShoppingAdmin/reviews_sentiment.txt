@@ -45,6 +45,7 @@ text_verdict_unreliable = Unreliable
 text_last_updated = Last updated
 text_ai_engagement = Was the AI summary helpful?
 text_ai_engagement_alert = More visitors found the AI summary unhelpful — consider regenerating.
+text_sentiment_evolution = Sentiment evolution over time
 text_themes = Detected themes
 text_quotes_positive = Representative positive quotes
 text_quotes_negative = Representative negative quotes

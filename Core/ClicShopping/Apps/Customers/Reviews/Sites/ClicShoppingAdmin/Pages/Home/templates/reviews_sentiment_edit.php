@@ -182,6 +182,35 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
               echo '<div class="alert alert-warning" role="alert">' . $CLICSHOPPING_Reviews->getDef('text_ai_engagement_alert') . '</div>';
             }
 
+            // ── Sentiment evolution over time (snapshots) ──
+            $Qhist = $CLICSHOPPING_Reviews->db->prepare('select date_added, review_count, positive_pct, neutral_pct, negative_pct, dominant_sentiment
+                                                         from :table_reviews_sentiment_history
+                                                         where products_id = :products_id
+                                                         order by date_added desc
+                                                         limit 12');
+            $Qhist->bindInt(':products_id', $analysis_products_id);
+            $Qhist->execute();
+            $history = $Qhist->fetchAll();
+
+            if (\is_array($history) && $history !== []) {
+              echo '<div class="mt-3"><strong>' . $CLICSHOPPING_Reviews->getDef('text_sentiment_evolution') . '</strong></div>';
+              echo '<table class="table table-sm table-striped"><thead><tr>';
+              echo '<th>' . $CLICSHOPPING_Reviews->getDef('text_last_updated') . '</th>';
+              echo '<th>' . $CLICSHOPPING_Reviews->getDef('text_reviews_analysed') . '</th>';
+              echo '<th>+%</th><th>=%</th><th>-%</th>';
+              echo '</tr></thead><tbody>';
+              foreach ($history as $h) {
+                echo '<tr>';
+                echo '<td>' . HTML::outputProtected((string)$h['date_added']) . '</td>';
+                echo '<td>' . (int)$h['review_count'] . '</td>';
+                echo '<td><span class="badge text-bg-success">' . (int)$h['positive_pct'] . '</span></td>';
+                echo '<td><span class="badge text-bg-secondary">' . (int)$h['neutral_pct'] . '</span></td>';
+                echo '<td><span class="badge text-bg-danger">' . (int)$h['negative_pct'] . '</span></td>';
+                echo '</tr>';
+              }
+              echo '</tbody></table>';
+            }
+
             for ($i = 0, $n = \count($languages); $i < $n; $i++) {
               $languages_id = (int)$languages[$i]['id'];
 

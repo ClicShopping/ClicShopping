@@ -8,8 +8,8 @@
 
 namespace ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment;
 
-use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
 use ClicShopping\OM\Registry;
 
 /**
@@ -36,11 +36,11 @@ class SentimentAnalysisTranslator
       return $canonicalJson;
     }
 
-    if (!Registry::exists('Ecommerce')) {
-      Registry::set('Ecommerce', new EcommerceApp());
+    if (!Registry::exists('ReviewsApp')) {
+      Registry::set('ReviewsApp', new ReviewsApp());
     }
-    $app = Registry::get('Ecommerce');
-    $app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/ReviewsSentiment/review_sentiment', 'en');
+    $app = Registry::get('ReviewsApp');
+    $app->loadDefinitions('Sites/ClicShoppingAdmin/review_sentiment_prompts', 'en');
 
     try {
       $prompt = $app->getDef('text_translate_analysis', [

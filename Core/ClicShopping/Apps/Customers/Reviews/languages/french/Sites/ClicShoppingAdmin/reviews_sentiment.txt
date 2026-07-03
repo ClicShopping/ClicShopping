@@ -45,6 +45,7 @@ text_verdict_unreliable = Peu fiable
 text_last_updated = Dernière mise à jour
 text_ai_engagement = Le résumé IA a-t-il été utile ?
 text_ai_engagement_alert = Plus de visiteurs ont jugé le résumé IA inutile — envisagez une régénération.
+text_sentiment_evolution = Évolution du sentiment dans le temps
 text_themes = Thèmes détectés
 text_quotes_positive = Citations positives représentatives
 text_quotes_negative = Citations négatives représentatives

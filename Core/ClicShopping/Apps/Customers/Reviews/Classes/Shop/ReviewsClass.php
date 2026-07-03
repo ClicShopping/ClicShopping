@@ -224,6 +224,28 @@ class ReviewsClass
   }
 
   /**
+   * Increments the view counter (`reviews_read`) of a single review.
+   *
+   * Called once per single-review view (ReviewsInfo page). Previously the counter
+   * was never incremented, so it stayed at 0.
+   *
+   * @param int $reviewsId Review being viewed.
+   * @return void
+   */
+  public function incrementReadCount(int $reviewsId): void
+  {
+    if ($reviewsId <= 0) {
+      return;
+    }
+
+    $Qupdate = $this->db->prepare('update :table_reviews
+                                   set reviews_read = reviews_read + 1
+                                   where reviews_id = :reviews_id');
+    $Qupdate->bindInt(':reviews_id', $reviewsId);
+    $Qupdate->execute();
+  }
+
+  /**
    * Saves a review entry into the database. Depending on the customer's group,
    * it updates the reviews and reviews description tables with the provided
    * review data. Invokes hooks after the entry is saved.

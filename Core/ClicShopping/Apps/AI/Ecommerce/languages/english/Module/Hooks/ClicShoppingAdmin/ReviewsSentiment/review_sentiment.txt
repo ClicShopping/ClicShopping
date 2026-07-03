@@ -1,69 +1,3 @@
-text_sentiment = TASK: Analyze the customer reviews for the product "{{products_name}}" and return ONLY a JSON object, no prose, no code fences.
-CONSTRAINTS:
-  - Use ONLY the provided reviews. No speculation. No usernames or personal data.
-  - Weight reviews annotated with more "[helpful: X yes / Y no]" votes more heavily.
-  - Respond in English.
-JSON SHAPE (return exactly this shape):
-{"dominant_sentiment":"positive|negative|neutral|mixed","strengths":["..."],"issues":["..."],"themes":[{"label":"...","frequency":0,"sentiment":"positive|neutral|negative"}],"quotes":{"positive":["..."],"negative":["..."]},"summary":"3-5 sentence paragraph"}
-=== CUSTOMER REVIEWS ===
-{{text_reviews}}
-
-
-
-text_fidelity_check = TASK: You are a strict fact-checker. The CUSTOMER REVIEWS below are the ONLY ground truth. For the ANALYSIS CLAIMS, return ONLY a JSON object, no prose, no code fences.
-CONSTRAINTS:
-  - A claim is "supported" only if the reviews state it or clearly imply it.
-  - List every claim that is NOT supported by the reviews.
-  - Respond in English.
-JSON SHAPE (return exactly this shape):
-{"supported_fraction":0.0,"unsupported_claims":["..."]}
-=== CUSTOMER REVIEWS ===
-{{text_reviews}}
-=== ANALYSIS CLAIMS ===
-{{claims}}
-
-
-
-text_translate_analysis = TASK: Translate ONLY the human-readable string values of the JSON below into {{language}}. Return ONLY the JSON object, exactly the same shape and keys, no prose, no code fences.
-CONSTRAINTS:
-  - Do NOT change field names, the "dominant_sentiment" value, any theme "sentiment" value, or the "frequency" numbers.
-  - Keep the exact same structure and array lengths.
-JSON:
-{{analysis_json}}
-
-
-
-text_prompt_critic = ROLE: You are a quality control agent specialized in e-commerce sentiment analysis.
-CONTEXT: A sentiment analysis was automatically generated for the product "{{products_name}}"
-based on {{reviewCount}} customer reviews.
-
-YOUR TASK: Assess the reliability and quality of this analysis.
-
-STRICT CONSTRAINTS:
-- Base your evaluation ONLY on the raw reviews provided below.
-- Do not speculate about information absent from the reviews.
-- Be precise and concise (150 words maximum).
-- Write in English.
-
-EVALUATION CRITERIA:
-1. Factual grounding: does the summary accurately reflect the raw reviews? (hallucinations?)
-2. Tone bias: does the summary over-represent positive or negative sentiment?
-3. Thematic coverage: are important themes missing or under-represented?
-4. Representativeness: does the summary reflect all reviews, or only some?
-
-MANDATORY RESPONSE FORMAT:
-VERDICT: [reliable | partial | unreliable]
-JUSTIFICATION: [your analysis in 2–4 sentences]
-MISSING POINTS: [short list or "none"]
-
-=== RAW CUSTOMER REVIEWS ===
-{{text_reviews}}
-
-=== ANALYSIS TO EVALUATE ===
-{{sentimentSummary}}
-
-
-
 text_review_sentiment_products_id = product_id
 text_review_sentiment_review_id = review_id
 text_review_sentiment_language_id = language_id
@@ -74,7 +8,6 @@ text_review_sentiment_description = sentiment description
 text_review_sentiment_vote = Vote
 text_review_sentiment_customer_id = customer id (vote)
 text_review_sentiment_vote_sentiment = vote sentiment
-text_review_sentiment_description = sentiment description
 text_warning_mesage = Sentiment reviews not analysed: you need at least {{review_number}} to be analysed.
 text_warning_gpt_disabled = ChatGPT must be enabled and configured to generate the sentiment analysis.
 text_succes_mesage = Sentiment reviews successfully updated.

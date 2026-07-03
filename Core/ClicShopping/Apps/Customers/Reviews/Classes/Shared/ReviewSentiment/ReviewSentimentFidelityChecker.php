@@ -8,9 +8,9 @@
 
 namespace ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment;
 
-use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
 /**
  * ReviewSentimentFidelityChecker — LLM fact-check against the source reviews.
@@ -39,11 +39,11 @@ class ReviewSentimentFidelityChecker
       return ['available' => true, 'fidelity_ok' => true, 'supported_fraction' => 1.0, 'unsupported_claims' => []];
     }
 
-    if (!Registry::exists('Ecommerce')) {
-      Registry::set('Ecommerce', new EcommerceApp());
+    if (!Registry::exists('ReviewsApp')) {
+      Registry::set('ReviewsApp', new ReviewsApp());
     }
-    $app = Registry::get('Ecommerce');
-    $app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/ReviewsSentiment/review_sentiment', $languageCode);
+    $app = Registry::get('ReviewsApp');
+    $app->loadDefinitions('Sites/ClicShoppingAdmin/review_sentiment_prompts', $languageCode);
 
     try {
       $prompt = $app->getDef('text_fidelity_check', [

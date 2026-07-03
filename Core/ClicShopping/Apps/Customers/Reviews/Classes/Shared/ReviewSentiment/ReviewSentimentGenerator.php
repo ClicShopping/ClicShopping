@@ -8,12 +8,10 @@
 
 namespace ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment;
 
-use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ReviewSentimentEmbedder;
 use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\ProductsAdmin;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentAnalysisData;
-use ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentMetrics;
-use ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentReviewCorpus;
+use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
 use ClicShopping\OM\Registry;
 use function count;
 
@@ -46,10 +44,10 @@ class ReviewSentimentGenerator
 
   public function __construct()
   {
-    if (!Registry::exists('Ecommerce')) {
-      Registry::set('Ecommerce', new EcommerceApp());
+    if (!Registry::exists('ReviewsApp')) {
+      Registry::set('ReviewsApp', new ReviewsApp());
     }
-    $this->app  = Registry::get('Ecommerce');
+    $this->app  = Registry::get('ReviewsApp');
     $this->db   = $this->app->db;
     $this->lang = Registry::get('Language');
 
@@ -105,10 +103,10 @@ class ReviewSentimentGenerator
       $isUpdate = false;
     }
 
-    // ── Canonical analysis (once, English) ──
+    // ── Canonical analysis (once, English) — corpus spans ALL languages ──
     $canonicalLangId = (int)$languages[0]['id'];
     $productsName    = $this->productsAdmin->getProductsName($productId, $canonicalLangId);
-    $corpus          = $this->getProductReviewCorpus($productId, $canonicalLangId);
+    $corpus          = $this->getProductReviewCorpus($productId);
     $weightedText    = SentimentReviewCorpus::buildWeightedText($corpus);
 
     $canonicalJson  = $this->generate('en', $productsName, $weightedText);
@@ -156,6 +154,21 @@ class ReviewSentimentGenerator
       }
     }
 
+    // Temporal snapshot — one row per analysis run (manual + cron) for the trend.
+    $this->db->save('reviews_sentiment_history', [
+      'products_id'        => $productId,
+      'review_count'       => count($ratings),
+      'positive_pct'       => $metrics['positive_pct'],
+      'neutral_pct'        => $metrics['neutral_pct'],
+      'negative_pct'       => $metrics['negative_pct'],
+      'rating_stddev'      => $metrics['rating_stddev'],
+      'dominant_sentiment' => $canonicalData->getDominantSentiment(),
+      'date_added'         => 'now()',
+    ]);
+
+    // Macro RAG embedding — same path for manual + cron; no-op if provider off.
+    (new ReviewSentimentEmbedder())->embed($sentimentId, count($ratings));
+
     return [
       'sentiment_id' => $sentimentId,
       'verdict'      => $verdict,
@@ -183,21 +196,34 @@ class ReviewSentimentGenerator
   }
 
   /**
+   * One text per approved review, across ALL languages.
+   *
+   * A customer review is stored in a single language, so filtering by one
+   * language would silently drop every review written in another language.
+   * The macro analysis must cover them all (the LLM handles multilingual input
+   * and answers in English via the prompt). Reviews translated into several
+   * languages (e.g. seeded demo data) are de-duplicated to one text per review.
+   *
    * @return array<int,array{text:string,rating:int,helpful_yes:int,helpful_no:int}>
    */
-  private function getProductReviewCorpus(int $productId, int $languagesId): array
+  private function getProductReviewCorpus(int $productId): array
   {
     $Qrows = $this->db->prepare('SELECT r.reviews_id, r.reviews_rating, rd.reviews_text
                                  FROM :table_reviews r, :table_reviews_description rd
                                  WHERE r.products_id = :products_id AND r.status = 1
-                                   AND r.reviews_id = rd.reviews_id AND rd.languages_id = :languages_id');
+                                   AND r.reviews_id = rd.reviews_id
+                                 ORDER BY r.reviews_id ASC, rd.languages_id ASC');
     $Qrows->bindInt(':products_id', $productId);
-    $Qrows->bindInt(':languages_id', $languagesId);
     $Qrows->execute();
 
     $rows = [];
+    $seen = [];
     foreach ($Qrows->fetchAll() as $row) {
       $reviewsId = (int)$row['reviews_id'];
+      if (isset($seen[$reviewsId])) {
+        continue; // one text per review (first language row wins)
+      }
+      $seen[$reviewsId] = true;
 
       $Qy = $this->db->prepare('SELECT count(*) AS c FROM :table_reviews_vote WHERE reviews_id = :rid AND vote = 1');
       $Qy->bindInt(':rid', $reviewsId);
@@ -223,7 +249,7 @@ class ReviewSentimentGenerator
    */
   private function generate(string $languageCode, string $productsName, string $weightedText): string
   {
-    $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/ReviewsSentiment/review_sentiment', $languageCode);
+    $this->app->loadDefinitions('Sites/ClicShoppingAdmin/review_sentiment_prompts', $languageCode);
 
     $prompt = $this->app->getDef('text_sentiment', [
       'products_name' => $productsName,

@@ -15,6 +15,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\Registry;
 use function count;
 
 /**
@@ -37,14 +38,18 @@ class ReviewSentimentCronRunner
   private const CRON_CODE  = 'productReviewSentiment';
   private const BATCH_SIZE = 30;
 
+  /** Minimum AI-summary votes before the "unhelpful" signal (B) triggers a regeneration. */
+  private const MIN_AI_SUMMARY_VOTES = 3;
+
   private mixed $db;
 
   public function __construct()
   {
-    // Own a fresh Reviews App instance for a public db handle. The 'Reviews'
-    // Registry key is NOT reused: in the Shop context it holds Classes\Shop\
-    // ReviewsClass (private $db), which would be inaccessible here.
-    $this->db = (new ReviewsApp())->db;
+    if (!Registry::exists('ReviewsApp')) {
+      Registry::set('ReviewsApp', new ReviewsApp());
+    }
+    
+    $this->db = Registry::get('ReviewsApp')->db;
   }
 
   /**
@@ -134,13 +139,36 @@ class ReviewSentimentCronRunner
   }
 
   /**
-   * Products with enough approved reviews whose analysis is missing or stale
-   * (older than the most recent review). Anchor reuses the existing sentiment
-   * row's reviews_id when present to avoid duplicate parents.
+   * Regeneration targets, capped at $limit and de-duplicated by product:
+   *   (1) products whose analysis is missing or stale (older than the newest review);
+   *   (2) products whose APPROVED analysis has a net-negative AI-summary vote (signal B).
    *
    * @return array<int,array{products_id:int,anchor:int}>
    */
   private function fetchTargets(int $limit): array
+  {
+    $targets = [];
+    $seen    = [];
+
+    foreach (array_merge($this->fetchStaleTargets($limit), $this->fetchPoorlyVotedTargets($limit)) as $t) {
+      $pid = $t['products_id'];
+      if (isset($seen[$pid]) || count($targets) >= $limit) {
+        continue;
+      }
+      $seen[$pid] = true;
+      $targets[]  = $t;
+    }
+
+    return $targets;
+  }
+
+  /**
+   * Products with enough approved reviews whose analysis is missing or stale.
+   * Anchor reuses the existing sentiment row's reviews_id to avoid duplicate parents.
+   *
+   * @return array<int,array{products_id:int,anchor:int}>
+   */
+  private function fetchStaleTargets(int $limit): array
   {
     $Q = $this->db->prepare('SELECT r.products_id,
                                     COALESCE(MAX(rs.reviews_id), MIN(r.reviews_id)) AS anchor
@@ -157,12 +185,48 @@ class ReviewSentimentCronRunner
     $Q->bindInt(':limit', $limit);
     $Q->execute();
 
-    $targets = [];
+    $rows = [];
     foreach ($Q->fetchAll() as $row) {
-      $targets[] = ['products_id' => (int)$row['products_id'], 'anchor' => (int)$row['anchor']];
+      $rows[] = ['products_id' => (int)$row['products_id'], 'anchor' => (int)$row['anchor']];
     }
 
-    return $targets;
+    return $rows;
+  }
+
+  /**
+   * Signal B — approved analyses whose AI-summary (reviews_id = 0) got more "not
+   * helpful" than "helpful" votes (min MIN_AI_SUMMARY_VOTES) are regenerated so a
+   * poorly-received summary gets a fresh attempt (re-verified + re-gated).
+   *
+   * @return array<int,array{products_id:int,anchor:int}>
+   */
+  private function fetchPoorlyVotedTargets(int $limit): array
+  {
+    $Q = $this->db->prepare('SELECT rs.products_id,
+                                    MAX(rs.reviews_id) AS anchor
+                             FROM :table_reviews_sentiment rs
+                             INNER JOIN (
+                               SELECT products_id
+                               FROM :table_reviews_vote
+                               WHERE reviews_id = 0
+                               GROUP BY products_id
+                               HAVING COUNT(*) >= :min_votes
+                                  AND SUM(CASE WHEN vote = 0 THEN 1 ELSE 0 END)
+                                    > SUM(CASE WHEN vote = 1 THEN 1 ELSE 0 END)
+                             ) v ON v.products_id = rs.products_id
+                             WHERE rs.sentiment_approved = 1
+                             GROUP BY rs.products_id
+                             LIMIT :limit');
+    $Q->bindInt(':min_votes', self::MIN_AI_SUMMARY_VOTES);
+    $Q->bindInt(':limit', $limit);
+    $Q->execute();
+
+    $rows = [];
+    foreach ($Q->fetchAll() as $row) {
+      $rows[] = ['products_id' => (int)$row['products_id'], 'anchor' => (int)$row['anchor']];
+    }
+
+    return $rows;
   }
 
   private function autoAccept(int $sentimentId): void

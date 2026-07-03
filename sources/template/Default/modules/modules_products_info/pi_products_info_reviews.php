@@ -8,9 +8,10 @@
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\DateTime;
-  use ClicShopping\OM\Hash;
-  use ClicShopping\OM\HTML;
+use ClicShopping\OM\Hash;
+use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentAnalysisData;
 
 class pi_products_info_reviews
 {
@@ -122,7 +123,7 @@ class pi_products_info_reviews
           $products_reviews_content .= '<div class="alert alert-info" role="alert">';
           $products_reviews_content .= '<span class="moduleProductsInfoReviewsTitleAiSentiment"><h4>' . CLICSHOPPING::getDef('modules_products_reviews_info_content_text_customers_ai_sentiment') . ' ' . $CLICSHOPPING_ProductsCommon->getProductsName() . '</h4></span>';
 
-          $analysis = \ClicShopping\Apps\Customers\Reviews\Classes\ClicShoppingAdmin\SentimentAnalysisData::fromJson(
+          $analysis = SentimentAnalysisData::fromJson(
             $Qsentiment->value('analysis_json'),
             $Qsentiment->value('description')
           );
