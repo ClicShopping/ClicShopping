@@ -13,12 +13,14 @@
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\HTML;
   use ClicShopping\OM\Interfaces\HooksInterface;
+  use ClicShopping\OM\Mail;
   use ClicShopping\OM\Registry;
   use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Common\CronLogger;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\CockpitAIOrchestrator;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\FeedbackCollector;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\RuleAdjuster;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\SeoCronRunner;
   use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
   
 /**
@@ -94,12 +96,35 @@ class Process implements HooksInterface
    */
   public function execute()
   {
+    // Unified Cronjob/Process dispatch — this single hook fans out to every
+    // AI/Ecommerce daily cron concern, exactly like Currency/Gdpr do. Each
+    // concern self-gates on its own clic_cron code + master switch + rate limit,
+    // so they run independently whether triggered by the full sweep
+    // (?cronjob&runall) or a single admin "Run" (?cronId=…).
+    $this->runCockpitAiCron();
+
+    // SEO daily optimization (Phase 1 audit / 2 multilingual / 3 optional FAQ)
+    // — delegated to its shared runner, self-gated on productSeoOptimization +
+    // CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS. Same source of truth as the
+    // former standalone SeoOptimization hook, now reached through Process.
+    (new SeoCronRunner())->run();
+  }
+
+  /**
+   * CockpitAI daily analysis concern.
+   *
+   * Self-gates on the CockpitAI master switch + provider status, then on its own
+   * cron code inside cronJob(). Void so an opt-out never aborts the sibling SEO
+   * concern dispatched right after it.
+   */
+  private function runCockpitAiCron(): void
+  {
     // Master switch — when the merchant flips this constant to 'False' in
     // app configuration, the scheduler still fires us but we opt out
     // cleanly instead of consuming LLM credits.
     if (defined('CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_STATUS')
         && CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_STATUS !== 'True') {
-      return false;
+      return;
     }
 
     $requiredConstants = [
@@ -111,7 +136,7 @@ class Process implements HooksInterface
     CLICSHOPPING::checkAppsIsActivated($requiredConstants);
 
     if (!Gpt::checkGptStatus()) {
-      return false;
+      return;
     }
 
     $this->cronJob();
@@ -125,7 +150,7 @@ class Process implements HooksInterface
      */
     private function cronJob(): void
     {
-      $cron_code = CRON_USER_ID; // Code unique identifiant ce cron dans la table
+      $cron_code = self::CRON_USER_ID; // Code unique identifiant ce cron dans la table
       $cron_id_update = Cronjob::getCronCode($cron_code);
 
       if (isset($_GET['cronId'])) {
@@ -188,6 +213,14 @@ class Process implements HooksInterface
       $summary['products_found'] = count($targets);
 
       if (empty($targets)) {
+        // Close the cron_log row for the no-op run (no targets today) so the
+        // observability table never leaves a dangling 'running' entry.
+        $logger->finish('completed', [
+          'targets_found' => 0,
+          'targets_processed' => 0,
+          'success_count' => 0,
+          'failure_count' => 0,
+        ]);
         $this->sendSummaryEmail($summary, 0);
         return;
       }
@@ -528,7 +561,12 @@ class Process implements HooksInterface
     HTML;
 
     try {
+      $fromAddr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
+      $fromName = \defined('STORE_NAME') ? STORE_NAME : 'ClicShopping';
 
+      $mail = new Mail();
+      $mail->addHtml($html, $text);
+      $mail->send($recipient, $fromName, $fromAddr, '', $subject);
     } catch (\Throwable $e) {
       if ($this->debug) {
         error_log('[CockpitAI Cron] Failed to send email: ' . $e->getMessage());

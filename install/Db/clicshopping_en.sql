@@ -2068,15 +2068,16 @@ INSERT INTO countries VALUES(238, 'Zambia', 'ZM', 'ZMB', 1, 1);
 INSERT INTO countries VALUES(239, 'Zimbabwe', 'ZW', 'ZWE', 1, 1);
 
 INSERT INTO cron VALUES(1, 'currency', 'Update the currencies', 'day', 'currency', 1, '2014-09-25 14:40:00', '2022-10-08 17:57:36');
-INSERT INTO cron VALUES(2, 'gdpr', 'Customer Legislation', 'monthly', 'gdpr', 0, '2014-09-01 14:40:00', '2022-10-08 18:04:38');
-INSERT INTO cron VALUES(3, 'backup', 'database backup', 'weekly', 'backup', 1, '1900-01-01 00:00:00', '2022-10-08 17:31:47');
-INSERT INTO cron VALUES(4, 'marketplace', 'Apps marketplace', 'monthly', 'marketplace', 1, '2023-01-06 15:51:34', '2023-01-06 18:19:19');
-INSERT INTO cron VALUES(5, 'embeddings', 'Update the embeddings table if it not exist<br>Table updated : categories_embedding, manufacturers_embedding, products_embedding, pages_manager_embedding, reviews_embedding,suppliers_embedding.<br>Table not updated : orders_embedding,return_orders_embedding, reviews_sentiment_embeddings', 'weekly', 'embeddings', 1, '2025-05-15 20:14:27', '2025-05-15 20:19:06');
+INSERT INTO cron VALUES(2, 'gdpr', 'Customer Legislation', 'month', 'gdpr', 0, '2014-09-01 14:40:00', '2022-10-08 18:04:38');
+INSERT INTO cron VALUES(3, 'backup', 'database backup', 'week', 'backup', 1, '1900-01-01 00:00:00', '2022-10-08 17:31:47');
+INSERT INTO cron VALUES(4, 'marketplace', 'Apps marketplace', 'month', 'marketplace', 1, '2023-01-06 15:51:34', '2023-01-06 18:19:19');
+INSERT INTO cron VALUES(5, 'embeddings', 'Update the embeddings table if it not exist<br>Table updated : categories_embedding, manufacturers_embedding, products_embedding, pages_manager_embedding, reviews_embedding,suppliers_embedding.<br>Table not updated : orders_embedding,return_orders_embedding, reviews_sentiment_embeddings', 'week', 'embeddings', 1, '2025-05-15 20:14:27', '2025-05-15 20:19:06');
 INSERT INTO cron VALUES(6, 'McpHealthCron', 'All 5 minutes', 'minute', 'McpHealthCron', 1, '2025-09-25 09:52:21', '2025-09-25 10:56:07');
 INSERT INTO cron VALUES(7, 'reputationUpdateProcessor', 'Reputation update queue processor - processes pending reputation update jobs every 5 minutes (batch size: 50, max attempts: 3)', 'minutes', 'ReputationUpdateProcessor', 0, '2026-02-08 09:59:22', '2026-02-22 19:52:40');
 INSERT INTO cron VALUES(8, 'productCockpitAi', 'CockpitAI daily analysis - scores products ordered today, modified since last analysis, and never analysed yet (in stock). Toggle via CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_STATUS. Recommended run at 02:00 AM.', 'day', 'productCockpitAi', 0, NOW(), NOW());
 INSERT INTO cron VALUES(9, 'productSeoOptimization', 'SEO daily cron - runs Phase 1 (Audit), Phase 2 (Multilingual Optimization) and optional Phase 3 (Grounded FAQ) on products ordered today, modified since last analysis, or never analysed. Toggle via CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS / EC_CRON_SEO_FAQ_STATUS. Recommended run at 02:00 AM.', 'day', 'productSeoOptimization', 0, NOW(), NOW());
 INSERT INTO cron VALUES(10, 'productReviewSentiment', 'Daily AI review sentiment analysis - auto-accept reliable analyses, note the rest for the administrator', 'day', 'productReviewSentiment', 0, '2026-07-03 14:56:18', '2026-07-03 15:02:16');
+INSERT INTO cron VALUES(11, 'reputation_decay', 'Daily reputation decay - applies time decay to critic reputations (gated by ActorCriticConfig::isReputationDecayEnabled). Dispatched via the action column to the ReputationDecay hook. Disabled by default. Recommended: once per day.', 'day', 'ReputationDecay', 0, NOW(), NOW());
 
 
 INSERT INTO currencies VALUES(1, 'Euro', 'EUR', '', 'EUR', '.', ',', '2', 1.00000000, '2008-09-13 18:02:35', 1, 0);

@@ -1,7 +1,9 @@
 version4.33
 - fix / bug resolution
 - libraries updated
-- 
+- AI review sentiment analysis improved and refactored with agentic approach
+- Cron Improvement
+
 ---------------
 version4.32
 - Schema updated
@@ -62,7 +64,7 @@ version4.27
 version4.26
 - remove table embedding no compatible with sql server inside schema
 - Add AI product recommendations (refactoring) inside product description (to do the cart, checkout  ... later)
-- librairies updated
+- libraries updated
 
 ---------------
 version4.25

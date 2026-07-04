@@ -107,15 +107,13 @@
       "ClicShoppingAdmin/RAG": {
       },
       "ClicShoppingAdmin/Cronjob": {
-        "Process":         "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\Process",
-        "SeoOptimization": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\SeoOptimization"
+        "Process":         "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\Process"
       },
       "ClicShoppingAdmin/TopDashboard": {
         "dashboardCron": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\dashboardCron"
       },
       "Shop/Cronjob": {
-        "Process":         "Module\\Hooks\\Shop\\Cronjob\\Cron&Process",
-        "SeoOptimization": "Module\\Hooks\\Shop\\Cronjob\\Cron&SeoOptimization"
+        "Process":         "Module\\Hooks\\Shop\\Cronjob\\Process"
       }
     }
   },
@@ -123,8 +121,7 @@
     "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
     "Shop": {
       "OpenAI&ACP":"Sites\\Shop\\Pages\\ACP",
-      "Google&UCP":"Sites\\Shop\\Pages\\UCP",
-      "CronSeoFaq":"Sites\\Shop\\Pages\\CronSeoFaq"
+      "Google&UCP":"Sites\\Shop\\Pages\\UCP"
     }
   }
 }

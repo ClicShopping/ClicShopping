@@ -37,7 +37,16 @@ class Run extends \ClicShopping\OM\Domains\PagesActionsAbstract
         if (strtotime('+1 ' . $result['cycle'], strtotime($result['date_modified'])) < ($time + 10)) {
           Cron::updateCron($result['cron_id']);
 
+          // Generic Process hook + optional per-cron named hook (row `action`).
+          // Running a single cron by id still sets $_GET['cronId'], so each hook
+          // self-gates to the right code; the action dispatch reaches the named
+          // hook (e.g. reputation) that Process alone would never call.
           $this->hooks->call('Cronjob', 'Process');
+
+          $action = trim((string)($result['action'] ?? ''));
+          if ($action !== '' && $action !== 'Process') {
+            $this->hooks->call('Cronjob', $action);
+          }
         }
       }
     }

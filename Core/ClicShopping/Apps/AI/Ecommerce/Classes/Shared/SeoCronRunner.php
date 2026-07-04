@@ -27,9 +27,11 @@ use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
 /**
  * SeoCronRunner — shared engine for the daily SEO cron.
  *
- * Extracted verbatim from the two byte-identical hook classes
- * (Shop\Cronjob\SeoOptimization and ClicShoppingAdmin\Cronjob\SeoOptimization),
- * which now delegate to this single source of truth.
+ * Reached through the unified Cronjob/Process dispatch: the AI/Ecommerce
+ * Shop\Cronjob\Process and ClicShoppingAdmin\Cronjob\Process hooks fan out to
+ * this runner alongside the CockpitAI concern, exactly like Currency/Gdpr wire
+ * their Process hooks. This is the single source of truth for the SEO batch;
+ * it self-gates on the productSeoOptimization cron code + master switch.
  *
  * Runs the full 3-phase SEO pipeline on a curated batch of products:
  *
@@ -65,7 +67,12 @@ use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
  * Configuration constants:
  *   CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS         (default True)  master switch
  *   CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_FAQ_STATUS     (default True)  include Phase 3
- *   CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_BATCH_SIZE     (default 30)    products per run
+ *   CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_BATCH_SIZE     (default 10)    products per run
+ *     — SEO is ~3 min/product, so size this to the trigger's time budget:
+ *       batchSize ≈ max_execution_time / 180s. Under an HTTP trigger with a low
+ *       max_execution_time even a small batch can time out; run via a CLI cron
+ *       (set_time_limit(0)) for large catch-ups. The backlog drains across runs
+ *       (per-product 24h cooldown), so a small batch is safe, just slower.
  *   CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_LLM_DAILY_LIMIT (default 500)  total LLM-bound runs/day
  */
 class SeoCronRunner
@@ -88,7 +95,7 @@ class SeoCronRunner
 
     $this->batchSize = defined('CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_BATCH_SIZE')
       ? (int)CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_BATCH_SIZE
-      : 30;
+      : 10;
 
     $this->faqEnabled = !defined('CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_FAQ_STATUS')
       || CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_FAQ_STATUS === 'True';
