@@ -170,7 +170,7 @@ echo(($form_action == 'Insert') ? HTML::button($CLICSHOPPING_Manufacturers->getD
               for ($i = 0, $n = \count($languages); $i < $n; $i++) {
                 ?>
                 <div class="accordion-item">
-                  <h2 class="accordion-header" id="heading<?php $i; ?>">
+                  <h2 class="accordion-header" id="heading<?php echo $i; ?>">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                       <?php echo $CLICSHOPPING_Language->getImage($languages[$i]['code']); ?>
@@ -278,7 +278,7 @@ echo(($form_action == 'Insert') ? HTML::button($CLICSHOPPING_Manufacturers->getD
               $languages_id = $languages[$i]['id'];
               ?>
               <div class="accordion-item">
-                <h2 class="accordion-header" id="heading<?php $i; ?>">
+                <h2 class="accordion-header" id="heading<?php echo $i; ?>">
                   <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
                           aria-expanded="true" aria-controls="collapseOne">
                     <?php echo $CLICSHOPPING_Language->getImage($languages[$i]['code']); ?>

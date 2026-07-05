@@ -179,7 +179,7 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
                 $languageId = $languages[$i]['id'];
                 ?>
                 <div class="accordion-item">
-                  <h2 class="accordion-header" id="heading<?php $i; ?>">
+                  <h2 class="accordion-header" id="heading<?php echo $i; ?>">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                       <?php echo $CLICSHOPPING_Language->getImage($languages[$i]['code']); ?>
@@ -239,7 +239,7 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
                 $languages_id = $languages[$i]['id'];
                 ?>
                 <div class="accordion-item">
-                  <h2 class="accordion-header" id="heading<?php $i; ?>">
+                  <h2 class="accordion-header" id="heading<?php echo $i; ?>">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                       <?php echo $CLICSHOPPING_Language->getImage($languages[$i]['code']); ?>

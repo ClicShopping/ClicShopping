@@ -159,7 +159,7 @@ echo HTML::button($CLICSHOPPING_Categories->getDef('button_cancel'), null, $CLIC
               for ($i = 0, $n = \count($languages); $i < $n; $i++) {
                 ?>
                 <div class="accordion-item">
-                  <h2 class="accordion-header" id="heading<?php $i; ?>">
+                  <h2 class="accordion-header" id="heading<?php echo $i; ?>">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                       <?php echo $CLICSHOPPING_Language->getImage($languages[$i]['code']); ?>
