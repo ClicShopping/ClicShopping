@@ -98,24 +98,14 @@ class TokenChartDataProvider
       $monthlyData[] = $monthlyMap[$monthKey] ?? 0;
     }
 
-    $modelColors = [
-      'gpt-5' => 'rgba(30, 64, 175, 0.55)',
-      'gpt-5.2' => 'rgba(37, 99, 235, 0.55)',
-      'gpt-5.2-pro' => 'rgba(17, 94, 89, 0.55)',
-      'gpt-5-mini' => 'rgba(14, 116, 144, 0.55)',
-      'gpt-5-nano' => 'rgba(14, 159, 110, 0.55)',
-      'gpt-4.1-mini' => 'rgba(13, 148, 136, 0.55)',
-      'gpt-4.1-nano' => 'rgba(99, 102, 241, 0.55)',
-      'gpt-4' => 'rgba(245, 158, 11, 0.55)',
-      'gpt-4-turbo' => 'rgba(251, 146, 60, 0.55)',
-      'gpt-3.5-turbo' => 'rgba(148, 163, 184, 0.55)',
-      'claude-3-opus' => 'rgba(190, 24, 93, 0.55)',
-      'claude-3-sonnet' => 'rgba(219, 39, 119, 0.55)',
-      'claude-3-haiku' => 'rgba(236, 72, 153, 0.55)',
-      'mistral-large' => 'rgba(234, 179, 8, 0.55)',
-      'mistral-medium' => 'rgba(202, 138, 4, 0.55)',
-      'mistral-small' => 'rgba(161, 98, 7, 0.55)',
-      'local' => 'rgba(34, 197, 94, 0.55)',
+    // Colors are assigned by PROVIDER FAMILY (not per model name) so the palette
+    // needs no maintenance when models are added to or removed from the catalog.
+    $familyColors = [
+      'openai'  => 'rgba(37, 99, 235, 0.55)',
+      'claude'  => 'rgba(219, 39, 119, 0.55)',
+      'gemini'  => 'rgba(139, 92, 246, 0.55)',
+      'mistral' => 'rgba(234, 179, 8, 0.55)',
+      'local'   => 'rgba(34, 197, 94, 0.55)',
     ];
 
     $rawCostData = [];
@@ -165,7 +155,7 @@ class TokenChartDataProvider
       $costDatasets[] = [
         'label' => $model,
         'data' => $dataset,
-        'backgroundColor' => $modelColors[$model] ?? 'rgba(0,0,0,0.3)',
+        'backgroundColor' => $familyColors[self::modelFamily($model)] ?? 'rgba(0,0,0,0.3)',
       ];
     }
 
@@ -267,5 +257,49 @@ class TokenChartDataProvider
     ];
 
     return self::$cache;
+  }
+
+  /**
+   * Maps a model identifier to its provider family for chart coloring:
+   * 'openai', 'claude', 'gemini', 'mistral', or 'local'.
+   *
+   * Classification is by name only (no catalog lookup) so a model removed from the
+   * catalog still gets a stable colour. Mirrors ProviderManager::getChatForModel():
+   * local LLPhant backends (Ollama-tagged ids, LM Studio "openai/…") and bare
+   * open-weights ids (qwen, phi-4, gpt-oss…) are 'local'.
+   *
+   * @param string $model Raw model identifier (rag_statistics.model_used)
+   * @return string One of: openai, claude, gemini, mistral, local
+   */
+  private static function modelFamily(string $model): string
+  {
+    $modelId = strtolower(trim($model));
+
+    if (str_contains($modelId, ':')
+        || str_starts_with($modelId, 'ollama')
+        || str_starts_with($modelId, 'openai/')) {
+      return 'local';
+    }
+
+    if (preg_match('/^gpt-\d/', $modelId) === 1
+        || str_starts_with($modelId, 'o1')
+        || str_starts_with($modelId, 'o3')) {
+      return 'openai';
+    }
+
+    if (str_starts_with($modelId, 'claude') || str_starts_with($modelId, 'anth')) {
+      return 'claude';
+    }
+
+    if (str_starts_with($modelId, 'gemini') || str_starts_with($modelId, 'google')) {
+      return 'gemini';
+    }
+
+    if (str_starts_with($modelId, 'mistral')) {
+      return 'mistral';
+    }
+
+    // Unknown / bare open-weights ids run locally (LM Studio / Ollama).
+    return 'local';
   }
 }

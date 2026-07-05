@@ -29,13 +29,13 @@ use ClicShopping\AI\Security\SecurityLogger;
  * - web_search_result: External web searches with URLs
  * - hybrid/mixed: Combination of multiple types
  *
- * Model-Specific Handling:
- * - GPT-4o: Standard JSON format (reference)
- * - GPT-4: May have truncated responses due to context limits
- * - GPT-4o-mini: Similar to GPT-4o but may have different token usage
- * - GPT-3.5-turbo: May return simpler JSON structures
- * - GPT-OSS/Phi-4: Local models may have formatting variations
- * - GPT-5: Future model with enhanced capabilities
+ * Model-Specific Handling (classified from the model id alone — provider-agnostic):
+ * - OpenAI GPT cloud series: dispatched by parsed major version (gpt-4 vs
+ *   gpt-5-and-newer, so future gpt-6/gpt-7… need no code change)
+ * - Other LLPhant cloud providers (OpenAI o-series, Anthropic, Gemini, Mistral):
+ *   modern-model truncation handling
+ * - LLPhant local backends (Ollama / LM Studio) and bare open-weights ids
+ *   (qwen, phi-4, gpt-oss…): response field-name normalization
  */
 class ResponseNormalizer
 {
@@ -515,8 +515,15 @@ class ResponseNormalizer
   /**
    * Apply model-specific adjustments
    *
-   * Different models may return responses in slightly different formats.
-   * This method applies model-specific adjustments to ensure consistency.
+   * Classifies the model from its identifier alone (this class is provider-agnostic
+   * and must not depend on the ChatGpt App catalog) and applies the matching
+   * post-processing:
+   *  - OpenAI GPT cloud models, dispatched by the parsed major version (gpt-4 vs
+   *    gpt-5-and-newer, so future gpt-6/gpt-7… are covered without a code change);
+   *  - other LLPhant cloud providers (OpenAI o-series, Anthropic, Gemini, Mistral)
+   *    share the modern-model truncation handling;
+   *  - LLPhant local backends (Ollama / LM Studio) and bare open-weights ids
+   *    (qwen, phi-4, gpt-oss…) get response field-name normalization.
    *
    * @param array $response Response array
    * @param string $model Model name
@@ -524,22 +531,86 @@ class ResponseNormalizer
    */
   private function applyModelSpecificAdjustments(array $response, string $model): array
   {
-    // GPT-4.x series: May have truncated responses due to context limits
-    if (in_array($model, ['gpt-4', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano'], true)) {
-      $response = $this->handleGpt4Truncation($response);
+    $modelId = strtolower(trim($model));
+
+    // LLPhant local backends first: Ollama-tagged ids ("qwen:7b", "llama3:latest")
+    // and LM Studio ("openai/…"). A ':' tag never appears in a cloud model id.
+    if ($this->isLocalModel($modelId)) {
+      return $this->handleLocalModelVariations($response);
     }
 
-    // GPT-5.x series: Newer models may also hit limits; handle truncation similarly
-    if (in_array($model, ['gpt-5.2', 'gpt-5.2-pro', 'gpt-5-mini'], true)) {
-      $response = $this->handleGpt5Truncation($response);
+    // OpenAI GPT cloud series — dispatch by the numeric major version parsed from the id.
+    $gptMajorVersion = $this->gptMajorVersion($modelId);
+
+    if ($gptMajorVersion === 4) {
+      return $this->handleGpt4Truncation($response);
     }
 
-    // Local models (GPT-OSS, Phi-4, Mistral): May have formatting variations
-    if (in_array($model, ['gpt-oss', 'phi-4', 'mistral-large', 'mistral-medium'], true)) {
-      $response = $this->handleLocalModelVariations($response);
+    if ($gptMajorVersion !== null && $gptMajorVersion >= 5) {
+      return $this->handleModernModelTruncation($response);
     }
 
-    return $response;
+    // Other modern cloud providers wired through LLPhant (o-series, Anthropic, Gemini, Mistral).
+    if ($this->isModernCloudModel($modelId)) {
+      return $this->handleModernModelTruncation($response);
+    }
+
+    // Unknown / bare open-weights ids (qwen, phi-4, gpt-oss…) run locally: normalize fields.
+    return $this->handleLocalModelVariations($response);
+  }
+
+  /**
+   * Whether the model runs on a LLPhant local backend (Ollama or LM Studio).
+   *
+   * Ollama model ids carry a "name:tag" suffix (e.g. "qwen:7b", "llama3:latest") or an
+   * explicit "ollama" prefix; LM Studio exposes OpenAI-compatible ids prefixed "openai/".
+   * Cloud model ids never contain a ':' tag.
+   *
+   * @param string $modelId Lower-cased model identifier
+   * @return bool
+   */
+  private function isLocalModel(string $modelId): bool
+  {
+    return str_contains($modelId, ':')
+        || str_starts_with($modelId, 'ollama')
+        || str_starts_with($modelId, 'openai/');
+  }
+
+  /**
+   * Parses the numeric major version of an OpenAI GPT identifier.
+   *
+   * "gpt-4" → 4, "gpt-4.1-mini" → 4, "gpt-5-mini" → 5, "gpt-6" → 6. Returns null for
+   * non-numeric GPT names such as the local "gpt-oss".
+   *
+   * @param string $modelId Lower-cased model identifier
+   * @return int|null Major version, or null when the id is not a numeric GPT model
+   */
+  private function gptMajorVersion(string $modelId): ?int
+  {
+    if (preg_match('/^gpt-(\d+)/', $modelId, $matches) === 1) {
+      return (int)$matches[1];
+    }
+
+    return null;
+  }
+
+  /**
+   * Whether the model is a modern cloud model wired through LLPhant, other than the
+   * GPT series handled via {@see gptMajorVersion()} (OpenAI o-series, Anthropic, Gemini,
+   * Mistral). Local Mistral ids ("mistral:7b") are excluded upstream by {@see isLocalModel()}.
+   *
+   * @param string $modelId Lower-cased model identifier
+   * @return bool
+   */
+  private function isModernCloudModel(string $modelId): bool
+  {
+    return str_starts_with($modelId, 'o1')
+        || str_starts_with($modelId, 'o3')
+        || str_starts_with($modelId, 'claude')
+        || str_starts_with($modelId, 'anth')
+        || str_starts_with($modelId, 'gemini')
+        || str_starts_with($modelId, 'google')
+        || str_starts_with($modelId, 'mistral');
   }
 
   /**
@@ -569,14 +640,16 @@ class ResponseNormalizer
   }
 
   /**
-   * Handle GPT-5 truncation issues
+   * Handle truncation for modern cloud models (GPT-5 and newer, OpenAI o-series,
+   * Anthropic, Gemini, Mistral).
    *
-   * GPT-5 series has context limits; add indicators when truncation is detected.
+   * These models have large but finite context windows; add an indicator when the
+   * response looks truncated.
    *
    * @param array $response Response array
    * @return array Adjusted response
    */
-  private function handleGpt5Truncation(array $response): array
+  private function handleModernModelTruncation(array $response): array
   {
     if (isset($response['interpretation'])) {
       $interpretation = $response['interpretation'];

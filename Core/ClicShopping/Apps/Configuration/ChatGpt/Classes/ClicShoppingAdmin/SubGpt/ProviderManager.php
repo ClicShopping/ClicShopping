@@ -320,9 +320,11 @@ class ProviderManager
 
     // Detect model type and return appropriate chat instance
     
-    // OpenAI models (GPT-4, GPT-3.5, o1, o3, etc.)
-    if (str_starts_with($modelLower, 'gpt') || 
-        str_starts_with($modelLower, 'o1') || 
+    // OpenAI cloud models (GPT-4/4o, GPT-5, future GPT-6/7…, o1, o3).
+    // Require "gpt-" followed by a digit so local open-weights ids such as "gpt-oss"
+    // are NOT sent to the OpenAI API (they fall through to the LM Studio fallback below).
+    if (preg_match('/^gpt-\d/', $modelLower) === 1 ||
+        str_starts_with($modelLower, 'o1') ||
         str_starts_with($modelLower, 'o3')) {
       return self::getOpenAiGpt(['model' => $model] + $options);
     }
@@ -342,8 +344,9 @@ class ProviderManager
       return self::getGeminiChat($model, $maxtoken);
     }
     
-    // Mistral models
-    if (str_starts_with($modelLower, 'mistral')) {
+    // Mistral cloud models. A tagged id like "mistral:7b" is a LOCAL Ollama model,
+    // so it is excluded here and handled by the Ollama branch below.
+    if (str_starts_with($modelLower, 'mistral') && !str_contains($modelLower, ':')) {
       $maxtoken = $options['maxtoken'] ?? null;
       return self::getMistralChat($model, $maxtoken);
     }
