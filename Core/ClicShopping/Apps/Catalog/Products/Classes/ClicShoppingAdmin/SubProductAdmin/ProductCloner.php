@@ -22,8 +22,6 @@ use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\Adm
  */
 class ProductCloner
 {
-  use ProductsDebugTrait;
-
   private mixed $db;
   private mixed $hooks;
 

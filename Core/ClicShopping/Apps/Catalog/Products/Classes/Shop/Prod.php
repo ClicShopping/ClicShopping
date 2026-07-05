@@ -28,28 +28,45 @@ class Prod
    */
   public function getID()
   {
-// products description
+    // products description: id carried in GET (Id or products_id)
     if (isset($_GET['Id'])) {
       $id = empty($_GET['Id']) ? null : HTML::sanitize($_GET['Id']);
     } else {
       $id = empty($_GET['products_id']) ? null : HTML::sanitize($_GET['products_id']);
     }
-// products listing
-    if (empty($id) && !isset($_GET['Search']) && !isset($_GET['Q'])) {
-      if (isset($_POST['Id']) && is_numeric($_POST['Id']) && !empty(HTML::sanitize($_POST['Id']))) {
-        $id = empty($_POST['Id']) ? null : HTML::sanitize($_POST['Id']);
-      } elseif (isset($_POST['products_id']) && is_numeric($_POST['products_id']) && !empty(HTML::sanitize($_POST['products_id']))) {
-        $id = empty($_POST['products_id']) ? null : HTML::sanitize($_POST['products_id']);
-      }
-    } elseif (isset($_GET['Search'], $_GET['Q'])) {
-      if (isset($_POST['Id']) && is_numeric($_POST['Id']) && !empty(HTML::sanitize($_POST['Id']))) {
-        $id = HTML::sanitize($_POST['Id']);
-      } elseif (isset($_POST['products_id']) && is_numeric($_POST['products_id']) && !empty(HTML::sanitize($_POST['products_id']))) {
-        $id = HTML::sanitize($_POST['products_id']);
+
+    // products listing (no id yet, not a search) or search results: id may be carried in POST
+    $isListing = empty($id) && !isset($_GET['Search']) && !isset($_GET['Q']);
+    $isSearch = isset($_GET['Search'], $_GET['Q']);
+
+    if ($isListing || $isSearch) {
+      $postId = $this->getRequestPostId();
+
+      if ($postId !== null) {
+        $id = $postId;
       }
     }
 
     return $id;
+  }
+
+  /**
+   * Returns the sanitized product id carried in the POST body ('Id' or 'products_id'),
+   * or null when neither holds a numeric, non-empty value. Extracted from getID() (the
+   * same guarded lookup was duplicated verbatim across its listing and search branches)
+   * to cut the cyclomatic complexity while preserving behaviour exactly.
+   *
+   * @return string|null The sanitized POST product id, or null when absent/invalid.
+   */
+  private function getRequestPostId(): ?string
+  {
+    foreach (['Id', 'products_id'] as $key) {
+      if (isset($_POST[$key]) && is_numeric($_POST[$key]) && !empty(HTML::sanitize($_POST[$key]))) {
+        return HTML::sanitize($_POST[$key]);
+      }
+    }
+
+    return null;
   }
 
   /**

@@ -49,44 +49,13 @@
      */
     public function apply(int $product_id, float $base_price, int $customer_group_id = 0): mixed
     {
-      $cache_key = 'dynamic_pricing_rules';
-      $cache = new Cache($cache_key);
-// Try to get rules from cache
-      $cached_rules = null;
-      $cached_rules = $cache->get();
-
-      if (!is_array($cached_rules)) {
-        $cached_rules = null;
-      }
-
       $stock = $this->getStock($product_id);
       $sales = $this->getSalesLast30Days($product_id);
       $isOnPromotion = $this->isProductOnPromotion($product_id);
       $isDynamicPromotion = $this->isProductOnDynamicPromotion($product_id);
       $promotion_applied = false;
 
-      if ($cached_rules === null) {
-        // If not in cache, fetch from database
-        $Qrules = $this->db->prepare('SELECT rules_id,
-                                           rules_name,
-                                           rules_condition,
-                                           rules_type,
-                                           rules_value,
-                                           rules_priority,
-                                           rules_status,
-                                           rules_status_special,
-                                           rules_status_promotion,
-                                           customers_group
-                                     FROM :table_dynamic_pricing_rules
-                                     WHERE rules_status = 1
-                                     ORDER BY rules_priority ASC
-                                  ');
-        $Qrules->execute();
-        $cached_rules = $Qrules->fetchAll();
-
-        // Save the result to cache for future use
-        $cache->save($cached_rules);
-      }
+      $cached_rules = $this->loadRules();
 
       $finalPrice = $base_price;
 
@@ -115,52 +84,14 @@
         }
 
         // Calcul du prix final selon le type de règle
-        switch ($ruleType) {
-          case 'percentage_decrease':
-            $finalPrice = $base_price * (1 - $ruleValue / 100);
-            break;
-          case 'percentage_increase':
-            $finalPrice = $base_price * (1 + $ruleValue / 100);
-            break;
-          case 'fixed_price':
-            $finalPrice = $ruleValue;
-            break;
-          default:
-            $finalPrice = $base_price;
-        }
+        $finalPrice = $this->computeFinalPrice($ruleType, $base_price, $ruleValue);
 
         $this->logVariation($rule_id, $product_id, $base_price, $finalPrice, $ruleName);
 
         // Gestion de la promotion catalogue (specials)
         if ($status_promotion == 1) {
           $promotion_applied = true;
-
-          if ($isDynamicPromotion === false && $isOnPromotion === false) {
-            // Aucune promotion existante : on crée une promotion dynamique
-            $insert_array = [
-              'products_id' => (int)$product_id,
-              'specials_new_products_price' => (float)$finalPrice,
-              'specials_date_added' => 'now()',
-              'status' => 1,
-              'customers_group_id' => 0,
-              'source' => 'dynamic'
-            ];
-            $this->db->save('specials', $insert_array);
-          } elseif ($isDynamicPromotion === true) {
-            // La promotion existante est dynamique : on la met à jour
-            $update_array = [
-              'specials_new_products_price' => (float)$finalPrice,
-              'specials_last_modified' => 'now()',
-              'status' => 1
-            ];
-            $this->db->save('specials', $update_array, [
-              'products_id' => (int)$product_id,
-              'customers_group_id' => 0,
-              'source' => 'dynamic'
-            ]);
-          }
-          // Si $isOnPromotion === true mais $isDynamicPromotion === false :
-          // la promotion est manuelle → on ne la touche pas
+          $this->applyPromotionSpecial($product_id, $finalPrice, $isDynamicPromotion, $isOnPromotion);
         }
 
         // On prend la première règle qui matche (priorité ASC), on sort de la boucle
@@ -172,6 +103,108 @@
       $this->deleteSpecials($product_id, $promotion_applied, $isDynamicPromotion);
 
       return $finalPrice;
+    }
+
+    /**
+     * Loads the active dynamic pricing rules — from cache when present, otherwise from the
+     * database (warming the cache). Extracted verbatim from apply() to reduce its complexity.
+     *
+     * @return array The active rules ordered by ascending priority.
+     */
+    private function loadRules(): array
+    {
+      $cache = new Cache('dynamic_pricing_rules');
+      $cached_rules = $cache->get();
+
+      if (is_array($cached_rules)) {
+        return $cached_rules;
+      }
+
+      $Qrules = $this->db->prepare('SELECT rules_id,
+                                           rules_name,
+                                           rules_condition,
+                                           rules_type,
+                                           rules_value,
+                                           rules_priority,
+                                           rules_status,
+                                           rules_status_special,
+                                           rules_status_promotion,
+                                           customers_group
+                                     FROM :table_dynamic_pricing_rules
+                                     WHERE rules_status = 1
+                                     ORDER BY rules_priority ASC
+                                  ');
+      $Qrules->execute();
+      $rules = $Qrules->fetchAll();
+
+      // Save the result to cache for future use
+      $cache->save($rules);
+
+      return $rules;
+    }
+
+    /**
+     * Computes the final price for a matched rule according to its type. Extracted verbatim
+     * from apply() (the price-type switch) to reduce its cyclomatic/NPath complexity.
+     *
+     * @param string $ruleType One of 'percentage_decrease', 'percentage_increase', 'fixed_price'.
+     * @param float $base_price The catalogue base price.
+     * @param float $ruleValue The rule value (percentage or fixed amount).
+     * @return float The computed final price (base price when the type is unknown).
+     */
+    private function computeFinalPrice(string $ruleType, float $base_price, float $ruleValue): float
+    {
+      switch ($ruleType) {
+        case 'percentage_decrease':
+          return $base_price * (1 - $ruleValue / 100);
+        case 'percentage_increase':
+          return $base_price * (1 + $ruleValue / 100);
+        case 'fixed_price':
+          return $ruleValue;
+        default:
+          return $base_price;
+      }
+    }
+
+    /**
+     * Persists the catalogue promotion (specials) for a matched rule whose promotion flag is on:
+     * creates a dynamic special when none exists, updates the existing dynamic special otherwise,
+     * and never touches a manual promotion. Extracted verbatim from apply().
+     *
+     * @param int $product_id The product ID.
+     * @param float $finalPrice The computed promotional price.
+     * @param bool $isDynamicPromotion Whether an existing special is a dynamic one.
+     * @param bool $isOnPromotion Whether the product currently has any active promotion.
+     * @return void
+     */
+    private function applyPromotionSpecial(int $product_id, float $finalPrice, bool $isDynamicPromotion, bool $isOnPromotion): void
+    {
+      if ($isDynamicPromotion === false && $isOnPromotion === false) {
+        // Aucune promotion existante : on crée une promotion dynamique
+        $insert_array = [
+          'products_id' => (int)$product_id,
+          'specials_new_products_price' => (float)$finalPrice,
+          'specials_date_added' => 'now()',
+          'status' => 1,
+          'customers_group_id' => 0,
+          'source' => 'dynamic'
+        ];
+        $this->db->save('specials', $insert_array);
+      } elseif ($isDynamicPromotion === true) {
+        // La promotion existante est dynamique : on la met à jour
+        $update_array = [
+          'specials_new_products_price' => (float)$finalPrice,
+          'specials_last_modified' => 'now()',
+          'status' => 1
+        ];
+        $this->db->save('specials', $update_array, [
+          'products_id' => (int)$product_id,
+          'customers_group_id' => 0,
+          'source' => 'dynamic'
+        ]);
+      }
+      // Si $isOnPromotion === true mais $isDynamicPromotion === false :
+      // la promotion est manuelle → on ne la touche pas
     }
 
     /**

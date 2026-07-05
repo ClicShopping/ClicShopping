@@ -27,8 +27,6 @@ use ClicShopping\OM\Registry;
  */
 class ProductSoldOutRenderer
 {
-  use ProductsDebugTrait;
-
   private mixed $db;
   private mixed $customer;
 

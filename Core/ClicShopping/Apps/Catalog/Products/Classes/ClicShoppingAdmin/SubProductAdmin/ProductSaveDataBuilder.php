@@ -26,8 +26,6 @@ use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\Adm
  */
 class ProductSaveDataBuilder
 {
-  use ProductsDebugTrait;
-
   /**
    * Builds the base `products` row from the submitted form (without the
    * file/image fields, which the caller adds).
@@ -137,8 +135,6 @@ class ProductSaveDataBuilder
       'products_mpn' => HTML::sanitize($_POST['products_mpn'] ?? ''),
       'products_upc' => HTML::sanitize($_POST['products_upc'] ?? '')
     ];
-
-    $this->debugLog('build', $sql_data_array);
 
     return $sql_data_array;
   }

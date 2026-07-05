@@ -1,1 +1,21 @@
+ -- Table clic_reviews_sentiment : métriques calculées (agnostiques langue, figées à l'analyse)
+  ALTER TABLE clic_reviews_sentiment
+    ADD COLUMN IF NOT EXISTS positive_pct  int NOT NULL DEFAULT 0
+      COMMENT 'Computed share of positive reviews (stars 4-5), percent',
+    ADD COLUMN IF NOT EXISTS neutral_pct   int NOT NULL DEFAULT 0
+      COMMENT 'Computed share of neutral reviews (stars 3), percent',
+    ADD COLUMN IF NOT EXISTS negative_pct  int NOT NULL DEFAULT 0
+      COMMENT 'Computed share of negative reviews (stars 1-2), percent',
+    ADD COLUMN IF NOT EXISTS rating_stddev decimal(5,3) NOT NULL DEFAULT 0
+      COMMENT 'Std-dev of star ratings - dispersion/polarization signal';
+
+  -- Table clic_reviews_sentiment_description : sortie LLM structurée (par langue)
+  ALTER TABLE clic_reviews_sentiment_description
+    ADD COLUMN IF NOT EXISTS analysis_json text NULL
+      COMMENT 'Structured LLM sentiment output - themes, quotes, strengths, issues, summary';
+
+
+INSERT INTO `clic_cron` VALUES(null, 'productReviewSentiment', 'Daily AI review sentiment analysis - auto-accept reliable analyses, note the rest for the administrator', 'day', 'productReviewSentiment', 0, '2026-07-03 14:56:18', '2026-07-03 15:02:16');
+UPDATE clic_cron SET cycle='week' WHERE code IN('backup','embeddings');
+UPDATE clic_cron SET cycle='month' WHERE code IN('gdpr','marketplace');
 

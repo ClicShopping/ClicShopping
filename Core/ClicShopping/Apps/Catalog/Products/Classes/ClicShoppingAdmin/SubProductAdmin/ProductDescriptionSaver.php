@@ -25,8 +25,6 @@ use ClicShopping\OM\Registry;
  */
 class ProductDescriptionSaver
 {
-  use ProductsDebugTrait;
-
   private mixed $db;
   private mixed $lang;
 
@@ -83,7 +81,5 @@ class ProductDescriptionSaver
         $this->db->save('products_description', $sql_data_array, $update_sql_data);
       } // end action
     } //end for
-
-    $this->debugLog('save', ['products_id' => $id, 'action' => $action, 'languages' => count($languages)]);
   }
 }

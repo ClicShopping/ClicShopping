@@ -23,8 +23,6 @@ use ClicShopping\OM\Registry;
  */
 class ProductRemover
 {
-  use ProductsDebugTrait;
-
   private mixed $db;
   private mixed $template;
   private mixed $hooks;

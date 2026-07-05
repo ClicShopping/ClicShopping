@@ -24,8 +24,6 @@ use ClicShopping\OM\HTML;
  */
 class ProductSortHeadingRenderer
 {
-  use ProductsDebugTrait;
-
   /**
    * Constructs a sortable heading link for products.
    *
