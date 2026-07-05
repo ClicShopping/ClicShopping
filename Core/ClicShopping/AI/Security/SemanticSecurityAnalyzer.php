@@ -450,8 +450,8 @@ class SemanticSecurityAnalyzer
       $temperature = 0.0; // Zero temperature = deterministic, no randomness
       $maxTokens = 500; // Security analysis should be concise
       
-      // Get configured model or use default
-      $model = defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : Gpt::getTechnicalFallbackModel();
+      // Get the default model (Gpt::defaultModel())
+      $model = Gpt::defaultModel();
 
       if (self::$debug) {
         self::$logger->logSecurityEvent(

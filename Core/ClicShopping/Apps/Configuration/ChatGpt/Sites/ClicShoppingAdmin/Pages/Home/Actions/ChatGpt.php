@@ -16,10 +16,11 @@ class ChatGpt extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
 
-    $this->page->setFile('dashboard.php');
+    $this->page->setFile('chatgpt.php');
     $this->page->data['action'] = 'ChatGpt';
 
     $CLICSHOPPING_ChatGpt->loadDefinitions('Sites/ClicShoppingAdmin/main');
     $CLICSHOPPING_ChatGpt->loadDefinitions('Sites/ClicShoppingAdmin/dashboard');
+    $CLICSHOPPING_ChatGpt->loadDefinitions('Sites/ClicShoppingAdmin/ai_models');
   }
 }

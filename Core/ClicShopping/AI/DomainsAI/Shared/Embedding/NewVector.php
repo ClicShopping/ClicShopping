@@ -39,10 +39,10 @@ class NewVector
    */
   private static function getApiKey(): string
   {
-    $api_key = CLICSHOPPING_APP_CHATGPT_CH_API_KEY;
+    $api_key = Gpt::getProviderApiKey('openai')['api_key'];
 
     if (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'mistral')) {
-      $api_key = CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL;
+      $api_key = Gpt::getProviderApiKey('mistral')['api_key'];
     } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage')) {
       $api_key = CLICSHOPPING_APP_CHATGPT_RA_API_KEY_VOYAGE_AI;
     }
@@ -59,9 +59,9 @@ class NewVector
   private static function checkApiKeys(string $model): bool
   {
     if (str_starts_with($model, 'gpt')) {
-      return !empty(CLICSHOPPING_APP_CHATGPT_CH_API_KEY);
+      return !empty(Gpt::getProviderApiKey('openai')['api_key']);
     } elseif (str_starts_with($model, 'mistral')) {
-      return !empty(CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL);
+      return !empty(Gpt::getProviderApiKey('mistral')['api_key']);
     } elseif (str_starts_with($model, 'voyage')) {
       return !empty(CLICSHOPPING_APP_CHATGPT_RA_API_KEY_VOYAGE_AI);
     } elseif (str_starts_with($model, 'ollama')) {

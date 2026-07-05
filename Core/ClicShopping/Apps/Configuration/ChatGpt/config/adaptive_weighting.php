@@ -17,28 +17,28 @@
  * @since 2026-02-06
  */
 
-// Determine LLM provider dynamically based on configured model
-$llmProvider = 'openai'; // Default
-if (defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL')) {
-    $model = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
-  // Determine provider from model name
-  if (str_starts_with($model, 'anth-') || str_contains($model, 'claude')) {
-    $llmProvider = 'anthropic';
-  } elseif (str_contains($model, 'mistral')) {
-    $llmProvider = 'mistral';
-  } elseif (str_starts_with($model, 'ollama:') || str_starts_with($model, 'mistral:')) {
-    $llmProvider = 'ollama';
-  } elseif (
-    str_starts_with($model, 'openai/') ||
-    str_starts_with($model, 'microsoft/') ||
-    str_starts_with($model, 'qwen/')
-  ) {
-    $llmProvider = 'lmstudio';
-  } else {
-    // Default to OpenAI for gpt-* models
-    $llmProvider = 'openai';
-  }
+// Determine LLM provider dynamically based on the default model
+$llmProvider = 'openai'; // Default
+$model = Gpt::defaultModel();
+
+// Determine provider from model name
+if (str_starts_with($model, 'anth-') || str_contains($model, 'claude')) {
+  $llmProvider = 'anthropic';
+} elseif (str_contains($model, 'mistral')) {
+  $llmProvider = 'mistral';
+} elseif (str_starts_with($model, 'ollama:') || str_starts_with($model, 'mistral:')) {
+  $llmProvider = 'ollama';
+} elseif (
+  str_starts_with($model, 'openai/') ||
+  str_starts_with($model, 'microsoft/') ||
+  str_starts_with($model, 'qwen/')
+) {
+  $llmProvider = 'lmstudio';
+} else {
+  // Default to OpenAI for gpt-* models
+  $llmProvider = 'openai';
 }
 
 return [
@@ -47,7 +47,7 @@ return [
     'ADAPTIVE_WEIGHTING_ENABLED' => true,
     
     // LLM provider for weight calculation
-    // Dynamically determined from CLICSHOPPING_APP_CHATGPT_CH_MODEL
+    // Dynamically determined from the default model (Gpt::defaultModel())
     // Options: 'openai', 'ollama', 'anthropic', 'mistral', 'lmstudio'
     'LLM_PROVIDER' => $llmProvider,
     

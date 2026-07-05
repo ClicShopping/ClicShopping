@@ -150,7 +150,7 @@ $config = [
                       </span>
                            <span class="float-end">
                         <div
-                          class="col-sm-12 text-white"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_rate_error_gpt') . ' ' . Gpt::getErrorRateGpt(); ?></div>
+                          class="col-sm-12 text-white"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_rate_error_gpt') . ' ' . Gpt::getErrorRateGpt() . ' %'; ?></div>
                       </span>
                          </div>
                        </div>

@@ -112,6 +112,16 @@ class Gpt
   // ========================================
 
   /**
+   * Retrieves the default model.
+   *
+   * @return string the model.
+   */
+  public static function defaultModel(): string
+  {
+   return ModelManager::defaultModel();
+  }
+
+  /**
    * Retrieves an array of GPT models with their corresponding IDs and textual descriptions.
    *
    * @return array An array of GPT models, where each model is represented as an associative array containing 'id' and 'text' keys.
@@ -188,6 +198,27 @@ class Gpt
   public static function getModelContextLength(string $model): int
   {
     return ModelManager::getModelContextLength($model);
+  }
+
+  /**
+   * Get a model's token pricing from the DB catalog as [inputPerMillion, outputPerMillion] (USD),
+   * or null when absent/zero-priced so the caller falls back to its own pricing table.
+   *
+   * @param string $model Technical model name
+   * @return array{0:float,1:float}|null
+   */
+  public static function getModelPricing(string $model): ?array
+  {
+    return ModelManager::getModelPricing($model);
+  }
+
+  /**
+   * Resolves a provider's API credential from the catalog. @see ModelManager::getProviderApiKey
+   * @return array{api_key:string,organisation:?string}
+   */
+  public static function getProviderApiKey(string $code): array
+  {
+    return ModelManager::getProviderApiKey($code);
   }
 
   /**
@@ -360,24 +391,9 @@ class Gpt
   // ========================================
 
   /**
-   * Saves data to the database, including question details, audit trials.
+   * Calculates the AI error rate from the rag_interactions log (request_type='error').
    *
-   * @param string $question The question being saved.
-   * @param string $result The result or response to the question.
-   * @param array|null $auditExtra Optional additional data for auditing purposes
-   * @param bool $force Force save regardless of saveGpt parameter
-   * @return void
-   * @throws \Exception
-   */
-  public static function saveData(string $question, string $result, ?array $auditExtra = [], bool $force = false): void
-  {
-    DataManager::saveData($question, $result, $auditExtra, $force);
-  }
-
-  /**
-   * Calculates the error rate of GPT responses by analyzing specific response patterns.
-   *
-   * @return bool|float Returns the calculated error rate as a percentage if computations are successful, or false if there is no data available.
+   * @return bool|float Error rate as a percentage (0..100), or false when there is no data.
    */
   public static function getErrorRateGpt(): bool|float
   {

@@ -12,6 +12,7 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\AiModelsAdmin;
 use ClicShopping\AI\Infrastructure\Metrics\Statistics;
 
 $CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
@@ -33,18 +34,21 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
             class="col-md-4 pageHeading"><?php echo '&nbsp;' . $CLICSHOPPING_ChatGpt->getDef('heading_title'); ?></span>
           <span class="col-md-7 text-end">
           <?php
-          if (MODE_DEMO == 'False') {
-            echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_configure'), null, $CLICSHOPPING_ChatGpt->link('Configure'), 'primary') . ' ';
-          }
+
+
+
+
+          echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_configure'), null, $CLICSHOPPING_ChatGpt->link('Configure'), 'primary') . ' ';
+
+
+          //modal to build
+            echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_add_model'), null, $CLICSHOPPING_ChatGpt->link('Create'), 'primary') . ' ';
+
 
           if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA_STATUS === 'True') {
             echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_rag_dashboard'), null, $CLICSHOPPING_ChatGpt->link('Dashboard'), 'danger') . ' ';
             echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_rag_websearch'), null, $CLICSHOPPING_ChatGpt->link('RagWebSearch'), 'success') . ' ';
           }
-
-          echo HTML::form('delete_everything', $CLICSHOPPING_ChatGpt->link('ChatGpt&DeleteEverything'));
-          echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_delete'), null, null, 'danger');
-          echo '</form>'
           ?>
           </span>
         </div>
@@ -147,7 +151,7 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
                       </span>
                       <span class="float-end">
                         <div
-                          class="col-sm-12 text-white"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_rate_error_gpt') . ' ' . Gpt::getErrorRateGpt(); ?></div>
+                          class="col-sm-12 text-white"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_rate_error_gpt') . ' ' . Gpt::getErrorRateGpt() . ' %'; ?></div>
                       </span>
                     </div>
                   </div>
@@ -165,104 +169,56 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
   </div>
   <div class="mt-1"></div>
   <!-- //################################################################################################################ -->
-  <!-- //                                            LISTING                                                           -->
+  <!-- //                                     AI MODEL CATALOG LISTING                                                   -->
   <!-- //################################################################################################################ -->
-
-  <?php echo HTML::form('delete_all', $CLICSHOPPING_ChatGpt->link('ChatGpt&DeleteAll') . '&page=' . $page); ?>
-
-  <div id="toolbar" class="float-end">
-    <button id="button" class="btn btn-danger"><?php echo $CLICSHOPPING_ChatGpt->getDef('button_delete'); ?></button>
-  </div>
-
-  <table
-    id="table"
-    data-toggle="table"
-    data-icons-prefix="bi"
-    data-icons="icons"
-    data-id-field="selected"
-    data-select-item-name="selected[]"
-    data-click-to-select="true"
-    data-sort-order="asc"
-    data-sort-name="chatgpt"
-    data-toolbar="#toolbar"
-    data-buttons-class="primary"
-    data-show-toggle="true"
-    data-show-columns="true"
-    data-mobile-responsive="true"
-    data-check-on-init="true"
-    data-show-export="true">
-
+  <table id="table" data-toggle="table" data-icons-prefix="bi" data-icons="icons"
+         data-sort-order="asc" data-sort-name="provider" data-show-columns="true"
+         data-mobile-responsive="true" data-show-export="true">
     <thead class="dataTableHeadingRow">
     <tr>
-      <th data-checkbox="true" data-field="state"></th>
-      <th data-field="selected"
-          data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_chatgpt_id'); ?></th>
-      <th data-field="question" class="text-center"
-          data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_chatgpt_question'); ?></th>
-      <th data-field="date_added"
-          data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_chatgpt_date_added'); ?></th>
-      <th data-field="user_admin"
-          data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_chatgpt_user_admin'); ?></th>
-      <th data-field="action" data-switchable="false"
-          class="text-end"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_action'); ?>&nbsp;
-      </th>
+      <th data-field="provider" data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_provider'); ?></th>
+      <th data-field="model" data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_model'); ?></th>
+      <th data-field="technical"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_technical'); ?></th>
+      <th data-field="context" class="text-center"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_context'); ?></th>
+      <th data-field="status" class="text-center"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_status'); ?></th>
+      <th data-field="default" class="text-center"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_default'); ?></th>
+      <th data-field="fallback" class="text-center"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_fallback'); ?></th>
+      <th data-field="action" data-switchable="false" class="text-end"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_action'); ?></th>
     </tr>
     </thead>
     <tbody>
     <?php
-    $QchatGpt = $CLICSHOPPING_ChatGpt->db->prepare('select SQL_CALC_FOUND_ROWS gpt_id,
-                                                                                 question,
-                                                                                 response,
-                                                                                 date_added,
-                                                                                 user_admin
-                                                      from :table_gpt
-                                                      order by date_added DESC
-                                                      limit :page_set_offset, :page_set_max_results
-                                                    ');
-
-    $QchatGpt->setPageSet((int)MAX_DISPLAY_SEARCH_RESULTS_ADMIN);
-    $QchatGpt->execute();
-
-    $listingTotalRow = $QchatGpt->getPageSetTotalRows();
-
-    if ($listingTotalRow > 0) {
-      while ($QchatGpt->fetch()) {
-        ?>
-        <tr>
-          <td></td>
-          <td><?php echo $QchatGpt->valueInt('gpt_id'); ?></td>
-          <td class="test-start"><?php echo substr($QchatGpt->value('question'), 0, 200) . "..."; ?></td>
-          <td><?php echo DateTime::toShort($QchatGpt->value('date_added')); ?></td>
-          <td><?php echo $QchatGpt->value('user_admin'); ?></td>
-          <td class="text-end">
-            <div class="btn-group d-flex justify-content-end" role="group" aria-label="buttonGroup">
-              <?php
-              echo HTML::link($CLICSHOPPING_ChatGpt->link('Edit&page=' . $page . '&cID=' . $QchatGpt->valueInt('gpt_id')), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_ChatGpt->getDef('icon_edit') . '"></i></h4>');
-              echo '&nbsp;';
-              ?>
-            </div>
-          </td>
-        </tr>
-        <?php
-      }
+    foreach (AiModelsAdmin::getModels() as $m) {
+      $mid = (int)$m['ai_model_name_id'];
+      ?>
+      <tr>
+        <td><?php echo HTML::outputProtected($m['ai_model_provider_code']); ?></td>
+        <td><?php echo HTML::outputProtected($m['model_display_name']); ?></td>
+        <td><code><?php echo HTML::outputProtected($m['model_technical_name']); ?></code></td>
+        <td class="text-center"><?php echo (int)$m['ai_model_context_window']; ?></td>
+        <td class="text-center">
+          <?php
+          $flag = ((int)$m['ai_model_status'] === 1) ? 0 : 1;
+          $icon = ((int)$m['ai_model_status'] === 1) ? 'bi-check text-success' : 'bi-x text-danger';
+          echo HTML::link($CLICSHOPPING_ChatGpt->link('ChatGpt&SetFlag&field=status&cID=' . $mid . '&flag=' . $flag), '<i class="bi ' . $icon . '"></i>');
+          ?>
+        </td>
+        <td class="text-center"><?php echo ((int)$m['ai_model_status_default'] === 1) ? '<i class="bi bi-star-fill text-warning"></i>' : ''; ?></td>
+        <td class="text-center"><?php echo ((int)$m['ai_model_status_fallback'] === 1) ? '<i class="bi bi-shield-fill text-info"></i>' : ''; ?></td>
+        <td class="text-end">
+          <div class="btn-group d-flex justify-content-end" role="group">
+            <?php
+            echo HTML::link($CLICSHOPPING_ChatGpt->link('Edit&cID=' . $mid), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_ChatGpt->getDef('icon_edit') . '"></i></h4>');
+            echo '&nbsp;';
+            echo HTML::link($CLICSHOPPING_ChatGpt->link('Delete&cID=' . $mid), '<h4><i class="bi bi-trash2" title="' . $CLICSHOPPING_ChatGpt->getDef('icon_delete') . '"></i></h4>');
+            ?>
+          </div>
+        </td>
+      </tr>
+      <?php
     }
     ?>
     </tbody>
   </table>
-  </form>
-  <?php
-  if ($listingTotalRow > 0) {
-    ?>
-    <div class="row">
-      <div class="col-md-12">
-        <div
-          class="col-md-6 float-start pagenumber hidden-xs TextDisplayNumberOfLink"><?php echo $QchatGpt->getPageSetLabel($CLICSHOPPING_ChatGpt->getDef('text_display_number_of_link')); ?></div>
-        <div
-          class="float-end text-end"><?php echo $QchatGpt->getPageSetLinks(CLICSHOPPING::getAllGET(array('page', 'info', 'x', 'y'))); ?></div>
-      </div>
-    </div>
-    <?php
-  }
-  ?>
 </div>
 <div class="py-4"></div>

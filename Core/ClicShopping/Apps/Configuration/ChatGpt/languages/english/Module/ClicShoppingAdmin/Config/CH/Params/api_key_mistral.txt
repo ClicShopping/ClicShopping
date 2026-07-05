@@ -1,2 +1,0 @@
-cfg_chatgpt_api_key_mistral_title = Mistral Api Key
-cfg_chatgpt_api_key_mistral_description = Please, insert the Api Key (https://www.mistral.ai)

@@ -473,7 +473,7 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
       }
 
       // Fallback if RAG is disabled
-      $response = Gpt::callWithModel($prompt, CLICSHOPPING_APP_CHATGPT_CH_MODEL);
+      $response = Gpt::callWithModel($prompt, Gpt::defaultModel());
       $textResponse = $response['text_response']
         ?? $response['response']
         ?? $response['interpretation']

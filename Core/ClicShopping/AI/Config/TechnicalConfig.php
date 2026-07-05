@@ -185,7 +185,7 @@ if (!defined('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS'))
   define('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS', 'True');
 
 // LLM provider for hybrid query decomposition
-// Uses the default LLM configuration from CLICSHOPPING_APP_CHATGPT_CH_MODEL
+// Uses the default model (ModelManager::defaultModel())
 // This constant is reserved for future use if we need a separate provider
 // Default: null (uses default LLM provider)
 // @see .kiro/specs/hybrid-query-decomposition/requirements.md (Requirement 12.2)

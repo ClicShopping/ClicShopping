@@ -8,6 +8,8 @@
 
 namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Dashboard;
 
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
@@ -57,7 +59,7 @@ class CheckAPI extends AdminDashboardAbstract
   {
     $output = '';
 
-    $apiKey = defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY') ? CLICSHOPPING_APP_CHATGPT_CH_API_KEY : '';
+    $apiKey = Gpt::getProviderApiKey('openai')['api_key'];
 
     if (empty($apiKey)) {
       try {

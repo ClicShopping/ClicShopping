@@ -1,6 +1,0 @@
-cfg_chatgpt_model_title = Modéle à appliquer
-cfg_chatgpt_model_description = Please, veuillez sélectionner le modéle par défaut que vous souhaitez appliquer.<br />
-Tous les modéles n'utilisent pas les mêmes paramétres et peuvent générer une erreur dans la rèponse<br />
-LE WYSWIWYG est impacté sur le type de modéle que vous souhaitez utiliser.<br />
-Cette fonctionnalité requiert un LLM doté d'une capacité de raisonnement avancée : les petits modéles comme phi-4 ne sont pas suffisants et dégradent la qualité des réponses.<br />
-Privilégiez un modéle disposant d'une fenêtre de contexte d'au moins 64k tokens, et ajustez les paramétres en conséquence.

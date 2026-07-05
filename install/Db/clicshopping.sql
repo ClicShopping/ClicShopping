@@ -14,6 +14,7 @@
 
 # 1 - Default, 2 - USA, 3 - Spain, 4 - Singapore, 5 - Germany
 
+
 INSERT INTO address_format VALUES(1, '$firstname $lastname$cr$streets$cr$city, $postcode$cr$statecomma$country', '$city / $country');
 INSERT INTO address_format VALUES(2, '$firstname $lastname$cr$streets$cr$city, $state    $postcode$cr$country', '$city, $state / $country');
 INSERT INTO address_format VALUES(3, '$firstname $lastname$cr$streets$cr$city$cr$postcode - $statecomma$country', '$state / $country');
@@ -200,7 +201,7 @@ INSERT INTO administrator_menu VALUES(790, 'index.php?A&Configuration\\Api&Api',
 INSERT INTO administrator_menu VALUES(791, 'index.php?A&Configuration\\Antispam&Configure', 13, 15, 0, 'antispam.png', 0, 'app_configuration_antispam', 1);
 INSERT INTO administrator_menu VALUES(792, 'index.php?A&Tools\\Upgrade&Upgrade', 644, 5, 1, '', 0, 'app_tools_upgrade', 1);
 INSERT INTO administrator_menu VALUES(793, 'index.php?A&Tools\\Upgrade&Marketplace', 644, 10, 1, null, 0, 'app_tools_upgrade', 1);
-INSERT INTO administrator_menu VALUES(794, 'index.php?A&Configuration\\ChatGpt&Dashboard', 810, 1, 1, 'chatgpt.gif', 1, 'app_configuration_chatgpt', 1);
+INSERT INTO administrator_menu VALUES(794, 'index.php?A&Configuration\\ChatGpt&ChatGpt', 810, 1, 1, 'chatgpt.gif', 1, 'app_configuration_chatgpt', 1);
 INSERT INTO administrator_menu VALUES(795, 'index.php?A&Catalog\\Products&StatsProductsNoPurchased', 98, 3, 0, 'stats_products_purchased.gif', 0, 'app_catalog_products', 1);
 INSERT INTO administrator_menu VALUES(796, 'index.php?A&Shipping\\Item&Configure&module=IT', 449, 4, 1, 'modules_shipping.gif', 0, 'app_shipping_item', 1);
 INSERT INTO administrator_menu VALUES(797, 'index.php?A&Marketing\\Recommendations&Recommendations', 107, 1, 0, 'products_recommendations.png', 0, 'app_marketing_recommendations', 1);
@@ -218,9 +219,6 @@ INSERT INTO administrator_menu VALUES(808, 'index.php?A&Catalog\\Products&StatsD
 INSERT INTO administrator_menu VALUES(809, 'index.php?A&Tools\\MCP&MCP', 810, 30, 1, '', 0, 'app_tools_mcp', 1);
 INSERT INTO administrator_menu VALUES(810, '', 2, 50, 2, '', 0, NULL, 1);
 INSERT INTO administrator_menu VALUES(811, 'index.php?A&AI\\Ecommerce', 810, 5, 1, '', 0, 'app_ai_ecommerce', 1);
-
-
-
 
 
 INSERT INTO administrator_menu_description VALUES(0, '', 1);
@@ -610,6 +608,34 @@ INSERT INTO administrator_menu_description VALUES(810, 'AI', 1);
 INSERT INTO administrator_menu_description VALUES(810, 'IA', 2);
 INSERT INTO administrator_menu_description VALUES(811, 'Ecommerce Agent', 1);
 INSERT INTO administrator_menu_description VALUES(811, 'Agent Ecommerce', 2);
+
+
+INSERT INTO ai_models_provider VALUES(1, 'openai', 1, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_provider VALUES(2, 'anthropic', 2, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_provider VALUES(3, 'gemini', 3, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_provider VALUES(4, 'mistral', 4, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_provider VALUES(5, 'ollama', 5, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_provider VALUES(6, 'lmstudio', 6, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_provider VALUES(7, 'deepseek', 7, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_api VALUES(1, 1, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_api VALUES(2, 2, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_api VALUES(3, 3, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_api VALUES(4, 4, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_api VALUES(5, 5, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_api VALUES(6, 6, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_api VALUES(7, 7, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(1, 1, 'gpt-4.1-mini', 'OpenAI GPT-4.1 mini', '64K context, embeddings, reasoning', 1, 1, 0, 0.8000, 0.8000, 64000, 1, 10, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(2, 1, 'gpt-5.1-mini', 'OpenAI GPT-5.1 mini', '128K context, embeddings, reasoning', 1, 0, 1, 0.2500, 0.2500, 128000, 1, 20, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(3, 1, 'gpt-5.2-mini', 'OpenAI GPT-5.2 mini', '128K context, embeddings, reasoning', 0, 0, 0, 0.2500, 0.2500, 128000, 1, 30, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(4, 1, 'gpt-5.5-mini', 'OpenAI GPT-5.5 mini', '400K context, embeddings, reasoning, web search', 0, 0, 0, 0.2500, 0.2500, 400000, 1, 40, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(5, 2, 'claude-opus-4-8', 'Anthropic Claude Opus 4.8', '200K context, embeddings, reasoning', 0, 0, 0, 15.0000, 75.0000, 200000, 1, 50, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(6, 2, 'claude-sonnet-4-6', 'Anthropic Claude Sonnet 4.6', '200K context, embeddings, reasoning', 0, 0, 0, 3.0000, 15.0000, 200000, 1, 60, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(7, 2, 'claude-haiku-4-5', 'Anthropic Claude Haiku 4.5', '200K context, embeddings, fast', 0, 0, 0, 0.2500, 1.2500, 200000, 1, 70, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(8, 3, 'gemini-2.5-flash', 'Google Gemini 2.5 Flash', '1M context, embeddings, reasoning', 0, 0, 0, 0.0750, 0.3000, 1000000, 1, 80, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(9, 4, 'mistral-small-latest', 'Mistral Small Latest', '128K context, embeddings, reasoning', 0, 0, 0, 2.0000, 6.0000, 128000, 1, 90, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(10, 5, 'qwen3.6:35b', 'Ollama Qwen3.6 35B', '262K context, reasoning, local', 0, 0, 0, 0.0000, 0.0000, 262000, 1, 100, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(11, 6, 'qwen/qwen3.6-35b-a3b', 'LM Studio Qwen3.6 35B-A3B', '262K context, reasoning, local', 0, 0, 0, 0.0000, 0.0000, 262000, 1, 110, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(12, 6, 'openai/gpt-oss-120b', 'LM Studio GPT-OSS 120B', '120K context, reasoning, local', 0, 0, 0, 0.0000, 0.0000, 120000, 1, 120, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 
 
 
@@ -1637,12 +1663,9 @@ INSERT INTO configuration VALUES(1573, 'Fréquence de la penalité', 'CLICSHOPPI
 INSERT INTO configuration VALUES(1574, 'Ordre de tri d\'affichage', 'CLICSHOPPING_APP_CHATGPT_CH_SORT_ORDER', '60', 'Ordre de tri pour l\'affichage (Le plus petit nombre est montré en premier)', 6, 0, NULL, '2023-02-22 17:17:04', NULL, NULL);
 INSERT INTO configuration VALUES(1575, 'Max Token', 'CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN', '350', 'Veuillez insérer un nombre<br />\ndavinci-codex : 4000 <br />\ntext-davinci-003 : 4000<br />', 6, 0, NULL, '2023-02-22 17:17:04', NULL, NULL);
 INSERT INTO configuration VALUES(1576, 'Statut', 'CLICSHOPPING_APP_CHATGPT_CH_STATUS', 'False', 'Souhaitez vous activer ce module à votre boutique', 6, 0, NULL, '2023-02-22 17:17:04', NULL, NULL);
-INSERT INTO configuration VALUES(1577, 'Clef Api', 'CLICSHOPPING_APP_CHATGPT_CH_API_KEY', '', 'Veuillez insérer la clef API (https://platform.openai.com/account/api-keys)', 6, 0, NULL, '2023-02-22 17:17:04', NULL, NULL);
 INSERT INTO configuration VALUES(1578, 'Best of', 'CLICSHOPPING_APP_CHATGPT_CH_BESTOFF', '1', 'Génère le best_of des complétions côté serveur et renvoie le \"meilleur\". Utiliser un entier', 6, 0, NULL, '2023-03-05 12:10:25', NULL, NULL);
 INSERT INTO configuration VALUES(1579, 'Top P', 'CLICSHOPPING_APP_CHATGPT_CH_TOP_P', '1', 'Veuillez insérer un nombre<br />\nUne alternative à l\'échantillonnage avec la température, appelée échantillonnage par noyau, où le modèle considère les résultats des jetons avec une masse de probabilité top_p. Ainsi, 0,1 signifie que seuls les jetons comprenant la masse de probabilité supérieure de 10 % sont pris en compte.', 6, 0, NULL, '2023-03-05 12:10:25', NULL, NULL);
-INSERT INTO configuration VALUES(1580, 'Modéle à appliquer', 'CLICSHOPPING_APP_CHATGPT_CH_MODEL', 'gpt-4o-mini', 'Please, veuillez sélectionner le modéle par défaut que vous souhaitez appliquer.<br />\nTous les modéles n\'utilisent pas les mêmes paramétres et peuvent générer une erreur dans la rèponse<br />\nLE WYSWIWYG est impacté sur le type de modéle que vous souhaiter utiliser', 6, 0, NULL, '2023-03-05 12:10:25', NULL, NULL);
 INSERT INTO configuration VALUES(1581, 'Présence de la penalité', 'CLICSHOPPING_APP_CHATGPT_CH_PRESENCE_PENALITY', '0.1', 'Veuillez insérer un nombre<br />\nNombre entre -2.0 et 2.0. Les valeurs positives pénalisent les nouveaux jetons en fonction de leur fréquence existante dans le texte jusqu\'à présent, diminuant ainsi la probabilité que le modèle répète la même phrase exactement.', 6, 0, NULL, '2023-03-05 12:10:25', NULL, NULL);
-INSERT INTO configuration VALUES(1582, 'Clef Organisation', 'CLICSHOPPING_APP_CHATGPT_CH_ORGANIZATION', '', 'Clef Organisation (voir votre administration OpenIA)', 6, 0, NULL, '2023-03-05 12:10:25', NULL, NULL);
 INSERT INTO configuration VALUES(1583, 'Information Email connexion sécurité client (catalogue)', 'CONFIGURATION_EMAIL_CUSTOMER_SECURITY', 'false', 'Envoyer un email d\'alerte au client si une connexion est faite dans son administration.<br><br><i>(Valeur True = Oui - Valeur False = Non)</i>', 12, 12, '2008-09-16 10:52:38', '2006-04-09 16:13:48', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
 
 INSERT INTO configuration VALUES(1584, 'Do you want to enable this Module ?', 'MODULE_ADMIN_DASHBOARD_TOTAL_CA_BY_YEAR_APP_STATUS', 'True', 'Do you want to enable this Module ?', 6, 1, NULL, '2023-04-30 14:22:10', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
@@ -1709,7 +1732,6 @@ INSERT INTO configuration VALUES(1743, 'Souhaitez-vous installer ce module ?', '
 INSERT INTO configuration VALUES(1744, 'Select the width to display', 'MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_CONTENT_WIDTH', '12', 'Veuillez sélectionner un nombre entre 1 et 12', 6, 1, NULL, '2023-09-15 09:16:47', NULL, 'clic_cfg_set_content_module_width_pull_down');
 INSERT INTO configuration VALUES(1745, 'Ordre de tri d\'affichage', 'MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_SORT_ORDER', '2', 'Ordre de tri pour l\'affichage (Le plus petit nombre est montré en premier)', 6, 2, NULL, '2023-09-15 09:16:47', NULL, '');
 INSERT INTO configuration VALUES(1746, 'Clef Api Anthropic', 'CLICSHOPPING_APP_CHATGPT_CH_ANTHROPIC_API_KEY', '', 'Veuillez insérer la clef API (https://www.anthropic.com)', 6, 0, NULL, '2023-02-22 17:17:04', NULL, NULL);
-INSERT INTO configuration VALUES(1747, 'Clef Api Mistral', 'CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL', '', 'Veuillez insérer la clef API (https://www.mistral.ai)', 6, 0, NULL, '2025-04-16 13:09:02', NULL, NULL);
 INSERT INTO configuration VALUES(1748, 'Ordre de tri d\'affichage', 'CLICSHOPPING_APP_ADMINISTRATORS_AD_SORT_ORDER', '30', 'Ordre de tri pour l\'affichage (Le plus petit nombre est montré en premier)', 6, 0, NULL, '2025-04-23 15:01:20', NULL, NULL);
 INSERT INTO configuration VALUES(1749, 'Statut', 'CLICSHOPPING_APP_ADMINISTRATORS_AD_STATUS', 'True', 'Souhaitez vous activer cette APP', 6, 0, NULL, '2025-04-23 15:01:20', NULL, NULL);
 INSERT INTO configuration VALUES(1750, 'Parameter [Administrators App]', 'MODULE_MODULES_ADMINISTRATORS_INSTALLED', 'Configuration\\Administrators\\AD', 'Parameter [Administrators App]', 6, 0, NULL, '2025-04-23 15:01:20', NULL, NULL);
@@ -2119,10 +2141,9 @@ INSERT INTO manufacturers_info VALUES(4, 2, '', 0, NULL, NULL, NULL, NULL, NULL)
 INSERT INTO manufacturers_info VALUES(5, 1, '', 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO manufacturers_info VALUES(5, 2, '', 0, NULL, NULL, NULL, NULL, NULL);
 
+
 INSERT INTO mcp VALUES(1, 'RagBI', 'd0a36b839700b60727fe13998e22aa0af197c61d8b371e26114c133ca51c4864bd0da73ad6d1e5090b02b55cff42b8a0cd23866e64e78fc8884eb6228d32f5e9d76bed468869dd89ee6bb8a3208c5077e88560d0bc238f67cfc732efcf5313a0cb361e297c29c8d82d050d770ed7dee972af6445e801fa9af12e3d478bf5346a', 1, '2025-10-05 13:02:04', NULL, 1, 0, 0, 0, 0, 'localhost', 3001, 0, 20, 1000, 300, 7, 0);
 INSERT INTO mcp_ip VALUES(1, 1, '127.0.0.1', 'localhost');
-
-
 
 
 INSERT INTO orders_status VALUES(1, 1, 'Pending', 1, 0, 0, 1);

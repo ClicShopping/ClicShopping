@@ -33,7 +33,7 @@ class ConfigManager
    */
   public static function checkGptStatus(): bool
   {
-    if (!defined('CLICSHOPPING_APP_CHATGPT_CH_STATUS') || CLICSHOPPING_APP_CHATGPT_CH_STATUS == 'False' || empty(CLICSHOPPING_APP_CHATGPT_CH_API_KEY)) {
+    if (!defined('CLICSHOPPING_APP_CHATGPT_CH_STATUS') || CLICSHOPPING_APP_CHATGPT_CH_STATUS == 'False' || empty(ModelManager::getProviderApiKey('openai')['api_key'])) {
       return false;
     }
 
@@ -52,12 +52,12 @@ class ConfigManager
     // Initialiser les constantes nécessaires
     static::initializeConstants();
 
-    if (!defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY') || empty(CLICSHOPPING_APP_CHATGPT_CH_API_KEY)) {
+    if (empty(ModelManager::getProviderApiKey('openai')['api_key'])) {
       error_log("WARNING: ChatGpt API not defined or empty");
       return null;
     }
 
-    $env = putenv('OPENAI_API_KEY=' . CLICSHOPPING_APP_CHATGPT_CH_API_KEY);
+    $env = putenv('OPENAI_API_KEY=' . ModelManager::getProviderApiKey('openai')['api_key']);
 
     return $env;
   }

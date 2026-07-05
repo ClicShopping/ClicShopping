@@ -103,16 +103,12 @@ class ParallelLLMExecutor
   }
 
   /**
-   * Detect the configured LLM provider from CLICSHOPPING_APP_CHATGPT_CH_MODEL
+   * Detect the configured LLM provider from the default model (Gpt::defaultModel())
    * using ModelManager::getModelProviderMap() as the single source of truth.
    */
   private static function detectConfiguredProvider(): string
   {
-    if (!defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL')) {
-      return 'openai';
-    }
-
-    $model = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+    $model = Gpt::defaultModel();
     $providerMap = ModelManager::getModelProviderMap();
 
     return $providerMap[$model] ?? 'openai';

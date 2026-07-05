@@ -97,7 +97,7 @@ class HybridQueryDecomposer
         $statusConfig = \defined('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS') ? CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS : 'True';
         $this->decompositionEnabled = ($statusConfig === 'True' || $statusConfig === true);
 
-        // Default: null (uses default LLM provider from CLICSHOPPING_APP_CHATGPT_CH_MODEL)
+        // Default: null (uses the default model (Gpt::defaultModel()))
         $this->llmProvider = \defined('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_LLM_PROVIDER') ? CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_LLM_PROVIDER : null;
         
         // Load debug mode (Requirement 12.3)
@@ -115,14 +115,12 @@ class HybridQueryDecomposer
     
     /**
      * Initialize chat instance for LLM calls
-     * 
-     * Requirements: 12.2
-     * Uses configured LLM provider or defaults to CLICSHOPPING_APP_CHATGPT_CH_MODEL
+     * Uses configured LLM provider or defaults to the default model (Gpt::defaultModel())
      */
     private function initializeChat(): void
     {
         // Use configured LLM provider or default (Requirement 12.2)
-        $model = $this->llmProvider ?? (\defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : 'gpt-5-mini');
+        $model = $this->llmProvider ?? Gpt::defaultModel();
         
         if ($this->debug) {
             $this->logDebug("Initializing chat with model: {$model}");

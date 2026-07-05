@@ -10,13 +10,13 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Sites\ClicShoppingAdmin\Pages\
 
 use ClicShopping\OM\Registry;
 
-class Edit extends \ClicShopping\OM\Domains\PagesActionsAbstract
+class Delete extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public function execute()
   {
     $CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
 
-    $this->page->setFile('edit.php');
+    $this->page->setFile('delete.php');
     $this->page->data['action'] = 'ChatGpt';
 
     $CLICSHOPPING_ChatGpt->loadDefinitions('Sites/ClicShoppingAdmin/main');

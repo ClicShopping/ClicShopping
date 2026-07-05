@@ -92,41 +92,6 @@ class MariaDb
   {
     $CLICSHOPPING_Db = Registry::get('Db');
 
-    $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_gpt"');
-
-    if ($Qcheck->fetch() === false) {
-      $sql = <<<EOD
-          CREATE TABLE :table_gpt (
-            gpt_id int(11) NOT NULL COMMENT 'Primary key - unique identifier for each GPT interaction',
-            question text NOT NULL COMMENT 'User question or prompt submitted to GPT',
-            response text NOT NULL COMMENT 'GPT generated response text',
-            date_added date DEFAULT NULL COMMENT 'Date when the interaction was recorded',
-            KEY idx_date_added (date_added)
-          ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='GPT interaction history with questions and responses';
-
-          ALTER TABLE :table_gpt  ADD PRIMARY KEY (gpt_id);
-          ALTER TABLE :table_gpt  MODIFY gpt_id int(11) NOT NULL AUTO_INCREMENT;
-
-          CREATE TABLE :table_gpt_usage (
-            usage_id int(11) NOT NULL COMMENT 'Primary key - unique identifier for each usage record',
-            gpt_id int(11) NOT NULL COMMENT 'FK to gpt table - links to the GPT interaction',
-            promptTokens int(11) DEFAULT NULL COMMENT 'Number of tokens used in the prompt/input',
-            completionTokens int(11) DEFAULT NULL COMMENT 'Number of tokens used in the completion/output',
-            totalTokens int(11) DEFAULT NULL COMMENT 'Total tokens used (prompt + completion)',
-            ia_type varchar(255) DEFAULT NULL COMMENT 'AI provider type - openai, ollama, anthropic, etc.',
-            model varchar(255) DEFAULT NULL COMMENT 'Model name used - gpt-4, gpt-3.5-turbo, claude-3, etc.',
-            date_added date DEFAULT NULL COMMENT 'Date when the usage was recorded',
-            KEY idx_gpt_id (gpt_id),
-            KEY idx_date_added (date_added),
-            KEY idx_model (model),
-            KEY idx_ia_type (ia_type)
-          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Token usage tracking for GPT API calls and cost analysis';
-          ALTER TABLE :table_gpt_usage  ADD PRIMARY KEY (usage_id);
-          ALTER TABLE :table_gpt_usage  MODIFY usage_id int(11) NOT NULL AUTO_INCREMENT;
-          EOD;
-      $CLICSHOPPING_Db->exec($sql);
-    }
-
     $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_pages_manager_embedding"');
 
     if ($Qcheck->fetch() === false) {
@@ -516,9 +481,8 @@ class MariaDb
       $countRow = $countResult->fetch();
       $validation['record_count'] = (int)($countRow['cnt'] ?? 0);
 
-      // Overall validation status
+      // Overall validation status (table existence already guaranteed by the early return above)
       $validation['valid'] =
-        $validation['exists'] &&
         $validation['has_taxonomy_column'] &&
         $validation['has_metadata_column'] &&
         $validation['has_content_column'] &&

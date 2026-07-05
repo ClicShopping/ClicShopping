@@ -13,7 +13,6 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters\AbstractFormatter;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
@@ -165,17 +164,6 @@ class WebSearchFormatter extends AbstractFormatter
     }
 
     $output .= "</div>";
-
-    // Save audit data
-    $auditExtra = [
-      'web_results' => $results['web_results'] ?? [],
-      'sources' => $results['sources'] ?? [],
-      'price_comparison' => $results['price_comparison'] ?? [],
-      'processing_chain' => $results['processing_chain'] ?? [],
-      'ai_overview' => $results['ai_overview'] ?? []
-    ];
-
-    Gpt::saveData($question, $output, $auditExtra);
 
     // CRITICAL DEBUG: Log output status before return
     if ($this->debug) {

@@ -78,8 +78,8 @@ class GptShop
       $temperature = 0.5;
     }
 
-    if (str_starts_with(CLICSHOPPING_APP_CHATGPT_CH_MODEL, 'gpt')) {
-      $engine = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+    if (str_starts_with(Gpt::defaultModel(), 'gpt')) {
+      $engine = Gpt::defaultModel();
       $response = Gpt::getGptResponse($question, $maxtoken, $temperature, $engine);
     } else {
       //ollama
@@ -99,8 +99,8 @@ class GptShop
   {
     $CLICSHOPPING_Db = Registry::get('Db');
 
-    $QtokenTotal = $CLICSHOPPING_Db->query('SELECT SUM(totalTokens) AS total
-                                             FROM :table_gpt_usage
+    $QtokenTotal = $CLICSHOPPING_Db->query('SELECT SUM(tokens_total) AS total
+                                             FROM :table_rag_statistics
                                              WHERE DATE(date_added) = CURDATE()
                                             ');
     $total_accepted = $QtokenTotal->value('total');

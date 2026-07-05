@@ -20,15 +20,16 @@
       "SumTotalTokenByMonth": "Module\\ClicShoppingAdmin\\Dashboard\\SumTotalTokenByMonth",
       "CostEstimation": "Module\\ClicShoppingAdmin\\Dashboard\\CostEstimation"
     },
-    "HeaderTags": {
-      "LlmsTxt": "Module\\HeaderTags\\LlmsTxt"
-    },
     "Hooks": {
       "ClicShoppingAdmin/Cronjob": {
         "Process": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\Process",
         "ReputationDecay": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationDecay",
-        "ReputationUpdateProcessor": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationUpdateProcessor",
-        "ProcessReputationQueue": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ProcessReputationQueue"
+        "ReputationUpdateProcessor": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationUpdateProcessor"
+      },
+      "Shop/Cronjob": {
+        "Process": "Module\\Hooks\\Shop\\Cronjob\\Process",
+        "ReputationDecay": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationDecay",
+        "ReputationUpdateProcessor": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationUpdateProcessor"
       },
       "ClicShoppingAdmin/Language": {
         "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm"

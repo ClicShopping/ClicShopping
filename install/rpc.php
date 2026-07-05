@@ -159,10 +159,8 @@ if (isset($_GET['action']) && !empty($_GET['action'])) {
 
           $CLICSHOPPING_Db->exec($sql);
         }
-
-        if ($_POST['demo'] == 'demo') {
-          $CLICSHOPPING_Db->importSQL($dir_fs_www_root . '/Db/demo_clicshopping_en.sql', $prefix);
-        } elseif ($language == 'french') {
+        
+        if ($language == 'french') {
           $CLICSHOPPING_Db->importSQL($dir_fs_www_root . '/Db/clicshopping.sql', $prefix);
         } else {
           $CLICSHOPPING_Db->importSQL($dir_fs_www_root . '/Db/clicshopping_en.sql', $prefix);

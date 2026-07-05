@@ -1,2 +1,0 @@
-cfg_chatgpt_api_key_anthropic_title = Anthropic Api Key
-cfg_chatgpt_api_key_anthropic_description = Please, insert the Api Key (https://www.anthropic.com)

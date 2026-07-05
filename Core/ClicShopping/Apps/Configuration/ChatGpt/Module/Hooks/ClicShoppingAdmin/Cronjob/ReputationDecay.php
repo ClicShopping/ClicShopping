@@ -131,9 +131,10 @@ class ReputationDecay implements HooksInterface
         if (isset($_GET['cronId'])) {
             $cron_id = HTML::sanitize($_GET['cronId']);
             
-            if ($cron_id !== null && !empty($cron_id) && is_int($cron_id)) {
+            if ($cron_id !== null && !empty($cron_id) && is_numeric($cron_id)) {
+                $cron_id = (int)$cron_id;
                 Cronjob::updateCron($cron_id);
-                
+
                 if ($cron_id_reputation_decay == $cron_id) {
                     $this->runReputationDecay();
                 }

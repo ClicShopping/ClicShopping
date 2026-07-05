@@ -22,6 +22,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\OllamaProvider;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\LMStudioProvider;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\MistralProvider;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\GeminiProvider;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
 /**
  * Class LLMProviderFactory
@@ -184,8 +185,8 @@ class LLMProviderFactory
     // Provider-specific defaults from constants
     switch ($providerName) {
       case 'openai':
-        $config['api_key'] = defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY') ? CLICSHOPPING_APP_CHATGPT_CH_API_KEY : '';
-        $config['model'] = defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : 'gpt-5-mini';
+        $config['api_key'] = Gpt::getProviderApiKey('openai')['api_key'];
+        $config['model'] = Gpt::defaultModel();
         $config['temperature'] = defined('CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE') ? (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE : 0.7;
         $config['max_tokens'] = defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 4000;
         $config['api_url'] = 'https://api.openai.com/v1/chat/completions';
@@ -223,7 +224,7 @@ class LLMProviderFactory
         break;
 
       case 'mistral':
-        $config['api_key'] = defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL') ? CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL : '';
+        $config['api_key'] = Gpt::getProviderApiKey('mistral')['api_key'];
         $config['model'] = defined('CLICSHOPPING_APP_CHATGPT_MISTRAL_MODEL') ? CLICSHOPPING_APP_CHATGPT_MISTRAL_MODEL : 'mistral-large-latest';
         $config['temperature'] = defined('CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE') ? (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE : 0.7;
         $config['max_tokens'] = defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 4000;

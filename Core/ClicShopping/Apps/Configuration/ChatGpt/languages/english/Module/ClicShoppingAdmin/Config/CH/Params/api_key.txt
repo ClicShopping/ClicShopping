@@ -1,2 +1,0 @@
-cfg_chatgpt_api_key_title = Api Key OpenAi
-cfg_chatgpt_api_key_description = Please, insert the Api Key (https://platform.openai.com/account/api-keys)

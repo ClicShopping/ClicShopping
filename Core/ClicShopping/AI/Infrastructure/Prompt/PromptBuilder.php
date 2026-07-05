@@ -64,7 +64,7 @@ class PromptBuilder
     $this->languageId = $languageId;
     $this->debug = $debug;
     $this->useCache = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER === 'True' ? 'True' : 'False';
-    $this->modelName = defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') && CLICSHOPPING_APP_CHATGPT_CH_MODEL !== '' ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : 'gpt-5-mini';
+    $this->modelName = Gpt::defaultModel();
 
     // Initialize SchemaRetriever if Schema RAG is enabled
     $useSchemaRAG = CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG;

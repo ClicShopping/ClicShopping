@@ -1,6 +1,0 @@
-cfg_chatgpt_model_title = Default model
-cfg_chatgpt_model_description = Please, please select the model you want to apply. <br />
-All the models does not have the same parameters and can generate an error on the response. <br />
-The WYSWIWYG is impacted by the model you want to use. <br />
-This feature requires an LLM with advanced reasoning capabilities: small models such as phi-4 are not sufficient and degrade the quality of the responses. <br />
-A model with a context window of at least 64k tokens is recommended; adjust the parameters accordingly.

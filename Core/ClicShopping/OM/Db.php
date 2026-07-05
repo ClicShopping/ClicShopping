@@ -991,6 +991,9 @@ class Db extends PDO
         // Don't cast to int, use as-is
         if ($type_lower === 'enum' || $type_lower === 'set') {
           $row .= '(' . $fields['length'] . ')';
+        } elseif (preg_match('/^\d+\s*,\s*\d+$/', (string)$fields['length'])) {
+          // Numeric precision,scale (e.g. decimal(15,4)) — preserve BOTH parts.
+          $row .= '(' . str_replace(' ', '', (string)$fields['length']) . ')';
         } else {
           // For numeric types, cast to int for safety
           $row .= '(' . (int)$fields['length'] . ')';

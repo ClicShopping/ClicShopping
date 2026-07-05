@@ -14,6 +14,8 @@ use LLPhant\Chat\MistralAIChat;
 use LLPhant\Chat\OllamaChat;
 use LLPhant\Chat\OpenAIChat;
 use LLPhant\LmStudioConfig;
+use LLPhant\MistralAIConfig;
+use LLPhant\GeminiOpenAIConfig;
 use LLPhant\OpenAIConfig;
 use LLPhant\OllamaConfig;
 use LLPhant\AnthropicConfig;
@@ -54,7 +56,7 @@ class ProviderManager
     $config = new OpenAIConfig();
 
     if (is_null($api_key)) {
-      $api_key = CLICSHOPPING_APP_CHATGPT_CH_API_KEY ?? null;
+      $api_key = ModelManager::getProviderApiKey('openai')['api_key'] ?: null;
     }
 
     $config->apiKey = $api_key;
@@ -63,7 +65,7 @@ class ProviderManager
       $config->model = $parameters['model'];
       $config->modelOptions = $parameters;
     } elseif (!is_null($parameters)) {
-      $config->model = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+      $config->model = ModelManager::defaultModel();
       $config->modelOptions = $parameters;
     }
 
@@ -156,8 +158,8 @@ class ProviderManager
    * NOTE: This method continues to use LLPhant's AnthropicChat for backward compatibility.
    * The provider interface is used for new code and parallel execution.
    *
-   * @param string $model The specific model identifier to use for the AnthropicChat instance.
-   * Supported values are 'anth-sonnet', 'anth-opus', 'anth-haiku'.
+   * @param string $model The real Anthropic technical model name from the catalog
+   * (e.g. 'claude-sonnet-4-6'); legacy 'anth-*' aliases are still resolved for backward compatibility.
    * @param int|null $maxtoken The maximum number of tokens the model can output.
    *                           Defaults to the configured max token if not provided.
    * @param array|null $modelOptions Additional configuration options for the model.
@@ -167,9 +169,9 @@ class ProviderManager
   {
     $result = false;
 
-    if (defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY_ANTHROPIC') &&!empty(CLICSHOPPING_APP_CHATGPT_CH_API_KEY_ANTHROPIC)) {
-      $api_key = CLICSHOPPING_APP_CHATGPT_CH_API_KEY_ANTHROPIC ?? null;
+    $api_key = ModelManager::getProviderApiKey('anthropic')['api_key'];
 
+    if ($api_key !== '') {
       if (is_null($modelOptions)) {
         $modelOptions = [
           'temperature' => (float) CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE,
@@ -179,22 +181,13 @@ class ProviderManager
         ];
       }
 
-      // Current Claude 4.x model strings. LLPhant's AnthropicConfig accepts an arbitrary
-      // model string, so we pass the API id directly (its CLAUDE_3_* constants are stale).
-      if ($model === 'anth-sonnet') {
-        $result = new AnthropicChat(
-          new AnthropicConfig('claude-sonnet-4-6', $maxtoken, $modelOptions, $api_key)
-        );
-      } elseif ($model === 'anth-opus') {
-        $result = new AnthropicChat(
-          new AnthropicConfig('claude-opus-4-8', $maxtoken, $modelOptions, $api_key)
-        );
-      } else {
-        // Default to Haiku
-        $result = new AnthropicChat(
-          new AnthropicConfig('claude-haiku-4-5-20251001', $maxtoken, $modelOptions, $api_key)
-        );
-      }
+      // $model is the real technical name from the catalog (option A). mapAnthropicModelName()
+      // is a passthrough for real names and still resolves any legacy anth-* alias.
+      $apiModel = ModelManager::mapAnthropicModelName($model);
+
+      $result = new AnthropicChat(
+        new AnthropicConfig($apiModel, $maxtoken, $modelOptions, $api_key)
+      );
     }
 
     return $result;
@@ -213,57 +206,89 @@ class ProviderManager
    */
   public static function getMistralChat(string $model, ?int $maxtoken = null): MistralAIChat
   {
-    $result = false;
+    $api_key = ModelManager::getProviderApiKey('mistral')['api_key'];
 
-    if (defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL') &&!empty(CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL)) {
-      $api_key = CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL ?? null;
-
-      if (empty($api_key)) {
-        throw new \Exception('You have to provide a MISTRAL_API_KEY to request Mistral AI.');
-      }
-
-      // Valid model for MistralAIChat
-      $valid_models = [
-        'mistral-tiny',
-        'mistral-small-latest',
-        'mistral-medium-latest',
-        'mistral-large-latest',
-        'pixtral-large-latest',
-        'ministral-3b-latest',
-        'ministral-8b-latest',
-        'codestral-latest',
-        'open-mistral-nemo',
-        'open-codestral-mamba',
-        'mistral-moderation-latest'
-      ];
-
-      if (empty($model) || !in_array($model, $valid_models)) {
-        $model = 'mistral-large-latest';
-      }
-
-      $config = new MistralAIChat();
-      $config->apiKey = $api_key;
-      $config->model = $model;
-
-      // Appliquer la limite de tokens si spécifiée
-      if (!is_null($maxtoken) && $maxtoken > 0) {
-        $config->maxTokens = $maxtoken;
-      } else {
-        $maxtoken = (int)(CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN ?? 0);
-        if ($maxtoken > 0) {
-          $config->maxTokens = $maxtoken;
-        }
-      }
-
-      try {
-        $result = new MistralAIChat($config);;
-        return $result;
-      } catch (\Exception $e) {
-        throw new \Exception('Error creating MistralAIChat instance: ' . $e->getMessage());
-      }
+    if ($api_key === '') {
+      throw new \Exception('You have to provide a MISTRAL_API_KEY to request Mistral AI.');
     }
 
-    return $result;
+    // Valid model for MistralAIChat
+    $valid_models = [
+      'mistral-tiny',
+      'mistral-small-latest',
+      'mistral-medium-latest',
+      'mistral-large-latest',
+      'pixtral-large-latest',
+      'ministral-3b-latest',
+      'ministral-8b-latest',
+      'codestral-latest',
+      'open-mistral-nemo',
+      'open-codestral-mamba',
+      'mistral-moderation-latest'
+    ];
+
+    if (empty($model) || !in_array($model, $valid_models)) {
+      $model = 'mistral-large-latest';
+    }
+
+    $config = new MistralAIConfig();
+    $config->apiKey = $api_key;
+    $config->model = $model;
+
+    // Appliquer la limite de tokens si spécifiée (option OpenAI-compatible)
+    if (is_null($maxtoken) || $maxtoken <= 0) {
+      $maxtoken = (int)(defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 0);
+    }
+    if ($maxtoken > 0) {
+      $config->modelOptions = ['max_tokens' => $maxtoken];
+    }
+
+    try {
+      return new MistralAIChat($config);
+    } catch (\Exception $e) {
+      throw new \Exception('Error creating MistralAIChat instance: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Creates a chat instance for Google Gemini via its OpenAI-compatible endpoint.
+   *
+   * Uses LLPhant's GeminiOpenAIConfig (base URL preset to Google's OpenAI-compatible API) driven
+   * by an OpenAIChat, with the API key resolved from the DB catalog (provider 'gemini').
+   *
+   * @param string $model The Gemini model identifier (e.g. gemini-2.5-flash)
+   * @param int|null $maxtoken Optional max output tokens
+   * @return OpenAIChat
+   * @throws \Exception When no Gemini API key is configured or instantiation fails
+   */
+  public static function getGeminiChat(string $model, ?int $maxtoken = null): OpenAIChat
+  {
+    $api_key = ModelManager::getProviderApiKey('gemini')['api_key'];
+
+    if ($api_key === '') {
+      throw new \Exception('You have to provide a GEMINI_API_KEY to request Google Gemini.');
+    }
+
+    if (empty($model)) {
+      $model = 'gemini-2.5-flash';
+    }
+
+    $config = new GeminiOpenAIConfig();
+    $config->apiKey = $api_key;
+    $config->model = $model;
+
+    if (is_null($maxtoken) || $maxtoken <= 0) {
+      $maxtoken = (int)(defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 0);
+    }
+    if ($maxtoken > 0) {
+      $config->modelOptions = ['max_tokens' => $maxtoken];
+    }
+
+    try {
+      return new OpenAIChat($config);
+    } catch (\Exception $e) {
+      throw new \Exception('Error creating Gemini chat instance: ' . $e->getMessage());
+    }
   }
 
   /**
@@ -287,10 +312,7 @@ class ProviderManager
   {
     // Use default model if not specified
     if ($model === null) {
-      if (!defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL')) {
-        throw new \Exception('No model specified and CLICSHOPPING_APP_CHATGPT_CH_MODEL not defined');
-      }
-      $model = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+      $model = ModelManager::defaultModel();
     }
 
     // Normalize model name to lowercase for comparison
@@ -314,9 +336,10 @@ class ProviderManager
     }
     
     // Google Gemini models
-    if (str_starts_with($modelLower, 'gemini') || 
+    if (str_starts_with($modelLower, 'gemini') ||
         str_starts_with($modelLower, 'google')) {
-      throw new \Exception("Gemini models are not yet supported. Model: {$model}");
+      $maxtoken = $options['maxtoken'] ?? null;
+      return self::getGeminiChat($model, $maxtoken);
     }
     
     // Mistral models
@@ -369,7 +392,7 @@ class ProviderManager
       case 'openai':
         $config['url'] = 'https://api.openai.com/v1/chat/completions';
         $config['headers'] = [
-          'Authorization' => 'Bearer ' . (CLICSHOPPING_APP_CHATGPT_CH_API_KEY ?? ''),
+          'Authorization' => 'Bearer ' . ModelManager::getProviderApiKey('openai')['api_key'],
           'Content-Type' => 'application/json'
         ];
         break;
@@ -377,7 +400,7 @@ class ProviderManager
       case 'anthropic':
         $config['url'] = 'https://api.anthropic.com/v1/messages';
         $config['headers'] = [
-          'x-api-key' => CLICSHOPPING_APP_CHATGPT_CH_API_KEY_ANTHROPIC ?? '',
+          'x-api-key' => ModelManager::getProviderApiKey('anthropic')['api_key'],
           'anthropic-version' => '2023-06-01',
           'Content-Type' => 'application/json'
         ];
@@ -386,7 +409,7 @@ class ProviderManager
       case 'mistral':
         $config['url'] = 'https://api.mistral.ai/v1/chat/completions';
         $config['headers'] = [
-          'Authorization' => 'Bearer ' . (CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL ?? ''),
+          'Authorization' => 'Bearer ' . ModelManager::getProviderApiKey('mistral')['api_key'],
           'Content-Type' => 'application/json'
         ];
         break;

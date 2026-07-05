@@ -194,13 +194,13 @@ class UIGenerator
    */
   public static function gptCkeditorParameters(): string|bool
   {
-    $model = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+    $model = ModelManager::defaultModel();
 
     $url = "https://api.openai.com/v1/chat/completions";
 
     $organization = '';
-    if (!empty(CLICSHOPPING_APP_CHATGPT_CH_ORGANIZATION)) {
-      $organization = 'let organizationGpt = "' . CLICSHOPPING_APP_CHATGPT_CH_ORGANIZATION . '";';
+    if (!empty(ModelManager::getProviderApiKey('openai')['organisation'])) {
+      $organization = 'let organizationGpt = "' . ModelManager::getProviderApiKey('openai')['organisation'] . '";';
     }
 
     $script = '<script>

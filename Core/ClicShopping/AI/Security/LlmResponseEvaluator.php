@@ -100,7 +100,7 @@ class LlmResponseEvaluator
       }
 
       // 5. Use evaluation model if available
-      if (str_starts_with(CLICSHOPPING_APP_CHATGPT_CH_MODEL, 'gpt') || str_starts_with(CLICSHOPPING_APP_CHATGPT_CH_MODEL, 'anth')) {
+      if (str_starts_with(Gpt::defaultModel(), 'gpt') || str_starts_with(Gpt::defaultModel(), 'anth')) {
         $llmEvaluation = self::performLlmEvaluation($question, $result);
         $evaluationResults['llm_evaluation'] = $llmEvaluation;
       }
@@ -757,7 +757,7 @@ class LlmResponseEvaluator
       'question' => $question,
       'result' => $result,
       'evaluation' => $evaluation,
-      'model' => CLICSHOPPING_APP_CHATGPT_CH_MODEL
+      'model' => Gpt::defaultModel()
     ];
 
     // Implementation according to your storage system

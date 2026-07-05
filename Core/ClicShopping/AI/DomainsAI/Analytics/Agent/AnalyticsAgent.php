@@ -105,7 +105,7 @@ class AnalyticsAgent
     $this->app = Registry::get('ChatGpt');
 
     // This replaces the duplicated model detection logic with a single, maintainable function
-    $model = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+    $model = Gpt::defaultModel();
     
     try {
       $this->chat = Gpt::getChatForModel($model);
@@ -1158,7 +1158,7 @@ class AnalyticsAgent
     }
 
     try {
-      $modelName = defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : Gpt::getTechnicalFallbackModel();
+      $modelName = Gpt::defaultModel();
       // Get model name from chat instance
 
       // Try to get actual model name from chat config

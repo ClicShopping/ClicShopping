@@ -122,18 +122,6 @@ EOD;
     );
 
     $this->app->db->save('configuration', [
-        'configuration_title' => 'Do you want to enable this Module ?',
-        'configuration_key' => 'MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_PRICE',
-        'configuration_value' => '0.001',
-        'configuration_description' => 'Sort order of display. Lowest is displayed first.',
-        'configuration_group_id' => '6',
-        'sort_order' => '2',
-        'set_function' => '',
-        'date_added' => 'now()'
-      ]
-    );
-
-    $this->app->db->save('configuration', [
         'configuration_title' => 'Sort Order',
         'configuration_key' => 'MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_SORT_ORDER',
         'configuration_value' => '50',
@@ -156,7 +144,6 @@ EOD;
     return [
       'MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_STATUS',
       'MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_CONTENT_WIDTH',
-      'MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_PRICE',
       'MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_SORT_ORDER'
     ];
   }

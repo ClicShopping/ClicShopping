@@ -1,2 +1,0 @@
-cfg_chatgpt_organization_title = Organization key
-cfg_chatgpt_organization_description = Organization key (see you OpenIA administration)

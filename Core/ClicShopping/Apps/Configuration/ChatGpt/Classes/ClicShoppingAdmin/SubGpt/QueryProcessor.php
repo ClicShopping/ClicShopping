@@ -61,7 +61,7 @@ class QueryProcessor
       ->setAgentType($aiResponse['agent_used'] ?? 'unknown')
       ->setClassificationType($aiResponse['intent']['type'] ?? 'unknown')
       ->setConfidence($aiResponse['intent']['confidence'] ?? 0)
-      ->setApiInfo('openai', CLICSHOPPING_APP_CHATGPT_CH_MODEL ?? 'gpt-5-mini');
+      ->setApiInfo('openai', ModelManager::defaultModel());
     
     if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
       error_log('[INFO : SUCCESS] ORCHESTRATOR PROCESSED SUCCESSFULLY');

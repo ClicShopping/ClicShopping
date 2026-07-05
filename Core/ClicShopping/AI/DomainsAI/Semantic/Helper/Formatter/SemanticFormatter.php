@@ -126,14 +126,6 @@ class SemanticFormatter extends AbstractFormatter
 
     $output .= "</div>";
 
-    // Save audit data
-    $auditExtra = [
-      'embeddings_context' => $results['embeddings_context'] ?? [],
-      'similarity_scores'  => $results['similarity_scores'] ?? [],
-      'processing_chain'   => $results['processing_chain'] ?? []
-    ];
-    //Gpt::saveData($question, $output, $auditExtra);
-
     if(!empty($results['similarity_scores'])) {
       $output .= '<div class="mt-2"></div>';
       $output .= 'Similarity_scores : ' . $results['similarity_scores'] ?? [];

@@ -104,14 +104,8 @@ class MultiDBRAGManager
       error_log("Debug enabled: " . ($this->debug ? 'YES' : 'NO'));
     }
 
-    $parameters = null;
-    $model = $model ?? (defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL') ? CLICSHOPPING_APP_CHATGPT_CH_MODEL : 'default_model');
-
-    if (!is_null($model)) {
-      $parameters['model'] = $model;
-    } elseif (defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL')) {
-      $parameters['model'] = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
-    }
+    $model = $model ?? Gpt::defaultModel();
+    $parameters = ['model' => $model];
 
     Gpt::getOpenAiGpt($parameters);
 

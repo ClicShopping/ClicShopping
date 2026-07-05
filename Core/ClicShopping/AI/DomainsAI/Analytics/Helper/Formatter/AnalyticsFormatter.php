@@ -13,7 +13,6 @@ use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters\AbstractFormatter;
 
 /**
@@ -146,14 +145,6 @@ class AnalyticsFormatter extends AbstractFormatter
 
     $output .= "</div>";
 
-    // Save audit data
-    $auditExtra = [
-      'embeddings_context' => $results['embeddings_context'] ?? [],
-      'similarity_scores'  => $results['similarity_scores'] ?? [],
-      'processing_chain'   => $results['processing_chain'] ?? []
-    ];
-    Gpt::saveData($question, $output, $auditExtra);
-
     return [
       'type' => 'formatted_results',
       'content' => $output
@@ -245,16 +236,6 @@ class AnalyticsFormatter extends AbstractFormatter
     }
 
     $output .= "</div>"; // Close analytics-results
-
-    // Save audit data
-    $auditExtra = [
-      'multiple_queries' => true,
-      'query_count' => $queryCount,
-      'embeddings_context' => $results['embeddings_context'] ?? [],
-      'similarity_scores'  => $results['similarity_scores'] ?? [],
-      'processing_chain'   => $results['processing_chain'] ?? []
-    ];
-    Gpt::saveData($originalQuery, $output, $auditExtra);
 
     return [
       'type' => 'formatted_results',

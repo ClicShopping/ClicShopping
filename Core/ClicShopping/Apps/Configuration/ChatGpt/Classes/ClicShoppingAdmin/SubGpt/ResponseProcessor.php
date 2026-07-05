@@ -15,6 +15,7 @@ use ClicShopping\AI\Infrastructure\Prompt\PromptOptimizer;
 use ClicShopping\AI\Infrastructure\Response\ResponseNormalizer;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\LLMProviderFactory;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
 use function defined;
 use function is_null;
@@ -197,27 +198,25 @@ class ResponseProcessor
   }
 
   /**
-   * Get fallback model for a failed model
+   * Get the fallback model for a failed model, resolved from the DB catalog.
+   *
+   * Uses the catalogued fallback (the `ai_model_status_fallback=1` row) via the ChatGpt facade
+   * instead of a hardcoded per-model map. Returns null when there is no distinct fallback to try
+   * (empty catalog, or the failed model IS the fallback) so `callWithModel()` never recurses onto
+   * the same model.
    *
    * @param string $failedModel The model that failed
-   * @return string|null Fallback model name or null if no fallback available
+   * @return string|null Fallback model name, or null if no distinct fallback is available
    */
   private static function getFallbackModel(string $failedModel): ?string
   {
-    $fallbackChain = [
-      'gpt-5' => 'gpt-4.1-mini',
-      'gpt-5-mini' => 'gpt-4.1-mini',
-      'gpt-5-nano' => 'gpt-4.1-mini',
-      'gpt-4.1-mini' => 'gpt-4.1-mini',
-      'gpt-4.1-nano' => 'gpt-4.1-nano',
-      'gpt-4o' => 'anth-sonnet',
-      'anth-sonnet' => 'anth-sonnet',
-      'anth-opus' => 'anth-sonnet',
-      'anth-haiku' => 'anth-sonnet',
-      'mistral-large-latest' => 'gpt-4.1-mini',
-    ];
+    $fallbackModel = Gpt::getTechnicalFallbackModel();
 
-    return $fallbackChain[$failedModel] ?? null;
+    if ($fallbackModel === '' || $fallbackModel === $failedModel) {
+      return null;
+    }
+
+    return $fallbackModel;
   }
 
   /**
@@ -235,11 +234,7 @@ class ResponseProcessor
    */
   public static function getChat(string $question, int|null $maxtoken = null, ?float $temperature = null, ?string $engine = null, int|null $max = 1): mixed
   {
-    if (!defined('CLICSHOPPING_APP_CHATGPT_CH_MODEL')) {
-      define('CLICSHOPPING_APP_CHATGPT_CH_MODEL', 'gpt-5-mini');
-    }
-
-    $model = $engine ?? CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+    $model = $engine ?? ModelManager::defaultModel();
 
     if (str_starts_with($model, 'gpt')) {
       $maxtoken = self::getMaxTokens($maxtoken);
@@ -272,7 +267,7 @@ class ResponseProcessor
         ], $tokenParams);
       }
       
-      if (!empty(CLICSHOPPING_APP_CHATGPT_CH_ORGANIZATION)) {
+      if (!empty(ModelManager::getProviderApiKey('openai')['organisation'])) {
         $parameters['organization'] = CLICSHOPPING_APP_CHATGPT_CH_ORGANISATION;
       }
       
@@ -320,7 +315,7 @@ class ResponseProcessor
     }
 
     if (is_null($engine)) {
-      $engine = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+      $engine = ModelManager::defaultModel();
     }
 
     // Validate and sanitize prompt
@@ -543,7 +538,7 @@ class ResponseProcessor
     // This method is maintained for backward compatibility
     
     $body = [
-      'model' => $model ?? CLICSHOPPING_APP_CHATGPT_CH_MODEL,
+      'model' => $model ?? ModelManager::defaultModel(),
       'temperature' => $temperature ?? (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE,
       'max_tokens' => $maxTokens ?? (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN,
     ];

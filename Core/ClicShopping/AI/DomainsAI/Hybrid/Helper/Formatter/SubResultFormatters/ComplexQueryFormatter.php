@@ -13,7 +13,6 @@ use ClicShopping\OM\Hash;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
 
 /**
@@ -160,14 +159,6 @@ class ComplexQueryFormatter extends AbstractFormatter
     }
 
     $output .= "</div>";
-
-    // Save audit data
-    $auditExtra = [
-      'sub_results' => $results['sub_results'] ?? [],
-      'source_attribution' => $results['source_attribution'] ?? [],
-      'processing_chain' => $results['processing_chain'] ?? []
-    ];
-    Gpt::saveData($question, $output, $auditExtra);
 
     return [
       'type' => 'formatted_results',
