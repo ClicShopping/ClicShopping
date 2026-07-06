@@ -1392,6 +1392,30 @@ class CurlFactory implements CurlFactoryInterface
 
     private function applyMethod(EasyHandle $easy, array &$conf): void
     {
+        if ($easy->request->getMethod() === 'HEAD') {
+            // libcurl stops at HEAD response headers only when CURLOPT_NOBODY
+            // is set; CURLOPT_CUSTOMREQUEST changes only the method string.
+            // NOBODY also suppresses request upload, so strip non-zero body
+            // length, transfer coding, and a 100-continue expectation.
+            $conf[\CURLOPT_CUSTOMREQUEST] = null;
+            $conf[\CURLOPT_NOBODY] = true;
+            unset(
+                $conf[\CURLOPT_WRITEFUNCTION],
+                $conf[\CURLOPT_READFUNCTION],
+                $conf[\CURLOPT_FILE],
+                $conf[\CURLOPT_INFILE]
+            );
+            if (\trim($easy->request->getHeaderLine('Content-Length')) !== '0') {
+                $this->removeHeader('Content-Length', $conf);
+            }
+            $this->removeHeader('Transfer-Encoding', $conf);
+            if (\strcasecmp(\trim($easy->request->getHeaderLine('Expect')), '100-continue') === 0) {
+                $this->removeHeader('Expect', $conf);
+            }
+
+            return;
+        }
+
         $body = $easy->request->getBody();
         $size = $body->getSize();
 
@@ -1407,14 +1431,6 @@ class CurlFactory implements CurlFactoryInterface
             if (!$easy->request->hasHeader('Content-Length')) {
                 $conf[\CURLOPT_HTTPHEADER][] = 'Content-Length: 0';
             }
-        } elseif ($method === 'HEAD') {
-            $conf[\CURLOPT_NOBODY] = true;
-            unset(
-                $conf[\CURLOPT_WRITEFUNCTION],
-                $conf[\CURLOPT_READFUNCTION],
-                $conf[\CURLOPT_FILE],
-                $conf[\CURLOPT_INFILE]
-            );
         }
     }
 
@@ -1914,13 +1930,22 @@ class CurlFactory implements CurlFactoryInterface
             $onHeaders = null;
         }
 
+        $startingResponse = false;
+        $collectingTrailers = false;
+
         return static function ($ch, $h) use (
             $onHeaders,
             $easy,
-            &$startingResponse
+            &$startingResponse,
+            &$collectingTrailers
         ) {
             $value = \trim($h);
-            if ($value === '') {
+            if ($h === "\r\n" || $h === "\n" || $h === "\r" || $h === '') {
+                if ($collectingTrailers) {
+                    // A blank line ends the trailer section; the response has
+                    // already been created.
+                    return \strlen($h);
+                }
                 $startingResponse = true;
                 try {
                     $easy->createResponse();
@@ -1941,9 +1966,17 @@ class CurlFactory implements CurlFactoryInterface
                         return -1;
                     }
                 }
-            } elseif ($startingResponse) {
+            } elseif ($startingResponse || $collectingTrailers) {
+                if ($easy->response !== null && !HeaderProcessor::isStatusLineCandidate($h)) {
+                    // Trailer fields arrive through the header callback after
+                    // the body; a new header block always begins with a status
+                    // line.
+                    $collectingTrailers = true;
+                } else {
+                    $collectingTrailers = false;
+                    $easy->headers = [$value];
+                }
                 $startingResponse = false;
-                $easy->headers = [$value];
             } else {
                 $easy->headers[] = $value;
             }

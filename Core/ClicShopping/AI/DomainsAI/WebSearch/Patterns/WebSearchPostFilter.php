@@ -119,7 +119,7 @@ class WebSearchPostFilter
     }
     
     // Only apply trends/news override if NO entity keywords AND NO financial keywords present
-    if (!$hasEntityKeyword && !$hasFinancialKeyword) {
+    if (!$hasEntityKeyword && !$hasFinancialKeyword && !$llmSaysAnalytics) {
       foreach (WebSearchPatterns::$trendsNewsKeywords as $keyword) {
         if (str_contains($query, $keyword)) {
           $analysis['intent_type'] = 'web_search';

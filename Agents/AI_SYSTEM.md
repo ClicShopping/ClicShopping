@@ -142,7 +142,7 @@ The `Gpt` class is the main facade managing all LLM interactions. It delegates t
 - `ModelManager` — Model information and selection
 - `ProviderManager` — Provider initialization
 - `ResponseProcessor` — Response generation and processing
-- `DataManager` — Data persistence and analytics
+- `DataManager` — AI error-rate analytics (read from `rag_interactions`, `request_type='error'`)
 - `UIGenerator` — UI component generation
 
 ```php
