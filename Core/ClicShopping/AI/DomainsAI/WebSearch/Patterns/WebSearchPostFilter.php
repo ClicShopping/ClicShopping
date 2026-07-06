@@ -118,7 +118,12 @@ class WebSearchPostFilter
       }
     }
     
-    // Only apply trends/news override if NO entity keywords AND NO financial keywords present
+    // Defer to a high-confidence LLM analytics verdict: the LLM already recognised
+    $llmSaysAnalytics = ($analysis['intent_type'] ?? null) === 'analytics'
+      && (float)($analysis['confidence'] ?? 0) >= 0.8;
+
+    // Only apply trends/news override if NO entity keywords AND NO financial keywords
+    // present AND the LLM did not already confidently classify this as analytics.
     if (!$hasEntityKeyword && !$hasFinancialKeyword && !$llmSaysAnalytics) {
       foreach (WebSearchPatterns::$trendsNewsKeywords as $keyword) {
         if (str_contains($query, $keyword)) {

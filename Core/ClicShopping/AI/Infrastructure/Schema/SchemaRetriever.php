@@ -409,33 +409,72 @@ class SchemaRetriever
     return $dotProduct / ($magnitude1 * $magnitude2);
   }
   
+
   /**
-   * Fallback keyword matching (Pure LLM mode - simplified)
-   * 
-   * Uses column index to match query keywords to relevant tables
-   * 
+   * Rank candidate tables for a query by keyword SPECIFICITY, most relevant first.
+   *
+   * Pure LLM Mode (no schema embeddings, NO stopword/synonym lists): the only signal is ColumnIndex
+   * keyword hits, scored purely by statistics + structure. The previous version concatenated hits
+   * in query-word order and let getRelevantTables() truncate at maxTables — so a generic word
+   * ("customer" → 100+ tables) flooded the head of the list and evicted the discriminating business
+   * table (products_favorites / products_recommendations). Three data-driven signals fix this
+   * without hardcoding any word list:
+   *  - IDF: a keyword matching many tables is generic and contributes little; a rare one, more.
+   *  - Concept coverage: a keyword scores once per table (not per column), so a table covering two
+   *    distinct query concepts beats one that repeats a single concept across many columns.
+   *  - Table-name match: a keyword found in the table NAME (favorites -> products_favorites) is far
+   *    more discriminating than a column-only hit, so it earns a strong boost.
+   * Reference/junction tables keep the same structural penalties as the embedding path. Result: the
+   * specific table ranks into the top-N before truncation, and generic filler words (list, current,
+   * …) can no longer out-rank it — no curated stopword list required.
+   *
    * @param string $query User query
-   * @return array Array of table names
+   * @return array Table names ordered by descending relevance
    */
   private function fallbackKeywordMatching(string $query): array
   {
-    // Pure LLM Mode - pattern-based fallbacks removed
-    // Use column index for keyword matching
     $keywords = $this->extractSimpleKeywords($query);
-    
-    $matchedTables = [];
+
+    $scores = [];
     foreach ($keywords as $keyword) {
       $matches = $this->columnIndex->find($keyword);
-      foreach ($matches as $match) {
-        $matchedTables[] = $match['table'];
+      if (empty($matches)) {
+        continue;
+      }
+      
+      // Score by CONCEPT COVERAGE, not column count: a keyword contributes once per table, so a
+      // table matching two distinct query concepts (e.g. "recommendations" + "customer") beats a
+      // table that merely repeats one concept across many columns (e.g. customers_* everywhere).
+      $distinctTables = array_unique(array_map(static fn($m) => $m['table'], $matches));
+
+      $idf = 1.0 / log(count($distinctTables) + M_E);
+      foreach ($distinctTables as $table) {
+        $scores[$table] = ($scores[$table] ?? 0.0) + $idf;
+
+        if (str_contains($table, $keyword)) {
+          $scores[$table] += 2.0;
+        }
       }
     }
-    
-    if ($this->debug && !empty($matchedTables)) {
-      error_log("[SchemaRetriever] Column index matches: " . implode(', ', array_unique($matchedTables)));
+
+    // Same structural penalties as the embedding path (applyDynamicScoring).
+    foreach ($scores as $table => $score) {
+      if ($this->isReferenceTable($table)) {
+        $scores[$table] *= 0.5;
+      }
+      if ($this->isJunctionTable($table)) {
+        $scores[$table] *= 0.6;
+      }
     }
-    
-    return array_unique($matchedTables);
+
+    arsort($scores);
+    $ranked = array_keys($scores);
+
+    if ($this->debug && !empty($ranked)) {
+      error_log("[SchemaRetriever] Ranked column-index matches: " . implode(', ', array_slice($ranked, 0, 8)));
+    }
+
+    return $ranked;
   }
   
   /**

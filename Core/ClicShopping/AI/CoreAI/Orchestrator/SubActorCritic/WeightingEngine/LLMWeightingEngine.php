@@ -445,8 +445,10 @@ class LLMWeightingEngine
         
         // Extract explanations
         $explanations = [];
-        foreach ($data['explanations'] as $criticId => $explanation) {
-            $explanations[$criticId] = (string)$explanation;
+        foreach ((array)($data['explanations'] ?? []) as $criticId => $explanation) {
+            $explanations[$criticId] = (is_scalar($explanation) || $explanation === null)
+                ? (string)$explanation
+                : json_encode($explanation, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
         
         // Extract overall rationale

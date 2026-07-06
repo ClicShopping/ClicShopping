@@ -54,8 +54,8 @@ class ColumnErrorStrategy implements CorrectionStrategyInterface
       return $this->correctOrderByError($query, $unknownColumn, $errorMessage);
     }
 
-    // Find similar column in schema
-    $similarColumn = $this->findSimilarColumnInSchema($unknownColumn);
+    // Find similar column in schema (alias-resolved, scoped to the aliased table)
+    $similarColumn = $this->findSimilarColumnInSchema($unknownColumn, $query);
 
     if ($similarColumn && $similarColumn !== $unknownColumn) {
       $corrected = str_replace($unknownColumn, $similarColumn, $query);
@@ -244,16 +244,153 @@ class ColumnErrorStrategy implements CorrectionStrategyInterface
    * @param string $columnName Column name to search for
    * @return string|null Similar column name or null if not found
    */
-  private function findSimilarColumnInSchema(string $columnName): ?string
+  private function findSimilarColumnInSchema(string $columnName, string $query = ''): ?string
   {
-    // TODO: Implement schema lookup with similarity matching
-    // This would require:
-    // 1. Query INFORMATION_SCHEMA to get all column names
-    // 2. Calculate similarity scores (Levenshtein distance)
-    // 3. Return the most similar column above a threshold
-    
-    // For now, return null (no match found)
-    return null;
+    // Split an "alias.column" reference; the alias lets us scope the search to the
+    // right table (e.g. s.date_added → alias "s", column "date_added").
+    $alias = null;
+    $bareColumn = $columnName;
+
+    if (str_contains($columnName, '.')) {
+      [$alias, $bareColumn] = explode('.', $columnName, 2);
+    }
+
+    // Resolve which real table(s) to inspect: the aliased table when we have an
+    // alias, otherwise every table referenced by the query.
+    $tables = $this->resolveQueryTables($query, $alias);
+
+    if (empty($tables)) {
+      return null;
+    }
+
+    $best = null;
+    $bestScore = 0.0;
+
+    foreach ($tables as $table) {
+      foreach ($this->getTableColumns($table) as $column) {
+        if ($column === $bareColumn) {
+          continue; // Column exists as-is in this table: nothing to correct.
+        }
+
+        $score = $this->columnSimilarity($bareColumn, $column);
+
+        if ($score > $bestScore) {
+          $bestScore = $score;
+          $best = $column;
+        }
+      }
+    }
+
+    // Require a strong match so we never swap in an unrelated column.
+    if ($best === null || $bestScore < 0.6) {
+      return null;
+    }
+
+    // Preserve the alias prefix so the caller's str_replace() targets the exact reference.
+    return $alias !== null ? $alias . '.' . $best : $best;
+  }
+
+  /**
+   * Resolve the real table name(s) referenced by the query. With $alias, returns only
+   * the table bound to that alias in a FROM/JOIN clause; otherwise returns every table.
+   * Table/alias tokens are limited to [A-Za-z0-9_].
+   *
+   * @param string $query SQL query
+   * @param string|null $alias Table alias to resolve (null = all tables)
+   * @return array<string> Real table names
+   */
+  private function resolveQueryTables(string $query, ?string $alias): array
+  {
+    if (!preg_match_all('/\b(?:FROM|JOIN)\s+([A-Za-z0-9_]+)(?:\s+(?:AS\s+)?([A-Za-z0-9_]+))?/i', $query, $matches, PREG_SET_ORDER)) {
+      return [];
+    }
+
+    // Words that are not real aliases when they follow the table name.
+    $reserved = ['on', 'where', 'group', 'order', 'limit', 'having', 'join', 'inner', 'left', 'right', 'outer', 'as'];
+    $tables = [];
+
+    foreach ($matches as $m) {
+      $table = $m[1];
+      $tableAlias = (isset($m[2]) && !in_array(strtolower($m[2]), $reserved, true)) ? $m[2] : null;
+
+      if ($alias !== null) {
+        if ($tableAlias !== null && strcasecmp($tableAlias, $alias) === 0) {
+          return [$table];
+        }
+      } else {
+        $tables[] = $table;
+      }
+    }
+
+    return $alias !== null ? [] : array_values(array_unique($tables));
+  }
+
+  /**
+   * Return the real column names of a table via SHOW COLUMNS (cached per run).
+   *
+   * @param string $table Real table name (already limited to [A-Za-z0-9_])
+   * @return array<string> Column names
+   */
+  private function getTableColumns(string $table): array
+  {
+    static $cache = [];
+
+    if (isset($cache[$table])) {
+      return $cache[$table];
+    }
+
+    $columns = [];
+
+    try {
+      if (Registry::exists('Db')) {
+        $stmt = Registry::get('Db')->query('SHOW COLUMNS FROM ' . $table);
+
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+          if (isset($row['Field'])) {
+            $columns[] = $row['Field'];
+          }
+        }
+      }
+    } catch (\Throwable $e) {
+      $columns = []; // Unknown/inaccessible table: correction simply fails.
+    }
+
+    $cache[$table] = $columns;
+
+    return $columns;
+  }
+
+  /**
+   * Similarity score in [0,1] between an unknown column and a candidate. A candidate
+   * that is "<prefix>_<unknown>" or "<unknown>_<suffix>" (the common "<table>_<column>"
+   * naming, e.g. date_added → specials_date_added) scores highest; otherwise a
+   * Levenshtein-based ratio is used.
+   *
+   * @param string $unknown Unknown (bare) column name
+   * @param string $candidate Candidate real column name
+   * @return float Similarity score (0.0 – 1.0)
+   */
+  private function columnSimilarity(string $unknown, string $candidate): float
+  {
+    $u = strtolower($unknown);
+    $c = strtolower($candidate);
+
+    if ($u === '' || $c === '') {
+      return 0.0;
+    }
+
+    if (str_ends_with($c, '_' . $u) || str_starts_with($c, $u . '_')) {
+      return 0.95;
+    }
+
+    if (str_contains($c, $u)) {
+      return 0.8;
+    }
+
+    $distance = levenshtein($u, $c);
+    $maxLen = max(strlen($u), strlen($c));
+
+    return $maxLen === 0 ? 0.0 : 1.0 - ($distance / $maxLen);
   }
 
   /**

@@ -62,9 +62,8 @@ class ColumnIndex
     $this->totalColumns = 0;
     $this->columnsWithComments = 0;
 
-    // Get all clic_ tables
-    $prefix = CLICSHOPPING::getConfig('prefix_table');
-    $Qtables = $this->db->query("SHOW TABLES LIKE $prefix'%'");
+    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+    $Qtables = $this->db->query("SHOW TABLES LIKE '{$prefix}%'");
     
     $tablesList = [];
 

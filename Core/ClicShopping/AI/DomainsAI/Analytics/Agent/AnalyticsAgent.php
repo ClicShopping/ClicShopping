@@ -1165,8 +1165,20 @@ class AnalyticsAgent
       $this->debugLog("Updating system message with Schema RAG", "SCHEMA_RAG");
       $this->debugLog("Model: {$modelName}", "SCHEMA_RAG");
 
+      // Schema retrieval is English-only (ColumnIndex is built from English column names/comments)
+      $schemaQuery = $query;
+      
+      try {
+        $translated = SemanticAgent::translateToEnglish($query, 80);
+        if (is_string($translated) && trim($translated) !== '') {
+          $schemaQuery = $translated;
+        }
+      } catch (\Throwable $e) {
+        $this->debugLog("Schema-query translation failed, using original: " . $e->getMessage(), "SCHEMA_RAG");
+      }
+
       // Get query-specific system message
-      $systemMessage = $this->promptBuilder->getSystemMessage('analytics', $query, $modelName);
+      $systemMessage = $this->promptBuilder->getSystemMessage('analytics', $schemaQuery, $modelName);
 
       // Update chat system message
       $this->chat->setSystemMessage($systemMessage);
