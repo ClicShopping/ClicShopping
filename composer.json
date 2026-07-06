@@ -21,12 +21,12 @@
         "symfony/cache": "^8.0",
         "symfony/http-client": "^8.0",
         "mattketmo/email-checker": "^3.0",
-        "theodo-group/llphant": "^0.11.21",
         "phpmailer/phpmailer": "^7.1",
         "setasign/fpdf": "^1.9",
         "stolt/llms-txt-php": "^3.4",
         "guzzlehttp/guzzle": "^7.13",
-        "stripe/stripe-php": "^20.3"
+        "stripe/stripe-php": "^20.3",
+        "theodo-group/llphant": "^1.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
