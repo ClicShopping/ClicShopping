@@ -67,7 +67,7 @@ class Mail
       $this->lf = "\n";
     }
 
-    $this->fileError = CLICSHOPPING::BASE_DIR . 'Work/Log/phpmail_error-' . date('Ymd') . '.log';
+    $this->fileError = CLICSHOPPING::getWorkDirectory('Log') . '/phpmail_error-' . date('Ymd') . '.log';
   }
 
   /**

@@ -211,11 +211,7 @@ class AnalyticsAgent
       $this->schemaManager->initializeTableRelationships();
       $this->schemaManager->buildDatabaseSchema();
     } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent("Error during AnalyticsAgent initialization: " . $e->getMessage(), 'error');
-
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent("Error during AnalyticsAgent initialization: " . $e->getMessage(), 'error');
-      }
+      $this->securityLogger->logApplicationError("Error during AnalyticsAgent initialization: " . $e->getMessage());
     }
   }
 

@@ -48,6 +48,6 @@ class ErrorHandler
    */
   public static function getDirectory(): string
   {
-    return CLICSHOPPING::BASE_DIR . 'Work/Log/';
+    return CLICSHOPPING::getWorkDirectory('Log') . '/';
   }
 }

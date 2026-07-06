@@ -270,7 +270,7 @@ class LlmGuardrails
       return $validationResults;
 
     } catch (\Exception $e) {
-      self::$securityLogger->logSecurityEvent('Guardrails Error: ' . $e->getMessage(), 'error');
+      self::$securityLogger->logApplicationError('Guardrails Error: ' . $e->getMessage());
 
       return [
         'error' => true,

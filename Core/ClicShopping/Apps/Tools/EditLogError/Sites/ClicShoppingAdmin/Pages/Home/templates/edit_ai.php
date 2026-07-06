@@ -19,10 +19,10 @@ $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 
 $files = [];
 
-foreach (glob(ErrorHandler::getDirectory() . 'phpmail_error-*.txt') as $f) {
+foreach (glob(ErrorHandler::getDirectory() . 'ai_errors-*.txt') as $f) {
   $key = basename($f, '.txt');
 
-  if (preg_match('/^phpmail_error-([0-9]{4})([0-9]{2})([0-9]{2})$/', $key, $matches)) {
+  if (preg_match('/^ai_errors-([0-9]{4})([0-9]{2})([0-9]{2})$/', $key, $matches)) {
     $files[$key] = [
       'path' => $f,
       'key' => $key,
@@ -32,7 +32,9 @@ foreach (glob(ErrorHandler::getDirectory() . 'phpmail_error-*.txt') as $f) {
   }
 }
 
-$log = $files[$_GET['log']];
+// Requested log key may be missing from $_GET or point to a rotated/deleted file
+// (e.g. an old ai_errors-YYYYMMDD that no longer exists) -> degrade gracefully, no warning.
+$log = $files[$_GET['log'] ?? ''] ?? null;
 ?>
 <div class="contentBody">
   <div class="row">
@@ -44,16 +46,16 @@ $log = $files[$_GET['log']];
           <span class="col-md-5 pageHeading">
             <?php
             echo '&nbsp;' . $CLICSHOPPING_EditLogError->getDef('heading_title') . ' -  ';
-            echo HTML::outputProtected($log['date']);
+            echo HTML::outputProtected($log['date'] ?? '');
             ?>
           </span>
           <span class="col-md-6 text-end">
-<?php
-echo HTML::button($CLICSHOPPING_EditLogError->getDef('button_back'), null, $CLICSHOPPING_EditLogError->link('LogErrorPhpMailer'), 'primary') . ' ';
+            <?php
+            echo HTML::button($CLICSHOPPING_EditLogError->getDef('button_back'), null, $CLICSHOPPING_EditLogError->link('LogErrorAI'), 'primary') . ' ';
 
-echo HTML::form('delete', $CLICSHOPPING_EditLogError->link('LogError&DeletePhpMailer&log=' . $log['key']));
-echo HTML::button($CLICSHOPPING_EditLogError->getDef('button_delete'), null, null, 'danger');
-?>
+            echo HTML::form('delete', $CLICSHOPPING_EditLogError->link('LogError&DeleteAi&log=' . ($log['key'] ?? '')));
+            echo HTML::button($CLICSHOPPING_EditLogError->getDef('button_delete'), null, null, 'danger');
+            ?>
             </form>
            </span>
         </div>
@@ -62,6 +64,10 @@ echo HTML::button($CLICSHOPPING_EditLogError->getDef('button_delete'), null, nul
   </div>
   <div class="mt-1"></div>
   <div>
-    <?php echo HTML::textAreaField('code', file_get_contents($log['path']), '', '', 'id="code"'); ?>
+    <?php
+    if (isset($log['path'])) {
+      echo HTML::textAreaField('code', file_get_contents($log['path']), '', '', 'id="code"');
+    }
+    ?>
   </div>
 </div>

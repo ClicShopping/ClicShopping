@@ -196,7 +196,7 @@ class SearchCacheManager
       return true;
 
     } catch (\Exception $e) {
-      $this->logger->logSecurityEvent("Error storing in learning RAG: " . $e->getMessage(), 'error');
+      $this->logger->logApplicationError("Error storing in learning RAG: " . $e->getMessage());
       return false;
     }
   }
@@ -290,7 +290,7 @@ class SearchCacheManager
       return $formatted;
 
     } catch (\Exception $e) {
-      $this->logger->logSecurityEvent("Error searching cache: " . $e->getMessage(), 'error');
+      $this->logger->logApplicationError("Error searching cache: " . $e->getMessage());
       return null;
     }
   }
@@ -634,7 +634,7 @@ class SearchCacheManager
       return $deleted;
 
     } catch (\Exception $e) {
-      $this->logger->logSecurityEvent("Error cleaning cache: " . $e->getMessage(),'error');
+      $this->logger->logApplicationError("Error cleaning cache: " . $e->getMessage());
       return 0;
     }
   }

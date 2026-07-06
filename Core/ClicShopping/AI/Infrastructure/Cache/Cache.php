@@ -149,7 +149,7 @@ class Cache
         }
       } catch (\Exception $e) {
         if ($this->debug) {
-          $this->securityLogger->logSecurityEvent("Memcached initialization failed: " . $e->getMessage(), 'error');
+          $this->securityLogger->logApplicationError("Memcached initialization failed: " . $e->getMessage());
         }
         $this->useMemcached = false;
         $this->memcached = null;
@@ -182,7 +182,7 @@ class Cache
         }
       } catch (\Exception $e) {
         if ($this->debug) {
-          $this->securityLogger->logSecurityEvent("Redis initialization failed: " . $e->getMessage(), 'error');
+          $this->securityLogger->logApplicationError("Redis initialization failed: " . $e->getMessage());
         }
         $this->useRedis = false;
         $this->redis = null;
@@ -327,9 +327,26 @@ class Cache
    */
   public static function getLogFilePath(): string
   {
-    $logDir = CLICSHOPPING::BASE_DIR . 'Work/Log';
+    $logDir = CLICSHOPPING::getWorkDirectory('Log');
     self::ensureDirectoryExists($logDir);
     return $logDir . '/rag_security.log';
+  }
+
+  /**
+   * Returns the file path for the AI application-error log.
+   *
+   * A dedicated, date-stamped channel (Work/Log/ai_errors-YYYYMMDD.txt) that
+   * keeps AI application/infrastructure errors OUT of the real-security journal
+   * (rag_security.log) and out of the native PHP errors-*.txt read by the
+   * non-AI admin (EditLogError).
+   *
+   * @return string The file path for the AI application-error log
+   */
+  public static function getApplicationErrorLogFilePath(): string
+  {
+    $logDir = CLICSHOPPING::getWorkDirectory('Log');
+    self::ensureDirectoryExists($logDir);
+    return $logDir . '/ai_errors-' . date('Ymd') . '.txt';
   }
 
   /**
@@ -364,7 +381,7 @@ class Cache
       }
     } catch (\Exception $e) {
       if ($this->debug) {
-        $this->securityLogger->logSecurityEvent("Error saving prompt cache: " . $e->getMessage(), 'error');
+        $this->securityLogger->logApplicationError("Error saving prompt cache: " . $e->getMessage());
       }
     }
   }

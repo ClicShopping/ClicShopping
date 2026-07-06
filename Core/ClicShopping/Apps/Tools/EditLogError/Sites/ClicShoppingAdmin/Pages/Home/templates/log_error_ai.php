@@ -19,10 +19,10 @@ $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 
 $files = [];
 
-foreach (glob(ErrorHandler::getDirectory() . 'phpmail_error-*.txt') as $f) {
+foreach (glob(ErrorHandler::getDirectory() . 'ai_errors-*.txt') as $f) {
   $key = basename($f, '.txt');
 
-  if (preg_match('/^phpmail_error-([0-9]{4})([0-9]{2})([0-9]{2})$/', $key, $matches)) {
+  if (preg_match('/^ai_errors-([0-9]{4})([0-9]{2})([0-9]{2})$/', $key, $matches)) {
     $files[$key] = [
       'path' => $f,
       'key' => $key,
@@ -42,7 +42,7 @@ foreach (glob(ErrorHandler::getDirectory() . 'phpmail_error-*.txt') as $f) {
           <span
             class="col-md-5 pageHeading"><?php echo '&nbsp;' . $CLICSHOPPING_EditLogError->getDef('heading_title'); ?></span>
           <span class="col-md-6 text-end">
-              <?php echo HTML::button($CLICSHOPPING_EditLogError->getDef('button_delete_all'), null, $CLICSHOPPING_EditLogError->link('LogError&DeleteAllPhpMailer'), 'danger'); ?>
+              <?php echo HTML::button($CLICSHOPPING_EditLogError->getDef('button_delete_all'), null, $CLICSHOPPING_EditLogError->link('LogError&DeleteAllAi'), 'danger'); ?>
            </span>
         </div>
       </div>
@@ -65,7 +65,7 @@ foreach (glob(ErrorHandler::getDirectory() . 'phpmail_error-*.txt') as $f) {
         <td><?php echo $f['date']; ?></td>
         <td class="text-end"><?php echo $f['size']; ?></td>
         <td
-          class="text-end"><?php echo HTML::link($CLICSHOPPING_EditLogError->link('EditPhpMailer&View&log=' . $f['key']), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_EditLogError->getDef('icon_edit') . '"></i></h4>'); ?></td>
+          class="text-end"><?php echo HTML::link($CLICSHOPPING_EditLogError->link('EditAi&View&log=' . $f['key']), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_EditLogError->getDef('icon_edit') . '"></i></h4>'); ?></td>
       </tr>
       <?php
     }

@@ -109,7 +109,28 @@ class SecurityLogger
         // Direct write if buffering disabled
         return $this->writeLogEntry($logEntry);
     }
-    
+
+    /**
+     * Logs an AI application/infrastructure error to the dedicated
+     * ai_errors-YYYYMMDD.txt channel, keeping it OUT of the real-security
+     * journal (rag_security.log) and out of the native errors-*.txt read by the
+     * non-AI admin.
+     *
+     * Application errors (failed cache init, RAG document I/O, LLM evaluation
+     * failures, JSON parse errors…) are diagnostics for the AI maintainer, never
+     * security events, and are always written regardless of the security log level.
+     *
+     * @param string $message Application error message
+     * @param array $context Additional context data, json-encoded
+     * @return bool True if the entry was written successfully
+     */
+    public function logApplicationError(string $message, array $context = []): bool
+    {
+        $logEntry = $this->formatLogEntry('error', $message, $context);
+
+        return $this->writeApplicationErrorEntry($logEntry);
+    }
+
     /**
      * Format log entry (extracted for reusability)
      *
@@ -148,7 +169,25 @@ class SecurityLogger
             FILE_APPEND | LOCK_EX
         );
     }
-    
+
+    /**
+     * Write an entry to the AI application-error channel (ai_errors-YYYYMMDD.txt).
+     *
+     * Separate from writeLogEntry() so application errors never touch the
+     * security journal. The date-stamped filename rotates daily by itself.
+     *
+     * @param string $logEntry Formatted log entry
+     * @return bool True if written successfully
+     */
+    private function writeApplicationErrorEntry(string $logEntry): bool
+    {
+        return (bool)file_put_contents(
+            Cache::getApplicationErrorLogFilePath(),
+            $logEntry,
+            FILE_APPEND | LOCK_EX
+        );
+    }
+
     /**
      * Add log entry to buffer
      *
@@ -381,7 +420,7 @@ class SecurityLogger
      */
     public function logError(string $message, array $context = []): bool
     {
-        return $this->logSecurityEvent($message, 'error', $context);
+        return $this->logApplicationError($message, $context);
     }
     
     /**

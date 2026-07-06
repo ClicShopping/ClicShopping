@@ -131,7 +131,7 @@ class LlmResponseEvaluator
       return $evaluationResults;
 
     } catch (\Exception $e) {
-      self::$securityLogger->logSecurityEvent('Evaluation Error: ' . $e->getMessage(), 'error');
+      self::$securityLogger->logApplicationError('Evaluation Error: ' . $e->getMessage());
 
       return [
         'error' => true,
@@ -262,7 +262,7 @@ class LlmResponseEvaluator
 
       return self::parseLlmEvaluationResponse($evaluationResponse);
     } catch (\Exception $e) {
-      self::$securityLogger->logSecurityEvent('LLM Evaluation failed: ' . $e->getMessage(), 'error');
+      self::$securityLogger->logApplicationError('LLM Evaluation failed: ' . $e->getMessage());
 
       return ['error' => 'LLM evaluation failed'];
     }
@@ -374,14 +374,14 @@ class LlmResponseEvaluator
 
       // Check if response is valid
       if ($response === false || empty($response)) {
-        self::$securityLogger->logSecurityEvent('LLM evaluation returned empty response', 'error');
+        self::$securityLogger->logApplicationError('LLM evaluation returned empty response');
         return '';
       }
 
       return trim($response);
 
     } catch (\Throwable $e) {
-      self::$securityLogger->logSecurityEvent('LLM evaluation call failed: ' . $e->getMessage(), 'error');
+      self::$securityLogger->logApplicationError('LLM evaluation call failed: ' . $e->getMessage());
 
       return '';
     }

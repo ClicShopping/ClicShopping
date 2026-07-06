@@ -342,7 +342,7 @@ class SqlQueryProcessor
     );
 
     if ($this->debug) {
-      $this->securityLogger->logSecurityEvent("Placeholder unknown: [$placeholder]", 'error');
+      $this->securityLogger->logApplicationError("Placeholder unknown: [$placeholder]");
     }
 
     // Return default safe value

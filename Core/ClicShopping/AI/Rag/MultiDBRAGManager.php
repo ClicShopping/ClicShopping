@@ -256,7 +256,7 @@ class MultiDBRAGManager
           error_log(" Auto-detection failed: " . $e->getMessage());
         }
 
-        $this->securityLogger->logSecurityEvent("Error auto-detecting embedding tables: " . $e->getMessage(), 'error');
+        $this->securityLogger->logApplicationError("Error auto-detecting embedding tables: " . $e->getMessage());
 
         // Fallback ultime
         $prefix = CLICSHOPPING::getConfig('db_table_prefix');
@@ -317,7 +317,7 @@ class MultiDBRAGManager
           error_log("Trace: " . $e->getTraceAsString());
         }
 
-        $this->securityLogger->logSecurityEvent("Error while initializing the vector store for the table {$tableName}: " . $e->getMessage(), 'error');
+        $this->securityLogger->logApplicationError("Error while initializing the vector store for the table {$tableName}: " . $e->getMessage());
 
       }
     }
@@ -393,7 +393,7 @@ class MultiDBRAGManager
 
       return true;
     } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent('Error while adding the document: ' . $e->getMessage(), 'error');
+      $this->securityLogger->logApplicationError('Error while adding the document: ' . $e->getMessage());
 
       return false;
     }

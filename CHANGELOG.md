@@ -3,6 +3,10 @@ version4.33
 - libraries updated
 - AI review sentiment analysis improved and refactored with agentic approach
 - Cron Improvement
+- ChatGpt Apps refactored
+- error_log management improved
+
+
 
 ---------------
 version4.32

@@ -45,6 +45,6 @@ class SimpleLogger implements LoggerInterface
   {
     $msg = DateTime::getNow() . ' ' . '[' . strtoupper($level) . '] ' . $message . '\n';
 
-    file_put_contents(CLICSHOPPING::BASE_DIR . 'Work/Log/simple_logger.log', $msg, FILE_APPEND);
+    file_put_contents(CLICSHOPPING::getWorkDirectory('Log') . '/simple_logger.log', $msg, FILE_APPEND);
   }
 }

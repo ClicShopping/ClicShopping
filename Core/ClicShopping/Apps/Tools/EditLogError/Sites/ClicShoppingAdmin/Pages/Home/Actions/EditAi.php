@@ -10,13 +10,13 @@ namespace ClicShopping\Apps\Tools\EditLogError\Sites\ClicShoppingAdmin\Pages\Hom
 
 use ClicShopping\OM\Registry;
 
-class EditPhpMailer extends \ClicShopping\OM\Domains\PagesActionsAbstract
+class EditAi extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public function execute()
   {
     $CLICSHOPPING_EditLogError = Registry::get('EditLogError');
 
-    $this->page->setFile('edit_php_mailer.php');
+    $this->page->setFile('edit_ai.php');
     $this->page->data['action'] = 'LogError';
 
     $CLICSHOPPING_EditLogError->loadDefinitions('Sites/ClicShoppingAdmin/main');

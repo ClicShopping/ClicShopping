@@ -8,8 +8,7 @@
 
 namespace ClicShopping\Apps\Tools\MCP\Classes\Shop\Security;
 
-
-
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\DateTime;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
@@ -544,7 +543,7 @@ class McpSecurity
         'data' => $sanitizedData
       ];
 
-      $logDir = CLICSHOPPING_BASE_DIR . 'Work/Log/';
+      $logDir = CLICSHOPPING::getWorkDirectory('Log') . '/';
       $logFile = $logDir . 'mcp_security.log';
       $maxSize = 10 * 1024 * 1024; // 10 Mo
 

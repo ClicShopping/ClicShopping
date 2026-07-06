@@ -64,7 +64,7 @@ class WebSearchLogger
     {
         try {
             $contextStr = !empty($context) ? ' | Context: ' . \json_encode($context) : '';
-            $this->logger->logSecurityEvent($message . $contextStr, 'error');
+            $this->logger->logApplicationError($message . $contextStr);
         } catch (\Exception $e) {
             \error_log('WebSearchLogger::logError error: ' . $e->getMessage());
         }

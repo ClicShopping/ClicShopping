@@ -558,6 +558,19 @@ class CLICSHOPPING
   }
 
   /**
+   * Returns the absolute path to a runtime working directory under Work/,
+   * without a trailing slash. Centralises the many
+   * `CLICSHOPPING::BASE_DIR . 'Work/...'` call sites (logs, caches, sessions…).
+   *
+   * @param string $subDirectory Optional sub-directory of Work/ (e.g. 'Log', 'Cache').
+   * @return string e.g. self::BASE_DIR . 'Work/Log' (or 'Work' when $subDirectory is empty)
+   */
+  public static function getWorkDirectory(string $subDirectory = ''): string
+  {
+    return self::BASE_DIR . 'Work' . ($subDirectory !== '' ? '/' . $subDirectory : '');
+  }
+
+  /**
    * Checks whether a configuration key exists in the specified group or globally.
    *
    * @param string $key The configuration key to check.

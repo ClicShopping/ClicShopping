@@ -119,6 +119,19 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
   }
 
   /**
+   * Logs an application/infrastructure error to the dedicated ai_errors channel
+   * (never into the real-security journal). Delegates to the SecurityLogger.
+   *
+   * @param string $text Application error message
+   * @return void
+   */
+  private static function logApplicationError(string $text): void
+  {
+    self::initializeLogger(); // Ensure logger is initialized
+    self::$logger->logApplicationError($text);
+  }
+
+  /**
    * Translate a given text to English using the OpenAI API.
    * to prevent blocking when translation service fails
    * 
@@ -859,7 +872,7 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
       ];
 
     } catch (\Exception $e) {
-      self::logSecurityEvent("Error in SemanticAgent::search(): " . $e->getMessage(), 'error');
+      self::logApplicationError("Error in SemanticAgent::search(): " . $e->getMessage());
 
       // Calculate response time even on error
       $endTime = microtime(true);

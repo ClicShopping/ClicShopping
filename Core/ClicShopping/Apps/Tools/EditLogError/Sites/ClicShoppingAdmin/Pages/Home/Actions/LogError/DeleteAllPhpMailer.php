@@ -45,9 +45,9 @@ class DeleteAllPhpMailer extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if ($result === true) {
       $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditLogError->getDef('ms_success_delete_all'), 'success');
     } else {
-      $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditLogError->getDef('ms_error_delete_all'), 'success');
+      $CLICSHOPPING_MessageStack->add($CLICSHOPPING_EditLogError->getDef('ms_error_delete_all'), 'error');
     }
 
-    $CLICSHOPPING_EditLogError->redirect('LogError');
+    $CLICSHOPPING_EditLogError->redirect('LogErrorPhpMailer');
   }
 }

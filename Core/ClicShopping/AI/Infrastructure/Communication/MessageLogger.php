@@ -4,11 +4,11 @@
  *
  * @copyright 2024 ClicShopping
  * @license MIT
- * @version 1.0.0
  */
 
 namespace ClicShopping\AI\Infrastructure\Communication;
 
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
 /**
@@ -32,7 +32,7 @@ class MessageLogger
     bool $enableFileLogging = true
   ) {
     $this->db = Registry::get('Db');
-    $this->logFile = CLICSHOPPING_BASE_DIR . 'Work/Log/actor_critic_messages.log';
+    $this->logFile = CLICSHOPPING::getWorkDirectory('Log') . '/actor_critic_messages.log';
     $this->enableDatabaseLogging = $enableDatabaseLogging;
     $this->enableFileLogging = $enableFileLogging;
   }

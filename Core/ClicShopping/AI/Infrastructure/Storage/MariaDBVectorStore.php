@@ -558,7 +558,7 @@ class MariaDBVectorStore extends VectorStoreBase
       return true;
     } catch (\Exception $e) {
       if ($this->debug == 'True') {
-        $this->securityLogger->logSecurityEvent('Error while deleting the document: ' . $e->getMessage(), 'error');
+        $this->securityLogger->logApplicationError('Error while deleting the document: ' . $e->getMessage());
       }
 
       return false;
@@ -611,7 +611,7 @@ class MariaDBVectorStore extends VectorStoreBase
       return true;
     } catch (\Exception $e) {
       if ($this->debug == 'True') {
-        $this->securityLogger->logSecurityEvent('Error while updating the document: ' . $e->getMessage(), 'error');
+        $this->securityLogger->logApplicationError('Error while updating the document: ' . $e->getMessage());
       }
 
       return false;
