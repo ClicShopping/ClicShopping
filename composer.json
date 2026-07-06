@@ -21,7 +21,7 @@
         "symfony/cache": "^8.0",
         "symfony/http-client": "^8.0",
         "mattketmo/email-checker": "^3.0",
-        "theodo-group/llphant": "^0.11.21",
+        "theodo-group/llphant": "^1.0.0",
         "phpmailer/phpmailer": "^7.1",
         "setasign/fpdf": "^1.9",
         "stolt/llms-txt-php": "^3.4",
