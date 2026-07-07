@@ -29,7 +29,8 @@ text_api_key = API key (provider)
 text_organisation = Organisation / Workspace ID
 text_info_context = Prefer a minimum context of 64k for complex data analysis.
 text_info_ai_capable = Light/local models are chat-only and must not be used for structured analysis.
-text_help_note = Reasoning models with a large context give the most reliable analytics.
+text_help_note = Reasoning models with a large context give the most reliable analytics.<br>
+Usage rates for the models may vary. Please update them.
 success_model_saved = The model has been saved.
 success_model_deleted = The model has been deleted.
 error_model_delete_default = The default model cannot be deleted. Set another model as default first.

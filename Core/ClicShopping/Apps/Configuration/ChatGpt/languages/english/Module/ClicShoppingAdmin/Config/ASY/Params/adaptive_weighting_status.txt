@@ -1,5 +1,5 @@
 cfg_chatgpt_adaptive_weighting_status_title = Enable Adaptive Weighting
-cfg_chatgpt_status_adaptive_weighting_description = Activate the adaptive weighting system that dynamically adjusts critic weights based on their performance and accuracy over time.
+cfg_chatgpt_status_adaptive_weighting_description = Dynamically tunes the actor-critic evaluation weights from each critic's past performance. IMPORTANT: this adds one LLM call run SYNCHRONOUSLY after every analytics answer (typically +4 to +11 s of latency per cold query). It only self-calibrates the critics and feeds internal dashboards — it never changes the answer shown to the user nor the accuracy of future answers. Recommended: False, unless you actively use the adaptive-weighting metrics.
 
 cfg_chatgpt_status_true = True
 cfg_chatgpt_status_false = False

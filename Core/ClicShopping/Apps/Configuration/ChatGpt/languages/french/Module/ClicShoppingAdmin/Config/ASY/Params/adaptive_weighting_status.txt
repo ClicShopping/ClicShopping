@@ -1,5 +1,5 @@
-cfg_chatgpt_adaptive_weighting_status_title = Enable Adaptive Weighting
-cfg_chatgpt_status_adaptive_weighting_description = Activate the adaptive weighting system that dynamically adjusts critic weights based on their performance and accuracy over time.
+cfg_chatgpt_adaptive_weighting_status_title = Activer la pondération adaptative
+cfg_chatgpt_status_adaptive_weighting_description = Ajuste dynamiquement les poids de l'évaluation actor-critic selon les performances passées de chaque critique. IMPORTANT : ajoute un appel LLM exécuté de façon SYNCHRONE après chaque réponse analytique (typiquement +4 à +11 s de latence par requête à froid). Ne sert qu'à l'auto-calibrage des critiques et aux tableaux de bord internes — n'affecte ni la réponse affichée à l'utilisateur ni la précision des réponses futures. Recommandé : False, sauf si vous exploitez réellement les métriques de pondération adaptative.
 
 cfg_chatgpt_status_true = True
 cfg_chatgpt_status_false = False

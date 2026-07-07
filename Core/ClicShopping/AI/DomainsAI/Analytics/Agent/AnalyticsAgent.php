@@ -270,7 +270,7 @@ class AnalyticsAgent
       $this->debugLog("\n--- STEP 2: Execute query ---");
       $this->debugLog("Calling executeQuery()...");
 
-      $results = $this->executeQuery($question, $feedbackContext);
+      $results = $this->executeQuery($question, $feedbackContext, $skipClassification);
 
       $this->debugLog("executeQuery() returned:");
       $this->debugLog("  type: " . ($results['type'] ?? 'unknown'));
@@ -578,6 +578,9 @@ class AnalyticsAgent
    * Provides fallback responses on complete failure
    *
    * @param string $question The business question in natural language
+   * @param array $feedbackContext Optional feedback context for query enrichment
+   * @param bool $skipClassification When true, the query is a pre-routed/decomposed sub-query
+   *                                 (from PlanExecutor); ambiguity detection is short-circuited downstream
    * @return array Results array containing:
    *               - type: 'success' or 'error'
    *               - message: Result message or error description
@@ -585,7 +588,7 @@ class AnalyticsAgent
    *               - suggestion: Error fix suggestion if applicable
    *               - recovery_attempted: Boolean indicating if recovery was attempted
    */
-  public function executeQuery(string $question, array $feedbackContext = []): array
+  public function executeQuery(string $question, array $feedbackContext = [], bool $skipClassification = false): array
   {
     $this->debugLog(str_repeat("-", 100));
     $this->debugLog("DEBUG: AnalyticsAgent.executeQuery() - START");
@@ -610,7 +613,7 @@ class AnalyticsAgent
 
     try {
       $this->debugLog("\nCalling processAnalyticsQuery()...");
-      $result = $this->processAnalyticsQuery($question, $feedbackContext);
+      $result = $this->processAnalyticsQuery($question, $feedbackContext, $skipClassification);
 
       $this->debugLog("processAnalyticsQuery() returned:");
       $this->debugLog("  type: " . ($result['type'] ?? 'unknown'));
@@ -646,9 +649,11 @@ class AnalyticsAgent
    *               - corrections: Array of applied corrections
    *               - results: Query results
    *               - count: Number of results
+   * @param bool $skipClassification When true (pre-routed/decomposed sub-query from PlanExecutor),
+   *                                 the ambiguity-detection stage is skipped — see STEP 0/0.5 below
    * @throws \Exception When query execution fails after recovery attempts
    */
-  private function processAnalyticsQuery(string $question, array $feedbackContext = []): array
+  private function processAnalyticsQuery(string $question, array $feedbackContext = [], bool $skipClassification = false): array
   {
     $this->debugLog(str_repeat(".", 100));
     $this->debugLog("AnalyticsAgent.processAnalyticsQuery() - START", "QUERY");
@@ -661,25 +666,34 @@ class AnalyticsAgent
         return $abstainResponse;
       }
 
-      $this->debugLog("--- STEP 0: Translate query for ambiguity detection ---", "TRANSLATION");
+      // Ambiguity detection — the user-query clarification gate.
+      if ($skipClassification) {
+        $ambiguityAnalysis = [
+          'is_ambiguous' => false,
+          'skipped' => true,
+          'reason' => 'pre_routed_subquery',
+          'confidence' => 1.0,
+        ];
+      } else {
+        $this->debugLog("--- STEP 0: Translate query for ambiguity detection ---", "TRANSLATION");
 
-      // This ensures the LLM can properly detect explicit keywords in any language
-      // Use a simple, fast translation that focuses on keywords
-      $queryForAmbiguity = $this->ambiguityTranslator->translate($question);
-      $this->debugLog("Original query: {$question}", "TRANSLATION");
-      $this->debugLog("Translated for ambiguity: {$queryForAmbiguity}", "TRANSLATION");
+        // This ensures the LLM can properly detect explicit keywords in any language
+        // Use a simple, fast translation that focuses on keywords
+        $queryForAmbiguity = $this->ambiguityTranslator->translate($question);
+        $this->debugLog("Original query: {$question}", "TRANSLATION");
+        $this->debugLog("Translated for ambiguity: {$queryForAmbiguity}", "TRANSLATION");
 
-      // STEP 0.25: DISABLED - Compound query detection
-      // Compound queries (e.g., "pending orders and revenue") are now classified as 'hybrid'
-      // and routed to HybridQueryProcessor which has proper handling and formatting.
-      // The CompoundQueryHandler produced incorrect output format not compatible with formatters.
-      // See: HybridQueryProcessor.splitHybridQuery() and HybridQueryProcessor.handleComplexQuery()
-      $this->debugLog("--- STEP 0.25: Compound query detection DISABLED ---", "COMPOUND");
-      $this->debugLog("Hybrid queries are handled by HybridQueryProcessor", "COMPOUND");
+        // STEP 0.25: DISABLED - Compound query detection
+        // Compound queries (e.g., "pending orders and revenue") are now classified as 'hybrid'and routed to HybridQueryProcessor which has proper handling and formatting.
 
-      $this->debugLog("--- STEP 0.5: Check for ambiguous query ---", "AMBIGUITY");
+        // See: HybridQueryProcessor.splitHybridQuery() and HybridQueryProcessor.handleComplexQuery()
+        $this->debugLog("--- STEP 0.25: Compound query detection DISABLED ---", "COMPOUND");
+        $this->debugLog("Hybrid queries are handled by HybridQueryProcessor", "COMPOUND");
 
-      $ambiguityAnalysis = $this->analyzeAmbiguity($question, $queryForAmbiguity);
+        $this->debugLog("--- STEP 0.5: Check for ambiguous query ---", "AMBIGUITY");
+
+        $ambiguityAnalysis = $this->analyzeAmbiguity($question, $queryForAmbiguity);
+      }
 
       if ($ambiguityAnalysis['is_ambiguous']) {
         $this->debugLog("AMBIGUOUS QUERY DETECTED!", "AMBIGUITY");
@@ -1170,7 +1184,7 @@ class AnalyticsAgent
       
       try {
         $translated = SemanticAgent::translateToEnglish($query, 80);
-        if (is_string($translated) && trim($translated) !== '') {
+        if (trim($translated) !== '') {
           $schemaQuery = $translated;
         }
       } catch (\Throwable $e) {

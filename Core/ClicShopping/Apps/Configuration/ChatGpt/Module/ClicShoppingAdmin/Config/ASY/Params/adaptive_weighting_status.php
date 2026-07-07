@@ -24,7 +24,7 @@ use ClicShopping\OM\HTML;
  */
 class adaptive_weighting_status extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = 'True';
+  public $default = 'False';
   public int|null $sort_order = 30;
   public bool $app_configured = true;
 

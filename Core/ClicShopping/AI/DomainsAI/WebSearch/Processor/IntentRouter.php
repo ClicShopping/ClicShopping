@@ -18,7 +18,6 @@
 
 namespace ClicShopping\AI\DomainsAI\WebSearch\Processor;
 
-use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\AI\DomainsAI\WebSearch\Logger\WebSearchLogger;
 use ClicShopping\AI\DomainsAI\WebSearch\Patterns\IntentDetectionPatterns;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
@@ -30,15 +29,18 @@ use ClicShopping\OM\CLICSHOPPING;
  * IntentRouter Class
  *
  * Implements LLM-based intent detection with pattern-based fallback for the three-mode websearch architecture.
- * Applies AI security guardrails before LLM analysis and delegates mode selection to ModeSelector.
+ * Delegates mode selection to ModeSelector.
+ *
+ * Query security (prompt injection, obfuscation, threat scoring) is enforced upstream by
+ * SecurityOrchestrator::validateQuery() in the chat request pipeline (RequestValidator),
+ * which blocks malicious queries before they ever reach this router — so no per-router guard is needed here.
  *
  * Routing Flow:
- * 1. Apply AI security guardrails (prompt injection, obfuscation, threat scoring, rate limiting)
- * 2. LLM-based intent detection via LLPhant
- * 3. Parse and validate LLM JSON response
- * 4. Fallback to pattern-based detection if LLM fails
- * 5. Delegate mode selection to ModeSelector
- * 6. Log routing decisions
+ * 1. LLM-based intent detection via LLPhant
+ * 2. Parse and validate LLM JSON response
+ * 3. Fallback to pattern-based detection if LLM fails
+ * 4. Delegate mode selection to ModeSelector
+ * 5. Log routing decisions
  *
  * @package ClicShopping\AI\DomainsAI\WebSearch\Processor
  */
@@ -63,11 +65,6 @@ class IntentRouter
    * @var object Language instance for getDef()
    */
   private object $language;
-
-  /**
-   * @var float Threat score threshold for guardrails
-   */
-  private const THREAT_SCORE_THRESHOLD = 0.8;
 
   /**
    * @var int LLM max tokens for intent detection
@@ -102,13 +99,12 @@ class IntentRouter
   /**
    * Route query to appropriate search mode(s)
    *
-   * Implements requirements 7.1-7.5, 8.1-8.5, 18.1-18.5, 20.1-20.5.
-   * Applies guardrails → LLM analysis → fallback to patterns on failure.
+   * LLM analysis → fallback to patterns on failure. Query security is enforced upstream
+   * (SecurityOrchestrator via RequestValidator), not in this router.
    *
    * @param string $query User query
    * @param array $options Additional options (reserved for future use)
    * @return RoutingDecision Routing decision
-   * @throws \Exception If guardrails reject the query
    */
   public function route(string $query, array $options = []): RoutingDecision
   {
@@ -116,27 +112,24 @@ class IntentRouter
       error_log("IntentRouter::route() - Query: {$query}");
     }
 
-    // Step 1: Apply AI security guardrails (Requirement 20.1, 20.2, 20.3, 20.4, 20.5)
-    $this->applyGuardrails($query);
-
-    // Step 2: LLM-based intent detection (Requirement 7.1, 7.2, 7.3, 7.4)
+    // Step 1: LLM-based intent detection
     $intent = $this->detectIntentViaLLM($query);
 
-    // Step 3: Fallback to pattern-based detection if LLM failed (Requirement 7.5, 8.1, 8.2)
+    // Step 2: Fallback to pattern-based detection if LLM failed
     if ($intent === null) {
       $intent = $this->detectIntentViaPatterns($query);
     }
 
-    // Step 4: Map location to parameters (Requirement 9.1.1, 9.1.2, 9.1.3, 9.1.4, 9.1.5)
+    // Step 3: Map location to parameters
     $locationParams = $this->modeSelector->mapLocationToParams($intent['location'] ?? null);
 
-    // Step 5: Delegate mode selection to ModeSelector (Requirement 9.1, 9.2, 9.3, 9.4, 9.5, 9.6)
+    // Step 4: Delegate mode selection to ModeSelector
     $selectedModes = $this->modeSelector->selectModes($intent, $options);
 
     // Retrieve any user notifications generated during mode selection (e.g. site not in DB)
     $userNotifications = $this->modeSelector->getUserNotifications();
 
-    // Step 6: Create routing decision
+    // Step 5: Create routing decision
     $metadata = [
       'confidence' => $intent['confidence'] ?? 0.0,
       'query_length' => strlen($query),
@@ -156,7 +149,7 @@ class IntentRouter
       $metadata
     );
 
-    // Step 7: Log routing decision (Requirement 21.2)
+    // Step 6: Log routing decision
     $this->logRoutingDecision($query, $routingDecision);
 
     if ($this->debug) {
@@ -164,71 +157,6 @@ class IntentRouter
     }
 
     return $routingDecision;
-  }
-
-  /**
-   * Apply AI security guardrails to query
-   *
-   * Implements requirement 20.1, 20.2, 20.3, 20.4, 20.5:
-   * - Prompt injection detection
-   * - Obfuscation detection
-   * - Threat scoring
-   * - Rate limiting (900s window, 20 requests max)
-   *
-   * @param string $query User query
-   * @throws \Exception If guardrails reject the query
-   */
-  private function applyGuardrails(string $query): void
-  {
-    try {
-      // Apply LlmGuardrails for security validation
-      // Note: LlmGuardrails::checkGuardrails() expects both question and result
-      // For intent detection, we validate the query as both input and output
-      $guardrailResult = LlmGuardrails::checkGuardrails($query, $query);
-
-      if ($this->debug) {
-        error_log("IntentRouter::applyGuardrails() - Guardrail result: " . json_encode($guardrailResult));
-      }
-
-      // Check if guardrails rejected the query
-      if (is_array($guardrailResult) && isset($guardrailResult['action'])) {
-        if ($guardrailResult['action'] === 'reject' || $guardrailResult['action'] === 'block') {
-          $reason = $guardrailResult['reason'] ?? 'Security threat detected';
-          $threatScore = $guardrailResult['threat_score'] ?? 1.0;
-
-          $this->logger->logError("Guardrails rejected query", [
-            'query' => substr($query, 0, 100),
-            'reason' => $reason,
-            'threat_score' => $threatScore,
-            'action' => $guardrailResult['action']
-          ]);
-
-          throw new \Exception("Query rejected for security reasons: {$reason}");
-        }
-      }
-
-      // Additional threat score validation
-      if (is_array($guardrailResult) && isset($guardrailResult['threat_score'])) {
-        if ($guardrailResult['threat_score'] >= self::THREAT_SCORE_THRESHOLD) {
-          $this->logger->logWarning("High threat score detected", [
-            'query' => substr($query, 0, 100),
-            'threat_score' => $guardrailResult['threat_score']
-          ]);
-
-          throw new \Exception("Query rejected: threat score too high");
-        }
-      }
-
-    } catch (\Exception $e) {
-      // Log security event
-      $this->logger->logError("Guardrails error: " . $e->getMessage(), [
-        'query' => substr($query, 0, 100),
-        'exception' => $e->getMessage()
-      ]);
-
-      // Re-throw security exceptions
-      throw $e;
-    }
   }
 
   /**

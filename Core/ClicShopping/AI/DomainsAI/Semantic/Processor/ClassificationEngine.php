@@ -34,7 +34,14 @@ use ClicShopping\AI\Config\DomainConfig;
 class ClassificationEngine
 {
   private static ?SecurityLogger $logger = null;
-  
+
+  /**
+   * Request-scoped memoization store for checkSemantics(), keyed on md5($text).
+   * Classification is a pure text→category function; the pipeline re-invokes it on the
+   * same text at several stages (analytics ×2–3, hybrid ×4), so the first result is reused.
+   */
+  private static array $classificationCache = [];
+
   /**
    * Initialize logger
    */
@@ -43,6 +50,15 @@ class ClassificationEngine
     if (self::$logger === null) {
       self::$logger = new SecurityLogger();
     }
+  }
+
+  /**
+   * Reset the request-scoped classification memoization cache.
+   * Intended for long-lived processes (test harnesses) that need to force fresh classification.
+   */
+  public static function clearClassificationCache(): void
+  {
+    self::$classificationCache = [];
   }
   
   /**
@@ -92,6 +108,32 @@ class ClassificationEngine
    * @return array ['type' => string, 'confidence' => float, 'reasoning' => string, 'sub_types' => array]
    */
   public static function checkSemantics(string $text): array
+  {
+    // Request-scoped memoization. checkSemantics is re-invoked on the SAME text at multiple
+    // pipeline stages (analytics ×2–3, hybrid ×4). Unlike translateToEnglish it had no result
+    // cache and runs at the provider's default temperature (≠0), so repeated calls both waste
+    // ~1–2 s each AND can disagree → inconsistent routing. Classify once per request.
+    $__key = md5($text);
+    if (array_key_exists($__key, self::$classificationCache)) {
+      return self::$classificationCache[$__key];
+    }
+
+    // This static survives across requests in a reused PHP-FPM worker; bound it so a long-lived
+    // worker cannot accumulate unbounded entries (a single request classifies only a few texts).
+    if (count(self::$classificationCache) >= 500) {
+      self::$classificationCache = [];
+    }
+
+    return self::$classificationCache[$__key] = self::computeSemantics($text);
+  }
+
+  /**
+   * Actual LLM classification (formerly the body of checkSemantics()); memoized by checkSemantics().
+   *
+   * @param string $text Text to classify
+   * @return array{type:string,confidence:float,reasoning:string,sub_types:array} classification result
+   */
+  private static function computeSemantics(string $text): array
   {
     self::initLogger();
 

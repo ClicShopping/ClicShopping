@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="dataSourceStorageLocal" created-in="PS-261.25134.104">
+  <component name="dataSourceStorageLocal" created-in="PS-261.26222.71">
     <data-source name="clicshopping_v4@localhost" uuid="536f8999-06f1-466f-b6af-633d3c12c045">
       <database-info product="MariaDB" version="11.8.6-MariaDB-5 from Ubuntu" jdbc-version="4.2" driver-name="MariaDB Connector/J" driver-version="3.5.7" dbms="MARIADB" exact-version="11.8.6" exact-driver-version="3.5">
         <extra-name-characters>#@</extra-name-characters>

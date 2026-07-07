@@ -13,6 +13,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\AnalyticsExecutorPatterns;
+use ClicShopping\AI\Infrastructure\Async\PostResponseDeferrer;
 
 /**
  * AnalyticsExecutor Class
@@ -302,9 +303,19 @@ class AnalyticsExecutor
         }
       }
 
-      // Record real analytics execution + critic evaluation (no synthetic data)
-      $this->recorder->recordAnalyticsEvaluation($query, $rawResult, $executionTimeMs);
-      $this->recorder->registerSlowQueryObjective($query, $executionTimeMs, $this->analyticsAgent);
+      // Record real analytics execution + critic evaluation (no synthetic data).
+      // Deferred to AFTER the response is flushed (PostResponseDeferrer): this is post-response
+      // observability + the actor-critic adaptive-weighting LEARNING loop 
+     
+      $recorder = $this->recorder;
+      $analyticsAgent = $this->analyticsAgent;
+      PostResponseDeferrer::defer(
+        static function () use ($recorder, $query, $rawResult, $executionTimeMs, $analyticsAgent) {
+          $recorder->recordAnalyticsEvaluation($query, $rawResult, $executionTimeMs);
+          $recorder->registerSlowQueryObjective($query, $executionTimeMs, $analyticsAgent);
+        },
+        'analytics_evaluation'
+      );
 
       return $formattedResult;
 

@@ -621,6 +621,7 @@ INSERT INTO ai_models_provider VALUES(4, 'mistral', 4, '2026-07-05 00:00:00', '2
 INSERT INTO ai_models_provider VALUES(5, 'ollama', 5, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_provider VALUES(6, 'lmstudio', 6, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_provider VALUES(7, 'deepseek', 7, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+
 INSERT INTO ai_models_api VALUES(1, 1, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_api VALUES(2, 2, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_api VALUES(3, 3, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
@@ -628,10 +629,11 @@ INSERT INTO ai_models_api VALUES(4, 4, '', NULL, '2026-07-05 00:00:00', '2026-07
 INSERT INTO ai_models_api VALUES(5, 5, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_api VALUES(6, 6, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_api VALUES(7, 7, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
-INSERT INTO ai_models_name VALUES(1, 1, 'gpt-4.1-mini', 'OpenAI GPT-4.1 mini', '64K context, embeddings, reasoning', 1, 1, 0, 0.8000, 0.8000, 64000, 1, 10, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
-INSERT INTO ai_models_name VALUES(2, 1, 'gpt-5.1-mini', 'OpenAI GPT-5.1 mini', '128K context, embeddings, reasoning', 1, 0, 1, 0.2500, 0.2500, 128000, 1, 20, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
-INSERT INTO ai_models_name VALUES(3, 1, 'gpt-5.2-mini', 'OpenAI GPT-5.2 mini', '128K context, embeddings, reasoning', 0, 0, 0, 0.2500, 0.2500, 128000, 1, 30, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
-INSERT INTO ai_models_name VALUES(4, 1, 'gpt-5.5-mini', 'OpenAI GPT-5.5 mini', '400K context, embeddings, reasoning, web search', 0, 0, 0, 0.2500, 0.2500, 400000, 1, 40, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+
+INSERT INTO ai_models_name VALUES(1, 1, 'gpt-4o-mini', 'Open AI gpt-4o-mini', '400k context, reasoning, local', 1, 0, 1, 0.0000, 0.0000, 120000, 1, 120, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(2, 1, 'gpt-4.1-mini', 'OpenAI GPT-4.1 mini', '64K context, embeddings, reasoning', 1, 1, 0, 0.4000, 1.6000, 64000, 1, 10, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(3, 1, 'gpt-5-mini', 'OpenAI GPT-5 mini', '128K context, embeddings, reasoning', 0, 0, 0, 0.2500, 0.3000, 128000, 1, 20, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
+INSERT INTO ai_models_name VALUES(4, 1, 'gpt-5.4-mini', 'OpenAI GPT-5.4 mini', '400K context, embeddings, reasoning, web search', 0, 0, 0, 0.7500, 4.5000, 400000, 1, 40, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_name VALUES(5, 2, 'claude-opus-4-8', 'Anthropic Claude Opus 4.8', '200K context, embeddings, reasoning', 0, 0, 0, 15.0000, 75.0000, 200000, 1, 50, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_name VALUES(6, 2, 'claude-sonnet-4-6', 'Anthropic Claude Sonnet 4.6', '200K context, embeddings, reasoning', 0, 0, 0, 3.0000, 15.0000, 200000, 1, 60, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_name VALUES(7, 2, 'claude-haiku-4-5', 'Anthropic Claude Haiku 4.5', '200K context, embeddings, fast', 0, 0, 0, 0.2500, 1.2500, 200000, 1, 70, '2026-07-05 00:00:00', '2026-07-05 00:00:00');

@@ -61,7 +61,7 @@ class ModelManager
   {
     $array = [
       ['id' => 'gpt-4.1-mini',  'text' => 'OpenAI GPT-4.1 mini (64K context, embeddings, reasoning)',  'provider' => 'openai',   'context_window' => 64000,   'status' => 1, 'is_default' => 1, 'is_fallback' => 0, 'ai_capable' => 1],
-      ['id' => 'gpt-5.1-mini',  'text' => 'OpenAI GPT-5.1 mini (128K context, embeddings, reasoning)', 'provider' => 'openai',   'context_window' => 128000,  'status' => 1, 'is_default' => 0, 'is_fallback' => 1, 'ai_capable' => 1],
+      ['id' => 'gpt-4o-mini',   'text' => 'OpenAI GPT-4o mini (128K context, embeddings, reasoning)', 'provider' => 'openai',   'context_window' => 128000,  'status' => 1, 'is_default' => 0, 'is_fallback' => 1, 'ai_capable' => 1],
     ];
 
     return $array;
