@@ -237,29 +237,63 @@ class RecommendationsShop
     $score = $this->recommendationsAdmin->calculateRecommendationScore($products_id, $products_rate_weight, $reviewRate, null, CLICSHOPPING_APP_RECOMMENDATIONS_PR_STRATEGY, $sentiment);
 
     if ($score != 0) {
-      $sql_data_array = [
-        'score' => $score,
-        'recommendation_date' => 'now()',
-        'customers_group_id' => $customer_group_id
-      ];
+      // Idempotency guard: a customer may legitimately generate several recommendations for the
+      // same product (a different vote/comment the same day yields a different score, another day yields another row). 
+      $QexistingRecommendations = $CLICSHOPPING_Db->prepare('SELECT score
+                                                             FROM :table_products_recommendations
+                                                             WHERE customers_id = :customers_id
+                                                               AND products_id = :products_id
+                                                               AND recommendation_date = CURDATE()
+                                                            ');
+      $QexistingRecommendations->bindInt(':customers_id', $customer_id);
+      $QexistingRecommendations->bindInt(':products_id', $products_id);
+      $QexistingRecommendations->execute();
 
-      $insert_sql_data = [
-        'products_id' => $products_id,
-        'customers_id' => $customer_id
-      ];
+      $isDuplicate = false;
 
-      $sql_data_array = array_merge($sql_data_array, $insert_sql_data);
+      foreach ($QexistingRecommendations->fetchAll() as $existingRecommendation) {
+        if (abs((float)$existingRecommendation['score'] - (float)$score) < 0.0001) {
+          $isDuplicate = true;
+          break;
+        }
+      }
 
-      $CLICSHOPPING_Db->save('products_recommendations', $sql_data_array);
+      if ($isDuplicate === false) {
+        $sql_data_array = [
+          'score' => $score,
+          'recommendation_date' => 'now()',
+          'customers_group_id' => $customer_group_id,
+          'products_id' => $products_id,
+          'customers_id' => $customer_id
+        ];
 
+        $CLICSHOPPING_Db->save('products_recommendations', $sql_data_array);
+      }
+
+      // The product/category mapping is a de-duplicated link: keep a single row per
+      // (products_id, categories_id) regardless of how many recommendations reference it.
       $category_id = self::getProductCategoryID($products_id);
 
-      $insert_sql_data = [
-        'products_id' => $products_id,
-        'categories_id' => $category_id
-      ];
+      if ($category_id > 0) {
+        $QexistingCategory = $CLICSHOPPING_Db->prepare('SELECT products_id
+                                                        FROM :table_products_recommendations_to_categories
+                                                        WHERE products_id = :products_id
+                                                          AND categories_id = :categories_id
+                                                        LIMIT 1
+                                                       ');
+        $QexistingCategory->bindInt(':products_id', $products_id);
+        $QexistingCategory->bindInt(':categories_id', $category_id);
+        $QexistingCategory->execute();
 
-      $CLICSHOPPING_Db->save('products_recommendations_to_categories', $insert_sql_data);
+        if ($QexistingCategory->fetch() === false) {
+          $insert_sql_data = [
+            'products_id' => $products_id,
+            'categories_id' => $category_id
+          ];
+
+          $CLICSHOPPING_Db->save('products_recommendations_to_categories', $insert_sql_data);
+        }
+      }
     }
   }
 

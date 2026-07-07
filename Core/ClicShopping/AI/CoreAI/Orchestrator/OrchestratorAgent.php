@@ -639,16 +639,24 @@ class OrchestratorAgent
           'info'
         );
 
-        // Build clarification message
-        $clarificationMessage = "Nous avons détecté une requête ambiguë. Veuillez préciser votre question:\n\n";
-        if (isset($contextCheck['clarification_options']) && is_array($contextCheck['clarification_options'])) {
-          foreach ($contextCheck['clarification_options'] as $index => $option) {
-            $clarificationMessage .= ($index + 1) . ". " . $option . "\n";
-          }
+        // Build clarification message. User-facing labels come from ai_response_labels.txt via
+        // getDef (already rendered in the interface language, so no downstream translation needed).
+        // Prefer the LLM-provided options (already in the query language); otherwise fall back to
+        // the generic product/person/other options.
+        if (isset($contextCheck['clarification_options']) && is_array($contextCheck['clarification_options'])
+            && !empty($contextCheck['clarification_options'])) {
+          $clarificationOptions = $contextCheck['clarification_options'];
         } else {
-          $clarificationMessage .= "1. Rechercher un produit nommé '{$query}'\n";
-          $clarificationMessage .= "2. Obtenir des informations sur une personne\n";
-          $clarificationMessage .= "3. Autre chose\n";
+          $clarificationOptions = [
+            CLICSHOPPING::getDef('text_orchestrator_clarification_option_product', ['query' => $query]),
+            CLICSHOPPING::getDef('text_orchestrator_clarification_option_person'),
+            CLICSHOPPING::getDef('text_orchestrator_clarification_option_other')
+          ];
+        }
+
+        $clarificationMessage = CLICSHOPPING::getDef('text_orchestrator_clarification_intro') . "\n\n";
+        foreach ($clarificationOptions as $index => $option) {
+          $clarificationMessage .= ($index + 1) . ". " . $option . "\n";
         }
 
         return [
@@ -659,11 +667,7 @@ class OrchestratorAgent
           'response' => $clarificationMessage,
           'clarification_needed' => true,
           'original_query' => $query,
-          'clarification_options' => $contextCheck['clarification_options'] ?? [
-            "Rechercher un produit nommé '{$query}'",
-            "Obtenir des informations sur une personne",
-            "Autre chose"
-          ],
+          'clarification_options' => $clarificationOptions,
           'out_of_context_detection' => [
             'is_out_of_context' => false,
             'category' => $contextCheck['detected_category'],

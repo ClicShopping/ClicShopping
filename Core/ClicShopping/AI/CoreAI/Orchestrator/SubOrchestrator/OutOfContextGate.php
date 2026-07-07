@@ -39,8 +39,8 @@ class OutOfContextGate
   /**
    * Compute the out-of-context decision inputs for a query (source data for the three-tier gate).
    *
-   * Short queries (<= 4 words, likely product names) skip LLM out-of-context detection and are
-   * allowed through with default values; longer queries are evaluated by the HallucinationDetector.
+   * Only very short queries (1-2 words with NO digit, i.e. bare product-name lookups) skip LLM
+   * out-of-context detection and are allowed through with default values; every other query is evaluated by the HallucinationDetector.
    * Returns the raw $contextCheck array consumed by the decision gates in processWithValidation().
    *
    * @param string $query User query
@@ -49,9 +49,9 @@ class OutOfContextGate
    */
   public function evaluate(string $query): array
   {
-    // Skip out-of-context detection for short queries (likely product names)
+    // Only skip detection for 1-2 word queries without a digit (bare product-name lookups).
     $wordCount = str_word_count($query);
-    $skipOutOfContextCheck = ($wordCount <= 4);
+    $skipOutOfContextCheck = ($wordCount <= 2 && preg_match('/\d/', $query) !== 1);
 
     if ($skipOutOfContextCheck) {
       if ($this->debug) {

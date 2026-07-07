@@ -219,6 +219,7 @@ INSERT INTO administrator_menu VALUES(808, 'index.php?A&Catalog\\Products&StatsD
 INSERT INTO administrator_menu VALUES(809, 'index.php?A&Tools\\MCP&MCP', 810, 30, 1, '', 0, 'app_tools_mcp', 1);
 INSERT INTO administrator_menu VALUES(810, '', 2, 50, 2, '', 0, NULL, 1);
 INSERT INTO administrator_menu VALUES(811, 'index.php?A&AI\\Ecommerce', 810, 5, 1, '', 0, 'app_ai_ecommerce', 1);
+INSERT INTO administrator_menu VALUES(812, 'index.php?A&Tools\\EditLogError&LogErrorAI', 178, 7, 1, '', 0, 'app_tools_edit_log_error', 1);
 
 
 INSERT INTO administrator_menu_description VALUES(0, '', 1);
@@ -608,6 +609,8 @@ INSERT INTO administrator_menu_description VALUES(810, 'AI', 1);
 INSERT INTO administrator_menu_description VALUES(810, 'IA', 2);
 INSERT INTO administrator_menu_description VALUES(811, 'Ecommerce Agent', 1);
 INSERT INTO administrator_menu_description VALUES(811, 'Agent Ecommerce', 2);
+INSERT INTO administrator_menu_description VALUES(812, 'Error log AI', 1);
+INSERT INTO administrator_menu_description VALUES(812, 'Erreurs AI', 2);
 
 
 INSERT INTO ai_models_provider VALUES(1, 'openai', 1, '2026-07-05 00:00:00', '2026-07-05 00:00:00');

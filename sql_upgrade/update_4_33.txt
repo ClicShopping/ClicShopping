@@ -1,3 +1,12 @@
+
+ INSERT INTO `clic_administrator_menu` VALUES(847, 'index.php?A&Tools\\EditLogError&LogErrorAI', 178, 7, 1, 'log.png', 0, 'app_tools_edit_log_error', 1);
+
+INSERT INTO `clic_administrator_menu_description` VALUES(847, 'Error Log AI', 1);
+INSERT INTO `clic_administrator_menu_description` VALUES(847, 'Erreurs AI', 2);
+
+
+
+
  -- Table clic_reviews_sentiment : métriques calculées (agnostiques langue, figées à l'analyse)
   ALTER TABLE clic_reviews_sentiment
     ADD COLUMN IF NOT EXISTS positive_pct  int NOT NULL DEFAULT 0
