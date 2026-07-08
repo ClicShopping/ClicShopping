@@ -306,7 +306,7 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
       $language->getDef('text_rag_security_analysis');
     }
 
-    $model = CLICSHOPPING_APP_CHATGPT_CH_MODEL;
+    $model = Gpt::defaultModel();
 
     $response = GPT::callWithModel($userQuery, $model);
 
