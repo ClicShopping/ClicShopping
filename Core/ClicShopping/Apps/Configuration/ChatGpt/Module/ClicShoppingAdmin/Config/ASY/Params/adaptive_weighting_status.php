@@ -24,7 +24,11 @@ use ClicShopping\OM\HTML;
  */
 class adaptive_weighting_status extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = 'False';
+  // Default ON again under Option B: the adaptive-weighting LLM call now runs deferred, AFTER the
+  // response is flushed (PostResponseDeferrer), so it no longer adds to the answer latency that
+  // motivated the earlier Option-A default of 'False'. (Live value is DB-stored — flip it in the
+  // admin to enable on an existing install.)
+  public $default = 'True';
   public int|null $sort_order = 30;
   public bool $app_configured = true;
 

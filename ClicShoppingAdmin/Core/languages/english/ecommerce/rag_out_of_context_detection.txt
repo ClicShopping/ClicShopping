@@ -53,6 +53,7 @@ Instructions:
        (a) PRODUCT vs PERSON name ambiguity (e.g., "Josef Strauss Prestige").
        (b) MISSING REQUIRED PARAMETER — most importantly a NUMBER that demands a time unit but has none ("the last 12", "les 12 derniers": 12 days? months? years?). This OVERRIDES overall intent clarity: even when the rest of the request is perfectly clear, a dangling number with no unit FORCES ask_clarification — you must NOT "allow" and guess the unit. (A query with NO time reference at all is different: it has a safe default = all-time, so it stays "allow".) Offer the plausible units as clarification_options, in the language of the query.
        (c) UNINTELLIGIBLE / CONTRADICTORY / GRAMMATICALLY BROKEN phrasing where the data intent is genuinely unrecoverable or could mean several different things.
+       (d) RANKING METRIC UNSPECIFIED — a request for the "best" / "top" / "meilleurs" / "worst" items where the ranking DIMENSION is missing. "Best" is ambiguous on its own: best by units sold? by revenue? by margin? by customer ratings? There is NO safe neutral default, so you must ask which metric. This is DIFFERENT from a query that NAMES the metric explicitly ("best-SELLING", "les plus VENDUS", "highest revenue", "top rated"): an explicit metric is clear -> "allow". It is also different from a missing TIME period, which HAS a safe default (all-time) and stays "allow". Offer the business metrics as clarification_options in the language of the query.
      ⚠️ ANTI-FALSE-POSITIVE (critical): This applies to case (c) ONLY. DO NOT ask_clarification for queries that are merely terse, abbreviated, telegraphic, or grammatically imperfect WHEN the intent is still clear (real users type fast and sloppy) — prefer "allow" for those. But this leniency NEVER overrides (a) or (b): a product/person ambiguity or a missing required parameter still forces ask_clarification even if the overall intent looks clear.
      ✅ CONSISTENCY (mandatory): if your explanation states that clarification is needed, OR you populate clarification_options, then suggested_action MUST be "ask_clarification" — never "allow" and never "reject".
    - allow: For e-commerce business queries using internal database (including terse/ungrammatical ones whose intent is clear)
@@ -114,6 +115,15 @@ Response: {"is_out_of_context": false, "context_relevance": 0.5, "detected_categ
 
 Query: "combien vente client 70e"
 Response: {"is_out_of_context": false, "context_relevance": 0.9, "detected_category": "ecommerce", "confidence": 0.85, "explanation": "Terse and ungrammatical but the intent is clear: count of sales/customers over 70 euros", "suggested_action": "allow"}
+
+Query: "quels sont nos meilleurs produits"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "underspecified", "confidence": 0.7, "explanation": "'meilleurs' does not name a ranking metric - could mean best-selling, highest revenue, best margin or best rated. No safe default, ask which metric", "suggested_action": "ask_clarification", "clarification_options": ["Ventes (quantité)", "Chiffre d'affaires", "Marge", "Notes et avis clients"]}
+
+Query: "show me our best products"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "underspecified", "confidence": 0.7, "explanation": "'best' does not specify the ranking metric - units sold, revenue, margin or ratings. No safe default, ask which metric", "suggested_action": "ask_clarification", "clarification_options": ["Sales (quantity)", "Revenue", "Margin", "Customer ratings and reviews"]}
+
+Query: "les 5 produits les plus vendus"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Ranking metric is explicit ('les plus vendus' = by units sold), so the request is clear. Core e-commerce analytics", "suggested_action": "allow"}
 
 Query: "Marie Claire Collection wine accessories"
 Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Query is a product search with specific product name and category, core e-commerce functionality", "suggested_action": "allow"}

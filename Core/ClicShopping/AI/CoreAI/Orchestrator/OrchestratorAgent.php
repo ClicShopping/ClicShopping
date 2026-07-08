@@ -8,6 +8,8 @@
 
 namespace ClicShopping\AI\CoreAI\Orchestrator;
 
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 use ClicShopping\AI\Config\AutonomousConfig;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
@@ -54,8 +56,7 @@ use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\Validation\HallucinationDetector;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveManager;
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
 /**
  * OrchestratorAgent Class
@@ -493,6 +494,9 @@ class OrchestratorAgent
     $this->performanceTracker->startTracking(); // Phase 5: Use PerformanceTracker
     $this->collector->startTimer('process_validation');
 
+    // Scope the exact LLM-call-per-request count to this request (read in the finally below).
+    Gpt::resetLlmCallCount();
+
     $status = 'success';
 
     $intent = null;
@@ -812,13 +816,14 @@ class OrchestratorAgent
           'info'
         );
 
-        if ($this->debug) {        
+        if ($this->debug) {
           error_log("-----------------------------------");
           error_log("[INFO END] processWithValidation - Status: {$status}");
           error_log("[INFO TIME] End time: " . date('Y-m-d H:i:s.u'));
           error_log("⏱️ [INFO DURATION] Total time: " . round($latencyMs, 2) . "ms");
+          error_log("🔢 [INFO LLM CALLS] LLM round-trips this request: " . Gpt::getLlmCallCount());
           error_log("-----------------------------------");
-	}  
+	}
       }
 
       $this->collector->stopTimer('process_validation');

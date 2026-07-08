@@ -5,7 +5,7 @@ version4.33
 - Cron Improvement
 - ChatGpt Apps refactored
 - error_log management improved
-
+- AI response optimization
 
 
 ---------------

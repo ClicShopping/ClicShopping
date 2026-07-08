@@ -266,9 +266,10 @@ class ResponseProcessor
           ]
         ], $tokenParams);
       }
-      
-      if (!empty(ModelManager::getProviderApiKey('openai')['organisation'])) {
-        $parameters['organization'] = CLICSHOPPING_APP_CHATGPT_CH_ORGANISATION;
+
+      $openaiCredential = ModelManager::getProviderApiKey('openai');
+      if (!empty($openaiCredential['organisation'])) {
+        $parameters['organization'] = $openaiCredential['organisation'];
       }
       
       if ($engine !== null) {
@@ -395,6 +396,11 @@ class ResponseProcessor
         
         error_log("[INFO VALIDATED] [ResponseProcessor::getGptResponse] Fallback to getChat() successful");
       }
+
+      // Count this LLM round-trip. Provider::getLLPhantChat() returns an unwrapped LLphant Chat
+
+      $chat = CountingChat::wrap($chat);
+
       if ($chatgpt_debug) {
         error_log(sprintf(
           "[INFO SEARCH] [ResponseProcessor::getGptResponse] Calling generateText() with prompt (first 100 chars): %s",

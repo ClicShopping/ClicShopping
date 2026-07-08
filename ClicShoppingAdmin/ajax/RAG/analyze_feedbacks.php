@@ -55,7 +55,7 @@ try {
       i.response,
       i.request_type
     FROM :table_rag_feedback f
-    LEFT JOIN :table_rag_interactions i ON f.interaction_id = i.interaction_id
+    LEFT JOIN :table_rag_interactions i ON f.interaction_id = i.client_interaction_id
     WHERE {$whereClause}
     ORDER BY f.date_added DESC
     LIMIT 50
@@ -94,19 +94,15 @@ try {
     $gpt = new Gpt();
     $analysis = $gpt->getGptResponse($prompt, 1500, 0.7, null, 1);
 
-    // Parser l'analyse
-    $parsedAnalysis = parseAnalysis($analysis);
-
-    // Retourner le résultat
+    // Return the raw LLM analysis. The dashboard (#tab11 / feedback.js) renders
+    // `full_analysis` directly; the previously-parsed summary/patterns/actions
+    // fields were never consumed by any client, so they are no longer produced.
     echo json_encode([
         'success' => true,
         'type' => $type,
         'type_label' => $typeLabel,
         'feedbacks_analyzed' => count($feedbacks),
         'period_days' => $periodDays,
-        'summary' => $parsedAnalysis['summary'] ?? '',
-        'patterns' => $parsedAnalysis['patterns'] ?? [],
-        'actions' => $parsedAnalysis['actions'] ?? [],
         'full_analysis' => $analysis
     ]);
 
@@ -172,40 +168,4 @@ function buildAnalysisPrompt(array $feedbacks, string $type, string $typeLabel):
     $prompt .= "3. [Titre action 3]: [Description]\n";
 
     return $prompt;
-}
-
-function parseAnalysis(string $analysis): array
-{
-    $result = [
-        'summary' => '',
-        'patterns' => [],
-        'actions' => []
-    ];
-
-    // Extraire le résumé
-    if (preg_match('/RÉSUMÉ:\s*(.*?)(?=PATTERNS|$)/s', $analysis, $matches)) {
-        $result['summary'] = trim($matches[1]);
-    }
-
-    // Extraire les patterns
-    if (preg_match('/PATTERNS IDENTIFIÉS:\s*(.*?)(?=ACTIONS|$)/s', $analysis, $matches)) {
-        $patternsText = trim($matches[1]);
-        $patterns = preg_split('/\n-\s*/', $patternsText);
-        $result['patterns'] = array_filter(array_map('trim', $patterns));
-    }
-
-    // Extraire les actions
-    if (preg_match('/ACTIONS PRIORITAIRES:\s*(.*?)$/s', $analysis, $matches)) {
-        $actionsText = trim($matches[1]);
-        preg_match_all('/\d+\.\s*([^:]+):\s*(.+?)(?=\d+\.|$)/s', $actionsText, $actionMatches, PREG_SET_ORDER);
-
-        foreach ($actionMatches as $match) {
-            $result['actions'][] = [
-                'title' => trim($match[1]),
-                'description' => trim($match[2])
-            ];
-        }
-    }
-
-    return $result;
 }

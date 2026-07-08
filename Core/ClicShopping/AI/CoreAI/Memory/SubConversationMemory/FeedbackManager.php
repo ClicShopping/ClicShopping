@@ -103,9 +103,8 @@ class FeedbackManager
       return $result !== false;
 
     } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error recording feedback: " . $e->getMessage(),
-        'error'
+      $this->securityLogger->logApplicationError(
+        "Error recording feedback: " . $e->getMessage()
       );
       return false;
     }
@@ -132,7 +131,7 @@ class FeedbackManager
           i.question as user_message,
           i.response as assistant_response
          FROM :table_rag_feedback f
-         LEFT JOIN :table_rag_interactions i ON f.interaction_id = CAST(i.interaction_id AS CHAR)
+         LEFT JOIN :table_rag_interactions i ON f.interaction_id = i.client_interaction_id
          WHERE f.user_id = :user_id
          AND f.language_id = :language_id
          AND f.feedback_type IN ('correction', 'positive')
@@ -199,9 +198,8 @@ class FeedbackManager
       return $feedbackItems;
 
     } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error retrieving feedback for learning: " . $e->getMessage(),
-        'error'
+      $this->securityLogger->logApplicationError(
+        "Error retrieving feedback for learning: " . $e->getMessage()
       );
       return [];
     }

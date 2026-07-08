@@ -1,5 +1,5 @@
 cfg_chatgpt_adaptive_weighting_status_title = Enable Adaptive Weighting
-cfg_chatgpt_status_adaptive_weighting_description = Dynamically tunes the actor-critic evaluation weights from each critic's past performance. IMPORTANT: this adds one LLM call run SYNCHRONOUSLY after every analytics answer (typically +4 to +11 s of latency per cold query). It only self-calibrates the critics and feeds internal dashboards — it never changes the answer shown to the user nor the accuracy of future answers. Recommended: False, unless you actively use the adaptive-weighting metrics.
+cfg_chatgpt_status_adaptive_weighting_description = Dynamically tunes the actor-critic evaluation weights from each critic's past performance. This runs one extra LLM call, but it is now DEFERRED: it executes AFTER the answer has been flushed to the user (post-response), so it no longer adds to the answer latency. It self-calibrates the critics and feeds internal dashboards, and the adaptive weights it learns are reused by later critic evaluations. Safe to enable now that it is off the response path — note it still costs one LLM call per analytics answer (billed by your provider) and keeps the PHP worker busy briefly after the flush.
 
 cfg_chatgpt_status_true = True
 cfg_chatgpt_status_false = False

@@ -15,6 +15,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\Pro
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ResponseProcessor;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\DataManager;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\UIGenerator;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\LlmCallCounter;
 
 /**
  * Gpt
@@ -368,6 +369,29 @@ class Gpt
   public static function getLastTokenUsage(): ?array
   {
     return ResponseProcessor::getLastTokenUsage();
+  }
+
+  /**
+   * Reset the per-request LLM call counter. Call once at the start of a request (e.g. the
+   * orchestrator entry) so {@see self::getLlmCallCount()} reflects only that request.
+   *
+   * @return void
+   */
+  public static function resetLlmCallCount(): void
+  {
+    LlmCallCounter::reset();
+  }
+
+  /**
+   * Number of real LLM round-trips made since the last reset, across BOTH the façade path
+   * and the raw $chat->generateText() path (every chat object is wrapped at construction).
+   * Unlike rag_statistics (one row per interaction), this is the exact per-request call count.
+   *
+   * @return int
+   */
+  public static function getLlmCallCount(): int
+  {
+    return LlmCallCounter::count();
   }
 
   /**

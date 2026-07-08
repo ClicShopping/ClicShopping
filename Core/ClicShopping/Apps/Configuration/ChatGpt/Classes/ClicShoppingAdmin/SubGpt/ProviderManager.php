@@ -71,7 +71,7 @@ class ProviderManager
 
     $chat = new OpenAIChat($config);
 
-    return $chat;
+    return CountingChat::wrap($chat);
   }
 
   /**
@@ -89,7 +89,7 @@ class ProviderManager
     $config->model = $model;
     $chat = new OllamaChat($config);
 
-    return $chat;
+    return CountingChat::wrap($chat);
   }
 
   /**
@@ -149,7 +149,7 @@ class ProviderManager
     }
 
     // Créer et retourner l'instance de LmStudioChat avec la config
-    return new LmStudioChat($config);
+    return CountingChat::wrap(new LmStudioChat($config));
   }
 
   /**
@@ -190,7 +190,8 @@ class ProviderManager
       );
     }
 
-    return $result;
+    // wrap() passes the `false` failure sentinel through untouched.
+    return CountingChat::wrap($result);
   }
 
   /**
@@ -244,7 +245,7 @@ class ProviderManager
     }
 
     try {
-      return new MistralAIChat($config);
+      return CountingChat::wrap(new MistralAIChat($config));
     } catch (\Exception $e) {
       throw new \Exception('Error creating MistralAIChat instance: ' . $e->getMessage());
     }
@@ -285,7 +286,7 @@ class ProviderManager
     }
 
     try {
-      return new OpenAIChat($config);
+      return CountingChat::wrap(new OpenAIChat($config));
     } catch (\Exception $e) {
       throw new \Exception('Error creating Gemini chat instance: ' . $e->getMessage());
     }
