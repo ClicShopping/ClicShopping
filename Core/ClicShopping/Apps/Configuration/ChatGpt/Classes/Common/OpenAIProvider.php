@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\Common;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\AbstractLLMProvider;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ProviderManager;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ModelManager;
 use LLPhant\Chat\ChatInterface;
 use LLPhant\Chat\OpenAIChat;
 use LLPhant\OpenAIConfig;
@@ -127,6 +129,9 @@ class OpenAIProvider extends AbstractLLMProvider
     $config = new OpenAIConfig();
     $config->apiKey = $this->apiKey;
     $config->model = $this->model;
+
+    // Apply the OpenAI organisation header (OpenAIConfig has no org field); no-op when unset.
+    ProviderManager::applyOpenAiOrganisation($config, ModelManager::getProviderApiKey('openai')['organisation'] ?? null);
 
     return new OpenAIChat($config);
   }

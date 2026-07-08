@@ -55,8 +55,11 @@ class ProviderManager
   {
     $config = new OpenAIConfig();
 
-    if (is_null($api_key)) {
-      $api_key = ModelManager::getProviderApiKey('openai')['api_key'] ?: null;
+    // Read the DB 'openai' credential once (api key + organisation).
+    $credential = ModelManager::getProviderApiKey('openai');
+    $usingDbKey = is_null($api_key);
+    if ($usingDbKey) {
+      $api_key = $credential['api_key'] ?: null;
     }
 
     $config->apiKey = $api_key;
@@ -69,9 +72,40 @@ class ProviderManager
       $config->modelOptions = $parameters;
     }
 
+    // Apply the OpenAI organisation header only when using the DB key it is paired with.
+    if ($usingDbKey) {
+      self::applyOpenAiOrganisation($config, $credential['organisation'] ?? null);
+    }
+
     $chat = new OpenAIChat($config);
 
     return CountingChat::wrap($chat);
+  }
+
+  /**
+   * Inject the OpenAI organisation as an `OpenAI-Organization` header.
+   *
+   * LLphant's OpenAIConfig exposes no organisation field, so the header can only be set at the
+   * openai-php client level. When an organisation is configured we build a client (carrying the
+   * header) from the config's own apiKey/url and hand it to OpenAIConfig::$client, which LLphant
+   * then uses verbatim. No organisation — or no apiKey — leaves $config->client null so LLphant
+   * builds its own default client (with its error-processor/timeout setup) as before.
+   *
+   * @param OpenAIConfig $config       The config about to drive an OpenAIChat/Gemini chat.
+   * @param string|null  $organisation The OpenAI organisation id, or null/'' when none is set.
+   * @return void
+   */
+  public static function applyOpenAiOrganisation(OpenAIConfig $config, ?string $organisation): void
+  {
+    if (empty($organisation) || empty($config->apiKey)) {
+      return;
+    }
+
+    $config->client = \OpenAI::factory()
+      ->withApiKey($config->apiKey)
+      ->withBaseUri($config->url)
+      ->withOrganization($organisation)
+      ->make();
   }
 
   /**
