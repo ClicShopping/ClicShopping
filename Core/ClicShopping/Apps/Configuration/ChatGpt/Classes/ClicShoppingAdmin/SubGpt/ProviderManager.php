@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt;
 
+use LLPhant\Chat\ChatInterface;
 use LLPhant\Chat\LLMStudioChat;
 use LLPhant\Chat\LmStudioChat;
 use LLPhant\Chat\MistralAIChat;
@@ -137,7 +138,7 @@ class ProviderManager
    * @param float|null $timeout Timeout en secondes (optionnel)
    * @return LmStudioChat Instance configurée de LmStudioChat
    */
-  public static function getLmStudioChat(string $model = 'openai/gpt-oss-20b', ?string $url = null, ?float $timeout = null): LmStudioChat
+  public static function getLmStudioChat(string $model = 'openai/gpt-oss-20b', ?string $url = null, ?float $timeout = null): ChatInterface
   {
     // Créer la configuration
     $config = new LmStudioConfig();
@@ -239,7 +240,7 @@ class ProviderManager
    * @return MistralAIChat
    * @throws \Exception
    */
-  public static function getMistralChat(string $model, ?int $maxtoken = null): MistralAIChat
+  public static function getMistralChat(string $model, ?int $maxtoken = null): ChatInterface
   {
     $api_key = ModelManager::getProviderApiKey('mistral')['api_key'];
 
@@ -296,7 +297,7 @@ class ProviderManager
    * @return OpenAIChat
    * @throws \Exception When no Gemini API key is configured or instantiation fails
    */
-  public static function getGeminiChat(string $model, ?int $maxtoken = null): OpenAIChat
+  public static function getGeminiChat(string $model, ?int $maxtoken = null): ChatInterface
   {
     $api_key = ModelManager::getProviderApiKey('gemini')['api_key'];
 

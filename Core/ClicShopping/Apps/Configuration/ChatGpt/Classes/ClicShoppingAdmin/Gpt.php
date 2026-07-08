@@ -267,9 +267,9 @@ class Gpt
    * @param string $model Le nom du modèle à utiliser (par défaut: 'openai/gpt-oss-20b')
    * @param string|null $url L'URL de l'API LM Studio (optionnel)
    * @param float|null $timeout Timeout en secondes (optionnel)
-   * @return \LLPhant\Chat\LmStudioChat Instance configurée de LmStudioChat
+   * @return \LLPhant\Chat\ChatInterface Instance configurée (LmStudioChat inside CountingChat)
    */
-  public static function getLmStudioChat(string $model = 'openai/gpt-oss-20b', ?string $url = null, ?float $timeout = null): \LLPhant\Chat\LmStudioChat
+  public static function getLmStudioChat(string $model = 'openai/gpt-oss-20b', ?string $url = null, ?float $timeout = null): \LLPhant\Chat\ChatInterface
   {
     return ProviderManager::getLmStudioChat($model, $url, $timeout);
   }
@@ -292,10 +292,10 @@ class Gpt
    *
    * @param string $model The specific model identifier to use for the MistralAIChat instance.
    * @param int|null $maxtoken Maximum tokens
-   * @return \LLPhant\Chat\MistralAIChat
+   * @return \LLPhant\Chat\ChatInterface (MistralAIChat enveloppée dans CountingChat)
    * @throws \Exception
    */
-  public static function getMistralChat(string $model, ?int $maxtoken = null): \LLPhant\Chat\MistralAIChat
+  public static function getMistralChat(string $model, ?int $maxtoken = null): \LLPhant\Chat\ChatInterface
   {
     return ProviderManager::getMistralChat($model, $maxtoken);
   }
