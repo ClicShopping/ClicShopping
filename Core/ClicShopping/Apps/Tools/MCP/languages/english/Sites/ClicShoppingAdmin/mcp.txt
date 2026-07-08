@@ -15,4 +15,4 @@ table_heading_mcp_date_modified = Date Modified
 table_heading_action = Action
 icon_edit = Edit
 icon_delete = Delete
-text_display_number_of_link = Displaying <b>%d</b> to <b>%d</b> (of <b>%d</b> entries)
+text_display_number_of_link = Displaying <b>{{listing_from}}</b> to <b>{{listing_to}}</b> (of <b>{{listing_total}}</b> entries)

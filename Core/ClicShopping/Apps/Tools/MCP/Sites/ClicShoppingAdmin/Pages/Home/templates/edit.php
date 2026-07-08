@@ -316,9 +316,14 @@ if (!empty($cId)) {
           </div>
 
           <div class="mt-1"></div>
+          <span class="alert alert-info d-block"><?php echo $CLICSHOPPING_Mcp->getDef('text_external_connection_note', ['endpoint' => HTTP::getShopUrlDomain() . 'index.php?mcp&ChatRagBI&action=analyze_sales']); ?></span>
+          <span class="alert alert-warning d-block"><?php echo $CLICSHOPPING_Mcp->getDef('text_websearch_limitation_note'); ?></span>
+
+          <div class="mt-1"></div>
           <div class="mt-1"></div>
           <?php echo $CLICSHOPPING_Hooks->output('Mcp', 'McpiContentTab1', null, 'display'); ?>
           </form>
+          <div class="py-4"></div>
         </div>
         <?php
         // -------------------------------------------------------------------
@@ -446,6 +451,7 @@ if (!empty($cId)) {
           </table>
           <div class="mt-1"></div>
           <?php echo $CLICSHOPPING_Hooks->output('Mcp', 'MCPContentTab2', null, 'display'); ?>
+          <div class="py-4"></div>
         </div>
         <?php
 
@@ -504,6 +510,7 @@ if (!empty($cId)) {
           </table>
           <div class="mt-1"></div>
           <?php echo $CLICSHOPPING_Hooks->output('Mcp', 'MCPContentTab3', null, 'display'); ?>
+          <div class="py-4"></div>
         </div>
       </div>
     </div>

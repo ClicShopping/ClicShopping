@@ -22,32 +22,23 @@
 ##################################
 
 <IfModule mod_rewrite.c>
-#RewriteEngine On
-#DirectorySlash Off
+    RewriteEngine On
+    RewriteBase /
 
-#
-# Remove WWW
-#
-#RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-#RewriteRule ^ https://%1%{REQUEST_URI} [R=302,L]
+    # 1. Forcer le HTTPS et retirer le WWW
+    RewriteCond %{HTTPS} off [OR]
+    RewriteCond %{HTTP_HOST} ^www\. [NC]
+    RewriteCond %{HTTP_HOST} ^(?:www\.)?(.+)$ [NC]
+    RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 
-#
-# Remove Trailing Slashes
-#
-#RewriteCond %{REQUEST_FILENAME} !-d
-#RewriteCond %{THE_REQUEST} \s(.+?)//+[?\s]
-#RewriteRule ^ %1 [R=302,L]
+    # 2. Ignorer les fichiers et dossiers réels
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
 
-#
-# Reroute to index.php
-#
-#RewriteCond %{REQUEST_FILENAME} !-f
-#RewriteCond %{REQUEST_FILENAME} !-d
-#RewriteRule ^(.*)$ index.php/$1 [L]
-
-#log
-#RewriteLog /path/to/rewrite.log
-#RewriteLogLevel 3
+    # 3. Règle spécifique pour ClicShopping SEO PRO
+    # On capture tout le chemin ($1) et on l'envoie à index.php
+    RewriteRule ^(.*)$ index.php/$1 [L,QSA]
 </IfModule>
 
 
@@ -67,22 +58,22 @@
 
   <IfModule mod_headers.c>
     # prevent mime based attacks
-    Header set X-Content-Type-Options "nosniff"
-
-    # XSS Protection
-    Header set X-XSS-Protection "1; mode=block"
+    Header always set X-Content-Type-Options "nosniff"
 
     #X Frame
     Header always append X-Frame-Options SAMEORIGIN
 
     # Clickjacking Protection
-    Header set Content-Security-Policy "frame-ancestors 'self';"
+    Header always set Content-Security-Policy "frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
+
+    # Cross-origin isolation
+    Header always set Cross-Origin-Opener-Policy "same-origin"
 
     #Remove Powered
     Header always unset X-Powered-By
 
     #HSTS
-    Header set Strict-Transport-Security "max-age=31536000" env=HTTPS
+    Header always set Strict-Transport-Security "max-age=31536000" env=HTTPS
 
 #http header
   <FilesMatch ".(js|css|xml|gz|html)$">

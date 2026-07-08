@@ -10,7 +10,9 @@
 // Example CURL command for testing the RAG-BI API endpoint
 // Note: Use a valid Base64 encoded "username:key"
 //   Example: echo -n "RagBI:YOUR_KEY" | base64
-curl "http://localhost/clicshopping_test/index.php?mcp&ChatRagBI&action=analyze" \
+// 'action' must be a whitelisted RagBIPermissions action (e.g. analyze_sales);
+// 'analyze' is NOT whitelisted and returns HTTP 403.
+curl "http://localhost/clicshopping_test/index.php?mcp&ChatRagBI&action=analyze_sales" \
    -H "Authorization: Basic Token" \
    -H "Content-Type: application/json" \
   -d '{"message":"liste les produits","queryType":"analytics"}'

@@ -207,10 +207,13 @@ class HTML
    * @param string|null $parameters Additional HTML attributes for the image element. Defaults to an empty string.
    * @param bool $responsive Determines whether the image should have responsive styling applied. Defaults to true.
    * @param string $bootstrap_css Any additional Bootstrap CSS classes to apply. Defaults to an empty string.
+   * @param bool $eager When true (Shop only), emit a real `src` with `fetchpriority="high"`/`loading="eager"`
+   *                    and drop the `lozad` class, so the browser fetches this image immediately instead of
+   *                    deferring it. Reserved for the single LCP hero image of a page; thumbnails stay lazy.
    *
    * @return string The generated HTML string for the image element.
    */
-  public static function image(string $src = '', ?string $alt = null, ?string $width = null, ?string $height = null, ?string $parameters = '', bool $responsive = true, string $bootstrap_css = ''): string
+  public static function image(string $src = '', ?string $alt = null, ?string $width = null, ?string $height = null, ?string $parameters = '', bool $responsive = true, string $bootstrap_css = '', bool $eager = false): string
   {
     if ((empty($src) || ($src == CLICSHOPPING::linkImage(''))) && (IMAGE_REQUIRED == 'false')) {
       return false;
@@ -235,7 +238,12 @@ class HTML
     }
 
     if (CLICSHOPPING::getSite() == 'Shop') {
-      $image = '<img data-src="' . static::output(CLICSHOPPING::getConfig('http_server') . CLICSHOPPING::getConfig('http_path', 'Shop') . $src) . '" alt="' . static::output($alt) . '"';
+      if ($eager === true) {
+        // LCP hero: fetch immediately with a real src and high priority, bypassing lozad.
+        $image = '<img src="' . static::output(CLICSHOPPING::getConfig('http_server') . CLICSHOPPING::getConfig('http_path', 'Shop') . $src) . '" alt="' . static::output($alt) . '" fetchpriority="high" loading="eager" decoding="async"';
+      } else {
+        $image = '<img data-src="' . static::output(CLICSHOPPING::getConfig('http_server') . CLICSHOPPING::getConfig('http_path', 'Shop') . $src) . '" alt="' . static::output($alt) . '"';
+      }
     } else {
       $image = '<img src="' . static::output($src) . '" alt="' . static::output($alt) . '"';
     }
@@ -286,7 +294,9 @@ class HTML
 
     $class = [];
 
-    $class[] = ' lozad media-object';
+    // Eager (LCP) images are fetched directly, so they must NOT carry the lozad
+    // class (lozad only swaps data-src → src, which the eager branch already skips).
+    $class[] = (CLICSHOPPING::getSite() == 'Shop' && $eager === true) ? ' media-object' : ' lozad media-object';
 
     if ($responsive === true) {
       $class[] = ' img-fluid';
