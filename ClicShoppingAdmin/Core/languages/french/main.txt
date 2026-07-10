@@ -375,7 +375,7 @@ error_log =  'Erreurs ont été détectés. Veuillez vérifier les fichiers se t
 error_image_directory_does_not_exist = Erreur: le répertoire cible n'exite pas
 error_image_directory_not_writeable = Erreur: le répertoire cible n'est pas en mode écriture
 error_image_does_not_exist = Erreur: l'imagen'existe pas
-error_image_is_not_writeable = Error: l'image ne peut pas être supprimée
+error_image_is_not_writeable = Error: l'image ne peut pas etre supprimée
 error_suppliers =  'Veuillez selectionner un fournisseur dans la liste
 error_orders =  'Veuillez selectionner correctement vos N° de commande
 

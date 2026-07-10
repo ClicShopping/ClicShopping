@@ -1516,4 +1516,4 @@ echo HTML::button($CLICSHOPPING_Products->getDef('button_cancel'), null, $CLICSH
   </div>
 </div>
 </form>
-<div class="py-4">s</div>
+<div class="py-4"></div>

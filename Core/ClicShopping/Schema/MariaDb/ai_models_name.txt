@@ -1,0 +1,28 @@
+ai_model_name_id int(11) unsigned not_null auto_increment comment(Primary key - unique identifier for each model)
+ai_model_provider_id int(11) unsigned not_null comment(Reference to ai_models_provider.ai_model_provider_id)
+model_technical_name varchar(100) not_null comment(Technical name for the LLPhant library - gpt-4.1-mini, claude-sonnet-4-6, qwen3.6:35b)
+model_display_name varchar(150) not_null comment(Display name shown in administration - OpenAI GPT-4.1 mini)
+ai_model_description varchar(255) not_null comment(Capabilities description shown in admin and used as RAG schema context - max context, reasoning, local, chat only)
+ai_model_status tinyint(1) not_null default(0) comment(General activation status - 1 active, 0 inactive)
+ai_model_status_default tinyint(1) not_null default(0) comment(Default model flag - only one model may have this at 1)
+ai_model_status_fallback tinyint(1) not_null default(0) comment(Technical fallback model flag - only one model may have this at 1)
+ai_model_token_input_price decimal(15,4) not_null default(0) comment(Price per input token unit - real tariffs seeded in Phase 3)
+ai_model_token_output_price decimal(15,4) not_null default(0) comment(Price per output token unit - real tariffs seeded in Phase 3)
+ai_model_context_window int(11) unsigned not_null default(0) comment(Maximum context window in tokens - replaces regex parsing of the description)
+ai_model_ai_capable tinyint(1) not_null default(1) comment(AI pipeline capability - 1 usable for structured analysis, 0 chat only)
+sort_order int(11) unsigned not_null default(0) comment(Display order in administration)
+created_at timestamp NULL default(current_timestamp) comment(Creation date)
+updated_at timestamp NULL default(current_timestamp) on_update(current_timestamp) comment(Last update date)
+
+--
+primary ai_model_name_id
+unique idx_provider_model ai_model_provider_id model_technical_name
+idx_name_sort_order sort_order
+idx_name_status ai_model_status
+idx_name_default ai_model_status_default
+idx_name_fallback ai_model_status_fallback
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

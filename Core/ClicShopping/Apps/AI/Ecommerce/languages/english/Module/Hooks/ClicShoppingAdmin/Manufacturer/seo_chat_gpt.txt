@@ -21,4 +21,5 @@ text_options_gpt_image = Authorize the AI to generate an image of this brand ?
 text_category_taxonomy = [Taxonomy of the category]
 
 title_help_seo = Help
-text_help_seo = Please note that if you use AI to generate your content, information may take longer to save due to processing. Please wait.
+text_help_seo = - Please note that if you use AI to generate your content, information may take longer to save due to processing. Please wait.<br>
+- The generated content is lightweight, lacks advanced verification, and is susceptible to hallucinations. Please carefully verify the results and the relevance of the generated content.

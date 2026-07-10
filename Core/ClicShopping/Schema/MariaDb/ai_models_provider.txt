@@ -1,0 +1,15 @@
+ai_model_provider_id int(11) unsigned not_null auto_increment comment(Primary key - unique identifier for each AI provider)
+ai_model_provider_code enum('openai','anthropic','gemini','mistral','ollama','lmstudio','deepseek') not_null comment(AI provider code constrained to LLPhant-supported providers - the enum blocks any provider LLPhant cannot handle at the database level)
+sort_order int(11) unsigned not_null default(0) comment(Display order in administration)
+created_at timestamp NULL default(current_timestamp) comment(Creation date)
+updated_at timestamp NULL default(current_timestamp) on_update(current_timestamp) comment(Last update date)
+
+--
+primary ai_model_provider_id
+unique idx_provider_code ai_model_provider_code
+idx_provider_sort_order sort_order
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

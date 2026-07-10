@@ -71,8 +71,6 @@ class SeoChatGpt implements HooksInterface
       $content .= '</button>';
 
       $getCategoriesSeoTitle = ChatJsAdminSeo::getCategoriesSeoTitle($content, $urlMultilanguage, $translate_language, $question, $url);
-
-
       $getCategoriesSeoDescription = ChatJsAdminSeo::getCategoriesSeoDescription($content, $urlMultilanguage, $translate_language, $question_summary_description, $url);
       $getCategoriesSeoKeywords = ChatJsAdminSeo::getCategoriesSeoKeywords($content, $urlMultilanguage, $translate_language, $question_keywords, $url);
 

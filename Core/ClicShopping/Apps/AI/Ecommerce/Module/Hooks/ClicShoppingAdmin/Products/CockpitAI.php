@@ -47,6 +47,7 @@
       }
 
       $this->app = Registry::get('Ecommerce');
+      $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Products/cockpit_ai');
     }
 
     /**
@@ -74,8 +75,9 @@
 
       $CLICSHOPPING_ProductsAdmin = Registry::get('ProductsAdmin');
 
-      // Load language definitions
-      $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Products/cockpit_ai');
+      if (!isset($_GET['pID'])) {
+        return false;
+      }
 
       if (isset($_GET['pID'])) {
         // Product Edit Mode - Display analysis interface

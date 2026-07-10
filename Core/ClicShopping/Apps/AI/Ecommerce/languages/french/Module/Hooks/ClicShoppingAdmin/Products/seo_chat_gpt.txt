@@ -9,6 +9,7 @@ text_seo_page_tag_question = Génère 8 tags SEO pertinents et actionnables pour
 text_seo_page_keywords_question = Génère 10 mots-clés SEO pertinents pour ce produit : {{products_name}}. Inclure un mélange de termes informationnels et transactionnels, séparés par des virgules. Réponse brute uniquement.
 text_seo_page_summary_description_question = Génère une meta description persuasive pour ce produit : {{products_name}}. Maximum 160 caractères, avec un bénéfice client et un appel à action léger. Réponse brute uniquement.
 
+
 text_seo_page_translate_language = Peux tu traduire la réponse en
 text_question_description = Ecris moi une longue description concernant ce produit : {{products_name}}.
 text_technical_question = Créés moi un nouveau paragraphe structuré avec des bullets points en html concernant les caractéristiques techniques concernant ce produit : {{products_name}}.
@@ -24,4 +25,5 @@ text_options_gpt_seo_tags = Autorisez l'IA à générer tags SEO du produit ?
 text_options_gpt_image = Autorisez l'IA à générer une image concernant ce produit ?
 
 title_help_seo = Aide
-text_help_seo = Veuillez noter que si vous utilisez l'IA pour générer votre contenu, le temps de sauvegarde de l'information peut être plus long du au traitement. Merci de patienter.
+text_help_seo = - Veuillez noter que si vous utilisez l'IA pour générer votre contenu, le temps de sauvegarde de l'information peut être plus long du au traitement. Merci de patienter.<br>
+- Le contenu généré est léger ne contient pas de vérifications avancées et peut être soumis à des hallucinations. Veuillez bien vérifier les résultats et la pertinence du contenu généré.

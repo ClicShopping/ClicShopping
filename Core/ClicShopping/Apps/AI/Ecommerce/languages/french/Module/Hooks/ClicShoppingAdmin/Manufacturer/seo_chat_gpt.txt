@@ -20,4 +20,5 @@ text_options_gpt_seo_keywords = Autorisez l'IA à générer les mots clefs SEO c
 text_options_gpt_image =  Autorisez l'IA à générer une image concernant cette marque ?
 
 title_help_seo = Aide
-text_help_seo = Veuillez noter que si vous utilisez l'IA pour générer votre contenu, le temps de sauvegarde de l'information peut être plus long du au traitement. Merci de patienter.
+text_help_seo = - Veuillez noter que si vous utilisez l'IA pour générer votre contenu, le temps de sauvegarde de l'information peut être plus long du au traitement. Merci de patienter.<br>
+- Le contenu généré est léger ne contient pas de vérifications avancées et peut être soumis à des hallucinations. Veuillez bien vérifier les résultats et la pertinence du contenu généré.

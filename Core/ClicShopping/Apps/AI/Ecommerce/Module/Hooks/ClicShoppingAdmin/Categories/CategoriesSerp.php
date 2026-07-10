@@ -8,14 +8,16 @@
 
   namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Categories;
 
+  use ClicShopping\OM\CLICSHOPPING;
+  use ClicShopping\OM\HTTP;
+  use ClicShopping\OM\Registry;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoActionLogRepository;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEmbedding;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoOriginalSnapshotRepository;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoReport;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoSerpReportRepository;
   use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
-  use ClicShopping\OM\CLICSHOPPING;
-  use ClicShopping\OM\HTTP;
   use ClicShopping\OM\Interfaces\HooksInterface;
-  use ClicShopping\OM\Registry;
 
   /**
    * Class CategoriesSerp
@@ -57,7 +59,11 @@
      */
     public function display(): string|false
     {
-      $requiredConstants = ['CLICSHOPPING_APP_ECOMMERCE_EC_STATUS'];
+      $requiredConstants = [
+        'CLICSHOPPING_APP_ECOMMERCE_EC_STATUS',
+        'CLICSHOPPING_APP_CHATGPT_RA_OPENAI_EMBEDDING',
+        'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
+      ];
 
       foreach ($requiredConstants as $const) {
         if (!\defined($const) || \constant($const) !== 'True') {
@@ -70,39 +76,13 @@
       }
 
       $categoryId = (int) $_GET['cID'];
+
+      // The 3-button workflow no longer lets the admin pick a language: every phase processes every enabled language in one pass through
       $languageId = (int)$this->lang->getId();
 
-      if (isset($_GET['language_id'])) {
-        $requestedLanguage = (int)$_GET['language_id'];
-        if ($requestedLanguage > 0) {
-          $languageId = $requestedLanguage;
-        }
-      }
-
-      $linkUrl    = HTTP::getShopUrlDomain() . 'index.php?cPath=' . $categoryId;
+      $linkUrl = HTTP::getShopUrlDomain() . 'index.php?cPath=' . $categoryId;
       $baseUrl = HTTP::getShopUrlDomain();
-
-      // -- Manual Action: Run/Re-run analysis --
       $actionResult = null;
-      if (isset($_POST['seo_run_analysis']) && (int) ($_POST['seo_category_id'] ?? 0) === $categoryId) {
-        try {
-          $repository = $this->getRepository();
-          $postedLanguage = (int)($_POST['language_id'] ?? 0);
-          if ($postedLanguage > 0) {
-            $languageId = $postedLanguage;
-          }
-          $actionResult = $repository->process(
-            entityId:    $categoryId,
-            languageId: $languageId,
-            url: $linkUrl,
-            baseUrl: $baseUrl,
-            pageType:    'category',
-            triggeredBy: 'manual'
-          );
-        } catch (\Throwable $e) {
-          $actionResult = ['success' => false, 'error' => $e->getMessage()];
-        }
-      }
 
       // -- Load embedding history --
       try {
@@ -112,6 +92,14 @@
       } catch (\Throwable $e) {
         $latest = null;
         $history = [];
+      }
+
+      // -- Merge the manual-action audit trail (accept / reject / revert) so the
+      //    history table shows a full, attributable trace of what was done. --
+      try {
+        $actionLog = (new SeoActionLogRepository())->getForEntity('category', $categoryId, 20);
+        $history = $this->mergeActionLog($history, $actionLog);
+      } catch (\Throwable $ignored) {
       }
 
       // -- Load latest agentic audit (advanced AI) --
@@ -138,6 +126,44 @@
         $reportHtml = '';
       }
 
+      // -- Source-level thin-content evaluation + no-description guard -- The guard keys off the ENGLISH description (language_id = 1, the install
+      // convention), not the admin's current UI language: 
+      $sourceLanguageId = 1;
+      $sourceHasDescription = false;
+      try {
+        $Qdesc = $this->db->prepare(
+          'SELECT categories_description
+             FROM :table_categories_description
+            WHERE categories_id = :cid
+              AND language_id = :lid
+            LIMIT 1'
+        );
+        $Qdesc->bindInt(':cid', $categoryId);
+        $Qdesc->bindInt(':lid', $sourceLanguageId);
+        $Qdesc->execute();
+        $descRow = $Qdesc->fetch();
+        $sourceText = $descRow ? trim(strip_tags((string)($descRow['categories_description'] ?? ''))) : '';
+        $sourceHasDescription = $sourceText !== '';
+        if ($sourceHasDescription) {
+          $sourceThin = $seoReport->evaluateSourceThinContent($sourceText);
+          $pageLevel  = (string)($seoData['thin_content_level'] ?? 'ok');
+          $severity   = ['critical' => 2, 'warning' => 1, 'ok' => 0];
+          if (($severity[$sourceThin['level']] ?? 0) > ($severity[$pageLevel] ?? 0)) {
+            $seoData['thin_content']       = $sourceThin['thin_content'];
+            $seoData['thin_content_level'] = $sourceThin['level'];
+            $seoData['thin_content_msg']   = $sourceThin['message'];
+            if ($sourceThin['level'] === 'critical') {
+              $seoData['seo_score'] = min((int)($seoData['seo_score'] ?? 0), SeoReport::THIN_CONTENT_CRITICAL_CAP);
+            } elseif ($sourceThin['level'] === 'warning') {
+              $seoData['seo_score'] = min((int)($seoData['seo_score'] ?? 0), SeoReport::THIN_CONTENT_WARNING_CAP);
+            }
+          }
+          $seoData['source_wordcount'] = $sourceThin['word_count'];
+        }
+      } catch (\Throwable) {
+        // Defensive — keep the page-level verdict if the DB probe fails.
+      }
+
       // -- UI Assembly --
       $title = $this->app->getDef('tab_seo_report');
       $content = $this->buildTabContent(
@@ -148,7 +174,8 @@
         reportHtml: $reportHtml,
         actionResult: $actionResult,
         agenticLatest: $agenticLatest,
-        languageId: $languageId
+        languageId: $languageId,
+        sourceHasDescription: $sourceHasDescription
       );
 
       return $this->wrapInTab($title, $content);
@@ -177,6 +204,7 @@
      * @param array|null $actionResult Result of a manual trigger
      * @param array|null $agenticLatest Latest AI agent report
      * @param int $languageId
+     * @param bool $sourceHasDescription Whether the category has a non-empty description to optimize
      * @return string
      */
     private function buildTabContent(
@@ -187,11 +215,21 @@
       string $reportHtml,
       ?array $actionResult,
       ?array $agenticLatest,
-      int $languageId
+      int $languageId,
+      bool $sourceHasDescription
     ): string {
       $out = '';
 
-      $out .= $this->renderLanguageSelector($languageId);
+      // Singleton non-dismissible progress modal — every phase button drives it.
+      $out .= $this->renderProgressModal();
+
+      if (!$sourceHasDescription) {
+        $out .= '<div class="alert alert-secondary d-flex align-items-start gap-2 mb-3">';
+        $out .= '<i class="bi bi-image fs-5 mt-1"></i>';
+        $out .= '<div><strong>' . htmlspecialchars($this->app->getDef('text_seo_category_no_description_title')) . '</strong><br />';
+        $out .= '<span class="small text-muted">' . htmlspecialchars($this->app->getDef('text_seo_category_no_description_info')) . '</span></div>';
+        $out .= '</div>';
+      }
 
       if ($actionResult !== null) {
         $out .= $this->renderActionBanner($actionResult);
@@ -199,59 +237,12 @@
 
       // Initial Mode: No history yet
       if ($latest === null) {
-        $out .= $this->renderInitialMode($categoryId, $seoData, $reportHtml, $languageId);
+        $out .= $this->renderInitialMode($categoryId, $seoData, $reportHtml);
         return $out;
       }
 
       // Optimization Mode: History available
-      $out .= $this->renderOptimizationMode($categoryId, $latest, $history, $seoData, $reportHtml, $agenticLatest, $languageId);
-
-      return $out;
-    }
-
-    private function renderLanguageSelector(int $languageId): string
-    {
-      try {
-        $languages = $this->lang->getAll();
-      } catch (\Throwable) {
-        return '';
-      }
-
-      if (empty($languages)) {
-        return '';
-      }
-
-      $options = '';
-      foreach ($languages as $lang) {
-        $id = (int)($lang['id'] ?? 0);
-        $name = (string)($lang['name'] ?? $id);
-        $selected = $id === $languageId ? ' selected' : '';
-        $options .= '<option value="' . $id . '"' . $selected . '>' . htmlspecialchars($name) . '</option>';
-      }
-
-      $currentUrl = $_SERVER['REQUEST_URI'] ?? '';
-      $separator = str_contains($currentUrl, '?') ? '&' : '?';
-
-      $out  = '<div class="mb-3">';
-      $out .= '<label class="form-label small text-muted">' . $this->app->getDef('text_seo_language_select') . '</label>';
-      $out .= '<select class="form-select form-select-sm" id="seo-language-selector">' . $options . '</select>';
-      $out .= '</div>';
-      $out .= '<script>
-        (function(){
-          var selector = document.getElementById("seo-language-selector");
-          if (!selector) return;
-          selector.addEventListener("change", function(){
-            var url = "' . addslashes($currentUrl) . '";
-            var newUrl = url;
-            if (url.indexOf("language_id=") !== -1) {
-              newUrl = url.replace(/language_id=\d+/, "language_id=" + this.value);
-            } else {
-              newUrl = url + "' . $separator . 'language_id=" + this.value;
-            }
-            window.location.href = newUrl;
-          });
-        })();
-      </script>';
+      $out .= $this->renderOptimizationMode($categoryId, $latest, $history, $seoData, $reportHtml, $agenticLatest, $languageId, $sourceHasDescription);
 
       return $out;
     }
@@ -287,10 +278,9 @@
      * * @param int $categoryId
      * @param array $seoData
      * @param string $reportHtml
-     * @param int $languageId
      * @return string
      */
-    private function renderInitialMode(int $categoryId, array $seoData, string $reportHtml, int $languageId): string
+    private function renderInitialMode(int $categoryId, array $seoData, string $reportHtml): string
     {
       $score      = $seoData['seo_score'] ?? 0;
       $scoreColor = $this->scoreColor($score);
@@ -319,7 +309,7 @@
         url: $runUrl,
         postName: 'seo_run_analysis',
         buttonClass: 'btn-primary',
-        languageId: $languageId
+        progressMessage: $this->app->getDef('text_seo_progress_phase1') ?: 'Initial SEO audit in progress…'
       );
       $out .= $this->renderReportsButton($categoryId);
 
@@ -412,10 +402,7 @@
     }
 
     /**
-     * Renders a button that triggers an AJAX SEO analysis.
-     * * @param int $categoryId
-    /**
-     * T4.1 + T4.4 — Renders contextual warning banners for category pages.
+     * Renders contextual warning banners for category pages.
      *
      * TWO independent signals from SeoReport::getSeoData():
      *
@@ -467,10 +454,12 @@
     }
 
     /**
-     * Renders a button that triggers an AJAX SEO action.
-     * On success the page reloads via window.location.href (preserving the ClicShopping URL intact)
-     * so the history table refreshes and the SEO tab reopens automatically.
-     * On error a Bootstrap modal shows the message without reloading.
+     * Render a single phase trigger button.
+     *
+     *
+     * The admin is not allowed to dismiss the modal manually while the AJAX
+     * is in flight — every phase processes every enabled language in one
+     * pass and any interruption would leave the database half-translated.
      */
     private function renderActionButton(
       int    $categoryId,
@@ -478,158 +467,223 @@
       string $url,
       string $postName,
       string $buttonClass = 'btn-primary',
-      int    $languageId  = 0
+      string $progressMessage = '',
+      string $confirmMessage = ''
     ): string {
-      $loadingText  = $this->app->getDef('text_seo_loading')              ?: 'Loading…';
-      $ajaxInvalid  = $this->app->getDef('text_seo_ajax_invalid_response') ?: 'Invalid response.';
-      $unknownError = $this->app->getDef('text_seo_unknown_error')         ?: 'Unknown error.';
-      $ajaxFailed   = $this->app->getDef('text_seo_ajax_failed')           ?: 'Request failed';
-
-      // Unique suffix per button so multiple buttons on the same page don't conflict
+      // Unique suffix per (postName, categoryId) so several buttons on the
+      // same tab (Phase 1 / 2) bind independent click handlers.
       $uid = 'seo_' . substr(md5($postName . $categoryId), 0, 8);
+
+      $progressMessage = $progressMessage !== ''
+        ? $progressMessage
+        : ($this->app->getDef('text_seo_progress_default') ?: 'Processing in progress…');
 
       $out  = '<button type="button"';
       $out .= ' id="btn_' . $uid . '"';
       $out .= ' class="btn ' . $buttonClass . ' btn-sm me-2 mb-3"';
-      $out .= ' data-url="'       . htmlspecialchars($url)      . '"';
-      $out .= ' data-post-name="' . htmlspecialchars($postName) . '"';
-      $out .= ' data-category-id="'. $categoryId . '"';
-      $out .= ' data-language-id="'. (int)$languageId . '">';
+      $out .= ' data-url="'             . htmlspecialchars($url)             . '"';
+      $out .= ' data-post-name="'       . htmlspecialchars($postName)        . '"';
+      $out .= ' data-category-id="'     . $categoryId                        . '"';
+      $out .= ' data-progress-message="' . htmlspecialchars($progressMessage) . '">';
       $out .= '<i class="bi bi-play-circle me-1"></i>' . htmlspecialchars($label);
       $out .= '</button>';
-
-      // Error modal (only injected once per page via a guard check)
-      $out .= '
-<div class="modal fade" id="seoErrorModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>SEO</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="seoErrorModalBody"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' . ($this->app->getDef('text_seo_modal_close') ?: 'Close') . '</button>
-      </div>
-    </div>
-  </div>
-</div>';
 
       $out .= '<script>
 (function () {
   var btn = document.getElementById(' . json_encode('btn_' . $uid) . ');
-  if (!btn) return;
+  if (!btn || btn.dataset.seoBound === "1") return;
+  btn.dataset.seoBound = "1";
 
   btn.addEventListener("click", function () {
     if (btn.disabled) return;
+    var confirmMsg = ' . json_encode($confirmMessage) . ';
+    if (confirmMsg !== "" && !window.confirm(confirmMsg)) { return; }
+
+    var notAppliedMsg = ' . json_encode($this->app->getDef('text_seo_not_applied_regression') ?: 'Optimization not applied: it would drop source facts (fidelity regression).') . ';
+    var notAppliedSeoMsg = ' . json_encode($this->app->getDef('text_seo_not_applied_seo_regression') ?: 'Optimization rolled back: it would degrade the page SEO structure.') . ';
+    var missingLabel  = ' . json_encode($this->app->getDef('text_seo_missing_facts') ?: 'Missing facts') . ';
 
     var formURL    = btn.getAttribute("data-url");
     var postName   = btn.getAttribute("data-post-name");
     var categoryId = btn.getAttribute("data-category-id");
-    var languageId = btn.getAttribute("data-language-id");
+    var message    = btn.getAttribute("data-progress-message");
+
+    if (typeof window.seoOpenProgressModal !== "function") {
+      return;
+    }
+    var modalApi = window.seoOpenProgressModal(message);
 
     var postData = {};
     postData[postName]          = "1";
     postData["seo_category_id"] = categoryId;
-    postData["language_id"]     = languageId;
 
-    var originalHtml = btn.innerHTML;
-    btn.disabled  = true;
-    btn.innerHTML = \'<span class="spinner-border spinner-border-sm me-1" role="status"></span>\' + ' . json_encode($loadingText) . ';
+    btn.disabled = true;
 
-    // Progress indicator for long-running optimization
-    var progressInterval;
-    var dots = 0;
-    var startTime = Date.now();
-    
-    progressInterval = setInterval(function() {
-      dots = (dots + 1) % 4;
-      var dotStr = ".".repeat(dots);
-      var elapsed = Math.floor((Date.now() - startTime) / 1000);
-      btn.innerHTML = \'<span class="spinner-border spinner-border-sm me-1" role="status"></span>\' 
-                    + ' . json_encode($loadingText) . ' + dotStr + " (" + elapsed + "s)";
-    }, 1000);
-
-    function showSeoError(msg) {
-      if (progressInterval) clearInterval(progressInterval);
-      var modalEl = document.getElementById("seoErrorModal");
-      document.getElementById("seoErrorModalBody").innerHTML = "<p>" + msg + "</p>";
-      bootstrap.Modal.getOrCreateInstance(modalEl).show();
-    }
-    
-    // -----------------------------
-    // SNIPPET 2 — AJAX success logic
-    // -----------------------------
-    
     $.ajax({
       url: formURL,
       type: "POST",
       data: postData,
-      dataType: "json",
-      timeout: 300000  // 5 minutes timeout for long-running SEO optimization
+      dataType: "json"
+      // No client-side timeout: the multilingual orchestrator can run for
+      // several minutes; the non-dismissible modal keeps the admin informed.
     }).done(function (payload) {
-    
-      if (progressInterval) clearInterval(progressInterval);
-      btn.disabled  = false;
-      btn.innerHTML = originalHtml;
-    
       if (!payload || typeof payload !== "object") {
-        showSeoError("Invalid response");
+        modalApi.showError("Invalid response from server.");
+        btn.disabled = false;
         return;
       }
-    
-      // Check success with multiple type checks
-      var isSuccess = (payload.success === true || payload.success === 1 || payload.success === "true" || payload.success === "1");
-    
+      var isSuccess = (payload.success === true || payload.success === 1
+                    || payload.success === "true" || payload.success === "1");
       if (isSuccess) {
-    
-        // Show success message
-        btn.innerHTML = \'<i class="bi bi-check-circle me-1"></i>Success! Reloading...\';
-        btn.classList.remove("btn-success");
-        btn.classList.add("btn-success", "opacity-75");
-    
-        // Reload page after short delay to show success message
-        setTimeout(function() {
-          var base = window.location.href.replace(/#.*$/, "");
-    
-          if (languageId && base.indexOf("language_id=") !== -1) {
-            base = base.replace(/language_id=\\d+/, "language_id=" + languageId);
-          } else if (languageId && base.indexOf("language_id=") === -1) {
-            base = base + (base.indexOf("?") !== -1 ? "&" : "?") + "language_id=" + languageId;
+        modalApi.showSuccess();
+        setTimeout(function () {
+          // Set the hash first so the SEO tab is targeted on the reloaded
+          // page, then call reload() explicitly: when only the hash changes
+          // the browser does NOT reload by itself, which used to be masked
+          // by the old language_id query-string mutation.
+          if (window.location.hash !== "#section_SEOReportApp_content") {
+            window.location.hash = "section_SEOReportApp_content";
           }
-    
-          window.location.replace(base + "#section_SEOReportApp_content");
-        }, 800);
-    
+          window.location.reload();
+        }, 900);
+      } else if (payload.status === "not_applied_regression") {
+        var miss = (payload.missing_entities && payload.missing_entities.length)
+          ? (" — " + missingLabel + ": " + payload.missing_entities.join(", "))
+          : "";
+        modalApi.showError(notAppliedMsg + miss);
+        btn.disabled = false;
+      } else if (payload.status === "not_applied_seo_regression") {
+        modalApi.showError(notAppliedSeoMsg);
+        btn.disabled = false;
       } else {
-    
-        var msg = payload.error || payload.message || "Unknown error";
-        showSeoError(msg);
-    
+        modalApi.showError(payload.error || payload.message || "Unknown error");
+        btn.disabled = false;
       }
-    
     }).fail(function (xhr) {
-    
-      if (progressInterval) clearInterval(progressInterval);
-      btn.disabled  = false;
-      btn.innerHTML = originalHtml;
-    
       var errorMsg = "Request failed (HTTP " + xhr.status + ")";
       if (xhr.status === 0) {
-        errorMsg = "Request timeout or network error. The optimization may still be running on the server.";
+        errorMsg = "Request timeout or network error. The optimization may still be running on the server — refresh the page in a moment to check.";
       } else if (xhr.status === 504 || xhr.status === 502) {
         errorMsg = "Gateway timeout. The optimization is taking longer than expected. Please refresh the page in a moment to see if changes were applied.";
       }
-      showSeoError(errorMsg);
-    
+      modalApi.showError(errorMsg);
+      btn.disabled = false;
     });
   });
+})();
+</script>';
 
-  function showSeoError(msg) {
-    var modalEl = document.getElementById("seoErrorModal");
-    document.getElementById("seoErrorModalBody").innerHTML = "<p>" + msg + "</p>";
-    bootstrap.Modal.getOrCreateInstance(modalEl).show();
-  }
+      return $out;
+    }
+
+    /**
+     * Render the singleton progress + error modal used by every phase button.
+     *
+     * The modal is non-dismissible (no close button, no backdrop click, no
+     * ESC key) while the AJAX is running. When the AJAX completes the JS
+     * helper either:
+     *  - swaps the body to a "Success" state and lets the page reload, or
+     *  - swaps the body to an "Error" state and unlocks a Close button.
+     *
+     * The script also exposes window.seoOpenProgressModal() so every button's
+     * inline JS can drive the same modal.
+     */
+    private function renderProgressModal(): string
+    {
+      $titleProgress = $this->app->getDef('text_seo_progress_title')     ?: 'SEO processing in progress';
+      $titleSuccess  = $this->app->getDef('text_seo_progress_success')   ?: 'Success! Reloading…';
+      $titleError    = $this->app->getDef('text_seo_progress_error')     ?: 'SEO action failed';
+      $warn          = $this->app->getDef('text_seo_progress_warning')   ?: 'Please wait and do not reload the page. The process can take several minutes.';
+      $elapsedLabel  = $this->app->getDef('text_seo_progress_elapsed')   ?: 'seconds elapsed';
+      $closeLabel    = $this->app->getDef('text_seo_modal_close')        ?: 'Close';
+
+      $out  = '<div class="modal fade" id="seoProgressModal" tabindex="-1"';
+      $out .= ' data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">';
+      $out .= '<div class="modal-dialog modal-dialog-centered">';
+      $out .= '<div class="modal-content">';
+      $out .= '<div class="modal-header bg-info text-white" id="seoProgressModalHeader">';
+      $out .= '<h5 class="modal-title"><i id="seoProgressIcon" class="bi bi-hourglass-split me-2"></i>';
+      $out .= '<span id="seoProgressTitle">' . htmlspecialchars($titleProgress) . '</span></h5>';
+      $out .= '</div>';
+      $out .= '<div class="modal-body text-center" id="seoProgressBody">';
+      $out .= '  <div id="seoProgressSpinner" class="d-flex flex-column align-items-center">';
+      $out .= '    <div class="spinner-border text-primary mb-3" role="status" style="width:3rem;height:3rem;"><span class="visually-hidden">Loading</span></div>';
+      $out .= '    <div id="seoProgressMessage" class="mb-2 fw-medium"></div>';
+      $out .= '    <div class="alert alert-warning small mb-2"><i class="bi bi-exclamation-triangle me-1"></i>' . htmlspecialchars($warn) . '</div>';
+      $out .= '    <div class="progress mb-2 w-100" style="height:8px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width:100%;"></div></div>';
+      $out .= '    <div class="text-muted small"><span id="seoProgressTimer">0</span> ' . htmlspecialchars($elapsedLabel) . '</div>';
+      $out .= '  </div>';
+      $out .= '  <div id="seoProgressErrorBox" class="text-start" style="display:none;"></div>';
+      $out .= '</div>';
+      $out .= '<div class="modal-footer" id="seoProgressFooter" style="display:none;">';
+      $out .= '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' . htmlspecialchars($closeLabel) . '</button>';
+      $out .= '</div>';
+      $out .= '</div></div></div>';
+
+      $out .= '<script>
+(function () {
+  if (window.seoOpenProgressModal) return; // already bound on this page
+
+  function el(id) { return document.getElementById(id); }
+
+  window.seoOpenProgressModal = function (message) {
+    var modalEl   = el("seoProgressModal");
+    var header    = el("seoProgressModalHeader");
+    var icon      = el("seoProgressIcon");
+    var title     = el("seoProgressTitle");
+    var spinner   = el("seoProgressSpinner");
+    var errorBox  = el("seoProgressErrorBox");
+    var footer    = el("seoProgressFooter");
+    var msgEl     = el("seoProgressMessage");
+    var timerEl   = el("seoProgressTimer");
+
+    // Reset to "in progress" layout
+    header.classList.remove("bg-success", "bg-danger");
+    header.classList.add("bg-info");
+    icon.className = "bi bi-hourglass-split me-2";
+    title.textContent = ' . json_encode($titleProgress) . ';
+    spinner.style.display  = "";
+    errorBox.style.display = "none";
+    footer.style.display   = "none";
+    errorBox.innerHTML     = "";
+    msgEl.textContent      = message || "";
+
+    var startedAt = Date.now();
+    timerEl.textContent = "0";
+    var tickId = setInterval(function () {
+      timerEl.textContent = String(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+
+    return {
+      showSuccess: function () {
+        clearInterval(tickId);
+        header.classList.remove("bg-info");
+        header.classList.add("bg-success");
+        icon.className = "bi bi-check-circle me-2";
+        title.textContent = ' . json_encode($titleSuccess) . ';
+      },
+      showError: function (msg) {
+        clearInterval(tickId);
+        header.classList.remove("bg-info");
+        header.classList.add("bg-danger");
+        icon.className = "bi bi-x-circle me-2";
+        title.textContent = ' . json_encode($titleError) . ';
+        spinner.style.display  = "none";
+        errorBox.style.display = "";
+        errorBox.innerHTML = "<div class=\"alert alert-danger mb-0\"><i class=\"bi bi-x-circle me-1\"></i>" +
+          String(msg).replace(/[<>]/g, function (c) { return c === "<" ? "&lt;" : "&gt;"; }) +
+          "</div>";
+        footer.style.display = "";
+      },
+      hide: function () {
+        clearInterval(tickId);
+        modal.hide();
+      }
+    };
+  };
 })();
 </script>';
 
@@ -654,6 +708,51 @@
       return $out;
     }
 
+    /**
+     * Accept / Reject (post-optimization) + "Revert to initial text" buttons.
+     * Shown only once an original snapshot exists (i.e. an optimization has run).
+     */
+    private function renderSeoDecisionButtons(int $categoryId): string
+    {
+      $snapshot = new SeoOriginalSnapshotRepository();
+      if (!$snapshot->exists('category', $categoryId)) {
+        return '';
+      }
+
+      $base = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/SEO/';
+
+      $out  = $this->renderActionButton(
+        $categoryId,
+        label: $this->app->getDef('text_seo_accept') ?: 'Accept',
+        url: $base . 'accept_category_seo.php',
+        postName: 'seo_accept',
+        buttonClass: 'btn-outline-success',
+        progressMessage: $this->app->getDef('text_seo_progress_accept') ?: 'Saving acceptance…'
+      );
+
+      $out .= $this->renderActionButton(
+        $categoryId,
+        label: $this->app->getDef('text_seo_reject') ?: 'Reject',
+        url: $base . 'reject_category_seo.php',
+        postName: 'seo_reject',
+        buttonClass: 'btn-outline-warning',
+        progressMessage: $this->app->getDef('text_seo_progress_reject') ?: 'Restoring original…',
+        confirmMessage: $this->app->getDef('text_seo_reject_confirm') ?: 'Reject the optimization and restore the original content in every language?'
+      );
+
+      $out .= $this->renderActionButton(
+        $categoryId,
+        label: $this->app->getDef('text_seo_revert_initial') ?: 'Revert to initial text',
+        url: $base . 'revert_category_seo.php',
+        postName: 'seo_revert_initial',
+        buttonClass: 'btn-outline-danger',
+        progressMessage: $this->app->getDef('text_seo_progress_revert') ?: 'Restoring original and clearing analysis…',
+        confirmMessage: $this->app->getDef('text_seo_revert_initial_confirm') ?: 'Restore the original text and DELETE all SEO analysis for this category (every language)? This cannot be undone.'
+      );
+
+      return $out;
+    }
+
     // ============================================================
     // HELPERS
     // ============================================================
@@ -666,6 +765,7 @@
      * @param string $reportHtml
      * @param array|null $agenticLatest
      * @param int $languageId
+     * @param bool $sourceHasDescription Whether the category has a non-empty description to optimize
      * @return string
      */
     private function renderOptimizationMode(
@@ -675,7 +775,8 @@
       array $seoData,
       string $reportHtml,
       ?array $agenticLatest,
-      int $languageId
+      int $languageId,
+      bool $sourceHasDescription
     ): string {
       $prevMeta = json_decode($latest['metadata'] ?? '{}', true);
       $scorePrev = (int)($prevMeta['seo_score_before'] ?? 0);
@@ -717,14 +818,13 @@
       // T4.1 + T4.4 — Thin content & JS render warnings
       $out .= $this->renderCategoryContentWarnings($seoData);
 
-      // -- AI Audit Summary --
-      if (!empty($auditResult['summary'])) {
-        $auditIcon  = ($auditResult['improved'] ?? false) ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning';
-        $out .= '<div class="alert alert-light border d-flex align-items-start gap-2 mb-3">';
-        $out .= '<i class="bi ' . $auditIcon . ' fs-5 mt-1"></i>';
-        $out .= '<div><strong>' . $this->app->getDef('text_seo_ai_audit') . '</strong><br />' . htmlspecialchars($auditResult['summary']) . '</div>';
-        $out .= '</div>';
-      }
+      // -- Audit (single approach) --
+      // $agenticLatest (SeoSerpReportRepository) is the richer, more current
+      // source (status + score delta + summary) and takes priority; the
+      // legacy $auditResult embedded in the optimization metadata is only
+      // used as a fallback until an agentic audit row exists for this
+      // category/language.
+      $out .= $this->renderAuditBlock($auditResult, $agenticLatest);
 
       // -- Suggestions --
       if (!empty($suggestions)) {
@@ -746,17 +846,19 @@
       }
 
       // -- Action Buttons --
-      $optUrl = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/SEO/optimize_category_seo.php';
-      $out .= $this->renderActionButton($categoryId, $this->app->getDef('text_seo_run_optimize'), $optUrl, 'seo_run_optimize', 'btn-success', $languageId);
-     // $out .= $this->renderReportsButton($categoryId);
-
-      // -- Agentic Audit --
-      if (!empty($agenticLatest)) {
-        $out .= '<div class="alert alert-light border d-flex align-items-start gap-2 mb-3"><i class="bi bi-robot fs-5 mt-1"></i>';
-        $out .= '<div><strong>' . $this->app->getDef('text_seo_agentic_audit') . '</strong><br />' . $this->app->getDef('text_seo_status_label') . ': <span class="badge bg-secondary">' . htmlspecialchars($agenticLatest['status']) . '</span> ';
-        $out .= $this->app->getDef('text_seo_score_label') . ': <strong>' . (int)$agenticLatest['seo_score_before'] . ' -> ' . (int)$agenticLatest['seo_score_after'] . '</strong><br />';
-        $out .= htmlspecialchars($agenticLatest['summary'] ?? '') . '</div></div>';
+      if ($sourceHasDescription) {
+        $optUrl = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/SEO/optimize_category_seo.php';
+        $out .= $this->renderActionButton(
+          $categoryId,
+          label: $this->app->getDef('text_seo_run_optimize'),
+          url: $optUrl,
+          postName: 'seo_run_optimize',
+          buttonClass: 'btn-success',
+          progressMessage: $this->app->getDef('text_seo_progress_phase2') ?: 'SEO content optimization across all languages in progress…'
+        );
       }
+      $out .= $this->renderSeoDecisionButtons($categoryId);
+      // $out .= $this->renderReportsButton($categoryId);
 
       if (!empty($history)) {
         $out .= $this->renderHistory($history, $languageId);
@@ -896,6 +998,41 @@
     }
 
     /**
+     * Renders a single, unified "audit" alert box.
+     * Two data sources historically produced two separate, visually
+     * near-identical alert boxes on this page (an "AI audit" summary stored
+     * in the optimization metadata, and an "agentic audit" row from
+     * SeoSerpReportRepository). This helper consolidates both into one
+     * block and one visual position: the agentic audit
+     * @param array $auditResult Legacy audit summary from optimization metadata (fallback)
+     * @param array|null $agenticLatest Latest agentic audit report (preferred)
+     * @return string
+     */
+    private function renderAuditBlock(array $auditResult, ?array $agenticLatest): string
+    {
+      if (!empty($agenticLatest)) {
+        $out = '<div class="alert alert-light border d-flex align-items-start gap-2 mb-3">';
+        $out .= '<i class="bi bi-robot fs-5 mt-1"></i>';
+        $out .= '<div><strong>' . $this->app->getDef('text_seo_agentic_audit') . '</strong><br />';
+        $out .= $this->app->getDef('text_seo_status_label') . ': <span class="badge bg-secondary">' . htmlspecialchars($agenticLatest['status']) . '</span> ';
+        $out .= $this->app->getDef('text_seo_score_label') . ': <strong>' . (int)$agenticLatest['seo_score_before'] . ' -> ' . (int)$agenticLatest['seo_score_after'] . '</strong><br />';
+        $out .= htmlspecialchars($agenticLatest['summary'] ?? '') . '</div></div>';
+        return $out;
+      }
+
+      if (!empty($auditResult['summary'])) {
+        $auditIcon = ($auditResult['improved'] ?? false) ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning';
+        $out = '<div class="alert alert-light border d-flex align-items-start gap-2 mb-3">';
+        $out .= '<i class="bi ' . $auditIcon . ' fs-5 mt-1"></i>';
+        $out .= '<div><strong>' . $this->app->getDef('text_seo_ai_audit') . '</strong><br />' . htmlspecialchars($auditResult['summary']) . '</div>';
+        $out .= '</div>';
+        return $out;
+      }
+
+      return '';
+    }
+
+    /**
      * Returns a badge for the report type.
      * * @param string $type
      * @return string
@@ -905,8 +1042,49 @@
       return match ($type) {
         'initial_report'   => '<span class="badge bg-info text-dark">' . $this->app->getDef('text_seo_type_initial') . '</span>',
         'optimized_report' => '<span class="badge bg-primary">' . $this->app->getDef('text_seo_type_optimized') . '</span>',
+        'seo_action'       => '<span class="badge bg-dark">' . ($this->app->getDef('text_seo_type_action') ?: 'Action') . '</span>',
         default            => '<span class="badge bg-light text-dark">' . htmlspecialchars($type) . '</span>',
       };
+    }
+
+    /**
+     * Merges the manual-action audit trail (accept / reject / revert) into the
+     * embedding-history list so both show, newest first, in the same table.
+     * Action rows are normalised to the shape the history renderer expects, with
+     * the action carried as the row status and the administrator as the source.
+     *
+     * @param array<int, array<string, mixed>> $history   Embedding-history rows.
+     * @param array<int, array<string, mixed>> $actionLog Rows from SeoActionLogRepository.
+     * @return array<int, array<string, mixed>> Merged list, newest first.
+     */
+    private function mergeActionLog(array $history, array $actionLog): array
+    {
+      foreach ($actionLog as $a) {
+        $meta    = [];
+        $rawMeta = $a['metadata'] ?? '';
+        if (is_string($rawMeta) && $rawMeta !== '') {
+          $decoded = json_decode($rawMeta, true);
+          if (is_array($decoded)) {
+            $meta = $decoded;
+          }
+        }
+        $meta['status']       = (string)($a['action'] ?? '');
+        $meta['action_admin'] = (string)($a['admin_name'] ?? '');
+
+        $history[] = [
+          'id'            => 'action_' . ($a['id'] ?? 0),
+          'type'          => 'seo_action',
+          'sourcename'    => (string)($a['admin_name'] ?? ''),
+          'date_modified' => (string)($a['date_added'] ?? ''),
+          'metadata'      => json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ];
+      }
+
+      usort($history, static fn (array $x, array $y): int =>
+        strcmp((string)($y['date_modified'] ?? ''), (string)($x['date_modified'] ?? ''))
+      );
+
+      return $history;
     }
 
     /**
@@ -921,6 +1099,9 @@
         'completed' => '<span class="badge bg-primary">'           . $this->app->getDef('text_seo_status_completed') . '</span>',
         'pending'   => '<span class="badge bg-warning text-dark">' . $this->app->getDef('text_seo_status_pending')   . '</span>',
         'initial'   => '<span class="badge bg-info text-dark">'    . $this->app->getDef('text_seo_status_initial')   . '</span>',
+        'accepted'  => '<span class="badge bg-success">'           . ($this->app->getDef('text_seo_status_accepted') ?: 'Accepted') . '</span>',
+        'rejected'  => '<span class="badge bg-danger">'            . ($this->app->getDef('text_seo_status_rejected') ?: 'Rejected') . '</span>',
+        'reverted'  => '<span class="badge bg-secondary">'         . ($this->app->getDef('text_seo_status_reverted') ?: 'Reverted') . '</span>',
         default     => '<span class="badge bg-light text-dark">'   . htmlspecialchars($status)                       . '</span>',
       };
     }

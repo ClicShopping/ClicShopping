@@ -1,0 +1,16 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each sentiment snapshot)
+products_id int not_null comment(FK to products table - product analysed)
+review_count int not_null default(0) comment(Number of approved reviews at snapshot time)
+positive_pct int not_null default(0) comment(Positive share (stars 4-5) at snapshot time, percent)
+neutral_pct int not_null default(0) comment(Neutral share (stars 3) at snapshot time, percent)
+negative_pct int not_null default(0) comment(Negative share (stars 1-2) at snapshot time, percent)
+rating_stddev decimal(5,3) not_null default(0) comment(Std-dev of star ratings at snapshot time - dispersion)
+dominant_sentiment varchar(20) default null comment(LLM dominant sentiment at snapshot time - positive|negative|neutral|mixed)
+date_added datetime not_null default current_timestamp comment(Timestamp of the snapshot - one per analysis run)
+--
+primary id
+idx_reviews_sentiment_history_products_id products_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

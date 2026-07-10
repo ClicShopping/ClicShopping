@@ -1,0 +1,15 @@
+ai_model_api_id int(11) unsigned not_null auto_increment comment(Primary key - unique identifier for each provider API credential)
+ai_model_provider_id int(11) unsigned not_null comment(Reference to ai_models_provider.ai_model_provider_id)
+ai_model_provider_api_key text not_null comment(Encrypted API token/key for the provider - encrypted with Hash encryptDatatext; TEXT because AES+base64+IV of a real key exceeds 255 chars)
+ai_model_organisation varchar(255) default null comment(Optional workspace or organization or project id - Anthropic workspace, OpenAI organization, Mistral workspace)
+created_at timestamp NULL default(current_timestamp) comment(Creation date)
+updated_at timestamp NULL default(current_timestamp) on_update(current_timestamp) comment(Last update date)
+
+--
+primary ai_model_api_id
+unique idx_api_provider ai_model_provider_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

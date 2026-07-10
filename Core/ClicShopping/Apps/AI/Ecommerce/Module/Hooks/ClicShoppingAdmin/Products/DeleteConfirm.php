@@ -50,25 +50,25 @@ class DeleteConfirm implements HooksInterface
   public function execute()
   {
     if (isset($_GET['DeleteConfirm']) && isset($this->Id)) {
-      // Delete the product embedding from the database
-      $this->app->db->delete('products_embedding', ['entity_id' => (int)$this->Id]);
-      
-      // Delete FAQ and FAQ embeddings for all languages
-      try {
-        // Delete FAQ content
-        $deletedFaq = $this->app->db->delete('products_description_faq', ['products_id' => (int)$this->Id]);
-        
-        // Delete FAQ embeddings
-        $deletedFaqEmbeddings = $this->app->db->delete('products_description_faq_embedding', ['entity_id' => (int)$this->Id]);
-        $seo_original_snapshot = $this->app->db->delete('seo_original_snapshot', ['entity_id' => (int)$this->Id]);
-        $seo_seo_quality_benchmark_log = $this->app->db->delete('clic_seo_quality_benchmark_log', ['entity_id' => (int)$this->Id]);
+      $pID = (int)$this->Id;
 
-        if ($deletedFaq || $deletedFaqEmbeddings || $seo_original_snapshot || $seo_seo_quality_benchmark_log) {
-          error_log("Products/DeleteConfirm: Deleted FAQ and embeddings for product {$this->Id}");
-        }
+      // Generic RAG embedding.
+      $this->app->db->delete('products_embedding', ['entity_id' => $pID]);
+
+      try {
+        // FAQ (product-only).
+        $this->app->db->delete('products_description_faq', ['products_id' => $pID]);
+        $this->app->db->delete('products_description_faq_embedding', ['entity_id' => $pID]);
+
+        // SEO embedding/report history + multilingual SEO workflow rows.
+        $this->app->db->delete('products_seo_embedding', ['entity_id' => $pID]);
+        $this->app->db->delete('seo_original_snapshot', ['entity_type' => 'product', 'entity_id' => $pID]);
+        $this->app->db->delete('seo_serp_reports', ['entity_type' => 'product', 'entity_id' => $pID]);
+        $this->app->db->delete('seo_product_action_log', ['entity_type' => 'product', 'entity_id' => $pID]);
+        $this->app->db->delete('seo_quality_benchmark_log', ['entity_type' => 'product', 'entity_id' => $pID]);
       } catch (\Exception $e) {
-        error_log("Products/DeleteConfirm: Error deleting FAQ for product {$this->Id}: " . $e->getMessage());
-        // Do not block product deletion if FAQ deletion fails
+        error_log("Products/DeleteConfirm: SEO cleanup failed for product {$pID}: " . $e->getMessage());
+        // Do not block product deletion if cleanup fails.
       }
     } // end if
   }

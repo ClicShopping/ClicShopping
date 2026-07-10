@@ -77,7 +77,15 @@
     public function getForEntity(string $entityType, int $entityId, int $limit = 20): array
     {
       $stmt = $this->db->prepare(
-        'SELECT id, entity_type, entity_id, language_id, action, admin_id, admin_name, metadata, date_added
+        'SELECT id, 
+                entity_type, 
+                entity_id, 
+                language_id, 
+                action, 
+                admin_id, 
+                admin_name, 
+                metadata, 
+                date_added
            FROM :table_seo_product_action_log
           WHERE entity_type = :entity_type
             AND entity_id   = :entity_id

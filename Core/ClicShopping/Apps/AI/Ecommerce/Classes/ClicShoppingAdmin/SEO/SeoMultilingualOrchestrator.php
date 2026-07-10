@@ -323,16 +323,20 @@ class SeoMultilingualOrchestrator
 
   /**
    * Build the shop-front URL of an entity for a given language code.
-   * Currently only the product entity is supported; the path mirrors the
-   * URL convention already used by the AJAX endpoints.
+   * The path mirrors the URL convention already used by the AJAX endpoints
+   * (product description page vs. category listing page). Unknown entity
+   * types fall back to the shop homepage.
    */
   private function buildEntityUrl(int $entityId, string $languageCode): string
   {
     return match ($this->entityType) {
-      'product' => HTTP::getShopUrlDomain()
+      'product'  => HTTP::getShopUrlDomain()
         . 'index.php?Products&Description&products_id=' . $entityId
         . '&language=' . urlencode($languageCode),
-      default   => HTTP::getShopUrlDomain(),
+      'category' => HTTP::getShopUrlDomain()
+        . 'index.php?cPath=' . $entityId
+        . '&language=' . urlencode($languageCode),
+      default    => HTTP::getShopUrlDomain(),
     };
   }
 

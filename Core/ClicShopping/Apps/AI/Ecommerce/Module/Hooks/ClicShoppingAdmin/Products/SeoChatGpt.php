@@ -11,6 +11,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Products
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\ChatJsAdminSeo;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
@@ -31,6 +32,7 @@ class SeoChatGpt implements HooksInterface
     }
 
     $this->app = Registry::get('Ecommerce');
+    $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Products/seo_chat_gpt');
   }
 
   /**
@@ -51,11 +53,9 @@ class SeoChatGpt implements HooksInterface
       return false;
     }
 
-    if (!isset($_GET['pID'])) {
+    if (\defined('CLICSHOPPING_APP_ECOMMERCE_EC_STATUS') && CLICSHOPPING_APP_ECOMMERCE_EC_STATUS == 'True') {
       return false;
     }
-
-    $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Products/seo_chat_gpt');
 
     if (isset($_GET['pID'])) {
       $id = HTML::sanitize($_GET['pID']);
@@ -113,7 +113,7 @@ EOD;
                     <ul class="list-group-slider list-group-flush">
                       <li class="list-group-item-slider">
                         <label class="switch">
-                          ' . HTML::checkboxField('option_gpt_description', '1', true, 'class="success"') . '
+                          ' . HTML::checkboxField('option_gpt_description', '1', false, 'class="success"') . '
                           <span class="slider"></span>
                         </label>
                       </li>
@@ -133,7 +133,7 @@ EOD;
                     <ul class="list-group-slider list-group-flush">
                       <li class="list-group-item-slider">
                         <label class="switch">
-                          ' . HTML::checkboxField('option_gpt_summary_description', '1', true, 'class="success"') . '
+                          ' . HTML::checkboxField('option_gpt_summary_description', '1', false, 'class="success"') . '
                           <span class="slider"></span>
                         </label>
                       </li>
@@ -153,7 +153,7 @@ EOD;
                     <ul class="list-group-slider list-group-flush">
                       <li class="list-group-item-slider">
                         <label class="switch">
-                          ' . HTML::checkboxField('option_gpt_seo_title', '1', true, 'class="success"') . '
+                          ' . HTML::checkboxField('option_gpt_seo_title', '1', false, 'class="success"') . '
                           <span class="slider"></span>
                         </label>
                       </li>
@@ -173,7 +173,7 @@ EOD;
                     <ul class="list-group-slider list-group-flush">
                       <li class="list-group-item-slider">
                         <label class="switch">
-                          ' . HTML::checkboxField('option_gpt_seo_description', '1', true, 'class="success"') . '
+                          ' . HTML::checkboxField('option_gpt_seo_description', '1', false, 'class="success"') . '
                           <span class="slider"></span>
                         </label>
                       </li>
@@ -193,7 +193,7 @@ EOD;
                     <ul class="list-group-slider list-group-flush">
                       <li class="list-group-item-slider">
                         <label class="switch">
-                          ' . HTML::checkboxField('option_gpt_seo_keywords', '1', true, 'class="success"') . '
+                          ' . HTML::checkboxField('option_gpt_seo_keywords', '1', false, 'class="success"') . '
                           <span class="slider"></span>
                         </label>
                       </li>
@@ -213,7 +213,7 @@ EOD;
                     <ul class="list-group-slider list-group-flush">
                       <li class="list-group-item-slider">
                         <label class="switch">
-                          ' . HTML::checkboxField('option_gpt_seo_tags', '1', true, 'class="success"') . '
+                          ' . HTML::checkboxField('option_gpt_seo_tags', '1', false, 'class="success"') . '
                           <span class="slider"></span>
                         </label>
                       </li>

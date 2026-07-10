@@ -193,6 +193,7 @@ class Insert implements HooksInterface
             // Seo Title
             //-------------------
             $seo_product_title = '';
+
             if (isset($_POST['option_gpt_seo_title'])) {
               $question = $this->app->getDef('text_seo_page_title_question', $products_name_array);
 
@@ -225,6 +226,7 @@ class Insert implements HooksInterface
                 $this->app->db->save('products_description', $sql_data_array, $update_sql_data);
               }
             }
+
             //-------------------
             // Seo keywords
             //-------------------

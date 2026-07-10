@@ -26,9 +26,6 @@
         "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
         "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"
       },
-      "ClicShoppingAdmin/PageManager": {
-        "PageTab": "Module\\Hooks\\ClicShoppingAdmin\\PageManager\\PageTab"
-      },
       "ClicShoppingAdmin/Categories": {
         "PageTabContent": "Module\\Hooks\\ClicShoppingAdmin\\Categories\\PageTabContent"
       },

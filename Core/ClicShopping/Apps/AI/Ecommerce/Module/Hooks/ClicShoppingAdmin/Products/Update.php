@@ -8,14 +8,15 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Products;
 
-use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
-use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
-use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
+use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ\FaqEmbeddingGenerator;
+use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
 use ClicShopping\Apps\Marketing\SEO\Classes\ClicShoppingAdmin\SeoAdmin;
 
@@ -321,7 +322,7 @@ class Update implements HooksInterface
               if ($QfaqCheck->fetch() && !empty($QfaqCheck->value('faq_content'))) {
                 try {
                   // Use FaqEmbeddingGenerator to regenerate FAQ embeddings
-                  $faqGenerator = new \ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ\FaqEmbeddingGenerator();
+                  $faqGenerator = new FaqEmbeddingGenerator();
                   
                   // Delete existing FAQ embeddings for this product and language
                   $deleteResult = $faqGenerator->deleteEmbeddings($products_id, $item['language_id']);
@@ -342,7 +343,6 @@ class Update implements HooksInterface
                   }
                 } catch (\Exception $e) {
                   error_log("Products/Update: Exception regenerating FAQ embeddings for product {$products_id}, language {$item['language_id']}: " . $e->getMessage());
-                  // Do not block product update if FAQ embedding regeneration fails
                 }
               }
             }
