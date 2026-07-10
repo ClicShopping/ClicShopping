@@ -76,5 +76,5 @@ error_language_directory_not_writeable = Attention : le répertoire Languages n'
 text_help = <li>Dans l'hypothèse ou vous rajouter une langue, veuillez faire attention à ces éléments. Un non respect peut engendrer une erreur au niveau de l'application</li>
 <li>Une langue par défaut toujours active</li>
 <li>Ne pas supprimer la langue anglaise qui peut être utilisée dans le cas ou une définition de langue ne contient pas les fichiers de la langue</li>
-<li>Ne pas etre dans la langue qui sera supprimée</li>
+<li>Ne pas être dans la langue qui sera supprimée</li>
 <li>Supprimer l'ensemble des langues (Outils / Editeurs / langues)</li>

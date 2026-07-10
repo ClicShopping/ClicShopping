@@ -1,2 +1,2 @@
 cfg_item_logo_title = Logo Expédition
-cfg_item_logo_desc = Veuillez indiquer le logo avec son extension (.gif, .jpg, etc...) pour afficher dans la page d'expédition.<br /><strong>Note :</strong></font><br />Le logo doit etre inséré dans ce répertoire  sources/images/logos/shipping/
+cfg_item_logo_desc = Veuillez indiquer le logo avec son extension (.gif, .jpg, etc...) pour afficher dans la page d'expédition.<br /><strong>Note :</strong></font><br />Le logo doit être inséré dans ce répertoire  sources/images/logos/shipping/

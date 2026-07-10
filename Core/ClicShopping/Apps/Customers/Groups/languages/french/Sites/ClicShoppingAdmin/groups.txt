@@ -38,9 +38,9 @@ title_default_quantity = Quantité minimale de commande
 entry_text_quantity_default = Quantité minimale de commande de ce groupe
 entry_text_quantity_note = &nbsp;<span class="errorText">* Voir note</span>
 entry_groups_name = Nom du groupe
-entry_groups_name_error = Aucun enregistrement n'a pu etre effectué car vous n'aviez pas informer de nom pour le groupe
-entry_groups_name_error_zero = Attention % champs est/sont exigé(s) et doit etre différent de zéro
-entry_groups_categorie_error = Aucun enregistrement n'a plus etre effectué car vous n'avez pas sélectionné de catégorie
+entry_groups_name_error = Aucun enregistrement n'a pu être effectué car vous n'aviez pas informer de nom pour le groupe
+entry_groups_name_error_zero = Attention % champs est/sont exigé(s) et doit être différent de zéro
+entry_groups_categorie_error = Aucun enregistrement n'a plus être effectué car vous n'avez pas sélectionné de catégorie
 
 text_delete_intro = Etes vous certain de vouloir supprimer ce groupe ?
 text_info_heading_delete_customer = Suppression du groupe

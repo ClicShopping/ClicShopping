@@ -50,4 +50,4 @@ table_heading_status = Statut
 table_heading_action = Action
 table_heading_group = Group
 
-text_info_module = Tous les ordres de tri doivent etre unique.<br /> Tout groupe / module (s) sans etre actif ne s'afficheront pas.
+text_info_module = Tous les ordres de tri doivent être unique.<br /> Tout groupe / module (s) sans être actif ne s'afficheront pas.

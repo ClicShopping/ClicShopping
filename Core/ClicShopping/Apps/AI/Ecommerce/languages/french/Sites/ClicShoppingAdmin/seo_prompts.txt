@@ -186,7 +186,7 @@ Retour de validation (erreurs à corriger depuis la tentative précédente) : {{
 
 
 Exigences IMPORTANTES :
-- CRITIQUE : Un terme ou expression ne doivent pas etre répétés plus de 2 fois.
+- CRITIQUE : Un terme ou expression ne doivent pas être répétés plus de 2 fois.
 - Longueur : environ 1,0x à 1,5x le compteur de mots de la source (hors tableau HTML). Utilisez l'espace supplémentaire pour l'enrichissement lexical, PAS pour ajouter des faits.
 - Une source courte mérite quand même une couverture intégrale de chaque attribut qu'elle mentionne ; ne sautez pas un attribut pour rester court.
 - Le mot-clé principal apparaît 2-3 fois, placé naturellement. Pas de bourrage de variantes — mais utilisez librement les synonymes sémantiques (ils ne sont PAS "le même mot-clé").

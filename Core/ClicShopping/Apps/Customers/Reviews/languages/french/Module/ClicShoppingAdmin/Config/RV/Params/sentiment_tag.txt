@@ -1,5 +1,5 @@
 cfg_reviews_sentiment_tag_title = Souhaitez-vous enregister les tags de sentiments du client lors de la création d'un commentaire ?
-cfg_reviews_sentiment_tag_description = Enregistre des tags générés par l'IA générative en fonction du commentaire de client (GPT doit etre activé)<br />
+cfg_reviews_sentiment_tag_description = Enregistre des tags générés par l'IA générative en fonction du commentaire de client (GPT doit être activé)<br />
 N'oubliez pad d'activer les options dans la partie Templete / Reviews
 
 cfg_reviews_sentiment_tag_true = True

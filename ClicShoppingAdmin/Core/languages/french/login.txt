@@ -26,7 +26,7 @@ button_create_administrator = Créer un administrateur
 error_action_recorder = Erreur: Le nombre maximum de login a été atteint. Veuillez recommencer dans {{module_action_recorder_admin_login_minutes}}  minutes. Un email a été envoyé à l'administrateur avec l'ensemble de vos informations de provenance (géolocalisation). Vous avez droit encore à une tentative avant d'être définitivement bloqué
 
 report_email_subject = Connexion intempestive ClicShopping
-report_access_login = Quelqu'un essaye de se connecter a l'administration de votre boutique de vente en ligne. Il s'agit peut etre d'une erreur de connexion. Veuillez vous connecter dans votre administration pour avoir des informations complementaires dans la section Outil / Surveillance des actions.
+report_access_login = Quelqu'un essaye de se connecter a l'administration de votre boutique de vente en ligne. Il s'agit peut être d'une erreur de connexion. Veuillez vous connecter dans votre administration pour avoir des informations complementaires dans la section Outil / Surveillance des actions.
 Ci-dessous les elements initiaux a notre connaissance. S'il y a plusieurs tentatives, l'adresse sera bloquee pendant un periode de temps. <br />
 Plus d'infos peuvent trouvé ici (copier l'IP : {{IP}})  https://ipinfo.io/
 report_sender_ip_address = Adresse IP : {{IP}}

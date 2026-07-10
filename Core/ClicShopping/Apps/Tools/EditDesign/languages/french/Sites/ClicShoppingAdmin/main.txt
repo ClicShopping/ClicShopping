@@ -54,7 +54,7 @@ dans le cas ou vous souhaiteriez réaliser des opérations de modification des f
 - Veuillez noter que le configuration de votre serveur aura une influence sur les autorisations que vous aurez droit de faire ou pas. Nous vous invitons à consulter dans <a href="http://clicshopping.org/marketplace/blog. " target="_blank" rel="noopener">notre guide</a>
 
 text_help_design = Vous devez avoir accès en écriture au fichier pour pouvoir modifier les fichiers. Veuillez noter que les erreurs auront une répercution direct sur l'affichage du résultat.
-Les erreurs pourront etre vue dans le fichier de logs des erreurs
+Les erreurs pourront être vue dans le fichier de logs des erreurs
 Si vous ajoutez un mot / syntaxe, veuillez aussi utiliser l'outil de gestion des langues pour ajouter votre nouveau code et sa traduction.
 
 success_file_saved_sucessfully =  Mise à jour effectuée

@@ -81,7 +81,7 @@ text_install_files = <strong>Veuillez lire ces informations avant de continuer.<
 - Si le module ne s'installe pas, veuillez le télécharger et l'installer vous même via ftp.<br />
     Pour les modules Officiels : https://github.com/ClicShoppingOfficialModulesV3<br />
     Pour les modules communautaires : https://github.com/organizations/ClicShoppingV3Community<br />
-- le concept est en mode beta et doit etre amélioré dans le temps. (votre aide sera la bienvenue)
+- le concept est en mode beta et doit être amélioré dans le temps. (votre aide sera la bienvenue)
 
 table_heading_module = Nom
 table_heading_description = Description

@@ -23,7 +23,7 @@ define('TEXT_INTRO_WELCOME', '  <p>ClicShoppingAI a été con&ccedil;ue spécial
   <p>ClicShoppingAI est en version B2B, B2C, B2B & B2C et soit en vente ouverte ou privée.</p>');
 
 define('TEXT_SERVER_CARACTERISTICS', 'Caractéristiques du serveur');
-define('TEXT_DIRECTORIES', 'Permissions des répertoires devant etre mis en 777 ou 755 en fonction de serveurs');
+define('TEXT_DIRECTORIES', 'Permissions des répertoires devant être mis en 777 ou 755 en fonction de serveurs');
 define('TEXT_PHP_SETTINGS', '1. Veuillez vérifier les caractéristiques de votre version php');
 define('TEXT_PHP_EXTENSION', '2. Veuillez vérifier que les extansions ci-dessous sont bien installées.');
 
