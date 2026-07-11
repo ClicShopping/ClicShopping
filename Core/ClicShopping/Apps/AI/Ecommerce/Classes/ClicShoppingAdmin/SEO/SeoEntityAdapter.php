@@ -85,6 +85,22 @@ class SeoEntityAdapter
   }
 
   /**
+   * Returns the SEO-embedding table for this entity, derived from its authoritative
+   * description table (e.g. 'categories_description' → 'categories_seo_embedding',
+   * 'products_description' → 'products_seo_embedding').
+   *
+   * This is the single source of truth for the embedding table name: it avoids the
+   * naïve `$entityType . 's_seo_embedding'` pluralisation, which produced the invalid
+   * 'categorys_seo_embedding' for the category entity (English plural: category → categories).
+   *
+   * @return string The embedding table name, or '' for an unsupported entity.
+   */
+  public function getEmbeddingTable(): string
+  {
+    return str_replace('_description', '_seo_embedding', $this->config['table'] ?? '');
+  }
+
+  /**
    * Retrieves the current data for an entity in a specific language.
    */
   public function getCurrentData(int $entityId, int $languageId): ?array

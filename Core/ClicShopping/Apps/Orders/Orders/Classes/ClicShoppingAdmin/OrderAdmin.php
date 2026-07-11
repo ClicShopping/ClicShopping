@@ -11,8 +11,25 @@ namespace ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 
-class OrderAdmin extends \ClicShopping\Apps\Orders\Orders\Classes\Shop\Order
+/**
+ * Admin-side order loader / value object.
+ *
+ * Historically extended {@see \ClicShopping\Apps\Orders\Orders\Classes\Shop\Order} purely
+ * to reuse its public array shape, which also dragged in the whole shop lifecycle
+ * (cart/Insert/process…) that has no meaning on the admin side. It now stands alone and
+ * declares its own public state; consumers only read these arrays (info/totals/products/
+ * customer/delivery/billing) and call query()/removeOrder()/getOrdersStatus()/
+ * getOrderPdfInvoiceLogo().
+ */
+class OrderAdmin
 {
+  public array $info;
+  public array $totals;
+  public array $products;
+  public array $customer;
+  public array $delivery;
+  public array $billing;
+
   public function __construct($order_id)
   {
     $this->info = [];
@@ -216,7 +233,7 @@ class OrderAdmin extends \ClicShopping\Apps\Orders\Orders\Classes\Shop\Order
     $CLICSHOPPING_Db = Registry::get('Db');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    if (isset($restock)) {
+    if ($restock) {
       $Qproducts = $CLICSHOPPING_Db->get('orders_products', [
         'products_id',
         'products_quantity'

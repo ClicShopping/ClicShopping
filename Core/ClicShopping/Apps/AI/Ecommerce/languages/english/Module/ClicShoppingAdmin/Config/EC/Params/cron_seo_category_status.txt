@@ -1,0 +1,4 @@
+cfg_ecommerce_cron_seo_category_status_title = Category SEO cron default status
+cfg_ecommerce_cron_seo_category_status_description = Please select the category SEO cron status (Phase 1 audit + Phase 2 multilingual optimization, no FAQ)
+cfg_ecommerce_cron_seo_category_status_true = True
+cfg_ecommerce_cron_seo_category_status_false = False

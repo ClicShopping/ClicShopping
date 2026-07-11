@@ -100,14 +100,20 @@ class Process implements HooksInterface
     // AI/Ecommerce daily cron concern, exactly like Currency/Gdpr do. Each
     // concern self-gates on its own clic_cron code + master switch + rate limit,
     // so they run independently whether triggered by the full sweep
-    // (?cronjob&runall) or a single admin "Run" (?cronId=…).
+    
     $this->runCockpitAiCron();
 
     // SEO daily optimization (Phase 1 audit / 2 multilingual / 3 optional FAQ)
     // — delegated to its shared runner, self-gated on productSeoOptimization +
     // CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS. Same source of truth as the
-    // former standalone SeoOptimization hook, now reached through Process.
     (new SeoCronRunner())->run();
+
+    // SEO daily optimization for CATEGORIES — the same shared runner in category
+    // mode (multilingual, no FAQ), self-gated on categorySeoOptimization +
+    // CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_CATEGORY_STATUS, with its own
+    // rate-limit buckets so it never blocks the product SEO cron.
+    
+    (new SeoCronRunner('category'))->run();
   }
 
   /**

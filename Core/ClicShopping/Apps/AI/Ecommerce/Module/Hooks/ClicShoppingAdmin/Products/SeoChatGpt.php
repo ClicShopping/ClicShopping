@@ -8,13 +8,13 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Products;
 
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
+use ClicShopping\OM\HTML;
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\ChatJsAdminSeo;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTML;
 use ClicShopping\OM\Interfaces\HooksInterface;
-use ClicShopping\OM\Registry;
 
 class SeoChatGpt implements HooksInterface
 {
@@ -50,10 +50,6 @@ class SeoChatGpt implements HooksInterface
     $CLICSHOPPING_ProductsAdmin = Registry::get('ProductsAdmin');
 
     if (Gpt::checkGptStatus() === false) {
-      return false;
-    }
-
-    if (\defined('CLICSHOPPING_APP_ECOMMERCE_EC_STATUS') && CLICSHOPPING_APP_ECOMMERCE_EC_STATUS == 'True') {
       return false;
     }
 
@@ -99,6 +95,10 @@ class SeoChatGpt implements HooksInterface
 
 EOD;
     } else {
+      if (\defined('CLICSHOPPING_APP_ECOMMERCE_EC_STATUS') && CLICSHOPPING_APP_ECOMMERCE_EC_STATUS == 'True') {
+        return false;
+      }
+
       $tab_title = $this->app->getDef('tab_gpt_options');
       $title = $this->app->getDef('text_gpt_options');
 

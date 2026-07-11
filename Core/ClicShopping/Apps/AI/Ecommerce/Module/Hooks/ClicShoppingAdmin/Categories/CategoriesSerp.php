@@ -77,7 +77,7 @@
 
       $categoryId = (int) $_GET['cID'];
 
-      // The 3-button workflow no longer lets the admin pick a language: every phase processes every enabled language in one pass through
+      // The 3-button workflow processes every enabled language in one pass (no per-language picker).
       $languageId = (int)$this->lang->getId();
 
       $linkUrl = HTTP::getShopUrlDomain() . 'index.php?cPath=' . $categoryId;
@@ -126,8 +126,8 @@
         $reportHtml = '';
       }
 
-      // -- Source-level thin-content evaluation + no-description guard -- The guard keys off the ENGLISH description (language_id = 1, the install
-      // convention), not the admin's current UI language: 
+      // -- Source-level thin-content evaluation + no-description guard --
+      // Keys off the ENGLISH description (language_id = 1, the SEO source of truth), not the admin's UI language.
       $sourceLanguageId = 1;
       $sourceHasDescription = false;
       try {

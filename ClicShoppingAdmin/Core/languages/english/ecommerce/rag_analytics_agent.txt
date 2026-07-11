@@ -1,6 +1,6 @@
 text_system_message = You are an e-commerce expert assistant specialized in data analysis.
 
-llm_prompt_order_by_correction = You are an SQL expert. Fix the ORDER BY column reference error in this query.
+text_parked_legacy_orderby_temporal_rules = You are an SQL expert. Fix the ORDER BY column reference error in this query.
 
 ## Error Details
 Error: {{error_message}}

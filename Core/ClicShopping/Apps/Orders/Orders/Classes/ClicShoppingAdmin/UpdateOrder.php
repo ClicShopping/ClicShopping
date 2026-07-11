@@ -11,6 +11,8 @@ namespace ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin;
 use ClicShopping\OM\Hooks;
 use ClicShopping\OM\Registry;
 
+use ClicShopping\Sites\Shop\Tax;
+
 class UpdateOrder
 {
   // -------------------------------------------------------------------------
@@ -247,7 +249,8 @@ class UpdateOrder
 
     // ── 1. Read the order's currency ───────────────
     $Qorder = $db->prepare('select currency,
-                                   currency_value
+                                   currency_value,
+                                   customers_group_id
                               from :table_orders
                              where orders_id = :orders_id
                           ');
@@ -302,14 +305,24 @@ class UpdateOrder
       ];
     }
 
-    // ── 4. Determine pricing mode from the stored order (no session needed) ──
-    //      We infer it from whether any ot_tax / TX row existed before:
-    //      if the subtotal row existed and was > grand_total − shipping, prices
-    //      are TTC. In practice we read the DISPLAY_PRICE_WITH_TAX constant
-    //      when available; otherwise we assume HT (safest for B2B installs).
-    $prices_include_tax = (defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX === 'true');
+    // ── 4. Customer group of the order — drives the same tax/total branching as cart() ──
+    $customers_group_id = $Qorder->valueInt('customers_group_id');
+    $group_tax = false;
 
-    // ── 5. Read all product lines with their tax rates ────────────────────────
+    if ($customers_group_id != 0) {
+      $QgroupTax = $db->prepare('select group_order_taxe,
+                                        group_tax
+                                   from :table_customers_groups
+                                  where customers_group_id = :customers_group_id
+                                ');
+      $QgroupTax->bindInt(':customers_group_id', $customers_group_id);
+      $QgroupTax->execute();
+      $group_tax = $QgroupTax->fetch();
+    }
+
+    // ── 5. Read the product lines and mirror Order::cart()'s per-line computation ──
+    //      The subtotal is the sum of TTC "shown" line totals (addTax × qty), exactly
+    //      like the shop — so admin-recomputed totals equal the checkout totals.
     $Qlines = $db->prepare('select final_price,
                                    products_quantity,
                                    products_tax
@@ -319,30 +332,31 @@ class UpdateOrder
     $Qlines->bindInt(':orders_id', $order_id);
     $Qlines->execute();
 
-    $subtotal   = 0.0;   // Σ final_price × qty  (HT when prices_include_tax=false)
-    $total_tax = 0;
+    $subtotal  = 0.0;
+    $total_tax = 0.0;
 
     while ($Qlines->fetch()) {
-      $unit_price = $Qlines->valueDecimal('final_price'); // HT
+      $unit_price = $Qlines->valueDecimal('final_price'); // stored HT
       $qty        = $Qlines->valueInt('products_quantity');
       $tax_rate   = $Qlines->valueDecimal('products_tax');
-      $line_total = $unit_price * $qty;
-      $subtotal  += $line_total;
 
-      if ($tax_rate > 0) {
-        if ($prices_include_tax) {
-          $line_tax = $line_total * ($tax_rate / 100.0);
-          $total_tax += $line_tax;
-        }
+      $shown_price = Tax::addTax($unit_price, $tax_rate) * $qty; // TTC line total, as cart()
+      $subtotal += $shown_price;
+
+      if (((defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && $customers_group_id == 0)
+        || ($customers_group_id != 0 && ($group_tax['group_tax'] ?? '') == 'true')) {
+        // TTC display: back-calculate the embedded tax (same expression as cart()).
+        $total_tax += $shown_price - ($shown_price / (float)(($tax_rate < 10) ? '1.0' . str_replace('.', '', (string)$tax_rate) : '1.' . str_replace('.', '', (string)$tax_rate)));
       } else {
-        $total_tax += $line_tax;
+        // HT display: tax added on top.
+        $total_tax += ($tax_rate / 100) * $shown_price;
+      }
     }
-  }
 
-    // Grand total:
-    //   • TTC mode: subtotal already includes tax → subtotal + shipping
-    //   • HT  mode: subtotal + tax + shipping
-    if (!$prices_include_tax) {
+    // ── 6. Grand total — same branching as cart() (TTC / B2B group tax: tax already in subtotal) ──
+    if (((defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && $customers_group_id == 0)
+      || ($customers_group_id != 0 && ($group_tax['group_tax'] ?? '') == 'true')
+      || ($customers_group_id != 0 && ($group_tax['group_order_taxe'] ?? 0) == 1)) {
       $grand_total = $subtotal + $shipping_value;
     } else {
       $grand_total = $subtotal + $total_tax + $shipping_value;
@@ -378,7 +392,6 @@ class UpdateOrder
                           ");
     $Qutax->bindValue(':value', $total_tax);
     $Qutax->bindValue(':text',  $fmt($total_tax));
-    $Qusub->bindValue(':class', 'TX');
     $Qutax->bindInt(':orders_id', $order_id);
     $Qutax->execute();
 

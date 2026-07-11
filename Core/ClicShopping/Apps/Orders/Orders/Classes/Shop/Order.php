@@ -44,6 +44,11 @@ class Order
   private mixed $db;
   private mixed $lang;
   protected $mail;
+  private ?OrderNotifier $notifier = null;
+  private ?PaymentModuleResolver $paymentResolver = null;
+  private ?OrderStockManager $stockManager = null;
+  private ?OrderWriter $orderWriter = null;
+  private ?OrderCartBuilder $cartBuilder = null;
 
   public function __construct( int|null $order_id = null)
   {
@@ -378,132 +383,10 @@ class Order
       }
     }
 
-    if (is_array($_SESSION['sendto']) && !empty($_SESSION['sendto'])) {
-      $shipping_address = [
-        'entry_firstname' => $_SESSION['sendto']['firstname'],
-        'entry_lastname' => $_SESSION['sendto']['lastname'],
-        'entry_company' => $_SESSION['sendto']['company'],
-        'entry_street_address' => $_SESSION['sendto']['street_address'],
-        'entry_suburb' => $_SESSION['sendto']['suburb'],
-        'entry_postcode' => $_SESSION['sendto']['postcode'],
-        'entry_city' => $_SESSION['sendto']['city'],
-        'entry_zone_id' => $_SESSION['sendto']['zone_id'],
-        'zone_name' => $_SESSION['sendto']['zone_name'],
-        'entry_country_id' => $_SESSION['sendto']['country_id'],
-        'countries_id' => $_SESSION['sendto']['country_id'],
-        'countries_name' => $_SESSION['sendto']['country_name'],
-        'countries_iso_code_2' => $_SESSION['sendto']['country_iso_code_2'],
-        'countries_iso_code_3' => $_SESSION['sendto']['country_iso_code_3'],
-        'address_format_id' => $_SESSION['sendto']['address_format_id'],
-        'entry_state' => $_SESSION['sendto']['zone_name']
-      ];
-    } elseif (is_numeric($_SESSION['sendto'])) {
-      $Qaddress = $this->db->prepare('select ab.entry_firstname,
-                                               ab.entry_lastname,
-                                               ab.entry_company,
-                                               ab.entry_street_address,
-                                               ab.entry_suburb,
-                                               ab.entry_postcode,
-                                               ab.entry_city,
-                                               ab.entry_zone_id,
-                                               ab.entry_country_id,
-                                               ab.entry_state,      
-                                               z.zone_name,
-                                               c.countries_id,
-                                               c.countries_name,
-                                               c.countries_iso_code_2,
-                                               c.countries_iso_code_3,
-                                               c.address_format_id
-                                       from :table_address_book ab left join :table_zones z on (ab.entry_zone_id = z.zone_id)
-                                                                   left join :table_countries c on (ab.entry_country_id = c.countries_id)
-                                       where ab.customers_id = :customers_id
-                                       and ab.address_book_id = :address_book_id
-                                    ');
-      $Qaddress->bindInt(':customers_id', $CLICSHOPPING_Customer->getID());
-      $Qaddress->bindInt(':address_book_id', (int)$_SESSION['sendto']);
-      $Qaddress->execute();
-
-      $shipping_address = $Qaddress->toArray();
-    } else {
-      $shipping_address = [
-        'entry_firstname' => null,
-        'entry_lastname' => null,
-        'entry_company' => null,
-        'entry_street_address' => null,
-        'entry_suburb' => null,
-        'entry_postcode' => null,
-        'entry_city' => null,
-        'entry_zone_id' => null,
-        'zone_name' => null,
-        'entry_country_id' => null,
-        'countries_id' => null,
-        'countries_name' => null,
-        'countries_iso_code_2' => null,
-        'countries_iso_code_3' => null,
-        'address_format_id' => 0,
-        'entry_state' => null
-      ];
-    }
-
-    if (isset($_SESSION['billto']) && is_array($_SESSION['billto']) && !empty($_SESSION['billto'])) {
-      $billing_address = [
-        'entry_firstname' => $_SESSION['billto']['firstname'],
-        'entry_lastname' => $_SESSION['billto']['lastname'],
-        'entry_company' => $_SESSION['billto']['company'],
-        'entry_street_address' => $_SESSION['billto']['street_address'],
-        'entry_suburb' => $_SESSION['billto']['suburb'],
-        'entry_postcode' => $_SESSION['billto']['postcode'],
-        'entry_city' => $_SESSION['billto']['city'],
-        'entry_zone_id' => $_SESSION['billto']['zone_id'],
-        'zone_name' => $_SESSION['billto']['zone_name'],
-        'entry_country_id' => $_SESSION['billto']['country_id'],
-        'countries_id' => $_SESSION['billto']['country_id'],
-        'countries_name' => $_SESSION['billto']['country_name'],
-        'countries_iso_code_2' => $_SESSION['billto']['country_iso_code_2'],
-        'countries_iso_code_3' => $_SESSION['billto']['country_iso_code_3'],
-        'address_format_id' => $_SESSION['billto']['address_format_id'],
-        'entry_state' => $_SESSION['billto']['zone_name']
-      ];
-    } else {
-      $Qaddress = $this->db->prepare('select ab.entry_firstname,
-                                                ab.entry_lastname,
-                                                ab.entry_company,
-                                                ab.entry_street_address,
-                                                ab.entry_suburb,
-                                                ab.entry_postcode,
-                                                ab.entry_city,
-                                                ab.entry_zone_id,
-                                                z.zone_name,
-                                                ab.entry_country_id,
-                                                c.countries_id,
-                                                c.countries_name,
-                                                c.countries_iso_code_2,
-                                                c.countries_iso_code_3,
-                                                c.address_format_id,
-                                                ab.entry_state
-                                         from :table_address_book ab left join :table_zones z on (ab.entry_zone_id = z.zone_id)
-                                                                     left join :table_countries c on (ab.entry_country_id = c.countries_id)
-                                         where ab.customers_id = :customers_id
-                                         and ab.address_book_id = :address_book_id
-                                        ');
-      $Qaddress->bindInt(':customers_id', $CLICSHOPPING_Customer->getID());
-      $Qaddress->bindInt(':address_book_id', $CLICSHOPPING_Customer->getDefaultAddressID());
-      $Qaddress->execute();
-
-      $billing_address = $Qaddress->toArray();
-    }
-
-    if ($this->content_type == 'virtual') {
-      $tax_address = [
-        'entry_country_id' => $billing_address['entry_country_id'],
-        'entry_zone_id' => $billing_address['entry_zone_id']
-      ];
-    } else {
-      $tax_address = [
-        'entry_country_id' => $shipping_address['entry_country_id'],
-        'entry_zone_id' => $shipping_address['entry_zone_id']
-      ];
-    }
+    $resolvedAddresses = $this->cartBuilder()->resolveAddresses($CLICSHOPPING_Customer, $this->content_type);
+    $shipping_address = $resolvedAddresses['shipping_address'];
+    $billing_address = $resolvedAddresses['billing_address'];
+    $tax_address = $resolvedAddresses['tax_address'];
 
     if ((isset($_SESSION['payment']) && is_array($_SESSION['payment'])) || (isset($_SESSION['shipping']) && is_array($_SESSION['shipping']))) {
       $this->info = [
@@ -532,27 +415,8 @@ class Order
       ];
     }
 
-    if (isset($_SESSION['payment'])) {
-      if (str_contains($_SESSION['payment'], '\\')) {
-        $code = 'Payment_' . str_replace('\\', '_', $_SESSION['payment']);
-
-        if (Registry::exists($code)) {
-          $CLICSHOPPING_PM = Registry::get($code);
-        }
-      }
-
-      if (isset($CLICSHOPPING_PM)) {
-        if (isset($CLICSHOPPING_PM->public_title)) {
-          $this->info['payment_method'] = $CLICSHOPPING_PM->public_title;
-        } else {
-          $this->info['payment_method'] = $CLICSHOPPING_PM->title;
-        }
-
-        if (isset($CLICSHOPPING_PM->order_status) && is_numeric($CLICSHOPPING_PM->order_status) && ($CLICSHOPPING_PM->order_status > 0)) {
-          $this->info['order_status'] = $CLICSHOPPING_PM->order_status;
-        }
-      }
-    }
+    $paymentModule = $this->paymentResolver()->resolve($_SESSION['payment'] ?? null);
+    $this->info = $this->paymentResolver()->applyToInfo($paymentModule, $this->info);
 
 // prise en compte de la compagnie en fonction du mode B2B ou non
     if (!empty($customer_address['customers_company'])) {
@@ -828,31 +692,10 @@ class Order
   public function Insert()
   {
     $CLICSHOPPING_Customer = Registry::get('Customer');
-    $CLICSHOPPING_Prod = Registry::get('Prod');
-    $CLICSHOPPING_ProductsAttributes = Registry::get('ProductsAttributes');
     $CLICSHOPPING_OrderTotal = Registry::get('OrderTotal');
 
-    if (isset($_SESSION['payment'])) {
-      if (str_contains($_SESSION['payment'], '\\')) {
-        $code = 'Payment_' . str_replace('\\', '_', $_SESSION['payment']);
-
-        if (Registry::exists($code)) {
-          $CLICSHOPPING_PM = Registry::get($code);
-        }
-      }
-
-      if (isset($CLICSHOPPING_PM)) {
-        if (isset($CLICSHOPPING_PM->public_title)) {
-          $this->info['payment_method'] = $CLICSHOPPING_PM->public_title;
-        } else {
-          $this->info['payment_method'] = $CLICSHOPPING_PM->title;
-        }
-
-        if (isset($CLICSHOPPING_PM->order_status) && is_numeric($CLICSHOPPING_PM->order_status) && ($CLICSHOPPING_PM->order_status > 0)) {
-          $this->info['order_status'] = $CLICSHOPPING_PM->order_status;
-        }
-      }
-    }
+    $paymentModule = $this->paymentResolver()->resolve($_SESSION['payment'] ?? null);
+    $this->info = $this->paymentResolver()->applyToInfo($paymentModule, $this->info);
 
 // Manage the atos module and the  Atos situation report in database.
 // Do not modify
@@ -863,16 +706,16 @@ class Order
     }
 
     $firstname = Hash::displayDecryptedDataText($this->customer['firstname']);
-    $lastame = Hash::displayDecryptedDataText($this->customer['lastname']);
-    $customers_name =  Hash::encryptDatatext($firstname . ' ' . $lastame);
+    $lastname = Hash::displayDecryptedDataText($this->customer['lastname']);
+    $customers_name =  Hash::encryptDatatext($firstname . ' ' . $lastname);
 
     $delivery_firstname = Hash::displayDecryptedDataText($this->delivery['firstname']);
-    $delivery_lastame = Hash::displayDecryptedDataText($this->delivery['lastname']);
-    $delivery_name =  Hash::encryptDatatext($delivery_firstname . ' ' . $delivery_lastame);
+    $delivery_lastname = Hash::displayDecryptedDataText($this->delivery['lastname']);
+    $delivery_name =  Hash::encryptDatatext($delivery_firstname . ' ' . $delivery_lastname);
 
     $billing_firstname = Hash::displayDecryptedDataText($this->billing['firstname']);
-    $billing_lastame = Hash::displayDecryptedDataText($this->billing['lastname']);
-    $billing_name =  Hash::encryptDatatext($billing_firstname . ' ' . $billing_lastame);
+    $billing_lastname = Hash::displayDecryptedDataText($this->billing['lastname']);
+    $billing_name =  Hash::encryptDatatext($billing_firstname . ' ' . $billing_lastname);
 
     $sql_data_array = [
       'customers_id' => (int)$CLICSHOPPING_Customer->getID(),
@@ -926,96 +769,13 @@ class Order
       $sql_data_array['customers_tva_intracom'] = $this->customer['tva_intracom'];
     }
 
-    $this->db->save('orders', $sql_data_array);
+    $writer = $this->orderWriter();
 
-    $this->insertID = $this->db->lastInsertId();
+    $this->insertID = $writer->insertOrder($sql_data_array);
 
-// orders total
-    $order_totals = $CLICSHOPPING_OrderTotal->process();
+    $writer->insertOrderTotals($this->insertID, $CLICSHOPPING_OrderTotal->process());
 
-    for ($i = 0, $n = count($order_totals); $i < $n; $i++) {
-      $sql_data_array = [
-        'orders_id' => (int)$this->insertID,
-        'title' => $order_totals[$i]['title'],
-        'text' => $order_totals[$i]['text'],
-        'value' => (float)$order_totals[$i]['value'],
-        'class' => $order_totals[$i]['code'],
-        'sort_order' => (int)$order_totals[$i]['sort_order']
-      ];
-
-      $this->db->save('orders_total', $sql_data_array);
-    }
-
-// initialized for the email confirmation
-    for ($i = 0, $n = count($this->products); $i < $n; $i++) {
-// search the good model
-      if ($CLICSHOPPING_Customer->getCustomersGroupID() != 0) {
-        $QproductsModuleCustomersGroup = $this->db->prepare('select products_model_group
-                                                               from :table_products_groups
-                                                               where products_id = :products_id
-                                                               and customers_group_id = :customers_group_id
-                                                              ');
-        $QproductsModuleCustomersGroup->bindInt(':products_id', $CLICSHOPPING_Prod::getProductID($this->products[$i]['id']));
-        $QproductsModuleCustomersGroup->bindInt(':customers_group_id', $CLICSHOPPING_Customer->getCustomersGroupID());
-        $QproductsModuleCustomersGroup->execute();
-
-        $products_model = $QproductsModuleCustomersGroup->value('products_model_group');
-
-        if (empty($products_model)) {
-          $products_model = $this->products[$i]['model'];
-        } else {
-          $products_model = 'no model';
-        }
-      } else {
-        $products_model = $this->products[$i]['model'];
-      }
-
-// save data
-      $sql_data_array = [
-        'orders_id' => (int)$this->insertID,
-        'products_id' => (int)$CLICSHOPPING_Prod::getProductID($this->products[$i]['id']),
-        'products_model' => $products_model,
-        'products_name' => $this->products[$i]['name'],
-        'products_price' => (float)$this->products[$i]['price'],
-        'final_price' => (float)$this->products[$i]['final_price'],
-        'products_tax' => (float)$this->products[$i]['tax'],
-        'products_quantity' => (int)$this->products[$i]['qty']
-      ];
-
-      $this->db->save('orders_products', $sql_data_array);
-
-      $order_products_id = $this->db->lastInsertId();
-
-      if (isset($this->products[$i]['attributes'])) {
-        for ($j = 0, $n2 = count($this->products[$i]['attributes']); $j < $n2; $j++) {
-          $Qattributes = $CLICSHOPPING_ProductsAttributes->getAttributesDownloaded($this->products[$i]['id'], $this->products[$i]['attributes'][$j]['option_id'], $this->products[$i]['attributes'][$j]['value_id'], $this->lang->getId());
-
-          $sql_data_array = [
-            'orders_id' => (int)$this->insertID,
-            'orders_products_id' => (int)$order_products_id,
-            'products_options' => $Qattributes->value('products_options_name'),
-            'products_options_values' => $Qattributes->value('products_options_values_name'),
-            'options_values_price' => (float)$Qattributes->value('options_values_price'),
-            'price_prefix' => $Qattributes->value('price_prefix'),
-            'products_attributes_reference' => $Qattributes->value('products_attributes_reference')
-          ];
-
-          $this->db->save('orders_products_attributes', $sql_data_array);
-
-          if ((\defined('DOWNLOAD_ENABLED') && DOWNLOAD_ENABLED == 'true') && $Qattributes->hasValue('products_attributes_filename') && !is_null($Qattributes->value('products_attributes_filename'))) {
-            $sql_data_array = [
-              'orders_id' => (int)$this->insertID,
-              'orders_products_id' => (int)$order_products_id,
-              'orders_products_filename' => $Qattributes->value('products_attributes_filename'),
-              'download_maxdays' => (int)$Qattributes->value('products_attributes_maxdays'),
-              'download_count' => (int)$Qattributes->value('products_attributes_maxcount')
-            ];
-
-            $this->db->save('orders_products_download', $sql_data_array);
-          }
-        }
-      }
-    } // end for
+    $writer->insertOrderProducts($this->insertID, $this->products, (int)$CLICSHOPPING_Customer->getCustomersGroupID(), $this->lang->getId());
 
     $this->saveGdpr($this->insertID, $CLICSHOPPING_Customer->getID());
 
@@ -1082,116 +842,12 @@ class Order
    */
   public function process(int $last_order_id): void
   {
-    $CLICSHOPPING_Customer = Registry::get('Customer');
-    $CLICSHOPPING_Prod = Registry::get('Prod');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
     $CLICSHOPPING_Hooks->call('Orders', 'PreActionProcess', ['order_id' => $last_order_id]);
     $CLICSHOPPING_Hooks->call('Orders', 'PreActionAIProcess', ['order_id' => $last_order_id]);
-    
-    $Qproducts = $this->db->prepare('select products_id,
-                                            products_quantity
-                                      from :table_orders_products
-                                      where orders_id = :orders_id
-                                     ');
-    $Qproducts->bindInt(':orders_id', $last_order_id);
-    $Qproducts->execute();
 
-    while ($Qproducts->fetch()) {
-// Stock Update
-      if (\defined('STOCK_LIMITED') && STOCK_LIMITED == 'true') {
-        if (\defined('DOWNLOAD_ENABLED') && DOWNLOAD_ENABLED == 'true') {
-          $stock_query_sql = 'select p.products_quantity,
-                                      pad.products_attributes_filename
-                                from :table_products p
-                                left join :table_products_attributes pa  on p.products_id = pa.products_id
-                                left join :table_products_attributes_download pad on pa.products_attributes_id = pad.products_attributes_id
-                                where p.products_id = :products_id';
-
-          $products_attributes = $this->products['attributes'] ?? '';
-
-          if (is_array($products_attributes)) {
-            $stock_query_sql .= ' and pa.options_id = :options_id
-                                   and pa.options_values_id = :options_values_id
-                                ';
-          }
-
-          $Qstock = $this->db->prepare($stock_query_sql);
-
-          $Qstock->bindInt(':products_id', $CLICSHOPPING_Prod::getProductID($Qproducts->valueInt('products_id')));
-
-          if (is_array($products_attributes)) {
-            $Qstock->bindInt(':options_id', $products_attributes['option_id']);
-            $Qstock->bindInt(':options_values_id', $products_attributes['value_id']);
-          }
-
-          $Qstock->execute();
-        } else {
-          $Qstock = $this->db->prepare('select products_quantity,
-                                                products_quantity_alert
-                                        from :table_products
-                                        where products_id = :products_id
-                                        ');
-
-          $Qstock->bindInt(':products_id', $CLICSHOPPING_Prod::getProductID($Qproducts->valueInt('products_id')));
-          $Qstock->execute();
-        }
-
-        if ($Qstock->fetch() !== false) {
-// do not decrement quantities if products_attributes_filename exists
-          if ((\defined('DOWNLOAD_ENABLED') && DOWNLOAD_ENABLED != 'true') || !is_null($Qstock->value('products_attributes_filename'))) {
-// select the good qty in B2B ti decrease the stock. See shopping_cart top display out stock or not
-            if ($CLICSHOPPING_Customer->getCustomersGroupID() != 0) {
-              $QproductsQuantityCustomersGroup = $this->db->prepare('select products_quantity_fixed_group
-                                                                        from :table_products_groups
-                                                                        where products_id = :products_id
-                                                                        and customers_group_id =  :customers_group_id
-                                                                       ');
-              $QproductsQuantityCustomersGroup->bindInt(':products_id', $CLICSHOPPING_Prod::getProductID($Qproducts->valueInt('products_id')));
-              $QproductsQuantityCustomersGroup->bindInt(':customers_group_id', (int)$CLICSHOPPING_Customer->getCustomersGroupID());
-              $QproductsQuantityCustomersGroup->execute();
-
-              $products_quantity_customers_group = $QproductsQuantityCustomersGroup->fetch();
-
-// do the exact qty in function the customer group and product
-              $products_quantity_customers_group = $products_quantity_customers_group['products_quantity_fixed_group'];
-            } else {
-              $products_quantity_customers_group = 1;
-            }
-
-            if (\defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') {
-              $stock_left = $Qstock->valueInt('products_quantity') - ($Qproducts->valueInt('products_quantity') * $products_quantity_customers_group);
-            } else {
-              $stock_left = $Qstock->valueInt('products_quantity');
-            }
-          } else {
-            $stock_left = $Qstock->valueInt('products_quantity');
-          }
-
-          if ($stock_left != $Qstock->valueInt('products_quantity')) {
-            $this->db->save('products', ['products_quantity' => $stock_left], ['products_id' => $CLICSHOPPING_Prod::getProductID($Qproducts->valueInt('products_id'))]);
-          }
-
-          if (($stock_left < 1) && (\defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false')) {
-            $this->db->save('products', ['products_status' => 0], ['products_id' => $CLICSHOPPING_Prod::getProductID($Qproducts->valueInt('products_id'))]);
-          }
-
-// alert an email if the product stock is < stock reorder level
-// Alert by mail if a product is 0 or < 0
-          $this->sendEmailAlertStockWarning($last_order_id);
-// Email alert when a product is exhausted
-          $this->sendEmailAlertProductsSoldOut($last_order_id);
-        }
-      }
-
-// Update products_ordered (for bestsellers list)
-      $Qupdate = $this->db->prepare('update :table_products
-                                       set products_ordered = products_ordered + :products_ordered
-                                       where products_id = :products_id');
-      $Qupdate->bindInt(':products_ordered', $Qproducts->valueInt('products_quantity'));
-      $Qupdate->bindInt(':products_id', $Qproducts->valueInt('products_id'));
-      $Qupdate->execute();
-    } // end while
+    $this->stockManager()->applyForOrder($last_order_id, $this->getNotifier());
 
     $this->adminOrdersStatusHistory($last_order_id);
     $this->sendCustomerEmail($last_order_id);
@@ -1226,341 +882,123 @@ class Order
   }
 
   /**
-   * Sends an email to the customer containing order details, including the order summary,
-   * product information, delivery and billing addresses, payment method details,
-   * and any additional comments or footer text. Optionally, extra order-related emails
-   * can also be sent to specified recipients.
+   * Lazily builds and returns the notifier responsible for the order e-mails
+   * (customer confirmation + store-owner stock alerts). Kept lazy because the
+   * Order constructor already runs cart()/query() and most Order lifecycles
+   * never send an e-mail.
+   *
+   * @return OrderNotifier
+   */
+  private function getNotifier(): OrderNotifier
+  {
+    if ($this->notifier === null) {
+      $this->notifier = new OrderNotifier($this);
+    }
+
+    return $this->notifier;
+  }
+
+  /**
+   * Lazily builds and returns the stateless payment-module resolver shared by
+   * cart() and Insert() to resolve the active payment module from the session
+   * and apply its title / forced order status onto the order info.
+   *
+   * @return PaymentModuleResolver
+   */
+  private function paymentResolver(): PaymentModuleResolver
+  {
+    if ($this->paymentResolver === null) {
+      $this->paymentResolver = new PaymentModuleResolver();
+    }
+
+    return $this->paymentResolver;
+  }
+
+  /**
+   * Lazily builds and returns the stock manager applying the post-checkout stock
+   * side effects (decrement, sold-out disabling, alerts, best-sellers counter).
+   *
+   * @return OrderStockManager
+   */
+  private function stockManager(): OrderStockManager
+  {
+    if ($this->stockManager === null) {
+      $this->stockManager = new OrderStockManager();
+    }
+
+    return $this->stockManager;
+  }
+
+  /**
+   * Lazily builds and returns the writer persisting the order rows
+   * (orders / orders_total / orders_products + attributes + download).
+   *
+   * @return OrderWriter
+   */
+  private function orderWriter(): OrderWriter
+  {
+    if ($this->orderWriter === null) {
+      $this->orderWriter = new OrderWriter();
+    }
+
+    return $this->orderWriter;
+  }
+
+  /**
+   * Lazily builds and returns the cart builder resolving the shipping/billing/tax
+   * addresses from the session and address book during cart().
+   *
+   * @return OrderCartBuilder
+   */
+  private function cartBuilder(): OrderCartBuilder
+  {
+    if ($this->cartBuilder === null) {
+      $this->cartBuilder = new OrderCartBuilder();
+    }
+
+    return $this->cartBuilder;
+  }
+
+  /**
+   * Sends the customer order-confirmation e-mail.
+   *
+   * Delegates to {@see OrderNotifier::sendCustomerEmail()}; kept as a public
+   * method for backward compatibility with the historical Order API.
    *
    * @param int $order_id The ID of the order to send the email for.
    * @return void
    */
   public function sendCustomerEmail(int $order_id): void
   {
-    $CLICSHOPPING_Customer = Registry::get('Customer');
-    $CLICSHOPPING_Currencies = Registry::get('Currencies');
-
-    if (str_contains($_SESSION['payment'], '\\')) {
-      $code = 'Payment_' . str_replace('\\', '_', $_SESSION['payment']);
-
-      if (Registry::exists($code)) {
-        $CLICSHOPPING_PM = Registry::get($code);
-      }
-    }
-
-    $Qorder = $this->db->prepare('select *
-                                     from :table_orders
-                                     where orders_id = :orders_id
-                                     limit 1
-                                     ');
-    $Qorder->bindInt(':orders_id', $order_id);
-    $Qorder->execute();
-
-    if ($Qorder->fetch() !== false) {
-      $Qproducts = $this->db->prepare('select orders_products_id,
-                                                 products_id,
-                                                 products_model,
-                                                 products_name,
-                                                 products_price,
-                                                 products_tax,
-                                                 products_quantity
-                                         from :table_orders_products
-                                         where orders_id = :orders_id
-                                         order by orders_products_id
-                                         ');
-      $Qproducts->bindInt(':orders_id', $order_id);
-      $Qproducts->execute();
-
-      $message_order = stripslashes(CLICSHOPPING::getDef('entry_text_order_number')) . ' ' . $order_id . "\n" . stripslashes(CLICSHOPPING::getDef('email_text_invoice_url'));
-
-      $email_order = $message_order . ' ' . CLICSHOPPING::link(null, 'Account&HistoryInfo&order_id=' . $order_id) . "\n" . CLICSHOPPING::getDef('email_text_date_ordered') . ' ' . DateTime::strftime(CLICSHOPPING::getDef('date_format_long')) . "\n\n";
-
-      if ($this->info['comments']) {
-        $email_order .= HTML::outputProtected($this->info['comments']) . "\n\n";
-      }
-
-      $message_order = stripslashes(CLICSHOPPING::getDef('email_text_products'));
-
-      $email_order .= html_entity_decode($message_order) . "\n" . CLICSHOPPING::getDef('email_separator') . "\n";
-
-      while ($Qproducts->fetch()) {
-        if ($CLICSHOPPING_Customer->getCustomersGroupID() != 0) {
-          $QproductsModuleCustomersGroup = $this->db->prepare('select products_model_group
-                                                                  from :table_products_groups
-                                                                  where products_id = :products_id
-                                                                  and customers_group_id =  :customers_group_id
-                                                                ');
-
-          $QproductsModuleCustomersGroup->bindInt(':products_id', $Qproducts->valueInt('products_id'));
-          $QproductsModuleCustomersGroup->bindInt(':customers_group_id', $CLICSHOPPING_Customer->getCustomersGroupID());
-          $QproductsModuleCustomersGroup->execute();
-
-          $products_model = $QproductsModuleCustomersGroup->value('products_model_group');
-
-          if (empty($products_model)) {
-            $products_model = $Qproducts->value('products_model');
-          }
-
-        } else {
-          $products_model = $Qproducts->value('products_model');
-        }
-
-        $email_order .= $Qproducts->valueInt('products_quantity') . ' x ' . $Qproducts->value('products_name') . ' (' . $products_model . ') = ' . html_entity_decode($CLICSHOPPING_Currencies->displayPrice($Qproducts->value('products_price'), $Qproducts->value('products_tax'), $Qproducts->valueInt('products_quantity'))) . "\n";
-      }
-
-      $email_order .= CLICSHOPPING::getDef('email_separator') . "\n";
-
-      $Qtotals = $this->db->prepare('select title,
-                                               text
-                                       from :table_orders_total
-                                       where orders_id = :orders_id
-                                       order by sort_order
-                                       ');
-      $Qtotals->bindInt(':orders_id', $order_id);
-      $Qtotals->execute();
-
-      while ($Qtotals->fetch()) {
-        $email_order .= strip_tags($Qtotals->value('title') . ' ' . $Qtotals->value('text'));
-        $email_order = str_replace('&nbsp;', ' ', $email_order) . "\n";
-      }
-
-      if ($this->content_type != 'virtual') {
-        $message_order = stripslashes(CLICSHOPPING::getDef('email_text_delivery_address'));
-        $email_order .= "\n" . $message_order . "\n" . CLICSHOPPING::getDef('email_separator') . "\n" . AddressBook::addressLabel($CLICSHOPPING_Customer->getID(), $_SESSION['sendto'], 0, '', "\n") . "\n";
-      }
-
-      $message_order = stripslashes(CLICSHOPPING::getDef('email_text_billing_address'));
-      $email_order .= "\n" . $message_order . "\n" . CLICSHOPPING::getDef('email_separator') . "\n" . AddressBook::addressLabel($CLICSHOPPING_Customer->getID(), $_SESSION['billto'], 0, '', "\n") . "\n\n";
-
-      if (isset($CLICSHOPPING_PM)) {
-        $message_order = stripslashes(CLICSHOPPING::getDef('email_text_payment_method'));
-        $email_order .= $message_order . "\n" . CLICSHOPPING::getDef('email_separator') . "\n";
-
-        $email_order .= $this->info['payment_method'] . "\n\n";
-
-        if (isset($CLICSHOPPING_PM->email_footer)) {
-          $email_order .= $CLICSHOPPING_PM->email_footer . "\n\n";
-        }
-      }
-
-      if (isset($_SESSION['payment'])) {
-        if (str_contains($_SESSION['payment'], '\\')) {
-          $code = 'Payment_' . str_replace('\\', '_', $_SESSION['payment']);
-
-          if (Registry::exists($code)) {
-            $CLICSHOPPING_PM = Registry::get($code);
-          }
-        }
-
-        if (isset($CLICSHOPPING_PM)) {
-          $message_order = stripslashes(CLICSHOPPING::getDef('email_text_payment_method'));
-          $email_order .= $message_order . "\n" . CLICSHOPPING::getDef('email_separator') . "\n";
-
-          $payment_class = $CLICSHOPPING_PM;
-          $email_order .= $this->info['payment_method'] . "\n\n";
-
-          if (isset($payment_class->email_footer)) {
-            $email_order .= $payment_class->email_footer . "\n";
-          }
-        }
-      } // end $GLOBALS[$_SESSION['payment']]
-
-      $email_order .= TemplateEmail::getTemplateEmailSignature() . "\n\n";
-      $email_order .= TemplateEmail::getTemplateEmailTextFooter() . "\n";
-
-      $to_email_address = Hash::displayDecryptedDataText($this->customer['email_address']);
-      $to_name = Hash::displayDecryptedDataText($this->customer['firstname']) . ' ' . Hash::displayDecryptedDataText($this->customer['lastname']);
-      $email_subject = CLICSHOPPING::getDef('email_text_subject', ['store_name' => STORE_NAME]);
-
-      $to_addr = $to_email_address;
-      $from_name = \defined('STORE_NAME') ? STORE_NAME : '';
-      $from_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-      $to_name = $to_name;
-      $subject = $email_subject;
-
-      $this->mail->addHtml($email_order);
-      $this->mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
-
-// SEND_EXTRA_ORDER_EMAILS_TO does'nt work like this, test<test@test.com>, just with test@test.com
-      if (!empty(\defined('SEND_EXTRA_ORDER_EMAILS_TO') ? SEND_EXTRA_ORDER_EMAILS_TO : '')) {
-        $email_text_subject = stripslashes(CLICSHOPPING::getDef('email_text_subject', ['store_name' => STORE_NAME]));
-        $email_text_subject = html_entity_decode($email_text_subject);
-
-        if (!empty(SEND_EXTRA_ORDER_EMAILS_TO)) {
-          $email[] = TemplateEmail::getExtractEmailAddress(SEND_EXTRA_ORDER_EMAILS_TO);
-
-          if (is_array($email)) {
-            foreach ($email as $key => $value) {
-              $to_addr = $value[$key];
-              $from_name = \defined('STORE_NAME') ? STORE_NAME : '';
-              $from_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-              $to_name = null;
-              $subject = $email_text_subject;
-
-              $this->mail->addHtml($email_order);
-              $this->mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
-            }
-          } else {
-            $to_addr = $email;
-            $from_name = \defined('STORE_NAME') ? STORE_NAME : '';
-            $from_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-            $to_name = null;
-            $subject = $email_text_subject;
-
-            $this->mail->addHtml($email_order);
-            $this->mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
-          }
-        }
-      }
-    }
+    $this->getNotifier()->sendCustomerEmail($order_id);
   }
 
   /**
-   * Sends an email alert to notify store administrators when products are sold out.
-   * The alert is triggered based on stock levels and configurable stock checking settings.
+   * Sends the store-owner "product sold out" stock alert.
+   *
+   * Delegates to {@see OrderNotifier::sendProductsSoldOutAlert()}; kept as a
+   * public method for backward compatibility with the historical Order API.
    *
    * @param int $insert_id The ID of the order associated with the product stock updates.
    * @return void
    */
   public function sendEmailAlertProductsSoldOut(int $insert_id): void
   {
-    $CLICSHOPPING_Prod = Registry::get('Prod');
-
-    if (\defined('STOCK_ALERT_PRODUCT_SOLD_OUT') && STOCK_ALERT_PRODUCT_SOLD_OUT == 'true') {
-      $Qproducts = $this->db->prepare('select orders_products_id,
-                                                 products_id
-                                                 products_model,
-                                                 products_name,
-                                                 products_quantity
-                                         from :table_orders_products
-                                         where orders_id = :orders_id
-                                         order by orders_products_id
-                                         ');
-      $Qproducts->bindInt(':orders_id', $insert_id);
-      $Qproducts->execute();
-
-      if ($Qproducts->fetch() !== false) {
-        while ($Qproducts->fetch()) {
-          $Qstock = $this->db->prepare('select products_quantity_alert,
-                                                  products_quantity
-                                            from :table_products
-                                            where products_id = :products_id
-                                          ');
-
-          $Qstock->bindInt(':products_id', $Qproducts->valueInt('products_id'));
-          $Qstock->execute();
-
-          $stock_left = $Qstock->valueInt('products_quantity');
-
-          if (($stock_left < 1) && (\defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') && (\defined('STOCK_CHECK') && STOCK_CHECK == 'true')) {
-            $email_text_subject_stock = stripslashes(CLICSHOPPING::getDef('email_text_subject_stock', ['store_name' => defined('STORE_NAME') ? STORE_NAME : '']));
-            $email_product_sold_out_stock = stripslashes(CLICSHOPPING::getDef('email_text_stock'));
-            $email_product_sold_out_stock .= "\n" . CLICSHOPPING::getDef('email_text_date_alert') . ' ' . date(CLICSHOPPING::getDef('date_format_long')) . "\n" .
-              CLICSHOPPING::getDef('email_text_model') . '  ' . $Qproducts->value('products_model') . "\n" .
-              CLICSHOPPING::getDef('email_text_products_name') . ' ' . $Qproducts->value('products_name') . "\n" .
-              CLICSHOPPING::getDef('email_text_id_product') . ' ' . $CLICSHOPPING_Prod::getProductID($Qproducts->value('products_id')) . "\n";
-
-            $to_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-            $from_name = \defined('STORE_NAME') ? STORE_NAME : '';
-            $from_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-            $to_name = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-            $subject = $email_text_subject_stock;
-
-            $this->mail->addHtml($email_product_sold_out_stock);
-            $this->mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
-          }
-        } // end stock alert
-      }  // end while
-    }
+    $this->getNotifier()->sendProductsSoldOutAlert($insert_id);
   }
 
   /**
-   * Sends an email alert when the stock quantity of a product reaches a specified reorder level
-   * or falls below a defined threshold. It checks product stock levels and generates alerts
-   * to notify the store owner about low stock or critical stock conditions.
+   * Sends the store-owner "reorder level / low stock" alert.
+   *
+   * Delegates to {@see OrderNotifier::sendStockWarningAlert()}; kept as a
+   * public method for backward compatibility with the historical Order API.
    *
    * @param int $insert_id The ID of the order to evaluate for stock-level alerts.
    * @return void
    */
   public function sendEmailAlertStockWarning(int $insert_id): void
   {
-    $CLICSHOPPING_Prod = Registry::get('Prod');
-
-    if (\defined('STOCK_ALERT_PRODUCT_REORDER_LEVEL') && STOCK_ALERT_PRODUCT_REORDER_LEVEL == 'true') {
-      if ((\defined('STOCK_ALLOW_CHECKOUT') && STOCK_ALLOW_CHECKOUT == 'false') && (\defined('STOCK_CHECK') && STOCK_CHECK == 'true')) {
-        $Qproducts = $this->db->prepare('select orders_products_id,
-                                                   products_id
-                                                   products_model,
-                                                   products_name,
-                                                   products_quantity
-                                           from :table_orders_products
-                                           where orders_id = :orders_id
-                                           order by orders_products_id
-                                           ');
-        $Qproducts->bindInt(':orders_id', $insert_id);
-        $Qproducts->execute();
-
-        if ($Qproducts->fetch() !== false) {
-          while ($Qproducts->fetch()) {
-            $Qstock = $this->db->prepare('select products_quantity_alert,
-                                                    products_quantity
-                                            from :table_products
-                                            where products_id = :products_id
-                                          ');
-
-            $Qstock->bindInt(':products_id', $CLICSHOPPING_Prod::getProductID($Qproducts->valueInt('products_id')));
-            $Qstock->execute();
-
-            $stock_products_quantity_alert = $Qstock->valueInt('products_quantity_alert');
-
-            $warning_stock = (int)STOCK_REORDER_LEVEL;
-            $current_stock = $Qstock->valueInt('products_quantity');
-
-// alert email if stock product alert < warning stock
-            if (($stock_products_quantity_alert <= $warning_stock) && ($stock_products_quantity_alert != '0')) {
-              $email_text_subject_stock = stripslashes(CLICSHOPPING::getDef('email_text_suject_stock', ['store_name' => STORE_NAME]));
-
-              $reorder_stock_email = stripslashes(CLICSHOPPING::getDef('email_reorder_level_text_alert_stock'));
-              $reorder_stock_email .= "\n" . CLICSHOPPING::getDef('email_text_date_alert') . ' ' . date(CLICSHOPPING::getDef('date_format_long')) . "\n" .
-                CLICSHOPPING::getDef('email_text_model') . ' ' . $Qproducts->value('products_model') . "\n" .
-                CLICSHOPPING::getDef('email_text_products_name') . ' ' . $Qproducts->value('products_name') . "\n" .
-                CLICSHOPPING::getDef('email_text_id_product') . ' ' . $CLICSHOPPING_Prod::getProductID($Qproducts->value('products_id')) . "\n" .
-                '<strong>' . CLICSHOPPING::getDef('email_text_product_url') . ' </strong>' . HTTP::getShopUrlDomain() . 'index.php?Products&Description&products_id=' . $Qproducts->value('products_id') . "\n" .
-                '<strong>' . CLICSHOPPING::getDef('email_text_product_stock') . ' ' . $stock_products_quantity_alert . '</strong>';
-
-              $to_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-              $from_name = \defined('STORE_OWNER') ? STORE_OWNER : '';
-              $from_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-              $to_name = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-              $subject = $email_text_subject_stock;
-
-              $this->mail->addHtml($reorder_stock_email);
-              $this->mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
-            }
-
-            if ($current_stock <= $warning_stock) {
-              $email_text_subject_stock = stripslashes(CLICSHOPPING::getDef('email_text_suject_stock', ['store_name' => STORE_NAME]));
-
-              $reorder_stock_email = stripslashes(CLICSHOPPING::getDef('email_reorder_level_text_stock'));
-              $reorder_stock_email .= "\n" . CLICSHOPPING::getDef('email_text_date_alert') . ' ' . date(CLICSHOPPING::getDef('date_format_long')) . "\n" .
-                CLICSHOPPING::getDef('email_text_model') . ' ' . $Qproducts->value('products_model') . "\n" .
-                CLICSHOPPING::getDef('email_text_products_name') . ' ' . $Qproducts->value('products_name') . "\n" .
-                CLICSHOPPING::getDef('email_text_id_product') . ' ' . $CLICSHOPPING_Prod::getProductID($Qproducts->value('products_id')) . "\n" .
-                '<strong>' . CLICSHOPPING::getDef('email_text_product_url') . ' </strong>' . HTTP::getShopUrlDomain() . 'index.php?Products&Description&products_id=' . $Qproducts->value('products_id') . "\n" .
-                '<strong>' . CLICSHOPPING::getDef('email_text_product_stock') . ' ' . $stock_products_quantity_alert . '</strong>';
-
-              $to_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-              $from_name = \defined('STORE_OWNER') ? STORE_OWNER : '';
-              $from_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-              $to_name = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-              $subject = $email_text_subject_stock;
-
-              $this->mail->addHtml($reorder_stock_email);
-              $this->mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
-            }
-          }
-        }
-      }
-    }
+    $this->getNotifier()->sendStockWarningAlert($insert_id);
   }
 
   /**

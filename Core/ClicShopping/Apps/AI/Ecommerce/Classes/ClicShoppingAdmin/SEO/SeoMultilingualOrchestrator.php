@@ -76,8 +76,9 @@ class SeoMultilingualOrchestrator
       defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True'
     );
     // Embedding history table differs per entity type so the display hook
-    // (ProductsSerp / CategoriesSerp) can still rely on its own table.
-    $this->embeddingHistory = new SeoEmbedding($this->entityType . 's_seo_embedding');
+    // (ProductsSerp / CategoriesSerp) can still rely on its own table. Resolved from the
+    // adapter (authoritative) to avoid naïve pluralisation (category → categorys, wrong).
+    $this->embeddingHistory = new SeoEmbedding($this->adapter->getEmbeddingTable());
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
   }
 

@@ -118,7 +118,7 @@ class SeoFaqPipeline
     $this->grounder      = new AnswerGroundingVerifier($this->debug);
     // Ground each Q/A pair by its similarity to the single best-matching source field (most robust separation for short product answers)
     $this->grounder->setScoringMode(AnswerGroundingVerifier::SCORING_MAX_SIMILARITY);
-    $this->embeddingHistory = new SeoEmbedding($this->entityType . 's_seo_embedding');
+    $this->embeddingHistory = new SeoEmbedding($this->adapter->getEmbeddingTable());
     $this->db = Registry::get('Db');
   }
 

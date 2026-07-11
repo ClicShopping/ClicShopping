@@ -80,6 +80,7 @@ class Insert implements HooksInterface
     if (!Gpt::checkGptStatus()) {
       return false;
     }
+
     $embedding_enabled = \defined('CLICSHOPPING_APP_CHATGPT_RA_OPENAI_EMBEDDING') && CLICSHOPPING_APP_CHATGPT_RA_OPENAI_EMBEDDING == 'True' && \defined( 'CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA_STATUS == 'True';
     
     if (isset($_GET['Insert'], $_GET['Products'])) {
@@ -94,7 +95,7 @@ class Insert implements HooksInterface
       
       $translate_language = $this->app->getDef('text_seo_page_translate_language');
 
-      if (!empty($products_id) || $products_id !== null) {
+      if (!empty($products_id)) {
         $Qproducts = $this->app->db->prepare('select p.products_id,
                                                      p.products_model,
                                                      p.manufacturers_id,

@@ -99,7 +99,8 @@ if ($CLICSHOPPING_MessageStack->exists('SubTotal')) {
   } else {
     ?>
     <div class="col-md-12 mainTitle">
-      <strong><?php echo $CLICSHOPPING_SubTotal->getConfigModuleInfo($current_module, 'title'); ?></strong></div>
+      <strong><?php echo $CLICSHOPPING_SubTotal->getConfigModuleInfo($current_module, 'title'); ?></strong>
+    </div>
     <div class="adminformTitle">
       <div class="row">
         <div class="mt-1"></div>

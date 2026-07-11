@@ -458,7 +458,7 @@ class ST implements PaymentInterface
       // another customer's order under concurrent checkouts.
       $customers_id = (int)(Registry::get('Customer')->getId());
 
-      $Qorder = $CLICSHOPPING_Order->db->prepare('select orders_id
+      $Qorder = $this->app->db->prepare('select orders_id
                                                     from :table_orders
                                                     where customers_id = :customers_id
                                                     order by orders_id desc

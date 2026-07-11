@@ -8,12 +8,13 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\Categories;
 
+use ClicShopping\OM\Registry;
+use ClicShopping\OM\HTML;
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\ChatJsAdminSeo;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\OM\HTML;
 use ClicShopping\OM\Interfaces\HooksInterface;
-use ClicShopping\OM\Registry;
+
 
 class SeoChatGpt implements HooksInterface
 {
@@ -31,6 +32,7 @@ class SeoChatGpt implements HooksInterface
     }
 
     $this->app = Registry::get('Ecommerce');
+    $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Categories/seo_chat_gpt');
   }
 
   /**
@@ -46,12 +48,6 @@ class SeoChatGpt implements HooksInterface
     if (Gpt::checkGptStatus() === false) {
       return false;
     }
-
-    if (!isset($_GET['cID'])) {
-      return false;
-    }
-
-    $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Categories/seo_chat_gpt');
 
     if (isset($_GET['cID'])) {
       $id = HTML::sanitize($_GET['cID']);
@@ -88,6 +84,10 @@ class SeoChatGpt implements HooksInterface
       <!-- categories seo tag -->
       EOD;
     } else {
+      if (\defined('CLICSHOPPING_APP_ECOMMERCE_EC_STATUS') && CLICSHOPPING_APP_ECOMMERCE_EC_STATUS == 'True') {
+        return false;
+      }
+
       $tab_title = $this->app->getDef('tab_gpt_options');
       $title = $this->app->getDef('text_gpt_options');
 

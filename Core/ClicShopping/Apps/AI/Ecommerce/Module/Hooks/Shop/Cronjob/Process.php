@@ -108,6 +108,13 @@ class Process implements HooksInterface
     // CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS. Same source of truth as the
     // former standalone SeoOptimization hook, now reached through Process.
     (new SeoCronRunner())->run();
+
+    // SEO daily optimization for CATEGORIES — the same shared runner in category
+    // mode (multilingual, no FAQ), self-gated on categorySeoOptimization +
+    // CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_CATEGORY_STATUS, with its own
+    // rate-limit buckets so it never blocks the product SEO cron.
+    
+    (new SeoCronRunner('category'))->run();
   }
 
   /**

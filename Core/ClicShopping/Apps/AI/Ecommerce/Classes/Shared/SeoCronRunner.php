@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shared;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Common\CronLogger;
@@ -77,19 +78,54 @@ use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
  */
 class SeoCronRunner
 {
-  private const CRON_CODE = 'productSeoOptimization';
+  private string $entityType;
+  private string $cronCode;
+  private string $statusConst;
+  private string $embeddingTable;
+  private string $rlLock;
+  private string $rlCooldown;
+  private string $rlLlm;
 
   private bool  $debug;
   private int   $batchSize;
   private bool  $faqEnabled;
-
-  public function __construct()
+  private mixed $apps;
+  /**
+   * @param string $entityType 'product' (default — unchanged behaviour) or
+   *        'category'. Categories reuse the same 1/2 phases minus Phase 3
+   *        (there is no category FAQ pipeline) and self-gate on their own cron
+   *        code, master switch and rate-limit buckets so the two crons never
+   *        block each other.
+   */
+  public function __construct(string $entityType = 'product')
   {
     // Ensure the Ecommerce app is registered so the downstream SEO classes
     // (SeoEmbedding, orchestrator, …) can resolve it from the Registry.
     if (!Registry::exists('Ecommerce')) {
       Registry::set('Ecommerce', new EcommerceApp());
     }
+
+    $this->apps = Registry::get('Ecommerce');
+    $this->apps->loadDefinitions('Sites/ClicShoppingAdmin/seo_cron');
+
+    $this->entityType = $entityType === 'category' ? 'category' : 'product';
+
+    if ($this->entityType === 'category') {
+      $this->cronCode       = 'categorySeoOptimization';
+      $this->statusConst    = 'CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_CATEGORY_STATUS';
+      $this->embeddingTable = 'categories_seo_embedding';
+      $this->rlLock         = 'seo_cron_category_lock';
+      $this->rlCooldown     = 'seo_cron_category';
+      $this->rlLlm          = 'seo_cron_category_llm_calls';
+    } else {
+      $this->cronCode       = 'productSeoOptimization';
+      $this->statusConst    = 'CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS';
+      $this->embeddingTable = 'products_seo_embedding';
+      $this->rlLock         = 'seo_cron_lock';
+      $this->rlCooldown     = 'seo_cron_product';
+      $this->rlLlm          = 'seo_cron_llm_calls';
+    }
+
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG')
       && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
 
@@ -97,8 +133,8 @@ class SeoCronRunner
       ? (int)CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_BATCH_SIZE
       : 10;
 
-    $this->faqEnabled = !defined('CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_FAQ_STATUS')
-      || CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_FAQ_STATUS === 'True';
+    // FAQ (Phase 3) exists only for products; categories have no FAQ pipeline.
+    $this->faqEnabled = $this->entityType === 'product' && (!defined('CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_FAQ_STATUS') || CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_FAQ_STATUS === 'True');
   }
 
   /**
@@ -109,8 +145,7 @@ class SeoCronRunner
   public function run(): bool|null
   {
     // Master switch — even if scheduler triggers the cron, opt out cleanly.
-    if (defined('CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS')
-        && CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_STATUS !== 'True') {
+    if (defined($this->statusConst) && constant($this->statusConst) !== 'True') {
       return false;
     }
 
@@ -132,7 +167,7 @@ class SeoCronRunner
 
   private function cronJob(): void
   {
-    $cronCode      = self::CRON_CODE;
+    $cronCode      = $this->cronCode;
     $cronIdUpdate  = Cronjob::getCronCode($cronCode);
 
     if (isset($_GET['cronId'])) {
@@ -158,14 +193,14 @@ class SeoCronRunner
    */
   private function runOptimization(): void
   {
-    $logger = new CronLogger('seo', self::CRON_CODE);
+    $logger = new CronLogger($this->entityType === 'category' ? 'seo_category' : 'seo', $this->cronCode);
     $logger->start();
 
-    // ── Global lock: refuse a second SEO cron run within the hour ──────
-    $globalLock = new RateLimit('seo_cron_lock', 1, 3600);
+    //Global lock: refuse a second SEO cron run within the hour
+    $globalLock = new RateLimit($this->rlLock, 1, 3600);
     if (!$globalLock->checkLimit('global')) {
       $logger->finish('skipped', [
-        'error_messages' => 'Global lock active — another SEO cron run is already in progress within the hour.',
+        'error_messages' => $this->apps->getDef('text_seo_cron_msg_global_lock'),
       ]);
 
       if ($this->debug) {
@@ -174,24 +209,24 @@ class SeoCronRunner
       return;
     }
 
-    // ── Target selection ──────────────────────────────────────────────
+    // ── Target selection
     try {
-      $strategy = new SeoCronStrategy();
+      $strategy = new SeoCronStrategy($this->entityType);
       $targets  = $strategy->fetchTargets($this->batchSize);
     } catch (\Throwable $e) {
-      $logger->finish('failed', ['error_messages' => 'Target selection failed: ' . $e->getMessage()]);
+      $logger->finish('failed', ['error_messages' => $this->apps->getDef('text_seo_cron_msg_target_failed', ['error' => $e->getMessage()])]);
       return;
     }
 
     if (empty($targets)) {
       $logger->finish('completed', [
         'targets_found' => 0,
-        'metadata'      => ['note' => 'no eligible product found'],
+        'metadata'      => ['note' => $this->apps->getDef('text_seo_cron_msg_no_eligible', ['entity' => $this->apps->getDef('text_seo_cron_entity_' . $this->entityType)])],
       ]);
       return;
     }
 
-    // ── Active languages ──────────────────────────────────────────────
+    // ── Active languages
     $languages = [];
     try {
       foreach (Registry::get('Language')->getAll() as $code => $row) {
@@ -200,23 +235,21 @@ class SeoCronRunner
         }
       }
     } catch (\Throwable $e) {
-      $logger->finish('failed', ['error_messages' => 'Language enumeration failed: ' . $e->getMessage()]);
+      $logger->finish('failed', ['error_messages' => $this->apps->getDef('text_seo_cron_msg_lang_failed', ['error' => $e->getMessage()])]);
       return;
     }
 
     if (empty($languages)) {
-      $logger->finish('failed', ['error_messages' => 'No active language found.']);
+      $logger->finish('failed', ['error_messages' => $this->apps->getDef('text_seo_cron_msg_no_language')]);
       return;
     }
 
-    // ── Per-product cooldown + LLM daily quota ────────────────────────
-    $perProductLimit = new RateLimit('seo_cron_product', 1, 86400);
-    $llmDailyLimit   = defined('CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_LLM_DAILY_LIMIT')
-      ? (int)CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_LLM_DAILY_LIMIT
-      : 500;
-    $llmQuota = new RateLimit('seo_cron_llm_calls', $llmDailyLimit, 86400);
+    // Per-entity cooldown + LLM daily quota (buckets namespaced per entity type so the product and category crons never share a lock)
+    $perProductLimit = new RateLimit($this->rlCooldown, 1, 86400);
+    $llmDailyLimit   = defined('CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_LLM_DAILY_LIMIT') ? (int)CLICSHOPPING_APP_ECOMMERCE_EC_CRON_SEO_LLM_DAILY_LIMIT : 500;
+    $llmQuota = new RateLimit($this->rlLlm, $llmDailyLimit, 86400);
 
-    $baseUrl = \ClicShopping\OM\HTTP::getShopUrlDomain();
+    $baseUrl = HTTP::getShopUrlDomain();
     $counters = [
       'targets_found'     => count($targets),
       'targets_processed' => 0,
@@ -238,7 +271,7 @@ class SeoCronRunner
         if ($this->debug) {
           error_log('[SeoOptimization] LLM daily quota reached, stopping.');
         }
-        $errors[] = 'LLM daily quota reached, remaining targets skipped.';
+        $errors[] = $this->apps->getDef('text_seo_cron_msg_llm_quota');
         break;
       }
 
@@ -287,7 +320,7 @@ class SeoCronRunner
 
         $productOk = $phase1Done || $phase2Done;
       } catch (\Throwable $e) {
-        $errors[] = sprintf('product %d: %s', $productId, $e->getMessage());
+        $errors[] = $this->apps->getDef('text_seo_cron_err_generic', ['entity' => $this->entityType, 'id' => $productId, 'error' => $e->getMessage()]);
       }
 
       if ($productOk) {
@@ -309,7 +342,7 @@ class SeoCronRunner
       $status = 'partial';
     }
 
-    $adminNote = self::buildAdminNote($failedProducts);
+    $adminNote = $this->buildAdminNote($failedProducts);
     if ($adminNote !== '') {
       // Surface the note at the top of the free-text channel too (that column
       // is the one the cron log page already renders).
@@ -358,27 +391,29 @@ class SeoCronRunner
    *
    * @param array<int, array{id:int, reason:string}> $failedProducts
    */
-  public static function buildAdminNote(array $failedProducts): string
+  public function buildAdminNote(array $failedProducts): string
   {
     if (empty($failedProducts)) {
       return '';
     }
+
+    $reasonDefault = $this->apps->getDef('text_seo_cron_reason_default');
 
     $parts = [];
     foreach ($failedProducts as $fp) {
       $id     = (int)($fp['id'] ?? 0);
       $reason = trim((string)($fp['reason'] ?? ''));
       if ($reason === '') {
-        $reason = 'optimization not applied';
+        $reason = $reasonDefault;
       }
-      $parts[] = sprintf('#%d — %s', $id, $reason);
+      $parts[] = $this->apps->getDef('text_seo_cron_note_item', ['id' => $id, 'reason' => $reason]);
     }
 
-    return sprintf(
-      '%d product(s) not auto-accepted (manual review required): %s',
-      count($failedProducts),
-      implode('; ', $parts)
-    );
+    return $this->apps->getDef('text_seo_cron_admin_note', [
+      'count'  => count($failedProducts),
+      'entity' => $this->apps->getDef('text_seo_cron_entity_' . $this->entityType),
+      'list'   => implode('; ', $parts),
+    ]);
   }
 
   /**
@@ -390,11 +425,11 @@ class SeoCronRunner
   private function autoAcceptProduct(int $productId): bool
   {
     try {
-      (new SeoSerpReportRepository())->markLatestStatus('product', $productId, 'accepted');
+      (new SeoSerpReportRepository())->markLatestStatus($this->entityType, $productId, 'accepted');
 
       try {
         (new SeoActionLogRepository())->record(
-          'product',
+          $this->entityType,
           $productId,
           0,
           'accepted',
@@ -416,6 +451,21 @@ class SeoCronRunner
   }
 
   /**
+   * Build the shop-front URL for the crawled entity, mirroring the URL
+   * convention used by the manual AJAX endpoints (product description page vs.
+   * category listing page).
+   */
+  private function entityUrl(int $entityId, string $baseUrl, string $languageCode): string
+  {
+    if ($this->entityType === 'category') {
+      return $baseUrl . 'index.php?cPath=' . $entityId . '&language=' . urlencode($languageCode);
+    }
+
+    return $baseUrl . 'index.php?Products&Description&products_id=' . $entityId
+         . '&language=' . urlencode($languageCode);
+  }
+
+  /**
    * Phase 1: cheap audit per language.  We loop because SeoEmbedding::process
    * is single-language; the cron processes ALL active locales to seed history.
    *
@@ -424,25 +474,24 @@ class SeoCronRunner
    */
   private function runPhase1(int $productId, array $languages, string $baseUrl, array &$errors): bool
   {
-    $repo = new SeoEmbedding('products_seo_embedding');
+    $repo = new SeoEmbedding($this->embeddingTable);
     $anyOk = false;
     foreach ($languages as $languageId => $code) {
-      $url = $baseUrl . 'index.php?Products&Description&products_id=' . $productId
-           . '&language=' . urlencode($code);
+      $url = $this->entityUrl($productId, $baseUrl, (string)$code);
       try {
         $r = $repo->process(
           entityId:    $productId,
           languageId:  (int)$languageId,
           url:         $url,
           baseUrl:     $baseUrl,
-          pageType:    'product',
+          pageType:    $this->entityType,
           triggeredBy: 'cron'
         );
         if (($r['success'] ?? false) === true) {
           $anyOk = true;
         }
       } catch (\Throwable $e) {
-        $errors[] = sprintf('phase1 product %d lang %d: %s', $productId, $languageId, $e->getMessage());
+        $errors[] = (string)$this->apps->getDef('text_seo_cron_err_phase1', ['entity' => $this->entityType, 'id' => $productId, 'lang' => $languageId, 'error' => $e->getMessage()]);
       }
     }
     return $anyOk;
@@ -460,31 +509,31 @@ class SeoCronRunner
     try {
       // HARD PRECONDITION (same as the manual optimize endpoint): preserve the genuine original (write-once, all languages) BEFORE the orchestrator overwrites anything
       try {
-        SeoOriginalSnapshotRepository::captureEntityOriginals('product', $productId);
+        SeoOriginalSnapshotRepository::captureEntityOriginals($this->entityType, $productId);
       } catch (\Throwable $e) {
-        $reason = 'original snapshot failed: ' . $e->getMessage();
-        $errors[] = sprintf('phase2 product %d: %s', $productId, $reason);
+        $reason = $this->apps->getDef('text_seo_cron_reason_snapshot_failed', ['error' => $e->getMessage()]);
+        $errors[] = (string)$this->apps->getDef('text_seo_cron_err_phase2', ['entity' => $this->entityType, 'id' => $productId, 'error' => $reason]);
         return ['ok' => false, 'reason' => $reason];
       }
 
-      $orchestrator = new SeoMultilingualOrchestrator('product');
+      $orchestrator = new SeoMultilingualOrchestrator($this->entityType);
       $r = $orchestrator->run($productId, $baseUrl, 'cron');
 
       if (($r['success'] ?? false) === true) {
         return ['ok' => true, 'reason' => null];
       }
 
-      $reason = (string)($r['error'] ?? 'failed');
+      $reason = (string)($r['error'] ?? $this->apps->getDef('text_seo_cron_reason_failed'));
       // The preservation gate reports the dropped facts — surface them so the
       // admin note is actionable ("why").
       if (!empty($r['missing_entities']) && \is_array($r['missing_entities'])) {
-        $reason .= ' (missing facts: ' . implode(', ', array_slice($r['missing_entities'], 0, 8)) . ')';
+        $reason .= ' ' . $this->apps->getDef('text_seo_cron_reason_missing_facts', ['facts' => implode(', ', array_slice($r['missing_entities'], 0, 8))]);
       }
-      $errors[] = sprintf('phase2 product %d: %s', $productId, $reason);
+      $errors[] = (string)$this->apps->getDef('text_seo_cron_err_phase2', ['entity' => $this->entityType, 'id' => $productId, 'error' => $reason]);
       return ['ok' => false, 'reason' => $reason];
     } catch (\Throwable $e) {
       $reason = $e->getMessage();
-      $errors[] = sprintf('phase2 product %d: %s', $productId, $reason);
+      $errors[] = (string)$this->apps->getDef('text_seo_cron_err_phase2', ['entity' => $this->entityType, 'id' => $productId, 'error' => $reason]);
       return ['ok' => false, 'reason' => $reason];
     }
   }
@@ -495,14 +544,14 @@ class SeoCronRunner
   private function runPhase3(int $productId, string $baseUrl, array &$errors): bool
   {
     try {
-      $pipeline = new SeoFaqPipeline('product');
+      $pipeline = new SeoFaqPipeline($this->entityType);
       $r = $pipeline->run($productId, $baseUrl, 'cron');
       if (($r['success'] ?? false) === true) {
         return true;
       }
-      $errors[] = sprintf('phase3 product %d: %s', $productId, $r['error'] ?? 'failed');
+      $errors[] = $this->apps->getDef('text_seo_cron_err_phase3', ['entity' => $this->entityType, 'id' => $productId, 'error' => $r['error'] ?? $this->apps->getDef('text_seo_cron_reason_failed')]);
     } catch (\Throwable $e) {
-      $errors[] = sprintf('phase3 product %d: %s', $productId, $e->getMessage());
+      $errors[] = $this->apps->getDef('text_seo_cron_err_phase3', ['entity' => $this->entityType, 'id' => $productId, 'error' => $e->getMessage()]);
     }
     return false;
   }

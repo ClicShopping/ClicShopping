@@ -92,7 +92,7 @@ class Insert implements HooksInterface
                                           ');
       $Qcheck->execute();
 
-      if ($Qcheck->valueInt('categories_id') !== null) {
+      if (!empty($Qcheck->valueInt('categories_id'))) {
         $Qcategories = $this->app->db->prepare('select categories_id,
                                                        categories_name,
                                                        language_id
