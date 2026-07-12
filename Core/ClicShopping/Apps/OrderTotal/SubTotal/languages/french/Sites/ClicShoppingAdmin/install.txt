@@ -1,1 +1,1 @@
-title_menu = <strong>Sous-total<strong>
+title_menu = <strong>Sous-total</strong>

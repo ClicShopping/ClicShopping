@@ -1219,7 +1219,7 @@ class ShoppingCart
       foreach ($this->contents as $item_id => $data) {
         if (isset($data['attributes'])) {
           foreach ($data['attributes'] as $value) {
-            $check = $this->productsAttributes->getCheckProductsDownload($item_id, $value);
+            $check = $this->productsAttributes->getCheckProductsDownload($this->getPrid($item_id), $value);
 
             if ($check > 0) {
               switch ($this->content_type) {
