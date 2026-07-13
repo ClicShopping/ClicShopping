@@ -691,9 +691,10 @@ CATEGORIES:
 ORDERS:
 - orders: Order info (orders_id, customers_id, date_purchased, orders_status)
 - orders_products: Products in orders (orders_id, products_id, products_quantity, products_price AS TRANSACTION_PRICE)
-- orders_total: Order calculations (orders_id, value, class)
-  Classes: 'ST' = Subtotal (use for revenue/turnover), 'SH' = Shipping, 'TX' = Tax, 'TO' = Total (final order total)
+- orders_total: One row PER order-total line (orders_id, title, value, class). `class` is the module code, `value` is the amount, `title` is the human label shown on the invoice (e.g. "Remise client : 10%").
+  Classes: 'ST' = Subtotal (use for revenue/turnover), 'SH' = Shipping, 'TX' = Tax, 'TO' = Total (final order total), 'CD' = Customer Discount (remise client), 'DC' = Discount Coupon (bon de réduction), 'LO' = Low Order Fee, 'SU' = Surcharge.
   **IMPORTANT**: For revenue/turnover queries, use class='ST' (Subtotal), NOT 'TO' or 'OT'
+  **DISCOUNTS/COUPONS granted on orders live HERE**, as orders_total lines: customer discount = class='CD', coupon = class='DC'. The amount is `ot.value`, the label is `ot.title`. This is DIFFERENT from `clic_specials` (product promotional prices). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price) — that is NOT the customer discount.
 
 CUSTOMERS:
 - customers: Customer info (customers_id, customers_name, customers_email_address, customers_status)
@@ -829,8 +830,13 @@ COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
    - "quantity ordered" / "quantity sold" → products_quantity (in orders_products table)
    - "transaction price" / "sale price" → products_price (in orders_products table)
    - "order total" / "revenue" / "turnover" → value (in orders_total WHERE class='ST')
+   - "customer discount" / "remise client" / "discounts granted" / "remises accordées" → orders_total WHERE class='CD' (value = amount, title = label)
+   - "coupon" / "bon de réduction" / "code promo used" → orders_total WHERE class='DC'
+   - "discounts and coupons" / "toutes les remises" → orders_total WHERE class IN ('CD','DC')
    **CRITICAL**: For revenue/turnover, ALWAYS use class='ST' (Subtotal), NOT 'TO' or 'OT'
-   
+   **CRITICAL**: Discounts/coupons granted on orders are orders_total lines (class 'CD'/'DC', amount = ot.value, label = ot.title). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price); that is NOT the discount. clic_specials is unrelated (product promo prices).
+   **CRITICAL**: the customer discount is ORDER-LEVEL (one orders_total CD line per order, applied to the whole order), NOT per product. To list the PRODUCTS of discounted orders ("products that received a discount" / "produits qui ont reçu une remise"), JOIN clic_orders_products (and clic_products_description) to the SAME order that has the class='CD' line.
+
    EXAMPLES:
    - "price and quantity" → SELECT p.products_id, p.products_price, p.products_quantity, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd...
    - "stock level" → SELECT p.products_id, p.products_quantity, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd...
@@ -1103,23 +1109,20 @@ ORDER VALUE QUERIES:
 
 STATUS QUERIES (Most Common):
 - 'pending order' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM clic_orders o JOIN clic_orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}}
-
 - 'pending orders' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM clic_orders o JOIN clic_orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}}
-
 - 'products with status off' → SELECT p.products_id, pd.products_name, p.products_status FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE p.products_status = 0 AND pd.language_id = {{language_id}}
-
 - 'pending orders this year' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM clic_orders o JOIN clic_orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}} AND YEAR(o.date_purchased) = YEAR(CURDATE())
-
 - 'orders this week' → SELECT o.orders_id, o.customers_name, o.date_purchased FROM clic_orders o WHERE YEARWEEK(o.date_purchased, 1) = YEARWEEK(CURDATE(), 1)
-
 - 'active customers' → SELECT c.customers_id, c.customers_name, c.customers_email_address FROM clic_customers c WHERE c.customers_status = 1
 
 AGGREGATION QUERIES:
 - 'number of products per category' → SELECT cd.categories_name, COUNT(p.products_id) AS product_count FROM clic_products p JOIN clic_products_to_categories ptc ON p.products_id = ptc.products_id JOIN clic_categories_description cd ON ptc.categories_id = cd.categories_id WHERE cd.language_id = {{language_id}} GROUP BY cd.categories_name ORDER BY product_count DESC
-
 - 'top sold products' → SELECT pd.products_name, SUM(op.products_quantity) AS total_sold FROM clic_orders_products op JOIN clic_products_description pd ON op.products_id = pd.products_id WHERE pd.language_id = {{language_id}} GROUP BY op.products_id, pd.products_name ORDER BY total_sold DESC LIMIT 10
-
 - 'revenue this month' → SELECT SUM(ot.value) AS total_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND MONTH(o.date_purchased) = MONTH(CURDATE()) AND YEAR(o.date_purchased) = YEAR(CURDATE())
+- 'discounts granted to customers' / 'remises accordées aux clients' → SELECT o.customers_id, MAX(o.customers_name) AS customers_name, ot.orders_id, ot.title, ot.value AS discount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' WHERE o.orders_status != 4 GROUP BY o.customers_id, ot.orders_id, ot.title, ot.value ORDER BY o.customers_id
+- 'total customer discounts granted' / 'montant total des remises clients' → SELECT SUM(ot.value) AS total_discount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'CD'
+- 'products ordered that received a discount' / 'produits commandés qui ont reçu une remise' → SELECT o.orders_id, pd.products_name, op.products_quantity, ot.value AS discount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' JOIN clic_orders_products op ON o.orders_id = op.orders_id JOIN clic_products_description pd ON op.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE o.orders_status != 4 ORDER BY o.orders_id
+(The discount is order-level: each product line of a discounted order is returned with that order's CD discount — NEVER a per-product price difference)
 
 PRODUCT QUERIES:
 - 'stock of product [ProductName]' → SELECT p.products_quantity, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}

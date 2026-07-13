@@ -687,9 +687,13 @@ class Order
    * ensuring compatibility with customer group relationships. Additionally, the method leverages
    * dynamic SQL data operations for saving relevant data into appropriate database tables.
    *
-   * @return void
+   * @param array<int, array{code:mixed, title:mixed, text:mixed, value:mixed, sort_order:mixed}>|null $orderTotals
+   *        Pre-computed OrderTotal pipeline output. Pass the result of a single OrderTotal::process()
+   *        call so the mutating pipeline is not run again here (which would compound discounts). When
+   *        null, the pipeline is processed once as a fallback for callers that did not precompute it.
+   * @return int|void
    */
-  public function Insert()
+  public function Insert(?array $orderTotals = null)
   {
     $CLICSHOPPING_Customer = Registry::get('Customer');
     $CLICSHOPPING_OrderTotal = Registry::get('OrderTotal');
@@ -773,7 +777,7 @@ class Order
 
     $this->insertID = $writer->insertOrder($sql_data_array);
 
-    $writer->insertOrderTotals($this->insertID, $CLICSHOPPING_OrderTotal->process());
+    $writer->insertOrderTotals($this->insertID, $orderTotals ?? $CLICSHOPPING_OrderTotal->process());
 
     $writer->insertOrderProducts($this->insertID, $this->products, (int)$CLICSHOPPING_Customer->getCustomersGroupID(), $this->lang->getId());
 

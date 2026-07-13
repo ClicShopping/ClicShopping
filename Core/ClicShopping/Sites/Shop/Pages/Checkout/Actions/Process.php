@@ -91,14 +91,15 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       CLICSHOPPING::redirect(null, 'Checkout&Billing');
     }
 
-// order total
-    $CLICSHOPPING_OrderTotal->process();
+// order total — run the pipeline ONCE. It mutates $Order->info (discounts/fees), so it must
+// not be run a second time on the already-mutated info (that would compound the discount).
+    $order_totals = $CLICSHOPPING_OrderTotal->process();
 
 // load the before_process function from the payment modules
     $CLICSHOPPING_Payment->before_process();
 
-// process to order
-    $last_order_id = $CLICSHOPPING_Order->Insert();
+// process to order — reuse the totals computed above instead of re-processing the pipeline.
+    $last_order_id = $CLICSHOPPING_Order->Insert($order_totals);
 
     $CLICSHOPPING_Order->Process($last_order_id);
 
