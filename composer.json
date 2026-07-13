@@ -25,7 +25,7 @@
         "phpmailer/phpmailer": "^7.1",
         "setasign/fpdf": "^1.9",
         "stolt/llms-txt-php": "^3.4",
-        "guzzlehttp/guzzle": "^7.13",
+        "guzzlehttp/guzzle": "^7.14",
         "stripe/stripe-php": "^20.3"
     },
     "require-dev": {
