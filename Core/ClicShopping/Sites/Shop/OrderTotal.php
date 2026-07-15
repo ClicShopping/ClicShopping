@@ -74,6 +74,10 @@ class OrderTotal
   {
     $order_total_array = [];
 
+    if (Registry::exists('Hooks')) {
+      Registry::get('Hooks')->call('OrderTotal', 'PreProcess');
+    }
+
     if (is_array($this->modules)) {
       foreach ($this->modules as $value) {
         if (!str_contains($value, '\\')) {

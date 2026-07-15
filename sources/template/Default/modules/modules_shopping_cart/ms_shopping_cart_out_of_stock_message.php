@@ -127,7 +127,7 @@ class ms_shopping_cart_out_of_stock_message
     $CLICSHOPPING_Db->save('configuration', [
         'configuration_title' => 'Sort order',
         'configuration_key' => 'MODULE_SHOPPING_CART_OUT_OF_STOCK_MESSAGE_SORT_ORDER',
-        'configuration_value' => '90',
+        'configuration_value' => '400',
         'configuration_description' => 'Sort order of display. Lowest is displayed first. The sort order must be different on every module',
         'configuration_group_id' => '6',
         'sort_order' => '4',

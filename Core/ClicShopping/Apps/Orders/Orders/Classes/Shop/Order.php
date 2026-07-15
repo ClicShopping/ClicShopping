@@ -19,7 +19,6 @@ use ClicShopping\Sites\Shop\AddressBook;
 use ClicShopping\Sites\Shop\Tax;
 
 use ClicShopping\Apps\Configuration\TemplateEmail\Classes\Shop\TemplateEmail;
-use ClicShopping\Apps\Marketing\DiscountCoupon\Classes\Shop\DiscountCouponCustomer;
 use function count;
 use function defined;
 use function is_array;
@@ -38,7 +37,6 @@ class Order
   public string $comment;
   protected int $id;
   protected int $insertID;
-  public $coupon;
   public $content_type;
 
   private mixed $db;
@@ -492,13 +490,6 @@ class Order
     }
 
     $index = 0;
-
-//**************************************
-// coupon
-//**************************************
-    $this->getCodeCoupon();
-    $valid_products_count = 0;
-
     $CLICSHOPPING_ShoppingCart = Registry::get('ShoppingCart');
     $CLICSHOPPING_ProductsAttributes = Registry::get('ProductsAttributes');
 
@@ -614,23 +605,8 @@ class Order
           }
         }
 
-        // discount coupons
-        if (is_object($this->coupon)) {
-          $discount = $this->coupon->getCalculateDiscount($this->products[$index], $valid_products_count);
-
-          if ($discount['applied_discount'] > 0) {
-            $valid_products_count++;
-          }
-
-          $shown_price = $this->coupon->getCalculateShownPrice($discount, $this->products[$index]);
-
-          $this->info['subtotal'] += $shown_price['shown_price'];
-
-          $shown_price = $shown_price['actual_shown_price'];
-        } else {
-          $shown_price = Tax::addTax($this->products[$index]['final_price'], $this->products[$index]['tax']) * $this->products[$index]['qty'];
-          $this->info['subtotal'] += $shown_price;
-        }
+        $shown_price = Tax::addTax($this->products[$index]['final_price'], $this->products[$index]['tax']) * $this->products[$index]['qty'];
+        $this->info['subtotal'] += $shown_price;
 
         $products_tax = $this->products[$index]['tax'];
         $products_tax_description = $this->products[$index]['tax_description'];
@@ -665,9 +641,6 @@ class Order
     } else {
       $this->info['total'] = $this->info['subtotal'] + $this->info['tax'] + $this->info['shipping_cost'];
     }
-
-// coupon
-    $this->getFinalizeCouponDiscount();
   }
 
   /***********************************************************
@@ -782,8 +755,6 @@ class Order
     $writer->insertOrderProducts($this->insertID, $this->products, (int)$CLICSHOPPING_Customer->getCustomersGroupID(), $this->lang->getId());
 
     $this->saveGdpr($this->insertID, $CLICSHOPPING_Customer->getID());
-
-    unset($_SESSION['coupon']);
 
     return $this->insertID;
   }
@@ -1003,54 +974,6 @@ class Order
   public function sendEmailAlertStockWarning(int $insert_id): void
   {
     $this->getNotifier()->sendStockWarningAlert($insert_id);
-  }
-
-  /**
-   * Validates and processes the discount coupon code from the session,
-   * ensuring the coupon is applicable to the products in the shopping cart.
-   *
-   * @return false|void Returns false if the discount coupon module is disabled or not active.
-   */
-  private function getCodeCoupon()
-  {
-    if (!defined('CLICSHOPPING_APP_DISCOUNT_COUPON_DC_STATUS') || CLICSHOPPING_APP_DISCOUNT_COUPON_DC_STATUS == 'False') {
-      return false;
-    }
-
-    $CLICSHOPPING_ShoppingCart = Registry::get('ShoppingCart');
-
-    $products = $CLICSHOPPING_ShoppingCart->get_products();
-
-    if (isset($_SESSION['coupon']) && !empty($_SESSION['coupon'])) {
-      $code_coupon = HTML::sanitize($_SESSION['coupon']);
-
-      if (!Registry::exists('DiscountCouponCustomer')) {
-        Registry::set('DiscountCouponCustomer', new DiscountCouponCustomer($code_coupon));
-        $this->coupon = Registry::get('DiscountCouponCustomer');
-      }
-
-      $this->coupon->getTotalValidProducts($products);
-    }
-  }
-
-  /**
-   * Applies and finalizes the discount from a coupon to the current order total,
-   * if the Discount Coupon module is active and the coupon object is available.
-   *
-   * @return mixed Returns the updated total with the coupon discount applied if applicable,
-   *               or false if the Discount Coupon module is inactive.
-   */
-  private function getFinalizeCouponDiscount()
-  {
-    if (!defined('CLICSHOPPING_APP_DISCOUNT_COUPON_DC_STATUS') || CLICSHOPPING_APP_DISCOUNT_COUPON_DC_STATUS == 'False') {
-      return false;
-    }
-
-    if (is_object($this->coupon)) {
-      $this->info['total'] = $this->coupon->getFinalizeDiscount($this->info);
-
-      return $this->info['total'];
-    }
   }
 
   /**
