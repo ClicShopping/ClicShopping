@@ -257,6 +257,256 @@ class Tax
   }
 
   /**
+   * Builds the ot_tax display rows for a "double tax" jurisdiction (Canada:
+   * GST/PST/HST; also US state/county/city, etc.), for a given delivery zone.
+   *
+   * Handles ANY number of tax rates configured for the zone — no per-count flag:
+   *   1 rate           → one line
+   *   2 rates          → two lines (compound when priorities differ, additive when equal)
+   *   3+ rates (generic)→ grouped by tax_priority: same priority additive on the base,
+   *                       higher priority compounds on (base + lower-priority taxes)
+   *
+   * This is the SINGLE source of truth for the tax split, shared by the checkout
+   * ot_tax module (Order::cart pipeline) and the admin order recalc
+   * (UpdateOrder::recalculateOrderTotal) so both render exactly the same lines.
+   * The 1- and 2-rate paths are a verbatim extraction of the former ot_tax logic;
+   * callers resolve the zone themselves and pass the order figures in.
+   *
+   * @param int    $country_id      Delivery country id.
+   * @param int    $zone_id         Delivery zone id (already resolved).
+   * @param float  $info_subtotal   Order subtotal (Order::info['subtotal']).
+   * @param float  $shipping_cost   Order shipping cost (Order::info['shipping_cost']).
+   * @param array  $tax_groups      Order::info['tax_groups'] — only used as the
+   *                                "is there taxable content" guard, exactly as before.
+   * @param string $currency        Order currency code.
+   * @param float  $currency_value  Order currency value.
+   * @return array{rows: array<int, array{title: string, text: string, value: float}>, tax_total: float}
+   */
+  public static function computeDoubleTaxRows(
+    int    $country_id,
+    int    $zone_id,
+    float  $info_subtotal,
+    float  $shipping_cost,
+    array  $tax_groups,
+    string $currency,
+    float  $currency_value
+  ): array {
+    $CLICSHOPPING_Db = Registry::get('Db');
+    $CLICSHOPPING_Currencies = Registry::get('Currencies');
+
+    $output = [];
+    $compound_tax = false;
+    $gst_total = 0;
+    $pst_total = 0;
+    $hst_total = 0;
+    $general_tax_total = null; // set by the generic N-tax branch (3+ rates)
+
+    $QtaxPriority = $CLICSHOPPING_Db->prepare('select tax_priority
+                                                 from :table_tax_rates tr left join :table_zones_to_geo_zones za on (tr.tax_zone_id = za.geo_zone_id)
+                                                                          left join :table_geo_zones tz on (tz.geo_zone_id = tr.tax_zone_id)
+                                                 where za.zone_country_id = :zone_country_id
+                                                 and za.zone_id = :zone_id
+                                                 order by tr.tax_priority
+                                                ');
+    $QtaxPriority->bindInt(':zone_country_id', $country_id);
+    $QtaxPriority->bindInt(':zone_id', $zone_id);
+    $QtaxPriority->execute();
+
+    $Qtax = $CLICSHOPPING_Db->prepare('select tax_rates_id,
+                                                tax_priority,
+                                                tax_rate,
+                                                tax_description
+                                         from :table_tax_rates tr left join :table_zones_to_geo_zones za on (tr.tax_zone_id = za.geo_zone_id)
+                                                                   left join :table_geo_zones tz on (tz.geo_zone_id = tr.tax_zone_id)
+                                         where za.zone_country_id = :zone_country_id
+                                         and za.zone_id = :zone_id
+                                         order by tr.tax_priority
+                                      ');
+    $Qtax->bindInt(':zone_country_id', $country_id);
+    $Qtax->bindInt(':zone_id', $zone_id);
+    $Qtax->execute();
+
+    if ($QtaxPriority->fetch()) {
+      $hst_total = 0;
+
+      if ($QtaxPriority->rowCount() == 2) { //Show taxes on two lines
+        $i = 0;
+        $tax_priority = '';
+
+        while ($QtaxPriority->fetch()) { //compare tax_priotiries
+          if ($i == 0) {
+            $tax_priority = $QtaxPriority->valueInt('tax_priority');
+          } else {
+            if ($tax_priority != $QtaxPriority->valueInt('tax_priority')) {
+              $compound_tax = true;
+            } else {
+              $compound_tax = false;
+            }
+          }
+          $i++;
+        }
+//END Compare tax priorities
+
+        if ($compound_tax) { //ie Quebec different de false et true
+          $j = 0;
+
+          while ($Qtax->fetch()) {
+            if ($j == 0) {
+              $gst_description = $Qtax->value('tax_description');
+              $gst_rate = $Qtax->valueDecimal('tax_rate') / 100;
+            } elseif ($j >= 1) {
+              $pst_description = $Qtax->value('tax_description');
+              $pst_rate = $Qtax->valueDecimal('tax_rate') / 100;
+            }
+            $j++;
+          }
+
+          $subtotal = $info_subtotal + $shipping_cost;
+
+// Si l'ordre d'affichage du shipping < sort order on additionne les frais d'envoi au sous total
+          if (defined(CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_SORT_ORDER) && (CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_SORT_ORDER < CLICSHOPPING_APP_ORDER_TOTAL_TAX_TX_SORT_ORDER)) $subtotal += $shipping_cost;
+
+          $gst_total = round($subtotal * $gst_rate, $CLICSHOPPING_Currencies->currencies[DEFAULT_CURRENCY]['decimal_places']);
+          $pst_total = ($subtotal + $gst_total) * $pst_rate;
+
+          foreach ($tax_groups as $key => $value) {
+            if ($value > 0) {
+              $output[] = [
+                'title' => $gst_description . ':',
+                'text' => $CLICSHOPPING_Currencies->format($gst_total, true, $currency, $currency_value), 'value' => $gst_total
+              ];
+              $output[] = [
+                'title' => $pst_description . ':',
+                'text' => $CLICSHOPPING_Currencies->format($pst_total, true, $currency, $currency_value),
+                'value' => $pst_total
+              ];
+            }
+          } // end while
+        } else { //ie: Ontario
+          $j = 0;
+
+          while ($Qtax->fetch()) {
+            if ($j == 0) {
+              $gst_description = $Qtax->value('tax_description');
+              $gst_rate = $Qtax->valueDecimal('tax_rate') / 100;
+            } elseif ($j >= 1) {
+              $pst_description = $Qtax->value('tax_description');
+              $pst_rate = $Qtax->valueDecimal('tax_rate') / 100;
+            }
+
+            $j++;
+          }
+          $subtotal = $info_subtotal;
+
+// Si l'ordre d'affichage du shipping < sort order on additionne les frais d'envoi au sous total
+          if (defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_SORT_ORDER') && (CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_SORT_ORDER < CLICSHOPPING_APP_ORDER_TOTAL_TAX_TX_SORT_ORDER)) $subtotal += $shipping_cost;
+
+          $gst_total = round($subtotal * $gst_rate, $CLICSHOPPING_Currencies->currencies[DEFAULT_CURRENCY]['decimal_places']);
+          $pst_total = $subtotal * $pst_rate;
+
+          foreach ($tax_groups as $key => $value) {
+            if ($value > 0) {
+              $output[] = [
+                'title' => $gst_description . ':',
+                'text' => $CLICSHOPPING_Currencies->format($gst_total, true, $currency, $currency_value),
+                'value' => $gst_total
+              ];
+              $output[] = [
+                'title' => $pst_description . ':',
+                'text' => $CLICSHOPPING_Currencies->format($pst_total, true, $currency, $currency_value),
+                'value' => $pst_total
+              ];
+            }
+          }
+        }
+// -----------------------------
+// Only one taxe
+// -----------------------------
+//
+      } elseif ($QtaxPriority->rowCount() == 1) { //Only GST or HST applies
+        while ($Qtax->fetch()) {
+          $subtotal = $info_subtotal;
+
+// Si l'ordre d'affichage du shipping < sort order on additionne les frais d'envoi au sous total
+          if (defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_SORT_ORDER') && CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_SORT_ORDER < CLICSHOPPING_APP_ORDER_TOTAL_TAX_TX_SORT_ORDER) $subtotal += $shipping_cost;
+
+          $hst_total = $subtotal * ($Qtax->valueDecimal('tax_rate') / 100);
+
+          foreach ($tax_groups as $key => $value) {
+            if ($value > 0) {
+              $output[] = [
+                'title' => $Qtax->value('tax_description') . ' : ',
+                'text' => $CLICSHOPPING_Currencies->format($hst_total, true, $currency, $currency_value), 'value' => $hst_total
+              ];
+            }
+          }
+        }
+// -----------------------------
+// Three or more taxes (generic)
+// -----------------------------
+      } elseif ($QtaxPriority->rowCount() >= 3) {
+        // Generic N-tax jurisdiction (e.g. US state + county + city). Taxes are grouped
+        // by tax_priority: same-priority taxes apply to the same base (additive), a
+        // higher priority compounds on (base + sum of the lower-priority taxes) — the
+        // same rule as the 2-line compound case, generalised to any number of lines.
+        $subtotal = $info_subtotal;
+
+// Si l'ordre d'affichage du shipping < sort order on additionne les frais d'envoi au sous total
+        if (defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_SORT_ORDER') && CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_SORT_ORDER < CLICSHOPPING_APP_ORDER_TOTAL_TAX_TX_SORT_ORDER) $subtotal += $shipping_cost;
+
+        $has_taxable = false;
+        foreach ($tax_groups as $value) {
+          if ($value > 0) {
+            $has_taxable = true;
+            break;
+          }
+        }
+
+        $priority_groups = [];
+        while ($Qtax->fetch()) {
+          $priority_groups[$Qtax->valueInt('tax_priority')][] = [
+            'description' => $Qtax->value('tax_description'),
+            'rate'        => $Qtax->valueDecimal('tax_rate') / 100,
+          ];
+        }
+        ksort($priority_groups);
+
+        $general_tax_total = 0;
+        $running_base = $subtotal;
+
+        foreach ($priority_groups as $rates) {
+          $group_tax = 0;
+
+          foreach ($rates as $rate) {
+            $line_tax = round($running_base * $rate['rate'], $CLICSHOPPING_Currencies->currencies[DEFAULT_CURRENCY]['decimal_places']);
+
+            if ($has_taxable) {
+              $output[] = [
+                'title' => $rate['description'] . ':',
+                'text'  => $CLICSHOPPING_Currencies->format($line_tax, true, $currency, $currency_value),
+                'value' => $line_tax,
+              ];
+            }
+
+            $group_tax += $line_tax;
+          }
+
+          $general_tax_total += $group_tax;
+          $running_base += $group_tax; // higher-priority taxes compound on the accrued base
+        }
+      } // end elseif
+    }
+
+    $tax_total = $general_tax_total ?? (
+      round($gst_total, $CLICSHOPPING_Currencies->currencies[DEFAULT_CURRENCY]['decimal_places'])
+        + round($pst_total, $CLICSHOPPING_Currencies->currencies[DEFAULT_CURRENCY]['decimal_places'])
+        + round($hst_total, $CLICSHOPPING_Currencies->currencies[DEFAULT_CURRENCY]['decimal_places'])
+    );
+
+    return ['rows' => $output, 'tax_total' => $tax_total];
+  }
+
+  /**
    * Retrieves an array representing a drop-down menu of tax classes.
    * Each entry in the array contains an ID and a corresponding text representation of a tax class.
    * Default includes an option with ID 0 and a text of "None".

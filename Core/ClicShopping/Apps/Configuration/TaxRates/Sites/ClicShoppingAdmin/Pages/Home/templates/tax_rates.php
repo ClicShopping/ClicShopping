@@ -138,4 +138,10 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
     <?php
   }
   ?>
+  <div class="col-md-12">
+  <div class="alert alert-info" role="alert">
+    <?php echo $CLICSHOPPING_TaxRates->getDef('text_double_tax_info'); ?>
+  </div>
 </div>
+</div>
+<div class="py-4"></div>

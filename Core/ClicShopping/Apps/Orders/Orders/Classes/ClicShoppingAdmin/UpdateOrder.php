@@ -211,7 +211,92 @@ class UpdateOrder
     return true;
   }
 
+ 
   /**
+   * Resolves the display title for a TX (tax) line of a given rate.
+   *
+   * Prefers an existing TX row title that already carries the rate's canonical
+   * description (keeps the exact label the shop wrote, tag included); otherwise
+   * falls back to the tax_rates description, then to a formatted percentage.
+   *
+   * @param mixed  $db
+   * @param float  $rate            Tax rate as a percentage (e.g. 20.0).
+   * @param array  $existingTitles  Titles of the order's current TX rows.
+   * @return string
+   */
+  private static function resolveTaxTitle(mixed $db, float $rate, array $existingTitles): string
+  {
+    $Qdesc = $db->prepare('select tax_description
+                             from :table_tax_rates
+                            where tax_rate = :rate
+                            limit 1
+                          ');
+    $Qdesc->bindValue(':rate', $rate);
+    $Qdesc->execute();
+    $desc = $Qdesc->fetch() ? (string)$Qdesc->value('tax_description') : '';
+
+    if ($desc !== '') {
+      foreach ($existingTitles as $title) {
+        if (stripos((string)$title, $desc) !== false) {
+          return (string)$title;
+        }
+      }
+
+      return $desc;
+    }
+
+    return rtrim(rtrim(number_format($rate, 2, '.', ''), '0'), '.') . '%';
+  }
+
+  /**
+   * Resolves an order's delivery (country_id, zone_id) from the stored delivery
+   * country/state NAMES — needed to feed Tax::computeDoubleTaxRows() for double-tax
+   * (Canada) jurisdictions. The orders table keeps only the textual names, so we map
+   * them back to ids the same way the checkout does when the zone id is unknown.
+   *
+   * @param mixed $db
+   * @param int   $order_id
+   * @return array{0:int,1:int}  [country_id, zone_id] — either may be 0 if unresolved.
+   */
+  private static function resolveOrderZone(mixed $db, int $order_id): array
+  {
+    $Qorder = $db->prepare('select delivery_country, delivery_state
+                              from :table_orders
+                             where orders_id = :orders_id
+                             limit 1
+                          ');
+    $Qorder->bindInt(':orders_id', $order_id);
+    $Qorder->execute();
+    $Qorder->fetch();
+
+    $country_name = (string)$Qorder->value('delivery_country');
+    $state_name   = (string)$Qorder->value('delivery_state');
+
+    $country_id = 0;
+    if ($country_name !== '') {
+      $Qc = $db->prepare('select countries_id from :table_countries where countries_name = :name limit 1');
+      $Qc->bindValue(':name', $country_name);
+      $Qc->execute();
+      if ($Qc->fetch()) {
+        $country_id = $Qc->valueInt('countries_id');
+      }
+    }
+
+    $zone_id = 0;
+    if ($country_id > 0 && $state_name !== '') {
+      $Qz = $db->prepare('select zone_id from :table_zones where zone_name = :name and zone_country_id = :country limit 1');
+      $Qz->bindValue(':name', $state_name);
+      $Qz->bindInt(':country', $country_id);
+      $Qz->execute();
+      if ($Qz->fetch()) {
+        $zone_id = $Qz->valueInt('zone_id');
+      }
+    }
+
+    return [$country_id, $zone_id];
+  }
+
+ /**
    * Recomputes ALL rows of orders_total from the current product lines of an
    * order and persists the results.
    *
@@ -221,20 +306,23 @@ class UpdateOrder
    * directly from the stored orders_products data, mirroring exactly what the
    * shop computes:
    *
-   *   ot_subtotal / ST  : Σ (final_price × qty)                      [HT]
-   *   ot_tax     / TX   : one row per distinct tax rate group,
-   *                        value = subtotal_for_group × (rate / 100)
+   *   ot_subtotal / ST  : Σ shown_price (HT or TTC, per the order's tax mode)
+   *   ot_tax     / TX   : rebuilt — one row per distinct tax rate (incl. a 0% line
+   *                        for exempt products), mirroring cart()/ot_tax's tax_groups
    *   ot_shipping / SH  : preserved as-is (not touched by line edits)
-   *   ot_total   / TO   : subtotal_HT + Σ tax + shipping
+   *   ot_total   / TO   : subtotal + Σ tax + shipping (or subtotal + shipping in TTC /
+   *                        group-tax modes where the tax is embedded/not charged)
    *
-   * If the installation stores prices TTC (DISPLAY_PRICE_WITH_TAX == 'true')
-   * the tax is already included in final_price, so we back-calculate it:
-   *   tax = shown_price − shown_price / (1 + rate/100)
-   * and the subtotal = Σ shown_price (TTC), while the grand total = subtotal
-   * + shipping (tax is embedded, not added again).
+   * HT vs TTC is decided from the ORDER's own customer group (group_tax) and the
+   * global DISPLAY_PRICE_WITH_TAX — NOT from Registry::get('Customer') (empty in
+   * back-office). In TTC mode the tax is back-calculated (tax = shown − shown/(1+rate)).
    *
-   * Rows whose class is not one of the four above (e.g. discount coupons,
-   * custom modules) are left untouched so no data is lost.
+   * Double-tax jurisdictions (Canada, DISPLAY_DOUBLE_TAXE == 'true') delegate the
+   * GST/PST/HST split to the shared Tax::computeDoubleTaxRows(), the same helper the
+   * checkout ot_tax module uses, so both render identical tax lines.
+   *
+   * Rows whose class is not ST/TX/SH/TO (e.g. discount coupons, custom modules) are
+   * left untouched so no data is lost.
    *
    * Called automatically by updateOrderProduct, addOrderProduct and
    * deleteOrderProduct — callers do not need to invoke it directly.
@@ -242,6 +330,7 @@ class UpdateOrder
    * @param int $order_id
    * @return void
    */
+   
   public static function recalculateOrderTotal(int $order_id): void
   {
     $db         = Registry::get('Db');
@@ -332,30 +421,72 @@ class UpdateOrder
     $Qlines->bindInt(':orders_id', $order_id);
     $Qlines->execute();
 
-    $subtotal  = 0.0;
-    $total_tax = 0.0;
+    $subtotal    = 0.0;
+    $total_tax   = 0.0;
+    $tax_by_rate = [];   // (string)rate => ['rate' => float, 'tax' => float] — one entry per distinct non-zero rate
+
+    // Decide HT vs TTC from the ORDER's own customer group — NOT from  Registry::get('Customer')
+    $decimals     = (int)($currencies->currencies[DEFAULT_CURRENCY]['decimal_places'] ?? 2);
+    $order_is_ttc = ((defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && $customers_group_id == 0)
+      || ($customers_group_id != 0 && ($group_tax['group_tax'] ?? '') == 'true');
 
     while ($Qlines->fetch()) {
       $unit_price = $Qlines->valueDecimal('final_price'); // stored HT
       $qty        = $Qlines->valueInt('products_quantity');
       $tax_rate   = $Qlines->valueDecimal('products_tax');
 
-      $shown_price = Tax::addTax($unit_price, $tax_rate) * $qty; // TTC line total, as cart()
+      // Line total in the order's own tax mode — identical to Tax::addTax()'s TTC/HT branches, but driven by the order group instead of the session customer.
+      $line_unit = $order_is_ttc
+        ? round($unit_price, $decimals) + Tax::calculate($unit_price, $tax_rate)
+        : round($unit_price, $decimals);
+      $shown_price = $line_unit * $qty;
       $subtotal += $shown_price;
 
-      if (((defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && $customers_group_id == 0)
-        || ($customers_group_id != 0 && ($group_tax['group_tax'] ?? '') == 'true')) {
-        // TTC display: back-calculate the embedded tax (same expression as cart()).
-        $total_tax += $shown_price - ($shown_price / (float)(($tax_rate < 10) ? '1.0' . str_replace('.', '', (string)$tax_rate) : '1.' . str_replace('.', '', (string)$tax_rate)));
+      if ($order_is_ttc) {
+        // TTC: back-calculate the embedded tax (same expression as cart()).
+        $line_tax = $shown_price - ($shown_price / (float)(($tax_rate < 10) ? '1.0' . str_replace('.', '', (string)$tax_rate) : '1.' . str_replace('.', '', (string)$tax_rate)));
       } else {
-        // HT display: tax added on top.
-        $total_tax += ($tax_rate / 100) * $shown_price;
+        // HT: tax added on top.
+        $line_tax = ($tax_rate / 100) * $shown_price;
       }
+
+      $total_tax += $line_tax;
+
+      // Accumulate the tax per distinct rate so ot_tax/TX keeps one line per rate
+      // (like Order::cart()'s tax_groups), instead of collapsing everything to one row.
+      // Zero-rate lines are kept too: cart()/ot_tax writes a "0%" line (value 0) for exempt products, so we mirror that instead of dropping it.
+      $key = (string)$tax_rate;
+      
+      if (!isset($tax_by_rate[$key])) {
+        $tax_by_rate[$key] = ['rate' => $tax_rate, 'tax' => 0.0];
+      }
+      $tax_by_rate[$key]['tax'] += $line_tax;
     }
 
-    // ── 6. Grand total — same branching as cart() (TTC / B2B group tax: tax already in subtotal) ──
-    if (((defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && $customers_group_id == 0)
-      || ($customers_group_id != 0 && ($group_tax['group_tax'] ?? '') == 'true')
+    // ── 5b. Double-tax jurisdictions (Canada GST/PST/HST) — delegate the split to the  shared Tax::computeDoubleTaxRows() so the admin renders exactly the same
+    //        tax lines as the checkout ot_tax module. Only when there is taxable content.
+    $double_taxe = defined('DISPLAY_DOUBLE_TAXE') && DISPLAY_DOUBLE_TAXE == 'true';
+    $dt_rows     = null;
+
+    if ($double_taxe && $total_tax > 0) {
+      [$dt_country_id, $dt_zone_id] = self::resolveOrderZone($db, $order_id);
+      $dt = Tax::computeDoubleTaxRows(
+        $dt_country_id,
+        $dt_zone_id,
+        $subtotal,
+        $shipping_value,
+        ['taxable' => $total_tax], // single positive group = "there is taxable content"
+        $currency,
+        $currency_value
+      );
+      $dt_rows   = $dt['rows'];
+      $total_tax = $dt['tax_total']; // keep the grand total consistent with the split rows
+    }
+
+    // ── 6. Grand total — same branching as cart(). Double-tax always adds tax on top (Order::info['total'] = subtotal + tax + shipping), like ot_tax does.
+    if ($double_taxe) {
+      $grand_total = $subtotal + $total_tax + $shipping_value;
+    } elseif ($order_is_ttc
       || ($customers_group_id != 0 && ($group_tax['group_order_taxe'] ?? 0) == 1)) {
       $grand_total = $subtotal + $shipping_value;
     } else {
@@ -380,21 +511,52 @@ class UpdateOrder
     $Qusub->bindInt(':orders_id', $order_id);
     $Qusub->execute();
 
-    // ── 8. Persist ot_tax / TX rows
-    //      The shop may have written one row per tax group.  We update the
-    //      first matching row with the aggregated total; additional rows (rare)
-    //      are set to 0 so the grand total stays correct.
-    $Qutax = $db->prepare("update :table_orders_total
-                           set value = :value,
-                               text = :text
-                           where orders_id = :orders_id
-                           and class = 'TX'
-                          ");
-    $Qutax->bindValue(':value', $total_tax);
-    $Qutax->bindValue(':text',  $fmt($total_tax));
-    $Qutax->bindInt(':orders_id', $order_id);
-    $Qutax->execute();
+    // ── 8. Persist ot_tax / TX rows — one row per distinct non-zero tax rate,
+    //      exactly like Order::cart()/ot_tax which emits one line per tax group.
+    //      The former code UPDATE-ed EVERY TX row to the aggregate, so a multi-rate
+    //      order had each tax line inflated to the full total. We rebuild the rows
+    //      from the per-rate breakdown; $total_tax still drives the grand total.
+    $Qtitles = $db->prepare("select title
+                               from :table_orders_total
+                              where orders_id = :orders_id
+                                and class = 'TX'
+                            ");
+    $Qtitles->bindInt(':orders_id', $order_id);
+    $Qtitles->execute();
+    $existing_tx_titles = [];
+    while ($Qtitles->fetch()) {
+      $existing_tx_titles[] = $Qtitles->value('title');
+    }
 
+    $tx_sort_order = $meta['TX']['sort_order'] ?? 0;
+
+    $db->delete('orders_total', ['orders_id' => $order_id, 'class' => 'TX']);
+
+    if ($dt_rows !== null) {
+      // Double-tax: one row per GST/PST/HST line, as produced by the shared helper.
+      foreach ($dt_rows as $row) {
+        $db->save('orders_total', [
+          'orders_id'  => $order_id,
+          'class'      => 'TX',
+          'title'      => $row['title'],
+          'text'       => $row['text'],
+          'value'      => $row['value'],
+          'sort_order' => $tx_sort_order,
+        ]);
+      }
+    } else {
+      // Single-tax: one row per distinct rate (incl. a 0% line for exempt products).
+      foreach ($tax_by_rate as $group) {
+        $db->save('orders_total', [
+          'orders_id'  => $order_id,
+          'class'      => 'TX',
+          'title'      => self::resolveTaxTitle($db, $group['rate'], $existing_tx_titles),
+          'text'       => $fmt($group['tax']),
+          'value'      => $group['tax'],
+          'sort_order' => $tx_sort_order,
+        ]);
+      }
+    }
 
     // ── 9. Persist ot_total / TO
     $Qutot = $db->prepare("update :table_orders_total

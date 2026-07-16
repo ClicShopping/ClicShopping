@@ -44,6 +44,12 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
           </div>
         </div>
         <div class="mt-1"></div>
+        <div class="col-md-12">
+          <div class="alert alert-info" role="alert">
+            <?php echo $CLICSHOPPING_TaxRates->getDef('text_double_tax_info'); ?>
+          </div>
+        </div>
+        <div class="mt-1"></div>
         <div class="separator"></div
         <div class="col-md-12">
           <div>

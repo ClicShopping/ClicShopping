@@ -24,11 +24,6 @@ $CLICSHOPPING_Image = Registry::get('Image');
 $CLICSHOPPING_Language = Registry::get('Language');
 $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-// ── Invoice lock flag for the view ───────────────────────────────────────
-// Computed once here so the template doesn't need to import UpdateOrder.
-// The actual mutations are handled by the UpdateOrder action controller
-// (Actions/Orders/UpdateOrder.php) — this file is display-only.
-
 if ($CLICSHOPPING_MessageStack->exists('main')) {
   echo $CLICSHOPPING_MessageStack->get('main');
 }
