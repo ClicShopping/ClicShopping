@@ -92,5 +92,79 @@ class RateLimiter
 
         $key = 'ratelimit_' . $operation;
         unset($_SESSION[$key]);
+        $key_count = 'ratelimit_count_' . $operation;
+        unset($_SESSION[$key_count]);
+    }
+
+    /**
+     * Check a sliding-window attempt counter (brute-force guard).
+     * Prunes timestamps older than $window, then blocks when $max_attempts is reached.
+     * Lazily prunes and writes back $_SESSION[$key] as a side effect.
+     *
+     * @param string $operation Operation name (e.g. 'coupon_submit')
+     * @param int $max_attempts Attempts allowed inside the window
+     * @param int $window Window length in seconds
+     * @return array ['allowed' => bool, 'message' => string, 'wait_seconds' => int]
+     */
+    public function checkAttempts(string $operation, int $max_attempts, int $window): array
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $key = 'ratelimit_count_' . $operation;
+        $window_seconds = $window;
+        $stamps = $this->pruneStamps((array)($_SESSION[$key] ?? []), $window_seconds);
+        $_SESSION[$key] = $stamps;
+
+        if ($stamps !== [] && \count($stamps) >= $max_attempts) {
+            $wait = $window_seconds - (time() - (int)$stamps[0]);
+            return [
+                'allowed' => false,
+                'message' => CLICSHOPPING::getDef('text_rate_limiter_wait', ['wait' => $wait]),
+                'wait_seconds' => $wait,
+            ];
+        }
+
+        return [
+            'allowed' => true,
+            'message' => '',
+            'wait_seconds' => 0,
+        ];
+    }
+
+    /**
+     * Record one attempt in the sliding window and prune expired ones.
+     *
+     * @param string $operation Operation name
+     * @param int $window Window length in seconds
+     * @return void
+     */
+    public function recordAttempt(string $operation, int $window): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $key = 'ratelimit_count_' . $operation;
+        $stamps = $this->pruneStamps((array)($_SESSION[$key] ?? []), $window);
+        $stamps[] = time();
+        $_SESSION[$key] = $stamps;
+    }
+
+    /**
+     * Drop timestamps older than the sliding window. Pure — no session side effect.
+     *
+     * @param array $stamps List of unix timestamps
+     * @param int $window Window length in seconds
+     * @return array<int> Kept timestamps, re-indexed
+     */
+    private function pruneStamps(array $stamps, int $window): array
+    {
+        $now = time();
+        return array_values(array_filter(
+            $stamps,
+            static fn($t): bool => ($now - (int)$t) < $window
+        ));
     }
 }

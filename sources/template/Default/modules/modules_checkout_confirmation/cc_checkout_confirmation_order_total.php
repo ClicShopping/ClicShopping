@@ -43,8 +43,6 @@ class cc_checkout_confirmation_order_total
 
         $content_width = (int)MODULE_CHECKOUT_CONFIRMATION_ORDER_TOTAL_CONTENT_WIDTH;
 
-        $CLICSHOPPING_OrderTotal->process();
-
         $order_total = $CLICSHOPPING_OrderTotal->output();
 
         $confirmation = '  <!-- cc_checkout_confirmation_order_total start -->' . "\n";

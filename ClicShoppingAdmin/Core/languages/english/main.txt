@@ -367,6 +367,7 @@ tab_quantity_discount = Qty discount
 tab_statistics =  Statistics
 fixed_amount = Fixed Amount
 percentage_discount = Percentage discount
+shipping_discount = Shipping discount
 price_total = Total Price
 product_quantity = Product quantity
 keywords_google_trend = Keywords Google trend

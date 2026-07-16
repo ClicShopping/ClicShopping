@@ -8,11 +8,12 @@
 
 namespace ClicShopping\Apps\Report\StatsProductsNotification\Module\Hooks\ClicShoppingAdmin\StatsDashboard;
 
+use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Report\StatsProductsNotification\StatsProductsNotification as StatsProductsNotificationApp;
 
-class PageTabContent implements \ClicShopping\OM\Modules\HooksInterface
+class PageTabContent implements HooksInterface
 {
   public mixed $app;
 

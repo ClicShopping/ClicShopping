@@ -64,6 +64,17 @@ class EntityTracker
    */
   public function setLastEntity(int $entityId, string $entityType, ?string $entityName = null): void
   {
+    // No-clobber guard: a nameless re-set of the SAME entity must not erase a name we already
+    // hold. Several call sites (StoreMemoryStage, MemoryManager::storeOrchestrationResult) re-set
+    // the entity with id+type only AFTER the executor captured the name; without this guard the
+    // name is lost and contextual follow-ups ("its sku") can no longer be resolved.
+    if (($entityName === null || $entityName === '')
+        && $entityId === $this->lastEntityId
+        && $entityType === $this->lastEntityType
+        && ($this->lastEntityName !== null && $this->lastEntityName !== '')) {
+      $entityName = $this->lastEntityName;
+    }
+
     $this->lastEntityId = $entityId;
     $this->lastEntityType = $entityType;
     $this->lastEntityName = $entityName;

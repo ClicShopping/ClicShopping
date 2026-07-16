@@ -262,8 +262,9 @@ class TX implements OrderTotalInterface
 // normal tax
 // ************************************
 
+//Taxes must appear same if the value is 0
       foreach ($CLICSHOPPING_Order->info['tax_groups'] as $key => $value) {
-        if ($value > 0) {
+        if ($value >= 0) {
           $this->output[] = [
             'title' => $key,
             'text' => $CLICSHOPPING_Currencies->format($value, true, $CLICSHOPPING_Order->info['currency'], $CLICSHOPPING_Order->info['currency_value']),

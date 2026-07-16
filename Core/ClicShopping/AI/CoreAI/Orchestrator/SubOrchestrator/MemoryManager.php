@@ -228,6 +228,17 @@ class MemoryManager
     $queryAnalyzer,
     $responseProcessor
   ): void {
+    // Recover the entity NAME captured earlier this turn (e.g. by AnalyticsExecutor) so it can be
+    // persisted in the memory metadata. getLastEntity() DB fallback reads metadata['entity_name'],
+    // so without this a cross-message follow-up ("its sku") loses the name and cannot be resolved.
+    $entityName = null;
+    if ($this->conversationMemory && $entityId !== 0) {
+      $tracked = $this->conversationMemory->getLastEntity();
+      if ($tracked !== null && (int)($tracked['id'] ?? 0) === $entityId) {
+        $entityName = $tracked['name'] ?? null;
+      }
+    }
+
     // Build metadata
     $metadata = [
       'success' => true,
@@ -241,6 +252,7 @@ class MemoryManager
       'validations_performed' => count($validationResults),
       'entity_id' => $entityId,
       'entity_type' => $entityType,
+      'entity_name' => $entityName,
       'user_id' => $userId,
       'language_id' => $languageId,
       'timestamp' => time(),
@@ -283,9 +295,9 @@ class MemoryManager
       }
     }
 
-    // Store last entity
+    // Store last entity (with the recovered name so contextual follow-ups keep working).
     if ($entityId !== null && $entityId !== 0) {
-      $this->setLastEntity($entityId, $entityType);
+      $this->setLastEntity($entityId, $entityType, $entityName);
     }
   }
 }

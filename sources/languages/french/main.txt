@@ -16,6 +16,7 @@ header_title_top = Accueil
 header_title_catalog = {{store_name}}
 
 text_selected = Selectionner
+text_rate_limiter_wait = Veuillez attendre {{wait}} secondes avant de relancer cette opération.
 type_below = Ci dessous
 
 footer_text_requests_since = requêtes depuis le
@@ -224,6 +225,8 @@ text_out_of_stock_pre_order = Pré-commande
 text_antispam = trois
 
 entry_discount_coupon_error = Le code du coupon est invalide, veuillez reessayer.
+entry_discount_coupon_not_applicable_products = Le coupon inséré est invalide ou ne s'applique pas aux produits sélectionnés dans le panier.
+entry_discount_coupon_specials_error = Ce coupon ne s'applique pas à un produit en promotion : {{product}}
 entry_discount_coupon_available_error = Le code du coupon insere n est pas ou plus valide.
 entry_discount_coupon_use_error = Nos informations nous disent que vous avez deja utilise ce coupon {{entry_discount_coupon_use_error}} fois. Vous ne pouvez plus l utiliser. que  {{entry_discount_coupon_max_use}} fois.
 entry_discount_coupon_min_price_error = La commande minimale pour ce coupon est de {{discount_min_price_error}}

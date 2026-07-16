@@ -410,6 +410,7 @@ tab_statistics =  Statistics
 
 fixed_amount = Montant fixe
 percentage_discount =  Remise sur pourcentage
+shipping_discount = Remise sur livraison
 price_total = Total du prix
 product_quantity = Quantité de produit
 

@@ -102,11 +102,10 @@ class ConversationMemory
 
   private int $entityId;
   private ?string $lastQueryType = null;
-  
-  // Entity tracking properties (for backward compatibility)
   private ?int $lastEntityId = null;
   private ?string $lastEntityType = null;
-  
+  private bool $lastQueryReferencedEntity = false;
+
   // Database prefix
   private string $prefix;
 
@@ -490,7 +489,10 @@ class ConversationMemory
   public function resolveContextualReferences(string $query): array
   {
     $startTime = microtime(true);
-    
+
+    // Reset per-call: only the reference-resolution branch below may flip this to true.
+    $this->lastQueryReferencedEntity = false;
+
     if ($this->debug) {
       error_log("[ConversationMemory] resolveContextualReferences called for query: " . substr($query, 0, 50));
     }
@@ -511,6 +513,7 @@ class ConversationMemory
         $resolution = (new ReferenceResolver($this->debug))->resolve($query, $lastEntity);
         $referencesEntity = (bool)($resolution['references_entity'] ?? false);
         $resolvedQuery = (string)($resolution['resolved_query'] ?? $query);
+        $this->lastQueryReferencedEntity = $referencesEntity;
 
         if ($this->debug) {
           $this->securityLogger->logSecurityEvent(
@@ -668,6 +671,22 @@ class ConversationMemory
   public function getLastEntity(): ?array
   {
     return $this->entityTracker->getLastEntity();
+  }
+
+  /**
+   * Whether the most recent resolveContextualReferences() call found that the query actually
+   * referenced the last entity (pronoun/possessive follow-up such as "its price", "son sku").
+   *
+   * Consumers use this to decide whether injecting the last entity into a prompt is safe: a
+   * false verdict means the current query is self-contained, so a stale entity id (e.g. a
+   * product) must NOT leak into an unrelated query (e.g. as a customers_id filter).
+   *
+   * @return bool True when the last query referenced the last entity, false otherwise
+   *              (and false until resolveContextualReferences() has run for the current query).
+   */
+  public function didLastQueryReferenceEntity(): bool
+  {
+    return $this->lastQueryReferencedEntity;
   }
 
   /**

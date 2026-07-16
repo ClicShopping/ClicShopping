@@ -16,6 +16,7 @@ header_title_top = Index
 header_title_catalog = {{store_name}}
 
 text_selected = Select
+text_rate_limiter_wait = Please wait {{wait}} seconds before restarting this operation.
 type_below = Type Below
 
 footer_text_requests_since = requests since
@@ -223,6 +224,8 @@ text_out_of_stock_allow_checkout = Order out of stock accepted
 text_antispam = three
 
 entry_discount_coupon_error = The coupon code you have inserted is not valid.
+entry_discount_coupon_not_applicable_products = The coupon entered is invalid or does not apply to the products selected in the cart.
+entry_discount_coupon_specials_error = This coupon does not apply to a product on special offer: {{product}}
 entry_discount_coupon_available_error = The coupon code you have entered is no longer valid.
 entry_discount_coupon_use_error = Our records show that you have used this coupon {{entry_discount_coupon_use_error}} time(s).  You may not use this code more than {{entry_discount_coupon_max_use}} time(s).
 entry_discount_coupon_min_price_error = The minimum order total for this coupon is {{discount_min_price_error}}

@@ -750,6 +750,16 @@ COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
 5. Add appropriate ORDER BY clauses
 6. Limit results to reasonable number if necessary (LIMIT)
 
+🚨 RULE — NAMED FILTER WITH NO VALUE → LIST, NEVER INVENT OR PLACEHOLDER 🚨
+When the question NAMES a filter column ("based on customer ID", "by product id", "for an order id") but gives NO concrete value:
+- NEVER invent a value, and NEVER reuse an id from the conversation context that the question did not explicitly ask for.
+- NEVER emit a bind placeholder (?, :id, %s, or <id>): the SQL is executed verbatim, an unbound placeholder is a syntax error.
+- Instead LIST: select the requested columns for ALL rows, ordered by that id ascending, with a reasonable LIMIT (default 100).
+✅ CORRECT (no id given): SELECT customers_id, CONCAT(customers_firstname, ' ', customers_lastname) AS customers_name, customers_email_address, customers_telephone FROM clic_customers ORDER BY customers_id ASC LIMIT 100
+❌ WRONG (unbound placeholder): SELECT ... FROM clic_customers WHERE customers_id = ?
+❌ WRONG (invented / context-borrowed id): SELECT ... FROM clic_customers WHERE customers_id = 103
+Add a WHERE on the id ONLY when the question itself contains a concrete id value (e.g. "customer 42").
+
 6.1. ORDER BY SYNTAX RULES (CRITICAL - PREVENTS COLUMN REFERENCE ERRORS):
 
    When using aggregate functions (YEAR, QUARTER, MONTH, etc.) in GROUP BY, you MUST follow these rules for ORDER BY:
