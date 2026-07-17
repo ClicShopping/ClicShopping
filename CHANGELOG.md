@@ -6,7 +6,8 @@ version4.33
 - ChatGpt Apps refactored
 - error_log management improved
 - AI response optimization
-
+- Allow to manage 3 taxes (europe, CA, US for example) 
+- Order total caculation improvment
 
 ---------------
 version4.32

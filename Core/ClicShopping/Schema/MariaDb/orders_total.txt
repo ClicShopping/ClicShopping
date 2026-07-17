@@ -5,6 +5,7 @@ text varchar(255) not_null comment(Formatted text value for display - e.g. $10.0
 value decimal(15,4) not_null comment(Numeric value for calculations)
 class varchar(255) not_null comment(Total module class name - identifies the type of total)
 sort_order int(3) not_null comment(Display order for total lines - subtotal first, grand total last)
+total_sign tinyint default(1) not_null comment(Sign for grand-total recompute - +1 charge, -1 credit/discount)
 --
 primary orders_total_id
 idx_orders_total_orders_id orders_id

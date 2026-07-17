@@ -28,3 +28,6 @@ INSERT INTO `clic_cron` VALUES(null, 'productReviewSentiment', 'Daily AI review 
 UPDATE clic_cron SET cycle='week' WHERE code IN('backup','embeddings');
 UPDATE clic_cron SET cycle='month' WHERE code IN('gdpr','marketplace');
 
+  ALTER TABLE clic_orders_total
+    ADD COLUMN IF NOT EXISTS total_sign TINYINT NOT NULL DEFAULT 1
+    COMMENT 'Sign for grand-total recompute - +1 charge, -1 credit/discount' AFTER sort_order;

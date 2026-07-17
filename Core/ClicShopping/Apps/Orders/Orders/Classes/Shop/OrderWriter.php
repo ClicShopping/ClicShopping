@@ -61,6 +61,8 @@ class OrderWriter
    */
   public function insertOrderTotals(int $order_id, array $orderTotals): void
   {
+    $has_sign = $this->ordersTotalHasSignColumn();
+
     for ($i = 0, $n = count($orderTotals); $i < $n; $i++) {
       $sql_data_array = [
         'orders_id' => (int)$order_id,
@@ -71,8 +73,33 @@ class OrderWriter
         'sort_order' => (int)$orderTotals[$i]['sort_order']
       ];
 
+      // total_sign: +1 charge, -1 credit/discount — written only when the column exists so a
+      // deploy that lands before the DB migration never breaks checkout (defensive rollout).
+      if ($has_sign) {
+        $sql_data_array['total_sign'] = (int)($orderTotals[$i]['total_sign'] ?? 1);
+      }
+
       $this->db->save('orders_total', $sql_data_array);
     }
+  }
+
+  /**
+   * Whether orders_total carries the total_sign column yet (added by the 4.33 migration).
+   * Cached for the request so we probe the schema at most once.
+   *
+   * @return bool
+   */
+  private function ordersTotalHasSignColumn(): bool
+  {
+    static $exists = null;
+
+    if ($exists === null) {
+      $Q = $this->db->prepare("SHOW COLUMNS FROM :table_orders_total LIKE 'total_sign'");
+      $Q->execute();
+      $exists = (bool)$Q->fetch();
+    }
+
+    return $exists;
   }
 
   /**

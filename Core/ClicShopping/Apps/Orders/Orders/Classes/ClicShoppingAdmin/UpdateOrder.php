@@ -8,8 +8,11 @@
 
 namespace ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin;
 
+use ClicShopping\OM\Apps;
 use ClicShopping\OM\Hooks;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\OrderTotalRecalcContext;
+use ClicShopping\OM\Interfaces\OrderTotalAdminRecalculable;
 
 use ClicShopping\Sites\Shop\Tax;
 
@@ -211,6 +214,146 @@ class UpdateOrder
     return true;
   }
 
+/**
+   * Net contribution of the optional OrderTotal rows (discounts / surcharges / fees / custom)
+   * to the grand total: Σ (total_sign × value) over every orders_total row that is NOT one of the
+   * base components (ST / TX / SH / TO, incl. their ot_* aliases).
+   *
+   * The sign comes from the total_sign column (+1 charge, -1 credit) when it exists; before the 4.33
+   * migration it falls back to a known-discount-class map so the fix still applies to the standard
+   * modules. Stored values are never modified — this only reads them (line-178 fallback).
+   *
+   * @param mixed $db
+   * @param int   $order_id
+   * @return float
+   */
+  /**
+   * Re-runs the installed OrderTotal modules that implement {@see OrderTotalAdminRecalculable},
+   * replacing their orders_total rows with amounts recomputed against the edited order. Driven by
+   * MODULE_ORDER_TOTAL_INSTALLED so it is app-agnostic (OrderTotal, Marketing, custom) and open/closed
+   * — a new module opts in by implementing the contract, no change here.
+   *
+   * A module is recomputed ONLY when the order already carries a row of its class (so it was applied
+   * at checkout) — editing never adds a module the order never had. Modules that do not implement the
+   * contract, or return null, keep their stored rows (handled by the caller's keep-value + sign path).
+   *
+   * @param mixed                   $db
+   * @param int                     $order_id
+   * @param array                   $meta      class → ['title','sort_order'] of the order's current rows.
+   * @param OrderTotalRecalcContext $context
+   * @return void
+   */
+  private static function recalculateContractModules(mixed $db, int $order_id, array $meta, OrderTotalRecalcContext $context): float
+  {
+    if (!defined('MODULE_ORDER_TOTAL_INSTALLED') || MODULE_ORDER_TOTAL_INSTALLED === null) {
+      return 0.0;
+    }
+
+    $has_sign  = self::ordersTotalHasSignColumn($db);
+    $base      = ['ST', 'ot_subtotal', 'TX', 'ot_tax', 'SH', 'ot_shipping', 'TO', 'ot_total'];
+    $tax_delta = 0.0;
+
+    foreach (explode(';', (string)MODULE_ORDER_TOTAL_INSTALLED) as $moduleRef) {
+      if (!str_contains($moduleRef, '\\')) {
+        continue;
+      }
+
+      $class = Apps::getModuleClass($moduleRef, 'OrderTotal');
+      if (empty($class) || !class_exists($class) || !is_subclass_of($class, OrderTotalAdminRecalculable::class)) {
+        continue;
+      }
+
+      try {
+        $module = new $class();
+      } catch (\Throwable $e) {
+        continue; // cannot instantiate admin-side → keep the stored rows (fallback)
+      }
+
+      $code = $module->code ?? '';
+
+      // Only recompute a module that was actually applied to this order and is not a base component.
+      if ($code === '' || !isset($meta[$code]) || \in_array($code, $base, true)) {
+        continue;
+      }
+
+      $result = $module->recalculateForOrder($context);
+      if ($result === null) {
+        continue; // module declined to recompute → keep the stored rows (fallback)
+      }
+
+      $tax_delta += (float)($result['taxDelta'] ?? 0.0);
+
+      $sort_order = $meta[$code]['sort_order'] ?? 0;
+      $db->delete('orders_total', ['orders_id' => $order_id, 'class' => $code]);
+
+      foreach (($result['rows'] ?? []) as $row) {
+        $data = [
+          'orders_id'  => $order_id,
+          'class'      => $code,
+          'title'      => $row['title'],
+          'text'       => $row['text'],
+          'value'      => (float)$row['value'],
+          'sort_order' => $sort_order,
+        ];
+        if ($has_sign) {
+          $data['total_sign'] = (int)($row['sign'] ?? 1);
+        }
+        $db->save('orders_total', $data);
+      }
+    }
+
+    return $tax_delta;
+  }
+
+  private static function sumOptionalTotalRows(mixed $db, int $order_id): float
+  {
+    $has_sign = self::ordersTotalHasSignColumn($db);
+
+    $columns = 'class, value' . ($has_sign ? ', total_sign' : '');
+    $Q = $db->prepare("select $columns
+                         from :table_orders_total
+                        where orders_id = :orders_id
+                          and class not in ('ST', 'ot_subtotal', 'TX', 'ot_tax', 'SH', 'ot_shipping', 'TO', 'ot_total')
+                      ");
+    $Q->bindInt(':orders_id', $order_id);
+    $Q->execute();
+
+    $sum = 0.0;
+    while ($Q->fetch()) {
+      if ($has_sign) {
+        $sign = $Q->valueInt('total_sign');
+        $sign = ($sign < 0) ? -1 : 1;
+      } else {
+        // Pre-migration fallback: known credit modules subtract, everything else adds.
+        $sign = \in_array($Q->value('class'), ['DC', 'CD'], true) ? -1 : 1;
+      }
+
+      $sum += $sign * $Q->valueDecimal('value');
+    }
+
+    return $sum;
+  }
+
+  /**
+   * Whether orders_total carries the total_sign column (added by the 4.33 migration). Cached per
+   * request so the schema is probed at most once.
+   *
+   * @param mixed $db
+   * @return bool
+   */
+  private static function ordersTotalHasSignColumn(mixed $db): bool
+  {
+    static $exists = null;
+
+    if ($exists === null) {
+      $Q = $db->prepare("SHOW COLUMNS FROM :table_orders_total LIKE 'total_sign'");
+      $Q->execute();
+      $exists = (bool)$Q->fetch();
+    }
+
+    return $exists;
+  }
+
  
   /**
    * Resolves the display title for a TX (tax) line of a given rate.
@@ -321,8 +464,12 @@ class UpdateOrder
    * GST/PST/HST split to the shared Tax::computeDoubleTaxRows(), the same helper the
    * checkout ot_tax module uses, so both render identical tax lines.
    *
-   * Rows whose class is not ST/TX/SH/TO (e.g. discount coupons, custom modules) are
-   * left untouched so no data is lost.
+   * Optional module rows (discounts / surcharges / fees / custom) are included in the grand total
+   * by their sign × value (+1 charge, -1 credit). A module that implements
+   * {@see \ClicShopping\OM\Interfaces\OrderTotalAdminRecalculable} is re-run against the edited order
+   * so percentage/option amounts (e.g. CustomerDiscount, Surcharge) rescale; others keep their stored
+   * value (line-178 fallback). Driven by MODULE_ORDER_TOTAL_INSTALLED (app-agnostic), a module is only
+   * recomputed when the order already carries a row of its class.
    *
    * Called automatically by updateOrderProduct, addOrderProduct and
    * deleteOrderProduct — callers do not need to invoke it directly.
@@ -336,9 +483,10 @@ class UpdateOrder
     $db         = Registry::get('Db');
     $currencies = Registry::get('Currencies');
 
-    // ── 1. Read the order's currency ───────────────
+    //1. Read the order's currency + customer 
     $Qorder = $db->prepare('select currency,
                                    currency_value,
+                                   customers_id,
                                    customers_group_id
                               from :table_orders
                              where orders_id = :orders_id
@@ -349,8 +497,9 @@ class UpdateOrder
 
     $currency       = $Qorder->value('currency') ?: 'EUR';
     $currency_value = $Qorder->valueDecimal('currency_value') ?: 1.0;
+    $customers_id   = $Qorder->valueInt('customers_id');
 
-    // ── 2. Read the existing shipping row (preserved as-is) ──────────────────
+    //2. Read the existing shipping row (preserved as-is)
     $Qship = $db->prepare("select value, 
                                    text, 
                                    title, 
@@ -465,11 +614,14 @@ class UpdateOrder
 
     // ── 5b. Double-tax jurisdictions (Canada GST/PST/HST) — delegate the split to the  shared Tax::computeDoubleTaxRows() so the admin renders exactly the same
     //        tax lines as the checkout ot_tax module. Only when there is taxable content.
-    $double_taxe = defined('DISPLAY_DOUBLE_TAXE') && DISPLAY_DOUBLE_TAXE == 'true';
-    $dt_rows     = null;
+    $double_taxe   = defined('DISPLAY_DOUBLE_TAXE') && DISPLAY_DOUBLE_TAXE == 'true';
+    $dt_rows       = null;
+
+    // Resolve the order's delivery zone once — used by the double-tax split AND passed in the
+    // recompute context (a module such as LowOrderFee needs the delivery country/zone).
+    [$dt_country_id, $dt_zone_id] = self::resolveOrderZone($db, $order_id);
 
     if ($double_taxe && $total_tax > 0) {
-      [$dt_country_id, $dt_zone_id] = self::resolveOrderZone($db, $order_id);
       $dt = Tax::computeDoubleTaxRows(
         $dt_country_id,
         $dt_zone_id,
@@ -483,7 +635,40 @@ class UpdateOrder
       $total_tax = $dt['tax_total']; // keep the grand total consistent with the split rows
     }
 
-    // ── 6. Grand total — same branching as cart(). Double-tax always adds tax on top (Order::info['total'] = subtotal + tax + shipping), like ot_tax does.
+    // ─5c. Re-run installed OrderTotal modules that implement the admin-recalc contract, so
+    //        percentage / option modules (e.g. CustomerDiscount) rescale against the EDITED order
+    //        instead of staying frozen at their checkout amount. App-agnostic (MODULE_ORDER_TOTAL_
+    //        INSTALLED). A module is only recomputed when the order already carries a row of its
+    //        class (it was applied at checkout) — editing never introduces a module the order never
+    //        had. Non-contract modules (e.g. session-only DiscountCoupon) keep their stored rows.
+    //        The context carries the GROSS tax; modules report a taxDelta (a discount reduces it).
+    $tax_delta = self::recalculateContractModules($db, $order_id, $meta, new OrderTotalRecalcContext(
+      subtotal:          $subtotal,
+      tax:               $total_tax,
+      shipping:          $shipping_value,
+      taxGroups:         [],
+      currency:          $currency,
+      currencyValue:     $currency_value,
+      customersId:       $customers_id,
+      customersGroupId:  $customers_group_id,
+      deliveryCountryId: $dt_country_id,
+      deliveryZoneId:    $dt_zone_id,
+      decimals:          $decimals
+    ));
+
+    // A commercial discount is levied on the NET (post-discount) base, so it removes tax (taxDelta<0).
+    // Apply it to the tax total AND proportionally to each rate row, so TX + TO match the checkout
+    // invoice (tax on the net) instead of the gross. Non-double-tax path (TX rebuilt from tax_by_rate).
+    if (abs($tax_delta) > 0.0001 && $total_tax > 0 && !$double_taxe) {
+      $net_tax = max(0.0, $total_tax + $tax_delta);
+      $factor  = $net_tax / $total_tax;
+      foreach ($tax_by_rate as $key => $group) {
+        $tax_by_rate[$key]['tax'] = $group['tax'] * $factor;
+      }
+      $total_tax = $net_tax;
+    }
+
+    //6. Grand total — same branching as cart() (uses the net tax after any discount reduction).
     if ($double_taxe) {
       $grand_total = $subtotal + $total_tax + $shipping_value;
     } elseif ($order_is_ttc
@@ -493,7 +678,13 @@ class UpdateOrder
       $grand_total = $subtotal + $total_tax + $shipping_value;
     }
 
-    // ── 6. Format amounts using the order's currency 
+    // 6b. Include the optional module rows (discounts / surcharges / fees / custom) in the grand
+    //        total WITHOUT changing their stored value for non-recomputable modules (line-178
+    //        fallback). Each such row contributes total_sign × value (+1 charge, -1 credit).
+    //        Module-agnostic — no hard-coded class list beyond the base ST/TX/SH/TO components.
+    $grand_total += self::sumOptionalTotalRows($db, $order_id);
+
+    // ── 6. Format amounts using the order's currency
     $fmt = static function (float $v) use ($currencies, $currency, $currency_value): string {
       return $currencies->format($v, true, $currency, $currency_value);
     };

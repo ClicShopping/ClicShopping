@@ -108,7 +108,10 @@ class OrderTotal
                   'title' => $CLICSHOPPING_OTM->output[$i]['title'],
                   'text' => $CLICSHOPPING_OTM->output[$i]['text'],
                   'value' => $CLICSHOPPING_OTM->output[$i]['value'],
-                  'sort_order' => $CLICSHOPPING_OTM->sort_order
+                  'sort_order' => $CLICSHOPPING_OTM->sort_order,
+                  // +1 charge, -1 credit/discount — modules that deduct (DC, CD) set total_sign = -1;
+                  // everything else defaults to +1. Used by the admin recalc to recompute the total.
+                  'total_sign' => $CLICSHOPPING_OTM->total_sign ?? 1
                 ];
               }
             }

@@ -70,10 +70,12 @@ switch ($module_type) {
           <span
             class="col-md-5 pageHeading"><?php echo '&nbsp;' . $CLICSHOPPING_Modules->getDef('heading_title'); ?></span>
           <span class="col-md-6 text-end">
+           
             <button type="button" class="btn btn-link"><a href="https://www.clicshopping.org/forum/files/"
                                                           target="_blank"
                                                           rel="noreferrer"><?php echo $CLICSHOPPING_Modules->getDef('button_marketplace'); ?></a></button>
-            <?php 
+            -->
+            <?php
 	      echo HTML::button($CLICSHOPPING_Modules->getDef('button_extension'), null, CLICSHOPPING::link(null, 'A&Tools\Upgrade&Upgrade'), 'primary');
 
             if (isset($_GET['action']) && $_GET['action'] == 'edit') {
