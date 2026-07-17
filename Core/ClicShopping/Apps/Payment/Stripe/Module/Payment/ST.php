@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Payment\Stripe\Module\Payment;
 
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
@@ -238,7 +239,13 @@ class ST implements PaymentInterface
     StripeAPI::setApiKey($this->private_key);
 
     $customer_id = $CLICSHOPPING_Customer->getId();
+
     $currency = mb_strtoupper($CLICSHOPPING_Order->info['currency']);
+
+    if ($currency === '') {
+      Registry::get('MessageStack')->add($this->app->getDef('error_stripe_payment_processing'), 'error', 'header');
+      CLICSHOPPING::redirect(null, 'Checkout&Billing');
+    }
     // Stripe expects the amount in the currency's smallest unit, which depends on its decimals:
     //  - zero-decimal currencies (JPY, KRW, …): the plain amount, no ×100;
     //  - three-decimal currencies (BHD, KWD, …): ×1000, but rounded to the nearest 10 (last digit 0);

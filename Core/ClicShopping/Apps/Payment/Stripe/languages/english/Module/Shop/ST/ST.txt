@@ -12,4 +12,5 @@ text_stripe_initial_processing = Initial processing by Stripe (not shown to the 
 module_stripe_error_general = An error has been detected, please try another time
 module_stripe_error_stripe = Error during the process via Stripe payment
 module_stripe_error_title = Stripe error
+error_stripe_payment_processing = The payment could not be processed. Please try again. If the problem persists, please contact us.
 

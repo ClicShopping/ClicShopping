@@ -192,12 +192,6 @@ use ClicShopping\OM\HTML;
           }
         ?>
         <?php echo HTML::link(CLICSHOPPING::link(null, 'Info&Contact'), CLICSHOPPING::getDef('modules_header_multi_template_title_contact_us')); ?>
-        <div class="multiTemplateDefault-language mt-3">
-          <ul>
-            <li class="multiTemplateDefault-language-item"><?php echo $languages_string; ?></li>
-            <li class="multiTemplateDefault-currency-item"><?php echo $currency_header; ?></li>
-          </ul>
-        </div>
       </div>
     </div>
   </div>

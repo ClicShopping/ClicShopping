@@ -74,9 +74,9 @@ switch ($module_type) {
             <button type="button" class="btn btn-link"><a href="https://www.clicshopping.org/forum/files/"
                                                           target="_blank"
                                                           rel="noreferrer"><?php echo $CLICSHOPPING_Modules->getDef('button_marketplace'); ?></a></button>
-            -->
+            
             <?php
-	      echo HTML::button($CLICSHOPPING_Modules->getDef('button_extension'), null, CLICSHOPPING::link(null, 'A&Tools\Upgrade&Upgrade'), 'primary');
+	           echo HTML::button($CLICSHOPPING_Modules->getDef('button_extension'), null, CLICSHOPPING::link(null, 'A&Tools\Upgrade&Upgrade'), 'primary');
 
             if (isset($_GET['action']) && $_GET['action'] == 'edit') {
               echo '<span class="cols-xs-3 float-end">';

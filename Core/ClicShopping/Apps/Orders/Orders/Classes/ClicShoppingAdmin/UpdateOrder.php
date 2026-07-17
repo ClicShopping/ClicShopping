@@ -653,7 +653,9 @@ class UpdateOrder
       customersGroupId:  $customers_group_id,
       deliveryCountryId: $dt_country_id,
       deliveryZoneId:    $dt_zone_id,
-      decimals:          $decimals
+      decimals:          $decimals,
+      orderId:           $order_id,
+      pricesIncludeTax:  $order_is_ttc
     ));
 
     // A commercial discount is levied on the NET (post-discount) base, so it removes tax (taxDelta<0).

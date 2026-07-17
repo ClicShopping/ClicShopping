@@ -387,11 +387,13 @@ class Order
     $tax_address = $resolvedAddresses['tax_address'];
 
     if ((isset($_SESSION['payment']) && is_array($_SESSION['payment'])) || (isset($_SESSION['shipping']) && is_array($_SESSION['shipping']))) {
+      $order_currency = $_SESSION['currency'];
+
       $this->info = [
         'order_status' => defined('DEFAULT_ORDERS_STATUS_ID') ? (int)DEFAULT_ORDERS_STATUS_ID : 0,
         'order_status_invoice' => defined('DEFAULT_ORDERS_STATUS_INVOICE_ID') ? (int)DEFAULT_ORDERS_STATUS_INVOICE_ID : 0,
-        'currency' => $_SESSION['currency'],
-        'currency_value' => $CLICSHOPPING_Currencies->currencies[$_SESSION['currency']]['value'],
+        'currency' => $order_currency,
+        'currency_value' => $CLICSHOPPING_Currencies->currencies[$order_currency]['value'] ?? 1,
         'payment_method' => $_SESSION['payment'] ?? '',
         'cc_type' => '',
         'cc_owner' => '',

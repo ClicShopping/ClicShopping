@@ -328,7 +328,8 @@ class Currencies
       if (!isset($_GET['Checkout'])) {
         $currency_header .= HTML::form('currencies', CLICSHOPPING::link(), 'get', null, ['session_id' => true]);
         $aria = $aria_label !== '' ? ' aria-label="' . HTML::outputProtected($aria_label) . '"' : '';
-        $currency_header .= HTML::selectField('currency', $currencies_array, HTML::sanitize($_SESSION['currency']), 'class="' . $class . '"' . $aria . ' onchange="this.form.submit();"') . $hidden_get_variables;
+
+        $currency_header .= $hidden_get_variables . HTML::selectField('currency', $currencies_array, HTML::sanitize($_SESSION['currency']), 'class="' . $class . '"' . $aria . ' onchange="this.form.submit();"');
         $currency_header .= '</form>';
       } else {
         $currency_header = '';

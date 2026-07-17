@@ -38,7 +38,7 @@ abstract class ConfigAbstract
 
     $this->code = (new \ReflectionClass($this))->getShortName();
 
-    $this->app->loadDefinitions('module/' . $this->code . '/' . $this->code);
+    $this->app->loadDefinitions('Module/ClicShoppingAdmin/Config/' . $this->code . '/' . $this->code);
 
     $this->init();
   }

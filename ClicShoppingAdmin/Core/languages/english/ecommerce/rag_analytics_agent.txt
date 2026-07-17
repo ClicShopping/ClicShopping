@@ -695,6 +695,7 @@ ORDERS:
   Classes: 'ST' = Subtotal (use for revenue/turnover), 'SH' = Shipping, 'TX' = Tax, 'TO' = Total (final order total), 'CD' = Customer Discount (remise client), 'DC' = Discount Coupon (bon de réduction), 'LO' = Low Order Fee, 'SU' = Surcharge.
   **IMPORTANT**: For revenue/turnover queries, use class='ST' (Subtotal), NOT 'TO' or 'OT'
   **DISCOUNTS/COUPONS granted on orders live HERE**, as orders_total lines: customer discount = class='CD', coupon = class='DC'. The amount is `ot.value`, the label is `ot.title`. This is DIFFERENT from `clic_specials` (product promotional prices). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price) — that is NOT the customer discount.
+- discount_coupons: Coupon DEFINITIONS only (coupons_id, coupons_description, coupons_discount_amount, coupons_discount_type). Link table discount_coupons_to_orders (coupons_id, orders_id). Use these ONLY to fetch a coupon's code/description; the amount actually applied to an order is the orders_total class='DC' line. For "coupons granted/used ON orders", go through orders_total WHERE class='DC' (it already carries orders_id + value + title) — do NOT answer from discount_coupons alone, it has no per-order amount.
 
 CUSTOMERS:
 - customers: Customer info (customers_id, customers_name, customers_email_address, customers_status)
@@ -840,9 +841,10 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    - "quantity ordered" / "quantity sold" → products_quantity (in orders_products table)
    - "transaction price" / "sale price" → products_price (in orders_products table)
    - "order total" / "revenue" / "turnover" → value (in orders_total WHERE class='ST')
-   - "customer discount" / "remise client" / "discounts granted" / "remises accordées" → orders_total WHERE class='CD' (value = amount, title = label)
-   - "coupon" / "bon de réduction" / "code promo used" → orders_total WHERE class='DC'
-   - "discounts and coupons" / "toutes les remises" → orders_total WHERE class IN ('CD','DC')
+   - "customer discount" / "remise client" (with the 'customer'/'client' qualifier) → orders_total WHERE class='CD' (value = amount, title = label)
+   - "coupon" / "bon de réduction" / "code promo" / "coupons granted"/"coupons octroyés"/"coupons used" → orders_total WHERE class='DC' (value = amount, title = label)
+   - bare "discount(s)" / "remise(s)" / "discounts granted" / "remises accordées" / "remises effectuées" / "discounts and coupons" / "toutes les remises" (NO 'customer'/'client' qualifier) → orders_total WHERE class IN ('CD','DC'). This is the DEFAULT for any unqualified discount question: coupons ARE discounts, so include them unless the user explicitly restricts to customer discounts.
+   - ALWAYS expose the discount TYPE: include `ot.class` (CD = customer discount, DC = coupon) and `ot.title` in the SELECT so each row states which kind of discount it is.
    **CRITICAL**: For revenue/turnover, ALWAYS use class='ST' (Subtotal), NOT 'TO' or 'OT'
    **CRITICAL**: Discounts/coupons granted on orders are orders_total lines (class 'CD'/'DC', amount = ot.value, label = ot.title). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price); that is NOT the discount. clic_specials is unrelated (product promo prices).
    **CRITICAL**: the customer discount is ORDER-LEVEL (one orders_total CD line per order, applied to the whole order), NOT per product. To list the PRODUCTS of discounted orders ("products that received a discount" / "produits qui ont reçu une remise"), JOIN clic_orders_products (and clic_products_description) to the SAME order that has the class='CD' line.
@@ -1133,6 +1135,8 @@ AGGREGATION QUERIES:
 - 'total customer discounts granted' / 'montant total des remises clients' → SELECT SUM(ot.value) AS total_discount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'CD'
 - 'products ordered that received a discount' / 'produits commandés qui ont reçu une remise' → SELECT o.orders_id, pd.products_name, op.products_quantity, ot.value AS discount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' JOIN clic_orders_products op ON o.orders_id = op.orders_id JOIN clic_products_description pd ON op.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE o.orders_status != 4 ORDER BY o.orders_id
 (The discount is order-level: each product line of a discounted order is returned with that order's CD discount — NEVER a per-product price difference)
+- 'coupons granted on orders' / 'coupons used on orders' / 'coupons octroyés sur les commandes' / 'bons de réduction utilisés' → SELECT o.orders_id, MAX(o.customers_name) AS customers_name, ot.title AS coupon, ot.value AS amount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'DC' WHERE o.orders_status != 4 GROUP BY o.orders_id, ot.title, ot.value ORDER BY o.orders_id
+- 'all discounts on orders' / 'toutes les remises effectuées sur les commandes' / 'remises et coupons' → SELECT o.orders_id, MAX(o.customers_name) AS customers_name, ot.class AS discount_type, ot.title, ot.value AS amount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class IN ('CD','DC') WHERE o.orders_status != 4 GROUP BY o.orders_id, ot.class, ot.title, ot.value ORDER BY o.orders_id (discount_type CD = customer discount, DC = coupon)
 
 PRODUCT QUERIES:
 - 'stock of product [ProductName]' → SELECT p.products_quantity, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
