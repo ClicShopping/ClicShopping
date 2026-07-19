@@ -1,0 +1,105 @@
+text_rag_detect_ambiguity = You are an expert at analyzing database queries for ambiguity. Your task is to analyze the user's query to identify any lack of clarity before SQL generation.
+Analyze this query and determine if it is ambiguous (could have multiple valid interpretations).
+Query: {{QUERY}}
+**CRITICAL RULE - EXPLICIT TIME REFERENCES ARE NOT AMBIGUOUS**:
+If the query contains EXPLICIT time references, IMMEDIATELY return is_ambiguous: false:
+* "this month", "this year", "this week", "this quarter", "this day"
+* "last month", "last year", "last week", "last quarter", "last 30 days"
+* "today", "yesterday", "tomorrow"
+* "ce mois", "ce mois-ci", "cette année", "cette semaine", "ce trimestre"
+* "le mois dernier", "l'année dernière", "la semaine dernière"
+* "aujourd'hui", "hier", "demain"
+* "in January", "in 2025", "for Q1", "en janvier", "en 2025", "pour Q1"
+These are EXPLICIT time specifications pointing to a SPECIFIC period. Return is_ambiguous: false immediately.
+**CRITICAL RULE - MISSING TEMPORAL UNIT (temporal_unit_missing)**:
+A NUMBER followed by "last"/"past"/"previous"/"derniers"/"dernières" WITHOUT a following time UNIT (day/week/month/year, jour/semaine/mois/an/année) is AMBIGUOUS — the unit is missing and MUST NOT be guessed:
+* "the last 12", "over the past 6", "for the previous 3" → AMBIGUOUS (12/6/3 of WHAT? days? weeks? months? years?)
+* "les 12 derniers", "sur les 6 dernières", "les 3 derniers" → AMBIGUOUS (12/6/3 quoi ? jours ? semaines ? mois ? années ?)
+By contrast, when the unit IS present the reference is EXPLICIT and NOT ambiguous: "last 12 months", "last 30 days", "les 12 derniers mois", "les 30 derniers jours".
+EQUALLY NOT ambiguous — and NEVER temporal_unit_missing: when the number is immediately followed by a COUNTABLE RECORD/ENTITY noun ({{countable_entity_nouns}}). {{recent_records_example}} means the 3 MOST RECENT records of that entity (sort by date or id DESC, LIMIT N) — set is_ambiguous false and "recommendation": "proceed", do NOT clarify. The unit is only "missing" when NO countable noun follows the number.
+For temporal_unit_missing set "recommendation": "clarify" and provide interpretations naming the plausible units (months / days / years). DO NOT silently default the unit — the user must confirm which period unit they mean.
+**NEW CRITICAL RULE - TEMPORAL PERIOD SCOPE AMBIGUITY**:
+If the query contains PERIODIC terms WITHOUT explicit time reference, this IS AMBIGUOUS (temporal_period_scope):
+* "monthly", "mensuel", "mensuellement" → AMBIGUOUS: could mean "current month" OR "breakdown by month"
+* "yearly", "annuel", "annuellement" → AMBIGUOUS: could mean "current year" OR "breakdown by year"
+* "weekly", "hebdomadaire" → AMBIGUOUS: could mean "current week" OR "breakdown by week"
+* "quarterly", "trimestriel" → AMBIGUOUS: could mean "current quarter" OR "breakdown by quarter"
+* "daily", "quotidien" → AMBIGUOUS: could mean "today" OR "breakdown by day"
+For temporal_period_scope ambiguity, provide these interpretations:
+1. current_period: "For the current [period] only" (e.g., WHERE MONTH(date) = CURRENT_MONTH)
+2. breakdown: "Breakdown by [period]" (e.g., GROUP BY MONTH(date))
+Examples of temporal_period_scope ambiguity:
+{{temporal_scope_ambiguous_examples}}
+Examples that are NOT ambiguous:
+{{temporal_scope_clear_examples}}
+**SECOND CRITICAL RULE - QUANTITATIVE LANGUAGE**:
+If the query contains QUANTITATIVE/STATISTICAL language, IMMEDIATELY return is_ambiguous: false:
+* Counting: "how many", "number of", "count of", "total number", "combien de", "nombre de"
+* Summing: "total", "sum of", "total amount", "combined"
+* Averaging: "average", "mean", "average of"
+* Extremes: "minimum", "maximum", "lowest", "highest", "least", "most", "smallest", "largest"
+**IMPORTANT**: If BOTH explicit time reference AND quantitative language are present, this is DOUBLY NOT ambiguous. Return is_ambiguous: false immediately.
+ONLY if the query does NOT contain explicit time references OR quantitative language, then consider these types of ambiguity:
+1. temporal_period_scope: PERIODIC terms without explicit time (monthly, yearly, etc.) - see NEW CRITICAL RULE above
+2. Quantification: COUNT (distinct items) vs SUM (total quantity/value)
+3. Scope: All items vs Recent items vs Active/Visible items
+4. Metric: Average vs Minimum vs Maximum vs Simple List
+5. Time period: ONLY when time range is COMPLETELY ABSENT (e.g., {{absent_time_example}} with no time reference)
+6. When generating SQL hints involving {{multiword_entity_noun}} (e.g., in a WHERE clause), if the name consists of multiple words (e.g., {{multiword_name_example}}), you MUST decompose the search term using separate LIKE '%word%' AND operators for each term, instead of using a single LIKE '%multi word%' pattern.
+**THIRD CRITICAL RULE - MULTI-FIELD QUERIES ARE NOT AMBIGUOUS**:
+If the query requests MULTIPLE SPECIFIC FIELDS (e.g., {{multifield_inline_examples}}), this is NOT ambiguous:
+{{multifield_examples}}
+Multi-field queries are EXPLICIT about what data is needed. Return is_ambiguous: false immediately.
+**FOURTH CRITICAL RULE - GROUP BY QUERIES ARE NOT AMBIGUOUS**:
+If the query contains "by [dimension]" pattern (e.g., {{groupby_inline_examples}}), this is NOT ambiguous:
+{{groupby_examples}}
+GROUP BY queries have CLEAR aggregation intent with explicit grouping dimension. Return is_ambiguous: false immediately.
+Default interpretation: SUM for financial metrics ({{financial_metric_examples}}), COUNT for entities ({{entity_examples}}).
+Respond ONLY with valid JSON in this exact format:
+{
+"is_ambiguous": true/false,
+"ambiguity_type": "temporal_period_scope|temporal_unit_missing|quantification|scope|metric|time|null",
+"confidence": 0.0-1.0,
+"interpretations": [
+{
+"type": "current_period|breakdown|count|sum|all|recent|active|average|min|max|list",
+"label": "Short label for interpretation",
+"description": "Clear description of the SQL interpretation.",
+"sql_hint": "SQL operation hint (COUNT, SUM, AVG, GROUP BY, WHERE, etc.)",
+"sql_field_reference": "Hint for the specific SQL field (e.g., {{sql_field_reference_example}})"
+}
+],
+"recommendation": "generate_both|use_default|clarify",
+"default_interpretation": "type from interpretations",
+"reasoning": "Brief explanation of the ambiguity level and recommendation."
+}
+Rules:
+- If query explicitly mentions SQL aggregation functions (COUNT, DISTINCT, SUM, TOTAL, AVG, MIN, MAX) -> NOT ambiguous.
+- If query requests a SINGLE NUMERIC RESULT with clear aggregation intent -> NOT ambiguous.
+- If query mentions REVENUE, TURNOVER, INCOME, SALES REVENUE -> NOT ambiguous (always SUM).
+- If query is vague about WHAT to calculate or HOW to aggregate -> IS ambiguous.
+- If query contains PERIODIC terms (monthly, yearly, etc.) WITHOUT explicit time reference -> IS ambiguous (temporal_period_scope).
+- Provide 2-4 interpretations if ambiguous.
+- Recommend "generate_both" for temporal_period_scope ambiguity (current period vs breakdown).
+- Recommend "generate_both" for quantification ambiguity (COUNT vs SUM).
+- Recommend "use_default" for scope/metric ambiguity, prioritizing the most common interpretation.
+- Recommend "clarify" for queries with COMPLETE absence of time reference (e.g., {{show_sales_example}} with no time indicator).
+- Recommend "clarify" for temporal_unit_missing (a number + last/past/derniers WITHOUT a unit) — never guess the unit.
+- IMPORTANT: All queries are translated to English before analysis. Focus on English quantitative language.
+- CRITICAL: Financial terms that mean "revenue" are NEVER ambiguous - they always mean SUM of monetary values, NOT COUNT of transactions.
+Examples:
+{{detect_examples}}
+
+text_rag_clarify_query_for_interpretation = Rewrite this ambiguous query to be explicit about the intent.
+Original query: {{original_query}}
+Interpretation: {{interpretation}}
+SQL hint: {{sql_hint}}
+Rewrite the query to clearly indicate this specific interpretation.
+If the query contains multiple words, rewrite the query for each word like that %word%.
+Use explicit keywords like COUNT, SUM, AVG, DISTINCT, ALL, RECENT, etc.
+Respond with ONLY the rewritten query, nothing else.
+Examples:
+{{clarify_examples}}
+
+text_rag_critique_ambiguity = You are a strict reviewer of an ambiguity verdict produced for a database query. Given the original query and a candidate JSON verdict, decide if the verdict is correct. A verdict is WRONG if: it marks an explicit time reference as ambiguous, it marks a clearly under-specified query (missing temporal unit, count-vs-sum) as non-ambiguous, or the ambiguity_type does not match the query. Return ONLY JSON: {"verdict_ok": true|false, "corrected": <the corrected verdict object, same schema as the candidate, only when verdict_ok is false>}. Query: {{QUERY}} Candidate verdict: {{VERDICT}}
+

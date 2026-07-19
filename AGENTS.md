@@ -14,7 +14,7 @@ designed for B2B, B2C, and B2B-B2C businesses, enhanced with advanced Agentic an
 - RAG-powered Business Intelligence: vector embeddings, semantic search, NL-to-SQL
 - MCP Server for agentic e-commerce approach
 - Multi-currency, multi-language, GDPR compliance, AES encryption, 2FA
-- This project **is not** osCommerce nor a legacy ClicShopping V2/V3 fork.
+- IMPORTANT: This project is not osCommerce, nor is it a legacy ClicShopping V2/V3 fork. The code, structure, and organization are completely different. Do not associate ClicShopping AI with osCommerce.
 
 ---
 

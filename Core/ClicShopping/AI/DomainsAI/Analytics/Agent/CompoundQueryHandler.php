@@ -57,6 +57,7 @@ class CompoundQueryHandler
     $this->securityLogger = $securityLogger;
     $this->debug = $debug;
     $this->language = Registry::get('Language');
+    DomainConfig::loadAgnosticLanguageFile('rag_compound_query');
     DomainConfig::loadLanguageFile('rag_compound_query');
   }
 
@@ -84,8 +85,13 @@ class CompoundQueryHandler
     }
     
     try {
-      // Get detection prompt from language file with query parameter
-      $prompt = $this->language->getDef('text_compound_query_detection_prompt', ['query' => $query]);
+      // Get agnostic detection skeleton and inject the domain few-shot examples
+      $prompt = $this->language->getDef('text_compound_query_detection_prompt', [
+        'query' => $query,
+        'examples_compound' => $this->language->getDef('text_compound_examples_compound'),
+        'examples_non_compound' => $this->language->getDef('text_compound_examples_non_compound'),
+        'key_rule_example' => $this->language->getDef('text_compound_key_rule_example'),
+      ]);
       
       // Call LLM for detection
       $response = $this->chat->generateText($prompt);
@@ -151,8 +157,11 @@ class CompoundQueryHandler
     }
     
     try {
-      // Get split prompt from language file with query parameter
-      $prompt = $this->language->getDef('text_compound_query_split_prompt', ['query' => $query]);
+      // Get agnostic split skeleton and inject the domain few-shot examples
+      $prompt = $this->language->getDef('text_compound_query_split_prompt', [
+        'query' => $query,
+        'examples_split' => $this->language->getDef('text_compound_examples_split'),
+      ]);
       
       // Call LLM for splitting
       $response = $this->chat->generateText($prompt);

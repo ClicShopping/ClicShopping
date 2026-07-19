@@ -47,6 +47,7 @@ class HallucinationDetector
 
     // Load language definitions
     $this->language = Registry::get('Language');
+    DomainConfig::loadAgnosticLanguageFile('rag_out_of_context_detection');
     DomainConfig::loadLanguageFile('rag_out_of_context_detection');
     
     // Initialize out-of-context cache (30 days TTL)
@@ -361,6 +362,57 @@ class HallucinationDetector
   }
 
   /**
+   * Domain policy & example values (ecommerce/rag_out_of_context_detection.txt) injected into the
+   * agnostic relevance-gate skeleton. Kept out of the skeleton so a second domain reuses the gate
+   * (4 actions + ask_clarification logic) with its own allowed-context list and examples (§Q).
+   *
+   * @return array<string, string>
+   */
+  private function outOfContextExampleVars(): array
+  {
+    // Auto-discover the domain placeholders the skeleton declares (no hardcoded key list).
+    $vars = $this->resolveDomainPlaceholders('text_out_of_context_detection_prompt', 'text_ooc_');
+
+    // Config-driven domain identity (skeleton has these placeholders but no language key for them):
+    //  - system_domain  = display name  → getActivities()   ('Ecommerce', 'Hr', 'Finance'…)
+    //  - domain_category = enum token id → getLanguagePath() (lowercased: 'ecommerce', 'hr'…)
+    $vars['system_domain'] = DomainConfig::getActivities();
+    $vars['domain_category'] = DomainConfig::getLanguagePath();
+
+    return $vars;
+  }
+
+  /**
+   * Auto-discover the {{placeholders}} a skeleton declares and resolve each to its domain value
+   * <prefix><name>. The skeleton is the single source of truth, so adding/removing a placeholder
+   * needs no code change. A {{name}} with no matching key (runtime {{query}}, or a config-driven one
+   * like {{system_domain}}/{{domain_category}}) resolves to the key itself and is skipped.
+   *
+   * @return array<string, string>
+   */
+  private function resolveDomainPlaceholders(string $skeletonKey, string $prefix): array
+  {
+    $skeleton = $this->language->getDef($skeletonKey);
+
+    if (preg_match_all('/\{\{([A-Za-z0-9_-]+)\}\}/', $skeleton, $matches) === 0) {
+      return [];
+    }
+
+    $vars = [];
+
+    foreach (array_unique($matches[1]) as $name) {
+      $key = $prefix . $name;
+      $value = $this->language->getDef($key);
+
+      if ($value !== $key) {
+        $vars[$name] = $value;
+      }
+    }
+
+    return $vars;
+  }
+
+  /**
    * Build LLM prompt for out-of-context detection
    *
    * Creates a prompt that asks the LLM to determine if a query is relevant
@@ -379,7 +431,7 @@ class HallucinationDetector
     
     // Get prompt template from language file with query parameter
     // The language file path is already domain-aware via DomainConfig::loadLanguageFile()
-    $prompt = $this->language->getDef('text_out_of_context_detection_prompt', ['query' => $query]);
+    $prompt = $this->language->getDef('text_out_of_context_detection_prompt', array_merge(['query' => $query], $this->outOfContextExampleVars()));
     
     if ($this->debug) {
       $this->logger->logSecurityEvent(

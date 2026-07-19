@@ -1,212 +1,104 @@
-text_rag_classification = YOU MUST RESPOND WITH PURE JSON ONLY.
-
-Format: {"type":"analytics","confidence":0.9,"reasoning":"Brief explanation","sub_types":[],"action":null,"action_params":{}}
-
-START YOUR RESPONSE WITH { AND END WITH }
-NO text before or after the JSON. NO markdown.
-
----
-
-You are a query classifier for an e-commerce system.
-
-Query: {{QUERY}}
-
-PRINCIPLE: What is the user looking for?
-
-1. DATABASE DATA (numbers, lists, calculations) → analytics
-2. DOCUMENT CONTENT (explanations, policies, articles) → semantic
-3. EXTERNAL WEB INFORMATION (trends, news, competitors, evolution) → web_search
-4. MULTIPLE different things → hybrid
-
-OPTIONAL ACTION SELECTION (Pure LLM Tool Selection):
-- If the user is asking for stock forecast / replenishment probability / stockout risk / safety stock forecast,
-  set: "action":"inventory_forecast"
-- Provide best-effort parameters in action_params:
-  {"entity_id":123,"horizon_days":30,"lead_time_days":7,"history_days":90,"service_level":0.95}
-- If entity_id is not explicit, omit it and keep other defaults.
-- If horizon is described (e.g., "next month"), set horizon_days accordingly.
-
-
-🚨 CLASSIFICATION CONTEXT ISOLATION RULES 🚨
-
-CRITICAL: Classify based ONLY on the current query's intrinsic content.
-
-DO NOT let previous query TYPES influence current classification.
-- If previous query was "analytics", current query can still be "semantic"
-- If previous query was "semantic", current query can still be "analytics"
-- Each query must be classified independently based on its own content
-
-Entity continuity is handled separately - focus on query TYPE classification.
-- Entity references like "le produit", "it", "the product" are resolved AFTER classification, not during
-- If query mentions a specific entity (e.g., "article 4"), classify based on that entity request, not previous entities
-
-TWO TYPES OF CONTEXT:
-
-1. ENTITY CONTEXT (KEEP):
-   - "SKU de l'iPhone 17 Pro" → "description du produit"
-   - Entity 'iPhone 17 Pro' is preserved, but classify 'description' as semantic independently
-   - Entity tracking is separate from query type classification
-
-2. CLASSIFICATION CONTEXT (ISOLATE):
-   - Example 1: "article 6 des CGV" (semantic) → "article 4 des CGV" (must be semantic, NOT influenced by previous query type)
-   - Example 2: "nombre de produits" (analytics) → "article 4 des CGV" (must be semantic, NOT analytics)
-   - Example 3: "article 6 des CGV" (semantic) → "nombre de produits par catégorie" (must be analytics, NOT semantic)
-   - Each query's TYPE must be determined by its own content, not previous query types
-
-CLASSIFICATION INDEPENDENCE:
-- Query 1: "article 6 des CGV" → semantic (requests document content)
-- Query 2: "article 4 des CGV" → semantic (requests document content, NOT influenced by Query 1)
-- Query 3: "nombre de produits" → analytics (requests database count, NOT influenced by Query 1 or 2)
-- Query 4: "article 4 des CGV" → semantic (requests document content, NOT influenced by Query 3)
-
-REMEMBER: Focus on WHAT the current query is asking for, not what previous queries asked for.
-
----
-Query to classify: {{QUERY}}
-
-DECISION TREE:
-
-STEP 1: HYBRID?
-
-* Contains "and", "then", connecting TWO distinct questions?
-* YES → {"type":"hybrid","sub_types":["type1","type2"]}
-
-🚨 ABSOLUTE RULE #0 - HYBRID DETECTION (CHECK THIS FIRST, BEFORE ALL OTHER RULES):
-If the query contains conjunctions connecting TWO DISTINCT QUESTIONS/REQUESTS, classify as "hybrid":
-- "price" (analytics) + "and" + "trends" (web_search) → HYBRID
-- "stock" (analytics) + "and" + "policy" (semantic) → HYBRID  
-- "policy" (semantic) + "and" + "news" (web_search) → HYBRID
-- "pending orders" (analytics) + "and" + "monthly revenue" (analytics) → HYBRID (two separate analytics queries)
-- "stock levels" (analytics) + "and" + "sales figures" (analytics) → HYBRID (two separate analytics queries)
-- Look for: "and", "also", "or"
-- If found, check if the parts are TWO DISTINCT QUESTIONS → classify as "hybrid"
-- CRITICAL: Even if BOTH parts are analytics, if they are TWO SEPARATE QUESTIONS, classify as "hybrid"
-- Example: "What is the price AND what are the latest trends or evolution" → hybrid (analytics + web_search)
-- Example: "pending orders AND monthly revenue" → hybrid (analytics + analytics) - TWO SEPARATE QUESTIONS
-
-🚨 EXCEPTION TO RULE #0 - SAME TYPE, SAME ENTITY (SINGLE QUERY):
-If the query uses "and" / "then" / "puis" / commas to connect ATTRIBUTES or DETAILS of a SINGLE entity, classify as the SINGLE TYPE (not hybrid):
-- "product price and stock" → ANALYTICS (not hybrid) - single product, multiple attributes
-- "category name and description" → ANALYTICS (not hybrid) - single category, multiple attributes
-- "price of the Samsung S25 then its SKU and EAN" → ANALYTICS (not hybrid, not semantic) - ONE product, multiple STRUCTURED attributes
-- RULE: connecting attributes of ONE entity = single type, even with "then" / "puis".
-🚨 STRUCTURED CATALOG ATTRIBUTES ARE ALWAYS ANALYTICS (never semantic): price, SKU, EAN, model/reference, stock/quantity, weight, status, dates. Asking several of these about one product = a SINGLE analytics query returning multiple columns — NOT hybrid, NOT semantic. (Semantic = document/free-text content like descriptions, policies, reviews.)
-
-🚨 MULTI-ENTITY QUERIES STAY HYBRID:
-If the query requests MULTIPLE DISTINCT ENTITIES (even of the same type), classify as HYBRID:
-- "article 5 and article 6 of terms" → HYBRID (two distinct articles, need separate retrieval)
-- "product A and product B" → HYBRID (two distinct products, need separate queries)
-- "order 123 and order 456" → HYBRID (two distinct orders, need separate queries)
-- RULE: Multiple distinct entities = hybrid (enables decomposition for separate retrieval)
-
-
-* NO → Step 2
-
-STEP 2: PRICE COMPARISON WITH TARGET SITE?
-
-🚨 CRITICAL RULE - TARGET SITE DETECTION:
-If the query contains a price request WITH a target site indicator, classify as HYBRID (analytics + web_search):
-- Patterns: "price on [site]", "prix sur [site]", "price at [site]", "prix chez [site]"
-- Target sites: amazon, cdiscount, fnac, darty, ebay, alibaba, walmart, bestbuy, etc.
-- Examples:
-  * "samsung galaxy 26 price on amazon" → HYBRID (analytics + web_search)
-  * "nokia phone price at walmart" → HYBRID (analytics + web_search)
-  * "laptop price on ebay" → HYBRID (analytics + web_search)
-- Detection keywords: "on", "at", "from", "sur", "chez", "à"
-- If detected → {"type":"hybrid","sub_types":["analytics","web_search"],"reasoning":"Price comparison with target site"}
-
-* YES → {"type":"hybrid","sub_types":["analytics","web_search"]}
-* NO → Step 3
-
-STEP 3: WEB_SEARCH?
-
-* Requests EXTERNAL or CURRENT information?
-* Keywords: "latest", "recent", "trends", "news", "competitors", "evolution", "history", "trajectory", "over time"
-* 🚨 CRITICAL RULE - PRICE EVOLUTION / TREND / HISTORY:
-  Queries asking for price evolution, price trend, price history, price over time
-  or price trajectory request EXTERNAL TIME-SERIES data (Google Trends), NOT an
-  internal SQL COUNT/AVG. ALWAYS classify these as web_search even when the word
-  "price" is present.
-  Examples (translated to English):
-  - "give me the price evolution of the Samsung S25" → web_search
-  - "iPhone 15 price trends" → web_search
-  - "historical price of the Galaxy" → web_search
-  - "Samsung price over time" → web_search
-  - "evolution of Samsung S25 price" → web_search
-  Contrast (these stay analytics):
-  - "give me the price of the Samsung S25" → analytics (current internal price)
-  - "list products under 500 EUR" → analytics
-* YES → {"type":"web_search"}
-* NO → Step 4
-
-STEP 4: ANALYTICS or SEMANTIC?
-
-ANALYTICS (database data):
-
-* Numbers, calculations (revenue, total, average)
+text_classification_analytics_definition_bullets = * Numbers, calculations (revenue, total, average)
 * Lists (list of products, categories, customers)
 * Field values (price, stock, reference, SKU)
 * Statuses (pending orders, out-of-stock products)
 
-SEMANTIC (document content):
+text_classification_classification_context_examples = - Example 1: "article 6 des CGV" (semantic) → "article 4 des CGV" (must be semantic, NOT influenced by previous query type)
+- Example 2: "nombre de produits" (analytics) → "article 4 des CGV" (must be semantic, NOT analytics)
+- Example 3: "article 6 des CGV" (semantic) → "nombre de produits par catégorie" (must be analytics, NOT semantic)
 
-* Explanations (what is, how, why)
-* Policies (terms and conditions, return policy, privacy)
-* Document articles (article 4 of the T&C, article 5)
-* Descriptions, guides
+text_classification_classification_independence_examples = - Query 1: "article 6 des CGV" → semantic (requests document content)
+- Query 2: "article 4 des CGV" → semantic (requests document content, NOT influenced by Query 1)
+- Query 3: "nombre de produits" → analytics (requests database count, NOT influenced by Query 1 or 2)
+- Query 4: "article 4 des CGV" → semantic (requests document content, NOT influenced by Query 3)
 
-CRITICAL RULES:
+text_classification_domain_action_selection = - If the user is asking for stock forecast / replenishment probability / stockout risk / safety stock forecast,
+set: "action":"inventory_forecast"
+- Provide best-effort parameters in action_params:
+{"entity_id":123,"horizon_days":30,"lead_time_days":7,"history_days":90,"service_level":0.95}
+- If entity_id is not explicit, omit it and keep other defaults.
+- If horizon is described (e.g., "next month"), set horizon_days accordingly.
 
-1. Document articles = ALWAYS semantic
-   "article 4 of the T&C" → semantic
-   "article 5 and article 6 of terms" → semantic
-   "return policy" → semantic
+text_classification_entity_context_example = - "SKU de l'iPhone 17 Pro" → "description du produit"
+- Entity 'iPhone 17 Pro' is preserved, but classify 'description' as semantic independently
 
-2. Entity lists = ALWAYS analytics
-   "list of products" → analytics
-   "list of categories" → analytics
+text_classification_fallback_analytics_examples = trend, growth, total, average, ratio, sales, revenue, profit, stock, price range
 
-3. Field values = ALWAYS analytics
-   "price of the iPhone" → analytics
-   "product stock" → analytics
-   "stock forecast" → analytics
-   "inventory forecast" → analytics
-   "reorder probability" → analytics
+text_classification_hybrid_examples = - "price" (analytics) + "and" + "trends" (web_search) → HYBRID
+- "stock" (analytics) + "and" + "policy" (semantic) → HYBRID
+- "policy" (semantic) + "and" + "news" (web_search) → HYBRID
+- "pending orders" (analytics) + "and" + "monthly revenue" (analytics) → HYBRID (two separate analytics queries)
+- "stock levels" (analytics) + "and" + "sales figures" (analytics) → HYBRID (two separate analytics queries)
 
-4. Statuses = ALWAYS analytics
-   "pending orders" → analytics
+text_classification_hybrid_examples_2 = - Example: "What is the price AND what are the latest trends or evolution" → hybrid (analytics + web_search)
+- Example: "pending orders AND monthly revenue" → hybrid (analytics + analytics) - TWO SEPARATE QUESTIONS
 
-5. Explanations = ALWAYS semantic
-   "what is" → semantic
-   "how it works" → semantic
+text_classification_multientity_examples = - "article 5 and article 6 of terms" → HYBRID (two distinct articles, need separate retrieval)
+- "product A and product B" → HYBRID (two distinct products, need separate queries)
+- "order 123 and order 456" → HYBRID (two distinct orders, need separate queries)
 
-6. Underspecified TIME SCOPE = analytics BUT lower confidence (0.8)
-   A number followed by "last"/"past"/"previous"/"derniers"/"dernières" WITHOUT a time unit
-   (day/week/month/year, jour/semaine/mois/an/année) leaves the period unit unknown.
-   Still classify as analytics, but set "confidence":0.8 (NOT 0.9 or higher) so the downstream
-   ambiguity check can ask the user which unit is meant. Do NOT guess the unit here.
-   "orders over 70 in the last 12" → analytics, confidence 0.8 (12 of days/months/years?)
-   "les 12 derniers" (no unit) → analytics, confidence 0.8
-   "in the last 12 months" / "les 12 derniers mois" → analytics, confidence 0.95 (unit explicit)
-
-EXAMPLES:
-
-HYBRID (different types): {"type":"hybrid","confidence":0.90,"reasoning":"Contains price AND T&C article","sub_types":["analytics","semantic"]}
+text_classification_output_examples = HYBRID (different types): {"type":"hybrid","confidence":0.90,"reasoning":"Contains price AND T&C article","sub_types":["analytics","semantic"]}
 HYBRID (multi-entity same type): {"type":"hybrid","confidence":0.90,"reasoning":"Requests articles 5 and 6 - two distinct entities requiring separate retrieval","sub_types":["semantic","semantic"]}
 ANALYTICS: {"type":"analytics","confidence":0.95,"reasoning":"Requests field value price","sub_types":[]}
 ANALYTICS (underspecified time unit): {"type":"analytics","confidence":0.8,"reasoning":"Orders over 70 but time unit missing - 12 of days/months/years?","sub_types":[]}
 SEMANTIC: {"type":"semantic","confidence":0.95,"reasoning":"Requests content of T&C article","sub_types":[]}
 WEB_SEARCH: {"type":"web_search","confidence":0.95,"reasoning":"Requests external trends","sub_types":[]}
 
-Respond ONLY with pure JSON:
-{{QUERY}}
+text_classification_rule_document_articles_examples = "article 4 of the T&C" → semantic
+"article 5 and article 6 of terms" → semantic
+"return policy" → semantic
 
-text_rag_classification_fallback = Based on these definitions, determine whether the following query is 'analytics' or 'semantic'. Respond ONLY with 'analytics' or 'semantic'.
+text_classification_rule_entity_lists_examples = "list of products" → analytics
+"list of categories" → analytics
 
-Definitions:
-An 'analytics' question seeks quantitative data, calculations, or comparisons (e.g., trend, growth, total, average, ratio, sales, revenue, profit, stock, price range).
-A 'semantic' question seeks information, definitions, procedures, or general knowledge (e.g., how to, policy, location, description, meaning).
+text_classification_rule_explanations_examples = "what is" → semantic
+"how it works" → semantic
 
-Query: {{QUERY}}
+text_classification_rule_field_values_examples = "price of the iPhone" → analytics
+"product stock" → analytics
+"stock forecast" → analytics
+"inventory forecast" → analytics
+"reorder probability" → analytics
 
-Response:
+text_classification_rule_statuses_example = "pending orders" → analytics
+
+text_classification_semantic_definition_bullets = * Explanations (what is, how, why)
+* Policies (terms and conditions, return policy, privacy)
+* Document articles (article 4 of the T&C, article 5)
+* Descriptions, guides
+
+text_classification_single_entity_examples = - "product price and stock" → ANALYTICS (not hybrid) - single product, multiple attributes
+- "category name and description" → ANALYTICS (not hybrid) - single category, multiple attributes
+- "price of the Samsung S25 then its SKU and EAN" → ANALYTICS (not hybrid, not semantic) - ONE product, multiple STRUCTURED attributes
+
+text_classification_step_price_comparison = STEP 2: PRICE COMPARISON WITH TARGET SITE?
+🚨 CRITICAL RULE - TARGET SITE DETECTION:
+If the query contains a price request WITH a target site indicator, classify as HYBRID (analytics + web_search):
+- Patterns: "price on [site]", "prix sur [site]", "price at [site]", "prix chez [site]"
+- Target sites: amazon, cdiscount, fnac, darty, ebay, alibaba, walmart, bestbuy, etc.
+- Examples:
+* "samsung galaxy 26 price on amazon" → HYBRID (analytics + web_search)
+* "nokia phone price at walmart" → HYBRID (analytics + web_search)
+* "laptop price on ebay" → HYBRID (analytics + web_search)
+- Detection keywords: "on", "at", "from", "sur", "chez", "à"
+- If detected → {"type":"hybrid","sub_types":["analytics","web_search"],"reasoning":"Price comparison with target site"}
+* YES → {"type":"hybrid","sub_types":["analytics","web_search"]}
+* NO → Step 3
+
+text_classification_structured_attributes = price, SKU, EAN, model/reference, stock/quantity, weight, status, dates
+
+
+text_classification_web_search_price_rule = * 🚨 CRITICAL RULE - PRICE EVOLUTION / TREND / HISTORY:
+Queries asking for price evolution, price trend, price history, price over time
+or price trajectory request EXTERNAL TIME-SERIES data (Google Trends), NOT an
+internal SQL COUNT/AVG. ALWAYS classify these as web_search even when the word
+"price" is present.
+Examples (translated to English):
+- "give me the price evolution of the Samsung S25" → web_search
+- "iPhone 15 price trends" → web_search
+- "historical price of the Galaxy" → web_search
+- "Samsung price over time" → web_search
+- "evolution of Samsung S25 price" → web_search
+Contrast (these stay analytics):
+- "give me the price of the Samsung S25" → analytics (current internal price)
+- "list products under 500 EUR" → analytics

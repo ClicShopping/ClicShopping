@@ -1,36 +1,3 @@
-text_rag_hybrid_decomposer_prompt_template = You are a query decomposition expert for a {{domain_name}} system.
-Your task is to decompose a hybrid query into separate sub-queries based on the requested types.
-
-DOMAIN CONTEXT:
-- Domain: {{domain_name}}
-- Terminology: {{domain_terminology}}
-- Data Types: {{domain_data_types}}
-
-REQUESTED SUB-QUERY TYPES:
-{{sub_types_list}}
-
-EXAMPLES FOR {{domain_name}} DOMAIN:
-{{domain_examples}}
-
-QUERY TO DECOMPOSE:
-"{{query}}"
-
-INSTRUCTIONS:
-1. Produce ONE sub-query per DISTINCT intent in the query (at least {{sub_type_count}} — more if a single type covers several separate questions)
-2. Each sub-query must have a "type" and "text" field
-3. Use ONLY these types: {{sub_types_csv}}. The SAME type MAY appear multiple times: two separate analytics questions (for example "price of X" and "last 3 orders") become TWO analytics sub-queries, never one combined sub-query (one analytics sub-query maps to a single SQL result)
-4. Cover every requested type at least once; never merge two distinct questions into a single sub-query
-5. Preserve the original meaning and context; use {{domain_name}} terminology
-6. A COUNT of items to retrieve from a SINGLE document ("3 clauses", "les 3 clauses", "3 articles", "the 3 clauses of the terms / CGV / policy") is ONE semantic sub-query asking for that many items. NEVER split it into one sub-query per item, and NEVER reinterpret the count as a specific item number — "3 clauses" means THREE clauses, it does NOT mean "article 3". Correct: [{"type":"semantic","text":"3 clauses of the terms and conditions"}]. Wrong: one sub-query for "article 3", one for "article 4", one for "article 5"
-
-OUTPUT FORMAT (JSON):
-[
-  {"type": "analytics", "text": "sub-query text"},
-  {"type": "semantic", "text": "sub-query text"}
-]
-
-Return ONLY the JSON array, no additional text.
-
 text_rag_hybrid_decomposer_domain_name = E-commerce
 text_rag_hybrid_decomposer_terminology = products, categories, orders, customers, inventory, manufacturers, suppliers
 text_rag_hybrid_decomposer_data_types = products, orders, customers, categories, reviews, manufacturers, suppliers

@@ -132,6 +132,40 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
   }
 
   /**
+   * Domain terminology & example values (ecommerce/rag_translation.txt) injected into the agnostic
+   * EN-normalization skeleton. Kept out of the skeleton so a second domain reuses the normalizer
+   * with its own terminology/examples (§Q).
+   *
+   * @param mixed $language Registry 'Language' instance
+   * @return array<string, string>
+   */
+  private static function translationExampleVars($language): array
+  {
+    // Auto-discover the placeholders the skeleton declares ({{name}}) and resolve each to its
+    // domain value text_translation_<name>. No hardcoded key list: the skeleton is the single
+    // source of truth, so adding/removing a placeholder needs no code change. A {{name}} with no
+    // matching key (e.g. a runtime var) resolves to the key itself and is skipped.
+    $skeleton = $language->getDef('text_fix_translation');
+
+    if (preg_match_all('/\{\{([A-Za-z0-9_-]+)\}\}/', $skeleton, $matches) === 0) {
+      return [];
+    }
+
+    $vars = [];
+
+    foreach (array_unique($matches[1]) as $name) {
+      $key = 'text_translation_' . $name;
+      $value = $language->getDef($key);
+
+      if ($value !== $key) {
+        $vars[$name] = $value;
+      }
+    }
+
+    return $vars;
+  }
+
+  /**
    * Translate a given text to English using the OpenAI API.
    * to prevent blocking when translation service fails
    * 
@@ -159,10 +193,12 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
       } else {
         // Load SYSTEM prompt in English for better LLM evaluation (internal process)
         // Note: This evaluates the response quality, not user-facing
+        // Agnostic EN-normalization engine (Agents/) + domain terminology & examples (ecommerce/) — double-load (§Q).
+        DomainConfig::loadAgnosticLanguageFile('rag_translation');
         DomainConfig::loadLanguageFile('rag_translation');
 
         $CLICSHOPPING_Language = Registry::get('Language');
-        $prompt = $CLICSHOPPING_Language->getDef('text_fix_translation');
+        $prompt = $CLICSHOPPING_Language->getDef('text_fix_translation', self::translationExampleVars($CLICSHOPPING_Language));
       }
 
       // Call TranslationHandler

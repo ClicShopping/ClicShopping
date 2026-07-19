@@ -75,14 +75,13 @@ class HybridQueryDecomposer
         }
 
         $this->language = Registry::get('Language');
-        // Load language definitions for SQL correction prompts using DomainConfig
+        // Load language definitions: agnostic prompt skeleton (Agents/) + domain layer (ecommerce/)
+        DomainConfig::loadAgnosticLanguageFile('rag_hybrid_query_decomposer');
         DomainConfig::loadLanguageFile('rag_hybrid_query_decomposer');
     }
     
     /**
      * Load configuration from TechnicalConfig
-     * 
-     * Requirements: 12.1, 12.2, 12.3, 12.4
      * 
      * Loads configuration settings for hybrid query decomposition:
      * - HYBRID_DECOMPOSITION_STATUS: Enable/disable decomposition

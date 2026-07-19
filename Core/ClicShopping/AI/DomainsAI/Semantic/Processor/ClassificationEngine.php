@@ -128,6 +128,57 @@ class ClassificationEngine
   }
 
   /**
+   * Domain routing & example values (ecommerce/rag_classification.txt) injected into the agnostic
+   * classifier skeleton. Kept out of the skeleton so a second domain reuses the 4-way classifier
+   * with its own actions/examples (§Q). The web-search routing values (price comparison, price
+   * trend) are the same content earmarked to move to Apps/AI/Ecommerce.
+   *
+   * @param mixed $language Registry 'Language' instance
+   * @return array<string, string>
+   */
+  private static function classificationExampleVars($language): array
+  {
+    // Auto-discover the domain placeholders the skeleton declares (no hardcoded key list).
+    $vars = self::resolveDomainPlaceholders($language, 'text_rag_classification', 'text_classification_');
+
+    // Config-driven domain display name (skeleton has {{system_domain}} but no language key for it).
+    $vars['system_domain'] = DomainConfig::getActivities();
+
+    return $vars;
+  }
+
+  /**
+   * Auto-discover the {{placeholders}} a skeleton declares and resolve each to its domain value
+   * <prefix><name>. The skeleton is the single source of truth, so adding/removing a placeholder
+   * needs no code change. A {{name}} with no matching key (runtime var {{QUERY}}, or a config-driven
+   * one like {{system_domain}}) resolves to the key itself and is skipped (injected separately).
+   *
+   * @param mixed $language Registry 'Language' instance
+   * @return array<string, string>
+   */
+  private static function resolveDomainPlaceholders($language, string $skeletonKey, string $prefix): array
+  {
+    $skeleton = $language->getDef($skeletonKey);
+
+    if (preg_match_all('/\{\{([A-Za-z0-9_-]+)\}\}/', $skeleton, $matches) === 0) {
+      return [];
+    }
+
+    $vars = [];
+
+    foreach (array_unique($matches[1]) as $name) {
+      $key = $prefix . $name;
+      $value = $language->getDef($key);
+
+      if ($value !== $key) {
+        $vars[$name] = $value;
+      }
+    }
+
+    return $vars;
+  }
+
+  /**
    * Actual LLM classification (formerly the body of checkSemantics()); memoized by checkSemantics().
    *
    * @param string $text Text to classify
@@ -140,23 +191,10 @@ class ClassificationEngine
     try {
       // Load language definitions for classification prompt
       $CLICSHOPPING_Language = Registry::get('Language');
+      DomainConfig::loadAgnosticLanguageFile('rag_classification');
       DomainConfig::loadLanguageFile('rag_classification');
-      $prompt = $CLICSHOPPING_Language->getDef('text_rag_classification', ['QUERY' => $text]);
+      $prompt = $CLICSHOPPING_Language->getDef('text_rag_classification', array_merge(['QUERY' => $text], self::classificationExampleVars($CLICSHOPPING_Language)));
 
-/*
-      $CLICSHOPPING_Language->loadDefinitions('rag_classification', 'en', null, 'ClicShoppingAdmin');
-      
-      // Load new classification prompt from language file
-      $promptTemplate = CLICSHOPPING::getDef('text_rag_classification');
-      
-      if (!$promptTemplate || $promptTemplate === 'text_rag_classification') {
-        // Language definition not found, use fallback
-        throw new \Exception('Classification prompt not found in language file');
-      }
-      
-      // Replace {{QUERY}} placeholder with actual query
-      $prompt = str_replace('{{QUERY}}', $text, $promptTemplate);
-*/ 
       // Get GPT response (expecting JSON)
       $response = Gpt::getGptResponse($prompt, 200); // Increased max tokens for JSON response
       
@@ -378,8 +416,12 @@ class ClassificationEngine
       // Fallback to old prompt (simple text response)
       // Load fallback prompt from language file
       $CLICSHOPPING_Language = Registry::get('Language');
+      DomainConfig::loadAgnosticLanguageFile('rag_classification');
       DomainConfig::loadLanguageFile('rag_classification');
-      $prompt = $CLICSHOPPING_Language->getDef('text_rag_classification_fallback', ['QUERY' => $text]);
+      $prompt = $CLICSHOPPING_Language->getDef('text_rag_classification_fallback', array_merge(
+        ['QUERY' => $text],
+        self::resolveDomainPlaceholders($CLICSHOPPING_Language, 'text_rag_classification_fallback', 'text_classification_')
+      ));
 
       $response = Gpt::getGptResponse($prompt, 20);
       $type = trim(strtolower($response));

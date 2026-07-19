@@ -1,110 +1,23 @@
-text_fix_translation = # MISSION
-Task: Strict English Standardization.
-Input: User text (any language).
-Output: A single string of characters in professional English.
-
-# ABSOLUTE CONSTRAINTS
-- OUTPUT ONLY the standardized text.
-- NO explanations, justifications, or comments.
-- NO visible reasoning.
-- NO interpretations of the user's intent.
-- NO answering questions contained in the input.
-- NEVER output any example text from this prompt.
-- NEVER introduce new entities, metrics, time periods, or clauses that are not in the input.
-- If the input does NOT mention revenue/profit/expenses, you MUST NOT output those terms.
-- ⚠️ CRITICAL: If the query contains the word "article" followed by a number, it is referring to a DOCUMENT ARTICLE. NEVER translate to financial terms like "revenue", "sales", or "quarter".
-- ⚠️ CRITICAL: "article 5 et article 6" means "article 5 and article 6" (document articles), NOT "revenue by quarter".
-
-# CORE RULES
-1. DOCUMENT ARTICLE REFERENCES (HIGHEST PRIORITY - CHECK FIRST):
-   - If the query mentions "article" + number, it is referring to a DOCUMENT ARTICLE, NOT a financial term.
-   - ALWAYS preserve "article" + number in the translation.
-   - NEVER translate document article references to "revenue", "sales", "quarter", or any financial term.
-   - Examples:
-     * "article 5 et article 6 des cgv" → "article 5 and article 6 of the terms and conditions" (NOT "revenue by quarter")
-     * "donnes moi article 3 des cgv" → "give me article 3 of the terms and conditions" (NOT "give me revenue")
-     * "article 4 of terms and conditions" → "article 4 of the terms and conditions" (already English, keep as-is)
-   - This rule has HIGHEST PRIORITY and overrides all other rules.
-   - COUNT vs ARTICLE NUMBER: a number placed directly BEFORE a plural noun ("3 clauses", "les 3 clauses", "les 3 articles", "3 important clauses") is a QUANTITY. Keep it as a count and KEEP the plural noun; it is NOT a specific section. NEVER turn "les 3 clauses" into "article 3". Only "article"/"clause" + number ("article 3", "clause 3") is a specific section.
-     * "les 3 clauses des cgv" → "3 clauses of the terms and conditions" (NOT "article 3")
-     * "3 clauses des CGV" → "3 clauses of the terms and conditions"
-     * "les 3 derniers articles des CGV" → "the last 3 articles of the terms and conditions" (NOT "article 3")
-
-2. IDENTITY TRANSFORM (HARD): If the text is already in English, return it EXACTLY as-is. Do NOT rephrase or substitute any terms. This overrides all examples.
-
-3. TECHNICAL INTEGRITY: Strictly preserve technical terms. Never modify acronyms, codes, or identifiers (e.g., EAN, SKU, UUID).
-
-4. ACTION VERBS: DO NOT modify or rephrase operational verbs (e.g., "Show", "Give", "Display", "Search").
-
-5. ZERO ADDITION: Do not add information like "Price not available" or metadata.
-
-# CRITICAL EXAMPLES - DOCUMENT ARTICLE TRANSLATION
-These examples show the CORRECT way to translate document article queries:
-
-❌ WRONG: "article 5 et article 6 des cgv" → "Give me the revenue by quarter" (HALLUCINATION!)
+text_translation_article_critical_examples = ❌ WRONG: "article 5 et article 6 des cgv" → "Give me the revenue by quarter" (HALLUCINATION!)
 ✅ CORRECT: "article 5 et article 6 des cgv" → "article 5 and article 6 of the terms and conditions"
-
 ❌ WRONG: "article 5 and article 6 of terms and conditions" → "Give me the revenue by quarter" (HALLUCINATION!)
 ✅ CORRECT: "article 5 and article 6 of terms and conditions" → "article 5 and article 6 of terms and conditions" (already English)
-
 ❌ WRONG: "donnes moi article 3 et article 4 des cgv" → "Give me revenue analysis" (HALLUCINATION!)
 ✅ CORRECT: "donnes moi article 3 et article 4 des cgv" → "give me article 3 and article 4 of the terms and conditions"
 
-The word "article" + number ALWAYS refers to a document section, NEVER to financial data.
+text_translation_article_examples = * "article 5 et article 6 des cgv" → "article 5 and article 6 of the terms and conditions" (NOT "revenue by quarter")
+* "donnes moi article 3 des cgv" → "give me article 3 of the terms and conditions" (NOT "give me revenue")
+* "article 4 of terms and conditions" → "article 4 of the terms and conditions" (already English, keep as-is)
 
-6. SMART REDUNDANCY DETECTION:
-   Apply this decision logic to determine if two parts of a query are redundant:
-   
-   **Step 1: Extract components from each part**
-   - What METRIC is requested? (revenue, price, stock, count, etc.)
-   - What TIME PERIOD? (month, quarter, year, week, day, etc.)
-   - What ENTITY? (product, order, customer, etc.)
-   - What AGGREGATION? (sum, count, average, list, etc.)
-   
-   **Step 2: Compare components**
-   - If ALL components are IDENTICAL but expressed with SYNONYMS → REDUNDANT (eliminate)
-   - If ANY component is DIFFERENT → NOT REDUNDANT (preserve both)
-   
-   **Step 3: Check for sequence indicators**
-   - Words like "then", "followed by", "after that" → SEQUENTIAL (preserve both)
-   - Sequential requests are NEVER redundant even if similar
-   
-   **Examples of comparison logic**:
-   - "revenue by month" vs "revenue monthly" → SAME metric, SAME period, SYNONYMS → REDUNDANT ✓
-   - "revenue by month" vs "revenue by quarter" → SAME metric, DIFFERENT period → NOT REDUNDANT ✗
-   - "revenue" vs "profit" → DIFFERENT metric → NOT REDUNDANT ✗
-   - "price" vs "stock" → DIFFERENT metric → NOT REDUNDANT ✗
-   - "count products" vs "list products" → SAME entity, DIFFERENT aggregation → NOT REDUNDANT ✗
+text_translation_clause_examples = * "les 3 clauses des cgv" → "3 clauses of the terms and conditions" (NOT "article 3")
+* "3 clauses des CGV" → "3 clauses of the terms and conditions"
+* "les 3 derniers articles des CGV" → "the last 3 articles of the terms and conditions" (NOT "article 3")
 
-# UNIVERSAL TERMINOLOGY MAPPING (Mandatory)
-Regardless of the source language (Chinese, French, etc.) or synonymous English terms, you MUST map these concepts to these exact keywords:
+text_translation_code_examples = EAN, SKU, UUID
 
-## FINANCIAL TERMS
-- CONCEPT: TOP-LINE TOTALS (The total monetary value of goods/services sold)
-  -> ALWAYS use: "revenue"
-  -> FORBIDDEN: "sales", "turnover", "income", "chiffre d'affaires", "营业额", "Umsatz", etc.
-
-- CONCEPT: BOTTOM-LINE TOTALS (The net profit after all expenses)
-  -> ALWAYS use: "profit"
-  -> FORBIDDEN: "earnings", "net", "gain", "bénéfice", "利润", "Gewinn", etc.
-
-- CONCEPT: OPERATIONAL OUTFLOWS (The money spent to generate revenue)
-  -> ALWAYS use: "expenses"
-  -> FORBIDDEN: "costs", "charges", "fees", "depenses", "支出", "Kosten", etc.
-
-- CONCEPT: SALES VOLUME / UNITS SOLD (How MANY items were sold — a QUANTITY, NOT money)
-  -> This is DISTINCT from revenue. "sold" / "vendus" refers to the COUNT of units sold, never to a monetary total.
-  -> ALWAYS keep it quantity-based: use "best-selling" / "least-selling" / "most sold" / "units sold".
-  -> ⚠️ NEVER map "sold" / "best-selling" / "most sold" to "revenue":
-     * "the most sold products" -> "the best-selling products" (NOT "products with the highest revenue")
-     * "the least sold products" -> "the least-selling products" (NOT "products with the lowest revenue")
-     * "the best-selling product" -> "the best-selling product" (already correct — NOT "the product with the most revenue")
-  -> Use "revenue" ONLY when the input EXPLICITLY names a monetary total (revenue, turnover, sales amount, €/$). "sold"/"best-selling" alone is volume, not money.
-
-## E-COMMERCE CONTEXT (CRITICAL)
-This is an e-commerce system. Use e-commerce terminology:
+text_translation_domain_terminology = This is an e-commerce system. Use e-commerce terminology:
 - Purchase transaction → "order" (NOT "command")
-- Person who buys → "customer" 
+- Person who buys → "customer"
 - Item for sale → "product"
 - Shopping basket → "cart"
 - Available quantity → "stock"
@@ -115,23 +28,32 @@ This is an e-commerce system. Use e-commerce terminology:
 - Product maker → "manufacturer"
 - Product provider → "supplier"
 
-## TEMPORAL TERMS (CRITICAL - DO NOT CONFUSE)
-- ⚠️ MISSING UNIT (HIGHEST TEMPORAL PRIORITY): If a number has NO time unit attached, DO NOT infer, complete, or add one. Translate the number literally and keep the unit absent.
-  * "les 12 derniers" / "les 12 dernières" → "the last 12" (NEVER "last year", "12 months", "12 days", or "12 weeks")
-  * "sur les 6 derniers" → "over the last 6" (NEVER "6 months")
-  * Preserving the absent unit is MANDATORY — a downstream step resolves the ambiguity. Inventing a unit here is a failure.
-  * The mappings below apply ONLY when the unit is EXPLICITLY present in the input.
-- 6-month period → "semester" (NOT "quarter")
-- 3-month period → "quarter" (NOT "semester")
-- 1-month period → "month"
-- 7-day period → "week"
-- 12-month period → "year"
-- 24-hour period → "day"
+text_translation_entity_examples = product, order, customer
 
-# SMART REDUNDANCY GUIDANCE (NO EXAMPLES)
-- Eliminate redundancy only when ALL components match and are synonyms.
-- Preserve both parts when ANY component differs (metric, period, entity, aggregation).
-- Preserve both parts when sequence indicators exist (then, followed by, after that).
+text_translation_financial_terms_mapping = - CONCEPT: TOP-LINE TOTALS (The total monetary value of goods/services sold)
+-> ALWAYS use: "revenue"
+-> FORBIDDEN: "sales", "turnover", "income", "chiffre d'affaires", "营业额", "Umsatz", etc.
+- CONCEPT: BOTTOM-LINE TOTALS (The net profit after all expenses)
+-> ALWAYS use: "profit"
+-> FORBIDDEN: "earnings", "net", "gain", "bénéfice", "利润", "Gewinn", etc.
+- CONCEPT: OPERATIONAL OUTFLOWS (The money spent to generate revenue)
+-> ALWAYS use: "expenses"
+-> FORBIDDEN: "costs", "charges", "fees", "depenses", "支出", "Kosten", etc.
 
-# FINAL CHECK
-Any output containing non-English characters (except for original Codes/EAN) or forbidden synonyms is a failure.
+text_translation_metric_examples = revenue, price, stock, count
+
+text_translation_redundancy_examples = - "revenue by month" vs "revenue monthly" → SAME metric, SAME period, SYNONYMS → REDUNDANT ✓
+- "revenue by month" vs "revenue by quarter" → SAME metric, DIFFERENT period → NOT REDUNDANT ✗
+- "revenue" vs "profit" → DIFFERENT metric → NOT REDUNDANT ✗
+- "price" vs "stock" → DIFFERENT metric → NOT REDUNDANT ✗
+- "count products" vs "list products" → SAME entity, DIFFERENT aggregation → NOT REDUNDANT ✗
+
+text_translation_sales_volume_mapping = - CONCEPT: SALES VOLUME / UNITS SOLD (How MANY items were sold — a QUANTITY, NOT money)
+-> This is DISTINCT from revenue. "sold" / "vendus" refers to the COUNT of units sold, never to a monetary total.
+-> ALWAYS keep it quantity-based: use "best-selling" / "least-selling" / "most sold" / "units sold".
+-> ⚠️ NEVER map "sold" / "best-selling" / "most sold" to "revenue":
+* "the most sold products" -> "the best-selling products" (NOT "products with the highest revenue")
+* "the least sold products" -> "the least-selling products" (NOT "products with the lowest revenue")
+* "the best-selling product" -> "the best-selling product" (already correct — NOT "the product with the most revenue")
+-> Use "revenue" ONLY when the input EXPLICITLY names a monetary total (revenue, turnover, sales amount, €/$). "sold"/"best-selling" alone is volume, not money.
+

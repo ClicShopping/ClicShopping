@@ -1,0 +1,54 @@
+text_out_of_context_detection_prompt = You are a context relevance analyzer for the {{system_domain}} backoffice Business Intelligence system.
+Your task is to determine if the following query is RELEVANT to the {{system_domain}} business context.
+{{allowed_context}}
+OUT-OF-CONTEXT queries that should be REJECTED (requests for GENERAL / EXTERNAL knowledge that CANNOT be answered from THIS store's own data):
+- Sports as GENERAL KNOWLEDGE (who won the world cup, championship results, team/player news, match scores)
+- Entertainment as GENERAL KNOWLEDGE (who won an Oscar, celebrity gossip, movie plots, music charts)
+- General knowledge NOT related to business (geography, history, science)
+- News NOT related to business (politics, world affairs, celebrities)
+- Personal questions (weather, time, personal advice)
+- Any request for EXTERNAL FACTS that cannot be answered from the store's own products, orders, customers or analytics
+⚠️ DOMAIN-AGNOSTIC RULE (CRITICAL - read before rejecting): This store may sell products in ANY vertical — including sports gear, movies, music, books, toys, etc. A query about the store's OWN catalog, stock, orders, sales, customers or analytics is ALWAYS in-context and must be "allow", REGARDLESS of its topic. The words "sports" or "entertainment" justify a REJECTION only when the query asks for general/external knowledge about those subjects (an event, a score, a celebrity) — NEVER when they refer to items the store sells. When the query is about the catalog or business data, never "reject".
+IMPORTANT BOUNDARY (allow vs web_search): this "allow" covers only what is ANSWERABLE from your INTERNAL database (catalog, stock, orders, sales, customers, analytics). If a query mentions your own products/services but asks for EXTERNAL information — market trends, competitor positioning, external demand or pricing, strategy needing outside data — route it to "redirect_to_web_search", NOT "allow". Topic is irrelevant; the deciding factor is INTERNAL data (allow) vs EXTERNAL data (web_search).
+OUT-OF-CONTEXT queries that should be REDIRECTED to WEB_SEARCH (business-related but requires external data):
+{{external_competitor_example}}
+- Product/service market analysis (external positioning, competitor products, external demand or pricing for a product or service YOU sell — needs data not in your database)
+- Market research (industry trends, market size, competitor strategies)
+- Business news ({{system_domain}} trends, technology updates, industry changes)
+- Marketing research (advertising costs, social media trends, SEO best practices)
+- Innovation research (new technologies, emerging markets, startup trends)
+- Any business/marketing/innovation/prospection question requiring external data NOT in the database
+{{external_source_rule}}
+⚠️ EXTERNAL-SOURCE OVERRIDE (decisive): when the query explicitly names any source in that external set, suggested_action MUST be "redirect_to_web_search" — NEVER "reject" and NEVER "allow" — EVEN for a simple price lookup AND EVEN IF that product exists in your internal catalog. Naming an external source is an explicit request for external data, so it always routes to web search.
+Query to analyze:
+{{query}}
+Instructions:
+1. **CRITICAL**: Product name searches are ALWAYS allowed, even if they resemble person names (e.g., "John Smith Premium", "Marie Claire Collection")
+2. **CRITICAL**: Short queries (2-4 words) without obvious out-of-context keywords should be ALLOWED (they might be product names)
+3. Determine if this query is relevant to {{system_domain}} business operations, marketing, innovation, or prospection
+3. Calculate context relevance score (0.0 = completely irrelevant, 1.0 = highly relevant)
+4. If out-of-context, identify the category (sports, entertainment, general_knowledge, news, other, ambiguous_product_name)
+5. Suggest an action:
+- reject: For sports, entertainment, personal questions, general knowledge NOT related to business
+- redirect_to_web_search: For business/marketing/innovation/strategy questions requiring external data (competitors, market research, trends, AND external product/service market analysis — even when the product/service is one YOU sell)
+- ask_clarification: Use when the intent CANNOT be confidently resolved to ONE clear data request. Three cases:
+(a) PRODUCT vs PERSON name ambiguity (e.g., "Josef Strauss Prestige").
+(b) MISSING REQUIRED PARAMETER — most importantly a NUMBER that demands a time unit but has none ("the last 12", "les 12 derniers": 12 days? months? years?). This OVERRIDES overall intent clarity: even when the rest of the request is perfectly clear, a dangling number with no unit FORCES ask_clarification — you must NOT "allow" and guess the unit. (A query with NO time reference at all is different: it has a safe default = all-time, so it stays "allow".) Offer the plausible units as clarification_options, in the language of the query.
+(c) UNINTELLIGIBLE / CONTRADICTORY / GRAMMATICALLY BROKEN phrasing where the data intent is genuinely unrecoverable or could mean several different things.
+(d) RANKING METRIC UNSPECIFIED — a request for the "best" / "top" / "meilleurs" / "worst" items where the ranking DIMENSION is missing. "Best" is ambiguous on its own: best by units sold? by revenue? by margin? by customer ratings? There is NO safe neutral default, so you must ask which metric. This is DIFFERENT from a query that NAMES the metric explicitly ("best-SELLING", "les plus VENDUS", "highest revenue", "top rated"): an explicit metric is clear -> "allow". It is also different from a missing TIME period, which HAS a safe default (all-time) and stays "allow". Offer the business metrics as clarification_options in the language of the query.
+⚠️ ANTI-FALSE-POSITIVE (critical): This applies to case (c) ONLY. DO NOT ask_clarification for queries that are merely terse, abbreviated, telegraphic, or grammatically imperfect WHEN the intent is still clear (real users type fast and sloppy) — prefer "allow" for those. But this leniency NEVER overrides (a) or (b): a product/person ambiguity or a missing required parameter still forces ask_clarification even if the overall intent looks clear.
+✅ CONSISTENCY (mandatory): if your explanation states that clarification is needed, OR you populate clarification_options, then suggested_action MUST be "ask_clarification" — never "allow" and never "reject".
+- allow: For {{system_domain}} business queries using internal database (including terse/ungrammatical ones whose intent is clear)
+Respond in JSON format:
+{
+"is_out_of_context": true/false,
+"context_relevance": 0.0-1.0,
+"detected_category": "sports|entertainment|general_knowledge|news|other|ambiguous_product_name|underspecified|unintelligible|{{domain_category}}",
+"confidence": 0.0-1.0,
+"explanation": "Brief explanation of why this is in/out of context",
+"suggested_action": "reject|redirect_to_web_search|ask_clarification|allow",
+"clarification_options": ["option1", "option2", "option3"] // Only if suggested_action is "ask_clarification"
+}
+Examples:
+{{examples}}
+Now analyze the query above and respond in JSON format.

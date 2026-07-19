@@ -101,7 +101,49 @@ class AmbiguousQueryDetector
     $this->securityLogger = $securityLogger;
     $this->debug = $debug;
     $this->language = Registry::get('Language');
+    DomainConfig::loadAgnosticLanguageFile('rag_ambiguity');
     DomainConfig::loadLanguageFile('rag_ambiguity');
+  }
+
+  /**
+   * Domain example values (ecommerce/rag_ambiguity.txt) injected into the agnostic detect skeleton.
+   * Keeping them out of the skeleton lets a second domain reuse the prompt with its own examples.
+   *
+   * @return array<string, string>
+   */
+  private function detectExampleVars(): array
+  {
+    return $this->resolveDomainPlaceholders('text_rag_detect_ambiguity', 'text_ambiguity_');
+  }
+
+  /**
+   * Auto-discover the {{placeholders}} a skeleton declares and resolve each to its domain value
+   * <prefix><name>. No hardcoded key list: the skeleton is the single source of truth, so adding or
+   * removing a placeholder needs no code change. A {{name}} with no matching key (e.g. a runtime var
+   * like {{QUERY}}) resolves to the key itself and is skipped.
+   *
+   * @return array<string, string>
+   */
+  private function resolveDomainPlaceholders(string $skeletonKey, string $prefix): array
+  {
+    $skeleton = $this->language->getDef($skeletonKey);
+
+    if (preg_match_all('/\{\{([A-Za-z0-9_-]+)\}\}/', $skeleton, $matches) === 0) {
+      return [];
+    }
+
+    $vars = [];
+
+    foreach (array_unique($matches[1]) as $name) {
+      $key = $prefix . $name;
+      $value = $this->language->getDef($key);
+
+      if ($value !== $key) {
+        $vars[$name] = $value;
+      }
+    }
+
+    return $vars;
   }
   
   /**
@@ -199,7 +241,7 @@ class AmbiguousQueryDetector
         error_log("AmbiguousQueryDetector: No clear pattern, using LLM detection");
       }
       
-      $prompt = $this->language->getDef('text_rag_detect_ambiguity', ['QUERY' => $query]);
+      $prompt = $this->language->getDef('text_rag_detect_ambiguity', ['QUERY' => $query] + $this->detectExampleVars());
 
       // Get LLM analysis. c1/c2/c3 use the Gpt facade at temperature 0.0 (deterministic +
       // facade-compliant). c0 keeps the legacy direct chat call at default temperature.
@@ -619,11 +661,11 @@ class AmbiguousQueryDetector
    */
   private function buildClarificationPrompt(string $originalQuery, array $interpretation): string
   {
-    $array = [
+    $array = array_merge([
       'original_query' => $originalQuery,
       'interpretation' => $interpretation['description'],
-      'sql_hint' => $interpretation['sql_hint']
-    ];
+      'sql_hint' => $interpretation['sql_hint'],
+    ], $this->resolveDomainPlaceholders('text_rag_clarify_query_for_interpretation', 'text_ambiguity_'));
 
     return $this->language->getDef('text_rag_clarify_query_for_interpretation', $array);
   }

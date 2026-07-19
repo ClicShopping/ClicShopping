@@ -1,0 +1,106 @@
+text_rag_detect_ambiguity = Vous êtes un expert dans l'analyse de requêtes de base de données pour détecter l'ambiguïté. Votre tâche est d'analyser la requête utilisateur pour identifier tout manque de clarté avant la génération SQL.
+Analysez cette requête et déterminez si elle est ambiguë (susceptible d'avoir plusieurs interprétations valides).
+Requête : {{QUERY}}
+**RÈGLE CRITIQUE - LES RÉFÉRENCES TEMPORELLES EXPLICITES NE SONT PAS AMBIGUËS** :
+Si la requête contient des références temporelles EXPLICITES, retournez IMMÉDIATEMENT is_ambiguous: false :
+* "ce mois", "ce mois-ci", "cette année", "cette semaine", "ce trimestre", "ce jour"
+* "le mois dernier", "l'année dernière", "la semaine dernière", "le dernier trimestre", "les 30 derniers jours"
+* "aujourd'hui", "hier", "demain"
+* "this month", "this year", "this week", "this quarter", "this day"
+* "last month", "last year", "last week", "last quarter", "last 30 days"
+* "today", "yesterday", "tomorrow"
+* "en janvier", "en 2025", "pour Q1", "in January", "in 2025", "for Q1"
+Ce sont des spécifications temporelles EXPLICITES pointant vers une période SPÉCIFIQUE. Retournez is_ambiguous: false immédiatement.
+**RÈGLE CRITIQUE - UNITÉ TEMPORELLE MANQUANTE (temporal_unit_missing)** :
+Un NOMBRE suivi de "derniers"/"dernières"/"last"/"past"/"previous" SANS UNITÉ de temps qui suit (jour/semaine/mois/an/année, day/week/month/year) est AMBIGU — l'unité est manquante et NE DOIT PAS être devinée :
+* "les 12 derniers", "sur les 6 dernières", "les 3 derniers" → AMBIGU (12/6/3 quoi ? jours ? semaines ? mois ? années ?)
+* "the last 12", "over the past 6", "for the previous 3" → AMBIGU (12/6/3 de QUOI ? jours ? semaines ? mois ? années ?)
+À l'inverse, quand l'unité EST présente la référence est EXPLICITE et NON ambiguë : "les 12 derniers mois", "les 30 derniers jours", "last 12 months", "last 30 days".
+TOUT AUSSI NON ambigu — et JAMAIS temporal_unit_missing : quand le nombre est immédiatement suivi d'un nom d'ENREGISTREMENT/ENTITÉ DÉNOMBRABLE ({{countable_entity_nouns}}). {{recent_records_example}} désigne les 3 enregistrements les PLUS RÉCENTS de cette entité (tri par date ou id DESC, LIMIT N) — mettez is_ambiguous false et "recommendation": "proceed", ne PAS demander de clarification. L'unité n'est "manquante" que si AUCUN nom dénombrable ne suit le nombre.
+Pour temporal_unit_missing, mettez "recommendation": "clarify" et fournissez des interprétations nommant les unités plausibles (mois / jours / années). NE choisissez PAS l'unité par défaut silencieusement — l'utilisateur doit confirmer quelle unité de période il vise.
+**NOUVELLE RÈGLE CRITIQUE - AMBIGUÏTÉ DE PORTÉE TEMPORELLE (temporal_period_scope)** :
+Si la requête contient des termes PÉRIODIQUES SANS référence temporelle explicite, c'est AMBIGU (temporal_period_scope) :
+* "mensuel", "mensuellement" → AMBIGU : peut signifier "mois en cours" OU "répartition par mois"
+* "annuel", "annuellement" → AMBIGU : peut signifier "année en cours" OU "répartition par année"
+* "hebdomadaire", "hebdomadairement" → AMBIGU : peut signifier "semaine en cours" OU "répartition par semaine"
+* "trimestriel", "trimestriellement" → AMBIGU : peut signifier "trimestre en cours" OU "répartition par trimestre"
+* "quotidien", "quotidiennement" → AMBIGU : peut signifier "aujourd'hui" OU "répartition par jour"
+* "monthly", "yearly", "weekly", "quarterly", "daily" → AMBIGU (mêmes règles en anglais)
+Pour l'ambiguïté temporal_period_scope, fournir ces interprétations :
+1. current_period : "Pour la période en cours uniquement" (ex: WHERE MONTH(date) = MONTH(CURRENT_DATE))
+2. breakdown : "Répartition par [période]" (ex: GROUP BY MONTH(date))
+Exemples d'ambiguïté temporal_period_scope :
+{{temporal_scope_ambiguous_examples}}
+Exemples NON ambigus :
+{{temporal_scope_clear_examples}}
+**DEUXIÈME RÈGLE CRITIQUE - LANGAGE QUANTITATIF** :
+Si la requête contient un langage QUANTITATIF/STATISTIQUE, retournez IMMÉDIATEMENT is_ambiguous: false :
+* Comptage : "combien de", "nombre de", "total de", "how many", "number of", "count of", "total number"
+* Somme : "total", "somme de", "montant total", "combiné", "sum of", "total amount", "combined"
+* Moyenne : "moyenne", "moyenne de", "average", "mean", "average of"
+* Extrêmes : "minimum", "maximum", "le plus bas", "le plus haut", "le moins", "le plus", "lowest", "highest", "least", "most"
+**IMPORTANT** : Si référence temporelle EXPLICITE ET langage quantitatif sont TOUS DEUX présents, c'est DOUBLEMENT NON ambigu. Retournez is_ambiguous: false immédiatement.
+SEULEMENT si la requête ne contient PAS de références temporelles explicites OU de langage quantitatif, alors considérez ces types d'ambiguïté :
+1. temporal_period_scope : Termes PÉRIODIQUES sans temps explicite (mensuel, annuel, etc.) - voir NOUVELLE RÈGLE ci-dessus
+2. Quantification : COUNT (nombre d'éléments distincts) vs SUM (quantité totale/valeur)
+3. Portée (Scope) : Tous les éléments vs Éléments récents vs Éléments actifs/visibles
+4. Métrique : Moyenne vs Minimum vs Maximum vs Liste simple
+5. Période temporelle : UNIQUEMENT lorsque la plage de temps est COMPLÈTEMENT ABSENTE (par exemple, {{absent_time_example}} sans référence temporelle)
+6. Lors de la génération d'indices SQL impliquant des {{multiword_entity_noun}} (par exemple, dans une clause WHERE), si le nom se compose de plusieurs mots (par exemple, {{multiword_name_example}}), vous DEVEZ décomposer le terme de recherche en utilisant des opérateurs LIKE '%mot%' AND comme opérateur pour chaque terme, au lieu d'utiliser un seul motif LIKE '%multi-mots%'.
+**TROISIÈME RÈGLE CRITIQUE - LES REQUÊTES MULTI-CHAMPS NE SONT PAS AMBIGUËS** :
+Si la requête demande PLUSIEURS CHAMPS SPÉCIFIQUES (par exemple, {{multifield_inline_examples}}), ce n'est PAS ambigu :
+{{multifield_examples}}
+Les requêtes multi-champs sont EXPLICITES sur les données nécessaires. Retournez is_ambiguous: false immédiatement.
+**QUATRIÈME RÈGLE CRITIQUE - LES REQUÊTES GROUP BY NE SONT PAS AMBIGUËS** :
+Si la requête contient le motif "par [dimension]" (par exemple, {{groupby_inline_examples}}), ce n'est PAS ambigu :
+{{groupby_examples}}
+Les requêtes GROUP BY ont une intention d'agrégation CLAIRE avec une dimension de regroupement explicite. Retournez is_ambiguous: false immédiatement.
+Interprétation par défaut : SUM pour les métriques financières ({{financial_metric_examples}}), COUNT pour les entités ({{entity_examples}}).
+Répondez UNIQUEMENT avec du JSON valide dans ce format exact :
+{
+"is_ambiguous": true/false,
+"ambiguity_type": "temporal_period_scope|temporal_unit_missing|quantification|scope|metric|time|null",
+"confidence": 0.0-1.0,
+"interpretations": [
+{
+"type": "current_period|breakdown|count|sum|all|recent|active|average|min|max|list",
+"label": "Short label",
+"description": "Clear description",
+"sql_hint": "SQL operation hint (COUNT, SUM, AVG, GROUP BY, WHERE, etc.)",
+"sql_field_reference": "SQL field concerned (Ex: {{sql_field_reference_example}})"
+}
+],
+"recommendation": "generate_both|use_default|clarify",
+"default_interpretation": "type from interpretations",
+"reasoning": "Brief explanation"
+}
+Règles :
+- Si la requête mentionne explicitement des fonctions d'agrégation SQL (COUNT, DISTINCT, SUM, TOTAL, AVG, MIN, MAX) -> NON ambiguë.
+- Si la requête demande un RÉSULTAT NUMÉRIQUE UNIQUE avec une intention d'agrégation claire -> NON ambiguë.
+- Si la requête mentionne CHIFFRE D'AFFAIRES, REVENU, VENTES -> NON ambiguë (toujours SUM).
+- Si la requête contient des termes PÉRIODIQUES (mensuel, annuel, etc.) SANS référence temporelle explicite -> EST ambiguë (temporal_period_scope).
+- Si la requête est vague sur CE QU'IL FAUT calculer ou COMMENT agréger -> EST ambiguë.
+- Fournir 2 à 4 interprétations si ambiguë.
+- Recommander "generate_both" pour l'ambiguïté temporal_period_scope (période en cours vs répartition).
+- Recommander "generate_both" pour l'ambiguïté de quantification (COUNT vs SUM).
+- Recommander "use_default" pour l'ambiguïté de portée/métrique, en privilégiant l'interprétation la plus courante.
+- Recommander "clarify" pour les requêtes avec ABSENCE COMPLÈTE de référence temporelle (par exemple, {{show_sales_example}} sans aucun indicateur temporel).
+- Recommander "clarify" pour temporal_unit_missing (un nombre + derniers/dernières/last/past SANS unité) — ne jamais deviner l'unité.
+- IMPORTANT : Toutes les requêtes sont traduites en anglais avant l'analyse. Se concentrer sur le langage quantitatif anglais.
+- CRITIQUE : Les termes financiers signifiant "revenu" ne sont JAMAIS ambigus - ils signifient toujours SUM de valeurs monétaires, PAS COUNT de transactions.
+Exemples :
+{{detect_examples}}
+
+text_rag_clarify_query_for_interpretation = Réécrivez cette requête ambiguë pour expliciter l'intention.
+Requête originale : {{original_query}}
+Interprétation : {{interpretation}}
+Indice SQL : {{sql_hint}}
+Réécrivez la requête pour indiquer clairement cette interprétation précise.
+Si la requête contient plusieurs mots, réécrivez la requête pour chaque mot sous la forme %mot%.
+Utilisez des mots-clés explicites comme COUNT, SUM, AVG, DISTINCT, ALL, RECENT, etc.
+Répondez UNIQUEMENT avec la requête réécrite, rien d'autre.
+Exemples :
+{{clarify_examples}}
+
+text_rag_critique_ambiguity = Vous êtes un relecteur strict d'un verdict d'ambiguïté produit pour une requête base de données. À partir de la requête d'origine et d'un verdict JSON candidat, décidez si le verdict est correct. Un verdict est FAUX si : il marque une référence temporelle explicite comme ambiguë, il marque comme non ambiguë une requête clairement sous-spécifiée (unité temporelle manquante, count-vs-sum), ou si ambiguity_type ne correspond pas à la requête. Retournez UNIQUEMENT du JSON : {"verdict_ok": true|false, "corrected": <le verdict corrigé, même schéma que le candidat, seulement quand verdict_ok vaut false>}. Query: {{QUERY}} Candidate verdict: {{VERDICT}}
+

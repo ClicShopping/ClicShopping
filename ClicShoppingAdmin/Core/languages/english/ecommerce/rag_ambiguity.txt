@@ -1,184 +1,91 @@
+text_ambiguity_absent_time_example = "sales"
 
-text_rag_detect_ambiguity = You are an expert at analyzing database queries for ambiguity. Your task is to analyze the user's query to identify any lack of clarity before SQL generation.
-Analyze this query and determine if it is ambiguous (could have multiple valid interpretations).
+text_ambiguity_clarify_examples = - "How many products?" + COUNT -> "Count the number of distinct products"
+- "How many products?" + SUM -> "Sum the total quantity of all products"
+- "Show orders" + RECENT -> "Show orders from the last 30 days"
 
-Query: {{QUERY}}
+text_ambiguity_countable_entity_nouns = orders, customers, products, invoices, categories, manufacturers, reviews ; commandes, clients, produits, factures, catégories
 
-**CRITICAL RULE - EXPLICIT TIME REFERENCES ARE NOT AMBIGUOUS**:
-If the query contains EXPLICIT time references, IMMEDIATELY return is_ambiguous: false:
-    * "this month", "this year", "this week", "this quarter", "this day"
-    * "last month", "last year", "last week", "last quarter", "last 30 days"
-    * "today", "yesterday", "tomorrow"
-    * "ce mois", "ce mois-ci", "cette année", "cette semaine", "ce trimestre"
-    * "le mois dernier", "l'année dernière", "la semaine dernière"
-    * "aujourd'hui", "hier", "demain"
-    * "in January", "in 2025", "for Q1", "en janvier", "en 2025", "pour Q1"
+text_ambiguity_detect_examples = - "How many products in stock?" -> AMBIGUOUS (count distinct models vs sum total quantity).
+- "Count distinct products" -> NOT ambiguous (explicit COUNT).
+- "How many orders this month?" -> NOT ambiguous (quantitative "how many" + explicit temporal "this month").
+- "Number of orders this month" -> NOT ambiguous (quantitative "number of" + explicit temporal "this month").
+- "How many customers" -> NOT ambiguous (quantitative language "how many", default: COUNT all customers).
+- "Number of customers" -> NOT ambiguous (quantitative language "number of", default: COUNT all customers).
+- "Total number of orders" -> NOT ambiguous (quantitative language "total number").
+- "Combien de commandes ce mois" -> NOT ambiguous (quantitative "combien de" + explicit temporal "ce mois").
+- "Combien de clients" -> NOT ambiguous (quantitative language "combien de", default: COUNT all clients).
+- "Revenue this month" -> NOT ambiguous (financial term "revenue" = SUM + explicit temporal "this month").
+- "Sales this year" -> NOT ambiguous (financial term "sales" = SUM + explicit temporal "this year").
+- "Orders today" -> NOT ambiguous (explicit temporal expression "today" provides clear time filter).
+- "Monthly revenue" -> AMBIGUOUS (temporal_period_scope: current month revenue OR revenue grouped by month).
+- "chiffre d'affaires mensuel" -> AMBIGUOUS (temporal_period_scope: CA du mois en cours OU CA par mois).
+- "Weekly sales" -> AMBIGUOUS (temporal_period_scope: this week's sales OR sales by week).
+- "ventes hebdomadaires" -> AMBIGUOUS (temporal_period_scope: ventes de cette semaine OU ventes par semaine).
+- "revenue by month" -> NOT ambiguous (explicit "by month" = GROUP BY MONTH).
+- "chiffre d'affaires par mois" -> NOT ambiguous (explicit "par mois" = GROUP BY MONTH).
+- "revenue this month" -> NOT ambiguous (explicit "this month" = current month only).
+- "chiffre d'affaires ce mois" -> NOT ambiguous (explicit "ce mois" = mois en cours seulement).
+- "Average price of products" -> NOT ambiguous (statistical language "average").
+- "Highest revenue this year" -> NOT ambiguous (extreme language "highest" + explicit temporal "this year").
+- "price and SKU" -> NOT ambiguous (multi-field query with 2 specific fields).
+- "model and price" -> NOT ambiguous (multi-field query with 2 specific fields).
+- "modèle et prix" -> NOT ambiguous (multi-field query with 2 specific fields).
+- "prix et quantité" -> NOT ambiguous (multi-field query with 2 specific fields).
+- "Show model and price" -> NOT ambiguous (display verb + multi-field query).
+- "Affiche le modèle et le prix" -> NOT ambiguous (display verb + multi-field query).
+- "sales by category" -> NOT ambiguous (GROUP BY query with clear aggregation: SUM sales grouped by category).
+- "revenue by month" -> NOT ambiguous (GROUP BY query with clear aggregation: SUM revenue grouped by month).
+- "orders by status" -> NOT ambiguous (GROUP BY query with clear aggregation: COUNT orders grouped by status).
+- "ventes par catégorie" -> NOT ambiguous (GROUP BY query: SUM ventes grouped by catégorie).
+- "commandes par statut" -> NOT ambiguous (GROUP BY query: COUNT commandes grouped by statut).
+- "chiffre d'affaires par trimestre" -> NOT ambiguous (GROUP BY query: SUM revenue grouped by quarter).
+- "Show orders" -> AMBIGUOUS (all vs recent vs active, NO time reference).
+- "Show all orders" -> NOT ambiguous (explicit scope "all").
+- "Show sales" -> AMBIGUOUS (no time reference, no quantification, no scope).
+- "customers who spent over 70 in the last 12" -> AMBIGUOUS (temporal_unit_missing: 12 days? months? years? -> clarify).
+- "clients ayant acheté pour plus de 70 sur les 12 derniers" -> AMBIGUOUS (temporal_unit_missing: 12 jours ? mois ? années ? -> clarify).
+- "customers who spent over 70 in the last 12 months" -> NOT ambiguous (explicit unit "months").
 
-These are EXPLICIT time specifications pointing to a SPECIFIC period. Return is_ambiguous: false immediately.
+text_ambiguity_entity_examples = orders, customers, products
 
-**CRITICAL RULE - MISSING TEMPORAL UNIT (temporal_unit_missing)**:
-A NUMBER followed by "last"/"past"/"previous"/"derniers"/"dernières" WITHOUT a following time UNIT (day/week/month/year, jour/semaine/mois/an/année) is AMBIGUOUS — the unit is missing and MUST NOT be guessed:
-    * "the last 12", "over the past 6", "for the previous 3" → AMBIGUOUS (12/6/3 of WHAT? days? weeks? months? years?)
-    * "les 12 derniers", "sur les 6 dernières", "les 3 derniers" → AMBIGUOUS (12/6/3 quoi ? jours ? semaines ? mois ? années ?)
-By contrast, when the unit IS present the reference is EXPLICIT and NOT ambiguous: "last 12 months", "last 30 days", "les 12 derniers mois", "les 30 derniers jours".
-EQUALLY NOT ambiguous — and NEVER temporal_unit_missing: when the number is immediately followed by a COUNTABLE RECORD/ENTITY noun (orders, customers, products, invoices, categories, manufacturers, reviews ; commandes, clients, produits, factures, catégories). "the last 3 orders" / "les 3 dernières commandes" means the 3 MOST RECENT records of that entity (sort by date or id DESC, LIMIT N) — set is_ambiguous false and "recommendation": "proceed", do NOT clarify. The unit is only "missing" when NO countable noun follows the number.
-For temporal_unit_missing set "recommendation": "clarify" and provide interpretations naming the plausible units (months / days / years). DO NOT silently default the unit — the user must confirm which period unit they mean.
+text_ambiguity_financial_metric_examples = sales, revenue, turnover
 
-**NEW CRITICAL RULE - TEMPORAL PERIOD SCOPE AMBIGUITY**:
-If the query contains PERIODIC terms WITHOUT explicit time reference, this IS AMBIGUOUS (temporal_period_scope):
-    * "monthly", "mensuel", "mensuellement" → AMBIGUOUS: could mean "current month" OR "breakdown by month"
-    * "yearly", "annuel", "annuellement" → AMBIGUOUS: could mean "current year" OR "breakdown by year"
-    * "weekly", "hebdomadaire" → AMBIGUOUS: could mean "current week" OR "breakdown by week"
-    * "quarterly", "trimestriel" → AMBIGUOUS: could mean "current quarter" OR "breakdown by quarter"
-    * "daily", "quotidien" → AMBIGUOUS: could mean "today" OR "breakdown by day"
+text_ambiguity_groupby_examples = * "sales by category" → NOT ambiguous (SUM sales grouped by category)
+* "revenue by month" → NOT ambiguous (SUM revenue grouped by month)
+* "orders by status" → NOT ambiguous (COUNT orders grouped by status)
+* "ventes par catégorie" → NOT ambiguous (SUM ventes grouped by catégorie)
+* "commandes par statut" → NOT ambiguous (COUNT commandes grouped by statut)
+* "chiffre d'affaires par trimestre" → NOT ambiguous (SUM revenue grouped by quarter)
 
-For temporal_period_scope ambiguity, provide these interpretations:
-    1. current_period: "For the current [period] only" (e.g., WHERE MONTH(date) = CURRENT_MONTH)
-    2. breakdown: "Breakdown by [period]" (e.g., GROUP BY MONTH(date))
+text_ambiguity_groupby_inline_examples = "sales by category", "revenue by month", "orders by status"
 
-Examples of temporal_period_scope ambiguity:
-    - "monthly revenue" → AMBIGUOUS (current month revenue OR revenue grouped by month)
-    - "chiffre d'affaires mensuel" → AMBIGUOUS (CA du mois en cours OU CA par mois)
-    - "weekly sales" → AMBIGUOUS (this week's sales OR sales by week)
-    - "ventes hebdomadaires" → AMBIGUOUS (ventes de cette semaine OU ventes par semaine)
+text_ambiguity_multifield_examples = * "price and SKU" → NOT ambiguous (clear request for 2 fields)
+* "model and price" → NOT ambiguous (clear request for 2 fields)
+* "modèle et prix" → NOT ambiguous (clear request for 2 fields)
+* "prix et quantité" → NOT ambiguous (clear request for 2 fields)
+* "Show model and price" → NOT ambiguous (display verb + 2 fields)
+* "Affiche le modèle et le prix" → NOT ambiguous (display verb + 2 fields)
 
-Examples that are NOT ambiguous:
-    - "revenue this month" → NOT ambiguous (explicit "this month" = current month)
-    - "chiffre d'affaires ce mois" → NOT ambiguous (explicit "ce mois" = mois en cours)
-    - "revenue by month" → NOT ambiguous (explicit "by month" = GROUP BY)
-    - "chiffre d'affaires par mois" → NOT ambiguous (explicit "par mois" = GROUP BY)
+text_ambiguity_multifield_inline_examples = "price and SKU", "model and price", "prix et quantité"
 
-**SECOND CRITICAL RULE - QUANTITATIVE LANGUAGE**:
-If the query contains QUANTITATIVE/STATISTICAL language, IMMEDIATELY return is_ambiguous: false:
-    * Counting: "how many", "number of", "count of", "total number", "combien de", "nombre de"
-    * Summing: "total", "sum of", "total amount", "combined"
-    * Averaging: "average", "mean", "average of"
-    * Extremes: "minimum", "maximum", "lowest", "highest", "least", "most", "smallest", "largest"
+text_ambiguity_multiword_entity_noun = product names
 
-**IMPORTANT**: If BOTH explicit time reference AND quantitative language are present, this is DOUBLY NOT ambiguous. Return is_ambiguous: false immediately.
+text_ambiguity_multiword_name_example = "iPhone 17 Pro"
 
-ONLY if the query does NOT contain explicit time references OR quantitative language, then consider these types of ambiguity:
-    1. temporal_period_scope: PERIODIC terms without explicit time (monthly, yearly, etc.) - see NEW CRITICAL RULE above
-    2. Quantification: COUNT (distinct items) vs SUM (total quantity/value)
-    3. Scope: All items vs Recent items vs Active/Visible items
-    4. Metric: Average vs Minimum vs Maximum vs Simple List
-    5. Time period: ONLY when time range is COMPLETELY ABSENT (e.g., "sales" with no time reference)
-    6. When generating SQL hints involving product names (e.g., in a WHERE clause), if the name consists of multiple words (e.g., "iPhone 17 Pro"), you MUST decompose the search term using separate LIKE '%word%' AND operators for each term, instead of using a single LIKE '%multi word%' pattern.
+text_ambiguity_recent_records_example = "the last 3 orders" / "les 3 dernières commandes"
 
-**THIRD CRITICAL RULE - MULTI-FIELD QUERIES ARE NOT AMBIGUOUS**:
-If the query requests MULTIPLE SPECIFIC FIELDS (e.g., "price and SKU", "model and price", "prix et quantité"), this is NOT ambiguous:
-    * "price and SKU" → NOT ambiguous (clear request for 2 fields)
-    * "model and price" → NOT ambiguous (clear request for 2 fields)
-    * "modèle et prix" → NOT ambiguous (clear request for 2 fields)
-    * "prix et quantité" → NOT ambiguous (clear request for 2 fields)
-    * "Show model and price" → NOT ambiguous (display verb + 2 fields)
-    * "Affiche le modèle et le prix" → NOT ambiguous (display verb + 2 fields)
+text_ambiguity_show_sales_example = "show sales"
 
-Multi-field queries are EXPLICIT about what data is needed. Return is_ambiguous: false immediately.
+text_ambiguity_sql_field_reference_example = p.products_status = 1, a.products_quantity
 
-**FOURTH CRITICAL RULE - GROUP BY QUERIES ARE NOT AMBIGUOUS**:
-If the query contains "by [dimension]" pattern (e.g., "sales by category", "revenue by month", "orders by status"), this is NOT ambiguous:
-    * "sales by category" → NOT ambiguous (SUM sales grouped by category)
-    * "revenue by month" → NOT ambiguous (SUM revenue grouped by month)
-    * "orders by status" → NOT ambiguous (COUNT orders grouped by status)
-    * "ventes par catégorie" → NOT ambiguous (SUM ventes grouped by catégorie)
-    * "commandes par statut" → NOT ambiguous (COUNT commandes grouped by statut)
-    * "chiffre d'affaires par trimestre" → NOT ambiguous (SUM revenue grouped by quarter)
+text_ambiguity_temporal_scope_ambiguous_examples = - "monthly revenue" → AMBIGUOUS (current month revenue OR revenue grouped by month)
+- "chiffre d'affaires mensuel" → AMBIGUOUS (CA du mois en cours OU CA par mois)
+- "weekly sales" → AMBIGUOUS (this week's sales OR sales by week)
+- "ventes hebdomadaires" → AMBIGUOUS (ventes de cette semaine OU ventes par semaine)
 
-GROUP BY queries have CLEAR aggregation intent with explicit grouping dimension. Return is_ambiguous: false immediately.
-Default interpretation: SUM for financial metrics (sales, revenue, turnover), COUNT for entities (orders, customers, products).
-
-Respond ONLY with valid JSON in this exact format:
-{
-"is_ambiguous": true/false,
-"ambiguity_type": "temporal_period_scope|temporal_unit_missing|quantification|scope|metric|time|null",
-"confidence": 0.0-1.0,
-"interpretations": [
- {
-   "type": "current_period|breakdown|count|sum|all|recent|active|average|min|max|list",
-   "label": "Short label for interpretation",
-   "description": "Clear description of the SQL interpretation.",
-   "sql_hint": "SQL operation hint (COUNT, SUM, AVG, GROUP BY, WHERE, etc.)",
-   "sql_field_reference": "Hint for the specific SQL field (e.g., p.products_status = 1, a.products_quantity)"
- }
-],
-"recommendation": "generate_both|use_default|clarify",
-"default_interpretation": "type from interpretations",
-"reasoning": "Brief explanation of the ambiguity level and recommendation."
-}
-
-Rules:
-    - If query explicitly mentions SQL aggregation functions (COUNT, DISTINCT, SUM, TOTAL, AVG, MIN, MAX) -> NOT ambiguous.
-    - If query requests a SINGLE NUMERIC RESULT with clear aggregation intent -> NOT ambiguous.
-    - If query mentions REVENUE, TURNOVER, INCOME, SALES REVENUE -> NOT ambiguous (always SUM).
-    - If query is vague about WHAT to calculate or HOW to aggregate -> IS ambiguous.
-    - If query contains PERIODIC terms (monthly, yearly, etc.) WITHOUT explicit time reference -> IS ambiguous (temporal_period_scope).
-    - Provide 2-4 interpretations if ambiguous.
-    - Recommend "generate_both" for temporal_period_scope ambiguity (current period vs breakdown).
-    - Recommend "generate_both" for quantification ambiguity (COUNT vs SUM).
-    - Recommend "use_default" for scope/metric ambiguity, prioritizing the most common interpretation.
-    - Recommend "clarify" for queries with COMPLETE absence of time reference (e.g., "show sales" with no time indicator).
-    - Recommend "clarify" for temporal_unit_missing (a number + last/past/derniers WITHOUT a unit) — never guess the unit.
-    - IMPORTANT: All queries are translated to English before analysis. Focus on English quantitative language.
-    - CRITICAL: Financial terms that mean "revenue" are NEVER ambiguous - they always mean SUM of monetary values, NOT COUNT of transactions.
-
-Examples:
-    - "How many products in stock?" -> AMBIGUOUS (count distinct models vs sum total quantity).
-    - "Count distinct products" -> NOT ambiguous (explicit COUNT).
-    - "How many orders this month?" -> NOT ambiguous (quantitative "how many" + explicit temporal "this month").
-    - "Number of orders this month" -> NOT ambiguous (quantitative "number of" + explicit temporal "this month").
-    - "How many customers" -> NOT ambiguous (quantitative language "how many", default: COUNT all customers).
-    - "Number of customers" -> NOT ambiguous (quantitative language "number of", default: COUNT all customers).
-    - "Total number of orders" -> NOT ambiguous (quantitative language "total number").
-    - "Combien de commandes ce mois" -> NOT ambiguous (quantitative "combien de" + explicit temporal "ce mois").
-    - "Combien de clients" -> NOT ambiguous (quantitative language "combien de", default: COUNT all clients).
-    - "Revenue this month" -> NOT ambiguous (financial term "revenue" = SUM + explicit temporal "this month").
-    - "Sales this year" -> NOT ambiguous (financial term "sales" = SUM + explicit temporal "this year").
-    - "Orders today" -> NOT ambiguous (explicit temporal expression "today" provides clear time filter).
-    - "Monthly revenue" -> AMBIGUOUS (temporal_period_scope: current month revenue OR revenue grouped by month).
-    - "chiffre d'affaires mensuel" -> AMBIGUOUS (temporal_period_scope: CA du mois en cours OU CA par mois).
-    - "Weekly sales" -> AMBIGUOUS (temporal_period_scope: this week's sales OR sales by week).
-    - "ventes hebdomadaires" -> AMBIGUOUS (temporal_period_scope: ventes de cette semaine OU ventes par semaine).
-    - "revenue by month" -> NOT ambiguous (explicit "by month" = GROUP BY MONTH).
-    - "chiffre d'affaires par mois" -> NOT ambiguous (explicit "par mois" = GROUP BY MONTH).
-    - "revenue this month" -> NOT ambiguous (explicit "this month" = current month only).
-    - "chiffre d'affaires ce mois" -> NOT ambiguous (explicit "ce mois" = mois en cours seulement).
-    - "Average price of products" -> NOT ambiguous (statistical language "average").
-    - "Highest revenue this year" -> NOT ambiguous (extreme language "highest" + explicit temporal "this year").
-    - "price and SKU" -> NOT ambiguous (multi-field query with 2 specific fields).
-    - "model and price" -> NOT ambiguous (multi-field query with 2 specific fields).
-    - "modèle et prix" -> NOT ambiguous (multi-field query with 2 specific fields).
-    - "prix et quantité" -> NOT ambiguous (multi-field query with 2 specific fields).
-    - "Show model and price" -> NOT ambiguous (display verb + multi-field query).
-    - "Affiche le modèle et le prix" -> NOT ambiguous (display verb + multi-field query).
-    - "sales by category" -> NOT ambiguous (GROUP BY query with clear aggregation: SUM sales grouped by category).
-    - "revenue by month" -> NOT ambiguous (GROUP BY query with clear aggregation: SUM revenue grouped by month).
-    - "orders by status" -> NOT ambiguous (GROUP BY query with clear aggregation: COUNT orders grouped by status).
-    - "ventes par catégorie" -> NOT ambiguous (GROUP BY query: SUM ventes grouped by catégorie).
-    - "commandes par statut" -> NOT ambiguous (GROUP BY query: COUNT commandes grouped by statut).
-    - "chiffre d'affaires par trimestre" -> NOT ambiguous (GROUP BY query: SUM revenue grouped by quarter).
-    - "Show orders" -> AMBIGUOUS (all vs recent vs active, NO time reference).
-    - "Show all orders" -> NOT ambiguous (explicit scope "all").
-    - "Show sales" -> AMBIGUOUS (no time reference, no quantification, no scope).
-    - "customers who spent over 70 in the last 12" -> AMBIGUOUS (temporal_unit_missing: 12 days? months? years? -> clarify).
-    - "clients ayant acheté pour plus de 70 sur les 12 derniers" -> AMBIGUOUS (temporal_unit_missing: 12 jours ? mois ? années ? -> clarify).
-    - "customers who spent over 70 in the last 12 months" -> NOT ambiguous (explicit unit "months").
-
-
-text_rag_clarify_query_for_interpretation = Rewrite this ambiguous query to be explicit about the intent.
-    Original query: {{original_query}}
-    Interpretation: {{interpretation}}
-    SQL hint: {{sql_hint}}
-Rewrite the query to clearly indicate this specific interpretation.
-If the query contains multiple words, rewrite the query for each word like that %word%.
-Use explicit keywords like COUNT, SUM, AVG, DISTINCT, ALL, RECENT, etc.
-Respond with ONLY the rewritten query, nothing else.
-
-Examples:
-    - "How many products?" + COUNT -> "Count the number of distinct products"
-    - "How many products?" + SUM -> "Sum the total quantity of all products"
-    - "Show orders" + RECENT -> "Show orders from the last 30 days"
-
-text_rag_critique_ambiguity = You are a strict reviewer of an ambiguity verdict produced for a database query. Given the original query and a candidate JSON verdict, decide if the verdict is correct. A verdict is WRONG if: it marks an explicit time reference as ambiguous, it marks a clearly under-specified query (missing temporal unit, count-vs-sum) as non-ambiguous, or the ambiguity_type does not match the query. Return ONLY JSON: {"verdict_ok": true|false, "corrected": <the corrected verdict object, same schema as the candidate, only when verdict_ok is false>}. Query: {{QUERY}} Candidate verdict: {{VERDICT}}
-
+text_ambiguity_temporal_scope_clear_examples = - "revenue this month" → NOT ambiguous (explicit "this month" = current month)
+- "chiffre d'affaires ce mois" → NOT ambiguous (explicit "ce mois" = mois en cours)
+- "revenue by month" → NOT ambiguous (explicit "by month" = GROUP BY)
+- "chiffre d'affaires par mois" → NOT ambiguous (explicit "par mois" = GROUP BY)
 
