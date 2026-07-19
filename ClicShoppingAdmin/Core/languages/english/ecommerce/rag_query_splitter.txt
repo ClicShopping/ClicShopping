@@ -1,33 +1,21 @@
-prompt_split_hybrid = Split this hybrid query into separate, independent sub-queries.
-Query: {{query}}
-INSTRUCTIONS:
-    1. Identify ALL distinct questions or requests in the query\n
-    2. Split them into separate sub-queries\n
-    3. Each sub-query must be complete and answerable on its own\n
-    4. Classify each as 'analytics' (database data: numbers, prices, lists AND structured catalog attributes), 'semantic' (free-text document content: descriptions, policies, reviews), or 'web_search' (external info)
-    5. STRUCTURED CATALOG ATTRIBUTES are ALWAYS 'analytics', NEVER 'semantic': price, SKU, EAN, model/reference, stock/quantity, weight, status, dates.
-EXAMPLES:
-Query: "price of the Samsung S25 then its SKU and EAN"\n
+text_split_hybrid_structured_attributes_rule = STRUCTURED CATALOG ATTRIBUTES are ALWAYS 'analytics', NEVER 'semantic': price, SKU, EAN, model/reference, stock/quantity, weight, status, dates.
+text_split_hybrid_examples = Query: "price of the Samsung S25 then its SKU and EAN"\n
 Result:
-    [
-        {"query": "price of the Samsung S25", "type": "analytics"},
-        {"query": "SKU and EAN of the Samsung S25", "type": "analytics"}
-    ]
+[
+{"query": "price of the Samsung S25", "type": "analytics"},
+{"query": "SKU and EAN of the Samsung S25", "type": "analytics"}
+]
 Query: "What is the price of iPhone 17 Pro and what is the return policy"\n
-Result: 
-    [
-        {"query": "What is the price of iPhone 17 Pro", "type": "analytics"}, 
-        {"query": "What is the return policy", "type": "semantic"}
-    ]
+Result:
+[
+{"query": "What is the price of iPhone 17 Pro", "type": "analytics"},
+{"query": "What is the return policy", "type": "semantic"}
+]
 Query: "Show me sales today and explain our shipping process"
-Result: 
-    [
-        {"query": "Show me sales today", "type": "analytics"}, 
-        {"query": "Explain our shipping process", "type": "semantic"}
-    ]
-Return ONLY a JSON array. No markdown, no explanation.
-JSON:
-
-
+Result:
+[
+{"query": "Show me sales today", "type": "analytics"},
+{"query": "Explain our shipping process", "type": "semantic"}
+]
 report_query_analytics_template = Get {subject} stock and sales data
 report_query_semantic_template = Get {subject} product information and features

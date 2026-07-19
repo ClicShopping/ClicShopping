@@ -80,6 +80,7 @@ class QuerySplitter extends BaseQueryProcessor
     // Initialize language support
     $this->language = Registry::get('Language');
     $this->languageCode = $this->language->get('code');
+    DomainConfig::loadAgnosticLanguageFile('rag_query_splitter');
     DomainConfig::loadLanguageFile('rag_query_splitter');
     
     if ($this->debug) {
@@ -372,8 +373,12 @@ class QuerySplitter extends BaseQueryProcessor
     try {
       if ($this->debug) $this->logInfo("Splitting hybrid query", ['query' => $query]);
 
-      // Get prompt from language file and replace {query} placeholder
-      $prompt = $this->language->getDef('prompt_split_hybrid', array('query' => $query));
+      // Get agnostic skeleton and inject the domain layer (structured-attributes rule + few-shot examples)
+      $prompt = $this->language->getDef('prompt_split_hybrid', array(
+        'query' => $query,
+        'structured_attributes_rule' => $this->language->getDef('text_split_hybrid_structured_attributes_rule'),
+        'examples' => $this->language->getDef('text_split_hybrid_examples'),
+      ));
 
       $validatedPrompt = $this->validatePrompt($prompt);
       if (empty($validatedPrompt)) {
