@@ -1,0 +1,367 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method GuzzleHttp\\Client\:\:request\(\) should return Psr\\Http\\Message\\ResponseInterface but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Client.php
+
+		-
+			message: '#^Method GuzzleHttp\\Client\:\:send\(\) should return Psr\\Http\\Message\\ResponseInterface but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Client.php
+
+		-
+			message: '#^Method GuzzleHttp\\Client\:\:sendRequest\(\) should return Psr\\Http\\Message\\ResponseInterface but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Client.php
+
+		-
+			message: '#^Parameter \#1 \$string of static method GuzzleHttp\\Psr7\\Utils\:\:asciiToLower\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Client.php
+
+		-
+			message: '#^Parameter \#3 \$headers of class GuzzleHttp\\Psr7\\Request constructor expects array\<array\<string\>\|string\>, array\<mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Client.php
+
+		-
+			message: '#^Part \$value\[0\] \(mixed\) of encapsed string cannot be cast to string\.$#'
+			identifier: encapsedStringPart.nonString
+			count: 3
+			path: src/Client.php
+
+		-
+			message: '#^Part \$value\[1\] \(mixed\) of encapsed string cannot be cast to string\.$#'
+			identifier: encapsedStringPart.nonString
+			count: 3
+			path: src/Client.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Cookie/CookieJar.php
+
+		-
+			message: '#^Call to function is_bool\(\) with bool will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: src/Cookie/SetCookie.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: src/Cookie/SetCookie.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 3
+			path: src/Cookie/SetCookie.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between null and null will always evaluate to false\.$#'
+			identifier: notIdentical.alwaysFalse
+			count: 3
+			path: src/Cookie/SetCookie.php
+
+		-
+			message: '#^Cannot call method getBody\(\) on Psr\\Http\\Message\\ResponseInterface\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Handler/CurlFactory.php
+
+		-
+			message: '#^Parameter \#1 \$ch of function curl_close expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Handler/CurlFactory.php
+
+		-
+			message: '#^Parameter \#1 \$ch of function curl_error expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/CurlFactory.php
+
+		-
+			message: '#^Parameter \#1 \$ch of function curl_getinfo expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 4
+			path: src/Handler/CurlFactory.php
+
+		-
+			message: '#^Parameter \#1 \$ch of function curl_reset expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/CurlFactory.php
+
+		-
+			message: '#^Parameter \#1 \$ch of function curl_setopt expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 6
+			path: src/Handler/CurlFactory.php
+
+		-
+			message: '#^Parameter \$handle of method GuzzleHttp\\Handler\\CurlFactory\:\:applyCurlOptions\(\) has invalid type CurlHandle\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handler/CurlFactory.php
+
+		-
+			message: '#^Property GuzzleHttp\\Handler\\CurlFactory\:\:\$handles has unknown class CurlHandle as its type\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handler/CurlFactory.php
+
+		-
+			message: '#^Offset ''handle_factory''\|''transport_sharing'' on array\{handle_factory\: true, transport_sharing\: true\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: src/Handler/CurlHandler.php
+
+		-
+			message: '#^Parameter \#1 \$ch of function curl_errno expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/CurlHandler.php
+
+		-
+			message: '#^Parameter \#1 \$ch of function curl_exec expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/CurlHandler.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Call to function is_int\(\) with int will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Method GuzzleHttp\\Handler\\CurlMultiHandler\:\:__get\(\) has invalid return type CurlMultiHandle\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Method GuzzleHttp\\Handler\\CurlMultiHandler\:\:__get\(\) never returns CurlMultiHandle so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#1 \$ch of function curl_close expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#1 \$ch of function curl_setopt expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#1 \$mh of function curl_multi_add_handle expects resource, CurlMultiHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#1 \$mh of function curl_multi_close expects resource, CurlMultiHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#1 \$mh of function curl_multi_exec expects resource, CurlMultiHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#1 \$mh of function curl_multi_info_read expects resource, CurlMultiHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#1 \$mh of function curl_multi_remove_handle expects resource, CurlMultiHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#1 \$mh of function curl_multi_select expects resource, CurlMultiHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 3
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#2 \$ch of function curl_multi_add_handle expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \#2 \$ch of function curl_multi_remove_handle expects resource, CurlHandle\|resource given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \$handle of method GuzzleHttp\\Handler\\CurlMultiHandler\:\:removeCompletedHandleFromMulti\(\) has invalid type CurlHandle\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Parameter \$handle of method GuzzleHttp\\Handler\\CurlMultiHandler\:\:removeHandleFromMulti\(\) has invalid type CurlHandle\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Property GuzzleHttp\\Handler\\CurlMultiHandler\:\:\$_mh \(CurlMultiHandle\|resource\) in isset\(\) is not nullable\.$#'
+			identifier: isset.property
+			count: 5
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Property GuzzleHttp\\Handler\\CurlMultiHandler\:\:\$_mh \(CurlMultiHandle\|resource\) is never assigned CurlMultiHandle so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Property GuzzleHttp\\Handler\\CurlMultiHandler\:\:\$_mh has unknown class CurlMultiHandle as its type\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between false and resource will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Handler/CurlMultiHandler.php
+
+		-
+			message: '#^Property GuzzleHttp\\Handler\\EasyHandle\:\:\$handle has unknown class CurlHandle as its type\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handler/EasyHandle.php
+
+		-
+			message: '#^Offset ''max_host_connections''\|''max_total…''\|''transport_sharing'' on array\{max_host_connections\: true, max_total_connections\: true, transport_sharing\: true\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: src/Handler/StreamHandler.php
+
+		-
+			message: '#^Parameter \#1 \$url of method GuzzleHttp\\Handler\\StreamHandler\:\:parse_proxy\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handler/StreamHandler.php
+
+		-
+			message: '#^Variable \$options in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: src/Handler/StreamHandler.php
+
+		-
+			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/HandlerStack.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: src/HandlerStack.php
+
+		-
+			message: '#^Instanceof between ArrayAccess\<int, array\> and ArrayAccess will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Middleware.php
+
+		-
+			message: '#^Instanceof between GuzzleHttp\\MessageFormatterInterface and GuzzleHttp\\MessageFormatterInterface will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Middleware.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 2
+			path: src/Middleware.php
+
+		-
+			message: '#^Call to function is_iterable\(\) with array\|Iterator will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Pool.php
+
+		-
+			message: '#^PHPDoc tag @var has invalid value \(callable\(int\)\)\: Unexpected token "\(", expected TOKEN_HORIZONTAL_WS at offset 24 on line 2$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: src/RetryMiddleware.php
+
+		-
+			message: '#^Property GuzzleHttp\\RetryMiddleware\:\:\$delay has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/RetryMiddleware.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: src/Utils.php
+
+		-
+			message: '#^Method GuzzleHttp\\Utils\:\:jsonDecode\(\) should return array\|bool\|float\|int\|object\|string\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Utils.php
+
+		-
+			message: '#^PHPDoc tag @var with type string is not subtype of native type non\-empty\-string\|false\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: src/Utils.php
+
+		-
+			message: '#^Parameter \#1 \$options of class GuzzleHttp\\Handler\\CurlHandler constructor expects array\{handle_factory\?\: GuzzleHttp\\Handler\\CurlFactoryInterface\|null, transport_sharing\?\: mixed\}, array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Utils.php
+
+		-
+			message: '#^Parameter \#3 \$depth of function json_encode expects int\<1, max\>, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Utils.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Utils.php

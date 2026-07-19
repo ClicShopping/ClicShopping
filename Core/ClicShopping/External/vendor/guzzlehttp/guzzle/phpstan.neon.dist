@@ -1,0 +1,13 @@
+includes:
+    - phpstan-baseline.neon
+    - vendor-bin/phpstan/vendor/phpstan/phpstan-deprecation-rules/rules.neon
+
+parameters:
+    ignoreErrors:
+        -
+            identifier: missingType.iterableValue
+    level: 9
+    paths:
+        - src
+    bootstrapFiles:
+      - tests/bootstrap-phpstan.php
