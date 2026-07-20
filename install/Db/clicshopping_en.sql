@@ -1808,6 +1808,7 @@ INSERT INTO configuration VALUES(1812, 'Do you want to display the details butto
 INSERT INTO configuration VALUES(1813, 'Do you want to display the cart button ?', 'MODULE_PRODUCTS_FEATURED_DISPLAY_CART_BUTTON', 'True', 'Display or remove the cart button', 6, 13, NULL, '2026-05-31 16:53:32', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
 INSERT INTO configuration VALUES(1814, 'Do you want to display the details button ?', 'MODULE_PRODUCTS_LISTING_DISPLAY_DETAILS_BUTTON', 'True', 'Display or remove the details button', 6, 11, NULL, '2026-05-31 16:59:51', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
 INSERT INTO configuration VALUES(1815, 'Do you want to display the cart button ?', 'MODULE_PRODUCTS_LISTING_DISPLAY_CART_BUTTON', 'True', 'Display or remove the cart button', 6, 13, NULL, '2026-05-31 16:59:51', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO configuration VALUES(1816, 'Store AI latency breakdown', 'STORE_AI_PERF_TRACE', 'false', 'Stores the per-stage AI orchestration latency breakdown to a dedicated log (Work/Log/rag_perf.log) for performance analysis. Independent of debug mode.<br />', 10, 5, NULL, '2026-07-20 00:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
 
     
     

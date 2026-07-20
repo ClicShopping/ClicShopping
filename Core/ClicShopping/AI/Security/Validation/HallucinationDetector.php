@@ -47,6 +47,7 @@ class HallucinationDetector
 
     // Load language definitions
     $this->language = Registry::get('Language');
+    // Agnostic relevance-gate skeleton (Agents/) + domain policy & examples (ecommerce/) — double-load (§Q).
     DomainConfig::loadAgnosticLanguageFile('rag_out_of_context_detection');
     DomainConfig::loadLanguageFile('rag_out_of_context_detection');
     

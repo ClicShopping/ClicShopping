@@ -86,6 +86,8 @@ class OrchestratorAgent
   private RateLimit $rateLimit;
   private string $userId;
   private bool $debug;
+
+  private bool $perfTrace;
   private int $languageId;
   private int $entityId;
   private $db;
@@ -178,6 +180,7 @@ class OrchestratorAgent
     $this->securityLogger = new SecurityLogger();
     $this->rateLimit = new RateLimit('orchestrator', 100, 60);
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
+    $this->perfTrace = defined('STORE_AI_PERF_TRACE') && STORE_AI_PERF_TRACE === 'true';
 
     
     $this->autonomousConfig = new AutonomousConfig($this->debug);
@@ -368,6 +371,7 @@ class OrchestratorAgent
         $this->performanceTracker,
         $this->securityLogger,
         $this->debug,
+        $this->perfTrace,
         $this->executionStats
       ));
 
@@ -861,6 +865,11 @@ class OrchestratorAgent
     // completes and the built response is returned.
     foreach ($this->stageRegistry->all() as $stage) {
       $stageResult = $stage->run($pipelineContext);
+
+      // Per-stage latency marker (read-only instrumentation): rreveals which stage dominates p95.
+      $stageParts = explode('\\', $stage::class);
+      $this->performanceTracker->addMarker(end($stageParts));
+
       if ($stageResult !== null) {
         return $stageResult;
       }

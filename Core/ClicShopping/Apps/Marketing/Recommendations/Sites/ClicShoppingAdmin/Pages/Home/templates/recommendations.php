@@ -6,12 +6,14 @@
  * See LICENSE file.
  */
 
+
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\ProductsAdmin;
 use ClicShopping\Apps\Customers\Groups\Classes\ClicShoppingAdmin\GroupsB2BAdmin;
 use ClicShopping\Apps\Marketing\Recommendations\Classes\ClicShoppingAdmin\RecommendationsAdmin;
+use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 $CLICSHOPPING_Hooks = Registry::get('Hooks');
@@ -117,9 +119,11 @@ if (isset($_POST['date'])) {
 
           <div class="col-md-1 text-end">
             <?php
-            if (!isset($_POST['product_limit'])) {
-              echo HTML::button($CLICSHOPPING_Recommendations->getDef('button_configure'), null, $CLICSHOPPING_Recommendations->link('Configure'), 'primary');
-            }
+              if (AdministratorAdmin::getAccess() === true) {
+                if (!isset($_POST['product_limit'])) {
+                  echo HTML::button($CLICSHOPPING_Recommendations->getDef('button_configure'), null, $CLICSHOPPING_Recommendations->link('Configure'), 'primary');
+                }
+              }
             ?>
           </div>
         </div>

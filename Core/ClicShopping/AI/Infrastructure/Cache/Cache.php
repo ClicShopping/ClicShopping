@@ -350,6 +350,23 @@ class Cache
   }
 
   /**
+   * Returns the file path for the AI performance-trace log.
+   *
+   * A dedicated, opt-in channel (Work/Log/rag_perf.log) that keeps the per-stage orchestration
+   * latency breakdown OUT of the security journal (rag_security.log) — same channel-isolation
+   * rationale as {@see getApplicationErrorLogFilePath()}. Written only when STORE_AI_PERF_TRACE is
+   * enabled (default off), independent of debug mode, so normal production logging stays clean.
+   *
+   * @return string The file path for the AI performance-trace log
+   */
+  public static function getPerformanceLogFilePath(): string
+  {
+    $logDir = CLICSHOPPING::getWorkDirectory('Log');
+    self::ensureDirectoryExists($logDir);
+    return $logDir . '/rag_perf.log';
+  }
+
+  /**
    * Saves the current prompt cache data to the cache file.
    *
    * Creates the cache directory if it doesn't exist.

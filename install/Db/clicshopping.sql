@@ -1808,6 +1808,7 @@ INSERT INTO configuration VALUES(1812, 'Voulez-vous afficher le bouton du panier
 INSERT INTO configuration VALUES(1813, 'Voulez-vous afficher le bouton du panier ?', 'MODULE_PRODUCTS_FEATURED_DISPLAY_CART_BUTTON', 'True', 'Afficher ou supprimer le bouton du panier', 6, 13, NULL, '2026-05-31 16:53:32', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
 INSERT INTO configuration VALUES(1814, 'Voulez-vous afficher le bouton de détails ?', 'MODULE_PRODUCTS_LISTING_DISPLAY_DETAILS_BUTTON', 'True', 'Afficher ou supprimer le bouton de détails', 6, 11, NULL, '2026-05-31 16:59:51', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
 INSERT INTO configuration VALUES(1815, 'Voulez-vous afficher le bouton du panier ?', 'MODULE_PRODUCTS_LISTING_DISPLAY_CART_BUTTON', 'True', 'Afficher ou supprimer le bouton du panier', 6, 13, NULL, '2026-05-31 16:59:51', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO configuration VALUES(1816, 'Stockage de la décomposition de latence IA', 'STORE_AI_PERF_TRACE', 'false', 'Stocke la décomposition de la latence de l\'orchestration IA par étape dans un journal dédié (Work/Log/rag_perf.log) pour l\'analyse de performance. Indépendant du mode debug.<br><br><i>(Valeur True = Oui - Valeur False = Non)</i>', 10, 5, NULL, '2026-07-20 00:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
 
 
 

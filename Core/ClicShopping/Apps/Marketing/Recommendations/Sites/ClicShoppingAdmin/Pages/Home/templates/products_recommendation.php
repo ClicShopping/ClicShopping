@@ -6,7 +6,9 @@
  * See LICENSE file.
  */
 
-use ClicShopping\OM\CLICSHOPPING;
+  use ClicShopping\Apps\Configuration\Administrators\Administrators;
+  use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
+  use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -67,6 +69,14 @@ foreach ($customers_group as $value) {
             }
             ?>
          </span>
+
+          <span class="col-md-4 text-end">
+             <?php
+               if (AdministratorAdmin::getAccess() === true) {
+                 echo HTML::button($CLICSHOPPING_Recommendations->getDef('button_configure'), null, $CLICSHOPPING_Recommendations->link('Configure'), 'primary');
+               }
+             ?>
+          <span>
         </div>
       </div>
     </div>

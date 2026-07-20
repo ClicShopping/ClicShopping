@@ -44,12 +44,19 @@ class CallUserFuncConfiguration
         $function_parameter = substr($function_array[1], 0, -1);
       }
 
+      $function_name = preg_replace('/\s+/', '', $function_name) ?? $function_name;
       if (!function_exists($function_name)) {
-        if (is_file(CLICSHOPPING::BASE_DIR . 'Sites/ClicShoppingAdmin/Assets/CfgParameters/' . $function_name . '.php')) {
-          include(CLICSHOPPING::BASE_DIR . 'Sites/ClicShoppingAdmin/Assets/CfgParameters/' . $function_name . '.php');
-        } else {
-          include(CLICSHOPPING::BASE_DIR . 'Custom/SitesClicShoppingAdmin/Assets/CfgParameters/' . $function_name . '.php');
+        $core_file = CLICSHOPPING::BASE_DIR . 'Sites/ClicShoppingAdmin/Assets/CfgParameters/' . $function_name . '.php';
+        $custom_file = CLICSHOPPING::BASE_DIR . 'Custom/SitesClicShoppingAdmin/Assets/CfgParameters/' . $function_name . '.php';
+
+        if (is_file($core_file)) {
+          include($core_file);
+        } elseif (is_file($custom_file)) {
+          include($custom_file);
         }
+      }
+      if (!function_exists($function_name)) {
+        return $default;
       }
 
       if (!empty($function_parameter)) {

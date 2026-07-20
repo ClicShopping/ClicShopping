@@ -25,6 +25,8 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Validator;
  */
 class SqlQualityValidator
 {
+    use SqlShapeHeuristics;
+
     /**
      * Evaluate SQL query quality across multiple dimensions.
      *
@@ -59,7 +61,10 @@ class SqlQualityValidator
             'has_from' => $this->hasFromClause($sqlUpper),
             'has_where' => $this->hasWhereClause($sqlUpper),
             'uses_wildcard' => $this->checkSelectWildcard($sqlUpper),
-            'has_limit' => $this->checkLimitClause($sqlUpper)
+            'has_limit' => $this->checkLimitClause($sqlUpper),
+ 
+            'limit_expected' => $this->limitExpectedForShape($sqlUpper),
+            'where_expected' => $this->whereExpectedForShape($sqlUpper)
         ];
 
         // Calculate dimension scores
@@ -161,24 +166,27 @@ class SqlQualityValidator
      */
     private function calculateDimensionScores(array $checks): array
     {
+        $bounded = $checks['has_limit'] || !($checks['limit_expected'] ?? true);
+        $filtered = $checks['has_where'] || !($checks['where_expected'] ?? true);
+
         // Accuracy: Basic SQL structure correctness
         $accuracy = ($checks['has_select'] && $checks['has_from']) ? 0.7 : 0.3;
-        $accuracy += $checks['has_where'] ? 0.1 : 0.0;
+        $accuracy += $filtered ? 0.1 : 0.0;
         $accuracy = $checks['uses_wildcard'] ? $accuracy - 0.1 : $accuracy;
 
         // Completeness: Presence of important clauses
         $completeness = ($checks['has_select'] && $checks['has_from']) ? 0.65 : 0.35;
-        $completeness += $checks['has_where'] ? 0.1 : 0.0;
+        $completeness += $filtered ? 0.1 : 0.0;
 
         // Efficiency: Query optimization
         $efficiency = $checks['uses_wildcard'] ? 0.45 : 0.65;
-        $efficiency += $checks['has_limit'] ? 0.1 : 0.0;
+        $efficiency += $bounded ? 0.1 : 0.0;
 
         // Clarity: Query structure and readability. Additive like the other dimensions
         $clarity = ($checks['has_select'] && $checks['has_from']) ? 0.7 : 0.4;
         $clarity += $checks['uses_wildcard'] ? 0.0 : 0.15; // explicit columns read clearer than SELECT *
-        $clarity += $checks['has_where'] ? 0.1 : 0.0;      // an explicit filter makes intent clear
-        $clarity += $checks['has_limit'] ? 0.05 : 0.0;     // a bounded result set is tidier
+        $clarity += $filtered ? 0.1 : 0.0;                 // an explicit (or unneeded) filter makes intent clear
+        $clarity += $bounded ? 0.05 : 0.0;                 // a bounded result set is tidier
 
         return [
             'accuracy' => $this->clamp($accuracy),
@@ -226,11 +234,11 @@ class SqlQualityValidator
             $issues[] = 'SELECT * detected (anti-pattern)';
         }
 
-        if (!$checks['has_limit']) {
+        if (!$checks['has_limit'] && ($checks['limit_expected'] ?? true)) {
             $issues[] = 'Missing LIMIT clause (potential performance issue)';
         }
 
-        if (!$checks['has_where']) {
+        if (!$checks['has_where'] && ($checks['where_expected'] ?? true)) {
             $issues[] = 'Missing WHERE clause (may return too many rows)';
         }
 
@@ -259,11 +267,11 @@ class SqlQualityValidator
             $recommendations[] = 'Specify columns explicitly instead of using SELECT *';
         }
 
-        if (!$checks['has_limit']) {
+        if (!$checks['has_limit'] && ($checks['limit_expected'] ?? true)) {
             $recommendations[] = 'Add LIMIT clause to prevent excessive result sets';
         }
 
-        if (!$checks['has_where']) {
+        if (!$checks['has_where'] && ($checks['where_expected'] ?? true)) {
             $recommendations[] = 'Consider adding WHERE clause for better filtering';
         }
 

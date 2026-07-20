@@ -10,6 +10,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\ObjectInfo;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
 use ClicShopping\Apps\Tools\AdministratorMenu\Classes\ClicShoppingAdmin\AdministratorMenu;
 
@@ -21,20 +22,10 @@ $CLICSHOPPING_Language = Registry::get('Language');
 $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
-$Qaccess = $CLICSHOPPING_Db->prepare('select access,
-                                              id
-                                        from :table_administrators
-                                        where id = :id
-                                        and access = 1
-                                        ');
-$Qaccess->bindInt(':id', $_SESSION['admin']['id']);
-$Qaccess->execute();
-
-
-if (\is_null($Qaccess->valueInt('access'))) {
-  $CLICSHOPPING_MessageStack->add($CLICSHOPPING_AdministratorMenu->getDef('error_no_access'), 'error');
-  CLICSHOPPING::redirect();
-}
+  if (AdministratorAdmin::getAccess() === true) {
+    $CLICSHOPPING_MessageStack->add($CLICSHOPPING_AdministratorMenu->getDef('error_no_access'), 'error');
+    CLICSHOPPING::redirect();
+  }
 
 if (isset($_POST['cPath'])) {
   $current_category_id = HTML::sanitize($_POST['cPath']);

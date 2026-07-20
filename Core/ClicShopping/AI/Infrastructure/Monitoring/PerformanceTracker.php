@@ -8,6 +8,7 @@
 
 namespace ClicShopping\AI\Infrastructure\Monitoring;
 
+use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\InterfacesAI\PerformanceTrackerInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 
@@ -291,6 +292,37 @@ class PerformanceTracker implements PerformanceTrackerInterface
       'PerformanceTracker',
       'performance_breakdown',
       $breakdown
+    );
+  }
+
+  /**
+   * Write the per-stage latency breakdown to the dedicated performance channel (rag_perf.log).
+   *
+   * Opt-in observability sink (gated by STORE_AI_PERF_TRACE at the FinalizeStage caller, default off),
+   * kept OUT of the security journal and independent of debug mode. Emits one JSON line per
+   * full-pipeline request: total, status and the per-stage phase durations — suitable for offline
+   * aggregation of real (cold-representative) production traffic. No-op if tracking never started.
+   *
+   * @return void
+   */
+  public function flushBreakdownToPerfLog(): void
+  {
+    if ($this->startTime === 0.0) {
+      return;
+    }
+
+    $metrics = $this->getLatencyMetrics();
+    $entry = [
+      'ts' => date('Y-m-d H:i:s'),
+      'total_ms' => $metrics['total_duration_ms'],
+      'status' => $metrics['status'],
+      'phases' => $metrics['phase_durations'],
+    ];
+
+    @\file_put_contents(
+      Cache::getPerformanceLogFilePath(),
+      \json_encode($entry, JSON_UNESCAPED_UNICODE) . PHP_EOL,
+      FILE_APPEND | LOCK_EX
     );
   }
 

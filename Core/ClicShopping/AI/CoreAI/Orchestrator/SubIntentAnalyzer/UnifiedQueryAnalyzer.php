@@ -65,8 +65,9 @@ class UnifiedQueryAnalyzer
     $this->logger = new SecurityLogger();
     $this->debug = $debug;
     
-    // Load language definitions
+    // Load language definitions: agnostic reasoning skeleton (Agents/) first
     $this->language = Registry::get('Language');
+    DomainConfig::loadAgnosticLanguageFile('rag_unified_analyzer');
     DomainConfig::loadLanguageFile('rag_unified_analyzer');
 
     $this->postFilterPipeline = new PostFilterPipeline($this->logger, $this->language, $this->debug);

@@ -177,20 +177,22 @@ class UnifiedMetadataExtractor
    */
   private function buildUnifiedPrompt(string $query): string
   {
-    // Build prompt by concatenating sections from language file
-    // This approach allows better maintainability and avoids placeholder issues
+    // Build prompt by concatenating sections. The reasoning skeleton is agnostic
+    // (Agents/rag_unified_analyzer.txt) and carries an {{examples}} placeholder per
+    // section; the concrete examples come from the active domain layer
+    // (ecommerce/rag_unified_analyzer.txt). 
 
     $prompt = '';
     $prompt .= $this->language->getDef('unified_analyzer_prompt_header') . "\n\n";
-    $prompt .= $this->language->getDef('unified_analyzer_prompt_anti_hallucination') . "\n\n";
-    $prompt .= $this->language->getDef('unified_analyzer_prompt_multi_temporal') . "\n\n";
-    $prompt .= $this->language->getDef('unified_analyzer_prompt_compound') . "\n\n";
-    $prompt .= $this->language->getDef('unified_analyzer_prompt_basic_analytics') . "\n\n";
+    $prompt .= $this->resolveSection('unified_analyzer_prompt_anti_hallucination', 'unified_analyzer_examples_anti_hallucination') . "\n\n";
+    $prompt .= $this->resolveSection('unified_analyzer_prompt_multi_temporal', 'unified_analyzer_examples_multi_temporal') . "\n\n";
+    $prompt .= $this->resolveSection('unified_analyzer_prompt_compound', 'unified_analyzer_examples_compound') . "\n\n";
+    $prompt .= $this->resolveSection('unified_analyzer_prompt_basic_analytics', 'unified_analyzer_examples_basic_analytics') . "\n\n";
     $prompt .= $this->language->getDef('unified_analyzer_prompt_classification') . "\n\n";
     $prompt .= $this->language->getDef('unified_analyzer_prompt_output_format') . "\n\n";
     $prompt .= $this->language->getDef('unified_analyzer_prompt_query_section') . "\n";
     $prompt .= $query . "\n\n";  // Insert the actual query here
-    $prompt .= $this->language->getDef('unified_analyzer_prompt_final_instructions') . "\n";
+    $prompt .= $this->resolveSection('unified_analyzer_prompt_final_instructions', 'unified_analyzer_examples_final_instructions') . "\n";
 
     if ($this->debug) {
       error_log("UnifiedQueryAnalyzer: Built prompt from language file sections");
@@ -200,6 +202,28 @@ class UnifiedMetadataExtractor
     }
 
     return $prompt;
+  }
+
+  /**
+   * Resolve one prompt section by injecting its domain examples into the agnostic
+   * skeleton. The skeleton key holds an {{examples}} placeholder; the examples key
+   * holds the domain-specific block. If the domain layer provides no examples, the
+   * placeholder collapses to an empty string so no raw key name leaks into the prompt.
+   *
+   * @param string $skeletonKey Agnostic section key (contains {{examples}})
+   * @param string $examplesKey Domain example key
+   * @return string Resolved section text
+   */
+  private function resolveSection(string $skeletonKey, string $examplesKey): string
+  {
+    $examples = $this->language->getDef($examplesKey);
+
+    // getDef() returns the key name verbatim when a definition is missing.
+    if ($examples === $examplesKey) {
+      $examples = '';
+    }
+
+    return $this->language->getDef($skeletonKey, ['examples' => $examples]);
   }
 
   /**

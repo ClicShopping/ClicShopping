@@ -298,4 +298,29 @@ class AdministratorAdmin
 
     return $administrator_right_array;
   }
+
+  /*
+   * Allow acces or not : user or display information)
+   *
+   * return bool
+   */
+  public static function getAccess():bool
+  {
+    $CLICSHOPPING_Db = Registry::get('Db');
+
+    $Qaccess = $CLICSHOPPING_Db->prepare('select access,
+                                              id
+                                        from :table_administrators
+                                        where id = :id
+                                        and access = 1
+                                        ');
+    $Qaccess->bindInt(':id', $_SESSION['admin']['id']);
+    $Qaccess->execute();
+
+    if (\is_null($Qaccess->valueInt('access'))) {
+      return false;
+    }
+
+    return true;
+  }
 }

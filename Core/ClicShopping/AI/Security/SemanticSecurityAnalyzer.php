@@ -369,6 +369,36 @@ class SemanticSecurityAnalyzer
   }
 
   /**
+   * Auto-discover the {{placeholders}} a skeleton declares and resolve each to its domain value
+   * <prefix><name>. The skeleton is the single source of truth, so adding/removing a placeholder
+   * needs no code change. A {{name}} with no matching key (runtime {{QUERY}}, or config-driven
+   * {{system_domain}}) resolves to the key itself and is skipped (injected separately).
+   *
+   * @return array<string, string>
+   */
+  private static function resolveDomainPlaceholders(string $skeletonKey, string $prefix): array
+  {
+    $skeleton = self::$language->getDef($skeletonKey);
+
+    if (preg_match_all('/\{\{([A-Za-z0-9_-]+)\}\}/', $skeleton, $matches) === 0) {
+      return [];
+    }
+
+    $vars = [];
+
+    foreach (array_unique($matches[1]) as $name) {
+      $key = $prefix . $name;
+      $value = self::$language->getDef($key);
+
+      if ($value !== $key) {
+        $vars[$name] = $value;
+      }
+    }
+
+    return $vars;
+  }
+
+  /**
    * Load security analysis prompt for specified language
    * 
    * Pure LLM Mode: The security prompts are multilingual and support multiple languages
@@ -383,20 +413,24 @@ class SemanticSecurityAnalyzer
    * @param string $query User query to analyze (already sanitized)
    * @param string $language Language code (en, fr, zh, it, etc.)
    * @return string Security analysis prompt
-   * 
-   * Requirements: 5.4
    */
   private static function loadSecurityPrompt(string $query, string $language): string
   {
+    // Agnostic prompt-injection detector (Agents/) + domain safe-examples (ecommerce/) — double-load (§Q).
+    DomainConfig::loadAgnosticLanguageFile('rag_security');
     DomainConfig::loadLanguageFile('rag_security');
 
     // Wrap query with explicit delimiters for meta-injection protection
     // The prompt template uses {{QUERY}} which will be replaced with this wrapped version
     $wrappedQuery = "[QUERY_START]\n" . $query . "\n[QUERY_END]";
-    
+
+    $vars = self::resolveDomainPlaceholders('text_rag_security_analysis', 'text_security_');
+    // Config-driven domain display name (skeleton has {{system_domain}} but no language key for it).
+    $vars['system_domain'] = DomainConfig::getActivities();
+
     // Get security analysis prompt with wrapped query parameter
     // getDef uses {{KEY}} syntax for variable substitution (case-insensitive)
-    $prompt = self::$language->getDef('text_rag_security_analysis', ['QUERY' => $wrappedQuery]);
+    $prompt = self::$language->getDef('text_rag_security_analysis', array_merge(['QUERY' => $wrappedQuery], $vars));
     
     if (empty($prompt)) {
       self::$logger->logSecurityEvent(

@@ -191,6 +191,7 @@ class ClassificationEngine
     try {
       // Load language definitions for classification prompt
       $CLICSHOPPING_Language = Registry::get('Language');
+      // Agnostic classifier skeleton (Agents/) + domain routing & examples (ecommerce/) — double-load (§Q).
       DomainConfig::loadAgnosticLanguageFile('rag_classification');
       DomainConfig::loadLanguageFile('rag_classification');
       $prompt = $CLICSHOPPING_Language->getDef('text_rag_classification', array_merge(['QUERY' => $text], self::classificationExampleVars($CLICSHOPPING_Language)));

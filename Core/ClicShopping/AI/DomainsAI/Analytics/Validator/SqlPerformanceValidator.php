@@ -28,6 +28,8 @@ use ClicShopping\AI\DomainsAI\Analytics\Agent\DatabaseSchemaManager;
  */
 class SqlPerformanceValidator
 {
+    use SqlShapeHeuristics;
+
     private ?DatabaseSchemaManager $schemaManager;
     private bool $debug;
 
@@ -90,7 +92,8 @@ class SqlPerformanceValidator
             'has_unnecessary_joins' => $this->hasUnnecessaryJoins($sqlUpper),
             'is_potentially_slow' => $this->isPotentiallySlowQuery($sqlUpper),
             'join_count' => $this->countJoins($sqlUpper),
-            'slow_pattern_count' => $this->countSlowPatterns($sqlUpper)
+            'slow_pattern_count' => $this->countSlowPatterns($sqlUpper),
+            'limit_expected' => $this->limitExpectedForShape($sqlUpper)
         ];
 
         // Calculate performance score
@@ -232,8 +235,9 @@ class SqlPerformanceValidator
             $score -= 0.2;
         }
 
-        // Bonus for LIMIT clause
-        if ($checks['has_limit']) {
+        // Bonus for a bounded result: LIMIT present, or not expected for this shape
+        // (a scalar aggregate / un-ordered GROUP BY does not need one).
+        if ($checks['has_limit'] || !($checks['limit_expected'] ?? true)) {
             $score += 0.1;
         }
 
@@ -285,7 +289,7 @@ class SqlPerformanceValidator
             ];
         }
 
-        if (!$checks['has_limit']) {
+        if (!$checks['has_limit'] && ($checks['limit_expected'] ?? true)) {
             $issues[] = [
                 'type' => 'missing_limit',
                 'severity' => 'medium',
@@ -340,7 +344,7 @@ class SqlPerformanceValidator
             $recommendations[] = 'This reduces network traffic and improves query performance';
         }
 
-        if (!$checks['has_limit']) {
+        if (!$checks['has_limit'] && ($checks['limit_expected'] ?? true)) {
             $recommendations[] = 'Add a LIMIT clause to prevent fetching excessive rows';
             $recommendations[] = 'Consider pagination for large result sets';
         }

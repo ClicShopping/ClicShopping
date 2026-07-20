@@ -37,6 +37,7 @@ class FinalizeStage implements OrchestrationStageInterface
     private PerformanceTracker $performanceTracker,
     private SecurityLogger $securityLogger,
     private bool $debug,
+    private bool $perfTrace,
     array &$executionStats
   ) {
     $this->executionStats = &$executionStats;
@@ -66,8 +67,13 @@ class FinalizeStage implements OrchestrationStageInterface
     $this->executionStats['total_requests']++;
     $this->executionStats['total_execution_time'] += (microtime(true) - $startTime);
 
-    // Phase 5: Log performance breakdown using PerformanceTracker
+    // Opt-in perf channel (STORE_AI_PERF_TRACE, default OFF): the breakdown goes to a DEDICATED log
+    if ($this->perfTrace) {
+      $this->performanceTracker->flushBreakdownToPerfLog();
+    }
+
     if ($this->debug) {
+      // In debug, keep the original breakdown line in the security journal + the verbose end summary.
       $this->performanceTracker->logPerformanceBreakdown();
 
       // End logging for handleFullOrchestration

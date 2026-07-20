@@ -11,6 +11,7 @@ use ClicShopping\OM\Registry;
 
 $CLICSHOPPING_Members = Registry::get('Members');
 $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
+$CLICSHOPPING_Template = Registry::get('Template');
 
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 
@@ -33,9 +34,9 @@ if ($CLICSHOPPING_MessageStack->exists('Members')) {
           <span
             class="col-md-4 pageHeading"><?php echo '&nbsp;' . $CLICSHOPPING_Members->getDef('heading_title'); ?></span>
           <span class="col-md-7 text-end">
-<?php
-echo HTML::button($CLICSHOPPING_Members->getDef('button_members'), null, $CLICSHOPPING_Members->link('Members'), 'success') . '&nbsp;';
-?>
+          <?php
+          echo HTML::button($CLICSHOPPING_Members->getDef('button_members'), null, $CLICSHOPPING_Members->link('Members'), 'success') . '&nbsp;';
+          ?>
         </div>
       </div>
     </div>
