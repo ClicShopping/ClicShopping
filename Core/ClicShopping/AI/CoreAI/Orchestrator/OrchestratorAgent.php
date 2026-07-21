@@ -52,6 +52,7 @@ use ClicShopping\AI\Infrastructure\Monitoring\AlertManager;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
 use ClicShopping\AI\Infrastructure\Monitoring\MonitoringAgent;
 use ClicShopping\AI\Infrastructure\Monitoring\PerformanceTracker;
+use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\Validation\HallucinationDetector;
@@ -69,8 +70,21 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
  * (and CockpitAI via SEO), NOT by this orchestrator
  */
 
-class OrchestratorAgent
+class OrchestratorAgent implements AgentInterface
 {
+
+  /** @inheritDoc */
+  public function getAgentId(): string
+  {
+    return 'orchestrator';
+  }
+
+  /** @inheritDoc */
+  public function getCapabilities(): array
+  {
+    return ['orchestration', 'routing', 'objective_management'];
+  }
+
   /**
    * Context relevance threshold for out-of-context detection
    * Queries with context_relevance < this threshold are rejected

@@ -8,9 +8,9 @@
 
 namespace ClicShopping\AI\CoreAI\Orchestrator;
 
-
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
+use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
@@ -23,8 +23,21 @@ use ClicShopping\OM\Registry;
  * Handles SQL validation, schema verification, performance analysis, and security checks
  */
 
-class ValidationAgent
+class ValidationAgent implements AgentInterface
 {
+
+  /** @inheritDoc */
+  public function getAgentId(): string
+  {
+    return 'validation';
+  }
+
+  /** @inheritDoc */
+  public function getCapabilities(): array
+  {
+    return ['sql_validation', 'pre_execution_guard'];
+  }
+
   private SecurityLogger $securityLogger;
   private DbSecurity $dbSecurity;
   private mixed $db;

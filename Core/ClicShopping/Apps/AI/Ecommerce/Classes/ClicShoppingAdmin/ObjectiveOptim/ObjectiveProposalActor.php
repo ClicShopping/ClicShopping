@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ObjectiveOptim;
 
-use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
+use ClicShopping\AI\InterfacesAI\ActorInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
@@ -22,7 +22,7 @@ use ClicShopping\AI\RegistryAI\ActorRegistry;
  * the coordinator's regeneration step (if globally ON for SEO) re-executes to the same
  * output and the objective gate stays a pure scoring pass.
  */
-class ObjectiveProposalActor implements ActorAgentInterface
+class ObjectiveProposalActor implements ActorInterface
 {
   public const ACTION_TYPE = 'objective_proposal_eval';
   public const OUTPUT_TYPE = 'objective_proposal';

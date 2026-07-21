@@ -6,7 +6,7 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment;
+namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;

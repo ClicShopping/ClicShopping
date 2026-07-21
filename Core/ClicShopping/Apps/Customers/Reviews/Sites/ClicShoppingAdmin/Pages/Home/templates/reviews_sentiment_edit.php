@@ -11,6 +11,8 @@ use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Customers\Reviews\Classes\ClicShoppingAdmin\ReviewsAdmin;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment\SentimentMetrics;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment\SentimentAnalysisData;
 
 $CLICSHOPPING_Reviews = Registry::get('Reviews');
 $CLICSHOPPING_Hooks = Registry::get('Hooks');
@@ -140,8 +142,8 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
         $analysis_products_id = (int)$Qreviews->valueInt('products_id');
         $review_count  = (int)$Qreviews->valueInt('review_count');
         $rating_stddev = (float)$Qreviews->value('rating_stddev');
-        $confidence    = \ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentMetrics::confidenceLevel($review_count);
-        $polarized     = $rating_stddev >= \ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentMetrics::POLARIZATION_STDDEV_THRESHOLD;
+        $confidence    = SentimentMetrics::confidenceLevel($review_count);
+        $polarized     = $rating_stddev >= SentimentMetrics::POLARIZATION_STDDEV_THRESHOLD;
         $critic_verdict = $Qreviews->value('critic_verdict');
 
         // Engagement (read-only) — helpful votes on the AI summary (reviews_id = 0)
@@ -217,7 +219,7 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
               $Qjson->bindInt(':language_id', $languages_id);
               $Qjson->execute();
 
-              $analysis = \ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentAnalysisData::fromJson($Qjson->value('analysis_json'), '');
+              $analysis = SentimentAnalysisData::fromJson($Qjson->value('analysis_json'), '');
 
               if (!$analysis->isStructured()) {
                 continue;

@@ -5,7 +5,7 @@ namespace ClicShopping\AI\RegistryAI;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\RegistryAI\Exceptions\InvalidCriticException;
 use ClicShopping\AI\RegistryAI\Exceptions\InsufficientCriticsException;
 
@@ -33,17 +33,17 @@ class CriticRegistry
     /**
      * Register a critic agent with validation and persistence
      * 
-     * @param CriticAgentInterface $critic Critic to register
+     * @param CriticInterface $critic Critic to register
      * @return void
      * @throws InvalidCriticException If critic invalid
      */
-    public function registerCritic(CriticAgentInterface $critic): void
+    public function registerCritic(CriticInterface $critic): void
     {
         $criticId = $critic->getCriticId();
         
         // Validate critic implements interface
-        if (!$critic instanceof CriticAgentInterface) {
-            throw new InvalidCriticException("Critic must implement CriticAgentInterface");
+        if (!$critic instanceof CriticInterface) {
+            throw new InvalidCriticException("Critic must implement CriticInterface");
         }
         
         // Validate critic ID is not empty
@@ -68,7 +68,7 @@ class CriticRegistry
      * Get critics qualified to evaluate specific output type
      * 
      * @param string $outputType Output type to match
-     * @return array<CriticAgentInterface> Qualified critics
+     * @return array<CriticInterface> Qualified critics
      */
     public function getQualifiedCritics(string $outputType): array
     {
@@ -183,7 +183,7 @@ class CriticRegistry
     /**
      * Get all registered critics
      * 
-     * @return array<string, CriticAgentInterface> Map of critic ID to critic
+     * @return array<string, CriticInterface> Map of critic ID to critic
      */
     public function getAllCritics(): array
     {
@@ -223,9 +223,9 @@ class CriticRegistry
      * Get critic by ID
      * 
      * @param string $criticId Critic ID
-     * @return CriticAgentInterface|null Critic or null if not found
+     * @return CriticInterface|null Critic or null if not found
      */
-    public function getCritic(string $criticId): ?CriticAgentInterface
+    public function getCritic(string $criticId): ?CriticInterface
     {
         return $this->critics[$criticId] ?? null;
     }
@@ -236,7 +236,7 @@ class CriticRegistry
      * Requirements: 24.1, 24.2
      * 
      * @param string $domain Domain name
-     * @return array<CriticAgentInterface> Domain-specialized critics
+     * @return array<CriticInterface> Domain-specialized critics
      */
     public function getCriticsByDomain(string $domain): array
     {
@@ -264,7 +264,7 @@ class CriticRegistry
      * 
      * @param string $outputType Output type to match
      * @param string|null $preferredDomain Preferred domain (null for no preference)
-     * @return array<CriticAgentInterface> Qualified critics (domain-specialized first)
+     * @return array<CriticInterface> Qualified critics (domain-specialized first)
      */
     public function getQualifiedCriticsWithDomainPreference(string $outputType, ?string $preferredDomain = null): array
     {
@@ -405,7 +405,7 @@ class CriticRegistry
      * 
      * @param string $outputType Output type
      * @param float $minExpertise Minimum expertise level
-     * @return array<CriticAgentInterface> Expert critics
+     * @return array<CriticInterface> Expert critics
      */
     public function getCriticsByExpertise(string $outputType, float $minExpertise = 0.7): array
     {
@@ -538,7 +538,7 @@ class CriticRegistry
      * @param array $qualifiedCritics Qualified critics
      * @param int $count Number to select
      * @param string $excludeActorId Actor ID to exclude (self-evaluation prevention)
-     * @return array<CriticAgentInterface> Selected critics
+     * @return array<CriticInterface> Selected critics
      * @throws InsufficientCriticsException If too few critics available
      */
     public function selectDiverseCritics(array $qualifiedCritics, int $count, string $excludeActorId = ''): array

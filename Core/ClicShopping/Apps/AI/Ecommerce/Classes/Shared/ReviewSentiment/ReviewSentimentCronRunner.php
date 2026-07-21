@@ -6,11 +6,11 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment;
+namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment;
 
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Common\CronLogger;
-use ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\ReviewSentimentGenerator;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment\ReviewSentimentGenerator;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;

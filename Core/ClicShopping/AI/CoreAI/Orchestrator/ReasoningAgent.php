@@ -11,6 +11,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\Infrastructure\Metrics\ReasoningAgentStats;
+use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\Registry;
@@ -20,8 +21,21 @@ use ClicShopping\OM\Registry;
  * Specialized agent for multi-step reasoning with Chain-of-Thought, Tree-of-Thought, and Self-consistency methods
  */
 
-class ReasoningAgent
+class ReasoningAgent implements AgentInterface
 {
+
+  /** @inheritDoc */
+  public function getAgentId(): string
+  {
+    return 'reasoning';
+  }
+
+  /** @inheritDoc */
+  public function getCapabilities(): array
+  {
+    return ['chain_of_thought', 'tree_of_thought', 'self_consistency'];
+  }
+
   private SecurityLogger $securityLogger;
   private mixed $chat;
   private bool $debug;

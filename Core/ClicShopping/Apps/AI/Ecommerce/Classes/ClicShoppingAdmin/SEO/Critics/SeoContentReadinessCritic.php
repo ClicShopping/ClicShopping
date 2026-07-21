@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Critics;
 
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Evaluation;
@@ -40,7 +40,7 @@ use ClicShopping\AI\Security\SecurityLogger;
  * covering the "seo_proposal" output type.
  */
 
-class SeoContentReadinessCritic implements CriticAgentInterface
+class SeoContentReadinessCritic implements CriticInterface
 {
   /** @var string Unique identifier for this critic instance. */
   private string $criticId;
@@ -86,7 +86,7 @@ class SeoContentReadinessCritic implements CriticAgentInterface
     }
   }
 
-  // CriticAgentInterface
+  // CriticInterface
 
   /**
    * Performs a pre-flight risk evaluation to guess the likelihood of a successful run 

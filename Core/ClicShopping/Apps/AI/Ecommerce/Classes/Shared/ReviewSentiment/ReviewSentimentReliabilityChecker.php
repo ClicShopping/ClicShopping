@@ -6,19 +6,19 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment;
+namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment;
 
 use ClicShopping\AI\Security\LlmResponseEvaluator;
 
 /**
- * ReviewSentimentCritic — reliability verdict for a generated sentiment summary.
+ * ReviewSentimentReliabilityChecker — reliability verdict for a generated sentiment summary.
  *
  * Thin domain wrapper: delegates the actual evaluation to the agnostic
  * LlmResponseEvaluator (Core/ClicShopping/AI/Security) and maps its overall
  * score to the existing reliable|partial|unreliable verdict vocabulary.
  * No parallel critic mechanism is created.
  */
-class ReviewSentimentCritic
+class ReviewSentimentReliabilityChecker
 {
   public const RELIABLE   = 'reliable';
   public const PARTIAL    = 'partial';

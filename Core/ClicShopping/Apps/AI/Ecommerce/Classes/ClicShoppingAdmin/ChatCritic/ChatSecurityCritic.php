@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ChatCritic;
 
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Evaluation;
@@ -23,7 +23,7 @@ use ClicShopping\AI\RegistryAI\CriticRegistry;
  * Critic that scores the SECURITY facet of a chat answer from the already-computed
  * guardrails evaluation (security_analysis.overall_security_score). No new LLM call.
  */
-class ChatSecurityCritic implements CriticAgentInterface
+class ChatSecurityCritic implements CriticInterface
 {
   public const OUTPUT_TYPE = 'chat_response';
 

@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ChatCritic;
 
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Evaluation;
@@ -25,7 +25,7 @@ use ClicShopping\AI\RegistryAI\CriticRegistry;
  * It performs NO new LLM call — it re-packages the verdict the live path already
  * produced, so the seam adds no per-request LLM cost.
  */
-class ChatQualityCritic implements CriticAgentInterface
+class ChatQualityCritic implements CriticInterface
 {
   public const OUTPUT_TYPE = 'chat_response';
 

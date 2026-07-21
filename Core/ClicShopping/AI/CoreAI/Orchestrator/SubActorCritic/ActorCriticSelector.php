@@ -10,8 +10,8 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic;
 
 use ClicShopping\AI\RegistryAI\ActorRegistry;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
-use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\ActorInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\RegistryAI\Exceptions\NoCapableActorException;
 use ClicShopping\AI\RegistryAI\Exceptions\InsufficientCriticsException;
 
@@ -67,10 +67,10 @@ class ActorCriticSelector
      *
      * @param Action $action Action to execute
      * @param string|null $preferredDomain Preferred domain (null for no preference)
-     * @return ActorAgentInterface Selected actor
+     * @return ActorInterface Selected actor
      * @throws NoCapableActorException If no capable actor found
      */
-    public function selectActor(Action $action, ?string $preferredDomain = null): ActorAgentInterface
+    public function selectActor(Action $action, ?string $preferredDomain = null): ActorInterface
     {
         // Get capable actors with domain preference (Requirements 10.1, 23.2, 23.3)
         if ($preferredDomain !== null) {
@@ -158,7 +158,7 @@ class ActorCriticSelector
      * @param ActionResult $result Result to evaluate
      * @param int $count Number of critics to select
      * @param string|null $preferredDomain Preferred domain (null for no preference)
-     * @return array<CriticAgentInterface> Selected critics
+     * @return array<CriticInterface> Selected critics
      * @throws InsufficientCriticsException If too few critics available
      */
     public function selectCritics(ActionResult $result, int $count, ?string $preferredDomain = null): array
@@ -250,7 +250,7 @@ class ActorCriticSelector
      *
      * @param array $scoredCritics Scored critics with metadata
      * @param int $count Number to select
-     * @return array<CriticAgentInterface> Selected critics
+     * @return array<CriticInterface> Selected critics
      */
     private function selectDiverseCritics(array $scoredCritics, int $count): array
     {
@@ -266,10 +266,10 @@ class ActorCriticSelector
      *
      * @param Action $action Action to execute
      * @param array $excludeActorIds Actor IDs to exclude
-     * @return ActorAgentInterface Alternative actor
+     * @return ActorInterface Alternative actor
      * @throws NoCapableActorException If no alternative actor available
      */
-    public function selectAlternativeActor(Action $action, array $excludeActorIds): ActorAgentInterface
+    public function selectAlternativeActor(Action $action, array $excludeActorIds): ActorInterface
     {
         $capableActors = $this->actorRegistry->getCapableActors($action->getType());
         $alternatives = array_filter($capableActors, fn($a) => !in_array($a->getActorId(), $excludeActorIds, true));
@@ -301,7 +301,7 @@ class ActorCriticSelector
      * @param ActionResult $result Result to evaluate
      * @param int $count Number of additional critics needed
      * @param array $excludeCriticIds Critic IDs to exclude
-     * @return array<CriticAgentInterface> Additional critics
+     * @return array<CriticInterface> Additional critics
      * @throws InsufficientCriticsException If not enough critics available
      */
     public function selectAdditionalCritics(

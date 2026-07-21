@@ -8,6 +8,7 @@
 
 namespace ClicShopping\AI\Infrastructure\Monitoring;
 
+use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
@@ -26,8 +27,27 @@ use ClicShopping\AI\Infrastructure\Monitoring\SubMonitoring\AlertManager;
  * - Analyzes trends over time
  */
 
-class MonitoringAgent
+class MonitoringAgent implements AgentInterface
 {
+
+  /** @inheritDoc */
+  public function getAgentId(): string
+  {
+    return 'monitoring';
+  }
+
+  /** @inheritDoc */
+  public function getCapabilities(): array
+  {
+    return ['monitoring', 'metrics_collection'];
+  }
+
+  /** @inheritDoc */
+  public function getStats(): array
+  {
+    return [];
+  }
+
   private SecurityLogger $logger;
   private Cache $cache;
   private bool $debug;

@@ -5,7 +5,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubReputation;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 
 /**
@@ -51,7 +51,7 @@ class ReputationAwareCriticSelector
      * @param Action $action Action to be evaluated
      * @param int $count Number of critics to select (default: 3)
      * @param string $excludeActorId Actor ID to exclude (prevent self-evaluation)
-     * @return array<CriticAgentInterface> Selected critics
+     * @return array<CriticInterface> Selected critics
      */
     public function selectCritics(
         Action $action,
@@ -139,12 +139,12 @@ class ReputationAwareCriticSelector
      * Evaluates how well the critic's expertise matches the action's domain
      * and output type requirements.
      * 
-     * @param CriticAgentInterface $critic Critic to evaluate
+     * @param CriticInterface $critic Critic to evaluate
      * @param Action $action Action to be evaluated
      * @return float Expertise score (0.0-1.0)
      */
     private function calculateExpertiseScore(
-        CriticAgentInterface $critic,
+        CriticInterface $critic,
         Action $action
     ): float {
         $outputType = $action->getOutputType();

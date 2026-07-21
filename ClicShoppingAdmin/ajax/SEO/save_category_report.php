@@ -30,29 +30,75 @@
     exit;
   }
 
+  set_time_limit(0);
+  ini_set('max_execution_time', '0');
+  ignore_user_abort(true);
+
   $categoryId = (int)($_POST['seo_category_id'] ?? 0);
 
-  $languageId = (int)($_POST['language_id'] ?? 0);
-  if ($languageId <= 0) {
-    $languageId = (int)Registry::get('Language')->getId();
+  if ($categoryId <= 0) {
+    echo json_encode(['success' => false, 'error' => 'Invalid category id.']);
+    exit;
   }
-  $linkUrl = HTTP::getShopUrlDomain() . 'index.php?cPath=' . $categoryId;
-  $baseUrl = HTTP::getShopUrlDomain();
+
+  $baseUrl    = HTTP::getShopUrlDomain();
+  $repository = new SeoEmbedding('categories_seo_embedding');
 
   try {
-    $repository = new SeoEmbedding('categories_seo_embedding');
-
-    $result = $repository->process(
-      entityId: $categoryId,
-      languageId: $languageId,
-      url: $linkUrl,
-      baseUrl: $baseUrl,
-      pageType: 'category',
-      triggeredBy: 'ajax'
-    );
-
-    echo json_encode($result);
+    $languages = Registry::get('Language')->getAll();
   } catch (\Throwable $e) {
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'error' => 'Failed to read languages: ' . $e->getMessage()]);
+    exit;
   }
-exit;
+
+  $perLanguage = [];
+  $atLeastOneSuccess = false;
+
+  foreach ($languages as $code => $info) {
+    if ((int)($info['status'] ?? 1) === 0) {
+      continue;
+    }
+    $languageId = (int)($info['id'] ?? 0);
+    if ($languageId <= 0) {
+      continue;
+    }
+
+    $linkUrl = $baseUrl . 'index.php?cPath=' . $categoryId . '&language=' . urlencode((string)$code);
+
+    try {
+      $result = $repository->process(
+        entityId:    $categoryId,
+        languageId:  $languageId,
+        url:         $linkUrl,
+        baseUrl:     $baseUrl,
+        pageType:    'category',
+        triggeredBy: 'ajax'
+      );
+      $perLanguage[$code] = [
+        'language_id' => $languageId,
+        'status'      => ($result['success'] ?? false) ? 'applied' : 'failed',
+        'mode'        => $result['mode']      ?? null,
+        'seo_score'   => $result['seo_score'] ?? $result['seo_score_now'] ?? null,
+        'message'     => $result['message']   ?? ($result['error'] ?? ''),
+      ];
+      if ($result['success'] ?? false) {
+        $atLeastOneSuccess = true;
+      }
+    } catch (\Throwable $e) {
+      $perLanguage[$code] = [
+        'language_id' => $languageId,
+        'status'      => 'failed',
+        'message'     => $e->getMessage(),
+      ];
+    }
+  }
+
+  echo json_encode([
+    'success'   => $atLeastOneSuccess,
+    'mode'      => 'initial_multilingual',
+    'languages' => $perLanguage,
+    'message'   => $atLeastOneSuccess
+      ? 'Initial SEO audit applied across enabled locales.'
+      : 'Initial SEO audit failed for every enabled locale.',
+  ]);
+  exit;

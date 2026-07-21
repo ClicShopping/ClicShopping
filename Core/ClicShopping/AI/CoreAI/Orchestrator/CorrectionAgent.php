@@ -13,6 +13,7 @@ use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
 use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVectorEmbeddingAdapter;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
+use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\LearningStatistics;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\CorrectionValidator;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\ErrorAnalyzer;
@@ -29,8 +30,27 @@ use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
  * Coordinates error analysis, pattern learning, strategy selection, and correction validation.
  * Maintains backward compatibility with existing API while delegating to focused components.
  */
-class CorrectionAgent
+class CorrectionAgent implements AgentInterface
 {
+
+  /** @inheritDoc */
+  public function getAgentId(): string
+  {
+    return 'correction';
+  }
+
+  /** @inheritDoc */
+  public function getCapabilities(): array
+  {
+    return ['error_correction', 'self_learning'];
+  }
+
+  /** @inheritDoc */
+  public function getStats(): array
+  {
+    return $this->getLearningStats();
+  }
+
   private SecurityLogger $securityLogger;
   private LearningStatistics $statistics;
   private CorrectionValidator $validator;

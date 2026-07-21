@@ -28,7 +28,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
  * @version 1.0.0
  * @since 2026-01-30
  */
-interface ActorAgentInterface
+interface ActorInterface
 {
     /**
      * Execute an action and produce a result

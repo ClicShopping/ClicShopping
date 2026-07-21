@@ -11,8 +11,8 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\RegistryAI\ActorRegistry;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
-use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\ActorInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\RegistryAI\Exceptions\NoCapableActorException;
 use ClicShopping\AI\RegistryAI\Exceptions\InsufficientCriticsException;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\LLMWeightingEngine;
@@ -342,10 +342,10 @@ class ActorCriticCoordinator
      *
      * @param Action $action Action to execute
      * @param string|null $preferredDomain Preferred domain (null for no preference)
-     * @return ActorAgentInterface Selected actor
+     * @return ActorInterface Selected actor
      * @throws NoCapableActorException If no capable actor found
      */
-    public function selectActor(Action $action, ?string $preferredDomain = null): ActorAgentInterface
+    public function selectActor(Action $action, ?string $preferredDomain = null): ActorInterface
     {
         return $this->selector->selectActor($action, $preferredDomain);
     }
@@ -356,7 +356,7 @@ class ActorCriticCoordinator
      * @param ActionResult $result Result to evaluate
      * @param int $count Number of critics to select
      * @param string|null $preferredDomain Preferred domain (null for no preference)
-     * @return array<CriticAgentInterface> Selected critics
+     * @return array<CriticInterface> Selected critics
      * @throws InsufficientCriticsException If too few critics available
      */
     public function selectCritics(ActionResult $result, int $count, ?string $preferredDomain = null): array
@@ -373,12 +373,12 @@ class ActorCriticCoordinator
      * - Select alternative actors
      * - Retry up to configured maximum
      * - Update performance metrics
-     * @param ActorAgentInterface $actor Actor to execute
+     * @param ActorInterface $actor Actor to execute
      * @param Action $action Action to execute
      * @return ActionResult Execution result
      * @throws Exception If all retries fail
      */
-    private function executeWithRetry(ActorAgentInterface $actor, Action $action): ActionResult
+    private function executeWithRetry(ActorInterface $actor, Action $action): ActionResult
     {
         $maxRetries = self::DEFAULT_ACTOR_RETRY_ATTEMPTS;
         $lastException = null;
@@ -487,7 +487,7 @@ class ActorCriticCoordinator
      * - Handle timeouts gracefully
      * - Continue with available evaluations on critic failure
      * - Ensure minimum critics complete successfully
-     * @param array<CriticAgentInterface> $critics Critics to evaluate
+     * @param array<CriticInterface> $critics Critics to evaluate
      * @param ActionResult $result Result to evaluate
      * @return array<Evaluation> Evaluations from critics
      * @throws InsufficientCriticsException If too few critics complete evaluation
@@ -669,14 +669,14 @@ class ActorCriticCoordinator
     /**
      * Evaluate with timeout
      *
-     * @param CriticAgentInterface $critic Critic to evaluate
+     * @param CriticInterface $critic Critic to evaluate
      * @param ActionResult $result Result to evaluate
      * @param int $timeout Timeout in seconds
      * @return Evaluation Evaluation result
      * @throws Exception If evaluation fails or times out
      */
     private function evaluateWithTimeout(
-        CriticAgentInterface $critic,
+        CriticInterface $critic,
         ActionResult $result,
         int $timeout
     ): Evaluation {
@@ -696,11 +696,11 @@ class ActorCriticCoordinator
     /**
      * Deliver feedback to actor
      *
-     * @param ActorAgentInterface $actor Actor to receive feedback
+     * @param ActorInterface $actor Actor to receive feedback
      * @param Feedback $feedback Feedback to deliver
      * @return void
      */
-    private function deliverFeedback(ActorAgentInterface $actor, Feedback $feedback): void
+    private function deliverFeedback(ActorInterface $actor, Feedback $feedback): void
     {
         try {
             $actorId = $actor->getActorId();

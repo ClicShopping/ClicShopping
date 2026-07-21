@@ -8,12 +8,10 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents;
 
-use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
+use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCapability;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\LLMServiceWrapper;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\TranslationServiceWrapper;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Prompts\AuditPrompts;
@@ -36,7 +34,7 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Models\AuditRep
  * This class contains audit intelligence logic.
  * It does not manage orchestration or registry behavior.
  */
-class SeoAuditAgent implements ActorAgentInterface
+class SeoAuditAgent implements AgentInterface
 {
   /**
    * Unique runtime identifier for this agent instance.
@@ -484,16 +482,6 @@ class SeoAuditAgent implements ActorAgentInterface
   }
 
   /**
-   * Proposes default SEO audit action configuration options.
-   * @param Context $context Core pipeline execution state information.
-   * @return Action Standard ready-to-run scheduled Action instance.
-   */
-  public function proposeAction(Context $context): Action
-  {
-    return new Action('seo_audit', [], $context, 'medium', 60);
-  }
-
-  /**
    * Declares audit capability parameters for registration.
    * @return array Capability mapping profile dictionary arrays.
    */
@@ -510,33 +498,15 @@ class SeoAuditAgent implements ActorAgentInterface
     ];
   }
 
-  /**
-   * Returns confidence score for executing audit actions.
-   * @param Action $action Evaluation criteria object.
-   * @return float Reliability score factor index.
-   */
-  public function evaluateConfidence(Action $action): float
-  {
-    return 0.7;
-  }
-
-  /**
-   * Receives critic feedback.
-   * Currently not used in this agent configuration module.
-   * @param Feedback $feedback Performance critique evaluation data maps.
-   * @return void
-   */
-  public function receiveFeedback(Feedback $feedback): void
-  {
-    // Intentionally empty.
-  }
-
-  /**
-   * Returns unique actor identifier.
-   * @return string Runtime actor identification name tracker string.
-   */
-  public function getActorId(): string
+  /** @inheritDoc */
+  public function getAgentId(): string
   {
     return $this->actorId;
+  }
+
+  /** @inheritDoc */
+  public function getStats(): array
+  {
+    return [];
   }
 }

@@ -15,6 +15,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\AI\InterfacesAI\ConfigurableComponent;
 use ClicShopping\AI\InterfacesAI\QueryTypeDomainInterface;
 
@@ -35,8 +36,21 @@ use ClicShopping\AI\InterfacesAI\SemanticConfigInterface;
  * Implements QueryTypeDomainInterface for domain-driven architecture.
  */
 
-class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface
+class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, AgentInterface
 {
+
+  /** @inheritDoc */
+  public function getAgentId(): string
+  {
+    return 'semantic';
+  }
+
+  /** @inheritDoc */
+  public function getStats(): array
+  {
+    return [];
+  }
+
   private static ?SecurityLogger $logger = null;
 
   // Configuration parameters with default values

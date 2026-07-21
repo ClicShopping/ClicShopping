@@ -11,14 +11,15 @@
   use ClicShopping\OM\HTTP;
   use ClicShopping\OM\Registry;
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoAgenticPipeline;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoMultilingualOrchestrator;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEntityAdapter;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoOriginalSnapshotRepository;
 
-  // Increase PHP execution time for long-running SEO optimization
-  set_time_limit(900); // 15 minutes
-  ini_set('max_execution_time', '900');
+  set_time_limit(0);
+  ini_set('max_execution_time', '0');
+  ignore_user_abort(true);
 
   define('CLICSHOPPING_BASE_DIR', realpath(__DIR__ . '/../../../Core/ClicShopping/') . DIRECTORY_SEPARATOR);
-
   require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
   spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');
 

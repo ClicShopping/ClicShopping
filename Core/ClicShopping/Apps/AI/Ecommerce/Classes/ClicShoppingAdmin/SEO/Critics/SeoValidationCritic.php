@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Critics;
 
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Evaluation;
@@ -29,7 +29,7 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SeoCodeV
  * Implements a fault-tolerant strategy to prevent execution gaps within the 
  * orchestration layout by returning safe low scores during runtime exceptions.
  */
-class SeoValidationCritic implements CriticAgentInterface
+class SeoValidationCritic implements CriticInterface
 {
   /** @var string Unique identifier for this critic instance. */
   private string $criticId;
@@ -70,7 +70,7 @@ class SeoValidationCritic implements CriticAgentInterface
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // CriticAgentInterface Implementation
+  // CriticInterface Implementation
   // ─────────────────────────────────────────────────────────────────────────
 
   /**

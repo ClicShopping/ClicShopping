@@ -6,7 +6,7 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment;
+namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment;
 
 /**
  * SentimentAnalysisData — safe accessor over the LLM `analysis_json`.

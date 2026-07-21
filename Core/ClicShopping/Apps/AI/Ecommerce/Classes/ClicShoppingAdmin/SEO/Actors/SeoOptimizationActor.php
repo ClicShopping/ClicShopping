@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Actors;
 
-use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
+use ClicShopping\AI\InterfacesAI\ActorInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
@@ -38,7 +38,7 @@ use ClicShopping\AI\Security\SecurityLogger;
  * This class contains no optimization strategy.
  * It is a transactional and orchestration adapter only.
  */
-class SeoOptimizationActor implements ActorAgentInterface
+class SeoOptimizationActor implements ActorInterface
 {
   /**
    * Unique runtime identifier for this actor instance.

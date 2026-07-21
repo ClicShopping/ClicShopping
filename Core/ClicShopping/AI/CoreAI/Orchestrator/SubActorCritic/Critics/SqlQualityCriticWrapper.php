@@ -15,7 +15,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\EvaluationCriteria;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Prediction;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\SqlQualityValidator;
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\OM\Registry;
@@ -23,17 +23,17 @@ use ClicShopping\OM\Registry;
 /**
  * SqlQualityCriticWrapper - Minimal wrapper delegating to SqlQualityValidator
  * 
- * This wrapper maintains CriticAgentInterface compatibility while delegating
+ * This wrapper maintains CriticInterface compatibility while delegating
  * all business logic to SqlQualityValidator in DomainsAI/Analytics/Validator/.
  * 
  * Responsibilities:
- * - Implement CriticAgentInterface
+ * - Implement CriticInterface
  * - Convert ActionResult to validator input format
  * - Convert validator output to Evaluation/Feedback format
  * - Register in CriticRegistry
  * - NO business logic (pure delegation)
  */
-class SqlQualityCriticWrapper implements CriticAgentInterface
+class SqlQualityCriticWrapper implements CriticInterface
 {
     private string $criticId;
     private SqlQualityValidator $validator;

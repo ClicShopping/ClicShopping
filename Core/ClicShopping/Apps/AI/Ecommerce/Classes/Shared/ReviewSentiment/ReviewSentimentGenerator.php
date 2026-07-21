@@ -6,7 +6,7 @@
  * See LICENSE file.
  */
 
-namespace ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment;
+namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment;
 
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ReviewSentimentEmbedder;
 use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\ProductsAdmin;
@@ -113,14 +113,14 @@ class ReviewSentimentGenerator
     $canonicalData  = SentimentAnalysisData::fromJson($canonicalJson, $canonicalJson);
     $canonicalProse = $canonicalData->getSummary();
 
-    $criticResult = ReviewSentimentCritic::evaluate($canonicalProse, $weightedText);
+    $criticResult = ReviewSentimentReliabilityChecker::evaluate($canonicalProse, $weightedText);
     $verdict    = $criticResult['verdict'];
     $criticText = $criticResult['critic'];
 
     $claims   = array_merge($canonicalData->getStrengths(), $canonicalData->getIssues(), [$canonicalProse]);
     $fidelity = ReviewSentimentFidelityChecker::check($weightedText, $claims, 'en');
     if ($fidelity['available'] && !$fidelity['fidelity_ok']) {
-      $verdict = ReviewSentimentCritic::UNRELIABLE;
+      $verdict = ReviewSentimentReliabilityChecker::UNRELIABLE;
       $criticText .= ' | FIDELITY: unsupported (' . number_format($fidelity['supported_fraction'], 2) . ') → ' . implode('; ', $fidelity['unsupported_claims']);
     }
 
@@ -172,7 +172,7 @@ class ReviewSentimentGenerator
     return [
       'sentiment_id' => $sentimentId,
       'verdict'      => $verdict,
-      'reliable'     => $verdict !== ReviewSentimentCritic::UNRELIABLE,
+      'reliable'     => $verdict !== ReviewSentimentReliabilityChecker::UNRELIABLE,
       'review_count' => count($ratings),
     ];
   }

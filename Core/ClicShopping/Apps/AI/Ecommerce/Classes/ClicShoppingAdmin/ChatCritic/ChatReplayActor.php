@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ChatCritic;
 
-use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
+use ClicShopping\AI\InterfacesAI\ActorInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
@@ -28,7 +28,7 @@ use ClicShopping\AI\RegistryAI\ActorRegistry;
  * for SEO — re-executes this actor to the IDENTICAL output, so the never-worse
  * comparison keeps the original and the chat path stays observe-only.
  */
-class ChatReplayActor implements ActorAgentInterface
+class ChatReplayActor implements ActorInterface
 {
   public const ACTION_TYPE = 'chat_response_eval';
   public const OUTPUT_TYPE = 'chat_response';

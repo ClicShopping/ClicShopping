@@ -1,13 +1,15 @@
 version4.33
 - fix / bug resolution
 - libraries updated
-- AI review sentiment analysis improved and refactored with agentic approach
 - Cron Improvement
-- ChatGpt Apps refactored
 - error_log management improved
-- AI response optimization
 - Allow to manage 3 taxes (europe, CA, US for example) 
-- Order total caculation improvment
+- Order total caculation improvement
+- AI
+  - Add distinction between Agents and Actors
+  - AI review sentiment analysis improved and refactored with agentic approach
+  - ChatGpt Apps refactored
+  - AI response time optimization
 
 ---------------
 version4.32

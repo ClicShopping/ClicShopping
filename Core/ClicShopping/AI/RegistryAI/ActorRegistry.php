@@ -5,7 +5,7 @@ namespace ClicShopping\AI\RegistryAI;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
+use ClicShopping\AI\InterfacesAI\ActorInterface;
 use ClicShopping\AI\RegistryAI\Exceptions\InvalidActorException;
 use ClicShopping\AI\RegistryAI\Exceptions\NoCapableActorException;
 
@@ -33,17 +33,17 @@ class ActorRegistry
     /**
      * Register an actor agent with validation and persistence
      * 
-     * @param ActorAgentInterface $actor Actor to register
+     * @param ActorInterface $actor Actor to register
      * @return void
      * @throws InvalidActorException If actor invalid
      */
-    public function registerActor(ActorAgentInterface $actor): void
+    public function registerActor(ActorInterface $actor): void
     {
         $actorId = $actor->getActorId();
         
         // Validate actor implements interface
-        if (!$actor instanceof ActorAgentInterface) {
-            throw new InvalidActorException("Actor must implement ActorAgentInterface");
+        if (!$actor instanceof ActorInterface) {
+            throw new InvalidActorException("Actor must implement ActorInterface");
         }
         
         // Validate actor ID is not empty
@@ -163,7 +163,7 @@ class ActorRegistry
     /**
      * Get all registered actors
      * 
-     * @return array<string, ActorAgentInterface> Map of actor ID to actor
+     * @return array<string, ActorInterface> Map of actor ID to actor
      */
     public function getAllActors(): array
     {
@@ -203,9 +203,9 @@ class ActorRegistry
      * Get actor by ID
      * 
      * @param string $actorId Actor ID
-     * @return ActorAgentInterface|null Actor or null if not found
+     * @return ActorInterface|null Actor or null if not found
      */
-    public function getActor(string $actorId): ?ActorAgentInterface
+    public function getActor(string $actorId): ?ActorInterface
     {
         return $this->actors[$actorId] ?? null;
     }
@@ -216,7 +216,7 @@ class ActorRegistry
      * Requirements: 23.1, 23.2
      * 
      * @param string $domain Domain name
-     * @return array<ActorAgentInterface> Domain-specialized actors
+     * @return array<ActorInterface> Domain-specialized actors
      */
     public function getActorsByDomain(string $domain): array
     {
@@ -241,7 +241,7 @@ class ActorRegistry
      * 
      * @param string $actionType Action type to match
      * @param string|null $preferredDomain Preferred domain (null for no preference)
-     * @return array<ActorAgentInterface> Capable actors (domain-specialized first)
+     * @return array<ActorInterface> Capable actors (domain-specialized first)
      */
     public function getCapableActorsWithDomainPreference(string $actionType, ?string $preferredDomain = null): array
     {
@@ -278,7 +278,7 @@ class ActorRegistry
      * Get actors capable of executing specific action type
      *
      * @param string $actionType Action type to match
-     * @return array<ActorAgentInterface> Capable actors
+     * @return array<ActorInterface> Capable actors
      */
     public function getCapableActors(string $actionType): array
     {

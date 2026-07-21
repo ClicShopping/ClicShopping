@@ -29,7 +29,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\EvaluationCriteria;
  * @version 1.0.0
  * @since 2026-01-30
  */
-interface CriticAgentInterface
+interface CriticInterface
 {
     /**
      * Evaluate an action result

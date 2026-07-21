@@ -11,7 +11,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\ClicShoppingAdmin\ReviewsS
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\ReviewSentimentGenerator;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment\ReviewSentimentGenerator;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Interfaces\HooksInterface;

@@ -8,6 +8,7 @@
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
+use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Config\AutonomousConfig;
@@ -42,8 +43,27 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
  * Implements comprehensive security measures
  */
 
-class AnalyticsAgent
+class AnalyticsAgent implements AgentInterface
 {
+
+  /** @inheritDoc */
+  public function getAgentId(): string
+  {
+    return 'analytics';
+  }
+
+  /** @inheritDoc */
+  public function getCapabilities(): array
+  {
+    return ['business_intelligence', 'nl_to_sql'];
+  }
+
+  /** @inheritDoc */
+  public function getStats(): array
+  {
+    return $this->getQueryCacheStats();
+  }
+
   private mixed $chat;
   private mixed $db;
   private mixed $language;

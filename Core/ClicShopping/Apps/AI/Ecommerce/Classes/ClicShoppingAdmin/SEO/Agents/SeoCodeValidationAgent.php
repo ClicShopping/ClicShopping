@@ -8,12 +8,10 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents;
 
-use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
+use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCapability;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEntityAdapter;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\LLMServiceWrapper;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\TranslationServiceWrapper;
@@ -40,7 +38,7 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Models\Validati
  * Orchestration and actor registration are handled externally.
  */
 
-class SeoCodeValidationAgent implements ActorAgentInterface
+class SeoCodeValidationAgent implements AgentInterface
 {
   /**
    * Unique runtime actor identifier.
@@ -513,20 +511,6 @@ class SeoCodeValidationAgent implements ActorAgentInterface
   }
 
   /**
-   * Proposes a validation action for the given context.
-   * 
-   * Creates a default SEO code validation action with medium priority
-   * and 30-second timeout. Used by the Actor-Critic orchestrator.
-   *
-   * @param Context $context Execution context with language and metadata
-   * @return Action Proposed validation action
-   */
-  public function proposeAction(Context $context): Action
-  {
-    return new Action('seo_code_validation', [], $context, 'medium', 30);
-  }
-
-  /**
    * Returns the agent's capabilities for Actor-Critic registration.
    * 
    * Declares the 'seo_code_validation' capability with confidence 0.6,
@@ -541,59 +525,16 @@ class SeoCodeValidationAgent implements ActorAgentInterface
     ];
   }
 
-  /**
-   * Evaluates confidence level for executing the given action.
-   * 
-   * Returns a fixed confidence of 0.6 for validation actions.
-   * Could be enhanced to vary based on action parameters.
-   *
-   * @param Action $action Action to evaluate
-   * @return float Confidence level (0.0 to 1.0)
-   */
-  public function evaluateConfidence(Action $action): float
-  {
-    return 0.6;
-  }
-
-  /**
-   * Receives feedback from critics after action execution.
-   * 
-   * Currently a no-op implementation. Could be enhanced to:
-   * - Store feedback for learning and improvement
-   * - Adjust validation thresholds based on feedback patterns
-   * - Log feedback for analysis and debugging
-   * - Update internal state for adaptive validation
-   *
-   * @param Feedback $feedback Feedback from critics containing score, issues, suggestions
-   * @return void
-   */
-  public function receiveFeedback(Feedback $feedback): void
-  {
-    // Future enhancement: Store feedback for learning
-    // Example implementation:
-    // - Log feedback to database for pattern analysis
-    // - Adjust quality score thresholds based on feedback trends
-    // - Update validation rules dynamically
-    
-    if ($this->debug) {
-      error_log('[SeoCodeValidationAgent] Received feedback: ' . json_encode([
-        'feedback_id' => $feedback->getFeedbackId(),
-        'score' => $feedback->getScore(),
-        'category' => $feedback->getCategory(),
-      ], JSON_UNESCAPED_UNICODE));
-    }
-  }
-
-  /**
-   * Returns the unique actor identifier.
-   * 
-   * Used by the Actor-Critic system for tracking and coordination.
-   *
-   * @return string Unique actor ID (e.g., 'seo_code_validator_abc123')
-   */
-  public function getActorId(): string
+  /** @inheritDoc */
+  public function getAgentId(): string
   {
     return $this->actorId;
+  }
+
+  /** @inheritDoc */
+  public function getStats(): array
+  {
+    return [];
   }
 
   // ── T3.4 : Schema.org JSON-LD validation ─────────────────────────────────────

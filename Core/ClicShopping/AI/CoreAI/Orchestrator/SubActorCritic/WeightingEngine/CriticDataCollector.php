@@ -12,7 +12,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine;
 
 use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationStore;
 use ClicShopping\AI\RegistryAI\CriticRegistry;
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 
 /**
  * CriticDataCollector - Gathers critic data for LLM weight analysis
@@ -44,7 +44,7 @@ class CriticDataCollector
      * 
      * Gathers reputation, domain expertise, confidence, and recent evaluations
      * for each critic. Handles missing data with sensible defaults.
-     * @param array<CriticAgentInterface> $critics Array of critic agents
+     * @param array<CriticInterface> $critics Array of critic agents
      * @return array<string, array> Map of critic_id => critic data
      */
     public function collectCriticData(array $critics): array
@@ -225,10 +225,10 @@ class CriticDataCollector
     
     /**
      * Get domain expertise from critic's evaluation criteria
-     * @param CriticAgentInterface $critic Critic agent
+     * @param CriticInterface $critic Critic agent
      * @return array List of domain specializations
      */
-    private function getDomainExpertise(CriticAgentInterface $critic): array
+    private function getDomainExpertise(CriticInterface $critic): array
     {
         $criteria = $critic->getEvaluationCriteria();
         $domains = [];
@@ -247,10 +247,10 @@ class CriticDataCollector
     
     /**
      * Get expertise level from critic's evaluation criteria
-     * @param CriticAgentInterface $critic Critic agent
+     * @param CriticInterface $critic Critic agent
      * @return float Average expertise level (0.0-1.0)
      */
-    private function getExpertiseLevel(CriticAgentInterface $critic): float
+    private function getExpertiseLevel(CriticInterface $critic): float
     {
         $criteria = $critic->getEvaluationCriteria();
         $expertiseLevels = [];
@@ -365,10 +365,10 @@ class CriticDataCollector
     /**
      * Get critic name from critic agent
      * 
-     * @param CriticAgentInterface $critic Critic agent
+     * @param CriticInterface $critic Critic agent
      * @return string Critic name
      */
-    private function getCriticName(CriticAgentInterface $critic): string
+    private function getCriticName(CriticInterface $critic): string
     {
         // Try to get name from critic if method exists
         if (method_exists($critic, 'getName')) {
@@ -446,10 +446,10 @@ class CriticDataCollector
      * Get default critic data when collection fails
      * 
      * @param string $criticId Critic identifier
-     * @param CriticAgentInterface $critic Critic agent
+     * @param CriticInterface $critic Critic agent
      * @return array Default critic data
      */
-    private function getDefaultCriticData(string $criticId, CriticAgentInterface $critic): array
+    private function getDefaultCriticData(string $criticId, CriticInterface $critic): array
     {
         return [
             'critic_id' => $criticId,

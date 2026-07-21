@@ -8,12 +8,10 @@
 
   namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents;
 
-  use ClicShopping\AI\InterfacesAI\ActorAgentInterface;
+  use ClicShopping\AI\InterfacesAI\AgentInterface;
   use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
   use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
-  use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
   use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActorCapability;
-  use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Feedback;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\LLMServiceWrapper;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\TranslationServiceWrapper;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Prompts\ContentGenerationPrompts;
@@ -39,7 +37,7 @@
    * This class contains SEO content generation intelligence.
    * Orchestration and actor registration are handled by SeoOptimizationActor.
    */
-  class SeoOptimizationAgent implements ActorAgentInterface
+  class SeoOptimizationAgent implements AgentInterface
   {
     /**
      * Unique runtime identifier for this agent instance.
@@ -679,13 +677,6 @@
       return trim($slug, '-');
     }
 
-    // ActorAgentInterface — orchestration stubs
-
-    public function proposeAction(Context $context): Action
-    {
-      return new Action('seo_optimize', [], $context, 'high', 90);
-    }
-
     public function getCapabilities(): array
     {
       return [
@@ -699,18 +690,13 @@
       ];
     }
 
-    public function evaluateConfidence(Action $action): float
-    {
-      return 0.8;
-    }
-
-    public function receiveFeedback(Feedback $feedback): void
-    {
-      // Feedback handled at the Actor layer (SeoOptimizationActor).
-    }
-
-    public function getActorId(): string
+    public function getAgentId(): string
     {
       return $this->actorId;
+    }
+
+    public function getStats(): array
+    {
+      return [];
     }
   }

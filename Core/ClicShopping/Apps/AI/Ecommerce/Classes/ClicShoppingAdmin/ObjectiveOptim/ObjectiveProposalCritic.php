@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ObjectiveOptim;
 
-use ClicShopping\AI\InterfacesAI\CriticAgentInterface;
+use ClicShopping\AI\InterfacesAI\CriticInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Action;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Evaluation;
@@ -24,7 +24,7 @@ use ClicShopping\AI\RegistryAI\CriticRegistry;
  * same class is registered twice (distinct facet ids) to meet the coordinator's
  * min-2-critics requirement.
  */
-class ObjectiveProposalCritic implements CriticAgentInterface
+class ObjectiveProposalCritic implements CriticInterface
 {
   public const OUTPUT_TYPE = 'objective_proposal';
 

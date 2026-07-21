@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Apps\Customers\Reviews\Module\Hooks\Shop\Cronjob;
 
-use ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\ReviewSentimentCronRunner;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment\ReviewSentimentCronRunner;
 use ClicShopping\OM\Interfaces\HooksInterface;
 
 /**
