@@ -13,6 +13,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\DomainsAI\Hybrid\Patterns\QuerySplitterPatterns;
+use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 use ClicShopping\AI\Config\DomainConfig;
 
 /**
@@ -738,14 +739,18 @@ class QuerySplitter extends BaseQueryProcessor
         return true;
       }
 
-      // Delegate pattern matching to QuerySplitterPatterns
-      $isMatch = QuerySplitterPatterns::isPriceComparisonQuery($query);
-      
-      if ($isMatch && $this->debug) {
-        $this->logInfo("Price comparison detected via pattern");
+      // FALLBACK: agnostic detectors registered by domain Apps (Core owns no
+      // domain keywords). First 'price_comparison' verdict wins.
+      foreach (WebSearchEngineRegistry::getInstance()->getIntentDetectors() as $detector) {
+        if ($detector->detectIntent($query) === 'price_comparison') {
+          if ($this->debug) {
+            $this->logInfo("Price comparison detected via detector fallback: " . $detector->getDetectorId());
+          }
+          return true;
+        }
       }
 
-      return $isMatch;
+      return false;
     } catch (\Exception $e) {
       $this->logError("Error in isPriceComparisonQuery", $e, ['query' => $query]);
       return false;

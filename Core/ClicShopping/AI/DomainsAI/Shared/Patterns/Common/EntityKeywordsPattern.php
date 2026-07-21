@@ -22,153 +22,96 @@
 
 namespace ClicShopping\AI\DomainsAI\Shared\Patterns\Common;
 
+use ClicShopping\AI\DomainsAI\DomainRegistry;
 
-
-
-// DEPRECATED: Pattern-based logic superseded by Pure LLM Mode. Scheduled for removal in Q3 2026.
+// Agnostic reader: the entity vocabulary is owned by the active domain (§Q-quater).
 
 class EntityKeywordsPattern
 {
   /**
-   * Flat list of entity keywords for simple matching
-   * 
-   * Used by Analytics and WebSearch domains for quick entity detection.
-   * Merged from SuperlativePatterns and WebSearchPatterns.
-   * 
-   * @var array<string>
+   * Resolve the active domain's entity-vocabulary class, or null when no domain
+   * exposes one (agnostic default = pure LLM, no hardcoded vocabulary in Core).
    */
-  public static array $entityKeywords = [
-    // Products
-    'product', 'products', 'item', 'items', 'article', 'articles',
-    
-    // Orders/Sales
-    'order', 'orders', 'sale', 'sales', 'purchase', 'purchases',
-    
-    // Customers
-    'customer', 'customers', 'client', 'clients', 'user', 'users',
-    
-    // Suppliers/Manufacturers
-    'supplier', 'suppliers', 'vendor', 'vendors', 'manufacturer', 'manufacturers',
-    
-    // Financial (from WebSearchPatterns)
-    'invoice', 'invoices', 'payment', 'payments', 'transaction', 'transactions',
-    
-    // Categories (from EntityDetectionPattern)
-    'category', 'categories', 'section', 'sections',
-    
-    // Reviews (from EntityDetectionPattern)
-    'review', 'reviews', 'rating', 'ratings', 'comment', 'comments',
-    
-    // Brands (from EntityDetectionPattern)
-    'brand', 'brands',
-  ];
-  
-  /**
-   * Entity patterns organized by entity type
-   * 
-   * Used by Ecommerce domain for structured entity detection.
-   * Merged from EntityDetectionPattern::getPatterns().
-   * 
-   * @var array<string, array<string>>
-   */
-  public static array $entityPatterns = [
-    'product' => ['product', 'products', 'item', 'items', 'article', 'articles'],
-    'category' => ['category', 'categories', 'section', 'sections'],
-    'customer' => ['customer', 'customers', 'client', 'clients', 'user', 'users'],
-    'order' => ['order', 'orders', 'purchase', 'purchases', 'sale', 'sales'],
-    'manufacturer' => ['manufacturer', 'manufacturers', 'brand', 'brands', 'supplier', 'suppliers', 'vendor', 'vendors'],
-    'review' => ['review', 'reviews', 'rating', 'ratings', 'comment', 'comments'],
-    'financial' => ['invoice', 'invoices', 'payment', 'payments', 'transaction', 'transactions'],
-  ];
-  
-  /**
-   * Get flat list of entity keywords
-   * 
-   * @return array<string>
-   */
+  private static function resolveVocabClass(): ?string
+  {
+    $app = DomainRegistry::getInstance()->getActiveApp();
+
+    if ($app !== null && method_exists($app, 'getEntityKeywordsClass')) {
+      $class = $app->getEntityKeywordsClass();
+
+      if (is_string($class) && $class !== '' && class_exists($class)) {
+        return $class;
+      }
+    }
+
+    return null;
+  }
+
+  /** @return array<string> */
   public static function getKeywords(): array
   {
-    return self::$entityKeywords;
+    $class = self::resolveVocabClass();
+    return $class !== null ? $class::getKeywords() : [];
   }
-  
-  /**
-   * Get entity patterns organized by type
-   * 
-   * @return array<string, array<string>>
-   */
+
+  /** @return array<string, array<string>> */
   public static function getPatterns(): array
   {
-    return self::$entityPatterns;
+    $class = self::resolveVocabClass();
+    return $class !== null ? $class::getPatterns() : [];
   }
-  
-  /**
-   * Get keywords for a specific entity type
-   * 
-   * @param string $entityType Entity type (product, category, customer, etc.)
-   * @return array<string> Keywords for the entity type, empty array if not found
-   */
+
+  /** @return array<string> */
+  public static function getFinancialMetricKeywords(): array
+  {
+    $class = self::resolveVocabClass();
+
+    if ($class !== null && method_exists($class, 'getFinancialMetricKeywords')) {
+      return $class::getFinancialMetricKeywords();
+    }
+
+    return [];
+  }
+
+  /** @return array<string> */
   public static function getKeywordsForEntity(string $entityType): array
   {
-    return self::$entityPatterns[$entityType] ?? [];
+    return self::getPatterns()[$entityType] ?? [];
   }
-  
-  /**
-   * Check if a keyword belongs to any entity type
-   * 
-   * @param string $keyword Keyword to check
-   * @return bool True if keyword is an entity keyword
-   */
+
   public static function isEntityKeyword(string $keyword): bool
   {
-    return in_array(mb_strtolower($keyword), self::$entityKeywords, true);
+    return in_array(mb_strtolower($keyword), self::getKeywords(), true);
   }
-  
-  /**
-   * Get entity type for a keyword
-   * 
-   * @param string $keyword Keyword to look up
-   * @return string|null Entity type or null if not found
-   */
+
   public static function getEntityTypeForKeyword(string $keyword): ?string
   {
     $keyword = mb_strtolower($keyword);
-    
-    foreach (self::$entityPatterns as $entityType => $keywords) {
+
+    foreach (self::getPatterns() as $entityType => $keywords) {
       if (in_array($keyword, $keywords, true)) {
         return $entityType;
       }
     }
-    
+
     return null;
   }
-  
-  /**
-   * Get all entity types
-   * 
-   * @return array<string>
-   */
+
+  /** @return array<string> */
   public static function getEntityTypes(): array
   {
-    return array_keys(self::$entityPatterns);
+    return array_keys(self::getPatterns());
   }
-  
-  /**
-   * Get metadata about this pattern
-   * 
-   * @return array Pattern metadata
-   */
+
+  /** @return array<string, mixed> */
   public static function getMetadata(): array
   {
     return [
       'name' => 'Entity Keywords Pattern',
-      'description' => 'Centralized entity keywords shared across Analytics, WebSearch, and Ecommerce domains',
+      'description' => 'Agnostic reader; entity vocabulary is owned by the active domain',
       'entity_types' => self::getEntityTypes(),
-      'total_keywords' => count(self::$entityKeywords),
-      'source_files' => [
-        'SuperlativePatterns::$entityKeywords',
-        'WebSearchPatterns::$entityKeywords',
-        'EntityDetectionPattern::getPatterns()',
-      ],
+      'total_keywords' => count(self::getKeywords()),
+      'source' => 'active domain via DomainRegistry::getActiveApp()->getEntityKeywordsClass()',
     ];
   }
 }

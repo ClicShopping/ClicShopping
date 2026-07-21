@@ -919,6 +919,25 @@ class AnalyticsAgent
               ]
             );
           }
+        } elseif (!empty($correctionResult['empty_after_correction'])) {
+          // Corrected query ran but returned 0 rows: render an honest empty result (like a
+          // legitimately-empty query), never a false "correction succeeded" on a broken query.
+          $this->debugLog("  Correction returned 0 rows — honest empty result (not a success).");
+
+          $results = [
+            'type' => 'analytics_results',
+            'query' => $question,
+            'sql_query' => $correctionResult['executed_query'] ?? $finalQuery,
+            'original_sql_query' => $sqlQuery,
+            'corrections' => $correctionResult['corrections'] ?? $this->correctionLog,
+            'results' => [],
+            'count' => 0,
+            'entity_id' => null,
+            'entity_type' => null,
+            'ambiguous' => $ambiguityAnalysis['is_ambiguous'] ?? false,
+            'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
+            'interpretations' => $ambiguityAnalysis['is_ambiguous'] ? array_keys($ambiguityAnalysis['interpretations']) : [],
+          ];
         } else {
           $this->debugLog("  Correction failed");
           throw new \Exception("Execution failed after intelligent correction attempt: " . $e->getMessage());
@@ -1363,7 +1382,7 @@ class AnalyticsAgent
             $results['count'] = count($executionResult['data']);
             $this->debugLog("✅ Corrected SQL executed successfully, returned " . $results['count'] . " rows");
 
-            // 🔧 FIX: Clear cached interpretation so it gets regenerated with new results
+            // Clear cached interpretation so it gets regenerated with new results
             if (isset($results['interpretation'])) {
               unset($results['interpretation']);
               $this->debugLog("Cleared cached interpretation to force regeneration with corrected results");

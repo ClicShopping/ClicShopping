@@ -10,6 +10,7 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Patterns;
 
 
 use ClicShopping\OM\Registry;
+use ClicShopping\AI\DomainsAI\Shared\Patterns\Common\EntityKeywordsPattern;
 
 /**
  * WebSearchPostFilter
@@ -88,16 +89,9 @@ class WebSearchPostFilter
     // Example: "most recent order" → analytics ✅ (has entity keyword "order")
     // Example: "revenue this month" → analytics ✅ (has financial keyword "revenue")
     
-    // Financial metric keywords that indicate analytics queries (not web search)
-    // These are metrics that require database aggregation, not external search
-    $financialMetricKeywords = [
-      'revenue', 'turnover', 'sales', 'profit', 'margin', 'income',
-      'cost', 'expense', 'spending', 'budget', 'forecast',
-      'average', 'total', 'sum', 'count', 'number of', 'how many',
-      'stock', 'inventory', 'quantity', 'units',
-      'pending', 'delivered', 'cancelled', 'processing', 'shipped',
-      'orders', 'customers', 'products', 'categories'
-    ];
+    // Financial metric keywords indicate an analytics query (database aggregation),
+    // not a web search. Sourced from the active domain (§Q-quater); empty = pure LLM.
+    $financialMetricKeywords = EntityKeywordsPattern::getFinancialMetricKeywords();
     
     // Check if query has entity keywords (database query, not web search)
     // 🔧 MIGRATION: Use centralized EntityKeywordsPattern instead of WebSearchPatterns

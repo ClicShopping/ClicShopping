@@ -67,8 +67,9 @@ class EntityMatcher
    * @param string $domain Domain context (optional, for future use)
    * @return array Array of extracted entities with type and value
    */
-  public function extractEntities(string $query, string $domain = 'Ecommerce'): array
+  public function extractEntities(string $query, ?string $domain = null): array
   {
+    $domain ??= DomainConfig::getActivities();
     try {
       // Get prompt from language file
       $prompt = CLICSHOPPING::getDef('prompt_extract_entities', [
@@ -122,8 +123,9 @@ class EntityMatcher
    * @param string $domain Domain context (optional, for future use)
    * @return bool True if content matches entities, false otherwise
    */
-  public function contentMatchesEntities(string $content, array $queryEntities, string $domain = 'Ecommerce'): bool
+  public function contentMatchesEntities(string $content, array $queryEntities, ?string $domain = null): bool
   {
+    $domain ??= DomainConfig::getActivities();
     // If no entities were extracted, don't filter (allow all content)
     if (empty($queryEntities)) {
       return true;
@@ -173,8 +175,9 @@ class EntityMatcher
    * @param string $domain Domain context (optional, for future use)
    * @return array Filtered array of documents
    */
-  public function filterDocumentsByEntities(array $documents, array $queryEntities, string $domain = 'Ecommerce'): array
+  public function filterDocumentsByEntities(array $documents, array $queryEntities, ?string $domain = null): array
   {
+    $domain ??= DomainConfig::getActivities();
     // If no entities, return all documents
     if (empty($queryEntities)) {
       return $documents;

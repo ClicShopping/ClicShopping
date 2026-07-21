@@ -128,7 +128,7 @@ class DomainFields
    * @param string|null $fallbackModule
    * @return string|null
    */
-  public static function resolveAppClass(?string $domain, string $classBase, ?string $fallbackModule = 'Ecommerce'): ?string
+  public static function resolveAppClass(?string $domain, string $classBase, ?string $fallbackModule = null): ?string
   {
     $module = self::getModuleName($domain);
     if ($module !== null && $module !== '') {

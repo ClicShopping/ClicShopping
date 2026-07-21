@@ -122,7 +122,7 @@ class TokenChartDataProvider
     );
 
     while ($Qcost->fetch()) {
-      $model = $Qcost->value('model') ?: 'gpt-3.5-turbo';
+      $model = $Qcost->value('model') ?: 'gpt-4.1-mini';
       $month = $Qcost->value('month');
       $promptTokens = (int)$Qcost->value('prompt_tokens');
       $completionTokens = (int)$Qcost->value('completion_tokens');

@@ -161,33 +161,8 @@ class QuerySplitterPatterns
   public const YEAR_PATTERN = '/\b(year\s+)?(\d{4})\b/i';
 
   /**
-   * Price comparison detection patterns (English only - query is already translated)
-   * 
-   * Used for detecting price comparison queries.
-   *
-   * @var array<string> Array of regex patterns
-   */
-  public const PRICE_COMPARISON_PATTERNS = [
-    // Pattern 1: "price/cost" + "compare/competitor"
-    '/\b(price|cost|prix)s?\b.*\b(compare|compar|competitor|concurrent)/i',
-    // Pattern 2: "compare/competitor" + "price/cost"
-    '/\b(compare|compar|competitor|concurrent)\b.*\b(price|cost|prix)s?\b/i',
-    // Pattern 3: Action verb + "price/cost" + "compare/competitor"
-    '/\b(give|show|tell|get|find)\b.*\b(price|cost|prix)s?\b.*\b(compare|compar|competitor)/i',
-    // Pattern 4: "compare prices/price for" (flexible word order)
-    '/\b(compar[e]?|competitor)\b\s+(price|cost|prix)s?\s+(for|of)\b/i',
-    // Pattern 5: "price comparison" phrase
-    '/\b(price|cost|prix)s?\s+(comparison|compar[e]?)/i',
-    // Pattern 6: "versus/vs" with price context
-    '/\b(price|cost|prix)s?\b.*\b(versus|vs\.?)\b/i',
-    '/\b(versus|vs\.?)\b.*\b(price|cost|prix)s?\b/i',
-    // Pattern 7: "compare" + "prices/price" (even without explicit "for")
-    '/\b(compare|compar)\b\s+(price|cost|prix)s?\b/i',
-  ];
-
-  /**
    * Product name extraction patterns (English only - query is already translated)
-   * 
+   *
    * Used for extracting product name from price comparison queries.
    * Organized by extraction phase for sequential application.
    *
@@ -198,18 +173,18 @@ class QuerySplitterPatterns
     'leading' => [
       '/^\s*(give|show|tell|get|find)\s+(me\s+)?(the\s+)?/i',
       '/^\s*(what\s+is|what\'s)\s+(the\s+)?/i',
-      '/^\s*(compare|compar|competitor)\s+(price|cost|prix)s?\s+(of|for)\s+/i',
-      '/^\s*(compare|compar|competitor)\s+(price|cost|prix)s?\s+/i',  // Remove "compare price(s)" at start
+      '/^\s*(compare|compar|competitor)\s+(price|cost)s?\s+(of|for)\s+/i',
+      '/^\s*(compare|compar|competitor)\s+(price|cost)s?\s+/i',  // Remove "compare price(s)" at start
       '/^\s*(compare|compar|competitor)\s+/i',  // Remove standalone "compare" at start
     ],
     // Phase 2: Remove "price/cost of/for" phrases
     'price' => [
-      '/\b(price|cost|prix)\s+(of|for|de)\s+/i',
-      '/\b(the\s+)?(price|cost|prix)\s+/i',
+      '/\b(price|cost)\s+(of|for)\s+/i',
+      '/\b(the\s+)?(price|cost)\s+/i',
     ],
     // Phase 3: Remove trailing comparison phrases (most aggressive)
     'trailing' => [
-      '/\s+(and\s+)?(compare|compar|competitor|concurrent).*$/i',
+      '/\s+(and\s+)?(compare|compar|competitor).*$/i',
       '/\s+(with|to)\s+(other\s+)?.*$/i',
       '/\s+(versus|vs\.?)(\s+.*)?$/i',  // Remove "versus" or "vs" with or without following text
       '/\s+(price\s+)?comparison.*$/i',
@@ -358,22 +333,6 @@ class QuerySplitterPatterns
       return $matches;
     }
     return null;
-  }
-
-  /**
-   * Check if query is a price comparison query
-   * 
-   * @param string $query Query text (already translated to English)
-   * @return bool True if price comparison query detected
-   */
-  public static function isPriceComparisonQuery(string $query): bool
-  {
-    foreach (self::PRICE_COMPARISON_PATTERNS as $pattern) {
-      if (preg_match($pattern, $query)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**

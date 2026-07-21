@@ -119,7 +119,21 @@ class AnalyticsErrorHandler
       $query->execute();
       $rows = $query->fetchAll(\PDO::FETCH_ASSOC);
       $queryResults = $this->queryExecutor->deduplicateRows($rows);
-    
+
+      // False-success guard (SQL-ALIAS): the original query FAILED and was healed (e.g. an  alias/column repoint). 
+      if (count($queryResults) === 0) {
+        $this->logEmptyAfterCorrection($failedQuery, $correctedQuery, $correctionResult['correction_method'] ?? 'unknown');
+
+        return [
+          'success' => false,
+          'empty_after_correction' => true,
+          'error' => 'Corrected query returned no rows',
+          'correction_attempted' => true,
+          'executed_query' => $correctedQuery,
+          'corrections' => $this->correctionLog,
+        ];
+      }
+
       // Success!
       return [
         'success' => true,
@@ -148,7 +162,33 @@ class AnalyticsErrorHandler
       ];
     }
   }
-  
+
+  /**
+   * Record an "empty after self-heal" event on the AI application-error channel so the
+   * recurring SQL-ALIAS mis-correction stops hiding behind a graceful "no results". Logging
+   * must never break the request, so any logger failure is swallowed.
+   *
+   * @param string $failedQuery The original query that failed
+   * @param string $correctedQuery The self-healed query that returned zero rows
+   * @param string $method The correction method that produced it
+   * @return void
+   */
+  private function logEmptyAfterCorrection(string $failedQuery, string $correctedQuery, string $method): void
+  {
+    try {
+      (new \ClicShopping\AI\Security\SecurityLogger())->logApplicationError(
+        'Empty result after self-heal (possible SQL-ALIAS mis-correction)',
+        [
+          'method' => $method,
+          'failed_query' => $failedQuery,
+          'corrected_query' => $correctedQuery,
+        ]
+      );
+    } catch (\Throwable $e) {
+      // Never let observability break the request path.
+    }
+  }
+
   /**
    * Generate user-friendly error suggestion based on error type
    * 

@@ -65,6 +65,10 @@ class ProviderManager
 
     $config->apiKey = $api_key;
 
+    if (defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LLM_TIMEOUT') && (float) CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LLM_TIMEOUT > 0) {
+      $config->timeout = (float) CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LLM_TIMEOUT;
+    }
+
     if (!is_null($parameters) && array_key_exists('model', $parameters)) {
       $config->model = $parameters['model'];
       $config->modelOptions = $parameters;
@@ -102,11 +106,19 @@ class ProviderManager
       return;
     }
 
-    $config->client = \OpenAI::factory()
+    $factory = \OpenAI::factory()
       ->withApiKey($config->apiKey)
       ->withBaseUri($config->url)
-      ->withOrganization($organisation)
-      ->make();
+      ->withOrganization($organisation);
+
+    if (!empty($config->timeout)) {
+      $factory = $factory->withHttpClient(new \GuzzleHttp\Client([
+        'timeout' => $config->timeout,
+        'connect_timeout' => $config->timeout,
+      ]));
+    }
+
+    $config->client = $factory->make();
   }
 
   /**
@@ -362,7 +374,13 @@ class ProviderManager
     if (preg_match('/^gpt-\d/', $modelLower) === 1 ||
         str_starts_with($modelLower, 'o1') ||
         str_starts_with($modelLower, 'o3')) {
-      return self::getOpenAiGpt(['model' => $model] + $options);
+      $parameters = ['model' => $model] + $options;
+      if (isset($parameters['maxtoken'])) {
+        $parameters += ModelManager::getModelApiParameters($model, (int) $parameters['maxtoken']);
+        unset($parameters['maxtoken']);
+      }
+      
+      return self::getOpenAiGpt($parameters);
     }
     
     // Anthropic models (Claude)

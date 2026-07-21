@@ -12,6 +12,7 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\EntityConfig;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\HybridPreFilter;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ProductHelper;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\AnalyticsPatterns;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\EntityKeywords;
 use ClicShopping\OM\Domains\AbstractDomainApp;
 
 /**
@@ -249,5 +250,19 @@ class Ecommerce extends AbstractDomainApp
   public function getAnalyticsPatternsClass(): ?string
   {
     return AnalyticsPatterns::class;
+  }
+
+  /**
+   * Get the entity-keywords vocabulary class for this domain
+   *
+   * Returns the FQCN of the domain-owned entity vocabulary. Core's agnostic
+   * EntityKeywordsPattern reads this through the active domain (§Q-quater), so the
+   * commerce nouns live with the domain instead of being hardcoded in Core.
+   *
+   * @return string|null Fully qualified class name or null if not available
+   */
+  public function getEntityKeywordsClass(): ?string
+  {
+    return EntityKeywords::class;
   }
 }

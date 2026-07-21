@@ -353,9 +353,10 @@ class LLMWeightingEngine
     {
         $attempt = 0;
         $lastException = null;
+        $maxTokens = $this->weightingResponseMaxTokens(count($expectedCriticIds));
 
         while ($attempt <= $this->maxParseRetries) {
-            $llmResponse = $this->llmClient->callLLMWithRetry($prompt);
+            $llmResponse = $this->llmClient->callLLMWithRetry($prompt, $maxTokens);
 
             try {
                 return $this->parseLLMResponse($llmResponse, $expectedCriticIds);
@@ -373,8 +374,24 @@ class LLMWeightingEngine
     }
 
     /**
+     * Size the output-token budget for the weighting JSON to the number of critics.
+     *
+     * The response carries a weight, an explanation and a domain_analysis block per critic plus
+     * shared bounds, so its length scales with the critic set. Budget generously — surplus tokens
+     * cost nothing (generation stops at the closing brace) but too small a cap truncates the body
+     * into invalid JSON and forces a regeneration.
+     *
+     * @param int $criticCount Number of critics being weighted
+     * @return int Output-token budget
+     */
+    private function weightingResponseMaxTokens(int $criticCount): int
+    {
+        return max(1500, 1000 + 600 * $criticCount);
+    }
+
+    /**
      * Parse LLM JSON response
-     * 
+     *
      * Extracts weights, explanations, rationale, and domain_analysis from LLM response.
      * Validates that all expected critics have weights.
      * 

@@ -365,3 +365,5 @@ Fournissez votre analyse sous forme d'objet JSON avec la structure suivante :
 - Utilisez un langage naturel - expliquez votre raisonnement comme vous le feriez à un humain
 
 Répondez UNIQUEMENT avec l'objet JSON, sans texte supplémentaire.
+
+text_json_only_instruction = IMPORTANT : Vous DEVEZ répondre uniquement avec du JSON valide. N'incluez aucun texte avant ou après l'objet JSON.

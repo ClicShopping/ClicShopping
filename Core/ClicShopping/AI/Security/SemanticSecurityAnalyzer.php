@@ -513,12 +513,13 @@ class SemanticSecurityAnalyzer
         );
       }
       
-      // Check if response exceeds timeout threshold
-      $timeout = defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LLM_TIMEOUT') ? CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LLM_TIMEOUT : 5000;
-      
-      if ($latency > $timeout) {
+      // Check if response exceeds timeout threshold. The shared constant is in SECONDS, so convert to milliseconds to compare against the measured latency.
+      $timeoutSeconds = defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LLM_TIMEOUT') ? (float) CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LLM_TIMEOUT : 120;
+      $timeoutMs = $timeoutSeconds * 1000;
+
+      if ($latency > $timeoutMs) {
         self::$logger->logSecurityEvent(
-          "LLM security analysis exceeded timeout threshold ({$latency}ms > {$timeout}ms)",
+          "LLM security analysis exceeded timeout threshold ({$latency}ms > {$timeoutMs}ms)",
           'warning'
         );
       }

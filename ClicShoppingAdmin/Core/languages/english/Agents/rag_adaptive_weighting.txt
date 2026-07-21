@@ -365,3 +365,5 @@ Provide your analysis as a JSON object with the following structure:
 - Use natural language - explain your reasoning as you would to a human
 
 Respond ONLY with the JSON object, no additional text.
+
+text_json_only_instruction = IMPORTANT: You MUST respond with valid JSON only. Do not include any text before or after the JSON object.

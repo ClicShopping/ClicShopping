@@ -24,7 +24,7 @@ use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\Infrastructure\Cache\DecompositionCache;
 use ClicShopping\AI\Infrastructure\Monitoring\DecompositionPerformanceMonitor;
 use ClicShopping\AI\DomainsAI\Hybrid\Patterns\QuerySplitterPatterns;
-use ClicShopping\AI\CoreAI\Planning\Patterns\PriceComparisonDetectionPatterns;
+use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 
 /**
  * HybridQueryDecomposer
@@ -1004,8 +1004,9 @@ class HybridQueryDecomposer
      * 
      * Architecture: Pure LLM Mode with pattern fallback (AGENTS.md compliant)
      * - PRIMARY: Check intent_type === 'price_comparison'
-     * - FALLBACK: Pattern matching via PriceComparisonDetectionPatterns
-     * 
+     * - FALLBACK: agnostic intent detectors registered by domain Apps
+     *   (WebSearchEngineRegistry::getIntentDetectors) — Core owns no keywords
+     *
      * @param string $query Query to analyze
      * @param array $intent Intent analysis
      * @return bool True if price comparison detected
@@ -1024,14 +1025,18 @@ class HybridQueryDecomposer
                 return true;
             }
 
-            // FALLBACK: Pattern matching (when the LLM signal is absent)
-            $isMatch = PriceComparisonDetectionPatterns::isPriceComparisonQuery($query);
-            
-            if ($isMatch && $this->debug) {
-                $this->logDebug("Price comparison detected via pattern fallback");
+            // FALLBACK: agnostic detectors registered by domain Apps (Core owns
+            // no domain keywords). First 'price_comparison' verdict wins.
+            foreach (WebSearchEngineRegistry::getInstance()->getIntentDetectors() as $detector) {
+                if ($detector->detectIntent($query) === 'price_comparison') {
+                    if ($this->debug) {
+                        $this->logDebug("Price comparison detected via detector fallback: " . $detector->getDetectorId());
+                    }
+                    return true;
+                }
             }
-            
-            return $isMatch;
+
+            return false;
             
         } catch (\Exception $e) {
             if ($this->debug) {

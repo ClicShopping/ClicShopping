@@ -13,7 +13,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Enh
 use ClicShopping\AI\InterfacesAI\WebSearchResultEnhancerInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\EcommerceWebSearchFacade;
-use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
+use ClicShopping\AI\DomainsAI\WebSearch\Helper\NumericBandFilter;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\Registry;
@@ -95,7 +95,7 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
 
             // Bound the DISPLAYED shopping results to ±BOUND_PERCENT of the catalog price so
             if (!empty($results['shopping_results']) && is_array($results['shopping_results'])) {
-                $cardBound = PriceBoundFilter::bound((float) $internal['price'], $results['shopping_results'], 'extracted_price');
+                $cardBound = NumericBandFilter::bound((float) $internal['price'], $results['shopping_results'], 'extracted_price');
                 $results['shopping_results'] = $cardBound['kept'];
             }
 
@@ -243,7 +243,7 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
         $priceBound = $comparison['price_bound'] ?? [];
         if ((int) ($priceBound['excluded'] ?? 0) > 0) {
             $html .= "<div class='market-analysis-bound' style='margin-top:8px; font-size:0.85em; color:#856404; background:#fff3cd; border:1px solid #ffeeba; border-radius:4px; padding:6px 10px;'>⚠️ "
-                   . htmlspecialchars($language->getDef('text_rag_price_bound_notice', ['bound' => (int) ($priceBound['bound_percent'] ?? PriceBoundFilter::BOUND_PERCENT), 'excluded' => (int) $priceBound['excluded']]))
+                   . htmlspecialchars($language->getDef('text_rag_price_bound_notice', ['bound' => (int) ($priceBound['bound_percent'] ?? NumericBandFilter::BOUND_PERCENT), 'excluded' => (int) $priceBound['excluded']]))
                    . "</div>";
         }
 

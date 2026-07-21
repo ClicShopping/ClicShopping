@@ -167,7 +167,7 @@ abstract class AbstractFormatter
 
     foreach (array_keys($row) as $key) {
       // Check if column name suggests it's an aggregation result
-      if (preg_match('/(total|count|sum|avg|average|prix_moyen|moyenne|somme)/i', $key)) {
+      if (preg_match('/(total|count|sum|avg|average|mean)/i', $key)) {
         $hasAggregation = true;
         $aggregationColumns[] = $key;
       }

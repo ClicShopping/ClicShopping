@@ -16,6 +16,7 @@ use ClicShopping\AI\DomainsAI\WebSearch\Providers\GoogleShoppingProvider;
 use ClicShopping\AI\DomainsAI\WebSearch\Providers\GoogleTrendsProvider;
 use ClicShopping\AI\DomainsAI\WebSearch\Providers\RagWebSearchProvider;
 use ClicShopping\AI\InterfacesAI\QueryEnricherInterface;
+use ClicShopping\AI\InterfacesAI\QueryIntentDetectorInterface;
 use ClicShopping\AI\InterfacesAI\SiteRouterInterface;
 use ClicShopping\AI\InterfacesAI\WebSearchEngineProviderInterface;
 use ClicShopping\AI\InterfacesAI\WebSearchResultEnhancerInterface;
@@ -85,6 +86,9 @@ final class WebSearchEngineRegistry
 
     /** @var array<string, QueryEnricherInterface> */
     private array $queryEnrichersById = [];
+
+    /** @var array<string, QueryIntentDetectorInterface> */
+    private array $intentDetectorsById = [];
 
     private SecurityLogger $logger;
     private bool $debug;
@@ -246,6 +250,44 @@ final class WebSearchEngineRegistry
     public function getQueryEnrichers(): array
     {
         return \array_values($this->queryEnrichersById);
+    }
+
+    /**
+     * Register a fallback intent detector (consulted only when the LLM intent
+     * signal is absent).
+     *
+     * Core registers none — verdicts come solely from domain Apps, which own
+     * their (domain-specific) intent keywords. Detectors fire in registration
+     * order; the first non-null verdict wins.
+     *
+     * @throws \InvalidArgumentException If a detector with the same id is already registered
+     */
+    public function registerIntentDetector(QueryIntentDetectorInterface $detector): void
+    {
+        $detectorId = $detector->getDetectorId();
+
+        if (isset($this->intentDetectorsById[$detectorId])) {
+            throw new \InvalidArgumentException(
+                "WebSearch intent detector with id '{$detectorId}' is already registered"
+            );
+        }
+
+        $this->intentDetectorsById[$detectorId] = $detector;
+
+        if ($this->debug) {
+            $this->logger->logStructured('info', 'WebSearchEngineRegistry', 'intent_detector_registered', [
+                'detector_id' => $detectorId,
+                'detector_class' => $detector::class,
+            ]);
+        }
+    }
+
+    /**
+     * @return array<QueryIntentDetectorInterface> All registered detectors in registration order
+     */
+    public function getIntentDetectors(): array
+    {
+        return \array_values($this->intentDetectorsById);
     }
 
     /**

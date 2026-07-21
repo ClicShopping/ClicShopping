@@ -15,7 +15,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters\AbstractFormatter;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
-use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
+use ClicShopping\AI\DomainsAI\WebSearch\Helper\NumericBandFilter;
 
 /**
  * WebSearchFormatter - Formats web search query results
@@ -991,7 +991,7 @@ class WebSearchFormatter extends AbstractFormatter
     $currency = $product['currency'] ?? '€';
     $productTitle = $product['product_title'] ?? '';
     
-    $priceBound = PriceBoundFilter::bound($internalPrice !== null ? (float)$internalPrice : null, $externalPrices);
+    $priceBound = NumericBandFilter::bound($internalPrice !== null ? (float)$internalPrice : null, $externalPrices);
     $externalPrices = $priceBound['kept'];
     $priceBoundNotice = '';
     if ($priceBound['excluded'] > 0) {

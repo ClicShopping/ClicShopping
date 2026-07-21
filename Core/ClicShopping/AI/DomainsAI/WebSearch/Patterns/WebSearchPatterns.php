@@ -52,20 +52,6 @@ class WebSearchPatterns
   ];
   
   /**
-   * Entity keywords that indicate database queries (not web search)
-   * 
-   * @deprecated Use Common\EntityKeywordsPattern::$entityKeywords instead
-   * @see EntityKeywordsPattern::$entityKeywords
-   */
-  public static array $entityKeywords = [
-    'product', 'products', 'item', 'items', 'article', 'articles',
-    'order', 'orders', 'sale', 'sales', 'purchase', 'purchases',
-    'customer', 'customers', 'client', 'clients', 'user', 'users',
-    'supplier', 'suppliers', 'vendor', 'vendors', 'manufacturer', 'manufacturers',
-    'invoice', 'invoices', 'payment', 'payments', 'transaction', 'transactions'
-  ];
-  
-  /**
    * Get entity keywords from centralized Common pattern
    * 
    * @return array<string> Entity keywords

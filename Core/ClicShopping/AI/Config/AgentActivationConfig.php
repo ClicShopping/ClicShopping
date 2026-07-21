@@ -52,13 +52,20 @@ class AgentActivationConfig
     private const AGENT_TYPE_ACTOR = 'actor';
     private const AGENT_TYPE_CRITIC = 'critic';
     private const AGENT_TYPE_HYBRID = 'hybrid';
-    private const AGENT_DOMAIN = 'Ecommerce';
     /**
-     * Default agent activation states
+     * Default agent activation states (built at call time so the domain tag is config-driven).
      *
      * Format: 'agent_id' => ['enabled' => bool, 'type' => string, 'domain' => string|null]
+     * Domain-specific agents are tagged with the ACTIVE domain (DomainConfig::getActivities()),
+     * not a hardcoded 'Ecommerce', so actor-critic domain isolation follows the configured domain.
+     *
+     * @return array<string, array{enabled: bool, type: string, domain: string|null, description: string}>
      */
-    private const DEFAULT_AGENTS = [
+    private static function defaultAgents(): array
+    {
+        $domain = DomainConfig::getActivities();
+
+        return [
         // Hybrid agents (legacy)
         'hybrid_agent' => [
             'enabled' => true,
@@ -71,7 +78,7 @@ class AgentActivationConfig
         'analytics_actor' => [
             'enabled' => true,
             'type' => self::AGENT_TYPE_ACTOR,
-            'domain' => self::AGENT_DOMAIN,
+            'domain' => $domain,
             'description' => 'Analytics SQL generation and execution'
         ],
         'reasoning_actor' => [
@@ -89,7 +96,7 @@ class AgentActivationConfig
         'semantic_actor' => [
             'enabled' => true,
             'type' => self::AGENT_TYPE_ACTOR,
-            'domain' => self::AGENT_DOMAIN,
+            'domain' => $domain,
             'description' => 'Semantic search and retrieval'
         ],
         'websearch_actor' => [
@@ -103,7 +110,7 @@ class AgentActivationConfig
         'analytics_critic' => [
             'enabled' => true,
             'type' => self::AGENT_TYPE_CRITIC,
-            'domain' => self::AGENT_DOMAIN,
+            'domain' => $domain,
             'description' => 'SQL quality and performance evaluation'
         ],
         'reasoning_critic' => [
@@ -121,10 +128,12 @@ class AgentActivationConfig
         'semantic_critic' => [
             'enabled' => true,
             'type' => self::AGENT_TYPE_CRITIC,
-            'domain' => self::AGENT_DOMAIN,
+            'domain' => $domain,
             'description' => 'Semantic relevance evaluation'
         ],
-    ];
+        ];
+    }
+
     private static ?array $config = null;
     private static bool $debug = false;
     
@@ -192,7 +201,7 @@ class AgentActivationConfig
             }
 
             // Merge with defaults for any missing agents
-            foreach (self::DEFAULT_AGENTS as $agentId => $defaultConfig) {
+            foreach (self::defaultAgents() as $agentId => $defaultConfig) {
                 if (!isset($config[$agentId])) {
                     $config[$agentId] = $defaultConfig;
                 }
@@ -204,7 +213,7 @@ class AgentActivationConfig
             if (self::$debug) {
                 error_log("AgentActivationConfig: Failed to load from database, using defaults - " . $e->getMessage());
             }
-            return self::DEFAULT_AGENTS;
+            return self::defaultAgents();
         }
     }
     
@@ -252,7 +261,8 @@ class AgentActivationConfig
         self::initialize();
 
         // Validate agent exists
-        if (!isset(self::$config[$agentId]) && !isset(self::DEFAULT_AGENTS[$agentId])) {
+        $defaults = self::defaultAgents();
+        if (!isset(self::$config[$agentId]) && !isset($defaults[$agentId])) {
             if (self::$debug) {
                 error_log("AgentActivationConfig: Unknown agent ID: {$agentId}");
             }
@@ -263,7 +273,7 @@ class AgentActivationConfig
             $db = Registry::get('Db');
 
             // Get agent info
-            $agentInfo = self::$config[$agentId] ?? self::DEFAULT_AGENTS[$agentId];
+            $agentInfo = self::$config[$agentId] ?? $defaults[$agentId];
 
             // Update in database
             $sql = "INSERT INTO :table_rag_agent_activation_config 
@@ -458,7 +468,7 @@ class AgentActivationConfig
             $db->query($sql);
             
             // Reset in memory
-            self::$config = self::DEFAULT_AGENTS;
+            self::$config = self::defaultAgents();
             
             if (self::$debug) {
                 error_log("AgentActivationConfig: Reset to defaults");

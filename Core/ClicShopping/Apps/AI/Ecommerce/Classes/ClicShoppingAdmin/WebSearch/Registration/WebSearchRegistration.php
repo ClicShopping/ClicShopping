@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Registration;
 
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Detectors\PriceComparisonIntentDetector;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Enhancers\MarketAnalysisEnhancer;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Enrichers\ContextualQueryEnricher;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Providers\AmazonShoppingProvider;
@@ -52,5 +53,10 @@ final class WebSearchRegistration
         // competitors") into a self-contained query by prepending the last
         // entity name discussed by the user.
         $registry->registerQueryEnricher(new ContextualQueryEnricher());
+
+        // Fallback intent detector: recognise a price-comparison query by
+        // pattern when the LLM intent signal is absent (Pure LLM Mode fallback).
+        // Price comparison is a commerce concept, so it lives in this domain.
+        $registry->registerIntentDetector(new PriceComparisonIntentDetector());
     }
 }

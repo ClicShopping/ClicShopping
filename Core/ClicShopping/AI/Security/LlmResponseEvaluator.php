@@ -209,9 +209,9 @@ class LlmResponseEvaluator
   private static function evaluateCompleteness(string $question, string $result): float
   {
     $sentenceCount = preg_match_all('/[.!?]\s/u', $result);
-    $keywordCount = preg_match_all('/\b(produit|prix|délai|livraison|stock)\b/ui', $result);
+    $wordCount = preg_match_all('/\S+/u', $result);
 
-    $score = 0.2 * min(5, $sentenceCount) + 0.2 * min(5, $keywordCount);
+    $score = 0.2 * min(5, $sentenceCount) + 0.2 * min(5, intdiv($wordCount, 20));
 
     return min(1.0, max(0.0, $score));
   }

@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\OM\CLICSHOPPING;
 
 /**
  * WeightingLlmClient - Shared LLM transport for the adaptive weighting subsystem
@@ -52,17 +54,19 @@ class WeightingLlmClient
      * Retries up to maxRetries times on failure with delays: 1s, 2s.
      *
      * @param string $prompt Structured prompt for LLM
+     * @param int|null $maxTokens Explicit output-token budget, sized by the caller to the
+     *                            response shape so a large JSON body is never truncated
      * @return string LLM response (JSON)
      * @throws \RuntimeException If all retries fail
      */
-    public function callLLMWithRetry(string $prompt): string
+    public function callLLMWithRetry(string $prompt, ?int $maxTokens = null): string
     {
         $attempt = 0;
         $lastException = null;
 
         while ($attempt <= $this->maxRetries) {
             try {
-                $response = $this->callLLM($prompt);
+                $response = $this->callLLM($prompt, $maxTokens);
 
                 if ($attempt > 0) {
                     $this->logRetrySuccess($attempt);
@@ -97,14 +101,26 @@ class WeightingLlmClient
      * Call LLM via Gpt facade
      *
      * @param string $prompt Prompt to send
+     * @param int|null $maxTokens Explicit output-token budget (null = model/config default)
      * @return string LLM response
      * @throws \RuntimeException If LLM call fails
      */
-    private function callLLM(string $prompt): string
+    private function callLLM(string $prompt, ?int $maxTokens = null): string
     {
-        $fullPrompt = $prompt . "\n\nIMPORTANT: You MUST respond with valid JSON only. Do not include any text before or after the JSON object.";
+        DomainConfig::loadAgnosticLanguageFile('rag_adaptive_weighting');
+        $fullPrompt = $prompt . "\n\n" . CLICSHOPPING::getDef('text_json_only_instruction');
 
-        $chat = Gpt::getChatForModel();
+        // JSON mode makes the provider GUARANTEE valid JSON (failures were structural, not
+        // truncation); honoured on OpenAI-compatible providers, harmlessly dropped elsewhere.
+        $options = ['response_format' => ['type' => 'json_object']];
+
+        // Also cap the output tokens when the caller sizes them: the JSON grows with the critic set,
+        // and too small a cap is the *other* failure mode (truncation into invalid JSON).
+        if ($maxTokens !== null) {
+            $options['maxtoken'] = $maxTokens;
+        }
+
+        $chat = Gpt::getChatForModel(null, $options);
         $response = $chat->generateText($fullPrompt);
 
         if (empty($response)) {

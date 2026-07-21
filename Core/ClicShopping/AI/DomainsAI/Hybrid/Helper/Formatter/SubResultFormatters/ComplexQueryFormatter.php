@@ -13,7 +13,7 @@ use ClicShopping\OM\Hash;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
-use ClicShopping\AI\DomainsAI\WebSearch\Helper\PriceBoundFilter;
+use ClicShopping\AI\DomainsAI\WebSearch\Helper\NumericBandFilter;
 
 /**
  * ComplexQueryFormatter - Formats complex query results (multi-step queries)
@@ -469,9 +469,9 @@ class ComplexQueryFormatter extends AbstractFormatter
     }
 
     if (isset($priceComparison['external_prices']) && is_array($priceComparison['external_prices'])) {
-      // Bound competitor listings to ±PriceBoundFilter::BOUND_PERCENT of the catalog price so
+      // Bound competitor listings to ±NumericBandFilter::BOUND_PERCENT of the catalog price so
       // accessories (cases, chargers…) do not skew the comparison / average.
-      $priceBound = PriceBoundFilter::bound($internalPrice, $priceComparison['external_prices']);
+      $priceBound = NumericBandFilter::bound($internalPrice, $priceComparison['external_prices']);
 
       $output .= "<div style='margin-top: 8px;'>";
       $output .= "<strong>" . $this->language->getDef('text_rag_complex_query_competitor_prices') . "</strong>";

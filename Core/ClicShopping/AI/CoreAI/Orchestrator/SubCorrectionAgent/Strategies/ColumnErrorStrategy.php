@@ -255,6 +255,15 @@ class ColumnErrorStrategy implements CorrectionStrategyInterface
       [$alias, $bareColumn] = explode('.', $columnName, 2);
     }
 
+    // SQL-ALIAS repoint: the LLM commonly attaches a name column to the WRONG JOIN alias
+    if ($alias !== null) {
+      $ownerAlias = $this->findOwningAlias($query, $bareColumn, $alias);
+
+      if ($ownerAlias !== null) {
+        return $ownerAlias . '.' . $bareColumn;
+      }
+    }
+
     // Resolve which real table(s) to inspect: the aliased table when we have an
     // alias, otherwise every table referenced by the query.
     $tables = $this->resolveQueryTables($query, $alias);
@@ -301,28 +310,85 @@ class ColumnErrorStrategy implements CorrectionStrategyInterface
    */
   private function resolveQueryTables(string $query, ?string $alias): array
   {
+    $pairs = $this->parseQueryTables($query);
+
+    if (empty($pairs)) {
+      return [];
+    }
+
+    if ($alias !== null) {
+      foreach ($pairs as [$tableAlias, $table]) {
+        if ($tableAlias !== null && strcasecmp($tableAlias, $alias) === 0) {
+          return [$table];
+        }
+      }
+
+      return [];
+    }
+
+    $tables = [];
+
+    foreach ($pairs as [, $table]) {
+      $tables[] = $table;
+    }
+
+    return array_values(array_unique($tables));
+  }
+
+  /**
+   * Parse the FROM/JOIN clauses into [alias|null, table] pairs, preserving order.
+   * Table/alias tokens are limited to [A-Za-z0-9_]; a trailing SQL keyword (ON, WHERE…)
+   * is not treated as an alias.
+   *
+   * @param string $query SQL query
+   * @return array<int, array{0: string|null, 1: string}> Ordered [alias, table] pairs
+   */
+  private function parseQueryTables(string $query): array
+  {
     if (!preg_match_all('/\b(?:FROM|JOIN)\s+([A-Za-z0-9_]+)(?:\s+(?:AS\s+)?([A-Za-z0-9_]+))?/i', $query, $matches, PREG_SET_ORDER)) {
       return [];
     }
 
     // Words that are not real aliases when they follow the table name.
     $reserved = ['on', 'where', 'group', 'order', 'limit', 'having', 'join', 'inner', 'left', 'right', 'outer', 'as'];
-    $tables = [];
+    $pairs = [];
 
     foreach ($matches as $m) {
       $table = $m[1];
       $tableAlias = (isset($m[2]) && !in_array(strtolower($m[2]), $reserved, true)) ? $m[2] : null;
+      $pairs[] = [$tableAlias, $table];
+    }
 
-      if ($alias !== null) {
-        if ($tableAlias !== null && strcasecmp($tableAlias, $alias) === 0) {
-          return [$table];
-        }
-      } else {
-        $tables[] = $table;
+    return $pairs;
+  }
+
+  /**
+   * Find the alias of another table in the query that owns $bareColumn EXACTLY. Used to
+   * repoint a name column the LLM attached to the wrong JOIN alias. The offending alias
+   * ($excludeAlias) is skipped, and only aliased tables can be a repoint target.
+   *
+   * @param string $query SQL query
+   * @param string $bareColumn Unqualified column name (no alias prefix)
+   * @param string|null $excludeAlias Alias the column was wrongly attached to (skipped)
+   * @return string|null Owning alias, or null if no other table owns the column
+   */
+  private function findOwningAlias(string $query, string $bareColumn, ?string $excludeAlias): ?string
+  {
+    foreach ($this->parseQueryTables($query) as [$tableAlias, $table]) {
+      if ($tableAlias === null) {
+        continue; // Cannot repoint to a table without an alias.
+      }
+
+      if ($excludeAlias !== null && strcasecmp($tableAlias, $excludeAlias) === 0) {
+        continue; // Skip the table the column was wrongly attached to.
+      }
+
+      if (in_array($bareColumn, $this->getTableColumns($table), true)) {
+        return $tableAlias;
       }
     }
 
-    return $alias !== null ? [] : array_values(array_unique($tables));
+    return null;
   }
 
   /**

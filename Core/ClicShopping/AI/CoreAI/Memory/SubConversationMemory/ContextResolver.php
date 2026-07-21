@@ -141,7 +141,7 @@ class ContextResolver
    * 
    * 
    * Examples of implicit contextual queries:
-   * - "compare avec les concurrents" (needs product from previous query)
+   * - "compare with competitors" (needs product from previous query)
    * - "show more details" (needs entity from previous query)
    * - "what's the price" (needs product from previous query)
    * 

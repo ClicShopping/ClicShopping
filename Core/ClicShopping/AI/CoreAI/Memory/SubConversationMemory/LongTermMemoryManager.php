@@ -15,6 +15,7 @@ use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\EntityMatcher;
+use ClicShopping\AI\Config\DomainConfig;
 
 /**
  * LongTermMemoryManager Class
@@ -229,8 +230,9 @@ class LongTermMemoryManager
    * @param int|null $languageId Filter by language ID (optional)
    * @return array Array of similar documents
    */
-  public function searchSimilar(string $query, int $limit = 3, ?string $userId = null, ?int $languageId = null, string $domain = 'Ecommerce'): array
+  public function searchSimilar(string $query, int $limit = 3, ?string $userId = null, ?int $languageId = null, ?string $domain = null): array
   {
+    $domain ??= DomainConfig::getActivities();
     try {
       $queryEntities = $this->entityMatcher->extractEntities($query, $domain);
       

@@ -14,6 +14,7 @@ use ClicShopping\AI\CoreAI\Planning\PlanExecutor;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainKeywordsLoader;
+use ClicShopping\AI\Config\DomainConfig;
 
 /**
  * HybridQueryHandler Class
@@ -72,7 +73,7 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
   private SecurityLogger $securityLogger;
   private DomainKeywordsLoader $domainKeywordsLoader;
   private bool $debug;
-  private string $currentDomain = 'Ecommerce'; // Default domain, can be configured
+  private string $currentDomain = ''; // Resolved from DomainConfig in the constructor (config-driven)
 
   // Statistics tracking
   private int $totalQueries = 0;
@@ -105,14 +106,14 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
     ?ConversationMemory $conversationMemory = null,
     ?DomainKeywordsLoader $domainKeywordsLoader = null,
     bool $debug = false,
-    string $domain = 'Ecommerce'
+    ?string $domain = null
   ) {
     $this->taskPlanner = $taskPlanner;
     $this->planExecutor = $planExecutor;
     $this->conversationMemory = $conversationMemory;
     $this->domainKeywordsLoader = $domainKeywordsLoader ?? new DomainKeywordsLoader($debug);
     $this->debug = $debug;
-    $this->currentDomain = $domain;
+    $this->currentDomain = $domain ?? DomainConfig::getActivities();
     $this->securityLogger = new SecurityLogger();
   }
 

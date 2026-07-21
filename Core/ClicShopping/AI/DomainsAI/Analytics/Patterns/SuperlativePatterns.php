@@ -51,7 +51,7 @@ class SuperlativePatterns
   /**
    * Entity keywords that indicate database queries
    * 
-   * @deprecated Use EntityKeywordsPattern::$entityKeywords instead
+   * @deprecated Use EntityKeywordsPattern::getKeywords() instead
    * @see \ClicShopping\AI\Domain\Patterns\Common\EntityKeywordsPattern
    */
   public static array $entityKeywords = [];
@@ -63,6 +63,6 @@ class SuperlativePatterns
    */
   public static function getEntityKeywords(): array
   {
-    return EntityKeywordsPattern::$entityKeywords;
+    return EntityKeywordsPattern::getKeywords();
   }
 }

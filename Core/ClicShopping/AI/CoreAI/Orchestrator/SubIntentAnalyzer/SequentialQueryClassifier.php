@@ -287,9 +287,9 @@ class SequentialQueryClassifier
    * which is necessary to split the query before LLM classification.
    *
    * Examples:
-   * - "sku puis résume cgv" → sequential(+0.3) + multiple types(+0.4) + high LLM confidence(+0.3) = 1.0 → HYBRID
-   * - "sku et prix" → no sequential(0) + single type(0) + low LLM confidence(0) = 0.0 → NOT HYBRID
-   * - "prix puis ventes" → sequential(+0.3) + single type(0) + medium LLM confidence(+0.15) = 0.45 → NOT HYBRID
+   * - "sku then summarize terms" → sequential(+0.3) + multiple types(+0.4) + high LLM confidence(+0.3) = 1.0 → HYBRID
+   * - "sku and price" → no sequential(0) + single type(0) + low LLM confidence(0) = 0.0 → NOT HYBRID
+   * - "price then sales" → sequential(+0.3) + single type(0) + medium LLM confidence(+0.15) = 0.45 → NOT HYBRID
    *
    * @param string $query Original query to analyze
    * @param array $splitResult Result from splitQueryOnSequentialIndicators()
