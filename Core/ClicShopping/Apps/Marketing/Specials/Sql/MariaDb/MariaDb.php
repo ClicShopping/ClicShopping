@@ -101,7 +101,7 @@ CREATE TABLE :table_specials (
   status int(1) default(1) NOT NULL,
   scheduled_date datetime,
   customers_group_id int NOT NULL default(0),
-  flash_discount int(1) NOT NULL  default(0)
+  flash_discount int(1) NOT NULL  default(0),
   PRIMARY KEY (specials_id),
   KEY idx_specials_products_id (products_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

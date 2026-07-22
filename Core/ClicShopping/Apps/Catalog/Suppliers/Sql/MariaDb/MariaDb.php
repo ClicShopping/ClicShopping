@@ -114,7 +114,7 @@ CREATE TABLE :table_suppliers (
   suppliers_notes text,
   suppliers_status int(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (suppliers_id),
-  ADD KEY idx_suppliers_name (suppliers_name)
+  KEY idx_suppliers_name (suppliers_name)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -129,8 +129,8 @@ CREATE TABLE :table_suppliers_info (
   languages_id int NOT NULL DEFAULT 0,
   suppliers_url varchar(255),
   url_clicked int(5) NOT NULL DEFAULT 0,
-  date_last_click datetime
-  PRIMARY KEY suppliers_id (languages_id)
+  date_last_click datetime,
+  PRIMARY KEY (suppliers_id, languages_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

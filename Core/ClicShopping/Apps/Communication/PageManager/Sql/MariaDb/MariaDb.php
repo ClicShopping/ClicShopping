@@ -99,7 +99,7 @@ class MariaDb
     links_target varchar(6) default('_self') not null,
     sort_order int(3),
     status int(1) default(1) NOT NULL,
-    page_type int(1) DEFAULT 0) NOT NULL,
+    page_type int(1) DEFAULT 0 NOT NULL,
     page_box int(1) DEFAULT 0 NOT NULL,
     page_time varchar(4) NOT NULL,
     page_date_start datetime,
@@ -109,7 +109,7 @@ class MariaDb
     date_status_change datetime,
     customers_group_id int DEFAULT 0 NOT NULL,
     page_general_condition int(1) DEFAULT 0 NOT NULL
-  PRIMARY KEY (pages_id)
+  , PRIMARY KEY (pages_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -128,8 +128,8 @@ EOD;
     page_manager_head_title_tag varchar(255),
     page_manager_head_desc_tag varchar(255),
     page_manager_head_keywords_tag varchar(255),
-  PRIMARY KEY pages_id (language_id),
-  ADD KEY idx_pages_title (pages_title)
+  PRIMARY KEY (pages_id, language_id),
+  KEY idx_pages_title (pages_title)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

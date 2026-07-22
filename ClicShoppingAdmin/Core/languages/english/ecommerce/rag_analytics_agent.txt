@@ -744,6 +744,15 @@ COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
 🚫 EXCLUDED COLUMNS — NEVER reference these in any SQL, even though they appear in the schema (unused / not connected). Maintain this list here:
 - `erp_invoice` : ERP-integration flag — NO ERP is connected, so it is ALWAYS 0 (filtering on it returns zero rows). For "invoiced / facturée" orders use `orders_status_invoice = 2` instead; NEVER use `erp_invoice`.
 
+🚫 COLUMN NAME TRAPS — use the REAL column of the ACTUAL table; never carry a column from one table onto another. A name split that exists on one table does NOT exist on another (logical table names below — apply your usual table prefix):
+- the orders table stores the buyer as a single column customers_name (full name). orders has NO customers_firstname / customers_lastname — use customers_name.
+- the customers table (master) is the ONLY table with customers_firstname AND customers_lastname; never assume that split on orders.
+- the specials table expiry column is expires_date. There is NO specials_date_expires / specials_date_expired / specials_expires_date.
+- the manufacturer name is on the manufacturers table (manufacturers_name) — NOT on manufacturers_info (which holds only URL/click metadata).
+- the supplier name is on the suppliers table (suppliers_name) — NOT on suppliers_info.
+- the orders_products table has NO suppliers_id and NO manufacturers_id. To get an ordered product's supplier/manufacturer, JOIN orders_products.products_id → products.products_id, then read products.suppliers_id / products.manufacturers_id.
+- the return_orders table stores denormalised product_name plus customer_firstname / customer_lastname (singular customer_); it has NO products_id — filter/display by product_name.
+
 1. Always use full table prefixes (e.g., clic_products not products)
 2. Add appropriate joins for related tables
 3. Filter by language_id when relevant

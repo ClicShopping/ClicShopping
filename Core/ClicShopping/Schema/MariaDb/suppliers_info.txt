@@ -1,4 +1,4 @@
-suppliers_id int default(0) not_null comment(FK to suppliers table - supplier identifier)
+suppliers_id int default(0) not_null comment(FK to suppliers table - supplier identifier - the name suppliers_name lives on the suppliers table not here)
 languages_id int default(0) not_null comment(FK to languages table - language for this translation)
 suppliers_url varchar(255) comment(Supplier website URL for this language)
 url_clicked int(5) default(0) not_null comment(Click count for supplier URL tracking)

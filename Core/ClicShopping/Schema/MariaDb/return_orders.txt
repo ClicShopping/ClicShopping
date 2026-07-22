@@ -7,7 +7,7 @@ customer_firstname varchar(255) not_null comment(Customer first name at time of 
 customer_lastname varchar(255) not_null comment(Customer last name at time of return)
 customer_email varchar(255) not_null comment(Customer email for return communication)
 customer_telephone varchar(255) not_null comment(Customer phone number for return coordination)
-product_name varchar(255) not_null comment(Product name at time of return)
+product_name varchar(255) not_null comment(Product name at time of return - denormalised, the return_orders table has no products_id, filter by product_name)
 product_model varchar(255) not_null comment(Product model/SKU at time of return)
 quantity int(4) not_null comment(Quantity of items being returned)
 opened tinyint(1) not_null default(0) comment(Product condition - 0: unopened/sealed, 1: opened/used)

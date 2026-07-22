@@ -110,7 +110,7 @@ CREATE TABLE :table_categories (
   virtual_categories tinyint(1) default(0) NOT NULL,
   status tinyint(0) default(0) NOT NULL,
   customers_group_id int default (99) not null,
-  PRIMARY KEY categories_id,
+  PRIMARY KEY (categories_id),
   KEY idx_categories_parent_id (parent_id)
   ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;

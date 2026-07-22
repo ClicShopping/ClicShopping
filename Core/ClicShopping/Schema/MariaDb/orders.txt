@@ -1,6 +1,6 @@
 orders_id int not_null auto_increment comment(Primary key - unique identifier for each order)
 customers_id int not_null comment(FK to customers table - customer who placed the order)
-customers_name text not_null comment(Customer full name at time of order)
+customers_name text not_null comment(Customer full name at time of order - single column, the orders table has no customers_firstname or customers_lastname)
 customers_company varchar(255) comment(Customer company name for B2B orders)
 customers_siret varchar(255) comment(French SIRET business registration number)
 customers_ape varchar(255) comment(French APE business activity code)

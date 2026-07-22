@@ -97,7 +97,7 @@ CREATE TABLE :table_administrator_menu (
   administrator_menu_variable varchar(250) NOT NULL,
   customers_group_id int(2) default(0) NOT NULL,
   administrator_menu_type smallint(1) default(0) NOT NULL,
-  status tinyInt default(1) NOT NULL
+  status tinyInt default(1) NOT NULL,
   PRIMARY KEY (administrator_menu_id),
   KEY idx_administrator_menu_id (administrator_menu_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -114,9 +114,9 @@ CREATE TABLE :table_administrator_menu_description (
   language_id int NOT NULL,
   administrator_menu_name varchar(250),
   administrator_menu_short_description varchar(250),
-  administrator_menu_description longtext
-  PRIMARY KEY (administrator_menu_id) (language_id),
-  KEY idx_administrator_menu_name (idx_administrator_menu_name)
+  administrator_menu_description longtext,
+  PRIMARY KEY (administrator_menu_id, language_id),
+  KEY idx_administrator_menu_name (administrator_menu_name)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

@@ -1,6 +1,6 @@
 orders_products_id int not_null auto_increment comment(Primary key - unique identifier for each order line item)
 orders_id int not_null comment(FK to orders table - order this product belongs to)
-products_id int not_null comment(FK to products table - product that was ordered)
+products_id int not_null comment(FK to products table - product that was ordered - join the products table for supplier or manufacturer, the orders_products table has no suppliers_id or manufacturers_id)
 products_model varchar(255) comment(Product model or SKU at time of order)
 products_name varchar(255) not_null comment(Product name at time of order - preserved for historical accuracy)
 products_price decimal(15,4) not_null comment(Base product price at time of order before tax)

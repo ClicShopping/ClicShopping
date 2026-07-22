@@ -99,8 +99,8 @@ CREATE TABLE :table_orders_status (
   public_flag tinyint(1) default(1),
   downloads_flag tinyint(1) default(0),
   support_orders_flag int(1) default(0),
-  authorize_to_delete_order tinyint(1) default(1)  
-  PRIMARY KEY (orders_status_id) language_id,
+  authorize_to_delete_order tinyint(1) default(1),
+  PRIMARY KEY (orders_status_id, language_id),
   KEY idx_orders_status_name (orders_status_name)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;

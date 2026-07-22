@@ -129,9 +129,9 @@ CREATE TABLE :table_manufacturers (
   date_added datetime,
   last_modified datetime,
   manufacturers_status int(1) NOT NULL DEFAULT 0,
-  suppliers_id int(11) NULL 
+  suppliers_id int(11) NULL,
   PRIMARY KEY (manufacturers_id),
-  ADD KEY idx_manufacturers_name (manufacturers_name)
+  KEY idx_manufacturers_name (manufacturers_name)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -150,8 +150,8 @@ CREATE TABLE :table_manufacturers_info (
   manufacturer_description text,
   manufacturer_seo_title varchar(70) Null,
   manufacturer_seo_description varchar(255) Null,
-  manufacturer_seo_keyword text  Null
-  PRIMARY KEY manufacturers_id (languages_id)
+  manufacturer_seo_keyword text  Null,
+  PRIMARY KEY (manufacturers_id, languages_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

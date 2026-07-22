@@ -207,10 +207,10 @@ CREATE TABLE :table_reviews (
   reviews_read int(5) NOT NULL DEFAULT (0),
   status tinyint(1) NOT NULL DEFAULT (0),
   customers_group_id int(11) NOT NULL DEFAULT (0),
-  customers_tag varchar(255) DEFAULT NULL
-  PRIMARY KEY reviews_id
-  KEY idx_reviews_products_id products_id
-      idx_reviews_customers_id customers_id
+  customers_tag varchar(255) DEFAULT NULL,
+  PRIMARY KEY (reviews_id),
+  KEY idx_reviews_products_id (products_id),
+        KEY idx_reviews_customers_id (customers_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Reviews->db->exec($sql);
@@ -222,7 +222,7 @@ EOD;
 CREATE TABLE :table_reviews_description (
   reviews_id int(11) NOT NULL,
   languages_id int(11) NOT NULL,
-  reviews_text text COLLATE utf8mb4_unicode_ci NOT NULL
+  reviews_text text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (reviews_id, languages_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;

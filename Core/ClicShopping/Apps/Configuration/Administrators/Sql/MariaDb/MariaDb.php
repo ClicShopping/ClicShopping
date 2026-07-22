@@ -103,8 +103,8 @@ CREATE TABLE :table_administrators (
   double_authentification_secret varchar(255) null,
   status tinyint(1) NOT NULL default(1),
   date_added datetime not null,
-  lat_modified datetime   
-  PRIMARY KEY id
+  lat_modified datetime,
+  PRIMARY KEY (id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

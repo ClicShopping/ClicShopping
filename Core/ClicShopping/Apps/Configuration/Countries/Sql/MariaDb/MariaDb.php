@@ -87,8 +87,8 @@ CREATE TABLE :table_countries (
   countries_iso_code_2 char(2) NOT NULL,
   countries_iso_code_3 char(3) NOT NULL,
   address_format_id int NOT NULL,
-  status tinyint(1) default(1)
-  PRIMARY KEY countries_id,
+  status tinyint(1) default(1),
+  PRIMARY KEY (countries_id),
   KEY idx_countries_name (countries_name)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;

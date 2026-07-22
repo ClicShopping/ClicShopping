@@ -101,8 +101,8 @@ CREATE TABLE :table_geo_zones (
   geo_zone_name varchar(255) NOT NULL,
   geo_zone_description varchar(255) NOT NULL,
   last_modified datetime,
-  date_added datetime NOT NULL
-  PRIMARY KEY geo_zone_id
+  date_added datetime NOT NULL,
+  PRIMARY KEY (geo_zone_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -118,9 +118,9 @@ CREATE TABLE :table_zones_to_geo_zones (
   zone_id int,
   geo_zone_id int,
   last_modified datetime,
-  date_added datetime NOT NULL
-  PRIMARY KEY association_id,
-  idx_zones_to_geo_zones_country_id (zone_country_id)
+  date_added datetime NOT NULL,
+  PRIMARY KEY (association_id),
+  KEY idx_zones_to_geo_zones_country_id (zone_country_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

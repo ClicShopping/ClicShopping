@@ -1,4 +1,4 @@
-manufacturers_id int not_null comment(FK to manufacturers table - manufacturer identifier)
+manufacturers_id int not_null comment(FK to manufacturers table - manufacturer identifier - the name manufacturers_name lives on the manufacturers table not here)
 languages_id int not_null comment(FK to languages table - language for this translation)
 manufacturers_url varchar(255) not_null comment(Manufacturer website URL for this language)
 url_clicked int(5) default(0) not_null comment(Click count for manufacturer URL tracking)

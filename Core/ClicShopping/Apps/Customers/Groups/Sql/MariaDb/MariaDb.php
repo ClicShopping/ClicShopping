@@ -105,8 +105,8 @@ group_order_taxe tinyint(1) default(0) NOT NULL,
 group_payment_unallowed varchar(255) default('cc'),
 group_shipping_unallowed varchar(255),
 group_tax varchar(5) default('false') NOT NULL,
-customers_group_quantity_default int(4) default(0) NOT NULL
-PRIMARY KEY customers_group_id,
+customers_group_quantity_default int(4) default(0) NOT NULL,
+PRIMARY KEY (customers_group_id),
 KEY idx_customers_group_name (customers_group_name)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
@@ -120,8 +120,8 @@ EOD;
 CREATE TABLE :table_groups_to_categories (
 customers_group_id int default(0) NOT NULL,
 categories_id int default(0) NOT NULL,
-discount decimal(11,2) default(0.00) NOT NULL
-PRIMARY KEY customers_group_id (categories_id)
+discount decimal(11,2) default(0.00) NOT NULL,
+PRIMARY KEY (customers_group_id, categories_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

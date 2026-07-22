@@ -112,8 +112,8 @@ CREATE TABLE :table_newsletters (
   customers_group_id int default(0) NOT NULL,
   newsletters_accept_file int(1) default(0) NOT NULL,
   newsletters_twitter tinyint(1) default(0) NOT NULL,
-  newsletters_customer_no_account tinyint(1) default(0) NOT NULL
-  PRIMARY KEY newsletters_id
+  newsletters_customer_no_account tinyint(1) default(0) NOT NULL,
+  PRIMARY KEY (newsletters_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -159,8 +159,8 @@ CREATE TABLE :table_newsletters_no_account (
   customers_email_address varchar(255) NOT NULL,
   customers_newsletter tinyint(1) default(1) NOT NULL,
   customers_date_added datetime,
-  languages_id int default(1) NOT NULL
-  PRIMARY KEY newsletters_id
+  languages_id int default(1) NOT NULL,
+  PRIMARY KEY (newsletters_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

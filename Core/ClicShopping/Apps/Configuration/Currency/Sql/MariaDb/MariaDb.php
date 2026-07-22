@@ -109,8 +109,8 @@ CREATE TABLE :table_currencies (
   decimal_places char(1),
   value float(13,8),
   last_updated datetime,
-  PRIMARY KEY currencies_id,
-  KEY idx_currencies_id(code code)
+  PRIMARY KEY (currencies_id),
+  KEY idx_currencies_id (code)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

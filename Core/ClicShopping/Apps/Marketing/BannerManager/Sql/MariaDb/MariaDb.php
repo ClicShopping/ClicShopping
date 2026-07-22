@@ -104,8 +104,8 @@ CREATE TABLE :table_banners (
   languages_id int default(0) not null,
   customers_group_id int default(0) not null,
   banners_title_admin varchar(255) not null,
-  PRIMARY KEY banners_id
-  KEY idx_banners_group banners_group
+  PRIMARY KEY (banners_id),
+  KEY idx_banners_group (banners_group)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -121,7 +121,7 @@ CREATE TABLE :table_banners_history (
   banners_shown int(5) default(0) not null,
   banners_clicked int(5) default(0) not null,
   banners_history_date datetime not null,
-  PRIMARY KEY banners_history_id
+  PRIMARY KEY (banners_history_id),
   KEY idx_banners_history_banners_id (banners_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
