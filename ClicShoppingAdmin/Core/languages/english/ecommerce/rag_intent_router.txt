@@ -6,7 +6,7 @@ Query: "{{query}}"
 Return ONLY a valid JSON object with the following structure:
 {
   "product": "product name or category (string)",
-  "intent": "price_comparison|product_discovery|market_research|trend_analysis",
+  "intent": "comparative_lookup|entity_discovery|market_research|trend_analysis",
   "location": "geographic location (string or null)",
   "target_site": "specific site domain (string or null, e.g., 'amazon.fr')",
   "mode_hint": "mode_a|mode_b|mode_c|hybrid|null",
@@ -14,12 +14,12 @@ Return ONLY a valid JSON object with the following structure:
 }
 
 Intent types:
-- price_comparison: User wants to COMPARE prices with competitors or find best deals
+- comparative_lookup: User wants to COMPARE prices with competitors or find best deals
   MANDATORY CRITERIA: Query MUST meet ONE of these conditions:
   * Contains BOTH a price keyword (price, cost, how much, pricing) AND a comparison keyword (compare, competitor, vs, versus, compared to, best price, best deal)
   * OR contains a price keyword AND mentions a specific competitor site (amazon, fnac, cdiscount, etc.)
   
-  VALID examples (price_comparison):
+  VALID examples (comparative_lookup):
   * "compare the price of iPhone 17 Pro with competitors"
   * "give me the price of iPhone 17 Pro and compare with competitors"
   * "what is the price of iPhone 17 Pro compared to competitors"
@@ -30,14 +30,14 @@ Intent types:
   * "price on amazon for iphone 17 pro" → price query with specific site
   * "fnac iphone 17 pro price" → price query with specific site
   
-  INVALID examples (NOT price_comparison, but product_discovery):
+  INVALID examples (NOT comparative_lookup, but entity_discovery):
   * "what is the price of iPhone 17 Pro" → simple price query, no comparison, no site
   * "how much does iPhone 17 Pro cost" → simple price query, no comparison, no site
   * "iPhone 17 Pro price" → simple price query, no comparison, no site
   
   Note: Price comparison queries require BOTH internal price lookup AND competitor price search
   
-- product_discovery: User wants to learn about a product, category, or get a simple price (without comparison)
+- entity_discovery: User wants to learn about a product, category, or get a simple price (without comparison)
   Examples:
   * "what is iPhone 17 Pro"
   * "tell me about iPhone 17 Pro features"
@@ -84,15 +84,15 @@ Mode hints:
 - null: Let system decide automatically
 
 CRITICAL RULES:
-1. For price_comparison intent: ALWAYS set mode_hint to null (user will be prompted to choose)
-2. For product_discovery intent: ALWAYS set mode_hint to null (system will use mode_a)
+1. For comparative_lookup intent: ALWAYS set mode_hint to null (user will be prompted to choose)
+2. For entity_discovery intent: ALWAYS set mode_hint to null (system will use mode_a)
 3. For market_research intent: ALWAYS set mode_hint to null (system will decide based on target_site)
 4. For trend_analysis intent: ALWAYS set mode_hint to null (system will use mode_e_google_trends)
 5. NEVER set mode_hint to a specific value unless explicitly requested by user
 
 IMPORTANT: 
-1. For queries containing ONLY price keywords (price, cost, how much) WITHOUT comparison keywords → classify as product_discovery
-2. For queries containing price keywords (price, cost, how much) + comparison keywords (compare, competitor, vs, versus, best) → classify as price_comparison
+1. For queries containing ONLY price keywords (price, cost, how much) WITHOUT comparison keywords → classify as entity_discovery
+2. For queries containing price keywords (price, cost, how much) + comparison keywords (compare, competitor, vs, versus, best) → classify as comparative_lookup
 3. Simply mentioning price does NOT automatically imply comparison
 
 Location extraction:
@@ -114,19 +114,19 @@ Determine if the following user query contains MULTIPLE INDEPENDENT search reque
 Query: "{{query}}"
 
 A COMPOUND query joins two or more independent questions with different intents, such as:
-- "Tell me about smartphone trends AND compare the price of iPhone 17 Pro" → compound (market_research + price_comparison)
-- "What are the latest e-commerce trends? Also show me iPhone 17 Pro price on Amazon" → compound (market_research + price_comparison)
-- "Give me next trends for smartphones and compare iPhone 17 Pro price with competitors" → compound (market_research + price_comparison)
+- "Tell me about smartphone trends AND compare the price of iPhone 17 Pro" → compound (market_research + comparative_lookup)
+- "What are the latest e-commerce trends? Also show me iPhone 17 Pro price on Amazon" → compound (market_research + comparative_lookup)
+- "Give me next trends for smartphones and compare iPhone 17 Pro price with competitors" → compound (market_research + comparative_lookup)
 
 A SIMPLE query is a single request (even if it covers multiple aspects of the same topic):
 - "Compare iPhone 17 Pro price on Amazon" → simple
 - "What are the latest smartphone trends" → simple
-- "Show me iPhone 17 Pro specs and price" → simple (one product_discovery)
-- "Compare iPhone 17 Pro price with Samsung Galaxy" → simple (one price_comparison)
+- "Show me iPhone 17 Pro specs and price" → simple (one entity_discovery)
+- "Compare iPhone 17 Pro price with Samsung Galaxy" → simple (one comparative_lookup)
 
 If COMPOUND, extract each independent task. For each task provide:
 - query: a focused sub-query that captures just that intent
-- intent: price_comparison | product_discovery | market_research
+- intent: comparative_lookup | entity_discovery | market_research
 - product: product name or category (string or null)
 - target_site: specific competitor site domain if mentioned, otherwise null
 
@@ -142,7 +142,7 @@ Return ONLY a valid JSON object:
     },
     {
       "query": "focused sub-query text",
-      "intent": "price_comparison",
+      "intent": "comparative_lookup",
       "product": "iPhone 17 Pro",
       "target_site": null
     }

@@ -157,7 +157,7 @@ class IntentDetectionPatterns
   {
     $intent = [
       'product' => self::extractProduct($query),
-      'intent' => 'product_discovery', // Default
+      'intent' => 'entity_discovery', // Default
       'location' => self::extractLocation($query),
       'target_site' => self::extractTargetSite($query),
       'mode_hint' => null,
@@ -179,7 +179,7 @@ class IntentDetectionPatterns
     $hasComparisonIntent = self::matchesAnyPattern($query, self::$comparisonPatterns);
 
     if ($hasPriceIntent || $hasShoppingIntent || $hasComparisonIntent) {
-      $intent['intent'] = 'price_comparison';
+      $intent['intent'] = 'comparative_lookup';
       $intent['mode_hint'] = 'mode_b'; // Google Shopping
       $intent['confidence'] = 0.7;
       return $intent;
@@ -195,7 +195,7 @@ class IntentDetectionPatterns
 
     // Check for product discovery intent
     if (self::matchesAnyPattern($query, self::$productDiscoveryPatterns)) {
-      $intent['intent'] = 'product_discovery';
+      $intent['intent'] = 'entity_discovery';
       $intent['mode_hint'] = 'mode_a'; // AI Overview
       $intent['confidence'] = 0.6;
       return $intent;

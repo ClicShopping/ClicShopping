@@ -23,7 +23,7 @@ Core/ClicShopping/AI/
 ├── Handler/             ✅ Error, fallback, query handling
 ├── Helper/              ✅ Utilities
 ├── Infrastructure/      ✅ Technical infrastructure
-├── InterfacesAI/        ✅ Contracts (ActorAgentInterface, etc.)
+├── InterfacesAI/        ✅ Contracts (AgentInterface, ActorInterface, CriticInterface, …)
 ├── LoadBalancing/       ✅ Load balancing
 ├── Rag/                 ✅ RAG Manager
 ├── RegistryAI/          ✅ Actor, Critic and WebSearch engine registries
@@ -68,7 +68,7 @@ $result = $agent->execute($query);
 | Domain-specific agents | `Core/ClicShopping/Apps/AI/{Domain}/` |
 
 Rules:
-- All agents implement `ActorAgentInterface` (`Core/ClicShopping/AI/InterfacesAI/`)
+- Agents implement `AgentInterface` ; actor-critic role classes implement `ActorInterface`/`CriticInterface` (all in `Core/ClicShopping/AI/InterfacesAI/`)
 - Inter-agent communication via Orchestrator only
 - No direct agent instantiation from business code
 
@@ -147,7 +147,7 @@ Rules:
 ```
 ✓ Use validators directly for business logic validation
 ✓ Use wrappers only within Actor-Critic pattern
-✓ Validators have no dependency on CriticAgentInterface
+✓ Validators have no dependency on CriticInterface
 ✓ Wrappers contain no business logic (pure delegation)
 
 ✗ Do not add business logic to wrappers
@@ -196,9 +196,25 @@ final class WebSearchRegistration {
   public static function register(WebSearchEngineRegistry $r): void {
     $r->registerProvider(new AmazonShoppingProvider());
     $r->registerSiteRouter(new AmazonSiteRouter());
+    $r->registerResultEnhancer(new MarketAnalysisEnhancer());     // post-search
+    $r->registerQueryEnricher(new ContextualQueryEnricher());     // pre-search
+    $r->registerIntentDetector(new PriceComparisonIntentDetector()); // fallback intent
   }
 }
 ```
+
+The registry exposes **five** agnostic hooks — a domain App registers whichever it needs:
+
+| Hook | Interface | Purpose |
+|------|-----------|---------|
+| `registerProvider` | `WebSearchEngineProviderInterface` | A brand-specific engine (Mode D, ...) |
+| `registerSiteRouter` | `SiteRouterInterface` | `target_site → modes` routing |
+| `registerResultEnhancer` | `WebSearchResultEnhancerInterface` | Post-search result rewriting |
+| `registerQueryEnricher` | `QueryEnricherInterface` | Pre-search query rewriting (context) |
+| `registerIntentDetector` | `QueryIntentDetectorInterface` | **Fallback** intent verdict when the LLM signal is absent (Core owns no keywords) |
+
+The intent-detector hook is how a *domain concept* like price comparison stays out of Core: `HybridQueryDecomposer` detects `price_comparison` PRIMARY via the
+LLM intent, and FALLBACK by iterating the registered detectors — the Ecommerce App owns the keywords in `PriceComparisonIntentDetector`.
 
 Component file locations (single template, used by every domain):
 
@@ -207,6 +223,9 @@ Apps/AI/{Domain}/Classes/ClicShoppingAdmin/WebSearch/
 ├── Engines/{Brand}Engine.php          implements WebSearchInterface
 ├── Providers/{Brand}Provider.php      implements WebSearchEngineProviderInterface
 ├── SiteRouters/{Brand}SiteRouter.php  implements SiteRouterInterface  (optional)
+├── Enhancers/{Name}Enhancer.php       implements WebSearchResultEnhancerInterface (optional)
+├── Enrichers/{Name}Enricher.php       implements QueryEnricherInterface  (optional)
+├── Detectors/{Name}IntentDetector.php implements QueryIntentDetectorInterface (optional)
 └── Registration/WebSearchRegistration.php  — auto-discovered by the registry
 ```
 

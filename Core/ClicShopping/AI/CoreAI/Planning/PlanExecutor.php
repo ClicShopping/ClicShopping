@@ -926,7 +926,7 @@ class PlanExecutor
    * Enrich a web-search query with last-entity context for follow-up queries.
    *
    * Extracted verbatim from executeWebSearch to cut NPath. Skips enrichment for
-   * price_comparison intents and runs the domain-agnostic QueryEnricher registry
+   * comparative_lookup intents and runs the domain-agnostic QueryEnricher registry
    * when a usable last-entity name is available.
    *
    * @param mixed $query Raw search query
@@ -935,8 +935,8 @@ class PlanExecutor
    */
   private function enrichWebSearchQuery(mixed $query, array $context): mixed
   {
-    // Skip query enrichment for price_comparison queries
-    // For price_comparison, SubTaskPlannerWebSearch already extracts the clean product name
+    // Skip query enrichment for comparative_lookup queries
+    // For comparative_lookup, SubTaskPlannerWebSearch already extracts the clean product name
     // from intent, so we should NOT enrich it again with entity context to avoid duplication
     // Example: query="iPhone 17 Pro" should stay as-is, not become "iPhone 17 Pro iPhone 17 Pro"
     $skipEnrichment = false;
@@ -944,12 +944,12 @@ class PlanExecutor
     // Check both 'intent' and 'intent_type' fields (different decomposers use different field names)
     $intentType = $context['plan_intent']['intent'] ?? $context['plan_intent']['intent_type'] ?? null;
     
-    if ($intentType === 'price_comparison') {
+    if ($intentType === 'comparative_lookup') {
       $skipEnrichment = true;
       
       if ($this->debug) {
         $this->securityLogger->logSecurityEvent(
-          "Skipping query enrichment for price_comparison (query already contains clean product name)",
+          "Skipping query enrichment for comparative_lookup (query already contains clean product name)",
           'info'
         );
       }
@@ -957,7 +957,7 @@ class PlanExecutor
     
     //Enrich query with last_entity context for follow-up queries
     // This allows web search to use context from previous analytics queries
-    // SKIP enrichment for price_comparison queries (they already have clean product names)
+    // SKIP enrichment for comparative_lookup queries (they already have clean product names)
     
     if (!$skipEnrichment && $this->conversationMemory !== null) {
       try {

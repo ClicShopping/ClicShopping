@@ -57,7 +57,7 @@ class EcommerceResultAggregator extends ResultAggregator
   protected function aggregateDomainSpecific(string $aggregationType, array $successfulResults, array $failedResults): array
   {
     return match($aggregationType) {
-      'price_comparison' => $this->aggregatePriceComparison($successfulResults, $failedResults),
+      'comparative_lookup' => $this->aggregatePriceComparison($successfulResults, $failedResults),
       default => parent::aggregateDomainSpecific($aggregationType, $successfulResults, $failedResults)
     };
   }
@@ -113,7 +113,7 @@ class EcommerceResultAggregator extends ResultAggregator
       $aggregatedText = ResultFormatter::formatPriceComparisonAsText($comparison);
       
       return $this->formatAggregatedResult(
-        'price_comparison',
+        'comparative_lookup',
         $aggregatedText,
         ['comparison_data' => $comparison, 'product' => $productData],
         $this->collectSources($comparison),
@@ -163,7 +163,7 @@ class EcommerceResultAggregator extends ResultAggregator
     $text = $this->addFailedQueryWarning($text, $failedResults);
 
     return $this->formatAggregatedResult(
-      'price_comparison',
+      'comparative_lookup',
       trim($text),
       [
         'product' => $productData,

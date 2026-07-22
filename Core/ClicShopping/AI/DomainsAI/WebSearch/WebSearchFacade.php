@@ -173,7 +173,7 @@ class WebSearchFacade
 
       // Step 1: Detect compound/multi-intent query before single-intent routing
       // Example: "What are smartphone trends AND compare iPhone price on a target site"
-      // → decomposed into [market_research task, price_comparison task]
+      // → decomposed into [market_research task, comparative_lookup task]
       $plan = $this->planner->analyze($query);
       if ($plan->isCompound()) {
         if ($this->debug) {

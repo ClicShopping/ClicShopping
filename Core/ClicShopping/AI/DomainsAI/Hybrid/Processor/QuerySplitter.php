@@ -721,7 +721,7 @@ class QuerySplitter extends BaseQueryProcessor
   /**
    * Check if query is a price comparison query (Requirements 1, 5)
    *
-   * Detects price comparison patterns in query and checks intent_type for 'price_comparison'.
+   * Detects price comparison patterns in query and checks intent_type for 'comparative_lookup'.
    * Uses both pattern matching and intent analysis for robust detection.
    *
    * @param string $query Query to analyze
@@ -732,7 +732,7 @@ class QuerySplitter extends BaseQueryProcessor
   {
     try {
       // Check intent type first (most reliable)
-      if (isset($intent['intent_type']) && $intent['intent_type'] === 'price_comparison') {
+      if (isset($intent['intent_type']) && $intent['intent_type'] === 'comparative_lookup') {
         if ($this->debug) {
           $this->logInfo("Price comparison detected via intent_type");
         }
@@ -740,9 +740,9 @@ class QuerySplitter extends BaseQueryProcessor
       }
 
       // FALLBACK: agnostic detectors registered by domain Apps (Core owns no
-      // domain keywords). First 'price_comparison' verdict wins.
+      // domain keywords). First 'comparative_lookup' verdict wins.
       foreach (WebSearchEngineRegistry::getInstance()->getIntentDetectors() as $detector) {
-        if ($detector->detectIntent($query) === 'price_comparison') {
+        if ($detector->detectIntent($query) === 'comparative_lookup') {
           if ($this->debug) {
             $this->logInfo("Price comparison detected via detector fallback: " . $detector->getDetectorId());
           }

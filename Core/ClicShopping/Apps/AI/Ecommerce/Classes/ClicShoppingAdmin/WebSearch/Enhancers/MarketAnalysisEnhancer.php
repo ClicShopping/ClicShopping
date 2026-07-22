@@ -19,7 +19,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\Registry;
 
 /**
- * MarketAnalysisEnhancer — Ecommerce result enhancer for price_comparison
+ * MarketAnalysisEnhancer — Ecommerce result enhancer for comparative_lookup
  *
  * When the user asks "compare with Amazon / is my price aligned with the
  * market", the Hybrid pipeline returns 99 product cards but no actual
@@ -59,9 +59,9 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
 
     public function shouldEnhance(array $results, array $context): bool
     {
-        // 1) Only price_comparison intents — the synthesis only makes sense
+        // 1) Only comparative_lookup intents — the synthesis only makes sense
         //    when the user asked for a market comparison.
-        if (($context['intent_type'] ?? null) !== 'price_comparison') {
+        if (($context['intent_type'] ?? null) !== 'comparative_lookup') {
             return false;
         }
 

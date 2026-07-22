@@ -21,7 +21,7 @@ class RoutingDecision
   /**
    * @var array Detected intent structure with fields:
    *            - product: Product name or category (string)
-   *            - intent: Intent type (price_comparison|product_discovery|market_research)
+   *            - intent: Intent type (comparative_lookup|entity_discovery|market_research)
    *            - location: Geographic location (string|null)
    *            - target_site: Specific site to search (string|null)
    *            - mode_hint: Explicit mode override (mode_a|mode_b|mode_c|hybrid|null)
@@ -153,7 +153,7 @@ class RoutingDecision
   /**
    * Get intent type
    *
-   * @return string|null Intent type (price_comparison|product_discovery|market_research) or null
+   * @return string|null Intent type (comparative_lookup|entity_discovery|market_research) or null
    */
   public function getIntentType(): ?string
   {

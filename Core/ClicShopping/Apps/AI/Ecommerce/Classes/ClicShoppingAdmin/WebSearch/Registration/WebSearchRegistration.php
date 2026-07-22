@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Registration;
 
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
+use ClicShopping\Apps\AI\Ecommerce\Config\WebSearchPolicy;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Detectors\PriceComparisonIntentDetector;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Enhancers\MarketAnalysisEnhancer;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Enrichers\ContextualQueryEnricher;
@@ -42,11 +43,15 @@ final class WebSearchRegistration
      */
     public static function register(WebSearchEngineRegistry $registry): void
     {
+        // Enable the Ecommerce web-search mode allow-list (all commerce modes).
+        // A non-commerce domain declaring a narrower policy degrades to AI Overview.
+        $registry->restrictToModes(WebSearchPolicy::ALLOWED_MODES);
+
         $registry->registerProvider(new AmazonShoppingProvider());
         $registry->registerSiteRouter(new AmazonSiteRouter());
 
         // Post-search enhancers: add the "is my price aligned with the
-        // market?" LLM synthesis at the top of price_comparison responses.
+        // market?" LLM synthesis at the top of comparative_lookup responses.
         $registry->registerResultEnhancer(new MarketAnalysisEnhancer());
 
         // Pre-search enrichers: turn a contextual follow-up ("compare with

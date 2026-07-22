@@ -7,6 +7,10 @@
  * Licensed under AGPLv3 or commercial license.
  * See LICENSE file.
  *
+ * This utility class provides centralized access to domain-specific configuration
+ * for the multi-domain RAG system. It enables domain-aware language loading by
+ * constructing paths with domain subdirectories (e.g., ClicShoppingAdmin/ecommerce).
+ * See DOMAIN.MD
  */
 
 namespace ClicShopping\AI\Config;

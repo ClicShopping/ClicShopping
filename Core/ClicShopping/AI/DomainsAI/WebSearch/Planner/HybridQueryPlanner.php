@@ -145,7 +145,7 @@ class HybridQueryPlanner
    */
   private function sanitizeTasks(array $rawTasks): array
   {
-    $validIntents = ['price_comparison', 'product_discovery', 'market_research'];
+    $validIntents = ['comparative_lookup', 'entity_discovery', 'market_research'];
     $tasks = [];
 
     foreach ($rawTasks as $task) {
@@ -153,9 +153,9 @@ class HybridQueryPlanner
         continue;
       }
 
-      $intent = $task['intent'] ?? 'product_discovery';
+      $intent = $task['intent'] ?? 'entity_discovery';
       if (!in_array($intent, $validIntents, true)) {
-        $intent = 'product_discovery';
+        $intent = 'entity_discovery';
       }
 
       $targetSite = $task['target_site'] ?? null;

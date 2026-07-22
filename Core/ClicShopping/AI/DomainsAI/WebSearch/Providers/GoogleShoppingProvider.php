@@ -18,7 +18,7 @@ use ClicShopping\AI\InterfacesAI\WebSearchEngineProviderInterface;
  * Built-in agnostic provider for Mode B — Google Shopping.
  *
  * Wraps the public SerpAPI `google_shopping` protocol. Default mode for
- * price_comparison intents with no target site.
+ * comparative_lookup intents with no target site.
  *
  * @package ClicShopping\AI\DomainsAI\WebSearch\Providers
  * @since 2026-05-24

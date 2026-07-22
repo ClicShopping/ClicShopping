@@ -145,7 +145,7 @@ class ResultAggregator extends BaseQueryProcessor
 
     // Price comparison: analytics + web_search (domain-specific, handled by subclasses)
     if (in_array('analytics', $queryTypes, true) && in_array('web_search', $queryTypes, true)) {
-      return 'price_comparison';
+      return 'comparative_lookup';
     }
 
     // Default for all other combinations

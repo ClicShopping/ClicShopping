@@ -93,9 +93,9 @@ final class AmazonSiteRouter implements SiteRouterInterface
     public function getRecommendedModes(string $intentType): array
     {
         return match ($intentType) {
-            'price_comparison'  => [AmazonShoppingProvider::MODE, GoogleShoppingProvider::MODE],
+            'comparative_lookup'  => [AmazonShoppingProvider::MODE, GoogleShoppingProvider::MODE],
             'market_research'   => [GoogleAIOverviewProvider::MODE, AmazonShoppingProvider::MODE],
-            'product_discovery' => [AmazonShoppingProvider::MODE],
+            'entity_discovery' => [AmazonShoppingProvider::MODE],
             default             => [AmazonShoppingProvider::MODE],
         };
     }

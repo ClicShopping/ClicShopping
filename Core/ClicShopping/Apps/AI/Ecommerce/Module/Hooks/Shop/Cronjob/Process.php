@@ -21,6 +21,7 @@
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\FeedbackCollector;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\RuleAdjuster;
   use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\SeoCronRunner;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment\ReviewSentimentCronRunner;
   use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
   
 /**
@@ -102,6 +103,11 @@ class Process implements HooksInterface
     // so they run independently whether triggered by the full sweep
     // (?cronjob&runall) or a single admin "Run" (?cronId=…).
     $this->runCockpitAiCron();
+
+    // Review-sentiment daily generation — shared runner, self-gated on its own
+    // cron code + master switch. Consolidated here from the former Reviews app
+    // Cronjob hook (the feature now lives in AI/Ecommerce).
+    (new ReviewSentimentCronRunner())->run();
 
     // SEO daily optimization (Phase 1 audit / 2 multilingual / 3 optional FAQ)
     // — delegated to its shared runner, self-gated on productSeoOptimization +

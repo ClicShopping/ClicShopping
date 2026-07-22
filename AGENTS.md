@@ -92,6 +92,8 @@ For cache and session details → `ARCHITECTURE.md`.
 
 ```
 - All comments inside Core/ClicShopping/AI/ classes must be in English
+- Keep comments short: MAX 2 lines per comment. Prefer none over verbose; never
+  restore verbosity the maintainer trimmed. Class/PSR docblocks are exempt.
 - All class comments must respect PSR standardization
 - No visible hardcoded string in PHP or templates — always use getDef('')
   (this includes RAG/agent PROMPTS: no heredoc/inline prompt text in classes)

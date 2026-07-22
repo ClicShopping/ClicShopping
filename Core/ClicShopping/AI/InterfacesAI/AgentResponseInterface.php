@@ -70,7 +70,7 @@ interface AgentResponseInterface
    * [
    *     'product_info' => array,        // Internal product information
    *     'external_results' => array,    // SERAPI results
-   *     'price_comparison' => array,    // Price comparison data
+   *     'comparative_lookup' => array,    // Price comparison data
    *     'urls' => array                 // External URLs
    * ]
    *

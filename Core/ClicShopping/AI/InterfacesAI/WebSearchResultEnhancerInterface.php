@@ -24,7 +24,7 @@ namespace ClicShopping\AI\InterfacesAI;
  *   know about that domain.
  *
  * Example (Ecommerce):
- *   - `MarketAnalysisEnhancer`: when the intent is `price_comparison` and
+ *   - `MarketAnalysisEnhancer`: when the intent is `comparative_lookup` and
  *     the response carries shopping_results, generates an LLM-written
  *     synthesis of "is your price aligned with the market" and adds it as
  *     `$results['market_analysis']`. WebSearchFormatter renders it at the

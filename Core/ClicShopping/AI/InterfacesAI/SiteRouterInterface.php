@@ -64,7 +64,7 @@ interface SiteRouterInterface
      * fall back to its default mode for the intent.
      *
      * @param string $intentType Intent classification from IntentRouter
-     *                           (e.g. 'price_comparison', 'market_research', 'product_discovery')
+     *                           (e.g. 'comparative_lookup', 'market_research', 'entity_discovery')
      * @return array<string> Ordered list of mode identifiers
      */
     public function getRecommendedModes(string $intentType): array;

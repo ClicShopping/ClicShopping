@@ -34,13 +34,13 @@ use ClicShopping\OM\Registry;
  *
  * Mode Selection Rules:
  * - Explicit mode_hint → Use specified mode (overrides automatic detection)
- * - price_comparison + no target_site → Mode B (Google Shopping)
- * - price_comparison + target_site not in DB → Mode B with site filter
- * - price_comparison + target_site in DB → Hybrid (Mode B + Mode C)
+ * - comparative_lookup + no target_site → Mode B (Google Shopping)
+ * - comparative_lookup + target_site not in DB → Mode B with site filter
+ * - comparative_lookup + target_site in DB → Hybrid (Mode B + Mode C)
  * - market_research + no target_site → Mode A (AI Overview)
  * - market_research + target_site in DB → Hybrid (Mode A + Mode C)
  * - market_research + target_site not in DB → Mode A only
- * - product_discovery → Mode A (AI Overview)
+ * - entity_discovery → Mode A (AI Overview)
  * - Default → Mode A
  *
  * @package ClicShopping\AI\DomainsAI\WebSearch\Processor
@@ -103,6 +103,44 @@ class ModeSelector
    */
   public function selectModes(array $intent, array $options = []): array
   {
+    return $this->enforceModePolicy($this->resolveModes($intent, $options));
+  }
+
+  /**
+   * Degrade any selected mode that the active domain does not allow to the
+   * universal AI Overview socle. A single disallowed mode collapses the whole
+   * selection — commerce modes never leak into a non-commerce domain.
+   *
+   * @param array $modes Modes proposed by the intent-driven selection
+   * @return array Allowed modes, or ['mode_a_ai_overview'] on any violation
+   */
+  private function enforceModePolicy(array $modes): array
+  {
+    $registry = WebSearchEngineRegistry::getInstance();
+
+    foreach ($modes as $mode) {
+      if (!$registry->hasProvider($mode)) {
+        $this->log("Mode policy: disallowed mode degraded to AI Overview", [
+          'requested_modes' => $modes,
+          'disallowed_mode' => $mode,
+        ]);
+
+        return ['mode_a_ai_overview'];
+      }
+    }
+
+    return $modes;
+  }
+
+  /**
+   * Intent-driven mode selection (before the domain allow-list is enforced).
+   *
+   * @param array $intent Intent structure with keys: product, intent, location, target_site, mode_hint
+   * @param array $options Additional options (reserved for future use)
+   * @return array Selected modes array
+   */
+  private function resolveModes(array $intent, array $options = []): array
+  {
     if ($this->debug) {
       error_log("ModeSelector::selectModes() - Intent: " . json_encode($intent));
     }
@@ -111,7 +149,7 @@ class ModeSelector
     $this->currentQuery = $options['query'] ?? '';
 
     // Extract intent fields
-    $intentType = $intent['intent'] ?? 'product_discovery';
+    $intentType = $intent['intent'] ?? 'entity_discovery';
     $targetSite = $intent['target_site'] ?? null;
     $modeHint = $intent['mode_hint'] ?? null;
 
@@ -128,7 +166,7 @@ class ModeSelector
     }
 
     // Rule 2-4: Price comparison intent - MAY RETURN UserInputRequiredResponse
-    if ($intentType === 'price_comparison') {
+    if ($intentType === 'comparative_lookup') {
       return $this->selectPriceComparisonModes($targetSite);
     }
 
@@ -148,7 +186,7 @@ class ModeSelector
     }
 
     // Rule 8: Product discovery intent
-    if ($intentType === 'product_discovery') {
+    if ($intentType === 'entity_discovery') {
       // If a domain SiteRouter owns the target_site → use the modes it recommends
       $router = $this->findSiteRouter($targetSite);
       if ($router !== null) {
@@ -350,7 +388,7 @@ class ModeSelector
       $params = [
         'user_id' => $userId,
         'query' => $this->currentQuery,
-        'intent' => 'price_comparison',
+        'intent' => 'comparative_lookup',
         'user_choice' => $choice,
         'selected_modes' => json_encode($selectedModes)
       ];
@@ -407,7 +445,7 @@ class ModeSelector
       $selectedModes = ['mode_b_google_shopping'];
       
       $this->log("Mode selection: Price comparison without target_site → Mode B", [
-        'intent_type' => 'price_comparison',
+        'intent_type' => 'comparative_lookup',
         'target_site' => null,
         'selected_modes' => $selectedModes
       ]);
@@ -419,11 +457,11 @@ class ModeSelector
     $router = $this->findSiteRouter($targetSite);
     
     if ($router !== null) {
-      $selectedModes = $router->getRecommendedModes('price_comparison');
+      $selectedModes = $router->getRecommendedModes('comparative_lookup');
       
       if (!empty($selectedModes)) {
         $this->log("Mode selection: Price comparison with domain-routed target_site", [
-          'intent_type' => 'price_comparison',
+          'intent_type' => 'comparative_lookup',
           'target_site' => $targetSite,
           'router_id' => $router->getRouterId(),
           'selected_modes' => $selectedModes,
@@ -446,7 +484,7 @@ class ModeSelector
       
       // Log for admin to track requested but unavailable sites
       $this->log("Mode selection: Price comparison with target_site not in DB → Mode B with user notification", [
-        'intent_type' => 'price_comparison',
+        'intent_type' => 'comparative_lookup',
         'target_site' => $targetSite,
         'site_in_db' => false,
         'selected_modes' => $selectedModes,
@@ -461,7 +499,7 @@ class ModeSelector
       $selectedModes = ['mode_b_google_shopping', 'mode_c_rag_websearch'];
       
       $this->log("Mode selection: Price comparison with one target_site in DB → Hybrid (Mode B + Mode C)", [
-        'intent_type' => 'price_comparison',
+        'intent_type' => 'comparative_lookup',
         'target_site' => $targetSite,
         'available_sites' => $availableSites,
         'site_count' => 1,
@@ -476,7 +514,7 @@ class ModeSelector
     $selectedModes = ['mode_b_google_shopping', 'mode_c_rag_websearch'];
     
     $this->log("Mode selection: Price comparison with multiple target_sites in DB → Hybrid (Mode B + Mode C)", [
-      'intent_type' => 'price_comparison',
+      'intent_type' => 'comparative_lookup',
       'target_site' => $targetSite,
       'available_sites' => $availableSites,
       'site_count' => count($availableSites),

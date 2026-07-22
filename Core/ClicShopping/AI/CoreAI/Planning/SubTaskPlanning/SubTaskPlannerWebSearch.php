@@ -57,7 +57,7 @@ class SubTaskPlannerWebSearch
   /**
    * Creates le plan de recherche web (1 étape simple)
    * 
-   * Extract product name from intent for price_comparison queries
+   * Extract product name from intent for comparative_lookup queries
    * 
    * 
    * @param array $intent Intent analysis result
@@ -78,7 +78,7 @@ class SubTaskPlannerWebSearch
       ? $intent['search_query_native']
       : (!empty($intent['translated_query']) ? $intent['translated_query'] : $query);
 
-    if (isset($intent['intent']) && $intent['intent'] === 'price_comparison') {
+    if (isset($intent['intent']) && $intent['intent'] === 'comparative_lookup') {
       // Check if intent has extracted product name
       if (!empty($intent['product'])) {
         $searchQuery = $intent['product'];
@@ -98,7 +98,7 @@ class SubTaskPlannerWebSearch
     $step1 = new TaskStep(
       'step_1',
       'web_search',
-      $searchQuery, // Use extracted product name for price_comparison, full query otherwise
+      $searchQuery, // Use extracted product name for comparative_lookup, full query otherwise
       [
         'intent' => $intent,
         'search_type' => 'web_search',

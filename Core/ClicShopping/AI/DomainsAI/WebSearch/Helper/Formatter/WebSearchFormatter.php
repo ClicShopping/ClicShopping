@@ -140,8 +140,8 @@ class WebSearchFormatter extends AbstractFormatter
     $output .= "<div class='mt-2'></div>";
 
     // Display enhanced price comparison if available (with shopping data source indicators)
-    if (isset($results['price_comparison']) && is_array($results['price_comparison'])) {
-      $output .= $this->formatPriceComparisonEnhanced($results['price_comparison']);
+    if (isset($results['comparative_lookup']) && is_array($results['comparative_lookup'])) {
+      $output .= $this->formatPriceComparisonEnhanced($results['comparative_lookup']);
     }
 
     // Display web search results with URLs

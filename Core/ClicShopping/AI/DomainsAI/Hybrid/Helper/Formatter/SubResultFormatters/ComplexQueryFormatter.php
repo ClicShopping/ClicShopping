@@ -393,8 +393,8 @@ class ComplexQueryFormatter extends AbstractFormatter
     $output = '';
 
     // Display price comparison if available
-    if (isset($subResult['price_comparison']) && is_array($subResult['price_comparison'])) {
-      $output .= $this->formatPriceComparison($subResult['price_comparison']);
+    if (isset($subResult['comparative_lookup']) && is_array($subResult['comparative_lookup'])) {
+      $output .= $this->formatPriceComparison($subResult['comparative_lookup']);
     }
 
     // Display web results

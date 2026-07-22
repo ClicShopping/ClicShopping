@@ -37,7 +37,7 @@ use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 final class PriceComparisonIntentDetector implements QueryIntentDetectorInterface
 {
     /** Intent identifier emitted on a positive match. */
-    public const INTENT = 'price_comparison';
+    public const INTENT = 'comparative_lookup';
 
     public function detectIntent(string $query): ?string
     {

@@ -1003,7 +1003,7 @@ class HybridQueryDecomposer
      * Solution: Detect price comparison patterns and use specialized decomposition
      * 
      * Architecture: Pure LLM Mode with pattern fallback (AGENTS.md compliant)
-     * - PRIMARY: Check intent_type === 'price_comparison'
+     * - PRIMARY: Check intent_type === 'comparative_lookup'
      * - FALLBACK: agnostic intent detectors registered by domain Apps
      *   (WebSearchEngineRegistry::getIntentDetectors) — Core owns no keywords
      *
@@ -1018,7 +1018,7 @@ class HybridQueryDecomposer
             // (rag_intent_router) emits the price-comparison verdict under 'intent';
             $llmIntent = (string)($intent['intent_type'] ?? '');
             $llmSubIntent = (string)($intent['intent'] ?? '');
-            if ($llmIntent === 'price_comparison' || $llmSubIntent === 'price_comparison') {
+            if ($llmIntent === 'comparative_lookup' || $llmSubIntent === 'comparative_lookup') {
                 if ($this->debug) {
                     $this->logDebug("Price comparison detected via LLM intent signal");
                 }
@@ -1026,9 +1026,9 @@ class HybridQueryDecomposer
             }
 
             // FALLBACK: agnostic detectors registered by domain Apps (Core owns
-            // no domain keywords). First 'price_comparison' verdict wins.
+            // no domain keywords). First 'comparative_lookup' verdict wins.
             foreach (WebSearchEngineRegistry::getInstance()->getIntentDetectors() as $detector) {
-                if ($detector->detectIntent($query) === 'price_comparison') {
+                if ($detector->detectIntent($query) === 'comparative_lookup') {
                     if ($this->debug) {
                         $this->logDebug("Price comparison detected via detector fallback: " . $detector->getDetectorId());
                     }

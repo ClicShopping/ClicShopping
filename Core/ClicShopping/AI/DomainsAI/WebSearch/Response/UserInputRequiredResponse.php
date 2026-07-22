@@ -32,7 +32,7 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Response;
  *     ['value' => '2', 'label' => 'Google Shopping', 'description' => '...', 'recommended' => true],
  *     ['value' => '3', 'label' => 'Both', 'description' => '...']
  *   ],
- *   ['query' => 'compare prices...', 'intent' => 'price_comparison']
+ *   ['query' => 'compare prices...', 'intent' => 'comparative_lookup']
  * );
  * ```
  */

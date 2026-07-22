@@ -18,7 +18,7 @@ use ClicShopping\AI\InterfacesAI\WebSearchEngineProviderInterface;
  * Built-in agnostic provider for Mode A — Google AI Overview.
  *
  * Wraps the public SerpAPI `google_ai_overview` protocol. Used as the default
- * mode for market_research and product_discovery intents without a target site.
+ * mode for market_research and entity_discovery intents without a target site.
  *
  * Not a commercial brand — `google_ai_overview` is a SerpAPI protocol name.
  *

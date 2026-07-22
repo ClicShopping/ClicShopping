@@ -95,7 +95,7 @@ see **`AI_ARCHITECTURE.md` §2**. Summary:
 
 - Core agents → `Core/ClicShopping/AI/CoreAI/`
 - Domain agents → `Core/ClicShopping/Apps/AI/{Domain}/`
-- All agents implement `ActorAgentInterface`
+- Agents (reasoning units) implement `AgentInterface` (`getAgentId`/`getCapabilities`/`getStats`) ; the actor-critic **roles** implement `ActorInterface` / `CriticInterface` — three symmetric contracts in `InterfacesAI/`
 - All inter-agent calls go through the Orchestrator — no direct instantiation
 
 ---
@@ -298,7 +298,7 @@ Do not modify the MCP protocol without human coder agreement.
 ```
 [ ] LLM calls via Gpt::getGptResponse() / LLPhant only — no direct API calls
 [ ] Agent registered in Core/ClicShopping/AI/CoreAI/ or Apps/AI/{Domain}/
-[ ] Agent implements ActorAgentInterface
+[ ] Agent implements AgentInterface (actor-critic role classes → ActorInterface / CriticInterface)
 [ ] DB access: Doctrine ORM inside AI/ — Registry::get('Db') outside AI/
 [ ] API keys via configuration constants — never hardcoded
 [ ] Constant name verified against existing constants (see AGENTS.md naming convention)

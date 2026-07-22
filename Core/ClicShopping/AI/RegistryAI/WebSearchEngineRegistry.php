@@ -95,6 +95,19 @@ final class WebSearchEngineRegistry
     private bool $domainsBootstrapped = false;
 
     /**
+     * Universal socle: modes available in every domain when no domain has
+     * declared an explicit allow-list. Agnostic by design — AI Overview and
+     * RAG WebSearch carry no commerce semantics.
+     */
+    private const SOCLE_DEFAULT_MODES = [
+        GoogleAIOverviewProvider::MODE,
+        RagWebSearchProvider::MODE,
+    ];
+
+    /** @var array<string>|null Active-domain mode allow-list; null = socle default. */
+    private ?array $allowedModes = null;
+
+    /**
      * Returns the shared registry instance, bootstrapping built-in providers
      * and (once) every available domain on first call.
      */
@@ -291,10 +304,37 @@ final class WebSearchEngineRegistry
     }
 
     /**
+     * Restrict the registry to the given modes for the active domain.
+     *
+     * Called once from a domain's WebSearchRegistration. Last call wins:
+     * the model is one active domain App per deployment (multi-domain union
+     * gating is deferred — see BACKLOG). Absent any call, the socle default
+     * applies.
+     */
+    public function restrictToModes(array $modes): void
+    {
+        $this->allowedModes = \array_values(\array_unique($modes));
+    }
+
+    /**
+     * Whether a mode is permitted by the active-domain allow-list (or socle).
+     */
+    private function isModeAllowed(string $mode): bool
+    {
+        $allowed = $this->allowedModes ?? self::SOCLE_DEFAULT_MODES;
+
+        return \in_array($mode, $allowed, true);
+    }
+
+    /**
      * Retrieve the provider for a given mode identifier.
      */
     public function getProvider(string $mode): ?WebSearchEngineProviderInterface
     {
+        if (!$this->isModeAllowed($mode)) {
+            return null;
+        }
+
         return $this->providersByMode[$mode] ?? null;
     }
 
@@ -303,15 +343,18 @@ final class WebSearchEngineRegistry
      */
     public function hasProvider(string $mode): bool
     {
-        return isset($this->providersByMode[$mode]);
+        return $this->isModeAllowed($mode) && isset($this->providersByMode[$mode]);
     }
 
     /**
-     * @return array<string> All registered mode identifiers
+     * @return array<string> All registered mode identifiers allowed for the active domain
      */
     public function getRegisteredModes(): array
     {
-        return \array_keys($this->providersByMode);
+        return \array_values(\array_filter(
+            \array_keys($this->providersByMode),
+            fn (string $mode): bool => $this->isModeAllowed($mode)
+        ));
     }
 
     /**

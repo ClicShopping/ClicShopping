@@ -287,7 +287,7 @@ class IntentRouter
     }
 
     // Validate required fields
-    if (!isset($intent['intent']) || !in_array($intent['intent'], ['price_comparison', 'product_discovery', 'market_research', 'trend_analysis'])) {
+    if (!isset($intent['intent']) || !in_array($intent['intent'], ['comparative_lookup', 'entity_discovery', 'market_research', 'trend_analysis'])) {
       return null;
     }
 
@@ -315,13 +315,13 @@ class IntentRouter
     }
 
     // CRITICAL FIX: Bugfix for french-price-comparison-mode-selection-fix
-    // The LLM sometimes returns a non-null mode_hint for price_comparison intent
+    // The LLM sometimes returns a non-null mode_hint for comparative_lookup intent
     // despite language file rules saying it should return null. This causes
     // ModeSelector::selectModes() to take the mode_hint path instead of calling
     // selectPriceComparisonModes(), which means UserInputRequiredResponse is never
     // created and the user never sees the 3-option prompt in web/chat mode.
     // Force mode_hint to null for intents whose mode is determined by ModeSelector
-    $intentsRequiringNullHint = ['price_comparison', 'trend_analysis'];
+    $intentsRequiringNullHint = ['comparative_lookup', 'trend_analysis'];
     if (in_array($validatedIntent['intent'], $intentsRequiringNullHint, true) && $validatedIntent['mode_hint'] !== null) {
       $originalModeHint = $validatedIntent['mode_hint'];
 

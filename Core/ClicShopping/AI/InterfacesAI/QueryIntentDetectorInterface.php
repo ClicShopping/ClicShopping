@@ -31,7 +31,7 @@ namespace ClicShopping\AI\InterfacesAI;
  *
  * Implementations MUST:
  *   - be side-effect-free and deterministic for a given query
- *   - return an intent identifier string (e.g. 'price_comparison') or null
+ *   - return an intent identifier string (e.g. 'comparative_lookup') or null
  *   - never throw — return null on any failure
  *
  * @package ClicShopping\AI\InterfacesAI

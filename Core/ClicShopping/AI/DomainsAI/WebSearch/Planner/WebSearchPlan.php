@@ -18,7 +18,7 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Planner;
  * Each task in the plan has the structure:
  * [
  *   'query'       => string  — sub-query text
- *   'intent'      => string  — price_comparison|product_discovery|market_research
+ *   'intent'      => string  — comparative_lookup|entity_discovery|market_research
  *   'product'     => string  — product or category name
  *   'target_site' => string|null — specific site domain or null
  * ]

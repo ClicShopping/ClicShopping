@@ -11,7 +11,7 @@ use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
-use ClicShopping\Apps\Customers\Reviews\Classes\Shared\ReviewSentiment\SentimentAnalysisData;
+use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment\SentimentAnalysisData;
 
 class pi_products_info_reviews
 {
