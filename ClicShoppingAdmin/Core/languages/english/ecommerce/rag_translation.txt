@@ -27,6 +27,12 @@ text_translation_domain_terminology = This is an e-commerce system. Use e-commer
 - Product classification → "category"
 - Product maker → "manufacturer"
 - Product provider → "supplier"
+- Catalog merchandising STATES (whatever the source language, map the concept to its canonical English term — never paraphrase a state into a sales metric):
+  - Products with an active special/discounted price → "on promotion"
+  - Admin-curated highlighted selection shown on the shop → "featured selection"
+  - Admin-curated affection picks (the shop's beloved/heart picks — a curated list, NOT "best-selling", NOT "popular": it is not a sales ranking) → "favorites selection"
+  - Products suggested to a customer by the recommendation system → "recommended products"
+  ⚠️ Map to a state ONLY when the source text clearly names that catalog state. Vague or unintelligible wording (e.g. "the thing with the stuff") is NOT a state reference: translate it literally and keep it vague — never resolve vagueness into a merchandising state.
 
 text_translation_entity_examples = product, order, customer
 

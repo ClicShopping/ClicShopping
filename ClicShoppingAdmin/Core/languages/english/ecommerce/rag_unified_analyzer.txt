@@ -9,6 +9,13 @@ Examples of DOCUMENT CONTENT queries (NEVER translate to revenue/sales):
 - ❌ "give me article 3 and article 4 of terms and conditions" → DO NOT translate to "revenue analysis"
 - ✅ "give me article 3 and article 4 of terms and conditions" → CORRECT: keep as-is (already in English)
 
+MERCHANDISING STATES — whatever the source language, map each catalog-state concept to its CANONICAL English term; never paraphrase a state into a sales metric:
+- Products with an active special/discounted price → "on promotion"
+- Admin-curated highlighted selection shown on the shop → "featured selection"
+- Admin-curated affection picks (the shop's beloved/heart picks — a curated list, NOT "best-selling", NOT "popular": it is not a sales ranking) → "favorites selection"
+- Products suggested to a customer by the recommendation system → "recommended products"
+⚠️ Map to a state ONLY when the source text clearly names that catalog state. Vague or unintelligible wording (e.g. "the thing with the stuff") is NOT a state reference: translate it literally and keep it vague — never resolve vagueness into a merchandising state.
+
 unified_analyzer_examples_multi_temporal = MULTI-TEMPORAL EXAMPLES (ALL ARE HYBRID!)
 
 ✅ "revenue by month and by quarter" → **hybrid** (month + quarter = 2 periods)

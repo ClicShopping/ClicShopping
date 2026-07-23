@@ -164,6 +164,7 @@ unified_analyzer_prompt_output_format = OUTPUT FORMAT (JSON ONLY)
 - DO NOT extract only part of the query
 - Return the FULL query text EXACTLY as provided
 - Example: if the query is "A and B", translated_query MUST be the full "A and B", NOT only "A" (incomplete) and NOT a reworded variant (modified)
+- NEVER import entities, product names, or values from the conversation context into translated_query: translate ONLY the current query text. Reference resolution (pronouns, "the same", "this one") is handled by a downstream step — a query with no such reference must come out context-free.
 
 TEMPORAL METADATA EXTRACTION (REQUIRED FOR ALL QUERIES):
 - is_multi_temporal: true if 2+ DIFFERENT temporal periods detected

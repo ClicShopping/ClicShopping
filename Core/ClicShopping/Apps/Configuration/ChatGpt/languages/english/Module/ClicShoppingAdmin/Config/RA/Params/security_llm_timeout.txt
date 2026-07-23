@@ -1,0 +1,2 @@
+cfg_chatgpt_security_llm_timeout_title = LLM request timeout (seconds)
+cfg_chatgpt_security_llm_timeout_description = Maximum time in seconds a single LLM request may run before it is aborted. Bounds a stalled provider so it fails cleanly instead of freezing the pipeline. Keep it comfortably above the slowest legitimate cold call.

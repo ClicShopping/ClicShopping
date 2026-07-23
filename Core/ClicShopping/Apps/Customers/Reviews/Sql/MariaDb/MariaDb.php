@@ -210,7 +210,7 @@ CREATE TABLE :table_reviews (
   customers_tag varchar(255) DEFAULT NULL,
   PRIMARY KEY (reviews_id),
   KEY idx_reviews_products_id (products_id),
-        KEY idx_reviews_customers_id (customers_id)
+  KEY idx_reviews_customers_id (customers_id)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Reviews->db->exec($sql);

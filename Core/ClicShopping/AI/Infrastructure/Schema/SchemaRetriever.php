@@ -15,6 +15,7 @@ use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Infrastructure\Prompt\PromptOptimizer;
+use ClicShopping\AI\Security\SecurityLogger;
 
 /**
  * SchemaRetriever
@@ -195,12 +196,18 @@ class SchemaRetriever
         
         return $tables;
       }
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
+      // Degraded retrieval is a production incident (wrong tables reach the LLM) — log loudly, not only in debug
+      (new SecurityLogger())->logApplicationError(
+        'SchemaRetriever degraded to keyword matching: ' . $e->getMessage(),
+        ['query' => substr($query, 0, 100)]
+      );
+
       if ($this->debug) {
         error_log("[SchemaRetriever] Embedding-based retrieval failed: " . $e->getMessage());
       }
     }
-    
+
     // Fallback to keyword matching
     if ($this->debug) {
       error_log("[SchemaRetriever] Falling back to keyword matching");
@@ -291,20 +298,20 @@ class SchemaRetriever
     // Extract query keywords using simple word extraction
     $queryKeywords = $this->extractSimpleKeywords($query);
     
-    // Find column matches
-    $columnMatchScores = [];
+    // Column score = keyword COVERAGE (distinct query keywords the table matches),
+    // not matched-column count: counting columns made wide tables (clic_products, 50+ cols) always outrank the semantically right narrow table, whatever the embedding said.
+    $matchedKeywords = [];
     foreach ($queryKeywords as $keyword) {
       $matches = $this->columnIndex->find($keyword);
       foreach ($matches as $match) {
-        $table = $match['table'];
-        $columnMatchScores[$table] = ($columnMatchScores[$table] ?? 0) + 1;
+        $matchedKeywords[$match['table']][$keyword] = true;
       }
     }
-    
-    // Normalize column scores
-    $maxColumnScore = !empty($columnMatchScores) ? max($columnMatchScores) : 1;
-    foreach ($columnMatchScores as $table => $score) {
-      $columnMatchScores[$table] = $score / $maxColumnScore;
+
+    $columnMatchScores = [];
+    $keywordCount = max(1, count($queryKeywords));
+    foreach ($matchedKeywords as $table => $keywords) {
+      $columnMatchScores[$table] = count($keywords) / $keywordCount;
     }
     
     // Combine scores
@@ -312,8 +319,9 @@ class SchemaRetriever
     foreach ($embeddingScores as $table => $embScore) {
       $colScore = $columnMatchScores[$table] ?? 0;
       
-      // Composite score: 30% embedding + 70% column matching
-      $finalScores[$table] = ($embScore * 0.3) + ($colScore * 0.7);
+      // Composite score: semantic similarity leads, lexical column matching complements.
+      // 70/30 (was 30/70): lexical dominance drowned correct embedding ranks — e.g. generic clic_products/description outranked clic_products_recommendations for "recommended products".
+      $finalScores[$table] = ($embScore * 0.7) + ($colScore * 0.3);
       
       // Penalty for reference tables
       if ($this->isReferenceTable($table)) {

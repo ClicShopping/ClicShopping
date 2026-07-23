@@ -721,8 +721,10 @@ MARKETING & PRICING (for Statistical Analysis):
 - specials: Special prices/discounts (products_id, specials_new_products_price, specials_date_added, expires_date, status)
   **CRITICAL**: For promotional/discount queries, use clic_specials table (NOT products_percentage field)
   **IMPORTANT**: Count promotional products with: SELECT COUNT(*) FROM clic_specials WHERE status = 1
-- products_featured: Featured products (products_id, date_added, expires_date, status)
-- products_favorites: Customer favorites (products_id, customers_id, date_added, status)
+- products_featured: Featured selection ("featured selection", "featured products"), admin-curated merchandising (products_id, products_featured_date_added, scheduled_date, expires_date, status, customers_group_id)
+- products_favorites: Admin-curated merchandising picks ("favorites selection") (products_id, products_favorites_date_added, scheduled_date, expires_date, status, customers_group_id). Same structure/role family as products_featured; it has NO customers_id (it is NOT a customer wishlist)
+- products_recommendations: PER-CUSTOMER recommended products ("recommended products") (customers_id, products_id, score, recommendation_date, product_tag, customers_group_id, status). Every row belongs to a customer (customers_id is always set — NEVER filter customers_id IS NULL). Global list = SELECT DISTINCT over ALL rows with status = 1; per-customer list = filter customers_id = <given id> only when the question names one
+- products_cockpit_ai_action_log: audit log of actions taken by the CockpitAI agent (price/promo actions history). NOT the catalog state — current promotions ALWAYS come from clic_specials (status = 1); use this log only when the question is about AI actions or their history
 - dynamic_pricing_history: Price change history (id, products_id, old_price, new_price, price_change_percentage, date_applied, reason)
 - dynamic_pricing_rules: Pricing rules (id, rule_name, products_id, price_factor, conditions, date_created, status)
 
@@ -744,14 +746,12 @@ COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
 🚫 EXCLUDED COLUMNS — NEVER reference these in any SQL, even though they appear in the schema (unused / not connected). Maintain this list here:
 - `erp_invoice` : ERP-integration flag — NO ERP is connected, so it is ALWAYS 0 (filtering on it returns zero rows). For "invoiced / facturée" orders use `orders_status_invoice = 2` instead; NEVER use `erp_invoice`.
 
-🚫 COLUMN NAME TRAPS — use the REAL column of the ACTUAL table; never carry a column from one table onto another. A name split that exists on one table does NOT exist on another (logical table names below — apply your usual table prefix):
-- the orders table stores the buyer as a single column customers_name (full name). orders has NO customers_firstname / customers_lastname — use customers_name.
-- the customers table (master) is the ONLY table with customers_firstname AND customers_lastname; never assume that split on orders.
-- the specials table expiry column is expires_date. There is NO specials_date_expires / specials_date_expired / specials_expires_date.
-- the manufacturer name is on the manufacturers table (manufacturers_name) — NOT on manufacturers_info (which holds only URL/click metadata).
-- the supplier name is on the suppliers table (suppliers_name) — NOT on suppliers_info.
-- the orders_products table has NO suppliers_id and NO manufacturers_id. To get an ordered product's supplier/manufacturer, JOIN orders_products.products_id → products.products_id, then read products.suppliers_id / products.manufacturers_id.
-- the return_orders table stores denormalised product_name plus customer_firstname / customer_lastname (singular customer_); it has NO products_id — filter/display by product_name.
+COLUMN LOCATIONS (verified against the live schema — use the real column of the actual table):
+- clic_orders stores the buyer name in the single column customers_name (full name). The firstname/lastname split exists on clic_customers.
+- clic_specials expiry column is expires_date.
+- The manufacturer name is clic_manufacturers.manufacturers_name; the supplier name is clic_suppliers.suppliers_name.
+- clic_orders_products carries no supplier or manufacturer id: JOIN clic_products via products_id, then read clic_products.suppliers_id / clic_products.manufacturers_id.
+- clic_return_orders references the product via product_id (singular) and also stores product_name denormalised; its customer columns use the singular prefix (customer_firstname, customer_lastname).
 
 1. Always use full table prefixes (e.g., clic_products not products)
 2. Add appropriate joins for related tables
@@ -1102,6 +1102,9 @@ COUNT QUERIES WITH FILTERS:
 - 'how many products on promotion' → SELECT COUNT(*) AS total FROM clic_specials WHERE status = 1
 
 - 'count promotional products' → SELECT COUNT(*) AS total FROM clic_specials WHERE status = 1
+
+MERCHANDISING CONCEPTS (platform knowledge — reason from it, whatever the phrasing):
+Each merchandising state lives in ONE dedicated table, active rows = status 1: current promotions/special prices = clic_specials; "featured selection" = clic_products_featured; "favorites selection" = clic_products_favorites; "recommended products" = clic_products_recommendations (per-customer rows). These tables reference the product via products_id → JOIN clic_products (and clic_products_description for the name, filtered by language_id). Never answer these from clic_products alone, and never from clic_products_cockpit_ai_action_log (audit log of AI actions, not the catalog state). When a question combines several states ("on promotion AND favorites selection"), the intent is the UNION of the lists, not the intersection: LEFT JOIN clic_products to each state table and keep rows matching AT LEAST ONE state — e.g. LEFT JOIN clic_specials s ON s.products_id = p.products_id AND s.status = 1 LEFT JOIN clic_products_favorites f ON f.products_id = p.products_id AND f.status = 1 WHERE (s.products_id IS NOT NULL OR f.products_id IS NOT NULL) — and expose each state in the SELECT (e.g. s.products_id IS NOT NULL AS on_promotion). Use an INNER intersection ONLY if the question explicitly requires products in BOTH states at once.
 
 AVERAGE RATING QUERIES:
 **PATTERN**: An average review rating joins ONLY clic_reviews → clic_products → clic_products_description. There is NO orders_products (op) table in a rating query — never reference op.* here. GROUP BY p.products_id (the alias that exists in the FROM/JOIN), never an undefined alias.
