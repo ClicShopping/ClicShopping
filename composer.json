@@ -24,9 +24,9 @@
         "phpmailer/phpmailer": "^7.1",
         "setasign/fpdf": "^1.9",
         "stolt/llms-txt-php": "^3.4",
-        "stripe/stripe-php": "^20.3",
         "theodo-group/llphant": "^1.0",
-        "guzzlehttp/guzzle": "^7.15"
+        "guzzlehttp/guzzle": "^7.15",
+        "stripe/stripe-php": "^21.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
