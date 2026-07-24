@@ -45,6 +45,7 @@ unified_analyzer_examples_compound = COMPOUND ANALYTICS EXAMPLES (ALL ARE HYBRID
 ✅ "pending orders and customer count" → **hybrid** (2 distinct requests)
 ✅ "product price and also the quantity in stock" → **hybrid** (2 distinct requests)
 ✅ "show me the best seller and give me customer count" → **hybrid** (2 distinct requests)
+✅ "products on promotion and favorites selection" → **hybrid** (2 distinct merchandising states = 2 lists from 2 different state tables — NEVER a single intersection query)
 
 SINGLE ANALYTICS EXAMPLES (NOT COMPOUND!)
 

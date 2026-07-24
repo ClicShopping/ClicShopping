@@ -40,7 +40,6 @@ class Status
       ],
         ['id' => (int)$id]
       );
-
     } else {
       return -1;
     }

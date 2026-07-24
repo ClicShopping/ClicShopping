@@ -5,7 +5,7 @@
             "php-http/discovery": true
         }
     },
-    "license": ["(GPL-2.0-or-later or MIT)"],
+    "license": ["(AGPLv3 and commercial licenses"],
     "require": {
         "ext-json": "*",
         "ext-pdo": "*",
