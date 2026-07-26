@@ -20,6 +20,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\ErrorAnalyzer;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\PatternLearner;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\CorrectionStrategyManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\CorrectionMemory;
+use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\QueryEquivalence;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\FeedbackLearner;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 
@@ -146,7 +147,7 @@ class CorrectionAgent implements AgentInterface
       );
 
       // Step 4: Validate correction using CorrectionValidator component
-      $validation = $this->validator->validateCorrection($correction);
+      $validation = $this->validator->validateCorrection($correction, $errorContext['failed_query'] ?? null);
 
       if ($validation['is_valid']) {
         // Step 5: Store successful correction using CorrectionMemory component
@@ -172,6 +173,7 @@ class CorrectionAgent implements AgentInterface
         ];
       } else {
         $this->statistics->incrementFailedCorrections();
+        $this->logRejectedCorrection($errorContext, $correction, $errorAnalysis, $validation);
 
         $result = [
           'success' => false,
@@ -216,13 +218,54 @@ class CorrectionAgent implements AgentInterface
     array $errorAnalysis,
     array $similarCases
   ): array {
+    $failedQuery = $errorContext['failed_query'] ?? '';
+
     // Delegate to PatternLearner if we have a high-confidence similar case
     if (!empty($similarCases) && $similarCases[0]['similarity_score'] > 0.85) {
-      return $this->patternLearner->applyLearnedCorrection($errorContext, $similarCases[0]);
+      $learned = $this->patternLearner->applyLearnedCorrection($errorContext, $similarCases[0]);
+
+      // A learned pattern that yields no transformation is a dead end: fall through to the
+      // strategies rather than replay it (that is how a no-op pattern kept re-serving itself).
+      if ($failedQuery === '' || !QueryEquivalence::isUnchanged($failedQuery, $learned['query'] ?? '')) {
+        return $learned;
+      }
     }
 
     // Delegate to CorrectionStrategyManager for strategy selection and execution
     return $this->strategyManager->applyStrategy($errorContext, $errorAnalysis, $similarCases);
+  }
+
+  /**
+   * Report a rejected correction on the AI application-error channel
+   *
+   * A no-op self-heal used to pass silently, get memorized and burn the retry budget;
+   * it must now be visible. Logging never breaks the correction path.
+   *
+   * @param array $errorContext Error context
+   * @param array $correction Correction that was rejected
+   * @param array $errorAnalysis Error analysis
+   * @param array $validation Validation result carrying the issues
+   * @return void
+   */
+  private function logRejectedCorrection(
+    array $errorContext,
+    array $correction,
+    array $errorAnalysis,
+    array $validation
+  ): void {
+    try {
+      $this->securityLogger->logApplicationError(
+        'Self-heal rejected: ' . implode('; ', $validation['issues']),
+        [
+          'error_type' => $errorAnalysis['type'] ?? 'unknown',
+          'method' => $correction['method'] ?? 'unknown',
+          'error_message' => $errorContext['error_message'] ?? '',
+          'failed_query' => $errorContext['failed_query'] ?? '',
+        ]
+      );
+    } catch (\Throwable $e) {
+      // Never let observability break the correction path.
+    }
   }
 
   /**

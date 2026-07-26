@@ -38,9 +38,10 @@ class CorrectionValidator
    * Validate proposed correction
    *
    * @param array $correction Correction to validate
+   * @param string|null $failedQuery The query that failed, to reject no-op corrections
    * @return array Validation result with is_valid, issues, warnings
    */
-  public function validateCorrection(array $correction): array
+  public function validateCorrection(array $correction, ?string $failedQuery = null): array
   {
     $validation = [
       'is_valid' => true,
@@ -57,7 +58,15 @@ class CorrectionValidator
       return $validation;
     }
 
-    // Validation 2: Use InputValidator for SQL syntax validation
+    // Validation 2: a correction that returns the failed query unchanged repairs nothing.
+    // Rejecting it here keeps it out of CorrectionMemory, which would otherwise re-serve it.
+    if ($failedQuery !== null && QueryEquivalence::isUnchanged($failedQuery, $query)) {
+      $validation['is_valid'] = false;
+      $validation['issues'][] = "Correction is unchanged from the failed query (no-op)";
+      return $validation;
+    }
+
+    // Validation 3: Use InputValidator for SQL syntax validation
     $syntaxCheck = \ClicShopping\AI\Security\InputValidator::validateSqlQuery($query);
     if (!$syntaxCheck['valid']) {
       $validation['is_valid'] = false;
@@ -67,7 +76,7 @@ class CorrectionValidator
       );
     }
 
-    // Validation 3: Check for balanced parentheses
+    // Validation 4: Check for balanced parentheses
     $openCount = substr_count($query, '(');
     $closeCount = substr_count($query, ')');
     if ($openCount !== $closeCount) {
@@ -75,13 +84,13 @@ class CorrectionValidator
       $validation['issues'][] = "Unbalanced parentheses: $openCount open vs $closeCount close";
     }
 
-    // Validation 4: Check SELECT queries have FROM clause
+    // Validation 5: Check SELECT queries have FROM clause
     if (stripos($query, 'SELECT') === 0 && stripos($query, 'FROM') === false) {
       $validation['is_valid'] = false;
       $validation['issues'][] = "SELECT query missing FROM clause";
     }
 
-    // Validation 5: Check confidence threshold (semantic validation)
+    // Validation 6: Check confidence threshold (semantic validation)
     if (isset($correction['confidence']) && $correction['confidence'] < $this->confidenceThreshold) {
       $validation['warnings'][] = "Low confidence correction: " . $correction['confidence'];
     }

@@ -105,7 +105,20 @@ class CorrectionStrategyManager
       }
       
       try {
-        return $strategy->correct($errorContext, $errorAnalysis, $similarCases);
+        $correction = $strategy->correct($errorContext, $errorAnalysis, $similarCases);
+
+        // A deterministic strategy that changed nothing has not understood the error:
+        // escalate to reasoning rather than surrender a verbatim copy of the failed query.
+        if ($this->shouldEscalateToReasoning($correction, $errorContext['failed_query'] ?? '')) {
+          $this->logger->logApplicationError(
+            "Self-heal produced no change, escalating to LLM reasoning",
+            ['error_type' => $errorType, 'method' => $correction['method'] ?? 'unknown']
+          );
+
+          return $this->correctWithLLMReasoning($errorContext, $errorAnalysis, $similarCases);
+        }
+
+        return $correction;
       } catch (\Exception $e) {
         $this->logger->logSecurityEvent(
           "Strategy execution failed for {$errorType}: " . $e->getMessage(),
@@ -126,6 +139,27 @@ class CorrectionStrategyManager
     }
     
     return $this->correctWithLLMReasoning($errorContext, $errorAnalysis, $similarCases);
+  }
+
+  /**
+   * Decide whether a proposed correction must be escalated to LLM reasoning
+   *
+   * True when the strategy returned the failed query unchanged. Corrections already produced
+   * by reasoning are excluded, so escalation can never loop.
+   *
+   * @param array $correction Correction produced by a deterministic strategy
+   * @param string $failedQuery The query that failed
+   * @return bool True when reasoning must take over
+   */
+  public function shouldEscalateToReasoning(array $correction, string $failedQuery): bool
+  {
+    $method = $correction['method'] ?? '';
+
+    if ($failedQuery === '' || str_starts_with($method, 'llm_reasoning')) {
+      return false;
+    }
+
+    return QueryEquivalence::isUnchanged($failedQuery, $correction['query'] ?? '');
   }
 
   /**

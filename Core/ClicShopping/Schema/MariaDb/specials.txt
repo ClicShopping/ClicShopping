@@ -3,7 +3,7 @@ products_id int not_null comment(FK to products table - product with special pri
 specials_new_products_price decimal(15,4) not_null comment(Special discounted price for the product)
 specials_date_added datetime comment(Timestamp when special price was created)
 specials_last_modified datetime comment(Timestamp of last modification to special price)
-expires_date datetime comment(Expiration date when special price ends - null for no expiration - only expiry column, no specials_date_expires or specials_date_expired)
+expires_date datetime comment(Expiration date when special price ends - null for no expiration)
 date_status_change datetime comment(Timestamp when status was last changed)
 status int(1) default(1) not_null comment(Special price status - 0: inactive, 1: active)
 scheduled_date datetime comment(Future date when special price becomes active - null for immediate)
