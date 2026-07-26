@@ -80,7 +80,7 @@ interface HybridQueryHandlerInterface
    *     'confidence' => 0.85,               // Classification confidence (0.0-1.0)
    *     'sub_types' => ['analytics', 'semantic'], // Sub-intent types
    *     'requires_web_search' => false,     // Whether external data is needed
-   *     'entity_type' => 'product',         // Detected entity type
+   *     'entity_type' => 'products',        // Detected entity type (canonical table-name form)
    *     'language_id' => 1                  // Language ID
    * ]
    *
@@ -89,7 +89,7 @@ interface HybridQueryHandlerInterface
    *     'user_id' => 123,                   // User ID for personalization
    *     'language_id' => 1,                 // Language ID for multilingual support
    *     'conversation_id' => 'abc123',      // Conversation ID for memory
-   *     'entity_type' => 'product',         // Entity type for routing
+   *     'entity_type' => 'products',        // Entity type for routing (canonical table-name form)
    *     'last_entity' => ['id' => 456],     // Last referenced entity
    *     'cache_key' => 'query_hash',        // Cache key for result caching
    *     'debug' => false                    // Debug mode flag

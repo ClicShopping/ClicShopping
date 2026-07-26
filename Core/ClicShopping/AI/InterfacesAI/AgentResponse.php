@@ -35,7 +35,7 @@ namespace ClicShopping\AI\InterfacesAI;
  *     ])
  *     ->setMetadata([
  *         'entity_id' => $productId,
- *         'entity_type' => 'product',
+ *         'entity_type' => 'products',
  *         'execution_time' => $executionTime
  *     ]);
  *

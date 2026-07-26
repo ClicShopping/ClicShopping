@@ -8,138 +8,47 @@
 
 namespace ClicShopping\AI\Infrastructure\Schema;
 
-use ClicShopping\OM\Registry;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
+use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 
 /**
  * SchemaEmbedder
- * 
- * Parses database schema into individual table definitions and generates embeddings
- * for efficient retrieval in Schema RAG optimization
- * 
+ *
+ * Owns the schema embedding store consumed by SchemaRetriever: it derives one
+ * schema text per business table from the live database, embeds it and keeps
+ * the store in sync with the schema.
+ *
  * Responsibilities:
- * - Parse full schema text into individual table schemas
- * - Generate embeddings for each table using EmbeddingService
- * - Store embeddings in database with caching
- * - Provide invalidation mechanism when schema changes
- * 
+ * - Discover the business tables of the install (prefix scoped, technical stores excluded)
+ * - Build the table schema text (same format as the schema injected in the prompt)
+ * - Generate embeddings through NewVector and store them in a VECTOR column
+ * - Report coverage so a stale store degrades visibly instead of silently
+ *
  * @package ClicShopping\AI\Infrastructure\Schema
  */
 class SchemaEmbedder
 {
   private mixed $db;
-  private mixed $embeddingService;
   private bool $debug;
   private string $tablePrefix;
-  
+
   /**
    * Constructor
-   * 
+   *
    * @param bool $debug Debug mode flag for logging
    */
   public function __construct(bool $debug = false)
   {
     $this->db = Registry::get('Db');
-    
-    // Try to get embedding service, but don't fail if it's not available
-    try {
-      $this->embeddingService = Registry::exists('EmbeddingService') ? Registry::get('EmbeddingService') : null;
-    } catch (\Exception $e) {
-      $this->embeddingService = null;
-      if ($debug) {
-        error_log("[SchemaEmbedder] EmbeddingService not available: " . $e->getMessage());
-      }
-    }
-    
     $this->debug = $debug;
     $this->tablePrefix = CLICSHOPPING::getConfig('db_table_prefix');
   }
-  
-  /**
-   * Embed all tables from the full schema text
-   * 
-   * Parses the schema, generates embeddings, and stores them in database
-   * This is typically run once during installation or when schema changes
-   * 
-   * @param string $fullSchemaText Full schema text from language file
-   * @return array Statistics about embedding generation
-   */
-  public function embedAllTables(string $fullSchemaText): array
-  {
-    $startTime = microtime(true);
-    
-    if ($this->debug) {
-      error_log("[SchemaEmbedder] Starting embedding generation for all tables");
-      error_log("[SchemaEmbedder] Full schema length: " . strlen($fullSchemaText) . " chars");
-    }
-    
-    // Parse schema into individual tables
-    $tables = $this->parseSchemaIntoTables($fullSchemaText);
-    
-    if ($this->debug) {
-      error_log("[SchemaEmbedder] Parsed " . count($tables) . " tables");
-    }
-    
-    $stats = [
-      'total_tables' => count($tables),
-      'embedded' => 0,
-      'failed' => 0,
-      'duration_seconds' => 0
-    ];
-    
-    // Generate and store embeddings for each table
-    foreach ($tables as $tableName => $tableData) {
-      try {
-        $this->embedTable($tableName, $tableData);
-        $stats['embedded']++;
-        
-        if ($this->debug) {
-          error_log("[SchemaEmbedder] ✓ Embedded table: {$tableName}");
-        }
-      } catch (\Exception $e) {
-        $stats['failed']++;
-        error_log("[SchemaEmbedder] ✗ Failed to embed table {$tableName}: " . $e->getMessage());
-      }
-    }
-    
-    $stats['duration_seconds'] = round(microtime(true) - $startTime, 2);
-    
-    if ($this->debug) {
-      error_log("[SchemaEmbedder] Embedding complete: {$stats['embedded']} succeeded, {$stats['failed']} failed");
-      error_log("[SchemaEmbedder] Duration: {$stats['duration_seconds']} seconds");
-    }
-    
-    return $stats;
-  }
-  
-  /**
-   * Get embedding for a specific table
-   * 
-   * @param string $tableName Table name (e.g., "products")
-   * @return array|null Embedding vector or null if not found
-   */
-  public function getTableEmbedding(string $tableName): ?array
-  {
-    $Qembedding = $this->db->prepare('
-      SELECT embedding_vector
-      FROM :table_rag_schema_embedding
-      WHERE table_name = :table_name
-    ');
-    
-    $Qembedding->bindValue(':table_name', $tableName);
-    $Qembedding->execute();
-    
-    if ($Qembedding->fetch()) {
-      $embeddingJson = $Qembedding->value('embedding_vector');
-      return json_decode($embeddingJson, true);
-    }
-    
-    return null;
-  }
-  
+
   /**
    * Get all table embeddings
-   * 
+   *
    * @return array Associative array of table_name => embedding_vector
    */
   public function getAllTableEmbeddings(): array
@@ -149,172 +58,402 @@ class SchemaEmbedder
       FROM :table_rag_schema_embedding
       ORDER BY table_name
     ');
-    
+
     $embeddings = [];
-    
+
     while ($Qembeddings->fetch()) {
       $tableName = $Qembeddings->value('table_name');
-      
-      // Skip technical tables (should not be in embeddings, but filter just in case)
-      if (str_contains($tableName, '_embedding') || str_starts_with($tableName, $this->tablePrefix . 'rag_')) {
+
+      // Technical stores are never business data — filtered at write, filtered again here
+      if (self::isTechnicalTable($tableName, $this->tablePrefix)) {
         continue;
       }
-      
-      $embeddingText = $Qembeddings->value('embedding_text');
-      
-      // Parse VECTOR text format: [val1,val2,...]
-      $embeddingText = trim($embeddingText, '[]');
+
+      $embeddingText = trim($Qembeddings->value('embedding_text'), '[]');
       $embeddings[$tableName] = array_map('floatval', explode(',', $embeddingText));
     }
-    
+
     return $embeddings;
   }
-  
+
   /**
-   * Invalidate cache and regenerate embeddings
-   * 
-   * Call this when database schema changes
-   * 
-   * @param string $fullSchemaText Full schema text from language file
-   * @return array Statistics about regeneration
+   * Synchronize the store with the current schema
+   *
+   * Embeds missing tables, re-embeds tables whose schema text changed, drops rows
+   * of tables that no longer exist. Cheap when the schema did not move.
+   *
+   * @param bool $force Re-embed every table even when its schema text is unchanged
+   * @return array Statistics: total, created, updated, unchanged, deleted, failed, duration_seconds
    */
-  public function invalidateAndRegenerate(string $fullSchemaText): array
+  public function syncAllTables(bool $force = false): array
   {
-    if ($this->debug) {
-      error_log("[SchemaEmbedder] Invalidating cache and regenerating embeddings");
-    }
-    
-    // Delete all existing embeddings
-    $this->db->query('DELETE FROM :table_rag_schema_embedding');
-    
-    // Regenerate
-    return $this->embedAllTables($fullSchemaText);
-  }
-  
-  /**
-   * Parse full schema text into individual table definitions
-   * 
-   * Extracts numbered sections like:
-   * 1. Table orders:
-   *    - Contains orders...
-   * 2. Table customers:
-   *    - Contains customer...
-   * 
-   * @param string $fullSchema Full schema text
-   * @return array Associative array of table_name => table_data
-   */
-  private function parseSchemaIntoTables(string $fullSchema): array
-  {
-    $tables = [];
-    
-    // Pattern to match numbered table sections
-    // Example: "1. Table orders:\n   - Contains orders..."
-    $pattern = '/(\d+)\.\s+Table\s+(' . preg_quote($this->tablePrefix, '/') . '\w+):\s*\\n(.*?)(?=\d+\.\s+Table|\z)/s';
-    
-    preg_match_all($pattern, $fullSchema, $matches, PREG_SET_ORDER);
-    
-    foreach ($matches as $match) {
-      $sectionNumber = $match[1];
-      $tableName = $match[2];
-      $description = trim($match[3]);
-      
-      $tables[$tableName] = [
-        'name' => $tableName,
-        'description' => $description,
-        'section_number' => $sectionNumber
-      ];
-      
-      if ($this->debug) {
-        error_log("[SchemaEmbedder] Parsed table: {$tableName} (section {$sectionNumber})");
+    $startTime = microtime(true);
+
+    $freshTexts = $this->buildAllSchemaTexts();
+    $storedTexts = $this->getStoredSchemaTexts();
+    $coverage = self::diffCoverage($freshTexts, $storedTexts);
+
+    $stats = [
+      'total_tables' => count($freshTexts),
+      'created' => 0,
+      'updated' => 0,
+      'unchanged' => 0,
+      'deleted' => 0,
+      'failed' => 0,
+      'duration_seconds' => 0
+    ];
+
+    $toEmbed = $force ? array_keys($freshTexts) : array_merge($coverage['missing'], $coverage['stale']);
+
+    foreach ($toEmbed as $tableName) {
+      $isNew = !isset($storedTexts[$tableName]);
+
+      try {
+        $this->embedAndStore($tableName, $freshTexts[$tableName]);
+        $stats[$isNew ? 'created' : 'updated']++;
+        $this->debugLog("embedded {$tableName}");
+      } catch (\Exception $e) {
+        $stats['failed']++;
+        (new SecurityLogger())->logApplicationError(
+          'SchemaEmbedder failed to embed table ' . $tableName . ': ' . $e->getMessage()
+        );
       }
     }
-    
+
+    $stats['unchanged'] = $force ? 0 : count($coverage['unchanged']);
+
+    if (!empty($coverage['orphan'])) {
+      $stats['deleted'] = $this->deleteRows($coverage['orphan']);
+    }
+
+    $stats['duration_seconds'] = round(microtime(true) - $startTime, 2);
+
+    // Re-read the store: what the sync could not fix is the degradation to make visible
+    $this->reportCoverage(self::diffCoverage($freshTexts, $this->getStoredSchemaTexts()));
+
+    $this->debugLog("sync done: {$stats['created']} created, {$stats['updated']} updated, {$stats['deleted']} deleted, {$stats['failed']} failed in {$stats['duration_seconds']}s");
+
+    return $stats;
+  }
+
+  /**
+   * Coverage of the store against the current schema
+   *
+   * @return array complete, db_tables, embedded, missing[], stale[], orphan[], unchanged[]
+   */
+  public function getCoverage(): array
+  {
+    return self::diffCoverage($this->buildAllSchemaTexts(), $this->getStoredSchemaTexts());
+  }
+
+  /**
+   * Log an application error when the store does not cover the schema
+   *
+   * Silent degradation is the failure mode of this store: an incomplete store sends
+   * wrong tables to the LLM without any error.
+   *
+   * @param array|null $coverage Coverage already computed, recomputed when null
+   * @return bool True when the coverage is complete
+   */
+  public function reportCoverage(?array $coverage = null): bool
+  {
+    $coverage ??= $this->getCoverage();
+
+    if ($coverage['complete']) {
+      return true;
+    }
+
+    (new SecurityLogger())->logApplicationError(
+      'Schema embedding store incomplete: ' . count($coverage['missing']) . ' table(s) missing, '
+      . count($coverage['stale']) . ' stale, ' . count($coverage['orphan']) . ' orphan',
+      [
+        'missing' => array_slice($coverage['missing'], 0, 10),
+        'stale' => array_slice($coverage['stale'], 0, 10)
+      ]
+    );
+
+    return false;
+  }
+
+  /**
+   * Build the schema text of every business table of the install
+   *
+   * @return array table_name => schema text
+   */
+  public function buildAllSchemaTexts(): array
+  {
+    $texts = [];
+
+    foreach ($this->listSchemaTables() as $tableName) {
+      $texts[$tableName] = self::formatTableText($tableName, $this->getTableColumns($tableName));
+    }
+
+    return $texts;
+  }
+
+  /**
+   * List the business tables to embed
+   *
+   * Prefix scoped: an unprefixed table does not belong to this install.
+   *
+   * @return array Table names
+   */
+  public function listSchemaTables(): array
+  {
+    $like = str_replace(['\\', '_', '%'], ['\\\\', '\_', '\%'], $this->tablePrefix);
+    $Qtables = $this->db->query("SHOW TABLES LIKE '{$like}%'");
+
+    $tables = [];
+
+    while ($Qtables->fetch()) {
+      $row = $Qtables->toArray();
+
+      if (empty($row)) {
+        continue;
+      }
+
+      $tableName = (string)reset($row);
+
+      if (!str_starts_with($tableName, $this->tablePrefix) || self::isTechnicalTable($tableName, $this->tablePrefix)) {
+        continue;
+      }
+
+      $tables[] = $tableName;
+    }
+
+    sort($tables);
+
     return $tables;
   }
-  
+
   /**
-   * Generate embedding for a single table and store in database
-   * 
+   * Technical stores carry no business semantics and must stay out of the schema retrieval
+   *
    * @param string $tableName Table name
-   * @param array $tableData Table data from parsing
-   * @return void
-   * @throws \Exception If embedding generation fails
+   * @param string $prefix Table prefix of the install
+   * @return bool
    */
-  private function embedTable(string $tableName, array $tableData): void
+  public static function isTechnicalTable(string $tableName, string $prefix): bool
   {
-    // Build schema text for embedding
-    $schemaText = "Table: {$tableName}\n{$tableData['description']}";
-    
-    // Generate embedding using existing EmbeddingService
-    $embedding = $this->embeddingService->createEmbedding($schemaText);
-    
-    if (empty($embedding)) {
-      throw new \Exception("Embedding generation returned empty result");
-    }
-    
-    // Estimate token count (rough estimate: 4 chars per token)
-    $tokenCount = (int)ceil(strlen($schemaText) / 4);
-    
-    // Store in database
-    $this->storeEmbedding($tableName, $schemaText, $embedding, $tokenCount);
+    return str_contains($tableName, '_embedding') || str_starts_with($tableName, $prefix . 'rag_');
   }
-  
+
   /**
-   * Store embedding in database
-   * 
+   * Format the schema text of one table
+   *
+   * Same shape as the schema injected in the prompt: "Table: x" then one line per column.
+   *
+   * @param string $tableName Table name
+   * @param array $columns Rows of SHOW FULL COLUMNS (Field, Type, Comment)
+   * @return string
+   */
+  public static function formatTableText(string $tableName, array $columns): string
+  {
+    $text = "Table: {$tableName}\n";
+
+    foreach ($columns as $column) {
+      $comment = $column['Comment'] ?? '';
+      $text .= "  - {$column['Field']} ({$column['Type']})" . (!empty($comment) ? ": {$comment}" : '') . "\n";
+    }
+
+    return trim($text);
+  }
+
+  /**
+   * Compare the schema with the store
+   *
+   * @param array $freshTexts table_name => schema text derived from the live schema
+   * @param array $storedTexts table_name => schema text currently embedded
+   * @return array complete, db_tables, embedded, missing[], stale[], orphan[], unchanged[]
+   */
+  public static function diffCoverage(array $freshTexts, array $storedTexts): array
+  {
+    $missing = [];
+    $stale = [];
+    $unchanged = [];
+
+    foreach ($freshTexts as $tableName => $text) {
+      if (!isset($storedTexts[$tableName])) {
+        $missing[] = $tableName;
+      } elseif ($storedTexts[$tableName] !== $text) {
+        $stale[] = $tableName;
+      } else {
+        $unchanged[] = $tableName;
+      }
+    }
+
+    $orphan = array_values(array_diff(array_keys($storedTexts), array_keys($freshTexts)));
+
+    return [
+      'complete' => empty($missing) && empty($stale) && empty($orphan),
+      'db_tables' => count($freshTexts),
+      'embedded' => count($storedTexts),
+      'missing' => $missing,
+      'stale' => $stale,
+      'orphan' => $orphan,
+      'unchanged' => $unchanged
+    ];
+  }
+
+  /**
+   * Columns of a table with their comments
+   *
+   * @param string $tableName Table name
+   * @return array Rows with Field, Type and Comment
+   */
+  private function getTableColumns(string $tableName): array
+  {
+    $columns = [];
+    $Qcolumns = $this->db->query("SHOW FULL COLUMNS FROM `{$tableName}`");
+
+    while ($Qcolumns->fetch()) {
+      $columns[] = [
+        'Field' => $Qcolumns->value('Field'),
+        'Type' => $Qcolumns->value('Type'),
+        'Comment' => $Qcolumns->value('Comment')
+      ];
+    }
+
+    return $columns;
+  }
+
+  /**
+   * Schema texts currently stored, technical rows included so they can be dropped
+   *
+   * Trimmed like the freshly built texts: surrounding whitespace carries no schema
+   * meaning and would report every row stale.
+   *
+   * @return array table_name => schema text
+   */
+  private function getStoredSchemaTexts(): array
+  {
+    $Qstored = $this->db->query('
+      SELECT table_name, schema_text
+      FROM :table_rag_schema_embedding
+      ORDER BY table_name
+    ');
+
+    $stored = [];
+
+    while ($Qstored->fetch()) {
+      $stored[$Qstored->value('table_name')] = trim($Qstored->value('schema_text'));
+    }
+
+    return $stored;
+  }
+
+  /**
+   * Generate the embedding of a table and store it
+   *
+   * @param string $tableName Table name
+   * @param string $schemaText Schema text to embed
+   * @return void
+   * @throws \Exception If the embedding generation or the write fails
+   */
+  private function embedAndStore(string $tableName, string $schemaText): void
+  {
+    $embeddedDocuments = NewVector::createEmbedding(null, $schemaText);
+
+    if (empty($embeddedDocuments) || !isset($embeddedDocuments[0]->embedding)) {
+      throw new \Exception('Embedding generation returned empty result');
+    }
+
+    $this->storeEmbedding($tableName, $schemaText, $embeddedDocuments[0]->embedding);
+  }
+
+  /**
+   * Write the embedding in the VECTOR column
+   *
    * @param string $tableName Table name
    * @param string $schemaText Schema text
    * @param array $embedding Embedding vector
-   * @param int $tokenCount Estimated token count
    * @return void
+   * @throws \Exception If the write fails
    */
-  private function storeEmbedding(string $tableName, string $schemaText, array $embedding, int $tokenCount): void
+  private function storeEmbedding(string $tableName, string $schemaText, array $embedding): void
   {
-    $embeddingJson = json_encode($embedding);
+    $vectorString = '[' . implode(',', $embedding) . ']';
+    $tokenCount = (int)ceil(strlen($schemaText) / 4);
     $now = date('Y-m-d H:i:s');
-    
-    // Check if embedding already exists
+
     $Qcheck = $this->db->prepare('
       SELECT id
       FROM :table_rag_schema_embedding
       WHERE table_name = :table_name
     ');
-    
+
     $Qcheck->bindValue(':table_name', $tableName);
     $Qcheck->execute();
-    
-    if ($Qcheck->fetch()) {
-      // Update existing
-      $Qupdate = $this->db->prepare('
+
+    if ($Qcheck->fetch() !== false) {
+      $Qwrite = $this->db->prepare('
         UPDATE :table_rag_schema_embedding
         SET schema_text = :schema_text,
-            embedding_vector = :embedding_vector,
+            embedding_vector = VEC_FromText(:embedding_vector),
             token_count = :token_count,
             updated_at = :updated_at
         WHERE table_name = :table_name
       ');
-      
-      $Qupdate->bindValue(':schema_text', $schemaText);
-      $Qupdate->bindValue(':embedding_vector', $embeddingJson);
-      $Qupdate->bindInt(':token_count', $tokenCount);
-      $Qupdate->bindValue(':updated_at', $now);
-      $Qupdate->bindValue(':table_name', $tableName);
-      $Qupdate->execute();
+      $Qwrite->bindValue(':updated_at', $now);
     } else {
-      // Insert new
-      $Qinsert = $this->db->prepare('
+      $Qwrite = $this->db->prepare('
         INSERT INTO :table_rag_schema_embedding
-        (table_name, schema_text, embedding_vector, token_count, created_at)
+        (table_name, schema_text, embedding_vector, token_count, created_at, updated_at)
         VALUES
-        (:table_name, :schema_text, :embedding_vector, :token_count, :created_at)
+        (:table_name, :schema_text, VEC_FromText(:embedding_vector), :token_count, :created_at, :updated_at)
       ');
-      
-      $Qinsert->bindValue(':table_name', $tableName);
-      $Qinsert->bindValue(':schema_text', $schemaText);
-      $Qinsert->bindValue(':embedding_vector', $embeddingJson);
-      $Qinsert->bindInt(':token_count', $tokenCount);
-      $Qinsert->bindValue(':created_at', $now);
-      $Qinsert->execute();
+      $Qwrite->bindValue(':created_at', $now);
+      $Qwrite->bindValue(':updated_at', $now);
+    }
+
+    $Qwrite->bindValue(':table_name', $tableName);
+    $Qwrite->bindValue(':schema_text', $schemaText);
+    $Qwrite->bindValue(':embedding_vector', $vectorString);
+    $Qwrite->bindInt(':token_count', $tokenCount);
+
+    // A false return swallows the SQL error, so it must be raised explicitly
+    if ($Qwrite->execute() === false) {
+      throw new \Exception('Write of the schema embedding failed');
+    }
+  }
+
+  /**
+   * Delete stored rows of tables that are gone or technical
+   *
+   * @param array $tableNames Table names to drop from the store
+   * @return int Number of deleted rows
+   */
+  private function deleteRows(array $tableNames): int
+  {
+    $deleted = 0;
+
+    $Qdelete = $this->db->prepare('
+      DELETE FROM :table_rag_schema_embedding
+      WHERE table_name = :table_name
+    ');
+
+    foreach ($tableNames as $tableName) {
+      $Qdelete->bindValue(':table_name', $tableName);
+
+      if ($Qdelete->execute() !== false) {
+        $deleted++;
+        $this->debugLog("dropped stale row {$tableName}");
+      }
+    }
+
+    return $deleted;
+  }
+
+  /**
+   * Guarded debug logging
+   *
+   * @param string $message Message to log
+   * @return void
+   */
+  private function debugLog(string $message): void
+  {
+    if ($this->debug) {
+      error_log('[SchemaEmbedder] ' . $message);
     }
   }
 }

@@ -60,12 +60,7 @@ class MariaDBVectorStore extends VectorStoreBase
   {
     $this->embeddingGenerator = $embeddingGenerator;
     $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-
-    if (!empty($prefix) && str_starts_with($tableName, $prefix)) {
-      $this->tableName = $tableName;
-    } else {
-      $this->tableName = $prefix . $tableName;
-    }
+    $this->tableName = self::resolveTableName($tableName);
 
     $entityManager = DoctrineOrm::getEntityManager();
     $this->connection = $entityManager->getConnection();
@@ -81,6 +76,26 @@ class MariaDBVectorStore extends VectorStoreBase
       error_log("Prefix: {$prefix}");
       error_log("===================================================");
     }
+  }
+
+  /**
+   * Resolve the table a store will really query
+   *
+   * Single rule, shared with callers that must check existence BEFORE building a store:
+   * checking the name handed in would validate a table the store never touches.
+   *
+   * @param string $tableName Table name, prefixed or not
+   * @return string Table name carrying this install's prefix
+   */
+  public static function resolveTableName(string $tableName): string
+  {
+    $prefix = (string)CLICSHOPPING::getConfig('db_table_prefix');
+
+    if ($prefix !== '' && str_starts_with($tableName, $prefix)) {
+      return $tableName;
+    }
+
+    return $prefix . $tableName;
   }
 
   /**

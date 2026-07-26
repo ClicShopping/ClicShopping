@@ -10,6 +10,7 @@ version4.33
   - AI review sentiment analysis improved and refactored with agentic approach
   - ChatGpt Apps refactored
   - AI response time optimization
+  - Some refactorisation and improvement
 
 ---------------
 version4.32

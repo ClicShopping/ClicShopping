@@ -455,7 +455,7 @@ modal_reset_cache_reactivate_button = Réactiver le bouton
 
 # Types de Cache
 cache_type_database = 💾 Cache Base de Données
-cache_type_database_desc = Table de base de données clic_rag_query_cache (résultats de requêtes SQL)
+cache_type_database_desc = Table de base de données rag_query_cache (résultats de requêtes SQL)
 
 
 

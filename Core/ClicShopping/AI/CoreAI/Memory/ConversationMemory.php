@@ -662,7 +662,7 @@ class ConversationMemory
    * 🆕 NEW METHOD: Délègue à EntityTracker
    *
    * @param int $entityId Entity ID
-   * @param string $entityType Entity type (product, category, order, etc.)
+   * @param string $entityType Entity type, any producer's form — EntityTracker normalizes it
    * @param string|null $entityName Entity name (optional, for context enrichment)
    * @return void
    */

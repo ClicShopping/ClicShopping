@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\CoreAI\Memory\SubConversationMemory;
 
 
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\OM\CLICSHOPPING;
@@ -63,13 +64,19 @@ class EntityTracker
   /**
    * Set the last entity
    *
+   * The type is coerced to the canonical form first: producers disagree (the analytics path derives
+   * it from the table name, a domain subsystem may author its own singular form in the embedding
+   * metadata it owns), and the no-clobber guard below compares types.
+   *
    * @param int $entityId Entity ID
-   * @param string $entityType Entity type (product, category, order, etc.)
+   * @param string $entityType Entity type, any producer's form
    * @param string|null $entityName Entity name (optional, for context enrichment)
    * @return void
    */
   public function setLastEntity(int $entityId, string $entityType, ?string $entityName = null): void
   {
+    $entityType = EntityRegistry::getInstance()->normalizeEntityType($entityType);
+
     // No-clobber guard: a nameless re-set of the SAME entity must not erase a name we already
     // hold. Several call sites (StoreMemoryStage, MemoryManager::storeOrchestrationResult) re-set
     // the entity with id+type only AFTER the executor captured the name; without this guard the
@@ -170,7 +177,8 @@ class EntityTracker
         if (!empty($metadataJson)) {
           $metadata = json_decode($metadataJson, true);
           if (isset($metadata['entity_type'])) {
-            $entityType = $metadata['entity_type'];
+            // Rows written before normalization carry the producer's own form; heal them on read
+            $entityType = EntityRegistry::getInstance()->normalizeEntityType((string)$metadata['entity_type']);
           }
           // Extract entity_name from metadata
           if (isset($metadata['entity_name'])) {

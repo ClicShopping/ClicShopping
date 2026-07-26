@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\CoreAI\Memory;
 
 
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
@@ -106,7 +107,9 @@ class MemoryRetentionService
       // Extract entity_id and language_id from metadata
       $entityId = $metadata['entity_id'] ?? 0;
       $languageId = $metadata['language_id'] ?? $this->languageId;
-      $entityType = $metadata['entity_type'] ?? 'unknown';
+      // The chat path receives the type straight from the agent response, so coerce it to the
+      // canonical form here — this metadata is what MariaDBVectorStore copies into the column.
+      $entityType = EntityRegistry::getInstance()->normalizeEntityType((string)($metadata['entity_type'] ?? 'unknown'));
 
       // Ensure they are not NULL
       if (is_null($entityId) || $entityId === '') {

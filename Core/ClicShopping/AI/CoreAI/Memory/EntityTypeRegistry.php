@@ -14,6 +14,7 @@ use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Rag\EmbeddingTableDiscovery;
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 
 /**
  * EntityTypeRegistry Class
@@ -112,12 +113,15 @@ class EntityTypeRegistry
         if ($entityType !== null) {
           $this->entityTypes[] = $entityType;
           $this->tableToEntityMap[$tableName] = $entityType;
-          $this->entityToTableMap[$entityType] = $tableName;
+          if (!isset($this->entityToTableMap[$entityType])
+            || $tableName === $this->prefix . $entityType . '_embedding') {
+            $this->entityToTableMap[$entityType] = $tableName;
+          }
         }
       }
 
       // Remove duplicates
-      $this->entityTypes = array_unique($this->entityTypes);
+      $this->entityTypes = array_values(array_unique($this->entityTypes));
 
       $this->initialized = true;
 
@@ -257,21 +261,20 @@ class EntityTypeRegistry
   /**
    * Extract entity type from table name
    *
-   * Converts table names like 'clicshopping_products_embedding' to 'products'
+   * Delegates to EntityRegistry, the single owner of the entity/satellite/system classification:
+   * 'clic_products_embedding' → 'products', and the satellite 'clic_products_seo_embedding' →
+   * 'products' too, since its entity_id holds a products_id. A store related to no entity is
+   * rejected rather than published as a type of its own.
    *
    * @param string $tableName Full table name
-   * @return string|null Entity type or null if invalid
+   * @return string|null Entity type or null if the table is not an entity store
    */
   private function extractEntityTypeFromTable(string $tableName): ?string
   {
-    // Remove prefix
-    $withoutPrefix = str_replace($this->prefix, '', $tableName);
+    $registry = EntityRegistry::getInstance();
+    $entityType = $registry->getEntityTypeForTable($tableName);
 
-    // Remove '_embedding' suffix
-    $entityType = str_replace('_embedding', '', $withoutPrefix);
-
-    // Validate entity type
-    if (empty($entityType) || strlen($entityType) < 2) {
+    if (strlen($entityType) < 2 || !in_array($entityType, $registry->getKnownEntityTypes(), true)) {
       return null;
     }
 
@@ -315,7 +318,7 @@ class EntityTypeRegistry
         }
       }
 
-      $this->entityTypes = array_unique($this->entityTypes);
+      $this->entityTypes = array_values(array_unique($this->entityTypes));
       $this->initialized = true;
 
       if ($this->debug) {

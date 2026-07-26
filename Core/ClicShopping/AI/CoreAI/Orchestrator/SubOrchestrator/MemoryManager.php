@@ -12,6 +12,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\CoreAI\Memory\WorkingMemory;
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 
 /**
  * MemoryManager Class
@@ -104,7 +105,7 @@ class MemoryManager
    * in the conversation for contextual reference resolution.
    *
    * @param int $entityId Entity ID
-   * @param string $entityType Entity type (product, category, customer, etc.)
+   * @param string $entityType Entity type, any producer's form — EntityTracker normalizes it
    * @param string|null $entityName Entity name (optional, for context enrichment)
    */
   public function setLastEntity(int $entityId, string $entityType, ?string $entityName = null): void
@@ -228,6 +229,10 @@ class MemoryManager
     $queryAnalyzer,
     $responseProcessor
   ): void {
+    // The metadata is what MariaDBVectorStore copies into the entity_type column, so the canonical
+    // form must be applied here too, not only on the tracked entity below.
+    $entityType = EntityRegistry::getInstance()->normalizeEntityType($entityType);
+
     // Recover the entity NAME captured earlier this turn (e.g. by AnalyticsExecutor) so it can be
     // persisted in the memory metadata. getLastEntity() DB fallback reads metadata['entity_name'],
     // so without this a cross-message follow-up ("its sku") loses the name and cannot be resolved.

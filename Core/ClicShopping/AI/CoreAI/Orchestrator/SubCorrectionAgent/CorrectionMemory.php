@@ -201,37 +201,17 @@ class CorrectionMemory
 
   /**
    * Extracts entity_id from query results using centralized EntityRegistry
-   * 
+   *
    * @param array $results Query results array
    * @return array Array with 'entity_id' and 'entity_type' keys
    */
   public function extractEntityIdFromResults(array $results): array
   {
-    $entityId = null;
-    $entityType = null;
-
     if (empty($results)) {
-      return ['entity_id' => $entityId, 'entity_type' => $entityType];
+      return ['entity_id' => null, 'entity_type' => null];
     }
 
-    $firstRow = $results[0];
-
-    // Use centralized EntityRegistry for ID column mappings
-    $registry = EntityRegistry::getInstance();
-    $idColumnNames = $registry->getIdColumnMappings();
-
-    foreach ($idColumnNames as $idCol => $type) {
-      if (isset($firstRow[$idCol]) && !empty($firstRow[$idCol])) {
-        $entityId = (int) $firstRow[$idCol];
-        $entityType = $type;
-        break;
-      }
-    }
-
-    return [
-      'entity_id' => $entityId,
-      'entity_type' => $entityType,
-    ];
+    return EntityRegistry::getInstance()->extractEntityFromRow($results[0]);
   }
 
   /**

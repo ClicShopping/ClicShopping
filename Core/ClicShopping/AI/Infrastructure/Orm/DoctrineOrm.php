@@ -53,6 +53,23 @@ class DoctrineOrm
   private static ?array $cachedFieldsByTable = null;
   private static ?EntityManager $entityManager = null;
 
+  /**
+   * This install's table prefix
+   *
+   * The class is used statically and nothing instantiates it, so the constructor cannot be
+   * relied on: a raw read of $prefixDb returns null and unscopes every prefix predicate.
+   *
+   * @return string Configured table prefix (empty string when none)
+   */
+  private static function prefix(): string
+  {
+    if (empty(self::$prefixDb)) {
+      self::$prefixDb = CLICSHOPPING::getConfig('db_table_prefix');
+    }
+
+    return (string)self::$prefixDb;
+  }
+
   public function __construct()
   {
     self::$debug = \defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER == 'True';
@@ -283,7 +300,7 @@ class DoctrineOrm
     
     try {
       $connection = self::getEntityManager()->getConnection();
-      $prefix = self::$prefixDb;
+      $prefix = self::prefix();
       
       // Get ALL tables with the prefix
       $sql = "SELECT TABLE_NAME 
@@ -357,7 +374,7 @@ class DoctrineOrm
     ];
     
     foreach ($excludeTables as $table) {
-      if ($tableName === self::$prefixDb . $table) {
+      if ($tableName === self::prefix() . $table) {
         return true;
       }
     }
@@ -378,11 +395,8 @@ class DoctrineOrm
    */
   public static function getFallbackRelevantTables(): array
   {
-    // Ensure prefix is initialized (may be called before constructor)
-    if (empty(self::$prefixDb)) {
-      self::$prefixDb = CLICSHOPPING::getConfig('db_table_prefix');
-    }
-    
+    self::prefix();
+
     $activeDomain = DomainConfig::getActivities();
     $entityConfigClass = DomainFields::resolveAppClass($activeDomain, 'EntityConfig');
     if ($entityConfigClass !== null) {
@@ -435,7 +449,8 @@ class DoctrineOrm
 
       $entityManager = self::getEntityManager();
       $connection = $entityManager->getConnection();
-      $prefix = self::$prefixDb;
+
+      $prefix = self::prefix();
 
       if (self::$debug) {
         error_log("Database prefix: '{$prefix}'");
@@ -461,6 +476,15 @@ class DoctrineOrm
         $result = $connection->executeQuery($sql);
         $tables = $result->fetchFirstColumn();
 
+        // Same scope as the METHOD 2 fallback: a shared schema may hold another install's
+        // embedding tables, and adopting them would feed foreign data into the RAG fan-out.
+        if ($prefix !== '') {
+          $tables = array_values(array_filter(
+            $tables,
+            static fn(string $tableName): bool => str_starts_with($tableName, $prefix)
+          ));
+        }
+
         if (self::$debug) {
           error_log("information_schema result: " . print_r($tables, true));
         }
@@ -479,7 +503,7 @@ class DoctrineOrm
 
         try {
           $sql = "SHOW TABLES LIKE ?";
-          $pattern = self::$prefixDb . '%_embedding';
+          $pattern = self::prefix() . '%_embedding';
 
           if (self::$debug) {
             error_log("Pattern: {$pattern}");
@@ -818,7 +842,7 @@ class DoctrineOrm
   private static function extractEntityType(string $tableName): ?string
   {
     // Remove prefix
-    $entityType = str_replace(self::$prefixDb, '', $tableName);
+    $entityType = str_replace(self::prefix(), '', $tableName);
     
     // Remove _description suffix
     $entityType = preg_replace('/_description$/', '', $entityType);
@@ -1080,13 +1104,10 @@ class DoctrineOrm
   {
     try {
       // Initialize prefix if not set
-      if (self::$prefixDb === null) {
-        self::$prefixDb = CLICSHOPPING::getConfig('db_table_prefix');
-      }
       
       // Add prefix if not already present
-      if (!str_starts_with($tableName, self::$prefixDb)) {
-        $tableName = self::$prefixDb . $tableName;
+      if (!str_starts_with($tableName, self::prefix())) {
+        $tableName = self::prefix() . $tableName;
       }
       
       $connection = self::getEntityManager()->getConnection();
@@ -1115,13 +1136,10 @@ class DoctrineOrm
   {
     try {
       // Initialize prefix if not set
-      if (self::$prefixDb === null) {
-        self::$prefixDb = CLICSHOPPING::getConfig('db_table_prefix');
-      }
       
       // Add prefix if not already present
-      if (!str_starts_with($tableName, self::$prefixDb)) {
-        $tableName = self::$prefixDb . $tableName;
+      if (!str_starts_with($tableName, self::prefix())) {
+        $tableName = self::prefix() . $tableName;
       }
       
       $connection = self::getEntityManager()->getConnection();
@@ -1146,13 +1164,10 @@ class DoctrineOrm
   {
     try {
       // Initialize prefix if not set
-      if (self::$prefixDb === null) {
-        self::$prefixDb = CLICSHOPPING::getConfig('db_table_prefix');
-      }
       
       // Add prefix if not already present
-      if (!str_starts_with($tableName, self::$prefixDb)) {
-        $tableName = self::$prefixDb . $tableName;
+      if (!str_starts_with($tableName, self::prefix())) {
+        $tableName = self::prefix() . $tableName;
       }
       
       $connection = self::getEntityManager()->getConnection();

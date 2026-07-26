@@ -23,9 +23,10 @@ use ClicShopping\AI\Config\DomainConfig;
 
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
+use ClicShopping\AI\Rag\Reranking\DocumentReranker;
+
 use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
-use LLPhant\Query\SemanticSearch\LLMReranker;
 
 /**
  * MultiDBRAGManager Class
@@ -57,7 +58,7 @@ class MultiDBRAGManager
 
   private int $userId;
 
-  private ?LLMReranker $reranker = null;
+  private ?DocumentReranker $reranker = null;
   private bool $useReranking = false;
   private RagContextFormatter $contextFormatter;
 
@@ -131,7 +132,7 @@ class MultiDBRAGManager
 
     $this->embeddingGenerator = $this->createEmbeddingGenerator();
 
-    // Initialize LLMReranker for better document relevance (Task 2.14.3)
+    // Initialize the document reranker for better document relevance (Task 2.14.3)
     if (defined('CLICSHOPPING_APP_CHATGPT_RA_USE_RERANKING')
       && CLICSHOPPING_APP_CHATGPT_RA_USE_RERANKING === 'True') {
 
@@ -143,13 +144,13 @@ class MultiDBRAGManager
         // Number of documents to return after reranking
         $nrOfOutputDocuments = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;
 
-        $this->reranker = new LLMReranker($chat, $nrOfOutputDocuments);
+        $this->reranker = new DocumentReranker($chat, $nrOfOutputDocuments, $this->debug);
 
         if ($this->debug) {
-          error_log(" LLMReranker initialized with {$nrOfOutputDocuments} output documents");
+          error_log(" DocumentReranker initialized with {$nrOfOutputDocuments} output documents");
         }
       } catch (\Exception $e) {
-        error_log("[error] Failed to initialize LLMReranker: " . $e->getMessage());
+        error_log("[error] Failed to initialize DocumentReranker: " . $e->getMessage());
         $this->useReranking = false;
         $this->reranker = null;
       }
@@ -285,10 +286,12 @@ class MultiDBRAGManager
           error_log("[INFO] Creating VectorStore for: {$tableName}");
         }
 
-        // Verify that the table exists before creating the VectorStore
-        if (!DoctrineOrm::checkTableStructure($tableName)) {
+        // Verify the table the store will really query, not the name handed in
+        $resolvedTable = MariaDBVectorStore::resolveTableName($tableName);
+
+        if (!DoctrineOrm::checkTableStructure($resolvedTable)) {
           if ($this->debug) {
-            error_log("Table {$tableName} does not exist, skipping");
+            error_log("Table {$resolvedTable} does not exist, skipping");
           }
 
           $failCount++;
@@ -359,11 +362,13 @@ class MultiDBRAGManager
     try {
       // Check the table if the vector exist
       if (!isset($this->vectorStores[$tableName])) {
-        // If the table does not exist, chack if exist inside the db
-        if (!DoctrineOrm::checkTableStructure($tableName)) {
+        // Check the table the store will really query, not the name handed in
+        $resolvedTable = MariaDBVectorStore::resolveTableName($tableName);
+
+        if (!DoctrineOrm::checkTableStructure($resolvedTable)) {
           // Id the table does not existe, create it
-          if (!DoctrineOrm::createTableStructure($tableName)) {
-            throw new \Exception("Unable to create the table {$tableName}");
+          if (!DoctrineOrm::createTableStructure($resolvedTable)) {
+            throw new \Exception("Unable to create the table {$resolvedTable}");
           }
         }
 
@@ -822,7 +827,7 @@ class MultiDBRAGManager
    */
   private function applyReranking(array $allResults, string $query, int $limit, array $auditMetadata): array
   {
-    // Apply LLMReranker if enabled (Task 2.14.3)
+    // Apply the reranker if enabled (Task 2.14.3)
     if ($this->debug) {
       error_log("[INFO] Reranking check:");
       error_log("  - useReranking: " . ($this->useReranking ? 'true' : 'false'));
@@ -833,7 +838,7 @@ class MultiDBRAGManager
     if ($this->useReranking && $this->reranker !== null && count($allResults) > 0) {
       try {
         if ($this->debug) {
-          error_log("[INFO] Applying LLMReranker to improve relevance...");
+          error_log("[INFO] Applying DocumentReranker to improve relevance...");
           error_log("Query for reranking: {$query}");
           error_log("Documents before reranking: " . count($allResults));
         }
@@ -850,7 +855,7 @@ class MultiDBRAGManager
           error_log("Reranking {$initialLimit} documents to get top {$rerankingOutputCount}");
         }
 
-        // Apply LLMReranker - this will reorder documents by relevance
+        // Apply the reranker - this will reorder documents by relevance
         // transformDocuments expects: array of questions, array of documents
         $rerankedDocuments = $this->reranker->transformDocuments([$query], $documentsForReranking);
 

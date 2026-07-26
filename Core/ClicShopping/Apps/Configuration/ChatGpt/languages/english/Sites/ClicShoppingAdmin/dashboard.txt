@@ -455,7 +455,7 @@ modal_reset_cache_reactivate_button = Reactivate button
 
 # Cache Types
 cache_type_database = 💾 Database Cache
-cache_type_database_desc = Database table clic_rag_query_cache (SQL query results)
+cache_type_database_desc = Database table rag_query_cache (SQL query results)
 cache_type_schema = 🗂️ Schema Query Cache
 cache_type_schema_desc = Cached database schema queries in Work/Cache/Rag/SchemaQuery/
 cache_type_intent = 🎯 Intent Classification Cache

@@ -283,109 +283,37 @@ class QueryExecutor
 
   /**
    * Extracts entity_id and entity_type from query results
-   * Identifies the primary key value from results based on column naming conventions
-   * 
-   * Uses MultiDBRAGManager::knownEmbeddingTable() to dynamically determine entity types
-   * instead of hardcoded mappings.
+   *
+   * Delegates to EntityRegistry, the single source of truth for the id_column => entity_type
+   * mapping. A registry failure yields no entity rather than a guessed one.
    *
    * @param array $results Query results
    * @return array Array with 'entity_id' and 'entity_type' keys
    */
   public function extractEntityIdFromResults(array $results): array
   {
-    $entityId = null;
-    $entityType = null;
-
     if (empty($results)) {
-      $array = [
-        'entity_id' => $entityId,
-        'entity_type' => $entityType
-      ];
-
-      return $array;
+      return ['entity_id' => null, 'entity_type' => null];
     }
 
-    $firstRow = $results[0];
-
-    // Get ID column mappings dynamically from known embedding tables
-    $idColumnNames = $this->getEntityIdColumnMappings();
-
-    foreach ($idColumnNames as $idCol => $type) {
-      if (isset($firstRow[$idCol]) && !empty($firstRow[$idCol])) {
-        $entityId = (int) $firstRow[$idCol];
-        $entityType = $type;
-
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Entity extracted from results: ID={$entityId}, Type={$entityType} (column: {$idCol})",
-            'info'
-          );
-        }
-
-        break;
-      }
-    }
-
-    return [
-      'entity_id' => $entityId,
-      'entity_type' => $entityType,
-    ];
-  }
-
-  /**
-   * Gets entity ID column mappings from EntityRegistry
-   * 
-   * Uses the centralized EntityRegistry to get ID column mappings
-   * instead of duplicating the logic here.
-   * 
-   * @return array Associative array mapping ID column names to entity types
-   */
-  private function getEntityIdColumnMappings(): array
-  {
     try {
-      // Use centralized EntityRegistry for all entity table mappings
-      $registry = EntityRegistry::getInstance();
-      $idColumnMappings = $registry->getIdColumnMappings();
-      
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Retrieved ID column mappings from EntityRegistry: " . json_encode($idColumnMappings),
-          'info'
-        );
-      }
-      
-      return $idColumnMappings;
-      
+      $entity = EntityRegistry::getInstance()->extractEntityFromRow($results[0]);
     } catch (\Exception $e) {
-      // Fallback to basic mappings if EntityRegistry is not available
-      $this->securityLogger->logSecurityEvent(
-        "Failed to get ID mappings from EntityRegistry, using fallback: " . $e->getMessage(),
-        'warning'
+      $this->securityLogger->logApplicationError(
+        "Entity extraction unavailable, no entity attached to this result: " . $e->getMessage()
       );
-      
-      return $this->getFallbackIdColumnMappings();
-    }
-  }
 
-  /**
-   * Gets fallback ID column mappings when EntityRegistry fails
-   * 
-   * @return array Fallback ID column mappings
-   */
-  private function getFallbackIdColumnMappings(): array
-  {
-    return [
-      'products_id' => 'products',
-      'categories_id' => 'categories',
-      'orders_id' => 'orders',
-      'customers_id' => 'customers',
-      'pages_id' => 'pages_manager',
-      'suppliers_id' => 'suppliers',
-      'manufacturers_id' => 'manufacturers',
-      'reviews_id' => 'reviews',
-      'return_id' => 'return_orders',
-      'id' => 'generic',
-    ];
+      return ['entity_id' => null, 'entity_type' => null];
+    }
+
+    if ($this->debug && $entity['entity_id'] !== null) {
+      $this->securityLogger->logSecurityEvent(
+        "Entity extracted from results: ID={$entity['entity_id']}, Type={$entity['entity_type']}",
+        'info'
+      );
+    }
+
+    return $entity;
   }
 
   /**

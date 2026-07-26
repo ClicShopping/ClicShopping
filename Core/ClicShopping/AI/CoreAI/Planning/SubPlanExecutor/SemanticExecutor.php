@@ -15,6 +15,8 @@ use ClicShopping\AI\Security\Validation\AnswerGroundingVerifier;
 use ClicShopping\AI\Security\Validation\HallucinationDetector;
 use ClicShopping\AI\Security\Validation\ConfidenceScoreCalculator;
 use ClicShopping\AI\CoreAI\Memory\EntityTypeRegistry;
+use ClicShopping\AI\DomainsAI\Shared\Entity\DocumentEntityResolver;
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationTurnReader;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
 use ClicShopping\OM\CLICSHOPPING;
@@ -405,7 +407,8 @@ class SemanticExecutor
    *
    *
    * This method examines the documents returned from semantic search and extracts
-   * entity information from their metadata. It infers entity_type from the source table name.
+   * entity information from their metadata. The type is resolved by DocumentEntityResolver:
+   * the source table first (schema-derived), the producer's label only as a fallback.
    *
    * @param array $rawResult Raw result containing documents
    * @return array|null Entity information or null if no entity found
@@ -440,20 +443,12 @@ class SemanticExecutor
         $entityId = (int)$metadata['entity_id'];
       }
 
-      // Extract or infer entity_type
-      $entityType = null;
-      
-      // First, check if entity_type is explicitly set in metadata
-      if (isset($metadata['entity_type']) && !empty($metadata['entity_type'])) {
-        $entityType = $metadata['entity_type'];
-      }
-      // Otherwise, infer from source_table or type
-      elseif (isset($metadata['source_table']) && !empty($metadata['source_table'])) {
-        $entityType = $this->inferEntityTypeFromTable($metadata['source_table']);
-      }
-      elseif (isset($metadata['type']) && !empty($metadata['type'])) {
-        $entityType = $metadata['type'];
-      }
+      // The store is schema-derived, so it outranks the label the producer wrote
+      $entityType = DocumentEntityResolver::resolveEntityType(
+        (array)$metadata,
+        fn(string $table): string => $this->inferEntityTypeFromTable($table),
+        static fn(string $type): bool => in_array($type, EntityRegistry::getInstance()->getKnownEntityTypes(), true)
+      );
 
       // If we found both entity_id and entity_type, return them
       if ($entityId !== null && $entityId > 0 && $entityType !== null) {
@@ -477,10 +472,10 @@ class SemanticExecutor
    * This method uses EntityTypeRegistry to dynamically convert table names
    * to entity types, avoiding code duplication.
    *
-   * Examples:
-   * - pages_manager_description_embedding → page_manager
-   * - products_embedding → product
-   * - categories_embedding → category
+   * Returns the canonical table-name form, e.g.:
+   * - products_embedding → products
+   * - categories_embedding → categories
+   * - pages_manager_embedding → pages_manager
    *
    * @param string $tableName Table name (with or without prefix)
    * @return string Entity type

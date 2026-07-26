@@ -40,6 +40,8 @@ class EntityRegistry
   private static ?EntityRegistry $instance = null;
   private array $entityTableCache = [];
   private array $idColumnCache = [];
+  private array $knownEntityTypeCache = [];
+  private array $classificationCache = [];
   private ?SecurityLogger $securityLogger = null;
   private bool $debug = false;
   private ?\PDO $db = null;
@@ -231,13 +233,9 @@ class EntityRegistry
       return $this->idColumnCache[$tableName];
     }
 
-    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-    
-    // Remove prefix and '_embedding' suffix to get entity type
-    $entityType = str_replace([$prefix, '_embedding'], '', $tableName);
-    
-    // Get ID column for this entity type
-    $idColumn = $this->getIdColumnForEntityType($entityType);
+    // A satellite reports its target's type, so it also borrows its target's id column:
+    // that is exactly what its entity_id holds.
+    $idColumn = $this->getIdColumnForEntityType($this->getEntityTypeForTable($tableName));
     
     // Cache the result
     $this->idColumnCache[$tableName] = $idColumn;
@@ -283,47 +281,195 @@ class EntityRegistry
   /**
    * Get entity type for a given table name
    *
-   * Extracts the entity type from the table name
+   * A satellite store ('products_seo', 'reviews_sentiment') carries the id of ANOTHER entity,
+   * so it reports its target's type; only a store related to no entity keeps its own name.
    *
    * @param string $tableName Full table name (with prefix)
    * @return string Entity type (e.g., 'products', 'categories')
    */
   public function getEntityTypeForTable(string $tableName): string
   {
+    $classification = $this->getTableClassification();
+
+    if (isset($classification[$tableName]['entity_type'])) {
+      return $classification[$tableName]['entity_type'];
+    }
+
+    return $this->deriveNameFromTable($tableName);
+  }
+
+  /**
+   * Derive the name a table declares, without interpreting it
+   *
+   * @param string $tableName Full table name (with prefix)
+   * @return string
+   */
+  private function deriveNameFromTable(string $tableName): string
+  {
     $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-    
-    // Remove prefix and '_embedding' suffix
-    $entityType = str_replace([$prefix, '_embedding'], '', $tableName);
-    
-    return $entityType;
+
+    return str_replace([$prefix, '_embedding'], '', $tableName);
+  }
+
+  /**
+   * Classify every known table as entity / satellite / system
+   *
+   * Memoized: the classification reads INFORMATION_SCHEMA through DoctrineOrm (itself cached),
+   * and every entity-vocabulary accessor below is built on it.
+   *
+   * @return array<string, array{kind: string, entity_type: string|null}>
+   */
+  private function getTableClassification(): array
+  {
+    if ($this->classificationCache !== []) {
+      return $this->classificationCache;
+    }
+
+    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+
+    $this->classificationCache = EntityTableClassifier::classify(
+      $this->getAllEntityTables(),
+      $prefix,
+      static fn(string $table): array => DoctrineOrm::getTableColumns($table),
+      fn(string $entityName): ?string => $this->getIdColumnForEntityType($entityName)
+    );
+
+    return $this->classificationCache;
+  }
+
+  /**
+   * Tables whose nature is the given kind
+   *
+   * @param string $kind One of EntityTableClassifier::ENTITY|SATELLITE|SYSTEM
+   * @return array<string, array{kind: string, entity_type: string|null}>
+   */
+  private function getTablesOfKind(string $kind): array
+  {
+    return array_filter(
+      $this->getTableClassification(),
+      static fn(array $entry): bool => $entry['kind'] === $kind
+    );
+  }
+
+  /**
+   * Get the canonical entity type vocabulary of this install
+   *
+   * The canonical form is the table-name form ('products', 'categories', 'pages_manager'): it is
+   * the only one derivable from the schema, so it needs no per-domain singular/plural dictionary.
+   *
+   * Only entity tables contribute: a satellite already resolves to its target's type, and a
+   * system store is not a nature of entity at all.
+   *
+   * @return array List of canonical entity types
+   */
+  public function getKnownEntityTypes(): array
+  {
+    if ($this->knownEntityTypeCache !== []) {
+      return $this->knownEntityTypeCache;
+    }
+
+    $types = [];
+
+    foreach ($this->getTablesOfKind(EntityTableClassifier::ENTITY) as $entry) {
+      if ($entry['entity_type'] !== null && $entry['entity_type'] !== '') {
+        $types[$entry['entity_type']] = true;
+      }
+    }
+
+    // An install with discovered tables but NO entity among them means the schema could not be
+    // read (classification needs INFORMATION_SCHEMA), not that this install has no entity.
+    // Publishing an empty vocabulary would silence entity tracking everywhere, so degrade to
+    // the table names — the pre-classification behaviour — and say so.
+    if ($types === [] && $this->getAllEntityTables() !== []) {
+      $this->securityLogger->logApplicationError(
+        'EntityRegistry: no entity table classified, falling back to table-name vocabulary'
+      );
+
+      foreach ($this->getAllEntityTables() as $tableName) {
+        $name = $this->deriveNameFromTable($tableName);
+
+        if ($name !== '') {
+          $types[$name] = true;
+        }
+      }
+    }
+
+    $this->knownEntityTypeCache = array_keys($types);
+
+    return $this->knownEntityTypeCache;
+  }
+
+  /**
+   * Normalize an entity type to the canonical form
+   *
+   * entity_type is written by several producers and compared by consumers, so it needs one form.
+   * The agnostic layer derives it from the table name, while a domain subsystem may author its own
+   * singular form in the embedding metadata it owns (SEO writes 'product' / 'category'); that label
+   * travels verbatim into conversation memory unless it is coerced here.
+   *
+   * A value that matches no entity table is returned as-is: 'general' / 'unknown' are not entities,
+   * and inventing a type would be worse than leaving the producer's label alone.
+   *
+   * @param string $entityType Entity type in any producer's form
+   * @return string Canonical entity type, or the hygienized input when no entity table matches
+   */
+  public function normalizeEntityType(string $entityType): string
+  {
+    $normalized = EntityHelper::normalizeEntityType($entityType);
+
+    if ($normalized === '') {
+      return $normalized;
+    }
+
+    try {
+      $known = $this->getKnownEntityTypes();
+    } catch (\Exception $e) {
+      // Degrade to the producer's label: losing entity tracking would be worse than losing the form
+      $this->securityLogger->logApplicationError(
+        'EntityRegistry: cannot normalize entity type, registry unavailable: ' . $e->getMessage()
+      );
+
+      return $normalized;
+    }
+
+    if (in_array($normalized, $known, true)) {
+      return $normalized;
+    }
+
+    $plural = EntityHelper::getPluralForm($normalized);
+
+    return in_array($plural, $known, true) ? $plural : $normalized;
   }
 
   /**
    * Get ID column mappings for all entity tables
    *
    * Returns an associative array mapping ID column names to entity types
-   * Used by QueryExecutor for entity extraction
+   * Used for entity extraction (see extractEntityFromRow)
+   *
+   * The bare 'id' column is claimed by several system tables (reviews_sentiment, rag_*), which
+   * would overwrite each other and label any `SELECT id, …` row with whichever came last.
+   * It stays generic: no specific type may own it.
+   *
+   * Only entity tables contribute: a satellite has no id column of its own, so mapping one
+   * would invent a column no query can ever return.
    *
    * @return array Associative array [id_column => entity_type]
    */
   public function getIdColumnMappings(): array
   {
     $mappings = [];
-    $allTables = $this->getAllEntityTables();
 
-    foreach ($allTables as $tableName) {
-      $entityType = $this->getEntityTypeForTable($tableName);
+    foreach ($this->getTablesOfKind(EntityTableClassifier::ENTITY) as $entry) {
+      $entityType = (string)$entry['entity_type'];
       $idColumn = $this->getIdColumnForEntityType($entityType);
 
-      if ($idColumn) {
+      if ($idColumn && $idColumn !== 'id') {
         $mappings[$idColumn] = $entityType;
       }
     }
 
-    // Add fallback for generic 'id' column
-    if (!isset($mappings['id'])) {
-      $mappings['id'] = 'generic';
-    }
+    $mappings['id'] = 'generic';
 
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(
@@ -334,6 +480,34 @@ class EntityRegistry
     }
 
     return $mappings;
+  }
+
+  /**
+   * Extract entity_id and entity_type from a result row
+   *
+   * Single source of truth for entity extraction: the registry owns the id_column => entity_type
+   * mapping, so it owns the lookup. A falsy id yields no entity — an entity_type without a usable
+   * id would still reach the last_entity path.
+   *
+   * @param array $row A single result row (column => value)
+   * @return array ['entity_id' => int|null, 'entity_type' => string|null]
+   */
+  public function extractEntityFromRow(array $row): array
+  {
+    if ($row === []) {
+      return ['entity_id' => null, 'entity_type' => null];
+    }
+
+    foreach ($this->getIdColumnMappings() as $idColumn => $entityType) {
+      if (!empty($row[$idColumn])) {
+        return [
+          'entity_id' => (int)$row[$idColumn],
+          'entity_type' => $entityType,
+        ];
+      }
+    }
+
+    return ['entity_id' => null, 'entity_type' => null];
   }
 
   /**
@@ -402,6 +576,8 @@ class EntityRegistry
   {
     $this->entityTableCache = [];
     $this->idColumnCache = [];
+    $this->knownEntityTypeCache = [];
+    $this->classificationCache = [];
 
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(
@@ -504,6 +680,10 @@ class EntityRegistry
 
     // Add to ID column cache (IN-MEMORY ONLY)
     $this->idColumnCache[$tableName] = $idColumn;
+
+    // The canonical vocabulary is derived from the table list, so a late registration must reset it
+    $this->knownEntityTypeCache = [];
+    $this->classificationCache = [];
 
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(

@@ -40,7 +40,7 @@ interface QueryEnricherInterface
      * @param string $query   The current web-search query (already in English)
      * @param array  $context Contextual data, e.g.:
      *                        - 'entity_name' (string): last discussed entity name
-     *                        - 'entity_type' (string): its type (product, category, ...)
+     *                        - 'entity_type' (string): its canonical type (products, categories, ...)
      *                        - 'intent_type' (string|null): detected intent
      * @return string The enriched (or untouched) query
      */
