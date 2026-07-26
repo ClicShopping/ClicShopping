@@ -1,9 +1,10 @@
-text_reference_resolution_prompt = Vous résolvez les références contextuelles d'une requête de recherche. La dernière entité évoquée est un(e) {{entity_type}} nommé(e) "{{entity_name}}".
-Déterminez si la REQUÊTE fait référence à CETTE entité précise.
-Elle y fait référence UNIQUEMENT si elle ne peut pas être comprise seule sans connaître cette entité — typiquement parce qu'elle utilise une expression de renvoi qui pointe vers elle (un pronom ou possessif comme « il », « sa », « ce », « celui-ci », « le même ») ou qu'elle est un suivi manifestement incomplet à son sujet.
-TEST DE L'INCONNU : si une personne qui n'a jamais vu l'entité précédente pouvait comprendre et répondre à la REQUÊTE telle quelle, alors elle est autonome et NE fait PAS référence à l'entité.
-PAS D'EXPRESSION DE RENVOI → PAS DE RÉFÉRENCE : si la REQUÊTE ne contient aucun mot qui pointe vers l'entité (pas de « il », « sa », « ce », « celui-ci », « le même », etc.), alors elle NE fait PAS référence à l'entité et doit être renvoyée INCHANGÉE — même si son sujet pourrait conceptuellement se rapporter à l'entité (par exemple un décompte, un total ou une collection qui pourrait en principe impliquer l'entité). Une association conceptuelle ou thématique n'est PAS une référence ; seule une expression de renvoi explicite ou un suivi grammaticalement incomplet en est une.
-Contraste : « combien en a-t-on enregistré ce mois-ci » (sans mot de renvoi) est un chiffre général → references_entity=false ; « combien d'entre eux ce mois-ci » ou « combien pour celui-ci » (mot de renvoi présent) → references_entity=true.
-Le simple fait qu'une entité vienne d'être évoquée ne rend PAS une REQUÊTE autonome et sans rapport « à son sujet ». En particulier, une REQUÊTE qui demande un chiffre général ou agrégé, un total, une somme, une moyenne, un décompte, une liste, un classement, ou qui porte sur un autre sujet, type, catégorie, groupe, période ou métrique — et qui NE pointe PAS vers l'entité par une expression de renvoi — NE fait PAS référence à l'entité : renvoyez-la INCHANGÉE. En cas de doute, considérez la REQUÊTE comme autonome et N'ajoutez PAS l'entité.
-Uniquement lorsque la REQUÊTE fait réellement référence à l'entité, réécrivez-la en une requête de recherche autonome qui nomme explicitement l'entité.
-Répondez UNIQUEMENT en JSON : {"references_entity": true|false, "resolved_query": "<la requête, réécrite seulement si elle référence l'entité>"}. REQUÊTE : {{query}}
+text_reference_resolution_prompt = CONVERSATION SO FAR:
+{{history}}
+CANDIDATE ENTITY: a {{entity_type}} named "{{entity_name}}".
+This entity is merely the last one the system happened to track. It is often harvested from a row of a previous ANSWER, so its existence is NOT evidence that the user is talking about it.
+NEW QUERY: {{query}}
+Decide whether the NEW QUERY continues to talk about the CANDIDATE ENTITY.
+REQUIREMENT 1 — user focus. In one of their OWN turns, the user must have named that entity or asked about it. If the entity only ever appeared inside an Assistant answer — a list, a ranking, a set of results — the user was asking about the list, not about that row: answer false and stop.
+REQUIREMENT 2 — the NEW QUERY must not carry its own subject. A query that states what it is about (a named collection, a category, a policy, a company-wide total) is self-contained: answer false, even right after the user discussed the entity. A query that leaves its subject unspecified — a bare metric, an attribute, a fragment, a pronoun — inherits the entity the user was focused on: answer true.
+Respond ONLY with JSON: {"references_entity": true|false, "resolved_query": "<the NEW QUERY, rewritten to name the entity only if references_entity is true>"}
+text_reference_resolution_no_history = (no earlier turn recorded)

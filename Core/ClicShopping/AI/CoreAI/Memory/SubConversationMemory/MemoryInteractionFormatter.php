@@ -38,6 +38,32 @@ class MemoryInteractionFormatter
   }
 
   /**
+   * Inverse of formatInteractionForStorage(): splits a stored interaction back into its
+   * user and assistant halves. Kept here so the storage shape stays known to one class only.
+   *
+   * @param string $content Stored content
+   * @return array{user: string, assistant: string} Empty strings when the shape does not match
+   */
+  public function parseStoredInteraction(string $content): array
+  {
+    $empty = ['user' => '', 'assistant' => ''];
+
+    if (!str_starts_with($content, 'User: ')) {
+      return $empty;
+    }
+
+    $split = mb_strpos($content, "\n\nAssistant: ");
+    if ($split === false) {
+      return $empty;
+    }
+
+    return [
+      'user' => trim(mb_substr($content, 6, $split - 6)),
+      'assistant' => trim(mb_substr($content, $split + 13)),
+    ];
+  }
+
+  /**
    * Reduces an assistant response to the plain semantic text the embedding
    * model needs. Strips HTML, decodes entities, collapses whitespace and
    * caps the result so a runaway answer never poisons the embedding cost.

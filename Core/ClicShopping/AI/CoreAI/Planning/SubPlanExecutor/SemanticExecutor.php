@@ -15,6 +15,7 @@ use ClicShopping\AI\Security\Validation\AnswerGroundingVerifier;
 use ClicShopping\AI\Security\Validation\HallucinationDetector;
 use ClicShopping\AI\Security\Validation\ConfidenceScoreCalculator;
 use ClicShopping\AI\CoreAI\Memory\EntityTypeRegistry;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationTurnReader;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Config\DomainFields;
@@ -34,6 +35,7 @@ use ClicShopping\AI\Config\DomainFields;
 
 class SemanticExecutor
 {
+  private const REFERENCE_HISTORY_TURNS = 5;
   private SecurityLogger $logger;
   private bool $debug;
   private ?MultiDBRAGManager $ragManager = null;
@@ -108,7 +110,10 @@ class SemanticExecutor
       // entity; self-contained documentary queries are left untouched (no product pollution).
       $enrichedQuery = $query;
       if (isset($context['last_entity']) && !empty($context['last_entity']) && is_array($context['last_entity'])) {
-        $resolution = (new ReferenceResolver($this->debug))->resolve($query, $context['last_entity']);
+        $history = (new ConversationTurnReader($this->userId, $this->languageId, $this->debug))
+          ->getRecentTurns(self::REFERENCE_HISTORY_TURNS);
+
+        $resolution = (new ReferenceResolver($this->debug))->resolve($query, $context['last_entity'], $history);
         $enrichedQuery = $resolution['resolved_query'];
 
         if ($enrichedQuery !== $query && $this->debug) {

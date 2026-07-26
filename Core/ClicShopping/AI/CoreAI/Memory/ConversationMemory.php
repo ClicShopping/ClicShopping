@@ -22,6 +22,7 @@ use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\LongTermMemoryManager;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ContextResolver;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\EntityTracker;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationTurnReader;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ChunkReconstructor;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\MemoryQualityTracker;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\MemoryInteractionFormatter;
@@ -105,6 +106,7 @@ class ConversationMemory
   private ?int $lastEntityId = null;
   private ?string $lastEntityType = null;
   private bool $lastQueryReferencedEntity = false;
+  private ?array $referencedEntity = null;
 
   // Database prefix
   private string $prefix;
@@ -130,6 +132,7 @@ class ConversationMemory
   private MemoryQualityTracker $qualityTracker;
   private MemoryInteractionFormatter $interactionFormatter;
   private MemoryContextSwitchDetector $contextSwitchDetector;
+  private ConversationTurnReader $turnReader;
 
   /**
    * Constructor
@@ -188,6 +191,12 @@ class ConversationMemory
     $this->qualityTracker = new MemoryQualityTracker();
     $this->interactionFormatter = new MemoryInteractionFormatter();
     $this->contextSwitchDetector = new MemoryContextSwitchDetector($this->securityLogger, $this->debug);
+    $this->turnReader = new ConversationTurnReader(
+      $this->userId,
+      $this->languageId,
+      $this->debug,
+      $this->interactionFormatter
+    );
 
     // Get ConversationHistory from ShortTermMemoryManager for compatibility
     $this->conversationHistory = $this->shortTermManager->getConversationHistory();
@@ -492,6 +501,7 @@ class ConversationMemory
 
     // Reset per-call: only the reference-resolution branch below may flip this to true.
     $this->lastQueryReferencedEntity = false;
+    $this->referencedEntity = null;
 
     if ($this->debug) {
       error_log("[ConversationMemory] resolveContextualReferences called for query: " . substr($query, 0, 50));
@@ -510,10 +520,13 @@ class ConversationMemory
       // query actually references the entity (pronoun / implicit follow-up); 
       
       if ($lastEntity !== null) {
-        $resolution = (new ReferenceResolver($this->debug))->resolve($query, $lastEntity);
+        $history = $this->turnReader->getRecentTurns($this->maxContextWindow);
+
+        $resolution = (new ReferenceResolver($this->debug))->resolve($query, $lastEntity, $history);
         $referencesEntity = (bool)($resolution['references_entity'] ?? false);
         $resolvedQuery = (string)($resolution['resolved_query'] ?? $query);
         $this->lastQueryReferencedEntity = $referencesEntity;
+        $this->referencedEntity = $referencesEntity ? $lastEntity : null;
 
         if ($this->debug) {
           $this->securityLogger->logSecurityEvent(
@@ -687,6 +700,20 @@ class ConversationMemory
   public function didLastQueryReferenceEntity(): bool
   {
     return $this->lastQueryReferencedEntity;
+  }
+
+  /**
+   * The entity the current verdict was made about, or null when the query referenced none.
+   *
+   * Consumers must inject THIS entity rather than re-reading getLastEntity(): a turn decomposed
+   * into sub-queries stores each sub-result, so the live last entity drifts away from the one
+   * the resolver judged (observed 2026-07-23: product #8 at the verdict, #3 two sub-queries later).
+   *
+   * @return array|null Array with 'id', 'type' and 'name', or null
+   */
+  public function getReferencedEntity(): ?array
+  {
+    return $this->lastQueryReferencedEntity ? $this->referencedEntity : null;
   }
 
   /**

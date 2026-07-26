@@ -17,9 +17,10 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
  * ReferenceResolver
  *
  * Agnostic, agentic resolution of contextual references for a search (sub-)query.
- * Given a query and the last discussed entity, an LLM decides whether the query references
- * that entity and, if so, rewrites it into a self-contained query. Self-contained queries
- * (documents, policies, unrelated topics) are returned untouched — no entity pollution (§R).
+ * Given a query, the last discussed entity and the recent conversation turns, an LLM decides
+ * whether the query references that entity and, if so, rewrites it into a self-contained query.
+ * Self-contained queries (documents, policies, unrelated topics) are returned untouched — no
+ * entity pollution (§R).
  *
  * Fail-safe: any uncertainty (missing name, bare id, LLM error, unparseable output) returns
  * the original query with references_entity=false. The worst case is a clean, un-enriched
@@ -27,6 +28,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
  */
 class ReferenceResolver
 {
+  private const MAX_ANSWER_CHARS = 400;
   private SecurityLogger $logger;
   private bool $debug;
   /** @var callable(string):string */
@@ -52,9 +54,11 @@ class ReferenceResolver
    *
    * @param string $query Search query (in English — already translated upstream)
    * @param array $lastEntity Last entity context (keys: type, name, id)
+   * @param array<int, array{user: string, assistant: string}> $history Recent turns in English,
+   *                                                                    oldest first
    * @return array{resolved_query: string, references_entity: bool}
    */
-  public function resolve(string $query, array $lastEntity): array
+  public function resolve(string $query, array $lastEntity, array $history = []): array
   {
     $unchanged = ['resolved_query' => $query, 'references_entity' => false];
 
@@ -68,10 +72,17 @@ class ReferenceResolver
 
     // Internal prompt -> English, from the agnostic Agents/ layer.
     DomainConfig::loadAgnosticLanguageFile('rag_reference_resolution', 'en');
+    $turns = $this->formatHistory($history);
+
+    if ($turns === '') {
+      $turns = CLICSHOPPING::getDef('text_reference_resolution_no_history');
+    }
+
     $prompt = CLICSHOPPING::getDef('text_reference_resolution_prompt', [
       'query' => $query,
       'entity_type' => $entityType,
       'entity_name' => (string)$name,
+      'history' => $turns,
     ]);
 
     try {
@@ -99,6 +110,37 @@ class ReferenceResolver
     }
 
     return ['resolved_query' => $resolved, 'references_entity' => true];
+  }
+
+  /**
+   * Render the recent turns for the prompt. Assistant answers are capped: only their opening
+   * matters here (did the entity come from a result list), and a full analytics answer would
+   * bury the user turns that carry the decision.
+   *
+   * Pure formatter — reads no language definition; the caller substitutes the "no history"
+   * wording when this returns an empty string.
+   *
+   * @param array<int, array{user: string, assistant: string}> $history
+   * @return string Empty when there is no usable turn
+   */
+  private function formatHistory(array $history): string
+  {
+    $lines = [];
+    foreach ($history as $turn) {
+      $user = trim((string)($turn['user'] ?? ''));
+      if ($user === '') {
+        continue;
+      }
+
+      $assistant = trim((string)($turn['assistant'] ?? ''));
+      if (mb_strlen($assistant) > self::MAX_ANSWER_CHARS) {
+        $assistant = mb_substr($assistant, 0, self::MAX_ANSWER_CHARS) . '…';
+      }
+
+      $lines[] = "User: {$user}\nAssistant: {$assistant}";
+    }
+
+    return implode("\n", $lines);
   }
 
   /**

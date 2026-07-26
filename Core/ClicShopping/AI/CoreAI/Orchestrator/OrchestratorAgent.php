@@ -710,22 +710,11 @@ class OrchestratorAgent implements AgentInterface
         // Note: Web search intent will be detected naturally by IntentAnalyzer
       }
       // If action is 'allow', continue normally
-      $resolved = $this->memoryManager->resolveContextualReferences($query);
-      $queryToProcess = $resolved['resolved_query'] ?? $query;
-      $contextUsed = $resolved['has_references'] ?? false;
-
-      if ($contextUsed && $this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "TASK 2.8: Contextual references resolved EARLY: '{$query}' → '{$queryToProcess}'",
-          'info'
-        );
-      }
-
-      // Translation is done inside handleFullOrchestration in parallel with context retrieval
-      // This early translation is kept for backward compatibility with logging
+      // Translate BEFORE resolving references: the whole AI process runs in English (AGENTS.md)
+      // and the resolution prompt is English, so it must judge the English form of the question.
       $translatedQuery = '';
       try {
-        $translatedQuery = SemanticAgent::translateToEnglish($queryToProcess, 80);
+        $translatedQuery = SemanticAgent::translateToEnglish($query, 80);
       } catch (\Exception $e) {
         // Non-blocking error: log and continue
         if ($this->debug) {
@@ -734,6 +723,18 @@ class OrchestratorAgent implements AgentInterface
             'warning'
           );
         }
+      }
+
+      $queryForResolution = $translatedQuery !== '' ? $translatedQuery : $query;
+      $resolved = $this->memoryManager->resolveContextualReferences($queryForResolution);
+      $contextUsed = $resolved['has_references'] ?? false;
+      $queryToProcess = $contextUsed ? (string)$resolved['resolved_query'] : $query;
+
+      if ($contextUsed && $this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "TASK 2.8: Contextual references resolved EARLY: '{$query}' → '{$queryToProcess}'",
+          'info'
+        );
       }
       if ($this->debug) {
         $this->securityLogger->logStructured('info', 'OrchestratorAgent', 'query_processing', [

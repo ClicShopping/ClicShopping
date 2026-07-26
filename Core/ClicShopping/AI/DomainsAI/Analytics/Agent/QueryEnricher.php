@@ -62,18 +62,16 @@ class QueryEnricher
     $enrichedQuestion = $this->promptBuilder->enrichWithFeedback($question, $feedbackContext);
 
     // Inject last_entity context ONLY when the current query actually references that entity
-    // (pronoun/possessive follow-up like "son", "sa", "it", "its"). The verdict comes from the
-    // ReferenceResolver, computed once upstream by ConversationMemory and read here via
-    // didLastQueryReferenceEntity() — no second LLM call. Without this gate a stale entity id
-    // (e.g. a product #103) leaks into an unrelated query and the LLM emits nonsense such as
-    // `WHERE customers_id = 103` (product id used as a customer id) → 0 rows → "not found".
+    // (pronoun/possessive follow-up like "son", "sa", "it", "its"). 
     if ($conversationMemory !== null) {
       try {
         // Fail-safe: if the verdict is unavailable (method missing), do NOT inject.
         $referencesEntity = method_exists($conversationMemory, 'didLastQueryReferenceEntity')
           && $conversationMemory->didLastQueryReferenceEntity();
 
-        $lastEntity = $conversationMemory->getLastEntity();
+        $lastEntity = method_exists($conversationMemory, 'getReferencedEntity')
+          ? $conversationMemory->getReferencedEntity()
+          : $conversationMemory->getLastEntity();
 
         if ($referencesEntity && $lastEntity !== null) {
           // Check if 'name' key exists before accessing it
