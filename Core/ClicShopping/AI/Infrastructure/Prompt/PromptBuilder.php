@@ -12,6 +12,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\AI\Infrastructure\Schema\SchemaRetriever;
 use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\OM\CLICSHOPPING;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
@@ -42,6 +43,7 @@ class PromptBuilder
   private string $useCache;
   private ?SchemaRetriever $schemaRetriever = null;
   private string $currentQuery = '';
+  private string $tablePrefix;
   
   // Supported agent types
   private string $modelName;
@@ -65,6 +67,7 @@ class PromptBuilder
     $this->debug = $debug;
     $this->useCache = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER === 'True' ? 'True' : 'False';
     $this->modelName = Gpt::defaultModel();
+    $this->tablePrefix = CLICSHOPPING::getConfig('db_table_prefix');
 
     // Initialize SchemaRetriever if Schema RAG is enabled
     $useSchemaRAG = CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG;
@@ -293,12 +296,12 @@ class PromptBuilder
       $multiTokenRules . "\n\n"                                      // 15. Parsing rules
     ;
 
-    // Replace placeholders with actual values
-    // The prompt contains {{language_id}} placeholders that need to be replaced
-    $finalMessage = str_replace('{{language_id}}', (string)$this->languageId, $completeSystemMessage);
+    // Prompts are install-agnostic: they declare {{table_prefix}} / {{language_id}} and this is
+    // the chokepoint that resolves them. An unresolved placeholder would reach the LLM verbatim.
+    $finalMessage = PromptPlaceholders::resolve($completeSystemMessage, $this->tablePrefix, $this->languageId);
 
     if ($this->debug) {
-      $placeholderCount = substr_count($completeSystemMessage, '{{language_id}}');
+      $placeholderCount = substr_count($completeSystemMessage, PromptPlaceholders::LANGUAGE_ID);
       error_log("Replaced {$placeholderCount} occurrences of {{language_id}} with {$this->languageId}");
       error_log("================================================================================");
       error_log("DEBUG PromptBuilder::buildSystemMessage() - FINAL");
@@ -484,7 +487,7 @@ class PromptBuilder
       $tableName = array_values($tableRow)[0];
 
       // Skip non-clic tables
-      if (!str_starts_with($tableName, 'clic_')) {
+      if (!str_starts_with($tableName, $this->tablePrefix)) {
         continue;
       }
 
@@ -550,7 +553,7 @@ class PromptBuilder
       $multiTokenRules . "\n\n";
 
     // Replace placeholders
-    $finalMessage = str_replace('{{language_id}}', (string)$this->languageId, $completeSystemMessage);
+    $finalMessage = PromptPlaceholders::resolve($completeSystemMessage, $this->tablePrefix, $this->languageId);
 
     if ($this->debug) {
       error_log("[PromptBuilder] Built Semantic agent message (" . strlen($finalMessage) . " chars)");
@@ -597,7 +600,7 @@ class PromptBuilder
       $multiTokenRules . "\n\n";
 
     // Replace placeholders
-    $finalMessage = str_replace('{{language_id}}', (string)$this->languageId, $completeSystemMessage);
+    $finalMessage = PromptPlaceholders::resolve($completeSystemMessage, $this->tablePrefix, $this->languageId);
 
     if ($this->debug) {
       error_log("[PromptBuilder] Built WebSearch agent message (" . strlen($finalMessage) . " chars)");
@@ -664,7 +667,7 @@ class PromptBuilder
       $multiTokenRules . "\n\n";
 
     // Replace placeholders
-    $finalMessage = str_replace('{{language_id}}', (string)$this->languageId, $completeSystemMessage);
+    $finalMessage = PromptPlaceholders::resolve($completeSystemMessage, $this->tablePrefix, $this->languageId);
 
     if ($this->debug) {
       error_log("[PromptBuilder] Built Hybrid agent message (" . strlen($finalMessage) . " chars)");

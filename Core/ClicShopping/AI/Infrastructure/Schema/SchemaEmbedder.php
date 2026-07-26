@@ -30,6 +30,7 @@ class SchemaEmbedder
   private mixed $db;
   private mixed $embeddingService;
   private bool $debug;
+  private string $tablePrefix;
   
   /**
    * Constructor
@@ -51,6 +52,7 @@ class SchemaEmbedder
     }
     
     $this->debug = $debug;
+    $this->tablePrefix = CLICSHOPPING::getConfig('db_table_prefix');
   }
   
   /**
@@ -154,7 +156,7 @@ class SchemaEmbedder
       $tableName = $Qembeddings->value('table_name');
       
       // Skip technical tables (should not be in embeddings, but filter just in case)
-      if (str_contains($tableName, '_embedding') || str_starts_with($tableName, 'clic_rag_')) {
+      if (str_contains($tableName, '_embedding') || str_starts_with($tableName, $this->tablePrefix . 'rag_')) {
         continue;
       }
       
@@ -207,7 +209,7 @@ class SchemaEmbedder
     
     // Pattern to match numbered table sections
     // Example: "1. Table clic_orders:\n   - Contains orders..."
-    $pattern = '/(\d+)\.\s+Table\s+(clic_\w+):\s*\\n(.*?)(?=\d+\.\s+Table|\z)/s';
+    $pattern = '/(\d+)\.\s+Table\s+(' . preg_quote($this->tablePrefix, '/') . '\w+):\s*\\n(.*?)(?=\d+\.\s+Table|\z)/s';
     
     preg_match_all($pattern, $fullSchema, $matches, PREG_SET_ORDER);
     
