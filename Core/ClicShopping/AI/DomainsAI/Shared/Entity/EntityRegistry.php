@@ -202,7 +202,7 @@ class EntityRegistry
    * - Tables with '_embedding' suffix contain vector embeddings for semantic search
    * - Tables without suffix are system/operational tables without embeddings
    * 
-   * See docs/RAG_TABLE_NAMING_CONVENTION.md for complete documentation
+   * See DomainsAI/Shared/README.md (Entity/) for the naming convention
    * 
    * @return array List of memory table names with prefix
    */
@@ -250,7 +250,7 @@ class EntityRegistry
    * 
    * IMPORTANT: Entity types here do NOT include '_embedding' suffix
    * The suffix is stripped before this method is called
-   * See docs/RAG_TABLE_NAMING_CONVENTION.md for details
+   * See DomainsAI/Shared/README.md (Entity/) for the naming convention
    *
    * @param string $entityType Entity type (e.g., 'products', 'categories')
    * @return string|null ID column name or null if not determinable

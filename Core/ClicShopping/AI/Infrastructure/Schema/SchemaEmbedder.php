@@ -345,6 +345,11 @@ class SchemaEmbedder
   /**
    * Generate the embedding of a table and store it
    *
+   * Stores the FIRST chunk only, on purpose: this is what the whole store holds and
+   * what the retriever was tuned on. A wide table is therefore covered by its first
+   * 800 tokens of columns — switching to a full-text vector is a measured change of
+   * the retrieval ranking, not a detail (see BACKLOG).
+   *
    * @param string $tableName Table name
    * @param string $schemaText Schema text to embed
    * @return void
@@ -379,10 +384,10 @@ class SchemaEmbedder
     $Qcheck = $this->db->prepare('
       SELECT id
       FROM :table_rag_schema_embedding
-      WHERE table_name = :table_name
+      WHERE table_name = :tbl_name
     ');
 
-    $Qcheck->bindValue(':table_name', $tableName);
+    $Qcheck->bindValue(':tbl_name', $tableName);
     $Qcheck->execute();
 
     if ($Qcheck->fetch() !== false) {
@@ -392,7 +397,7 @@ class SchemaEmbedder
             embedding_vector = VEC_FromText(:embedding_vector),
             token_count = :token_count,
             updated_at = :updated_at
-        WHERE table_name = :table_name
+        WHERE table_name = :tbl_name
       ');
       $Qwrite->bindValue(':updated_at', $now);
     } else {
@@ -400,13 +405,13 @@ class SchemaEmbedder
         INSERT INTO :table_rag_schema_embedding
         (table_name, schema_text, embedding_vector, token_count, created_at, updated_at)
         VALUES
-        (:table_name, :schema_text, VEC_FromText(:embedding_vector), :token_count, :created_at, :updated_at)
+        (:tbl_name, :schema_text, VEC_FromText(:embedding_vector), :token_count, :created_at, :updated_at)
       ');
       $Qwrite->bindValue(':created_at', $now);
       $Qwrite->bindValue(':updated_at', $now);
     }
 
-    $Qwrite->bindValue(':table_name', $tableName);
+    $Qwrite->bindValue(':tbl_name', $tableName);
     $Qwrite->bindValue(':schema_text', $schemaText);
     $Qwrite->bindValue(':embedding_vector', $vectorString);
     $Qwrite->bindInt(':token_count', $tokenCount);
@@ -429,11 +434,11 @@ class SchemaEmbedder
 
     $Qdelete = $this->db->prepare('
       DELETE FROM :table_rag_schema_embedding
-      WHERE table_name = :table_name
+      WHERE table_name = :tbl_name
     ');
 
     foreach ($tableNames as $tableName) {
-      $Qdelete->bindValue(':table_name', $tableName);
+      $Qdelete->bindValue(':tbl_name', $tableName);
 
       if ($Qdelete->execute() !== false) {
         $deleted++;

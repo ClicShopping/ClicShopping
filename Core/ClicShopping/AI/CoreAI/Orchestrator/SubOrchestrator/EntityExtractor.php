@@ -14,6 +14,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
+use ClicShopping\AI\DomainsAI\Shared\Entity\EntityHelper;
 
 /**
  * EntityExtractor Class
@@ -378,10 +379,10 @@ class EntityExtractor
    * Detect entity from embeddings using semantic search
    *
    * @param string $query Query to search for
-   * @param string $entityType Type of entity to search for (product, category, etc.)
+   * @param string $entityType Entity nature to narrow the search to, empty to search every store
    * @return array|null Entity data with entity_id, entity_type, confidence, or null if not found
    */
-  public function detectEntityFromEmbeddings(string $query, string $entityType = 'product'): ?array
+  public function detectEntityFromEmbeddings(string $query, string $entityType = ''): ?array
   {
     try {
       if ($this->debug) {
@@ -401,13 +402,8 @@ class EntityExtractor
       $prefix = CLICSHOPPING::getConfig('db_table_prefix');
 
       if (!empty($entityType) && $entityType !== 'unknown') {
-        // Pluralize entity type (simple approach - add 's' if not already plural)
-        $pluralEntity = $entityType;
-        if (!str_ends_with($entityType, 's')) {
-          $pluralEntity = $entityType . 's';
-        }
-        
-        $targetTable = $prefix . $pluralEntity . '_embedding';
+        // EntityHelper owns the plural rules (category -> categories, page -> pages_manager)
+        $targetTable = $prefix . EntityHelper::getPluralForm($entityType) . '_embedding';
         
         // Only search in the specific table if it exists
         if (in_array($targetTable, $embeddingTables, true)) {

@@ -103,8 +103,6 @@ class ConversationMemory
 
   private int $entityId;
   private ?string $lastQueryType = null;
-  private ?int $lastEntityId = null;
-  private ?string $lastEntityType = null;
   private bool $lastQueryReferencedEntity = false;
   private ?array $referencedEntity = null;
 
@@ -153,10 +151,6 @@ class ConversationMemory
     // Use null coalescing for language ID registry check
     $this->languageId = $languageId ?? Registry::get('Language')->getId();
     $this->entityId = $entityId;
-    
-    //Initialize entity tracking properties
-    $this->lastEntityId = null;
-    $this->lastEntityType = null;
 
     // Apply system configuration (defaults <- base <- Custom/Conf override).
     $memoryConfig = SystemConfig::getSection('ConversationMemory', [
@@ -669,10 +663,6 @@ class ConversationMemory
   public function setLastEntity(int $entityId, string $entityType, ?string $entityName = null): void
   {
     $this->entityTracker->setLastEntity($entityId, $entityType, $entityName);
-    
-    // Update local properties for backward compatibility
-    $this->lastEntityId = $entityId;
-    $this->lastEntityType = $entityType;
   }
 
   /**
@@ -727,10 +717,6 @@ class ConversationMemory
     $previousEntity = $this->entityTracker->getLastEntity();
     
     $this->entityTracker->clearLastEntity();
-    
-    // Also clear local properties for backward compatibility
-    $this->lastEntityId = null;
-    $this->lastEntityType = null;
     
     if ($this->debug) {
       $this->securityLogger->logStructured(

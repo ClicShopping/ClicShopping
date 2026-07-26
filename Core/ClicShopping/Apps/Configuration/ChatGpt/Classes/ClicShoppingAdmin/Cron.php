@@ -14,6 +14,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\Infrastructure\Schema\SchemaEmbedder;
 
 
 class Cron {
@@ -828,6 +829,25 @@ class Cron {
 
     // Suppliers doesn't use language_id, so it's called once outside the loop
     $this->updateAllEmbeddingSuppliers();
+
+    $this->updateSchemaEmbeddings();
+  }
+
+  /**
+   * Keeps the schema embedding store in sync with the database schema.
+   *
+   * Entity embeddings follow the data, this one follows the schema: without it any
+   * table added, dropped or re-commented degrades schema retrieval silently.
+   *
+   * @return void
+   */
+  private function updateSchemaEmbeddings(): void
+  {
+    $stats = (new SchemaEmbedder())->syncAllTables();
+
+    if ($stats['created'] > 0 || $stats['updated'] > 0 || $stats['deleted'] > 0 || $stats['failed'] > 0) {
+      error_log("Cron Schema: {$stats['created']} created, {$stats['updated']} updated, {$stats['deleted']} deleted, {$stats['failed']} failed");
+    }
   }
 
   /**

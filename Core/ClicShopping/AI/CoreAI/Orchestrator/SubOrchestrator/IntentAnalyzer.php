@@ -462,10 +462,10 @@ class IntentAnalyzer
    * Detect entity from embeddings (delegated to EntityExtractor)
    *
    * @param string $query Query to analyze
-   * @param string $entityType Type of entity to search for
+   * @param string $entityType Entity nature to narrow the search to, empty to search every store
    * @return array|null Entity data or null if not found
    */
-  public function detectEntityFromEmbeddings(string $query, string $entityType = 'product'): ?array
+  public function detectEntityFromEmbeddings(string $query, string $entityType = ''): ?array
   {
     return $this->entityExtractor->detectEntityFromEmbeddings($query, $entityType);
   }

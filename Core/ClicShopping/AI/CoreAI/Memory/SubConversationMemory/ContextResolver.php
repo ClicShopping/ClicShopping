@@ -302,18 +302,6 @@ class ContextResolver
       $allEntityTypes = $this->entityRegistry->getAllEntityTypes();
       
       foreach ($allEntityTypes as $entityType) {
-        // Skip system tables that shouldn't be included in context resolution
-        // IMPORTANT: Use correct table names with '_embedding' suffix for embedding tables
-        // See docs/RAG_TABLE_NAMING_CONVENTION.md for complete documentation
-        if (in_array($entityType, [
-          'rag_conversation_memory_embedding',  // Embedding table: conversation history
-          'rag_correction_patterns_embedding',  // Embedding table: correction patterns
-          'rag_web_cache_embedding',            // Embedding table: web cache
-          'rag_memory_retention_log'            // System table: retention logs (no embedding)
-        ], true)) {
-          continue;
-        }
-        
         // Convert entity type to singular for pattern matching using EntityHelper
         // e.g., "products" -> "product", "categories" -> "category"
         $singularType = EntityHelper::getSingularForm($entityType);

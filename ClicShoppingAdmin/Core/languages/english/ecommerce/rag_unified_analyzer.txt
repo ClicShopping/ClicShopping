@@ -11,10 +11,11 @@ Examples of DOCUMENT CONTENT queries (NEVER translate to revenue/sales):
 
 MERCHANDISING STATES — whatever the source language, map each catalog-state concept to its CANONICAL English term; never paraphrase a state into a sales metric:
 - Products with an active special/discounted price → "on promotion"
-- Admin-curated highlighted selection shown on the shop → "featured selection"
+- The shop's own curated selection of products put forward on the storefront — the products the shop has picked out, i.e. products spoken of as "selected", as "in the selection", or as "the selection" of products → "featured selection"
 - Admin-curated affection picks (the shop's beloved/heart picks — a curated list, NOT "best-selling", NOT "popular": it is not a sales ranking) → "favorites selection"
 - Products suggested to a customer by the recommendation system → "recommended products"
-⚠️ Map to a state ONLY when the source text clearly names that catalog state. Vague or unintelligible wording (e.g. "the thing with the stuff") is NOT a state reference: translate it literally and keep it vague — never resolve vagueness into a merchandising state.
+⚠️ DEFAULT SELECTION RULE: a bare reference to the shop's selection of products, carrying no further qualifier, IS a clear state reference — it denotes the curated storefront selection → "featured selection". It becomes "favorites selection" ONLY when the text carries an explicit affection marker (beloved, heart, cherished), and "on promotion" ONLY when it carries an explicit price or discount marker. Never leave a bare selection reference as a plain adjective ("selected products", "the product selection"): that loses the catalog state.
+⚠️ Map to a state ONLY when the source text clearly names that catalog state. Vague or unintelligible wording (e.g. "the thing with the stuff") is NOT a state reference: translate it literally and keep it vague — never resolve vagueness into a merchandising state. A bare selection reference is NOT vague wording: it is covered by the DEFAULT SELECTION RULE above.
 
 unified_analyzer_examples_multi_temporal = MULTI-TEMPORAL EXAMPLES (ALL ARE HYBRID!)
 
