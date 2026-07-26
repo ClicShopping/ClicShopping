@@ -415,7 +415,8 @@ use Psr\Log\NullLogger;
         $arguments = $argumentsString !== '' && $argumentsString !== '0' ? json_decode($argumentsString, true, 512, JSON_THROW_ON_ERROR) : [];
         $functionToCall = $this->getFunctionInfoFromName($functionName, $toolCallId);
         $return = $functionToCall->instance->{$functionToCall->name}(...$arguments);
-        $this->functionsCalled[] = new CalledFunction($functionToCall, $arguments, $return, $toolCallId);
+        $normalizedReturn = $return === null ? null : Message::normalizeContent($return);
+        $this->functionsCalled[] = new CalledFunction($functionToCall, $arguments, $normalizedReturn, $toolCallId);
         $this->lastFunctionCalled = $functionToCall;
     }
 
@@ -488,7 +489,7 @@ use Psr\Log\NullLogger;
         $toolsOutput = [];
         /** @var CalledFunction $functionCalled */
         foreach ($this->functionsCalled as $functionCalled) {
-            if ($functionCalled->return) {
+            if ($functionCalled->return !== null) {
                 $toolsOutput[] = Message::toolResult($functionCalled->return, $functionCalled->tool_call_id);
             }
             if ($functionCalled->tool_call_id) {

@@ -2431,12 +2431,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "cfd18923fba8aa5324d151b69ea4196710f2932a"
+                "reference": "e7d396822cefa7207fd352f61f68660811e108a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/cfd18923fba8aa5324d151b69ea4196710f2932a",
-                "reference": "cfd18923fba8aa5324d151b69ea4196710f2932a",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/e7d396822cefa7207fd352f61f68660811e108a4",
+                "reference": "e7d396822cefa7207fd352f61f68660811e108a4",
                 "shasum": ""
             },
             "conflict": {
@@ -3066,7 +3066,7 @@
                 "personnummer/personnummer": "<3.0.2",
                 "ph7software/ph7builder": "<=17.9.1",
                 "phanan/koel": "<=9.7",
-                "pheditor/pheditor": "<2.0.6",
+                "pheditor/pheditor": "<2.0.8",
                 "phenx/php-svg-lib": "<0.5.2",
                 "php-censor/php-censor": "<2.0.13|>=2.1,<2.1.5",
                 "php-mod/curl": "<2.3.2",
@@ -3109,7 +3109,7 @@
                 "pocketmine/pocketmine-mp": "<5.42.1",
                 "pocketmine/raklib": ">=0.14,<0.14.6|>=0.15,<0.15.1",
                 "pontedilana/php-weasyprint": "<=2.5.1",
-                "poweradmin/poweradmin": "<4.2.4|>=4.3,<4.3.3",
+                "poweradmin/poweradmin": "<4.2.5|>=4.3,<4.3.4",
                 "pressbooks/pressbooks": "<5.18",
                 "prestashop/autoupgrade": ">=4,<4.10.1",
                 "prestashop/blockreassurance": "<=5.1.3",
@@ -3509,7 +3509,7 @@
                 "zoujingli/thinkadmin": "<=6.1.53",
                 "zumba/json-serializer": "<3.2.3"
             },
-            "time": "2026-07-23T15:56:28+00:00",
+            "time": "2026-07-24T23:00:42+00:00",
             "default-branch": true,
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",
@@ -5425,17 +5425,17 @@
         },
         {
             "name": "theodo-group/llphant",
-            "version": "1.0.0",
-            "version_normalized": "1.0.0.0",
+            "version": "1.0.1",
+            "version_normalized": "1.0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LLPhant/LLPhant.git",
-                "reference": "4fc721b1c94ff869fcce1f70dcfa8a01b96d0461"
+                "reference": "0d90d8b8ba7983ee8c8b09acbb695239c3dc4b74"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/4fc721b1c94ff869fcce1f70dcfa8a01b96d0461",
-                "reference": "4fc721b1c94ff869fcce1f70dcfa8a01b96d0461",
+                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/0d90d8b8ba7983ee8c8b09acbb695239c3dc4b74",
+                "reference": "0d90d8b8ba7983ee8c8b09acbb695239c3dc4b74",
                 "shasum": ""
             },
             "require": {
@@ -5486,7 +5486,7 @@
                 "probots-io/pinecone-php": "This is required for the PineconeVectorStore. Use scotteuser/pinecone-php for <= PHP 8.2",
                 "symfony/cache": "This is one of the possible types of psr/cache needed by doctrine/orm"
             },
-            "time": "2026-07-05T19:08:23+00:00",
+            "time": "2026-07-26T08:26:01+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -5518,7 +5518,7 @@
             ],
             "support": {
                 "issues": "https://github.com/LLPhant/LLPhant/issues",
-                "source": "https://github.com/LLPhant/LLPhant/tree/1.0.0"
+                "source": "https://github.com/LLPhant/LLPhant/tree/1.0.1"
             },
             "install-path": "../theodo-group/llphant"
         },

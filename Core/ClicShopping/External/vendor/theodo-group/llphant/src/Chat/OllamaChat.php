@@ -422,7 +422,8 @@ class OllamaChat implements ChatInterface
         $functionToCall = $this->getFunctionInfoFromName($functionName);
         $return = $functionToCall->callWithArguments($arguments);
 
-        $this->functionsCalled[] = new CalledFunction($functionToCall, $arguments, $return);
+        $normalizedReturn = $return === null ? null : Message::normalizeContent($return);
+        $this->functionsCalled[] = new CalledFunction($functionToCall, $arguments, $normalizedReturn);
 
         return $return;
     }

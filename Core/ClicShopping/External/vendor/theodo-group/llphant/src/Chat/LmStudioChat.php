@@ -100,7 +100,13 @@ class LmStudioChat implements ChatInterface
             $messages[] = $this->assistantAskingFunctions($result);
             foreach ($result as $functionToCall) {
                 $toolResult = $functionToCall->call();
-                $this->functionsCalled[] = new CalledFunction($functionToCall, json_decode($functionToCall->jsonArgs, true, 512, JSON_THROW_ON_ERROR), $toolResult, $functionToCall->getToolCallId());
+                $normalizedToolResult = $toolResult === null ? null : Message::normalizeContent($toolResult);
+                $this->functionsCalled[] = new CalledFunction(
+                    $functionToCall,
+                    json_decode($functionToCall->jsonArgs, true, 512, JSON_THROW_ON_ERROR),
+                    $normalizedToolResult,
+                    $functionToCall->getToolCallId()
+                );
                 $toolResultMessage = Message::toolResult($toolResult, $functionToCall->getToolCallId());
                 $messages[] = $toolResultMessage;
             }
