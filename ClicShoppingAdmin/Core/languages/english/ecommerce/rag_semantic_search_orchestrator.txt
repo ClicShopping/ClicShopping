@@ -1,18 +1,10 @@
-# Semantic Search Orchestrator Language Definitions
-# Patterns for detecting generic "insufficient information" responses
-# NOTE: All processing is done in English, so only English patterns are needed
 
-# Insufficient Information Detection Patterns (pipe-separated for easy splitting)
-# Includes patterns for multiple languages: English, French, Spanish, Chinese, etc.
 text_insufficient_info_patterns = I don't have that information|I don't have enough information|I would need more specific information|consult the company's official website|contact their customer service|don't have enough information|no information found|I don't have|insufficient information|Informations Insuffisantes|Je n'ai pas cette information|Je n'ai pas assez d'informations|n'ai pas assez d'informations|J'aurais besoin de plus d'informations|aucune information|No tengo suficiente información|información insuficiente|no tengo esa información|我没有足够的信息|信息不足|没有相关信息|无法回答
 
-# Minimum response length to be considered valid (not generic)
 text_min_response_length = 20
 
-# LLM Prompts for Language Detection (Pure LLM Mode)
 text_prompt_detect_language = Detect the language of this query and respond with ONLY the 2-letter language code (en, fr, es, de, it, pt, nl, ru, zh, ja, ko, ar). Query: "{{query}}"
 
-# Log messages
 text_log_conversation_memory_useful = Conversation memory document has useful content (length: {{length}})
 text_log_conversation_memory_generic = Conversation memory document has generic LLM response - skipping
 text_log_conversation_memory_no_content = Conversation memory documents have no actual content (empty or generic responses)

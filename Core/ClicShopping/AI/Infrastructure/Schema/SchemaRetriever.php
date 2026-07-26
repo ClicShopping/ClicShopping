@@ -299,7 +299,7 @@ class SchemaRetriever
     $queryKeywords = $this->extractSimpleKeywords($query);
     
     // Column score = keyword COVERAGE (distinct query keywords the table matches),
-    // not matched-column count: counting columns made wide tables (clic_products, 50+ cols) always outrank the semantically right narrow table, whatever the embedding said.
+    // not matched-column count: counting columns made wide tables (products, 50+ cols) always outrank the semantically right narrow table, whatever the embedding said.
     $matchedKeywords = [];
     foreach ($queryKeywords as $keyword) {
       $matches = $this->columnIndex->find($keyword);
@@ -320,7 +320,7 @@ class SchemaRetriever
       $colScore = $columnMatchScores[$table] ?? 0;
       
       // Composite score: semantic similarity leads, lexical column matching complements.
-      // 70/30 (was 30/70): lexical dominance drowned correct embedding ranks — e.g. generic clic_products/description outranked clic_products_recommendations for "recommended products".
+      // 70/30 (was 30/70): lexical dominance drowned correct embedding ranks — e.g. generic products/description outranked products_recommendations for "recommended products".
       $finalScores[$table] = ($embScore * 0.7) + ($colScore * 0.3);
       
       // Penalty for reference tables

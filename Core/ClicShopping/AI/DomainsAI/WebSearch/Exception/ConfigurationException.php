@@ -8,6 +8,8 @@
 
 namespace ClicShopping\AI\DomainsAI\WebSearch\Exception;
 
+use ClicShopping\OM\CLICSHOPPING;
+
 /**
  * ConfigurationException - Exception thrown when configuration validation fails
  *
@@ -113,7 +115,7 @@ class ConfigurationException extends \RuntimeException
       "No properly configured search engines available for modes: {$modesStr}. " .
       "Please check the following:\n" .
       "1. CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI is set and valid\n" .
-      "2. For RAG WebSearch: clic_rag_websearch table contains active sites (status = 1)\n" .
+      "2. For RAG WebSearch: " . CLICSHOPPING::getConfig('db_table_prefix') . "rag_websearch table contains active sites (status = 1)\n" .
       "3. Database connection is working properly"
     );
   }

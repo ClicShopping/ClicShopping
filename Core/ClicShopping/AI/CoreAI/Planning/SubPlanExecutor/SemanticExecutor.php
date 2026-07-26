@@ -478,9 +478,9 @@ class SemanticExecutor
    * to entity types, avoiding code duplication.
    *
    * Examples:
-   * - clic_pages_manager_description_embedding → page_manager
-   * - clic_products_embedding → product
-   * - clic_categories_embedding → category
+   * - pages_manager_description_embedding → page_manager
+   * - products_embedding → product
+   * - categories_embedding → category
    *
    * @param string $tableName Table name (with or without prefix)
    * @return string Entity type

@@ -2,16 +2,13 @@ text_system_message = You are an e-commerce expert assistant specialized in data
 
 text_parked_legacy_orderby_temporal_rules = You are an SQL expert. Fix the ORDER BY column reference error in this query.
 
-## Error Details
 Error: {{error_message}}
 Unknown Column: {{unknown_column}}
 
-## Failed SQL Query
 ```sql
 {{sql_query}}
 ```
 
-## ORDER BY Rules
 When using aggregate functions (YEAR, QUARTER, MONTH, etc.) in GROUP BY:
 
 1. Use the SAME function expression in ORDER BY:
@@ -24,7 +21,6 @@ When using aggregate functions (YEAR, QUARTER, MONTH, etc.) in GROUP BY:
 3. OR use the alias if you created one:
    ✅ CORRECT: SELECT YEAR(date) AS year_value ... ORDER BY year_value
 
-## Your Task
 Fix ONLY the ORDER BY clause. Preserve the SELECT and GROUP BY clauses exactly as they are.
 
 Return ONLY the corrected SQL query, nothing else.
@@ -62,16 +58,16 @@ GROUP BY YEAR(date_column), MONTH(date_column)
 -- Query: "revenue last month" (asked in January 2026)
 -- ✅ CORRECT: Use explicit December 2025 dates
 SELECT SUM(ot.value) AS revenue 
-FROM clic_orders o 
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o 
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE o.orders_status != 4 
   AND o.date_purchased >= '2025-12-01' 
   AND o.date_purchased < '2026-01-01'
 
 -- ❌ WRONG: Using YEAR()/MONTH() functions
 SELECT SUM(ot.value) AS revenue 
-FROM clic_orders o 
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o 
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE o.orders_status != 4 
   AND YEAR(o.date_purchased) = 2026 
   AND MONTH(o.date_purchased) = 12
@@ -108,8 +104,8 @@ WHERE o.orders_status != 4
 - "by day" / "list by day" → GROUP BY DAY with last 30 days limit
 - "by week" / "list by week" → GROUP BY WEEK with last 12 weeks limit
 
-**REVENUE RULE (MANDATORY)**: revenue is `SUM(ot.value)` where `ot` is `clic_orders_total`. You MUST
-ALWAYS define `ot` with the join — `FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'`.
+**REVENUE RULE (MANDATORY)**: revenue is `SUM(ot.value)` where `ot` is `{{table_prefix}}orders_total`. You MUST
+ALWAYS define `ot` with the join — `FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'`.
 NEVER write `ot.value` (or any `ot.` column) without that JOIN, or the query fails with "Unknown table 'ot'".
 Every example below is COMPLETE — copy the full FROM/JOIN, never abbreviate it as "FROM ...".
 
@@ -118,24 +114,24 @@ Every example below is COMPLETE — copy the full FROM/JOIN, never abbreviate it
 - `orders_status_invoice` (billing — INDEPENDENT of orders_status, the two are NOT synchronised): 1=Order (NOT yet invoiced), 2=Invoice/Facture, 3=Cancelled, 4=Avoir/credit note (used for the PDF bill). An INVOICED / "facturée" order = `orders_status_invoice = 2`. NEVER infer "invoiced/facturée" from orders_status.
   ⚠️ For "facturée / invoiced" use ONLY `orders_status_invoice = 2`. NEVER use the column `erp_invoice` (it is an unused ERP-integration flag, always 0 → returns no rows). NEVER use `orders_status` for "invoiced".
 - Examples:
-  * "commandes facturées" / "invoiced orders" → SELECT o.orders_id, o.customers_name, o.date_purchased FROM clic_orders o WHERE o.orders_status_invoice = 2
-  * "évolution des commandes facturées" → SELECT DATE(o.date_purchased) AS date, COUNT(o.orders_id) AS invoiced FROM clic_orders o WHERE o.orders_status_invoice = 2 GROUP BY DATE(o.date_purchased) ORDER BY date ASC
+  * "commandes facturées" / "invoiced orders" → SELECT o.orders_id, o.customers_name, o.date_purchased FROM {{table_prefix}}orders o WHERE o.orders_status_invoice = 2
+  * "évolution des commandes facturées" → SELECT DATE(o.date_purchased) AS date, COUNT(o.orders_id) AS invoiced FROM {{table_prefix}}orders o WHERE o.orders_status_invoice = 2 GROUP BY DATE(o.date_purchased) ORDER BY date ASC
 
 **EXAMPLES**:
 Query: "monthly revenue"
-✅ CORRECT: SELECT SUM(ot.value) AS revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND YEAR(o.date_purchased) = YEAR(CURDATE()) AND MONTH(o.date_purchased) = MONTH(CURDATE())
+✅ CORRECT: SELECT SUM(ot.value) AS revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND YEAR(o.date_purchased) = YEAR(CURDATE()) AND MONTH(o.date_purchased) = MONTH(CURDATE())
 (Returns revenue for CURRENT MONTH only)
 
 Query: "yearly revenue" / "chiffre d'affaires annuel"
-✅ CORRECT: SELECT SUM(ot.value) AS revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND YEAR(o.date_purchased) = YEAR(CURDATE())
+✅ CORRECT: SELECT SUM(ot.value) AS revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND YEAR(o.date_purchased) = YEAR(CURDATE())
 (Returns revenue for CURRENT YEAR only - 2026)
 
 Query: "revenue by month"
-✅ CORRECT: SELECT MONTH(o.date_purchased) AS month, SUM(ot.value) AS revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY MONTH(o.date_purchased)
+✅ CORRECT: SELECT MONTH(o.date_purchased) AS month, SUM(ot.value) AS revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY MONTH(o.date_purchased)
 (Returns breakdown by month for last 12 months)
 
 Query: "revenue this year vs last year" / "chiffre d'affaires de cette année et de l'an dernier"
-✅ CORRECT: SELECT YEAR(o.date_purchased) AS year, SUM(ot.value) AS revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND YEAR(o.date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(o.date_purchased)
+✅ CORRECT: SELECT YEAR(o.date_purchased) AS year, SUM(ot.value) AS revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST' WHERE o.orders_status != 4 AND YEAR(o.date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(o.date_purchased)
 (One row per year — both years in a single grouped query, NOT two separate `ot` references)
 
 **OVERRIDE KEYWORDS** (no time limit):
@@ -158,7 +154,7 @@ MUST NEVER be used in `GROUP BY`, `WHERE col = ...`, `JOIN ... ON`, `HAVING`, `D
 equality/`LIKE` comparisons — the encrypted values never match, so grouping/filtering breaks.
 
 **ENCRYPTED COLUMNS (treat as opaque, display-only)**:
-- `customers_name` (in `clic_orders` AND `clic_customers`)
+- `customers_name` (in `{{table_prefix}}orders` AND `{{table_prefix}}customers`)
 - `customers_email_address`, customer telephone / address fields
 - Any personal-data column shown decrypted only at display time.
 
@@ -170,8 +166,8 @@ order** (one group per distinct ciphertext) instead of one row per customer — 
 -- ✅ CORRECT: group by the numeric ID only; expose the name with MAX()/ANY_VALUE()
 SELECT o.customers_id, MAX(o.customers_name) AS customers_name,
        SUM(ot.value) AS total_spent, MAX(o.date_purchased) AS last_order_date
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE o.orders_status != 4 AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
 GROUP BY o.customers_id
 HAVING SUM(ot.value) > 70 AND MAX(o.date_purchased) < DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
@@ -221,7 +217,7 @@ drop the > 70€ and 12-month constraints to answer only the inactivity part.
 - Order counts
 - Order lists
 - Customer order history
-- ANY query using the `clic_orders` table
+- ANY query using the `{{table_prefix}}orders` table
 
 **REQUIRED FORMAT IN YOUR TEXT ANALYSIS** (visible to the user):
 - State clearly: "This analysis includes: [description of statuses]"
@@ -274,8 +270,8 @@ EXAMPLE 1 - "Monthly revenue":
 Query: "Monthly revenue"
 CORRECT:
 SELECT SUM(ot.value) AS revenue
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE MONTH(o.date_purchased) = MONTH(CURDATE()) AND YEAR(o.date_purchased) = YEAR(CURDATE())
 Result: ONE number for CURRENT MONTH (e.g., 15000 EUR for January 2026)
 
@@ -283,8 +279,8 @@ EXAMPLE 2 - "Yearly revenue" / "Chiffre d'affaires annuel":
 Query: "Yearly revenue" / "Chiffre d'affaires annuel"
 CORRECT:
 SELECT SUM(ot.value) AS revenue
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE YEAR(o.date_purchased) = YEAR(CURDATE())
 Result: ONE number for CURRENT YEAR (e.g., 150000 EUR for 2026)
 
@@ -292,7 +288,7 @@ EXAMPLE 3 - "Number of orders this month":
 Query: "Number of orders this month" / "Nombre de commandes ce mois"
 CORRECT:
 SELECT COUNT(*) AS total
-FROM clic_orders
+FROM {{table_prefix}}orders
 WHERE MONTH(date_purchased) = MONTH(CURDATE()) AND YEAR(date_purchased) = YEAR(CURDATE())
 Result: ONE number for current month only
 
@@ -302,8 +298,8 @@ EXAMPLE 4 - "Revenue by month" / "Chiffre d'affaires par mois":
 Query: "Revenue by month" / "Chiffre d'affaires par mois"
 CORRECT:
 SELECT MONTH(o.date_purchased) AS month, YEAR(o.date_purchased) AS year, SUM(ot.value) AS revenue
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
 GROUP BY YEAR(o.date_purchased), MONTH(o.date_purchased)
 ORDER BY year DESC, month DESC
@@ -313,7 +309,7 @@ EXAMPLE 5 - "List orders by month":
 Query: "List orders by month" / "Liste des commandes par mois"
 CORRECT:
 SELECT MONTH(date_purchased) AS month, YEAR(date_purchased) AS year, COUNT(*) AS total
-FROM clic_orders
+FROM {{table_prefix}}orders
 WHERE date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
 GROUP BY YEAR(date_purchased), MONTH(date_purchased)
 ORDER BY year DESC, month DESC
@@ -365,8 +361,8 @@ EXAMPLE 1 - "Revenue by month" (breakdown with limit):
 Query: "Revenue by month" / "Chiffre d'affaires par mois"
 CORRECT:
 SELECT MONTH(o.date_purchased) AS month, YEAR(o.date_purchased) AS year, SUM(ot.value) AS revenue
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
 GROUP BY YEAR(o.date_purchased), MONTH(o.date_purchased)
 ORDER BY year DESC, month DESC
@@ -375,8 +371,8 @@ EXAMPLE 2 - "Monthly revenue" (current period, NO breakdown):
 Query: "Monthly revenue" / "Chiffre d'affaires mensuel"
 CORRECT:
 SELECT SUM(ot.value) AS revenue
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE MONTH(o.date_purchased) = MONTH(CURDATE()) AND YEAR(o.date_purchased) = YEAR(CURDATE())
 Result: ONE number for CURRENT MONTH only
 
@@ -384,8 +380,8 @@ EXAMPLE 3 - "Yearly revenue" (current period, NO breakdown):
 Query: "Yearly revenue" / "Chiffre d'affaires annuel"
 CORRECT:
 SELECT SUM(ot.value) AS revenue
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE YEAR(o.date_purchased) = YEAR(CURDATE())
 Result: ONE number for CURRENT YEAR (2026) only
 
@@ -413,7 +409,7 @@ EXAMPLE 1 - "Number of orders last 6 months" (SINGLE TOTAL):
 Query: "Number of orders last 6 months"
 CORRECT:
 SELECT COUNT(*) AS total
-FROM clic_orders
+FROM {{table_prefix}}orders
 WHERE date_purchased >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
 Result: Returns ONE number (e.g., 150 orders total)
 
@@ -421,7 +417,7 @@ EXAMPLE 2 - "List orders by month last 6 months" (BREAKDOWN):
 Query: "List orders by month last 6 months" / "Liste des commandes par mois les 6 derniers mois"
 CORRECT:
 SELECT MONTH(date_purchased) AS month, YEAR(date_purchased) AS year, COUNT(*) AS total
-FROM clic_orders
+FROM {{table_prefix}}orders
 WHERE date_purchased >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
 GROUP BY YEAR(date_purchased), MONTH(date_purchased)
 ORDER BY year DESC, month DESC
@@ -431,16 +427,16 @@ EXAMPLE 3 - "Revenue last 30 days" (SINGLE TOTAL):
 Query: "Revenue last 30 days" / "Chiffre d'affaires les 30 derniers jours"
 CORRECT:
 SELECT SUM(ot.value) AS revenue
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
 
 EXAMPLE 4 - "Revenue by day last 30 days" (BREAKDOWN):
 Query: "Revenue by day last 30 days" / "Chiffre d'affaires par jour les 30 derniers jours"
 CORRECT:
 SELECT DATE(o.date_purchased) AS day, SUM(ot.value) AS revenue
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
 WHERE o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
 GROUP BY DATE(o.date_purchased)
 ORDER BY day DESC
@@ -458,9 +454,9 @@ ORDER BY day DESC
 RULE 1: SIMPLE STATUS FIELDS (0/1) - DO NOT CONFUSE WITH NAMES
 
 Tables with simple status fields (0/1):
-- clic_products.products_status (0 = OFF, 1 = ON)
-- clic_categories.status (0 = OFF, 1 = ON)
-- clic_reviews.status (0 = OFF, 1 = ON)
+- {{table_prefix}}products.products_status (0 = OFF, 1 = ON)
+- {{table_prefix}}categories.status (0 = OFF, 1 = ON)
+- {{table_prefix}}reviews.status (0 = OFF, 1 = ON)
 
 WRONG: WHERE pd.products_name LIKE '%off%'  // Searches for "off" in product NAME
 CORRECT: WHERE p.products_status = 0  // Filters on STATUS field (0 = OFF, 1 = ON)
@@ -475,7 +471,7 @@ RULE 2: STATUS TABLES - USE orders_status_id DIRECTLY
 For order status queries, use the status ID directly (more efficient than LIKE patterns):
 
 CORRECT: WHERE o.orders_status = 1  // Status ID for "Pending" / "En instance"
-ALSO CORRECT (if status name unknown): JOIN clic_orders_status os ON o.orders_status = os.orders_status_id 
+ALSO CORRECT (if status name unknown): JOIN {{table_prefix}}orders_status os ON o.orders_status = os.orders_status_id 
 WHERE (os.orders_status_name LIKE '%pending%' OR os.orders_status_name LIKE '%instance%') 
 AND os.language_id = {{language_id}}
 
@@ -606,8 +602,8 @@ SQL (CORRECT):
 SELECT 
     QUARTER(o.date_purchased) AS quarter,
     SUM(ot.value) AS revenue
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id
 WHERE ot.class = 'ST'
   AND YEAR(o.date_purchased) = YEAR(CURDATE())  -- Corrected: YEAR instead of MONTH
 GROUP BY QUARTER(o.date_purchased)
@@ -633,8 +629,8 @@ SQL (CORRECT):
 SELECT 
     MONTH(o.date_purchased) AS month,
     SUM(ot.value) AS sales
-FROM clic_orders o
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id
+FROM {{table_prefix}}orders o
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id
 WHERE ot.class = 'ST'
   AND YEAR(o.date_purchased) = YEAR(CURDATE())  -- Corrected: YEAR instead of WEEK
 GROUP BY MONTH(o.date_purchased)
@@ -668,8 +664,8 @@ RULE 3: ALWAYS INCLUDE ENTITY IDs
 When answering about a specific entity (product, order, customer), ALWAYS include the ID column in SELECT.
 
 Example: "What is the price of Ricardo?"
-CORRECT: SELECT p.products_price AS catalog_price, p.products_id FROM clic_products p 
-JOIN clic_products_description pd ON p.products_id = pd.products_id 
+CORRECT: SELECT p.products_price AS catalog_price, p.products_id FROM {{table_prefix}}products p 
+JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id 
 WHERE pd.products_name LIKE '%Ricardo%' AND pd.language_id = {{language_id}}
 
 
@@ -694,14 +690,14 @@ ORDERS:
 - orders_total: One row PER order-total line (orders_id, title, value, class). `class` is the module code, `value` is the amount, `title` is the human label shown on the invoice (e.g. "Remise client : 10%").
   Classes: 'ST' = Subtotal (use for revenue/turnover), 'SH' = Shipping, 'TX' = Tax, 'TO' = Total (final order total), 'CD' = Customer Discount (remise client), 'DC' = Discount Coupon (bon de réduction), 'LO' = Low Order Fee, 'SU' = Surcharge.
   **IMPORTANT**: For revenue/turnover queries, use class='ST' (Subtotal), NOT 'TO' or 'OT'
-  **DISCOUNTS/COUPONS granted on orders live HERE**, as orders_total lines: customer discount = class='CD', coupon = class='DC'. The amount is `ot.value`, the label is `ot.title`. This is DIFFERENT from `clic_specials` (product promotional prices). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price) — that is NOT the customer discount.
+  **DISCOUNTS/COUPONS granted on orders live HERE**, as orders_total lines: customer discount = class='CD', coupon = class='DC'. The amount is `ot.value`, the label is `ot.title`. This is DIFFERENT from `{{table_prefix}}specials` (product promotional prices). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price) — that is NOT the customer discount.
 - discount_coupons: Coupon DEFINITIONS only (coupons_id, coupons_description, coupons_discount_amount, coupons_discount_type). Link table discount_coupons_to_orders (coupons_id, orders_id). Use these ONLY to fetch a coupon's code/description; the amount actually applied to an order is the orders_total class='DC' line. For "coupons granted/used ON orders", go through orders_total WHERE class='DC' (it already carries orders_id + value + title) — do NOT answer from discount_coupons alone, it has no per-order amount.
 
 CUSTOMERS:
 - customers: Customer info (customers_id, customers_name, customers_email_address, customers_status)
   **NOTE**: customers_status is an INT field (0=inactive, 1=active), NOT a foreign key
   **ENCRYPTED (see RULE -2)**: customers_name and customers_email_address are GDPR-encrypted
-  (non-deterministic). Also present and encrypted on clic_orders as o.customers_name. NEVER use them
+  (non-deterministic). Also present and encrypted on {{table_prefix}}orders as o.customers_name. NEVER use them
   in GROUP BY / WHERE = / JOIN / HAVING; aggregate by customers_id and expose the name via MAX().
 
 BRANDS & SUPPLIERS:
@@ -719,12 +715,12 @@ REVIEWS & SENTIMENT:
 
 MARKETING & PRICING (for Statistical Analysis):
 - specials: Special prices/discounts (products_id, specials_new_products_price, specials_date_added, expires_date, status)
-  **CRITICAL**: For promotional/discount queries, use clic_specials table (NOT products_percentage field)
-  **IMPORTANT**: Count promotional products with: SELECT COUNT(*) FROM clic_specials WHERE status = 1
+  **CRITICAL**: For promotional/discount queries, use {{table_prefix}}specials table (NOT products_percentage field)
+  **IMPORTANT**: Count promotional products with: SELECT COUNT(*) FROM {{table_prefix}}specials WHERE status = 1
 - products_featured: Featured selection ("featured selection", "featured products"), admin-curated merchandising (products_id, products_featured_date_added, scheduled_date, expires_date, status, customers_group_id)
 - products_favorites: Admin-curated merchandising picks ("favorites selection") (products_id, products_favorites_date_added, scheduled_date, expires_date, status, customers_group_id). Same structure/role family as products_featured; it has NO customers_id (it is NOT a customer wishlist)
 - products_recommendations: PER-CUSTOMER recommended products ("recommended products") (customers_id, products_id, score, recommendation_date, product_tag, customers_group_id, status). Every row belongs to a customer (customers_id is always set — NEVER filter customers_id IS NULL). Global list = SELECT DISTINCT over ALL rows with status = 1; per-customer list = filter customers_id = <given id> only when the question names one
-- products_cockpit_ai_action_log: audit log of actions taken by the CockpitAI agent (price/promo actions history). NOT the catalog state — current promotions ALWAYS come from clic_specials (status = 1); use this log only when the question is about AI actions or their history
+- products_cockpit_ai_action_log: audit log of actions taken by the CockpitAI agent (price/promo actions history). NOT the catalog state — current promotions ALWAYS come from {{table_prefix}}specials (status = 1); use this log only when the question is about AI actions or their history
 - dynamic_pricing_history: Price change history (id, products_id, old_price, new_price, price_change_percentage, date_applied, reason)
 - dynamic_pricing_rules: Pricing rules (id, rule_name, products_id, price_factor, conditions, date_created, status)
 
@@ -738,22 +734,23 @@ RETURNS:
 text_sql_generation_rules = SQL GENERATION RULES:
 
 COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
-- Catalog / list price comes from clic_products.products_price → you MUST alias it: SELECT p.products_price AS catalog_price
-- Transaction / sale price comes from clic_orders_products.products_price → you MUST alias it: SELECT op.products_price AS transaction_price
-- Units sold / quantity sold is SUM of clic_orders_products.products_quantity → you MUST alias it: SUM(op.products_quantity) AS total_sold
+- Catalog / list price comes from {{table_prefix}}products.products_price → you MUST alias it: SELECT p.products_price AS catalog_price
+- Transaction / sale price comes from {{table_prefix}}orders_products.products_price → you MUST alias it: SELECT op.products_price AS transaction_price
+- Units sold / quantity sold is SUM of {{table_prefix}}orders_products.products_quantity → you MUST alias it: SUM(op.products_quantity) AS total_sold
 - NEVER output a bare products_price or invent ad-hoc alias names. These fixed aliases (catalog_price, transaction_price, total_sold) are REQUIRED so downstream synthesis and the front-office receive stable, predictable column names on single-product lookups, lists, aggregations and hybrid queries.
 
 🚫 EXCLUDED COLUMNS — NEVER reference these in any SQL, even though they appear in the schema (unused / not connected). Maintain this list here:
 - `erp_invoice` : ERP-integration flag — NO ERP is connected, so it is ALWAYS 0 (filtering on it returns zero rows). For "invoiced / facturée" orders use `orders_status_invoice = 2` instead; NEVER use `erp_invoice`.
 
 COLUMN LOCATIONS (verified against the live schema — use the real column of the actual table):
-- clic_orders stores the buyer name in the single column customers_name (full name). The firstname/lastname split exists on clic_customers.
-- clic_specials expiry column is expires_date.
-- The manufacturer name is clic_manufacturers.manufacturers_name; the supplier name is clic_suppliers.suppliers_name.
-- clic_orders_products carries no supplier or manufacturer id: JOIN clic_products via products_id, then read clic_products.suppliers_id / clic_products.manufacturers_id.
-- clic_return_orders references the product via product_id (singular) and also stores product_name denormalised; its customer columns use the singular prefix (customer_firstname, customer_lastname).
+- {{table_prefix}}orders stores the buyer name in the single column customers_name (full name). The firstname/lastname split exists on {{table_prefix}}customers.
+- {{table_prefix}}specials expiry column is expires_date. It also has scheduled_date (future activation date, NULL = active immediately).
+- SCHEDULING WINDOW ({{table_prefix}}specials, {{table_prefix}}products_featured, {{table_prefix}}products_favorites): scheduled_date and expires_date are nullable datetimes and every comparison MUST carry an explicit operator — `scheduled_date <= NOW()` for "already started", `expires_date >= NOW()` for "not yet over". Writing a column next to NOW() with NO operator (e.g. `s.scheduled_date NOW()`) is a syntax error. status = 1 alone already answers "current"; add the window only when the question is explicitly about scheduling, and always guard the NULL: (s.scheduled_date IS NULL OR s.scheduled_date <= NOW()).
+- The manufacturer name is {{table_prefix}}manufacturers.manufacturers_name; the supplier name is {{table_prefix}}suppliers.suppliers_name.
+- {{table_prefix}}orders_products carries no supplier or manufacturer id: JOIN {{table_prefix}}products via products_id, then read {{table_prefix}}products.suppliers_id / {{table_prefix}}products.manufacturers_id.
+- {{table_prefix}}return_orders references the product via product_id (singular) and also stores product_name denormalised; its customer columns use the singular prefix (customer_firstname, customer_lastname).
 
-1. Always use full table prefixes (e.g., clic_products not products)
+1. Always use full table prefixes (e.g., {{table_prefix}}products not products)
 2. Add appropriate joins for related tables
 3. Filter by language_id when relevant
 4. Optimize for performance
@@ -765,9 +762,9 @@ When the question NAMES a filter column ("based on customer ID", "by product id"
 - NEVER invent a value, and NEVER reuse an id from the conversation context that the question did not explicitly ask for.
 - NEVER emit a bind placeholder (?, :id, %s, or <id>): the SQL is executed verbatim, an unbound placeholder is a syntax error.
 - Instead LIST: select the requested columns for ALL rows, ordered by that id ascending, with a reasonable LIMIT (default 100).
-✅ CORRECT (no id given): SELECT customers_id, CONCAT(customers_firstname, ' ', customers_lastname) AS customers_name, customers_email_address, customers_telephone FROM clic_customers ORDER BY customers_id ASC LIMIT 100
-❌ WRONG (unbound placeholder): SELECT ... FROM clic_customers WHERE customers_id = ?
-❌ WRONG (invented / context-borrowed id): SELECT ... FROM clic_customers WHERE customers_id = 103
+✅ CORRECT (no id given): SELECT customers_id, CONCAT(customers_firstname, ' ', customers_lastname) AS customers_name, customers_email_address, customers_telephone FROM {{table_prefix}}customers ORDER BY customers_id ASC LIMIT 100
+❌ WRONG (unbound placeholder): SELECT ... FROM {{table_prefix}}customers WHERE customers_id = ?
+❌ WRONG (invented / context-borrowed id): SELECT ... FROM {{table_prefix}}customers WHERE customers_id = 103
 Add a WHERE on the id ONLY when the question itself contains a concrete id value (e.g. "customer 42").
 
 6.1. ORDER BY SYNTAX RULES (CRITICAL - PREVENTS COLUMN REFERENCE ERRORS):
@@ -799,23 +796,23 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    
    Example 1 - Quarterly revenue (using function in ORDER BY):
    SELECT QUARTER(o.date_purchased) AS quarter, SUM(ot.value) AS revenue
-   FROM clic_orders o
-   JOIN clic_orders_total ot ON o.orders_id = ot.orders_id
+   FROM {{table_prefix}}orders o
+   JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id
    WHERE YEAR(o.date_purchased) = 2025 AND ot.class = 'ST'
    GROUP BY QUARTER(o.date_purchased)
    ORDER BY QUARTER(o.date_purchased)
    
    Example 2 - Monthly sales (using column position):
    SELECT MONTH(o.date_purchased), COUNT(*) AS order_count
-   FROM clic_orders o
+   FROM {{table_prefix}}orders o
    WHERE YEAR(o.date_purchased) = 2025
    GROUP BY MONTH(o.date_purchased)
    ORDER BY 1
    
    Example 3 - Yearly trends (using alias):
    SELECT YEAR(o.date_purchased) AS year_value, SUM(ot.value) AS total_revenue
-   FROM clic_orders o
-   JOIN clic_orders_total ot ON o.orders_id = ot.orders_id
+   FROM {{table_prefix}}orders o
+   JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id
    WHERE ot.class = 'ST'
    GROUP BY year_value
    ORDER BY year_value
@@ -855,16 +852,16 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    - bare "discount(s)" / "remise(s)" / "discounts granted" / "remises accordées" / "remises effectuées" / "discounts and coupons" / "toutes les remises" (NO 'customer'/'client' qualifier) → orders_total WHERE class IN ('CD','DC'). This is the DEFAULT for any unqualified discount question: coupons ARE discounts, so include them unless the user explicitly restricts to customer discounts.
    - ALWAYS expose the discount TYPE: include `ot.class` (CD = customer discount, DC = coupon) and `ot.title` in the SELECT so each row states which kind of discount it is.
    **CRITICAL**: For revenue/turnover, ALWAYS use class='ST' (Subtotal), NOT 'TO' or 'OT'
-   **CRITICAL**: Discounts/coupons granted on orders are orders_total lines (class 'CD'/'DC', amount = ot.value, label = ot.title). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price); that is NOT the discount. clic_specials is unrelated (product promo prices).
-   **CRITICAL**: the customer discount is ORDER-LEVEL (one orders_total CD line per order, applied to the whole order), NOT per product. To list the PRODUCTS of discounted orders ("products that received a discount" / "produits qui ont reçu une remise"), JOIN clic_orders_products (and clic_products_description) to the SAME order that has the class='CD' line.
+   **CRITICAL**: Discounts/coupons granted on orders are orders_total lines (class 'CD'/'DC', amount = ot.value, label = ot.title). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price); that is NOT the discount. {{table_prefix}}specials is unrelated (product promo prices).
+   **CRITICAL**: the customer discount is ORDER-LEVEL (one orders_total CD line per order, applied to the whole order), NOT per product. To list the PRODUCTS of discounted orders ("products that received a discount" / "produits qui ont reçu une remise"), JOIN {{table_prefix}}orders_products (and {{table_prefix}}products_description) to the SAME order that has the class='CD' line.
 
    EXAMPLES:
-   - "price and quantity" → SELECT p.products_id, p.products_price, p.products_quantity, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd...
-   - "stock level" → SELECT p.products_id, p.products_quantity, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd...
-   - "stock alert" → SELECT p.products_id, p.products_quantity_alert, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd...
-   - "inventory count" → SELECT SUM(p.products_quantity) FROM clic_products p
-   - "low stock" / "low in stock" / "stock bas" → SELECT p.products_id, p.products_quantity, p.products_quantity_alert, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE p.products_quantity <= p.products_quantity_alert
-   - "out of stock" / "rupture" → SELECT p.products_id, p.products_quantity, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE p.products_quantity = 0
+   - "price and quantity" → SELECT p.products_id, p.products_price, p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd...
+   - "stock level" → SELECT p.products_id, p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd...
+   - "stock alert" → SELECT p.products_id, p.products_quantity_alert, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd...
+   - "inventory count" → SELECT SUM(p.products_quantity) FROM {{table_prefix}}products p
+   - "low stock" / "low in stock" / "stock bas" → SELECT p.products_id, p.products_quantity, p.products_quantity_alert, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE p.products_quantity <= p.products_quantity_alert
+   - "out of stock" / "rupture" → SELECT p.products_id, p.products_quantity, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE p.products_quantity = 0
    - "out of stock OR low stock" / "en rupture ou en stock bas" → use the alert threshold which already covers both (0 <= alert): WHERE p.products_quantity <= p.products_quantity_alert. NEVER return empty SQL for a stock question — products_quantity / products_quantity_alert always exist.
 
 9. MULTI-TOKEN SEARCH (CRITICAL):
@@ -888,27 +885,27 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    - Any requested data field (price, quantity, etc.)
    
    REQUIRED JOIN FOR PRODUCT NAMES:
-   - ALWAYS JOIN with clic_products_description: 
-     JOIN clic_products_description pd ON p.products_id = pd.products_id
+   - ALWAYS JOIN with {{table_prefix}}products_description: 
+     JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
    - ALWAYS filter by language_id: WHERE pd.language_id = {{language_id}}
    
    ❌ WRONG APPROACH - Using MAX/MIN without product identification:
-   "most expensive product" → SELECT MAX(p.products_price) FROM clic_products p
+   "most expensive product" → SELECT MAX(p.products_price) FROM {{table_prefix}}products p
    Problem: Returns only the price, user doesn't know which product!
    
    ✅ CORRECT APPROACH - Select the complete product record:
    "most expensive product" → 
    SELECT pd.products_name, p.products_price, p.products_id
-   FROM clic_products p
-   JOIN clic_products_description pd ON p.products_id = pd.products_id
+   FROM {{table_prefix}}products p
+   JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
    WHERE pd.language_id = {{language_id}}
-     AND p.products_price = (SELECT MAX(products_price) FROM clic_products WHERE products_status = 1)
+     AND p.products_price = (SELECT MAX(products_price) FROM {{table_prefix}}products WHERE products_status = 1)
    
    MORE EXAMPLES:
-   - "stock level" → SELECT p.products_quantity, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}}
-   - "price" → SELECT p.products_price, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}}
-   - "cheapest product" → SELECT pd.products_name, p.products_price, p.products_id FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} AND p.products_price = (SELECT MIN(products_price) FROM clic_products WHERE products_status = 1)
-   - "product with most stock" → SELECT pd.products_name, p.products_quantity, p.products_id FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} AND p.products_quantity = (SELECT MAX(products_quantity) FROM clic_products WHERE products_status = 1)
+   - "stock level" → SELECT p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}}
+   - "price" → SELECT p.products_price, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}}
+   - "cheapest product" → SELECT pd.products_name, p.products_price, p.products_id FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} AND p.products_price = (SELECT MIN(products_price) FROM {{table_prefix}}products WHERE products_status = 1)
+   - "product with most stock" → SELECT pd.products_name, p.products_quantity, p.products_id FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} AND p.products_quantity = (SELECT MAX(products_quantity) FROM {{table_prefix}}products WHERE products_status = 1)
    
    REMEMBER: Users cannot identify products by ID or price alone - they need the NAME!
 
@@ -918,12 +915,12 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    The database uses foreign keys to link tables. Identify relationships by looking for columns with matching names:
    
    PRIMARY RELATIONSHIPS:
-   - products_id: Links clic_products → clic_products_description, clic_orders_products, clic_reviews, clic_products_notifications, clic_specials, clic_products_viewed
-   - customers_id: Links clic_customers → clic_orders, clic_reviews, clic_products_notifications
-   - orders_id: Links clic_orders → clic_orders_products, clic_orders_total
-   - categories_id: Links clic_categories → clic_categories_description, clic_products_to_categories
-   - manufacturers_id: Links clic_manufacturers → clic_manufacturers_info, clic_products
-   - suppliers_id: Links clic_suppliers → clic_suppliers_info, clic_manufacturers
+   - products_id: Links {{table_prefix}}products → {{table_prefix}}products_description, {{table_prefix}}orders_products, {{table_prefix}}reviews, {{table_prefix}}products_notifications, {{table_prefix}}specials, {{table_prefix}}products_viewed
+   - customers_id: Links {{table_prefix}}customers → {{table_prefix}}orders, {{table_prefix}}reviews, {{table_prefix}}products_notifications
+   - orders_id: Links {{table_prefix}}orders → {{table_prefix}}orders_products, {{table_prefix}}orders_total
+   - categories_id: Links {{table_prefix}}categories → {{table_prefix}}categories_description, {{table_prefix}}products_to_categories
+   - manufacturers_id: Links {{table_prefix}}manufacturers → {{table_prefix}}manufacturers_info, {{table_prefix}}products
+   - suppliers_id: Links {{table_prefix}}suppliers → {{table_prefix}}suppliers_info, {{table_prefix}}manufacturers
    
    LEVEL 2 - COMMON RELATIONSHIP PATTERNS:
    
@@ -936,8 +933,8 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
       JOIN Strategy: Use INNER JOIN or LEFT JOIN depending on whether you want only matched records or all records
    
    B. MANY-TO-MANY (Requires linking table):
-      - Products ↔ Orders: Use clic_orders_products as linking table
-      - Products ↔ Categories: Use clic_products_to_categories as linking table
+      - Products ↔ Orders: Use {{table_prefix}}orders_products as linking table
+      - Products ↔ Categories: Use {{table_prefix}}products_to_categories as linking table
       
       JOIN Strategy: JOIN through the linking table (2 JOINs required)
    
@@ -952,19 +949,19 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    When you see these query types, apply the corresponding JOIN pattern:
    
    - "best selling" / "most sold" / "top products"
-     → JOIN with clic_orders_products, use SUM(products_quantity), GROUP BY products_id
+     → JOIN with {{table_prefix}}orders_products, use SUM(products_quantity), GROUP BY products_id
    
    - "customer reviews" / "product feedback" / "ratings"
-     → JOIN with clic_reviews table
+     → JOIN with {{table_prefix}}reviews table
    
    - "never purchased" / "unpurchased" / "no sales"
-     → LEFT JOIN with clic_orders_products WHERE products_id IS NULL
+     → LEFT JOIN with {{table_prefix}}orders_products WHERE products_id IS NULL
    
    - "product notifications" / "stock alerts" / "customer alerts"
-     → JOIN with clic_products_notifications and clic_customers
+     → JOIN with {{table_prefix}}products_notifications and {{table_prefix}}customers
    
    - "viewed products" / "most viewed" / "product views"
-     → Use clic_products_viewed table (special tracking table)
+     → Use {{table_prefix}}products_viewed table (special tracking table)
    
    - "profit margin" / "margin calculation"
      → Calculate: (products_price - (products_cost + products_handling)) / products_price * 100
@@ -977,11 +974,11 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    - "marge financière" / "marge bénéficiaire" → profit margin (calculate from price and cost)
    - "hors stock" / "rupture de stock" → out of stock (products_quantity = 0)
    - "en stock" / "disponible" → in stock (products_quantity > 0)
-   - "produits vus" / "consultations" → viewed products (use clic_products_viewed table)
+   - "produits vus" / "consultations" → viewed products (use {{table_prefix}}products_viewed table)
    - "meilleurs produits" / "produits les plus vendus" → best selling (JOIN with orders_products, SUM quantity)
    - "produits non achetés" / "jamais achetés" → unpurchased products (LEFT JOIN orders_products WHERE NULL)
-   - "avis clients" / "commentaires" → customer reviews (use clic_reviews table)
-   - "surveillance" / "notifications" → product notifications (use clic_products_notifications table)
+   - "avis clients" / "commentaires" → customer reviews (use {{table_prefix}}reviews table)
+   - "surveillance" / "notifications" → product notifications (use {{table_prefix}}products_notifications table)
    
    KEY RULES FOR GENERATING JOINS:
    1. Always use table aliases (p, pd, op, r, c, etc.) for clarity
@@ -1049,7 +1046,7 @@ PATTERN RECOGNITION:
 - ALWAYS check database schema for the correct table name
 
 GENERIC PATTERN (adapt to the entity):
-1. Identify the main table (e.g., clic_suppliers, clic_manufacturers, clic_products)
+1. Identify the main table (e.g., {{table_prefix}}suppliers, {{table_prefix}}manufacturers, {{table_prefix}}products)
 2. Check if there's a multilingual description table (e.g., *_description, *_info)
 3. Select ID + name/description + 2-3 relevant columns
 4. Add language_id filter if multilingual table exists
@@ -1058,19 +1055,19 @@ GENERIC PATTERN (adapt to the entity):
 
 EXAMPLES:
 
-'list products' → SELECT p.products_id, pd.products_name, p.products_price, p.products_quantity FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} ORDER BY pd.products_name LIMIT 100
+'list products' → SELECT p.products_id, pd.products_name, p.products_price, p.products_quantity FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} ORDER BY pd.products_name LIMIT 100
 
-'list suppliers' → SELECT s.suppliers_id, si.suppliers_name, si.suppliers_description FROM clic_suppliers s JOIN clic_suppliers_info si ON s.suppliers_id = si.suppliers_id WHERE si.language_id = {{language_id}} ORDER BY si.suppliers_name LIMIT 100
+'list suppliers' → SELECT s.suppliers_id, si.suppliers_name, si.suppliers_description FROM {{table_prefix}}suppliers s JOIN {{table_prefix}}suppliers_info si ON s.suppliers_id = si.suppliers_id WHERE si.language_id = {{language_id}} ORDER BY si.suppliers_name LIMIT 100
 
-'list manufacturers' / 'list brands' → SELECT m.manufacturers_id, mi.manufacturers_name, mi.manufacturers_description FROM clic_manufacturers m JOIN clic_manufacturers_info mi ON m.manufacturers_id = mi.manufacturers_id WHERE mi.language_id = {{language_id}} ORDER BY mi.manufacturers_name LIMIT 100
+'list manufacturers' / 'list brands' → SELECT m.manufacturers_id, mi.manufacturers_name, mi.manufacturers_description FROM {{table_prefix}}manufacturers m JOIN {{table_prefix}}manufacturers_info mi ON m.manufacturers_id = mi.manufacturers_id WHERE mi.language_id = {{language_id}} ORDER BY mi.manufacturers_name LIMIT 100
 
-'list categories' → SELECT c.categories_id, cd.categories_name FROM clic_categories c JOIN clic_categories_description cd ON c.categories_id = cd.categories_id WHERE cd.language_id = {{language_id}} ORDER BY cd.categories_name LIMIT 100
+'list categories' → SELECT c.categories_id, cd.categories_name FROM {{table_prefix}}categories c JOIN {{table_prefix}}categories_description cd ON c.categories_id = cd.categories_id WHERE cd.language_id = {{language_id}} ORDER BY cd.categories_name LIMIT 100
 
-'list customers' → SELECT customers_id, customers_name, customers_email_address FROM clic_customers ORDER BY customers_name LIMIT 100
+'list customers' → SELECT customers_id, customers_name, customers_email_address FROM {{table_prefix}}customers ORDER BY customers_name LIMIT 100
 
-'list orders' → SELECT orders_id, customers_name, date_purchased, orders_status FROM clic_orders ORDER BY date_purchased DESC LIMIT 100
+'list orders' → SELECT orders_id, customers_name, date_purchased, orders_status FROM {{table_prefix}}orders ORDER BY date_purchased DESC LIMIT 100
 
-'list reviews' → SELECT r.reviews_id, r.products_id, r.customers_name, r.reviews_rating, r.reviews_date_added FROM clic_reviews r ORDER BY r.reviews_date_added DESC LIMIT 100
+'list reviews' → SELECT r.reviews_id, r.products_id, r.customers_name, r.reviews_rating, r.reviews_date_added FROM {{table_prefix}}reviews r ORDER BY r.reviews_date_added DESC LIMIT 100
 
 KEY RULES:
 - NEVER say "I don't have that information" for list queries
@@ -1080,49 +1077,53 @@ KEY RULES:
 - Non-multilingual tables don't need language_id filter
 
 SIMPLE COUNT QUERIES (No Filters):
-- 'how many customers' → SELECT COUNT(*) AS total_customers FROM clic_customers
+- 'how many customers' → SELECT COUNT(*) AS total_customers FROM {{table_prefix}}customers
 
-- 'how many products' → SELECT COUNT(*) AS total_products FROM clic_products
+- 'how many products' → SELECT COUNT(*) AS total_products FROM {{table_prefix}}products
 
-- 'total number of orders' → SELECT COUNT(*) AS total_orders FROM clic_orders
+- 'total number of orders' → SELECT COUNT(*) AS total_orders FROM {{table_prefix}}orders
 
-- 'number of categories' → SELECT COUNT(*) AS total_categories FROM clic_categories
+- 'number of categories' → SELECT COUNT(*) AS total_categories FROM {{table_prefix}}categories
 
-- 'how many reviews' → SELECT COUNT(*) AS total_reviews FROM clic_reviews
+- 'how many reviews' → SELECT COUNT(*) AS total_reviews FROM {{table_prefix}}reviews
 
 COUNT QUERIES WITH FILTERS:
-- 'how many active products' → SELECT COUNT(*) AS total FROM clic_products WHERE products_status = 1
+- 'how many active products' → SELECT COUNT(*) AS total FROM {{table_prefix}}products WHERE products_status = 1
 
-- 'how many customers this month' → SELECT COUNT(*) AS total FROM clic_customers c JOIN clic_customers_info ci ON c.customers_id = ci.customers_info_id WHERE MONTH(ci.customers_info_date_account_created) = MONTH(CURDATE()) AND YEAR(ci.customers_info_date_account_created) = YEAR(CURDATE())
+- 'how many customers this month' → SELECT COUNT(*) AS total FROM {{table_prefix}}customers c JOIN {{table_prefix}}customers_info ci ON c.customers_id = ci.customers_info_id WHERE MONTH(ci.customers_info_date_account_created) = MONTH(CURDATE()) AND YEAR(ci.customers_info_date_account_created) = YEAR(CURDATE())
 
-- 'number of orders this month' → SELECT COUNT(*) AS total FROM clic_orders WHERE MONTH(date_purchased) = MONTH(CURDATE()) AND YEAR(date_purchased) = YEAR(CURDATE())
+- 'number of orders this month' → SELECT COUNT(*) AS total FROM {{table_prefix}}orders WHERE MONTH(date_purchased) = MONTH(CURDATE()) AND YEAR(date_purchased) = YEAR(CURDATE())
 
-- 'how many products in stock' → SELECT COUNT(*) AS total FROM clic_products WHERE products_quantity > 0
+- 'how many products in stock' → SELECT COUNT(*) AS total FROM {{table_prefix}}products WHERE products_quantity > 0
 
-- 'how many products on promotion' → SELECT COUNT(*) AS total FROM clic_specials WHERE status = 1
+- 'how many products on promotion' → SELECT COUNT(*) AS total FROM {{table_prefix}}specials WHERE status = 1
 
-- 'count promotional products' → SELECT COUNT(*) AS total FROM clic_specials WHERE status = 1
+- 'count promotional products' → SELECT COUNT(*) AS total FROM {{table_prefix}}specials WHERE status = 1
+
+- 'list the current promotions' → SELECT s.products_id, pd.products_name, s.specials_new_products_price AS discounted_price FROM {{table_prefix}}specials s JOIN {{table_prefix}}products_description pd ON s.products_id = pd.products_id WHERE s.status = 1 AND pd.language_id = {{language_id}} LIMIT 100
+
+- 'promotions that have already started and are not expired' → SELECT s.products_id, pd.products_name, s.specials_new_products_price AS discounted_price FROM {{table_prefix}}specials s JOIN {{table_prefix}}products_description pd ON s.products_id = pd.products_id WHERE s.status = 1 AND (s.scheduled_date IS NULL OR s.scheduled_date <= NOW()) AND (s.expires_date IS NULL OR s.expires_date >= NOW()) AND pd.language_id = {{language_id}} LIMIT 100
 
 MERCHANDISING CONCEPTS (platform knowledge — reason from it, whatever the phrasing):
-Each merchandising state lives in ONE dedicated table, active rows = status 1: current promotions/special prices = clic_specials; "featured selection" = clic_products_featured; "favorites selection" = clic_products_favorites; "recommended products" = clic_products_recommendations (per-customer rows). These tables reference the product via products_id → JOIN clic_products (and clic_products_description for the name, filtered by language_id). Never answer these from clic_products alone, and never from clic_products_cockpit_ai_action_log (audit log of AI actions, not the catalog state). When a question combines several states ("on promotion AND favorites selection"), the intent is the UNION of the lists, not the intersection: LEFT JOIN clic_products to each state table and keep rows matching AT LEAST ONE state — e.g. LEFT JOIN clic_specials s ON s.products_id = p.products_id AND s.status = 1 LEFT JOIN clic_products_favorites f ON f.products_id = p.products_id AND f.status = 1 WHERE (s.products_id IS NOT NULL OR f.products_id IS NOT NULL) — and expose each state in the SELECT (e.g. s.products_id IS NOT NULL AS on_promotion). Use an INNER intersection ONLY if the question explicitly requires products in BOTH states at once.
+Each merchandising state lives in ONE dedicated table, active rows = status 1: current promotions/special prices = {{table_prefix}}specials; "featured selection" = {{table_prefix}}products_featured; "favorites selection" = {{table_prefix}}products_favorites; "recommended products" = {{table_prefix}}products_recommendations (per-customer rows). These tables reference the product via products_id → JOIN {{table_prefix}}products (and {{table_prefix}}products_description for the name, filtered by language_id). Never answer these from {{table_prefix}}products alone, and never from {{table_prefix}}products_cockpit_ai_action_log (audit log of AI actions, not the catalog state). When a question combines several states ("on promotion AND favorites selection"), the intent is the UNION of the lists, not the intersection: LEFT JOIN {{table_prefix}}products to each state table and keep rows matching AT LEAST ONE state — e.g. LEFT JOIN {{table_prefix}}specials s ON s.products_id = p.products_id AND s.status = 1 LEFT JOIN {{table_prefix}}products_favorites f ON f.products_id = p.products_id AND f.status = 1 WHERE (s.products_id IS NOT NULL OR f.products_id IS NOT NULL) — and expose each state in the SELECT (e.g. s.products_id IS NOT NULL AS on_promotion). Use an INNER intersection ONLY if the question explicitly requires products in BOTH states at once.
 
 AVERAGE RATING QUERIES:
-**PATTERN**: An average review rating joins ONLY clic_reviews → clic_products → clic_products_description. There is NO orders_products (op) table in a rating query — never reference op.* here. GROUP BY p.products_id (the alias that exists in the FROM/JOIN), never an undefined alias.
+**PATTERN**: An average review rating joins ONLY {{table_prefix}}reviews → {{table_prefix}}products → {{table_prefix}}products_description. There is NO orders_products (op) table in a rating query — never reference op.* here. GROUP BY p.products_id (the alias that exists in the FROM/JOIN), never an undefined alias.
 
-- 'average rating per product' / 'best rated products' / 'product review scores' → SELECT p.products_id, pd.products_name, AVG(r.reviews_rating) AS average_rating, COUNT(r.reviews_id) AS review_count FROM clic_reviews r JOIN clic_products p ON r.products_id = p.products_id JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} GROUP BY p.products_id, pd.products_name ORDER BY average_rating DESC LIMIT 100
+- 'average rating per product' / 'best rated products' / 'product review scores' → SELECT p.products_id, pd.products_name, AVG(r.reviews_rating) AS average_rating, COUNT(r.reviews_id) AS review_count FROM {{table_prefix}}reviews r JOIN {{table_prefix}}products p ON r.products_id = p.products_id JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} GROUP BY p.products_id, pd.products_name ORDER BY average_rating DESC LIMIT 100
 
 RETURN RATE QUERIES:
-**PATTERN**: Returns live in clic_return_orders (return_id, order_id, date_added). Return rate = returns ÷ orders over the SAME period. Use a self-contained subquery for the order count (never reference the outer alias inside the subquery). Never constrain one date column with both >= and = to the same value. Current-quarter start = MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH.
+**PATTERN**: Returns live in {{table_prefix}}return_orders (return_id, order_id, date_added). Return rate = returns ÷ orders over the SAME period. Use a self-contained subquery for the order count (never reference the outer alias inside the subquery). Never constrain one date column with both >= and = to the same value. Current-quarter start = MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH.
 
-- 'return rate this quarter' / 'product return rate' → SELECT COUNT(DISTINCT ro.return_id) AS total_returns, (SELECT COUNT(*) FROM clic_orders o WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH) AS total_orders, ROUND(COUNT(DISTINCT ro.return_id) / NULLIF((SELECT COUNT(*) FROM clic_orders o WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH), 0) * 100, 2) AS return_rate_percentage FROM clic_return_orders ro WHERE ro.date_added >= MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH
+- 'return rate this quarter' / 'product return rate' → SELECT COUNT(DISTINCT ro.return_id) AS total_returns, (SELECT COUNT(*) FROM {{table_prefix}}orders o WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH) AS total_orders, ROUND(COUNT(DISTINCT ro.return_id) / NULLIF((SELECT COUNT(*) FROM {{table_prefix}}orders o WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH), 0) * 100, 2) AS return_rate_percentage FROM {{table_prefix}}return_orders ro WHERE ro.date_added >= MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (QUARTER(CURDATE())-1)*3 MONTH
 
 ORDER VALUE QUERIES:
-**PATTERN**: Use clic_orders_total with class='TO' for total order value
+**PATTERN**: Use {{table_prefix}}orders_total with class='TO' for total order value
 
 - 'most important order' / 'biggest order' → 
   SELECT o.orders_id, o.customers_name, ot.value AS total
-  FROM clic_orders o
-  JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'TO'
+  FROM {{table_prefix}}orders o
+  JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'TO'
   ORDER BY ot.value DESC LIMIT 1
 
 - 'biggest order this month' → Add: WHERE MONTH(o.date_purchased) = MONTH(CURDATE())
@@ -1132,39 +1133,39 @@ ORDER VALUE QUERIES:
 **KEY**: "important/biggest/largest order" = highest monetary value (ot.class = 'TO')
 
 STATUS QUERIES (Most Common):
-- 'pending order' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM clic_orders o JOIN clic_orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}}
-- 'pending orders' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM clic_orders o JOIN clic_orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}}
-- 'products with status off' → SELECT p.products_id, pd.products_name, p.products_status FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE p.products_status = 0 AND pd.language_id = {{language_id}}
-- 'pending orders this year' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM clic_orders o JOIN clic_orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}} AND YEAR(o.date_purchased) = YEAR(CURDATE())
-- 'orders this week' → SELECT o.orders_id, o.customers_name, o.date_purchased FROM clic_orders o WHERE YEARWEEK(o.date_purchased, 1) = YEARWEEK(CURDATE(), 1)
-- 'active customers' → SELECT c.customers_id, c.customers_name, c.customers_email_address FROM clic_customers c WHERE c.customers_status = 1
+- 'pending order' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}}
+- 'pending orders' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}}
+- 'products with status off' → SELECT p.products_id, pd.products_name, p.products_status FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE p.products_status = 0 AND pd.language_id = {{language_id}}
+- 'pending orders this year' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}} AND YEAR(o.date_purchased) = YEAR(CURDATE())
+- 'orders this week' → SELECT o.orders_id, o.customers_name, o.date_purchased FROM {{table_prefix}}orders o WHERE YEARWEEK(o.date_purchased, 1) = YEARWEEK(CURDATE(), 1)
+- 'active customers' → SELECT c.customers_id, c.customers_name, c.customers_email_address FROM {{table_prefix}}customers c WHERE c.customers_status = 1
 
 AGGREGATION QUERIES:
-- 'number of products per category' → SELECT cd.categories_name, COUNT(p.products_id) AS product_count FROM clic_products p JOIN clic_products_to_categories ptc ON p.products_id = ptc.products_id JOIN clic_categories_description cd ON ptc.categories_id = cd.categories_id WHERE cd.language_id = {{language_id}} GROUP BY cd.categories_name ORDER BY product_count DESC
-- 'top sold products' → SELECT pd.products_name, SUM(op.products_quantity) AS total_sold FROM clic_orders_products op JOIN clic_products_description pd ON op.products_id = pd.products_id WHERE pd.language_id = {{language_id}} GROUP BY op.products_id, pd.products_name ORDER BY total_sold DESC LIMIT 10
-- 'revenue this month' → SELECT SUM(ot.value) AS total_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND MONTH(o.date_purchased) = MONTH(CURDATE()) AND YEAR(o.date_purchased) = YEAR(CURDATE())
-- 'discounts granted to customers' / 'remises accordées aux clients' → SELECT o.customers_id, MAX(o.customers_name) AS customers_name, ot.orders_id, ot.title, ot.value AS discount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' WHERE o.orders_status != 4 GROUP BY o.customers_id, ot.orders_id, ot.title, ot.value ORDER BY o.customers_id
-- 'total customer discounts granted' / 'montant total des remises clients' → SELECT SUM(ot.value) AS total_discount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'CD'
-- 'products ordered that received a discount' / 'produits commandés qui ont reçu une remise' → SELECT o.orders_id, pd.products_name, op.products_quantity, ot.value AS discount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' JOIN clic_orders_products op ON o.orders_id = op.orders_id JOIN clic_products_description pd ON op.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE o.orders_status != 4 ORDER BY o.orders_id
+- 'number of products per category' → SELECT cd.categories_name, COUNT(p.products_id) AS product_count FROM {{table_prefix}}products p JOIN {{table_prefix}}products_to_categories ptc ON p.products_id = ptc.products_id JOIN {{table_prefix}}categories_description cd ON ptc.categories_id = cd.categories_id WHERE cd.language_id = {{language_id}} GROUP BY cd.categories_name ORDER BY product_count DESC
+- 'top sold products' → SELECT pd.products_name, SUM(op.products_quantity) AS total_sold FROM {{table_prefix}}orders_products op JOIN {{table_prefix}}products_description pd ON op.products_id = pd.products_id WHERE pd.language_id = {{language_id}} GROUP BY op.products_id, pd.products_name ORDER BY total_sold DESC LIMIT 10
+- 'revenue this month' → SELECT SUM(ot.value) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND MONTH(o.date_purchased) = MONTH(CURDATE()) AND YEAR(o.date_purchased) = YEAR(CURDATE())
+- 'discounts granted to customers' / 'remises accordées aux clients' → SELECT o.customers_id, MAX(o.customers_name) AS customers_name, ot.orders_id, ot.title, ot.value AS discount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' WHERE o.orders_status != 4 GROUP BY o.customers_id, ot.orders_id, ot.title, ot.value ORDER BY o.customers_id
+- 'total customer discounts granted' / 'montant total des remises clients' → SELECT SUM(ot.value) AS total_discount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'CD'
+- 'products ordered that received a discount' / 'produits commandés qui ont reçu une remise' → SELECT o.orders_id, pd.products_name, op.products_quantity, ot.value AS discount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' JOIN {{table_prefix}}orders_products op ON o.orders_id = op.orders_id JOIN {{table_prefix}}products_description pd ON op.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE o.orders_status != 4 ORDER BY o.orders_id
 (The discount is order-level: each product line of a discounted order is returned with that order's CD discount — NEVER a per-product price difference)
-- 'coupons granted on orders' / 'coupons used on orders' / 'coupons octroyés sur les commandes' / 'bons de réduction utilisés' → SELECT o.orders_id, MAX(o.customers_name) AS customers_name, ot.title AS coupon, ot.value AS amount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'DC' WHERE o.orders_status != 4 GROUP BY o.orders_id, ot.title, ot.value ORDER BY o.orders_id
-- 'all discounts on orders' / 'toutes les remises effectuées sur les commandes' / 'remises et coupons' → SELECT o.orders_id, MAX(o.customers_name) AS customers_name, ot.class AS discount_type, ot.title, ot.value AS amount FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class IN ('CD','DC') WHERE o.orders_status != 4 GROUP BY o.orders_id, ot.class, ot.title, ot.value ORDER BY o.orders_id (discount_type CD = customer discount, DC = coupon)
+- 'coupons granted on orders' / 'coupons used on orders' / 'coupons octroyés sur les commandes' / 'bons de réduction utilisés' → SELECT o.orders_id, MAX(o.customers_name) AS customers_name, ot.title AS coupon, ot.value AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'DC' WHERE o.orders_status != 4 GROUP BY o.orders_id, ot.title, ot.value ORDER BY o.orders_id
+- 'all discounts on orders' / 'toutes les remises effectuées sur les commandes' / 'remises et coupons' → SELECT o.orders_id, MAX(o.customers_name) AS customers_name, ot.class AS discount_type, ot.title, ot.value AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class IN ('CD','DC') WHERE o.orders_status != 4 GROUP BY o.orders_id, ot.class, ot.title, ot.value ORDER BY o.orders_id (discount_type CD = customer discount, DC = coupon)
 
 PRODUCT QUERIES:
-- 'stock of product [ProductName]' → SELECT p.products_quantity, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'stock of product [ProductName]' → SELECT p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
 
-- 'price of product [ProductName]' → SELECT p.products_price AS catalog_price, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'price of product [ProductName]' → SELECT p.products_price AS catalog_price, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
 
-- 'what is the price of [ProductName]' → SELECT p.products_price AS catalog_price, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'what is the price of [ProductName]' → SELECT p.products_price AS catalog_price, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
 
-- 'model/reference of product [ProductName]' → SELECT p.products_model, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'model/reference of product [ProductName]' → SELECT p.products_model, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
 
-- 'price and SKU of product [ProductName]' → SELECT p.products_price AS catalog_price, p.products_sku, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'price and SKU of product [ProductName]' → SELECT p.products_price AS catalog_price, p.products_sku, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
 
-- 'model and price of product [ProductName]' → SELECT p.products_model, p.products_price AS catalog_price, p.products_id, pd.products_name FROM clic_products p JOIN clic_products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'model and price of product [ProductName]' → SELECT p.products_model, p.products_price AS catalog_price, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
 
 COMPARISON QUERIES:
-- 'compare revenue may vs february' → SELECT SUM(CASE WHEN MONTH(o.date_purchased) = 5 THEN ot.value ELSE 0 END) AS may_revenue, SUM(CASE WHEN MONTH(o.date_purchased) = 2 THEN ot.value ELSE 0 END) AS february_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = YEAR(CURDATE())
+- 'compare revenue may vs february' → SELECT SUM(CASE WHEN MONTH(o.date_purchased) = 5 THEN ot.value ELSE 0 END) AS may_revenue, SUM(CASE WHEN MONTH(o.date_purchased) = 2 THEN ot.value ELSE 0 END) AS february_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = YEAR(CURDATE())
 
 
 
@@ -1181,15 +1182,15 @@ Pick the GROUP BY expression by granularity (keep it in SELECT aliased, and ORDE
 - by day: GROUP BY DATE(date)
 Use the aggregate that matches the wording: AVG for "average", SUM for "total"/"turnover"/"revenue", COUNT for "how many".
 
-- 'average turnover in 2025 and 2026' → SELECT YEAR(o.date_purchased) AS period, AVG(ot.value) AS average_turnover FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) IN (2025, 2026) GROUP BY YEAR(o.date_purchased) ORDER BY period
-- 'total revenue per quarter in 2025' → SELECT QUARTER(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = 2025 GROUP BY QUARTER(o.date_purchased) ORDER BY period
-- 'revenue by month this year' → SELECT MONTH(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = YEAR(CURDATE()) GROUP BY MONTH(o.date_purchased) ORDER BY period
-- 'orders per day last week' → SELECT DATE(o.date_purchased) AS period, COUNT(*) AS total_orders FROM clic_orders o WHERE o.date_purchased >= CURDATE() - INTERVAL 7 DAY GROUP BY DATE(o.date_purchased) ORDER BY period
+- 'average turnover in 2025 and 2026' → SELECT YEAR(o.date_purchased) AS period, AVG(ot.value) AS average_turnover FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) IN (2025, 2026) GROUP BY YEAR(o.date_purchased) ORDER BY period
+- 'total revenue per quarter in 2025' → SELECT QUARTER(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = 2025 GROUP BY QUARTER(o.date_purchased) ORDER BY period
+- 'revenue by month this year' → SELECT MONTH(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = YEAR(CURDATE()) GROUP BY MONTH(o.date_purchased) ORDER BY period
+- 'orders per day last week' → SELECT DATE(o.date_purchased) AS period, COUNT(*) AS total_orders FROM {{table_prefix}}orders o WHERE o.date_purchased >= CURDATE() - INTERVAL 7 DAY GROUP BY DATE(o.date_purchased) ORDER BY period
 
 YEAR-OVER-YEAR COMPARISON (relative years like "this year" vs "last year"):
 For "compare X this year and last year" use a SINGLE query that groups by YEAR with YEAR(CURDATE()) for the current year and YEAR(CURDATE()) - 1 for the previous year. NEVER use correlated subqueries or two separate revenue columns — always GROUP BY YEAR so both years come back as rows.
-- 'compare revenue this year and last year' / 'chiffre d'affaires de cette année et de l'an dernier' / 'revenue this year vs last year' → SELECT YEAR(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(o.date_purchased) ORDER BY period
-- 'compare the number of orders this year and last year' → SELECT YEAR(date_purchased) AS period, COUNT(*) AS total_orders FROM clic_orders WHERE orders_status != 4 AND YEAR(date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(date_purchased) ORDER BY period
+- 'compare revenue this year and last year' / 'chiffre d'affaires de cette année et de l'an dernier' / 'revenue this year vs last year' → SELECT YEAR(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(o.date_purchased) ORDER BY period
+- 'compare the number of orders this year and last year' → SELECT YEAR(date_purchased) AS period, COUNT(*) AS total_orders FROM {{table_prefix}}orders WHERE orders_status != 4 AND YEAR(date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(date_purchased) ORDER BY period
 
 text_sql_format_instructions = SQL FORMAT RULES:
 1. ONLY respond with the SQL query, no explanatory text before or after
@@ -1215,9 +1216,9 @@ EXAMPLE (JSON FIELD EXTRACTION):
 ❌ WRONG: "list products with SEO score"
 You generate:
 SELECT p.products_id, pd.products_name, s.seo_score_after
-FROM clic_products p
-JOIN clic_products_description pd ON p.products_id = pd.products_id
-JOIN clic_products_seo_embedding s ON p.products_id = s.entity_id
+FROM {{table_prefix}}products p
+JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
+JOIN {{table_prefix}}products_seo_embedding s ON p.products_id = s.entity_id
 ORDER BY s.seo_score_after DESC
 
 Problem:
@@ -1230,9 +1231,9 @@ You must generate absolutly like this using JSON_UNQUOTE(JSON_EXTRACT(s.metadata
 SELECT DISTINCT p.products_id,
       pd.products_name,
       JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS seo_score
- FROM clic_products p
- JOIN clic_products_description pd ON p.products_id = pd.products_id
- JOIN clic_products_seo_embedding s ON p.products_id = s.entity_id AND s.entity_type = 'product'
+ FROM {{table_prefix}}products p
+ JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
+ JOIN {{table_prefix}}products_seo_embedding s ON p.products_id = s.entity_id AND s.entity_type = 'product'
  WHERE pd.language_id = {{language_id}}
  AND JSON_EXTRACT(s.metadata, '$.seo_score_after') IS NOT NULL
  AND JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) != 'null'
@@ -1258,9 +1259,9 @@ The following fields ALL exist inside JSON metadata, NEVER as real columns:
        "before/after comparison" → select BOTH fields
 
 ❌ WRONG (FORBIDDEN - will always fail):
-SELECT DISTINCT seos.seo_score_before FROM clic_products_seo_embedding seos
-SELECT DISTINCT s.seo_score_after FROM clic_products_seo_embedding s
-SELECT DISTINCT seos.seo_score FROM clic_products_seo_embedding seos
+SELECT DISTINCT seos.seo_score_before FROM {{table_prefix}}products_seo_embedding seos
+SELECT DISTINCT s.seo_score_after FROM {{table_prefix}}products_seo_embedding s
+SELECT DISTINCT seos.seo_score FROM {{table_prefix}}products_seo_embedding seos
 
 SAFE CAST RULE FOR JSON NUMERIC VALUES (MANDATORY):
 When using JSON_EXTRACT on any numeric JSON field (seo_score, price, quantity, etc.),
@@ -1294,9 +1295,9 @@ SELECT DISTINCT
     pd.products_name,
     JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_before')) AS seo_score_before,
     JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS seo_score_after
-FROM clic_products p
-JOIN clic_products_description pd ON p.products_id = pd.products_id
-JOIN clic_products_seo_embedding s ON p.products_id = s.entity_id AND s.entity_type = 'product'
+FROM {{table_prefix}}products p
+JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
+JOIN {{table_prefix}}products_seo_embedding s ON p.products_id = s.entity_id AND s.entity_type = 'product'
 WHERE pd.language_id = {{language_id}}
 AND JSON_EXTRACT(s.metadata, '$.seo_score_after') IS NOT NULL
 AND JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) != 'null'
@@ -1344,8 +1345,8 @@ When user asks to COMPARE periods (vs, versus, compared to), generate ONE query 
 text_aggregation_rules = ABSOLUTE RULE - GLOBAL AGGREGATIONS
 ABSOLUTE PROHIBITION: NEVER include products_id, orders_id, or any other column with AVG, SUM, COUNT without GROUP BY
 
-FORBIDDEN: SELECT AVG(p.products_price) AS prix_moyen, p.products_id FROM clic_products p WHERE p.products_status = 1
-MANDATORY: SELECT AVG(p.products_price) AS prix_moyen FROM clic_products p WHERE p.products_status = 1
+FORBIDDEN: SELECT AVG(p.products_price) AS prix_moyen, p.products_id FROM {{table_prefix}}products p WHERE p.products_status = 1
+MANDATORY: SELECT AVG(p.products_price) AS prix_moyen FROM {{table_prefix}}products p WHERE p.products_status = 1
 
 RULES for global aggregations (without GROUP BY):
 1. NEVER add LIMIT 1 (aggregation already returns ONE row)
@@ -1357,26 +1358,26 @@ RULES for global aggregations (without GROUP BY):
 When user asks for "cheapest product", "most expensive product", "product with most stock", etc.,
 they want to see the ACTUAL PRODUCTS, not just the aggregated value.
 
-❌ WRONG: SELECT MIN(p.products_price) AS min_price FROM clic_products p
+❌ WRONG: SELECT MIN(p.products_price) AS min_price FROM {{table_prefix}}products p
    Problem: Returns only the price value, user doesn't know which product!
 
 ✅ CORRECT: Use subquery to find ALL products at MIN/MAX value:
    SELECT pd.products_name, p.products_price, p.products_id
-   FROM clic_products p
-   JOIN clic_products_description pd ON p.products_id = pd.products_id
+   FROM {{table_prefix}}products p
+   JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
    WHERE pd.language_id = {{language_id}}
-     AND p.products_price = (SELECT MIN(products_price) FROM clic_products WHERE products_status = 1)
+     AND p.products_price = (SELECT MIN(products_price) FROM {{table_prefix}}products WHERE products_status = 1)
 
 This returns ALL products at the minimum price, not just one!
 
 CORRECT Examples:
-"How many active products" → SELECT COUNT(DISTINCT p.products_id) AS total FROM clic_products p WHERE p.products_status = 1
-"Average price of active products in stock" → SELECT AVG(p.products_price) AS prix_moyen FROM clic_products p WHERE p.products_status = 1 AND p.products_quantity > 0
-"Total revenue" → SELECT SUM(ot.value) AS total FROM clic_orders o JOIN clic_orders_total ot ON o.orders_id = ot.orders_id WHERE ot.class = 'ST'
+"How many active products" → SELECT COUNT(DISTINCT p.products_id) AS total FROM {{table_prefix}}products p WHERE p.products_status = 1
+"Average price of active products in stock" → SELECT AVG(p.products_price) AS prix_moyen FROM {{table_prefix}}products p WHERE p.products_status = 1 AND p.products_quantity > 0
+"Total revenue" → SELECT SUM(ot.value) AS total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE ot.class = 'ST'
 
 EXCEPTION - Aggregations with GROUP BY:
 If you use GROUP BY, you CAN include the grouped columns:
-SELECT p.products_id, pd.products_name, SUM(op.products_quantity) AS total FROM clic_orders_products op ... GROUP BY p.products_id, pd.products_name ORDER BY total DESC LIMIT 10
+SELECT p.products_id, pd.products_name, SUM(op.products_quantity) AS total FROM {{table_prefix}}orders_products op ... GROUP BY p.products_id, pd.products_name ORDER BY total DESC LIMIT 10
 
 SIMPLE RULE:
 - Global aggregation (no GROUP BY) = ONE single column (the aggregation function), no LIMIT, no ID
@@ -1474,9 +1475,9 @@ text_rag_system_analytics_rules = ESSENTIAL RULE FOR ANALYTICS:
 --- AMBIGUITY RESOLUTION RULE (CATALOG vs. TRANSACTION) ---
 
 If query mentions price or product list without specific time constraints or transactional keywords (e.g., 'order', 'sold', 'transaction', 'last 30 days'),
-you MUST default to using **CATALOG_PRICE** from 'clic_products' table.
+you MUST default to using **CATALOG_PRICE** from '{{table_prefix}}products' table.
 
-Only use **TRANSACTIONAL_PRICE** from 'clic_orders_products' if sales event or order context is explicitly mentioned.
+Only use **TRANSACTIONAL_PRICE** from '{{table_prefix}}orders_products' if sales event or order context is explicitly mentioned.
 
 When answering about specific entity (product, order, customer), always include ID column in SELECT clause.
 
@@ -1523,18 +1524,18 @@ REVENUE CALCULATION RULES:
 
 EXAMPLES:
 ✅ CORRECT (Default): 
-SELECT SUM(ot.value) FROM clic_orders o 
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id 
+SELECT SUM(ot.value) FROM {{table_prefix}}orders o 
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id 
 WHERE o.orders_status != 4 AND ot.class = 'ST'
 Analysis note: "Includes all orders except cancelled ones"
 
 ✅ CORRECT (Completed only): 
-SELECT SUM(ot.value) FROM clic_orders o 
-JOIN clic_orders_total ot ON o.orders_id = ot.orders_id 
+SELECT SUM(ot.value) FROM {{table_prefix}}orders o 
+JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id 
 WHERE o.orders_status = 3 AND ot.class = 'ST'
 Analysis note: "Includes only delivered orders (status = 3)"
 
-❌ WRONG: SELECT SUM(ot.value) FROM clic_orders_total ot (missing orders_status filter!)
+❌ WRONG: SELECT SUM(ot.value) FROM {{table_prefix}}orders_total ot (missing orders_status filter!)
 
 TEMPORAL AGGREGATIONS:
 - Maintain orders_status filter across ALL time periods
@@ -1611,8 +1612,8 @@ FROM (
         YEAR(o.date_purchased) AS year,
         QUARTER(o.date_purchased) AS quarter,
         SUM(ot.value) AS revenue
-    FROM clic_orders o
-    JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    FROM {{table_prefix}}orders o
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
@@ -1677,8 +1678,8 @@ FROM (
         YEAR(o.date_purchased) AS year,
         MONTH(o.date_purchased) AS month,
         SUM(ot.value) AS revenue
-    FROM clic_orders o
-    JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    FROM {{table_prefix}}orders o
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
     GROUP BY YEAR(o.date_purchased), MONTH(o.date_purchased)
@@ -1724,8 +1725,8 @@ FROM (
         YEAR(o.date_purchased) AS year,
         QUARTER(o.date_purchased) AS quarter,
         SUM(ot.value) AS revenue
-    FROM clic_orders o
-    JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    FROM {{table_prefix}}orders o
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
@@ -1771,8 +1772,8 @@ FROM (
         YEAR(o.date_purchased) AS year,
         QUARTER(o.date_purchased) AS quarter,
         SUM(ot.value) AS revenue
-    FROM clic_orders o
-    JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    FROM {{table_prefix}}orders o
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
@@ -1815,8 +1816,8 @@ FROM (
         YEAR(o.date_purchased) AS year,
         QUARTER(o.date_purchased) AS quarter,
         SUM(ot.value) AS revenue
-    FROM clic_orders o
-    JOIN clic_orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    FROM {{table_prefix}}orders o
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
@@ -1960,8 +1961,8 @@ This indicates [STRONG/MODERATE/WEAK] seasonal patterns, with [DESCRIPTION]."
 
 
 text_analytic_agent_context = ---- CONTEXT FROM PREVIOUS CONVERSATION ----
-Last {{entityType}}} discussed: {{entityName}} (ID: {{entityId}})
-IMPORTANT: If the query contains pronouns or possessive adjectives  it, its, this, that, the, etc.)
+Last {{entityType}} discussed: {{entityName}} (ID: {{entityId}})
+IMPORTANT: If the query contains pronouns or possessive adjectives (it, its, this, that, the, etc.)
 use this context to resolve them.
 Example: The/This sku means the SKU of {{entityName}}
 Example: its price means the price of {{entityName}}

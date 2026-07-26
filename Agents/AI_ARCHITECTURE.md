@@ -213,8 +213,10 @@ The registry exposes **five** agnostic hooks — a domain App registers whicheve
 | `registerQueryEnricher` | `QueryEnricherInterface` | Pre-search query rewriting (context) |
 | `registerIntentDetector` | `QueryIntentDetectorInterface` | **Fallback** intent verdict when the LLM signal is absent (Core owns no keywords) |
 
-The intent-detector hook is how a *domain concept* like price comparison stays out of Core: `HybridQueryDecomposer` detects `price_comparison` PRIMARY via the
-LLM intent, and FALLBACK by iterating the registered detectors — the Ecommerce App owns the keywords in `PriceComparisonIntentDetector`.
+The intent-detector hook is how a *domain concept* like price comparison stays out of Core: `HybridQueryDecomposer` detects `comparative_lookup` PRIMARY via the
+LLM intent, and FALLBACK by iterating the registered detectors — the Ecommerce App owns the keywords in `PriceComparisonIntentDetector`. The Core intent
+identifiers are domain-neutral (`comparative_lookup`, `entity_discovery`, `market_research`, `trend_analysis`); the commerce meaning lives only in the Ecommerce
+classification prompt (`ecommerce/rag_intent_router.txt`).
 
 Component file locations (single template, used by every domain):
 

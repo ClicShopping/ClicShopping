@@ -115,7 +115,7 @@ class SchemaEmbedder
   /**
    * Get embedding for a specific table
    * 
-   * @param string $tableName Table name (e.g., "clic_products")
+   * @param string $tableName Table name (e.g., "products")
    * @return array|null Embedding vector or null if not found
    */
   public function getTableEmbedding(string $tableName): ?array
@@ -195,9 +195,9 @@ class SchemaEmbedder
    * Parse full schema text into individual table definitions
    * 
    * Extracts numbered sections like:
-   * 1. Table clic_orders:
+   * 1. Table orders:
    *    - Contains orders...
-   * 2. Table clic_customers:
+   * 2. Table customers:
    *    - Contains customer...
    * 
    * @param string $fullSchema Full schema text
@@ -208,7 +208,7 @@ class SchemaEmbedder
     $tables = [];
     
     // Pattern to match numbered table sections
-    // Example: "1. Table clic_orders:\n   - Contains orders..."
+    // Example: "1. Table orders:\n   - Contains orders..."
     $pattern = '/(\d+)\.\s+Table\s+(' . preg_quote($this->tablePrefix, '/') . '\w+):\s*\\n(.*?)(?=\d+\.\s+Table|\z)/s';
     
     preg_match_all($pattern, $fullSchema, $matches, PREG_SET_ORDER);

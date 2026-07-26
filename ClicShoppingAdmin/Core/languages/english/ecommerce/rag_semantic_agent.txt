@@ -102,11 +102,11 @@ RULE 4: MULTILINGUAL HANDLING
 RULE 5: ENTITY TYPE FILTERING
 
 **Filter by entity type when specified:**
-- Products: Search in clic_products_embedding
-- Categories: Search in clic_categories_embedding
-- Manufacturers: Search in clic_manufacturers_embedding
-- Suppliers: Search in clic_suppliers_embedding
-- Documents: Search in clic_rag_documents_embedding
+- Products: Search in {{table_prefix}}products_embedding
+- Categories: Search in {{table_prefix}}categories_embedding
+- Manufacturers: Search in {{table_prefix}}manufacturers_embedding
+- Suppliers: Search in {{table_prefix}}suppliers_embedding
+- Documents: Search in {{table_prefix}}rag_documents_embedding
 - Other entity types: Search in corresponding embedding tables (dynamically configured)
 
 **Multi-entity search:**
@@ -318,7 +318,7 @@ STRATEGY 1: APPROXIMATE NEAREST NEIGHBOR (ANN)
 
 **MariaDB Vector Index (if available):**
 ```sql
-CREATE INDEX idx_embedding ON clic_products_embedding(embedding) 
+CREATE INDEX idx_embedding ON {{table_prefix}}products_embedding(embedding) 
 USING VECTOR(type=HNSW, distance=COSINE, M=16, efConstruction=200);
 ```
 
@@ -353,11 +353,11 @@ STRATEGY 3: MULTI-VECTOR SEARCH
 **Search across multiple embedding tables:**
 1. Embed query once
 2. Search in parallel across all available embedding tables:
-   - clic_products_embedding
-   - clic_categories_embedding
-   - clic_manufacturers_embedding
-   - clic_suppliers_embedding
-   - clic_rag_documents_embedding
+   - {{table_prefix}}products_embedding
+   - {{table_prefix}}categories_embedding
+   - {{table_prefix}}manufacturers_embedding
+   - {{table_prefix}}suppliers_embedding
+   - {{table_prefix}}rag_documents_embedding
    - Additional embedding tables (dynamically configured)
 3. Merge results by similarity score
 4. Return top N across all tables
@@ -456,7 +456,7 @@ STRATEGY 7: FILTERING
 **SQL example (filter before):**
 ```sql
 SELECT content, embedding, score
-FROM clic_products_embedding
+FROM {{table_prefix}}products_embedding
 WHERE language_id = 1 AND status = 1
 ORDER BY COSINE_SIMILARITY(embedding, ?) DESC
 LIMIT 10;

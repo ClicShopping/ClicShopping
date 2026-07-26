@@ -120,7 +120,7 @@ interface AgentResponseInterface
    * ]
    *
    * Examples:
-   * - Analytics: ['primary_source' => 'Analytics Database', 'icon' => '📊', 'details' => ['table' => 'clic_products'], 'confidence' => 0.9]
+   * - Analytics: ['primary_source' => 'Analytics Database', 'icon' => '📊', 'details' => ['table' => 'products'], 'confidence' => 0.9]
    * - Semantic: ['primary_source' => 'RAG Knowledge Base', 'icon' => '📚', 'details' => ['document_count' => 3], 'confidence' => 0.85]
    * - Web Search: ['primary_source' => 'Web Search', 'icon' => '🌐', 'details' => ['url_count' => 5], 'confidence' => 0.7]
    * - LLM: ['primary_source' => 'LLM', 'icon' => '🤖', 'details' => ['fallback' => true], 'confidence' => 0.5]

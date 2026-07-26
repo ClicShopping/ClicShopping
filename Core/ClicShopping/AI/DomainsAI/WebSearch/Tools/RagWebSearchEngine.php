@@ -18,11 +18,11 @@ use ClicShopping\OM\CLICSHOPPING;
 /**
  * RagWebSearchEngine - Mode C Executor
  *
- * Executes targeted searches on specific competitor sites configured in clic_rag_websearch table.
+ * Executes targeted searches on specific competitor sites configured in rag_websearch table.
  * Provides deep product extraction from configured e-commerce sites using site-specific patterns.
  *
  * Uses centralized SerpApiClient to avoid code duplication.
- * Queries clic_rag_websearch table via Doctrine ORM (agnostic layer requirement).
+ * Queries rag_websearch table via Doctrine ORM (agnostic layer requirement).
  *
  * @package ClicShopping\AI\DomainsAI\WebSearch\Executor
  */
@@ -67,7 +67,7 @@ class RagWebSearchEngine implements WebSearchInterface
   /**
    * Execute a search query using RAG WebSearch engine
    *
-   * Queries clic_rag_websearch table for active sites, then executes
+   * Queries rag_websearch table for active sites, then executes
    * site-specific searches via SerpAPI using site:domain.com operator.
    *
    * @param string $query The search query string
@@ -96,7 +96,7 @@ class RagWebSearchEngine implements WebSearchInterface
 
       if (empty($activeSites)) {
         return $this->buildErrorResponse(
-          'No active competitor sites found in clic_rag_websearch table',
+          'No active competitor sites found in ' . $this->prefixDb . 'rag_websearch table',
           $query,
           $startTime
         );
@@ -209,7 +209,7 @@ class RagWebSearchEngine implements WebSearchInterface
   }
 
   /**
-   * Get active competitor sites from clic_rag_websearch table
+   * Get active competitor sites from rag_websearch table
    *
    * Queries via Doctrine ORM (agnostic layer requirement).
    * Filters by status = 1 (active) and optional target_site.
@@ -222,7 +222,7 @@ class RagWebSearchEngine implements WebSearchInterface
     try {
       $tableName = $this->prefixDb . 'rag_websearch';
 
-      // Build query — only columns that exist in clic_rag_websearch
+      // Build query — only columns that exist in rag_websearch
       $sql = "SELECT id,
                      site_domain,
                      search_pattern,
@@ -265,7 +265,7 @@ class RagWebSearchEngine implements WebSearchInterface
         error_log('[RagWebSearchEngine] Error querying active sites: ' . $e->getMessage());
       }
 
-      $this->logger->logError('Error querying clic_rag_websearch table: ' . $e->getMessage(), [
+      $this->logger->logError('Error querying ' . $this->prefixDb . 'rag_websearch table: ' . $e->getMessage(), [
         'exception' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
       ]);
@@ -358,7 +358,7 @@ class RagWebSearchEngine implements WebSearchInterface
   /**
    * Extract product information from organic result using site-specific patterns
    *
-   * Uses search_pattern column from clic_rag_websearch table to extract
+   * Uses search_pattern column from rag_websearch table to extract
    * product data (title, price, URL) from organic search results.
    *
    * @param array $result Organic result from SerpAPI
@@ -587,7 +587,7 @@ class RagWebSearchEngine implements WebSearchInterface
   }
 
   /**
-   * Log scraping activity to clic_rag_web_search_requests table
+   * Log scraping activity to rag_web_search_requests table
    *
    * Logs each site search for audit trail and monitoring.
    *
@@ -611,7 +611,7 @@ class RagWebSearchEngine implements WebSearchInterface
         ));
       }
 
-      // TODO: Implement proper logging to clic_rag_web_search_requests
+      // TODO: Implement proper logging to rag_web_search_requests
       // This requires extending WebSearchLogger or creating a dedicated method
       // for Mode C scraping activity logging
 
@@ -625,7 +625,7 @@ class RagWebSearchEngine implements WebSearchInterface
   /**
    * Build SerpAPI URL stub — not supported by RagWebSearchEngine
    *
-   * RagWebSearchEngine executes N requests (one per active site from clic_rag_websearch)
+   * RagWebSearchEngine executes N requests (one per active site from rag_websearch)
    * and cannot be represented as a single URL. Hybrid execution must use search() directly.
    * This stub satisfies the WebSearchInterface contract.
    *
@@ -671,7 +671,7 @@ class RagWebSearchEngine implements WebSearchInterface
    *
    * Validates:
    * 1. SerpAPI key is configured
-   * 2. clic_rag_websearch table exists
+   * 2. rag_websearch table exists
    * 3. At least one active site (status = 1) is configured
    *
    * @return bool True if engine can be used
@@ -701,7 +701,7 @@ class RagWebSearchEngine implements WebSearchInterface
    *
    * Checks:
    * 1. SerpAPI key is set and valid
-   * 2. clic_rag_websearch table exists
+   * 2. rag_websearch table exists
    * 3. At least one active site is configured
    *
    * Requirements: 19.4
@@ -727,7 +727,7 @@ class RagWebSearchEngine implements WebSearchInterface
       return false;
     }
 
-    // Check if clic_rag_websearch table exists and has active sites
+    // Check if rag_websearch table exists and has active sites
     try {
       $tableName = $this->prefixDb . 'rag_websearch';
 
@@ -739,7 +739,7 @@ class RagWebSearchEngine implements WebSearchInterface
 
       if (!$result || $result['count'] == 0) {
         if ($this->debug) {
-          error_log('[RagWebSearchEngine] Configuration invalid: No active sites in clic_rag_websearch');
+          error_log('[RagWebSearchEngine] Configuration invalid: No active sites in ' . $this->prefixDb . 'rag_websearch');
         }
         return false;
       }

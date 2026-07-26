@@ -11,6 +11,7 @@ namespace ClicShopping\AI\DomainsAI\Shared\Entity;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
+use ClicShopping\OM\CLICSHOPPING;
 
 /**
  * EntityIdExtractor Class
@@ -160,6 +161,8 @@ class EntityIdExtractor
   private function inferEntityFromQuery(string $sqlQuery, array $entityColumnMap): array
   {
     $sqlLower = strtolower($sqlQuery);
+    // Generated SQL carries this install's prefix; a literal one would match no table elsewhere.
+    $prefix = strtolower((string)CLICSHOPPING::getConfig('db_table_prefix'));
 
     // Check for table names in FROM clause
     foreach ($entityColumnMap as $columnName => $entityType) {
@@ -167,9 +170,9 @@ class EntityIdExtractor
 
       // Check if table name appears in query
       if (str_contains($sqlLower, "from {$tableName}") ||
-          str_contains($sqlLower, "from clic_{$tableName}") ||
+          str_contains($sqlLower, "from {$prefix}{$tableName}") ||
           str_contains($sqlLower, "join {$tableName}") ||
-          str_contains($sqlLower, "join clic_{$tableName}")) {
+          str_contains($sqlLower, "join {$prefix}{$tableName}")) {
 
         return [
           'entity_id' => null, // Can't extract ID from query alone

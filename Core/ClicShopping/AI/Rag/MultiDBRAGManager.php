@@ -184,7 +184,7 @@ class MultiDBRAGManager
    * - If dynamic detection fails, empty array prevents stale data
    *
    * Adding New Embeddings:
-   * - Simply create the embedding table in database (e.g., clic_new_entity_embedding)
+   * - Simply create the embedding table in database (e.g., new_entity_embedding)
    * - Dynamic detection will automatically find it
    * - No code changes needed
    *

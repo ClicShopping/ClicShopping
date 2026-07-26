@@ -1,21 +1,15 @@
-# RAG Timeout Response Messages (English)
-# TASK 13 (Cold Cache Timeout Fix): User-friendly timeout messages
 
-# Cold cache timeout messages
 text_rag_timeout_cold_cache_error = Your query is taking longer than expected. This is normal for the first execution.
 text_rag_timeout_cold_cache_explanation = The system is building the cache for this query. The next execution will be much faster.
 text_rag_timeout_cold_cache_guidance = Please try again, your next query will be faster.
 
-# General timeout messages
 text_rag_timeout_general_error = The query took too long to execute.
 text_rag_timeout_general_explanation = The system encountered an unexpected delay while processing your query.
 text_rag_timeout_general_guidance = Please try again. If the problem persists, contact the administrator.
 
-# Progress messages
 text_rag_timeout_progress_processing = Processing your query...
 text_rag_timeout_progress_with_percent = Processing... %s%% complete
 text_rag_timeout_progress_taking_longer = Your query is taking a bit longer than expected, please wait...
 
-# Completion messages
 text_rag_timeout_completion_from_cache = Query processed successfully in %s seconds (from cache)
 text_rag_timeout_completion_normal = Query processed successfully in %s seconds

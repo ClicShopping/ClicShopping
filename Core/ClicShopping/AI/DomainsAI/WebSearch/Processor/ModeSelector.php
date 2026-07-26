@@ -364,7 +364,7 @@ class ModeSelector
   /**
    * Log user choice to analytics table
    *
-   * Logs user mode selection choice to clic_rag_mode_selection_analytics table
+   * Logs user mode selection choice to rag_mode_selection_analytics table
    * for analytics and debugging purposes.
    *
    * Implements Requirement 4: Analytics logging
@@ -582,7 +582,7 @@ class ModeSelector
       }
     }
 
-    // Check if target_site exists in clic_rag_websearch table
+    // Check if target_site exists in rag_websearch table
     $siteExistsInDb = $this->checkTargetSiteExists($targetSite);
 
     if ($siteExistsInDb) {
@@ -640,7 +640,7 @@ class ModeSelector
   }
 
   /**
-   * Check if target site exists in clic_rag_websearch table
+   * Check if target site exists in rag_websearch table
    *
    * Queries the database via Doctrine ORM to check if the target site
    * is configured for RAG websearch (Mode C).

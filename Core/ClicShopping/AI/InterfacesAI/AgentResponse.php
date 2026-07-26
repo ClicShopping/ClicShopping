@@ -30,7 +30,7 @@ namespace ClicShopping\AI\InterfacesAI;
  *     ->setSourceAttribution([
  *         'primary_source' => 'Analytics Database',
  *         'icon' => '📊',
- *         'details' => ['table' => 'clic_products'],
+ *         'details' => ['table' => 'products'],
  *         'confidence' => 0.9
  *     ])
  *     ->setMetadata([

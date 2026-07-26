@@ -1,15 +1,12 @@
 llm_prompt_order_by_correction = Vous êtes un expert SQL. Corrigez l'erreur de référence de colonne ORDER BY dans cette requête.
 
-## Détails de l'erreur
 Erreur: {{error_message}}
 Colonne inconnue: {{unknown_column}}
 
-## Requête SQL échouée
 ```sql
 {{query}}
 ```
 
-## Règles ORDER BY
 Lors de l'utilisation de fonctions d'agrégation (YEAR, QUARTER, MONTH, etc.) dans GROUP BY:
 
 1. Utilisez la MÊME expression de fonction dans ORDER BY:
@@ -22,7 +19,6 @@ Lors de l'utilisation de fonctions d'agrégation (YEAR, QUARTER, MONTH, etc.) da
 3. OU utilisez l'alias si vous en avez créé un:
    ✅ CORRECT: SELECT YEAR(date) AS year_value ... ORDER BY year_value
 
-## Votre tâche
 Corrigez UNIQUEMENT la clause ORDER BY. Préservez les clauses SELECT et GROUP BY exactement telles qu'elles sont.
 
 Retournez UNIQUEMENT la requête SQL corrigée, rien d'autre.

@@ -18,7 +18,7 @@ use ClicShopping\AI\InterfacesAI\WebSearchEngineProviderInterface;
  * Built-in agnostic provider for Mode C — RAG WebSearch.
  *
  * Performs targeted scraping of admin-configured competitor sites stored in
- * `clic_rag_websearch`. The engine is agnostic — the sites it scrapes are
+ * `rag_websearch`. The engine is agnostic — the sites it scrapes are
  * domain-supplied data, not Core knowledge.
  *
  * @package ClicShopping\AI\DomainsAI\WebSearch\Providers

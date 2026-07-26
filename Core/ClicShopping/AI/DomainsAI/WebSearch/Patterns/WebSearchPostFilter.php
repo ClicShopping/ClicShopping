@@ -23,7 +23,7 @@ use ClicShopping\AI\DomainsAI\Shared\Patterns\Common\EntityKeywordsPattern;
  * mentioning competitors or external sites, where LLM classification is inconsistent.
  *
  * ARCHITECTURE:
- * 1. Priority: SQL database (clic_rag_websearch) - sites configured by admin
+ * 1. Priority: SQL database (rag_websearch) - sites configured by admin
  * 2. Fallback: SerpAPI - for sites not in database
  * 3. English-only keywords - queries are translated before pattern matching
  *

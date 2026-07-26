@@ -1,21 +1,15 @@
-# RAG Timeout Response Messages (French)
-# TASK 13 (Cold Cache Timeout Fix): User-friendly timeout messages
 
-# Cold cache timeout messages
 text_rag_timeout_cold_cache_error = Votre requête prend plus de temps que prévu. Ceci est normal pour la première exécution.
 text_rag_timeout_cold_cache_explanation = Le système construit le cache pour cette requête. La prochaine exécution sera beaucoup plus rapide.
 text_rag_timeout_cold_cache_guidance = Veuillez réessayer, votre prochaine requête sera plus rapide.
 
-# General timeout messages
 text_rag_timeout_general_error = La requête a pris trop de temps à s'exécuter.
 text_rag_timeout_general_explanation = Le système a rencontré un délai inattendu lors du traitement de votre requête.
 text_rag_timeout_general_guidance = Veuillez réessayer. Si le problème persiste, contactez l'administrateur.
 
-# Progress messages
 text_rag_timeout_progress_processing = Traitement de votre requête en cours...
 text_rag_timeout_progress_with_percent = Traitement en cours... %s%% terminé
 text_rag_timeout_progress_taking_longer = Votre requête prend un peu plus de temps que prévu, veuillez patienter...
 
-# Completion messages
 text_rag_timeout_completion_from_cache = Requête traitée avec succès en %s secondes (depuis le cache)
 text_rag_timeout_completion_normal = Requête traitée avec succès en %s secondes

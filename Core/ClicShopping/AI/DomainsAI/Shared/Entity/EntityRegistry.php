@@ -30,8 +30,8 @@ use ClicShopping\AI\Rag\EmbeddingTableDiscovery;
  * Usage:
  * ```php
  * $registry = EntityRegistry::getInstance();
- * $idColumn = $registry->getIdColumnForTable('clic_products');
- * $entityType = $registry->getEntityTypeForTable('clic_products');
+ * $idColumn = $registry->getIdColumnForTable('products');
+ * $entityType = $registry->getEntityTypeForTable('products');
  * $allTables = $registry->getAllEntityTables();
  * ```
  */
@@ -422,9 +422,9 @@ class EntityRegistry
    * Example output:
    * ```php
    * [
-   *   'clic_products_embedding' => ['products' => 150],
-   *   'clic_categories_embedding' => ['categories' => 25],
-   *   'clic_pages_manager_embedding' => ['pages_manager' => 10]
+   *   'products_embedding' => ['products' => 150],
+   *   'categories_embedding' => ['categories' => 25],
+   *   'pages_manager_embedding' => ['pages_manager' => 10]
    * ]
    * ```
    *

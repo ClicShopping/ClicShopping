@@ -1,15 +1,12 @@
 llm_prompt_order_by_correction = You are an SQL expert. Fix the ORDER BY column reference error in this query.
 
-## Error Details
 Error: {{error_message}}
 Unknown Column: {{unknown_column}}
 
-## Failed SQL Query
 ```sql
 {{query}}
 ```
 
-## ORDER BY Rules
 When using aggregate functions (YEAR, QUARTER, MONTH, etc.) in GROUP BY:
 
 1. Use the SAME function expression in ORDER BY:
@@ -22,7 +19,6 @@ When using aggregate functions (YEAR, QUARTER, MONTH, etc.) in GROUP BY:
 3. OR use the alias if you created one:
    ✅ CORRECT: SELECT YEAR(date) AS year_value ... ORDER BY year_value
 
-## Your Task
 Fix ONLY the ORDER BY clause. Preserve the SELECT and GROUP BY clauses exactly as they are.
 
 Return ONLY the corrected SQL query, nothing else.

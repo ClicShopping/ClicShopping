@@ -30,6 +30,8 @@ class EntityTracker
 {
   private SecurityLogger $logger;
   private bool $debug;
+  private string $userId;
+  private ?int $languageId;
   private ?int $lastEntityId = null;
   private ?string $lastEntityType = null;
   private ?string $lastEntityName = null;
@@ -40,10 +42,14 @@ class EntityTracker
    * Constructor
    *
    * @param bool $debug Enable debug logging
+   * @param string $userId Owner of the tracked context — scopes the cross-request database fallback
+   * @param int|null $languageId Language of the tracked context, null when unknown
    */
-  public function __construct(bool $debug = false)
+  public function __construct(bool $debug = false, string $userId = 'system', ?int $languageId = null)
   {
     $this->debug = $debug;
+    $this->userId = $userId;
+    $this->languageId = $languageId;
     $this->logger = new SecurityLogger();
 
     if ($this->debug) {
@@ -93,8 +99,9 @@ class EntityTracker
 
   /**
    * Get the last entity
-   * 
-   * First checks in-memory (fast path), then queries database if needed.
+   *
+   * First checks in-memory (fast path), then queries database if needed — the database read is
+   * scoped to the owning user and language, so no other conversation's entity can be inherited.
    *
    * @return array|null Array with 'id', 'type', and 'name' keys, or null if no entity
    */
@@ -115,7 +122,12 @@ class EntityTracker
     }
 
     // This enables contextual queries to work across HTTP requests
-    
+
+    // Fail-closed: an unscoped read would hand this admin the entity of whoever wrote last.
+    if ($this->userId === '') {
+      return null;
+    }
+
     try {
       // Get table prefix from configuration
       $prefix = CLICSHOPPING::getConfig('db_table_prefix', 'DB');
@@ -123,19 +135,31 @@ class EntityTracker
       // This table is used by LongTermMemoryManager to store interactions with embeddings
       $tableName = $prefix . 'rag_conversation_memory_embedding';
       
+      // Scoped to this user and language, exactly like ConversationTurnReader: the two sources feed
+      // the same reference resolution, and an unscoped row here leaks another admin's entity.
+      $params = ['user_id' => $this->userId];
+      $languageFilter = '';
+
+      if ($this->languageId !== null) {
+        $languageFilter = 'AND language_id = :language_id';
+        $params['language_id'] = $this->languageId;
+      }
+
       // Query the most recent interaction with a valid entity
       // Order by date_modified (most recent first)
       $sql = "
         SELECT entity_id, metadata
         FROM {$tableName}
-        WHERE entity_id IS NOT NULL
+        WHERE user_id = :user_id
+        {$languageFilter}
+        AND entity_id IS NOT NULL
         AND entity_id != 0
         ORDER BY date_modified DESC
         LIMIT 1
       ";
-      
-      $result = DoctrineOrm::selectOne($sql);
-      
+
+      $result = DoctrineOrm::selectOne($sql, $params);
+
       if ($result) {
         $entityId = (int)$result['entity_id'];
         $metadataJson = $result['metadata'];

@@ -212,10 +212,17 @@ Entity (Product, Category, etc.)
 
 ### Embedding Tables
 
+`clic_` below is this install's `db_table_prefix`, not a fixed name — always resolve it with
+`CLICSHOPPING::getConfig('db_table_prefix')`, never hardcode it.
+
 | Table | Entity |
 |---|---|
 | `clic_products_embedding` | Products |
+| `clic_products_seo_embedding` | Product SEO |
+| `clic_products_description_faq_embedding` | Product FAQ |
+| `clic_products_cockpit_ai_embedding` | CockpitAI product state |
 | `clic_categories_embedding` | Categories |
+| `clic_categories_seo_embedding` | Category SEO |
 | `clic_reviews_embedding` | Customer reviews |
 | `clic_reviews_sentiment_embedding` | Review sentiment |
 | `clic_orders_embedding` | Orders |
@@ -223,8 +230,11 @@ Entity (Product, Category, etc.)
 | `clic_manufacturers_embedding` | Manufacturers |
 | `clic_suppliers_embedding` | Suppliers |
 | `clic_return_orders_embedding` | Order returns |
-| `clic_conversation_memory_embedding` | Conversational memory |
-| `clic_correction_pattern_embedding` | Correction patterns |
+| `clic_rag_conversation_memory_embedding` | Conversational memory |
+| `clic_rag_correction_patterns_embedding` | Correction patterns |
+| `clic_rag_schema_embedding` | DB schema (semantic table retrieval) |
+| `clic_rag_web_cache_embedding` | Web-search cache |
+| `clic_rag_agent_order_insights_embedding` | Order insights |
 
 ### Common Table Structure
 

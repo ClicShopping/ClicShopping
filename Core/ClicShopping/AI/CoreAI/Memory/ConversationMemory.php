@@ -181,7 +181,7 @@ class ConversationMemory
     $this->shortTermManager = new ShortTermMemoryManager($this->maxHistorySize, $this->debug);
     $this->longTermManager = new LongTermMemoryManager($this->vectorStore, $this->embeddingGenerator, $this->similarityThreshold, $this->debug, $this->languageId);
     
-    $this->entityTracker = new EntityTracker($this->debug);
+    $this->entityTracker = new EntityTracker($this->debug, $this->userId, $this->languageId);
     
     $this->contextResolver = new ContextResolver($this->languageId, $this->debug, $this->entityTracker);
     
