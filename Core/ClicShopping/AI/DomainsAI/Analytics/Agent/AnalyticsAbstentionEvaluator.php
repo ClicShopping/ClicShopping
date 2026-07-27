@@ -10,7 +10,7 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\CoreAI\Query\QueryClassifier;
-use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 
 /**
  * AnalyticsAbstentionEvaluator — pre-execution confidence/abstention concern of AnalyticsAgent
@@ -25,7 +25,6 @@ class AnalyticsAbstentionEvaluator
 {
   public function __construct(
     private AgentAbstentionManager $abstentionManager,
-    private ResultInterpreter $resultInterpreter,
     private bool $debug = false
   ) {
   }
@@ -50,8 +49,7 @@ class AnalyticsAbstentionEvaluator
     }
 
     // Get classification confidence (already calculated in isAnalyticsQuery)
-    $translatedForClassification = SemanticAgent::translateToEnglish($question, 80);
-    $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translatedForClassification);
+    $cleanTranslation = EnglishQueryNormalizer::normalize($question);
     $classifier = new QueryClassifier($this->debug);
     $classificationResult = $classifier->classify($cleanTranslation, $cleanTranslation);
 

@@ -51,8 +51,8 @@ class HallucinationDetector
     DomainConfig::loadAgnosticLanguageFile('rag_out_of_context_detection');
     DomainConfig::loadLanguageFile('rag_out_of_context_detection');
     
-    // Initialize out-of-context cache (30 days TTL)
-    $this->outOfContextCache = new OutOfContextCache(2592000, $this->debug);
+    // TTL left to the platform knob (RA_CACHE_TTL), not pinned here.
+    $this->outOfContextCache = new OutOfContextCache(debug: $this->debug);
   }
 
   /**

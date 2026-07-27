@@ -12,7 +12,7 @@
 namespace ClicShopping\AI\Infrastructure\Cache\SubQueryCache;
 
 
-use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 
 /**
  * Génère des clés de cache MD5 uniques basées sur la requête et le contexte
@@ -29,12 +29,9 @@ class CacheKeyGenerator
    */
   public static function generate(string $userQuery, array $context = []): string
   {
-    // Normalize query to English for consistent cache keys
-    try {
-      $normalized = SemanticAgent::translateToEnglish($userQuery, 120);
-    } catch (\Throwable $e) {
-      $normalized = $userQuery;
-    }
+    // Normalize query to English for consistent cache keys. Same chokepoint as the pipeline,
+    // so the key derives from the very string the stages read (it never throws).
+    $normalized = EnglishQueryNormalizer::normalize($userQuery);
 
     $data = [
       'query' => trim(strtolower($normalized)),

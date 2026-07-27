@@ -51,7 +51,7 @@ if (!defined('CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT'))
 // ============================================================================
 
 if (!defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL'))
-  define('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL', 2592000); // 30 days
+  define('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL', 3600); // 1 hour
 
 // ============================================================================
 // FALLBACK (2 constants)

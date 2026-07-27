@@ -23,7 +23,7 @@ use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
-use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
 use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
@@ -83,7 +83,6 @@ class AnalyticsAgent implements AgentInterface
   private SqlQueryProcessor $queryProcessor;
   private QueryExecutor $queryExecutor;
   private ResultInterpreter $resultInterpreter;
-  private AmbiguityTranslator $ambiguityTranslator;
   private QueryEnricher $queryEnricher;
   private AnalyticsQueryClassifier $queryClassifier;
   private CorrectionAgent $correctionAgent;
@@ -186,9 +185,8 @@ class AnalyticsAgent implements AgentInterface
       $this->enablePromptCache,
       $this->debug
     );
-    $this->ambiguityTranslator = new AmbiguityTranslator($this->resultInterpreter, $this->debug);
     $this->queryEnricher = new QueryEnricher($this->promptBuilder, $this->language, $this->debug);
-    $this->queryClassifier = new AnalyticsQueryClassifier($this->resultInterpreter, $this->debug);
+    $this->queryClassifier = new AnalyticsQueryClassifier($this->debug);
     $this->correctionAgent = new CorrectionAgent($userId, $languageId);
     
     // Initialize QueryCache
@@ -225,7 +223,7 @@ class AnalyticsAgent implements AgentInterface
     $this->objectiveRunner = new AnalyticsObjectiveRunner($this->autonomousConfig, $this->debug, $this->securityLogger);
 
     // Pre-execution confidence/abstention concern extracted from this class (god-class decomposition).
-    $this->abstentionEvaluator = new AnalyticsAbstentionEvaluator($this->abstentionManager, $this->resultInterpreter, $this->debug);
+    $this->abstentionEvaluator = new AnalyticsAbstentionEvaluator($this->abstentionManager, $this->debug);
 
     try {
       $this->schemaManager->initializeTableRelationships();
@@ -699,7 +697,7 @@ class AnalyticsAgent implements AgentInterface
 
         // This ensures the LLM can properly detect explicit keywords in any language
         // Use a simple, fast translation that focuses on keywords
-        $queryForAmbiguity = $this->ambiguityTranslator->translate($question);
+        $queryForAmbiguity = EnglishQueryNormalizer::normalize($question);
         $this->debugLog("Original query: {$question}", "TRANSLATION");
         $this->debugLog("Translated for ambiguity: {$queryForAmbiguity}", "TRANSLATION");
 
@@ -1008,11 +1006,13 @@ class AnalyticsAgent implements AgentInterface
     if (!isset($sqlQueries)) {
       $this->debugLog("❌ SQL CACHE MISS - Calling LLM", "CACHE");
 
+      $englishQuestion = $this->translateForGeneration($question);
+
       // Update system message with Schema RAG if enabled
-      $this->updateSystemMessageForQuery($question);
+      $this->updateSystemMessageForQuery($englishQuestion);
 
       // Enrich question with feedback context for learning
-      $enrichedQuestion = $this->queryEnricher->enrichWithFeedback($question, $feedbackContext, $this->conversationMemory);
+      $enrichedQuestion = $this->queryEnricher->enrichWithFeedback($englishQuestion, $feedbackContext, $this->conversationMemory);
 
       $this->debugLog("Calling chat.generateText()...", "SQL");
       $startTime = microtime(true);
@@ -1117,8 +1117,7 @@ class AnalyticsAgent implements AgentInterface
     $classificationConfidence = 0.0;
 
     // Re-classify to get confidence (cached, so very fast)
-    $translatedForClassification = SemanticAgent::translateToEnglish($question, 80);
-    $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translatedForClassification);
+    $cleanTranslation = EnglishQueryNormalizer::normalize($question);
     $classifier = new QueryClassifier($this->debug);
     $classificationResult = $classifier->classify($cleanTranslation, $cleanTranslation);
 
@@ -1190,12 +1189,27 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
+   * Normalise a query to English for the generation step.
+   *
+   * Schema retrieval (ColumnIndex) and the SQL system message (rules, examples) are both
+   * English-only, so both must be driven by the English form. Delegates to the single
+   * chokepoint so generation reads the same string as ambiguity, classification and abstention.
+   *
+   * @param string $query User query, in the interface language
+   * @return string English query, or the original one on failure
+   */
+  private function translateForGeneration(string $query): string
+  {
+    return EnglishQueryNormalizer::normalize($query);
+  }
+
+  /**
    * Update system message for query (Schema RAG)
    *
    * If Schema RAG is enabled, updates the system message with only relevant
    * table schemas based on the query, reducing context size for small models
    *
-   * @param string $query User query
+   * @param string $query Query already normalised to English by translateForGeneration()
    * @return void
    */
   private function updateSystemMessageForQuery(string $query): void
@@ -1218,20 +1232,8 @@ class AnalyticsAgent implements AgentInterface
       $this->debugLog("Updating system message with Schema RAG", "SCHEMA_RAG");
       $this->debugLog("Model: {$modelName}", "SCHEMA_RAG");
 
-      // Schema retrieval is English-only (ColumnIndex is built from English column names/comments)
-      $schemaQuery = $query;
-      
-      try {
-        $translated = SemanticAgent::translateToEnglish($query, 80);
-        if (trim($translated) !== '') {
-          $schemaQuery = $translated;
-        }
-      } catch (\Throwable $e) {
-        $this->debugLog("Schema-query translation failed, using original: " . $e->getMessage(), "SCHEMA_RAG");
-      }
-
       // Get query-specific system message
-      $systemMessage = $this->promptBuilder->getSystemMessage('analytics', $schemaQuery, $modelName);
+      $systemMessage = $this->promptBuilder->getSystemMessage('analytics', $query, $modelName);
 
       // Update chat system message
       $this->chat->setSystemMessage($systemMessage);

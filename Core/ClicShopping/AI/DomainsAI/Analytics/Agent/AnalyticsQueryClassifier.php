@@ -12,7 +12,7 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 use ClicShopping\AI\CoreAI\Query\QueryClassifier;
 use ClicShopping\AI\DomainsAI\Shared\Patterns\Common\ModificationKeywordsPattern;
-use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 
 /**
  * AnalyticsQueryClassifier - characterises an incoming query for the analytics pipeline.
@@ -26,7 +26,6 @@ use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 class AnalyticsQueryClassifier
 {
   public function __construct(
-    private ResultInterpreter $resultInterpreter,
     private bool $debug = false
   ) {}
 
@@ -62,13 +61,7 @@ class AnalyticsQueryClassifier
       error_log("Input query: '{$query}'");
     }
 
-    $translatedQuery = SemanticAgent::translateToEnglish($query, 80);
-    if ($this->debug) {
-      error_log("Translated query: '{$translatedQuery}'");
-    }
-
-    // Extract only the clean translation (not the descriptive text)
-    $cleanTranslation = $this->resultInterpreter->extractCleanTranslation($translatedQuery);
+    $cleanTranslation = EnglishQueryNormalizer::normalize($query);
     if ($this->debug) {
       error_log("Clean translation: '{$cleanTranslation}'");
     }

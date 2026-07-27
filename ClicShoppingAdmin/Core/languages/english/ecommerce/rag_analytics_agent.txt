@@ -1104,6 +1104,16 @@ COUNT QUERIES WITH FILTERS:
 
 - 'promotions that have already started and are not expired' → SELECT s.products_id, pd.products_name, s.specials_new_products_price AS discounted_price FROM {{table_prefix}}specials s JOIN {{table_prefix}}products_description pd ON s.products_id = pd.products_id WHERE s.status = 1 AND (s.scheduled_date IS NULL OR s.scheduled_date <= NOW()) AND (s.expires_date IS NULL OR s.expires_date >= NOW()) AND pd.language_id = {{language_id}} LIMIT 100
 
+- 'list the featured selection products' → SELECT f.products_id, pd.products_name, p.products_price AS catalog_price FROM {{table_prefix}}products_featured f JOIN {{table_prefix}}products p ON f.products_id = p.products_id JOIN {{table_prefix}}products_description pd ON f.products_id = pd.products_id WHERE f.status = 1 AND pd.language_id = {{language_id}} LIMIT 100
+
+- 'how many products in the featured selection' → SELECT COUNT(*) AS total FROM {{table_prefix}}products_featured WHERE status = 1
+
+- 'list the favorites selection products' → SELECT fa.products_id, pd.products_name, p.products_price AS catalog_price FROM {{table_prefix}}products_favorites fa JOIN {{table_prefix}}products p ON fa.products_id = p.products_id JOIN {{table_prefix}}products_description pd ON fa.products_id = pd.products_id WHERE fa.status = 1 AND pd.language_id = {{language_id}} LIMIT 100
+
+- 'how many products in the favorites selection' → SELECT COUNT(*) AS total FROM {{table_prefix}}products_favorites WHERE status = 1
+
+- 'list the recommended products' → SELECT r.products_id, pd.products_name, p.products_price AS catalog_price FROM {{table_prefix}}products_recommendations r JOIN {{table_prefix}}products p ON r.products_id = p.products_id JOIN {{table_prefix}}products_description pd ON r.products_id = pd.products_id WHERE r.status = 1 AND pd.language_id = {{language_id}} LIMIT 100
+
 MERCHANDISING CONCEPTS (platform knowledge — reason from it, whatever the phrasing):
 Each merchandising state lives in ONE dedicated table, active rows = status 1: current promotions/special prices = {{table_prefix}}specials; "featured selection" = {{table_prefix}}products_featured; "favorites selection" = {{table_prefix}}products_favorites; "recommended products" = {{table_prefix}}products_recommendations (per-customer rows). These tables reference the product via products_id → JOIN {{table_prefix}}products (and {{table_prefix}}products_description for the name, filtered by language_id). Never answer these from {{table_prefix}}products alone, and never from {{table_prefix}}products_cockpit_ai_action_log (audit log of AI actions, not the catalog state). When a question combines several states ("on promotion AND favorites selection"), the intent is the UNION of the lists, not the intersection: LEFT JOIN {{table_prefix}}products to each state table and keep rows matching AT LEAST ONE state — e.g. LEFT JOIN {{table_prefix}}specials s ON s.products_id = p.products_id AND s.status = 1 LEFT JOIN {{table_prefix}}products_favorites f ON f.products_id = p.products_id AND f.status = 1 WHERE (s.products_id IS NOT NULL OR f.products_id IS NOT NULL) — and expose each state in the SELECT (e.g. s.products_id IS NOT NULL AS on_promotion). Use an INNER intersection ONLY if the question explicitly requires products in BOTH states at once.
 
