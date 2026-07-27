@@ -255,41 +255,4 @@ class ResultInterpreter
     return $cleanedResults;
   }
 
-  /**
-   * Extracts clean translation from verbose GPT response
-   * Removes descriptive text and extracts only the translation
-   *
-   * @param string $response Response from GPT
-   * @return string Clean translation
-   */
-  public function extractCleanTranslation(string $response): string
-  {
-    if ($this->debug) {
-      error_log("Extracting clean translation...");
-    }
-
-    // Pattern 1: Extract text between quotes after "is:"
-    if (preg_match('/is:\s*"([^"]+)"|is:\s*\'([^\']+)\'/', $response, $matches)) {
-      $clean = $matches[1] ?? $matches[2];
-      if ($this->debug) {
-        error_log("Extracted via pattern 1: '{$clean}'");
-      }
-      return $clean;
-    }
-
-    // Pattern 2: Extract quoted text
-    if (preg_match('/["\']([^"\']+)["\']/', $response, $matches)) {
-      $clean = $matches[1];
-      if ($this->debug) {
-        error_log("Extracted via pattern 2: '{$clean}'");
-      }
-      return $clean;
-    }
-
-    // Fallback
-    if ($this->debug) {
-      error_log("No pattern matched, returning as-is: '{$response}'");
-    }
-    return $response;
-  }
 }

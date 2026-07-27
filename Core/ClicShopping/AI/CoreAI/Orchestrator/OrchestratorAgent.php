@@ -45,6 +45,7 @@ use ClicShopping\AI\CoreAI\Response\LlmResponseProcessor;
 use ClicShopping\AI\DomainsAI\DomainRouter;
 use ClicShopping\AI\DomainsAI\Hybrid\Handler\HybridQueryHandler;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Handler\Error\ErrorHandler as ErrorHandlerComponent;
 use ClicShopping\AI\Handler\Query\ComplexQueryHandler;
 use ClicShopping\AI\Handler\Query\QueryProcessor;
@@ -714,7 +715,7 @@ class OrchestratorAgent implements AgentInterface
       // and the resolution prompt is English, so it must judge the English form of the question.
       $translatedQuery = '';
       try {
-        $translatedQuery = SemanticAgent::translateToEnglish($query, 80);
+        $translatedQuery = EnglishQueryNormalizer::normalize($query);
       } catch (\Exception $e) {
         // Non-blocking error: log and continue
         if ($this->debug) {

@@ -10,6 +10,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer;
 
 
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
 
@@ -95,7 +96,7 @@ class TranslationService
     }
 
     // Query is not in English, translate it
-    $translatedQuery = SemanticAgent::translateToEnglish($query, 80);
+    $translatedQuery = EnglishQueryNormalizer::normalize($query);
     $translationTime = (microtime(true) - $startTime) * 1000;
 
     $this->logger->logStructured(

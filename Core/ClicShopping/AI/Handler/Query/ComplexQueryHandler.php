@@ -10,7 +10,7 @@
  * 
  * IMPORTANT: This class expects queries to be PRE-TRANSLATED to English.
  * All patterns and keywords are in English only, as translation is handled
- * upstream by SemanticAgent::translateToEnglish() before reaching this class.
+ * upstream by EnglishQueryNormalizer::normalize() before reaching this class.
  * 
  * @package AI\Tools\Query
  * @author Kiro AI Assistant

@@ -20,7 +20,7 @@ use ClicShopping\OM\CLICSHOPPING;
  * Cache Structure:
  * - Directory: Work/Cache/Rag/Classification/
  * - Format: JSON files with md5 hash filenames
- * - TTL: 30 days (configurable)
+ * - TTL: CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL, evaluated on READ
  * 
  * @package ClicShopping\AI\Infrastructure\Cache
  * @since 2025-12-26
@@ -34,7 +34,7 @@ class ClassificationCache
   private string $cacheDir;
 
   /**
-   * @var int Lifetime of cache files in seconds (default: 30 days).
+   * @var int Lifetime of cache files in seconds.
    */
   private int $lifetime;
 
@@ -51,14 +51,16 @@ class ClassificationCache
   /**
    * ClassificationCache constructor.
    *
-   * @param int $lifetime Cache lifetime in seconds (default: 30 days).
+   * @param int|null $lifetime Cache lifetime in seconds; null reads the platform RAG cache TTL
    * @param bool $debug Enable debug logging.
    */
-  public function __construct(int $lifetime = 2592000, bool $debug = false)
+  public function __construct(?int $lifetime = null, bool $debug = false)
   {
     $this->cacheEnabled = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER') &&  CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER === 'True';
     $this->cacheDir = CLICSHOPPING::BASE_DIR . 'Work/Cache/Rag/Classification/';
-    $this->lifetime = $lifetime;
+    $this->lifetime = $lifetime ?? (defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL')
+      ? (int)CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL
+      : 3600);
     $this->debug = $debug || (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True');
 
     // Check cache configuration

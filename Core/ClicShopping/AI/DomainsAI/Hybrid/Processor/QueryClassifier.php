@@ -10,6 +10,7 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Processor;
 
 
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\DomainsAI\WebSearch\Patterns\WebSearchPostFilter;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
 
@@ -103,7 +104,7 @@ class QueryClassifier extends BaseQueryProcessor
   public function classifyQueryType(string $query): array
   {
     // Translate query to English if needed
-    $translatedQuery = SemanticAgent::translateToEnglish($query, 80);
+    $translatedQuery = EnglishQueryNormalizer::normalize($query);
 
     if ($this->debug) {
       $this->logInfo("Classifying query (Pure LLM mode)", [

@@ -57,7 +57,7 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
   private static array $config = [
     'classification_threshold' => 3,
     'max_retries' => 3,
-    'translation_cache_ttl' => 3600,
+    'translation_cache_ttl' => 86400,
     'enable_fallback' => true,
     'enable_competitor_detection' => true
   ];
@@ -184,10 +184,9 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
    * to prevent blocking when translation service fails
    * 
    * @param string $message
-   * @param int|null $token
    * @return string Translated text or original message if translation fails
    */
-  public static function translateToEnglish(string $message, int|null $token = 80): string
+  public static function translateToEnglish(string $message): string
   {
     try {
       // Check if Language is registered in Registry
@@ -608,7 +607,7 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
       [
         'name' => 'translation_cache_ttl',
         'type' => 'int',
-        'default' => 3600,
+        'default' => 86400,
         'description' => 'Translation cache time-to-live in seconds',
         'min' => 60,
         'max' => 86400

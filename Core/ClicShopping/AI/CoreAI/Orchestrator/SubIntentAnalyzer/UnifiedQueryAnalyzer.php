@@ -11,7 +11,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
-use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\MultiTemporalPostFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\TimeRangePattern;
@@ -25,7 +25,7 @@ use ClicShopping\AI\Config\DomainConfig;
  * translation and entity extraction.
  *
  * Classification Flow:
- * 1. Pre-translate query to English (SemanticAgent)
+ * 1. Pre-translate query to English (EnglishQueryNormalizer)
  * 2. Classify intent using ClassificationEngine (rag_classification.txt prompt)
  * 3. Extract entities and metadata using unified analyzer (rag_unified_analyzer.txt prompt)
  * 4. Merge results: classification from ClassificationEngine, metadata from unified analyzer
@@ -44,7 +44,6 @@ use ClicShopping\AI\Config\DomainConfig;
 
 class UnifiedQueryAnalyzer
 {
-  private SemanticAgent $semantics;
   private SecurityLogger $logger;
   private mixed $language;
   private bool $debug;
@@ -61,7 +60,6 @@ class UnifiedQueryAnalyzer
    */
   public function __construct(bool $debug = false)
   {
-    $this->semantics = new SemanticAgent();
     $this->logger = new SecurityLogger();
     $this->debug = $debug;
     
@@ -84,7 +82,7 @@ class UnifiedQueryAnalyzer
    * The unified analyzer is used only for translation and entity extraction.
    *
    * Classification Flow:
-   * 1. Pre-translate query to English using SemanticAgent
+   * 1. Pre-translate query to English using EnglishQueryNormalizer
    * 2. Classify intent using ClassificationEngine (rag_classification.txt prompt)
    * 3. Extract entities and metadata using unified analyzer (rag_unified_analyzer.txt prompt)
    * 4. Merge results: classification from ClassificationEngine, metadata from unified analyzer
@@ -92,7 +90,7 @@ class UnifiedQueryAnalyzer
    *
    * This method combines multiple operations:
    * 1. Language detection (ISO 639-1 code) - via unified analyzer
-   * 2. Translation to English - via SemanticAgent pre-translation
+   * 2. Translation to English - via EnglishQueryNormalizer pre-translation
    * 3. Intent classification (analytics/semantic/hybrid/web_search) - via ClassificationEngine
    * 4. Entity type detection (product, order, customer, etc.) - via unified analyzer
    * 5. Time constraint detection (comparison, relative_period, specific_date, none) - via unified analyzer
@@ -137,7 +135,7 @@ class UnifiedQueryAnalyzer
       // This ensures the query is in English BEFORE sending to LLM for classification
       // The LLM classification prompt works best with English input
       $originalQuery = $query;
-      $preTranslatedQuery = $this->semantics->translateToEnglish($query);
+      $preTranslatedQuery = EnglishQueryNormalizer::normalize($query);
 
       // Use pre-translated query if translation was successful
       if (!empty($preTranslatedQuery) && $preTranslatedQuery !== $query) {

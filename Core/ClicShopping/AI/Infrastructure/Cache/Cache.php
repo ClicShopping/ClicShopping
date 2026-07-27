@@ -136,7 +136,14 @@ class Cache
     if (class_exists('Memcached')) {
       try {
         // Using CacheAdmin's Memcached instance to ensure consistency across the application
-        $this->memcached = CacheAdmin::getMemcached();
+        // It returns false when no server answers, and $memcached is typed: assigning it directly is a fatal TypeError
+        $memcached = CacheAdmin::getMemcached();
+
+        if ($memcached === false) {
+          throw new \Exception('Memcached server unreachable');
+        }
+
+        $this->memcached = $memcached;
 
         // Test connection
         $stats = $this->memcached->getStats();

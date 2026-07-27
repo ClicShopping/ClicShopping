@@ -2,7 +2,7 @@
   "Semantics": {
     "classification_threshold": 3,
     "max_retries": 3,
-    "translation_cache_ttl": 3600,
+    "translation_cache_ttl": 86400,
     "enable_fallback": true,
     "enable_competitor_detection": true
   },

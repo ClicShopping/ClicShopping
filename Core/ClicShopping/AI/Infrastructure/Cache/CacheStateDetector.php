@@ -200,10 +200,10 @@ class CacheStateDetector
     // Calculate age
     $ageSeconds = $currentTime - $timestamp;
     
-    // Get TTL from configuration (default: 30 days = 2592000 seconds)
-    $ttl = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL') ? 
-           CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL : 
-           2592000;
+    // This reader must agree with the writers: same knob, same fallback.
+    $ttl = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL') ?
+           CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL :
+           3600;
     
     // Check if cache has expired
     if ($ageSeconds > $ttl) {

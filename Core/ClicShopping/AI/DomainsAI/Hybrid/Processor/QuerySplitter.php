@@ -10,7 +10,6 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Processor;
 
 
 use ClicShopping\OM\Registry;
-use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\DomainsAI\Hybrid\Patterns\QuerySplitterPatterns;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
@@ -46,16 +45,6 @@ class QuerySplitter extends BaseQueryProcessor
    * @var QueryClassifier Query classifier for sub-query classification
    */
   private QueryClassifier $classifier;
-
-  /**
-   * @var array Translation cache for performance optimization
-   */
-  private static array $translationCache = [];
-
-  /**
-   * @var int Translation cache TTL in seconds (1 hour)
-   */
-  private const TRANSLATION_CACHE_TTL = 3600;
 
   /**
    * @var object Language object for translations
@@ -630,56 +619,6 @@ class QuerySplitter extends BaseQueryProcessor
     }
   }
 
-  /**
-   * Translate query to English with caching for performance
-   *
-   * This method caches translations to avoid repeated API calls for the same query.
-   * Cache entries expire after 1 hour (TRANSLATION_CACHE_TTL).
-   *
-   * @param string $query Query to translate
-   * @return string Translated query in English
-   */
-  private function translateToEnglishCached(string $query): string
-  {
-    // Generate cache key
-    $cacheKey = md5($query);
-    
-    // Check if translation is cached and not expired
-    if (isset(self::$translationCache[$cacheKey])) {
-      $cached = self::$translationCache[$cacheKey];
-      if (time() - $cached['timestamp'] < self::TRANSLATION_CACHE_TTL) {
-        if ($this->debug) {
-          $this->logInfo("Translation cache hit", ['query' => $query]);
-        }
-        return $cached['translation'];
-      } else {
-        // Cache expired, remove it
-        unset(self::$translationCache[$cacheKey]);
-      }
-    }
-    
-    // Cache miss or expired, translate
-    if ($this->debug) {
-      $this->logInfo("Translation cache miss", ['query' => $query]);
-    }
-    
-    $translation = SemanticAgent::translateToEnglish($query);
-    
-    // Store in cache
-    self::$translationCache[$cacheKey] = [
-      'translation' => $translation,
-      'timestamp' => time(),
-    ];
-    
-    // Clean old cache entries (keep max 100 entries)
-    if (count(self::$translationCache) > 100) {
-      // Remove oldest entries
-      uasort(self::$translationCache, fn($a, $b) => $a['timestamp'] <=> $b['timestamp']);
-      self::$translationCache = array_slice(self::$translationCache, -100, 100, true);
-    }
-    
-    return $translation;
-  }
 
   /**
    * Validate prompt before LLM call

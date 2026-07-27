@@ -181,7 +181,7 @@ class TranslationServiceWrapper
   private function translateToEnglish(string $text): string
   {
     // Use SemanticAgent for translation to English
-    $translated = SemanticAgent::translateToEnglish($text, 80);
+    $translated = SemanticAgent::translateToEnglish($text);
 
     // If translation is empty, return original
     if (empty(trim($translated))) {

@@ -35,13 +35,15 @@ class TranslationCache
   /**
    * TranslationCache constructor.
    *
-   * @param int $lifetime Cache lifetime in seconds.
+   * @param int|null $lifetime Cache lifetime in seconds; null reads the platform RAG cache TTL
    */
-  public function __construct(int $lifetime = 2592000)
+  public function __construct(?int $lifetime = null)
   {
     $this->cache = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER === 'True';
     $this->cacheDir = CLICSHOPPING::BASE_DIR . 'Work/Cache/Rag/Translation/';
-    $this->lifetime = $lifetime;
+    $this->lifetime = $lifetime ?? (defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL')
+      ? (int)CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL
+      : 3600);
     $this->checkTranslationCache();
 
     if (!is_dir($this->cacheDir)) {

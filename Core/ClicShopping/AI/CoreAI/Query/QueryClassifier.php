@@ -57,7 +57,7 @@ class QueryClassifier
     $this->debug = $debug;
     
     if (!Registry::exists('ClassificationCache')) {
-      Registry::set('ClassificationCache', new ClassificationCache(2592000, $this->debug));
+      Registry::set('ClassificationCache', new ClassificationCache(debug: $this->debug));
     }
     $this->classificationCache = Registry::get('ClassificationCache');
     

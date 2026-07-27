@@ -83,7 +83,7 @@ class TranslationHandler
     if ($useCache) {
       // Initialize TranslationCache in Registry if not exists
       if (!Registry::exists('TranslationCache')) {
-        Registry::set('TranslationCache', new TranslationCache());
+        Registry::set('TranslationCache', new TranslationCache($cacheTTL));
       }
 
       $translationCache = Registry::get('TranslationCache');

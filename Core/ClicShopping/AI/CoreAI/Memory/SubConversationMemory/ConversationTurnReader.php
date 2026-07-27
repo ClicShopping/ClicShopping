@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\CoreAI\Memory\SubConversationMemory;
 
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\OM\CLICSHOPPING;
@@ -55,7 +56,7 @@ class ConversationTurnReader
   ) {
     $this->formatter = $formatter ?? new MemoryInteractionFormatter();
     $this->logger = $logger ?? new SecurityLogger();
-    $this->translator = $translator ?? static fn(string $text): string => SemanticAgent::translateToEnglish($text, 80);
+    $this->translator = $translator ?? static fn(string $text): string => EnglishQueryNormalizer::normalize($text);
   }
 
   /**

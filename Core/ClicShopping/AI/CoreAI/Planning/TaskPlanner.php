@@ -465,11 +465,7 @@ class TaskPlanner
         $score = 0;
         $factors = [];
 
-        // Translate query to English for multilingual analysis
-        // not used : Delete ?
-        $translatedQuery = SemanticAgent::translateToEnglish($query, 80);
-
-        // Factor 1: Hybrid query
+       // Factor 1: Hybrid query
         if ($intent['is_hybrid'] ?? false) {
             $score += 3;
             $factors[] = 'hybrid_query';

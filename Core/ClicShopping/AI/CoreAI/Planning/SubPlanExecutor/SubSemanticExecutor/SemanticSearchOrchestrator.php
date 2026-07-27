@@ -20,6 +20,7 @@ namespace ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\SubSemanticExecutor;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\RagWarmupManager;
 use ClicShopping\AI\Helper\InsufficientInformationDetector;
@@ -442,7 +443,7 @@ class SemanticSearchOrchestrator
 
       // Translate query to English before embedding/search to ensure consistent processing
       try {
-        $normalizedQuery = SemanticAgent::translateToEnglish($query, 120);
+        $normalizedQuery = EnglishQueryNormalizer::normalize($query);
       } catch (\Throwable $e) {
         $normalizedQuery = $query;
       }
@@ -671,7 +672,7 @@ class SemanticSearchOrchestrator
       try {
         // Cache the formatted result as JSON
         // Use global constant (loaded from TechnicalConfig in config_clicshopping.php)
-        $cacheTTL = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL') ? (int)CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL: 2592000;
+        $cacheTTL = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL') ? (int)CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL: 3600;
 
         $this->cache->cacheResponse($query, json_encode($formattedResult), $cacheTTL);
 

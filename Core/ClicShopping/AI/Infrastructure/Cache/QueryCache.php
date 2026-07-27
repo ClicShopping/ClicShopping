@@ -19,6 +19,7 @@ use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheStorage;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFileStorage;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheCleanup;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheStatistics;
+use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFreshnessValidator;
 use ClicShopping\AI\Infrastructure\Cache\RagCache;
 
 /**
@@ -40,6 +41,7 @@ class QueryCache
 
   private CacheCleanup $cleanup;
   private CacheStatistics $statistics;
+  private CacheFreshnessValidator $freshness;
   private mixed $db = null;
   
   public function __construct()
@@ -61,6 +63,7 @@ class QueryCache
 
     $this->cleanup = new CacheCleanup($this->maxCacheSize, $this->debug);
     $this->statistics = new CacheStatistics();
+    $this->freshness = new CacheFreshnessValidator($this->debug);
 
     if (!$this->enabled) {
       if ($this->debug) {
@@ -172,12 +175,19 @@ class QueryCache
         case 'database':
           $result = $this->dbStorage->get($cacheKey);
           if ($result !== null) {
+            // A live TTL is not proof of freshness: drop the entry when its source tables moved.
+            if (!$this->freshness->isFresh($result['sql_query'] ?? null, $result['created_at'] ?? null)) {
+              $this->dbStorage->delete($cacheKey);
+
+              return null;
+            }
+
             $this->dbStorage->incrementHitCount($cacheKey);
-            
+
             if (isset($result['created_at']) && !isset($result['timestamp'])) {
               $result['timestamp'] = strtotime($result['created_at']);
             }
-            
+
             $result['backend'] = 'database';
           }
           return $result;
@@ -219,6 +229,15 @@ class QueryCache
     $cached = $this->ragCache->get($cacheKey);
 
     if ($cached !== null && is_array($cached)) {
+      // Same freshness rule as the database backend, expressed as an age.
+      $age = time() - (int)($cached['timestamp'] ?? time());
+
+      if (!$this->freshness->isFreshSinceAge($cached['sql'] ?? null, $age)) {
+        $this->ragCache->delete($cacheKey);
+
+        return null;
+      }
+
       if ($this->debug) {
         error_log("QueryCache: HIT from {$this->backend} via RagCache - {$cacheKey}");
       }
