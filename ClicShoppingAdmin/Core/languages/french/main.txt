@@ -659,17 +659,6 @@ text_rag_insufficient_information = Je n'ai pas suffisamment d'informations fiab
 text_rag_source_insufficient_information = Informations Insuffisantes - Réponse rejetée en raison d'un score de fiabilité faible
 
 
-text_orchestrator_no_business_operation = Je suis désolé(e), mais cette question n'est pas liée aux opérations commerciales.
-text_orchestrator_no_business_domain = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions concernant {{entity_list}}, les revenus, l'analyse et les opérations commerciales.
-text_orchestrator_no_business_domain_general = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions concernant les données commerciales, les revenus, l'analyse et les opérations.
-text_orchestrator_no_business_operation_no_relevance = Je suis désolé(e), mais cette question semble peu pertinente pour notre domaine d'activité. Je peux uniquement vous aider pour les questions concernant {{entity_list}}, les revenus, l'analyse et les opérations commerciales.
-text_orchestrator_no_business_operation_no_relevance_general = Je suis désolé(e), mais cette question semble peu pertinente pour notre domaine d'activité. Je peux uniquement vous aider pour les questions relatives aux données commerciales, au chiffre d'affaires, aux analyses et aux opérations.
-text_orchestrator_no_business_configured_domain = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions relatives à {{entity_list}}, au chiffre d'affaires, aux analyses et aux opérations commerciales.
-text_orchestrator_no_business_configured_domain_general = Je suis désolé(e), mais cette question n'est pas liée au domaine d'activité configuré. Je peux uniquement vous aider pour les questions relatives aux données commerciales, au chiffre d'affaires, aux analyses et aux opérations.
-text_orchestrator_clarification_intro = Nous avons détecté une requête ambiguë. Veuillez préciser votre question :
-text_orchestrator_clarification_option_product = Rechercher un produit nommé « {{query}} »
-text_orchestrator_clarification_option_person = Obtenir des informations sur une personne
-text_orchestrator_clarification_option_other = Autre chose
 
 text_notify_user_site_unavailable = Le site [{{targetSite}}] n'est pas encore disponible dans la base de données compétiteur, veuillez compléter votre base de sites compétiteurs.\n\nSites disponibles actuellement : {{availableSites}}.
 Nous effectuons une recherche Google Shopping à la place.

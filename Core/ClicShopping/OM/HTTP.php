@@ -112,6 +112,24 @@ class HTTP
   }
 
   /**
+   * Mask credential-looking query parameters in a URL or an error message.
+   *
+   * Applied at the LOGGING point, never at the caller: a secret travelling in a query string
+   * (SerpAPI `api_key`, tokens, signatures) would otherwise be written in clear to
+   * `Work/Log/errors-*.txt`, which is readable from the back-office and ends up in backups.
+   * Everything else is preserved so the log stays diagnosable.
+   *
+   * @param string $text URL or free-form message about to be logged.
+   * @return string The same text with credential values replaced by `***`.
+   */
+  public static function redactSecrets(string $text): string
+  {
+    $pattern = '/\b(api[_-]?key|access[_-]?token|client[_-]?secret|signature|password|passwd|token|secret|auth|pwd|key)=[^&\s"\'\]\)]+/i';
+
+    return preg_replace($pattern, '$1=***', $text) ?? $text;
+  }
+
+  /**
    * Sends an HTTP request based on the provided data and retrieves the response.
    *
    * @param array $data An associative array containing the following keys:
@@ -212,8 +230,10 @@ class HTTP
         $result = json_decode($result, true);
       }
     } catch (Exception $e) {
-      // Log only method and URL — never log headers or options (may contain credentials/tokens)
-      trigger_error('HTTP::getResponse() failed [' . strtoupper($data['method']) . ' ' . $data['url'] . ']: ' . $e->getMessage());
+      // Log only method and URL — never log headers or options (may contain credentials/tokens).
+      // The URL itself carries secrets (api_key=…) and Guzzle repeats it: redact both.
+      trigger_error('HTTP::getResponse() failed [' . strtoupper($data['method']) . ' '
+        . static::redactSecrets($data['url']) . ']: ' . static::redactSecrets($e->getMessage()));
     }
 
     return $result;

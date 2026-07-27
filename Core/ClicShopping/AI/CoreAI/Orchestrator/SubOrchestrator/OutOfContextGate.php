@@ -106,15 +106,14 @@ class OutOfContextGate
    * per-gate wording is preserved exactly.
    *
    * @param string $activeDomain    Active business domain (from DomainConfig::getActivities()).
-   * @param string $baseMessage     Initial message before entity resolution (gate-specific).
    * @param string $entitiesDefKey  getDef() key used when entity types are available; receives
    *                                an 'entity_list' placeholder.
    * @param string $generalMessage  Fallback message when no entity types can be resolved.
    * @return string The resolved rejection message.
    */
-  public function buildError(string $activeDomain, string $baseMessage, string $entitiesDefKey, string $generalMessage): string
+  public function buildError(string $activeDomain, string $entitiesDefKey, string $generalMessage): string
   {
-    $errorMessage = $baseMessage;
+    $errorMessage = $generalMessage;
 
     $entityConfigClass = DomainFields::resolveAppClass($activeDomain, 'EntityConfig');
     if ($entityConfigClass !== null) {

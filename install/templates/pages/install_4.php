@@ -185,7 +185,18 @@ $dbDatabase = trim($_POST['DB_DATABASE']);
 $dbTablePrefix = trim($_POST['DB_TABLE_PREFIX']);
 $timezone = trim($_POST['TIME_ZONE']);
 
-$data_encryption = bin2hex(random_bytes(16));
+// Never rotate a secret already in use: everything encrypted with it would become unreadable.
+// Re-running the installation on an existing shop must therefore keep the key it already has.
+$globalConfigFile = CLICSHOPPING::BASE_DIR . 'Conf/global.php';
+$data_encryption = '';
+
+if (is_file($globalConfigFile) && preg_match('/^data_encryption = "([^"]+)"/m', (string)file_get_contents($globalConfigFile), $matches)) {
+  $data_encryption = trim($matches[1]);
+}
+
+if ($data_encryption === '') {
+  $data_encryption = bin2hex(random_bytes(16));
+}
 
 $file_contents = <<<ENDCFG
 <?php

@@ -19,15 +19,17 @@ INSERT INTO `clic_administrator_menu_description` VALUES(847, 'Erreurs AI', 2);
       COMMENT 'Std-dev of star ratings - dispersion/polarization signal';
 
   -- Table clic_reviews_sentiment_description : sortie LLM structurée (par langue)
-  ALTER TABLE clic_reviews_sentiment_description
-    ADD COLUMN IF NOT EXISTS analysis_json text NULL
-      COMMENT 'Structured LLM sentiment output - themes, quotes, strengths, issues, summary';
+  ALTER TABLE clic_reviews_sentiment_description ADD COLUMN IF NOT EXISTS analysis_json text NULL COMMENT 'Structured LLM sentiment output - themes, quotes, strengths, issues, summary';
 
 
 INSERT INTO `clic_cron` VALUES(null, 'productReviewSentiment', 'Daily AI review sentiment analysis - auto-accept reliable analyses, note the rest for the administrator', 'day', 'productReviewSentiment', 0, '2026-07-03 14:56:18', '2026-07-03 15:02:16');
 UPDATE clic_cron SET cycle='week' WHERE code IN('backup','embeddings');
 UPDATE clic_cron SET cycle='month' WHERE code IN('gdpr','marketplace');
 
-  ALTER TABLE clic_orders_total
-    ADD COLUMN IF NOT EXISTS total_sign TINYINT NOT NULL DEFAULT 1
-    COMMENT 'Sign for grand-total recompute - +1 charge, -1 credit/discount' AFTER sort_order;
+ALTER TABLE clic_orders_total ADD COLUMN IF NOT EXISTS total_sign TINYINT NOT NULL DEFAULT 1  COMMENT 'Sign for grand-total recompute - +1 charge, -1 credit/discount' AFTER sort_order;
+
+===========
+ SELECT COUNT(*) FROM clic_products_cockpit_ai_tracking_impressions WHERE session_hash IS NULL;  -- doit rendre 0
+  ALTER TABLE clic_products_cockpit_ai_tracking_impressions
+    MODIFY COLUMN session_hash BINARY(32) NOT NULL
+    COMMENT 'SHA-256 hash of session ID (32 bytes, upgraded from MD5 16 bytes on 2026-04-28)';

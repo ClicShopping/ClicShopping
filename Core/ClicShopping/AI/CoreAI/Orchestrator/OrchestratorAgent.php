@@ -216,6 +216,9 @@ class OrchestratorAgent implements AgentInterface
 
     // Response processor
     $this->responseProcessor = new LlmResponseProcessor();
+
+    // Agnostic user-facing labels (rendered verbatim, interface language).
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
 
   /**
@@ -529,6 +532,23 @@ class OrchestratorAgent implements AgentInterface
     }
 
     try {
+      // EMPTY-INPUT GATE: a blank query carries nothing to classify, so it must never reach an LLM
+      // — routing it would be non-deterministic (bimodal) and would bill round-trips for nothing.
+      // trim() === '' rather than empty(): empty('0') is true, and "0" is a legitimate query.
+      if (trim($query) === '') {
+        $emptyMessage = CLICSHOPPING::getDef('text_orchestrator_empty_query');
+
+        return [
+          'success' => false,
+          'type' => 'error',
+          'error' => 'empty_query',
+          'text_response' => $emptyMessage,
+          'response' => $emptyMessage,
+          'sources' => [],
+          'data' => []
+        ];
+      }
+
       // Compute the three-tier out-of-context decision inputs (short-query skip + detection).
       $contextCheck = $this->outOfContextGate->evaluate($query);
 
@@ -554,7 +574,6 @@ class OrchestratorAgent implements AgentInterface
         $activeDomain = DomainConfig::getActivities();
         $errorMessage = $this->outOfContextGate->buildError(
           $activeDomain,
-          CLICSHOPPING::getDef('text_orchestrator_no_business_operation'),
           'text_orchestrator_no_business_domain',
           CLICSHOPPING::getDef('text_orchestrator_no_business_domain_general')
         );
@@ -594,9 +613,8 @@ class OrchestratorAgent implements AgentInterface
         $activeDomain = DomainConfig::getActivities();
         $errorMessage = $this->outOfContextGate->buildError(
           $activeDomain,
-          "I'm sorry, but this question appears to have low relevance to our business domain.",
           'text_orchestrator_no_business_operation_no_relevance',
-          "I'm sorry, but this question appears to have low relevance to our business domain. I can only help with questions about business data, revenue, analytics, and operations."
+          CLICSHOPPING::getDef('text_orchestrator_no_business_operation_no_relevance_general')
         );
 
         return [
@@ -633,7 +651,6 @@ class OrchestratorAgent implements AgentInterface
         $activeDomain = DomainConfig::getActivities();
         $errorMessage = $this->outOfContextGate->buildError(
           $activeDomain,
-          "I'm sorry, but this question is not related to business operations.",
           'text_orchestrator_no_business_configured_domain',
           CLICSHOPPING::getDef('text_orchestrator_no_business_configured_domain_general')
         );

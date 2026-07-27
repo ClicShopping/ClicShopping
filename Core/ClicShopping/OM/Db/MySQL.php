@@ -90,6 +90,10 @@ class MySQL extends \ClicShopping\OM\Db
     $this->connected = true;
 
     parent::__construct($dsn, $this->username, $this->password, $this->driver_options);
+
+    // The plaintext password must not outlive the handshake: any stack trace carrying this object
+    // dumps its properties into Work/Log (readable from the back-office, kept in backups).
+    $this->password = '';
   }
 
   /**

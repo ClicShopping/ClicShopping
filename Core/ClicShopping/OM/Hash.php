@@ -29,31 +29,65 @@ use function strlen;
  */
 class Hash
 {
-  private static $key; // 32 caractères pour AES-256
+  private static ?string $key = null;
   private static $cipher = 'aes-256-cbc'; // Algorithme de chiffremen
   private const EMAIL_PREFIX = 'ENC::'; // Préfixe pour identifier un email chiffré
 
   /**
-   * Hash constructor.
-   * @access public
-   *
-   * Initializes a new Hash object for generating and verifying secure hashes.
-   * This class provides functionality for password hashing and verification
-   * using industry-standard cryptographic algorithms.
+   * Key used before 2026-07-27: the secret was read under a name the installer never writes and
+   * the fallback lived in a constructor nobody called, so ciphertexts were produced with '' .
+   * Kept for READING the rows already stored; nothing is ever encrypted with it again.
    */
-  public function __construct()
+  private const LEGACY_EMPTY_KEY = '';
+
+
+  /**
+   * Tells whether an encryption secret is configured, without attempting anything.
+   *
+   * Lets the back-office warn the shop owner up front instead of letting the refusal surface
+   * as a fatal on the first customer create/edit/checkout.
+   *
+   * @return bool True when `data_encryption` (or its `encryption_key` alias) is set.
+   */
+  public static function isEncryptionKeyConfigured(): bool
   {
-    if (CLICSHOPPING::getConfig('encryption_key') && CLICSHOPPING::configExists('encryption_key')) {
-      self::$key = CLICSHOPPING::getConfig('encryption_key'); // Clé hexadécimale (32 caractères)
-    } else {
-      self::$key = '1c5f37542a2056c76dc2cfe98fecb514'; // Valeur par défaut (32 caractères hex)
+    if (self::$key !== null) {
+      return true;
     }
 
-    self::$key = hex2bin(self::$key);
+    $secret = (string)(CLICSHOPPING::getConfig('data_encryption') ?? CLICSHOPPING::getConfig('encryption_key') ?? '');
 
-    if (self::$key === false || strlen(self::$key) !== 32) {
-      throw new Exception('Clé d’encryption invalide');
+    return trim($secret) !== '';
+  }
+
+  /**
+   * Resolves the AES key from the secret generated at install (`data_encryption` in
+   * Conf/global.php, `encryption_key` accepted as an alias).
+   *
+   * Resolved lazily on first use: every method of this class is static, so a constructor
+   * would never run — which is exactly how the key silently stayed empty. Fails closed
+   * rather than falling back to any built-in value: a key shipped in the source protects
+   * nothing.
+   *
+   * @return string A 32-byte binary key, as AES-256 requires.
+   * @throws Exception When no secret is configured.
+   */
+  private static function encryptionKey(): string
+  {
+    if (self::$key !== null) {
+      return self::$key;
     }
+
+    $secret = (string)(CLICSHOPPING::getConfig('data_encryption') ?? CLICSHOPPING::getConfig('encryption_key') ?? '');
+
+    if (trim($secret) === '') {
+      throw new Exception('Missing data_encryption in Conf/global.php — refusing to encrypt without the secret generated at install.');
+    }
+
+    // Derive 32 bytes whatever the configured length: the installer writes 32 hex chars (16 bytes).
+    self::$key = hash('sha256', $secret, true);
+
+    return self::$key;
   }
 
   /**
@@ -388,7 +422,7 @@ class Hash
         throw new Exception('IV generation failed or is not cryptographically strong');
       }
 
-    $encrypted = openssl_encrypt($data, self::$cipher, self::$key, 0, $iv);
+    $encrypted = openssl_encrypt($data, self::$cipher, self::encryptionKey(), 0, $iv);
     if ($encrypted === false) {
       throw new Exception('Erreur lors du chiffrement des données');
     }
@@ -417,7 +451,13 @@ class Hash
 
     [$encrypted, $iv] = $parts;
 
-    $decrypted = openssl_decrypt($encrypted, self::$cipher, self::$key, 0, $iv);
+    $decrypted = openssl_decrypt($encrypted, self::$cipher, self::encryptionKey(), 0, $iv);
+
+    if ($decrypted === false) {
+      // Rows stored before the key was fixed: read them, never re-encrypt with that key.
+      $decrypted = openssl_decrypt($encrypted, self::$cipher, self::LEGACY_EMPTY_KEY, 0, $iv);
+    }
+
     if ($decrypted === false) {
       throw new Exception('Erreur lors du déchiffrement des données');
     }
@@ -478,7 +518,7 @@ class Hash
       throw new Exception('IV generation failed or is not cryptographically strong');
     }
 
-    $encrypted = openssl_encrypt($email, self::$cipher, self::$key, 0, $iv);
+    $encrypted = openssl_encrypt($email, self::$cipher, self::encryptionKey(), 0, $iv);
     return base64_encode($iv . $encrypted);
   }
 
@@ -508,8 +548,13 @@ class Hash
     $iv = str_pad(substr($data, 0, $ivLength), $ivLength, "\0");
     $encrypted = substr($data, $ivLength);
     
-    $decrypted = openssl_decrypt($encrypted, self::$cipher, self::$key, 0, $iv);
-    
+    $decrypted = openssl_decrypt($encrypted, self::$cipher, self::encryptionKey(), 0, $iv);
+
+    if ($decrypted === false) {
+      // Same legacy read path as decryptDatatext(): addresses stored with the empty key.
+      $decrypted = openssl_decrypt($encrypted, self::$cipher, self::LEGACY_EMPTY_KEY, 0, $iv);
+    }
+
     // If decryption failed, return the original value
     return $decrypted !== false ? $decrypted : $encryptedEmail;
   }
