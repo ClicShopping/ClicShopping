@@ -133,4 +133,15 @@ final class CountingChat implements ChatInterface
   {
     return $this->inner->{$name}(...$arguments);
   }
+
+  /**
+   * Real token usage, read from the wrapped chat. Declared rather than left to __call, which
+   * method_exists() cannot see — probing callers fell back to a characters/4 estimate.
+   *
+   * @return mixed Provider response carrying `usage`, or null when the wrapped chat exposes none
+   */
+  public function getLastResponse(): mixed
+  {
+    return method_exists($this->inner, 'getLastResponse') ? $this->inner->getLastResponse() : null;
+  }
 }

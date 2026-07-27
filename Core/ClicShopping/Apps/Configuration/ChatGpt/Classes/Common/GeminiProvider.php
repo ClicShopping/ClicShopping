@@ -132,6 +132,7 @@ class GeminiProvider extends AbstractLLMProvider
     // GeminiOpenAIConfig already includes the correct URL by default
     $config = new GeminiOpenAIConfig($this->apiKey);
     $config->model = $this->model;
+    $config->modelOptions = $this->llphantModelOptions();
 
     return new OpenAIChat($config);
   }

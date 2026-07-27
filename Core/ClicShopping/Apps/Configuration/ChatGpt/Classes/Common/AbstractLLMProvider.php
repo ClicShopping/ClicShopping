@@ -65,6 +65,12 @@ abstract class AbstractLLMProvider implements LLMProviderInterface
   protected array $capabilities;
 
   /**
+   * @var array<int, string> Config keys the caller asked for. Only these reach LLPhant, so an
+   *                         inert configured default does not start capping every answer.
+   */
+  protected array $explicitOptions = [];
+
+  /**
    * Constructor
    *
    * Initializes the provider with configuration.
@@ -91,8 +97,41 @@ abstract class AbstractLLMProvider implements LLMProviderInterface
     $this->maxTokens = $config['max_tokens'] ?? 4096;
     $this->temperature = $config['temperature'] ?? 0.7;
     $this->capabilities = $config['capabilities'] ?? [];
+    $this->explicitOptions = $config['explicit_options'] ?? [];
 
     $this->validateConfig();
+  }
+
+  /**
+   * Did the caller ask for this option, rather than inheriting a configured default?
+   *
+   * @param string $key Config key, as passed to LLMProviderFactory::create()
+   * @return bool True when the caller supplied it
+   */
+  protected function isExplicit(string $key): bool
+  {
+    return in_array($key, $this->explicitOptions, true);
+  }
+
+  /**
+   * Generation options handed to LLPhant, in OpenAI wire format. LLPhant spreads them into the
+   * request body, so Anthropic and Ollama override this with their own keys.
+   *
+   * @return array<string, mixed> Empty when the caller bounded nothing
+   */
+  protected function llphantModelOptions(): array
+  {
+    $options = [];
+
+    if ($this->isExplicit('max_tokens') && $this->maxTokens > 0) {
+      $options['max_tokens'] = $this->maxTokens;
+    }
+
+    if ($this->isExplicit('temperature')) {
+      $options['temperature'] = $this->temperature;
+    }
+
+    return $options;
   }
 
   /**

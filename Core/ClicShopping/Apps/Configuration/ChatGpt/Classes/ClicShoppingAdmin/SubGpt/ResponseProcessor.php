@@ -324,55 +324,39 @@ class ResponseProcessor
         ));
       }
 
-      // Extract usage metrics
-      if (method_exists($chat, 'getLastResponse')) {
-        if ($chatgpt_debug) {
-          error_log("[INFO SEARCH] [ResponseProcessor::getGptResponse] Attempting to extract token usage from last response");
-        }
+      // Extract usage metrics. 
+      $lastResponse = is_callable([$chat, 'getLastResponse']) ? $chat->getLastResponse() : null;
 
-        $lastResponse = $chat->getLastResponse();
-        
-        if (!is_null($lastResponse) && isset($lastResponse['usage'])) {
-          self::$lastTokenUsage = [
-            'prompt_tokens' => $lastResponse['usage']['prompt_tokens'] ?? 0,
-            'completion_tokens' => $lastResponse['usage']['completion_tokens'] ?? 0,
-            'total_tokens' => $lastResponse['usage']['total_tokens'] ?? 0
-          ];
-          if ($chatgpt_debug) {
-            error_log(sprintf(
-              '[INFO USAGE] [ResponseProcessor::getGptResponse] Token usage for model %s: prompt=%d, completion=%d, total=%d',
-              $engine,
-              self::$lastTokenUsage['prompt_tokens'],
-              self::$lastTokenUsage['completion_tokens'],
-              self::$lastTokenUsage['total_tokens']
-            ));
-          }
-        } else {
-          self::$lastTokenUsage = null;
-          if ($chatgpt_debug) {
-            error_log(sprintf(
-              '[INFO WARNING] [ResponseProcessor::getGptResponse] No token usage data in response for model %s',
-              $engine
-            ));
-          }
+      if (!is_null($lastResponse) && isset($lastResponse['usage'])) {
+        self::$lastTokenUsage = [
+          'prompt_tokens' => $lastResponse['usage']['prompt_tokens'] ?? 0,
+          'completion_tokens' => $lastResponse['usage']['completion_tokens'] ?? 0,
+          'total_tokens' => $lastResponse['usage']['total_tokens'] ?? 0
+        ];
+
+        if ($chatgpt_debug) {
+          error_log(sprintf(
+            '[INFO USAGE] [ResponseProcessor::getGptResponse] Token usage for model %s: prompt=%d, completion=%d, total=%d',
+            $engine,
+            self::$lastTokenUsage['prompt_tokens'],
+            self::$lastTokenUsage['completion_tokens'],
+            self::$lastTokenUsage['total_tokens']
+          ));
         }
       } else {
-        if ($chatgpt_debug) {
-          error_log("[INFO SEARCH] [ResponseProcessor::getGptResponse] getLastResponse() not available, estimating token usage");
-        }
-
         $promptTokens = (int)ceil(strlen($prompt) / 4);
         $completionTokens = (int)ceil(strlen($result) / 4);
 
         self::$lastTokenUsage = [
           'prompt_tokens' => $promptTokens,
           'completion_tokens' => $completionTokens,
-          'total_tokens' => $promptTokens + $completionTokens
+          'total_tokens' => $promptTokens + $completionTokens,
+          'estimated' => true
         ];
 
         if ($chatgpt_debug) {
           error_log(sprintf(
-            '[INFO USAGE] Estimated token usage for model %s (provider: %s): prompt=%d, completion=%d, total=%d',
+            '[INFO USAGE] ESTIMATED token usage for model %s (provider: %s reported none): prompt=%d, completion=%d, total=%d',
             $engine,
             get_class($chat),
             $promptTokens,
@@ -380,8 +364,6 @@ class ResponseProcessor
             $promptTokens + $completionTokens
           ));
         }
-
-        error_log("[INFO VALIDATED] [ResponseProcessor::getGptResponse] Request completed successfully");
       }
 
       return $result;

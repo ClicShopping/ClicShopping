@@ -117,6 +117,28 @@ class OpenAIProvider extends AbstractLLMProvider
   }
 
   /**
+   * Same distinction as buildRequestBody(): reasoning models reject temperature and spell the
+   * output budget max_completion_tokens. Sending the standard keys would make the call fail.
+   *
+   * @return array<string, mixed> Generation options in OpenAI wire format
+   */
+  protected function llphantModelOptions(): array
+  {
+    $options = parent::llphantModelOptions();
+
+    if ($this->isReasoningModel($this->model)) {
+      unset($options['temperature']);
+
+      if (isset($options['max_tokens'])) {
+        $options['max_completion_tokens'] = $options['max_tokens'];
+        unset($options['max_tokens']);
+      }
+    }
+
+    return $options;
+  }
+
+  /**
    * Get LLPhant Chat instance for OpenAI
    *
    * Creates and returns an OpenAIChat instance configured for this provider.
@@ -129,6 +151,7 @@ class OpenAIProvider extends AbstractLLMProvider
     $config = new OpenAIConfig();
     $config->apiKey = $this->apiKey;
     $config->model = $this->model;
+    $config->modelOptions = $this->llphantModelOptions();
 
     // Apply the OpenAI organisation header (OpenAIConfig has no org field); no-op when unset.
     ProviderManager::applyOpenAiOrganisation($config, ModelManager::getProviderApiKey('openai')['organisation'] ?? null);

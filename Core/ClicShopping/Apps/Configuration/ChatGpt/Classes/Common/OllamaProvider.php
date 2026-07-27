@@ -139,7 +139,30 @@ class OllamaProvider extends AbstractLLMProvider
     $config = new OllamaConfig();
     $config->model = $this->model;
     $config->url = $this->apiUrl;
+    $config->modelOptions = $this->llphantModelOptions();
 
     return new OllamaChat($config);
+  }
+
+  /**
+   * Ollama does not speak the OpenAI wire format: generation settings live under `options`,
+   * and the output budget is `num_predict`. Sending max_tokens would simply be ignored.
+   *
+   * @return array<string, mixed> Generation options in Ollama wire format
+   */
+  protected function llphantModelOptions(): array
+  {
+    $standard = parent::llphantModelOptions();
+    $options = [];
+
+    if (isset($standard['max_tokens'])) {
+      $options['num_predict'] = $standard['max_tokens'];
+    }
+
+    if (isset($standard['temperature'])) {
+      $options['temperature'] = $standard['temperature'];
+    }
+
+    return $options === [] ? [] : ['options' => $options];
   }
 }

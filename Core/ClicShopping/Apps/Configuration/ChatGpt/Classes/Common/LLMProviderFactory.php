@@ -167,6 +167,10 @@ class LLMProviderFactory
       $config = array_merge($config, $overrides);
     }
 
+    // Remember what the CALLER actually asked for. A null override means "no opinion" (callers
+    // forward optional arguments verbatim), so it does not count as explicit.
+    $config['explicit_options'] = array_keys(array_filter($overrides, static fn($value) => $value !== null));
+
     return $config;
   }
 

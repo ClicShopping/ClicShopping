@@ -96,6 +96,7 @@ class MistralProvider extends AbstractLLMProvider
     $config = new MistralAIConfig();
     $config->apiKey = $this->apiKey;
     $config->model = $this->model;
+    $config->modelOptions = $this->llphantModelOptions();
 
     return new MistralAIChat($config);
   }

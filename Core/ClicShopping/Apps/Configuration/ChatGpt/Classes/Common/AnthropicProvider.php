@@ -124,9 +124,16 @@ class AnthropicProvider extends AbstractLLMProvider
    */
   public function getLLPhantChat(): ChatInterface
   {
-    $config = new AnthropicConfig();
-    $config->apiKey = $this->apiKey;
-    $config->model = $this->mapModelName($this->model);
+    // AnthropicConfig is readonly: everything goes through the constructor. Assigning afterwards
+    // raised "Cannot modify readonly property" and made this whole path unusable.
+    $options = $this->llphantModelOptions();
+
+    $config = new AnthropicConfig(
+      model: $this->mapModelName($this->model),
+      maxTokens: $options['max_tokens'] ?? 1024,
+      modelOptions: array_diff_key($options, ['max_tokens' => null]),
+      apiKey: $this->apiKey
+    );
 
     return new AnthropicChat($config);
   }

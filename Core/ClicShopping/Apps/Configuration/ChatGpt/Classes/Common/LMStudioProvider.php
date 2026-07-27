@@ -145,6 +145,7 @@ class LMStudioProvider extends AbstractLLMProvider
       $baseUrl = substr($baseUrl, 0, -strlen('/v1/chat/completions'));
     }
     $config->url = $baseUrl;
+    $config->modelOptions = $this->llphantModelOptions();
 
     return new LmStudioChat($config);
   }
