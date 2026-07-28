@@ -8,7 +8,6 @@
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
-
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
@@ -76,7 +75,11 @@ class DatabaseSchemaManager
     try {
       // Retrieve the table schema WITH COMMENTS
       $query = $this->db->prepare("SHOW FULL COLUMNS FROM " . $table);
-      $query->execute();
+
+      if ($query->execute() === false) {
+        throw new \Exception("SHOW FULL COLUMNS failed for {$table}");
+      }
+
       $columns = $query->fetchAll(\PDO::FETCH_ASSOC);
 
       $schema = [];
@@ -92,15 +95,13 @@ class DatabaseSchemaManager
 
       return $schema;
     } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error getting schema for table {$table}: " . $e->getMessage(),
-        'error'
+      $this->securityLogger->logApplicationError(
+        "Error getting schema for table {$table}: " . $e->getMessage()
       );
 
       if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Error getting schema for table {$table}: " . $e->getMessage(),
-          'error'
+        $this->securityLogger->logApplicationError(
+          "Error getting schema for table {$table}: " . $e->getMessage()
         );
       }
 
@@ -121,7 +122,10 @@ class DatabaseSchemaManager
   {
     try {
       $query = $this->db->prepare("SHOW TABLES");
-      $query->execute();
+
+      if ($query->execute() === false) {
+        throw new \Exception('SHOW TABLES failed');
+      }
 
       $tables = $query->fetchAll(\PDO::FETCH_COLUMN);
 
@@ -141,7 +145,11 @@ class DatabaseSchemaManager
 
         // Retrieve columns for each table WITH COMMENTS
         $columnsQuery = $this->db->prepare("SHOW FULL COLUMNS FROM " . $table);
-        $columnsQuery->execute();
+
+        if ($columnsQuery->execute() === false) {
+          throw new \Exception("SHOW FULL COLUMNS failed for {$table}");
+        }
+
         $columns = $columnsQuery->fetchAll();
 
         $this->databaseSchema[$table] = [];
@@ -175,15 +183,13 @@ class DatabaseSchemaManager
         'info'
       );
     } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error building database schema: " . $e->getMessage(),
-        'error'
+      $this->securityLogger->logApplicationError(
+        "Error building database schema: " . $e->getMessage()
       );
 
       if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Error while building the database schema: " . $e->getMessage(),
-          'error'
+        $this->securityLogger->logApplicationError(
+          "Error while building the database schema: " . $e->getMessage()
         );
       }
 
@@ -206,7 +212,11 @@ class DatabaseSchemaManager
     try {
       // Retrieve all tables from the database
       $query = $this->db->prepare("SHOW TABLES");
-      $query->execute();
+
+      if ($query->execute() === false) {
+        throw new \Exception('SHOW TABLES failed');
+      }
+
       $tables = $query->fetchAll(\PDO::FETCH_COLUMN);
 
       // For each table, analyze the columns to detect potential relationships
@@ -267,15 +277,13 @@ class DatabaseSchemaManager
       // Build a dictionary of column synonyms based on similar names
       $this->buildColumnSynonyms($tables);
     } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error initializing table relationships: " . $e->getMessage(),
-        'error'
+      $this->securityLogger->logApplicationError(
+        "Error initializing table relationships: " . $e->getMessage()
       );
 
       if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Error initializing table relationships: " . $e->getMessage(),
-          'error'
+        $this->securityLogger->logApplicationError(
+          "Error initializing table relationships: " . $e->getMessage()
         );
       }
 
@@ -336,7 +344,11 @@ class DatabaseSchemaManager
     try {
       $safeTable = InputValidator::sanitizeIdentifier($table);
       $query = $this->db->prepare("DESCRIBE " . $safeTable);
-      $query->execute();
+
+      if ($query->execute() === false) {
+        throw new \Exception("DESCRIBE failed for {$safeTable}");
+      }
+
       $columns = $query->fetchAll(\PDO::FETCH_ASSOC);
 
       foreach ($columns as $column) {
@@ -347,9 +359,8 @@ class DatabaseSchemaManager
 
       return null;
     } catch (\Exception $e) {
-      $this->securityLogger->logSecurityEvent(
-        "Error getting primary key for table {$table}: " . $e->getMessage(),
-        'error'
+      $this->securityLogger->logApplicationError(
+        "Error getting primary key for table {$table}: " . $e->getMessage()
       );
       return null;
     }
@@ -375,7 +386,6 @@ class DatabaseSchemaManager
     return $this->databaseSchema;
   }
 
-
   /**
    * Gets the column index (inverse mapping of columns to tables)
    *
@@ -385,7 +395,6 @@ class DatabaseSchemaManager
   {
     return $this->columnIndex;
   }
-
 
   /**
    * Gets the column synonyms dictionary

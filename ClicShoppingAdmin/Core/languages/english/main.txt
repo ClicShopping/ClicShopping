@@ -594,3 +594,4 @@ text_notify_user_site_unavailable = The site [{{targetSite}}] is not yet availab
 We are performing a Google Shopping search instead.
 
 text_rate_limiter_wait = Please wait {{wait}} seconds before restarting this operation.
+error_data_encryption_missing = Security: the key data_encryption is missing from Core/ClicShopping/Conf/global.php. Customer data can no longer be encrypted until it is added. Run the installation again WITHOUT reinstalling the database to regenerate the file, or add the line manually then restore the read-only permission.

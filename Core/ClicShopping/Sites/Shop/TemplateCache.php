@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Sites\Shop;
 
+use ClicShopping\OM\Cache;
 use ClicShopping\OM\CLICSHOPPING;
 
 /**
@@ -31,10 +32,10 @@ class TemplateCache
   private $lifetime;
 
   /**
-   * @var bool Enable/disable cache file compression
-   * @todo : the compression does not work currently, it needs to be fixed
+   * @var string OM\Cache namespace holding the rendered blocks. Storage, expiry and purge are
+   * delegated to OM\Cache: one file-cache mechanism for the whole repository.
    */
-  private const USE_CATALOG_COMPRESS_CACHE = false;
+  private const CACHE_NAMESPACE = 'Templates';
 
   /**
    * @var int Minimum time between cache cleanups (24 hours by default)
@@ -96,11 +97,6 @@ class TemplateCache
       }
     }
 
-    if ($this->isResetEnabled() === true) {
-      $this->resetAllCache();
-      $this->clearLogs();
-    }
-
     // Clean expired cache files with a 1% probability
     if (random_int(1, 100) === 1) {
       $this->cleanExpiredCache();
@@ -115,29 +111,11 @@ class TemplateCache
   private function checkStaticCache()
   {
     if (defined('USE_CATALOG_CACHE') && USE_CATALOG_CACHE == 'False') {
-      $this->resetAllCache(true);
+      $this->resetAllCache();
       $this->clearLogs();
 
       return false;
     }
-  }
-
-  /**
-   * Retrieves cached content for a given key, or generates and caches it if not present or expired.
-   *
-   * @param string   $key       Unique cache key.
-   * @param callable $generator Function to generate content if cache is missing or expired.
-   * @return mixed   Cached or newly generated content.
-   */
-  public function getCachedContent(string $key, callable $generator)
-  {
-    if ($this->hasCache($key)) {
-      return $this->getCache($key);
-    }
-
-    $content = $generator();
-    $this->setCache($key, $content);
-    return $content;
   }
 
   /**
@@ -152,13 +130,7 @@ class TemplateCache
       return false;
     }
 
-    $cacheFile = $this->getCacheFile($key);
-
-    if (!file_exists($cacheFile)) {
-      return false;
-    }
-
-    return (time() - filemtime($cacheFile)) < $this->lifetime;
+    return $this->entry($key)->exists((string) $this->lifetimeMinutes());
   }
 
   /**
@@ -173,23 +145,18 @@ class TemplateCache
       return false;
     }
 
-    if ($this->hasCache($key)) {
-      $content = file_get_contents($this->getCacheFile($key));
-      if ($content === false) {
-        $this->log("Failed to read cache file for key: $key");
-        return false;
-      }
-
-      $decompressed = $this->decompressContent($content);
-      if ($decompressed === false) {
-        $this->log("Failed to decompress cache content for key: $key");
-        return false;
-      }
-
-      return $decompressed;
+    if (!$this->hasCache($key)) {
+      return false;
     }
 
-    return false;
+    $content = $this->entry($key)->get();
+
+    if (!is_string($content)) {
+      $this->log("Failed to read cache entry for key: $key");
+      return false;
+    }
+
+    return $content;
   }
 
   /**
@@ -205,11 +172,8 @@ class TemplateCache
       return false;
     }
 
-    $compressed = $this->compressContent($content);
-    $result = file_put_contents($this->getCacheFile($key), $compressed);
-
-    if ($result === false) {
-      $this->log("Failed to write cache file for key: $key");
+    if ($this->entry($key)->save($content) === false) {
+      $this->log("Failed to write cache entry for key: $key");
       return false;
     }
 
@@ -218,97 +182,13 @@ class TemplateCache
   }
 
   /**
-   * Delete a cache file
-   *
-   * @param string $key Cache key
-   * @return bool Success status
-   */
-  public function deleteCache(string $key): bool
-  {
-    if (!$this->isCacheEnabled() || !$this->isResetEnabled()) {
-      return false;
-    }
-
-    $cacheFile = $this->getCacheFile($key);
-
-    if (file_exists($cacheFile)) {
-      try {
-        $result = unlink($cacheFile);
-        if ($result) {
-          $this->log("Successfully deleted cache file for key: $key");
-        } else {
-          $this->log("Failed to delete cache file for key: $key");
-        }
-        return $result;
-      } catch (\Exception $e) {
-        $this->log("Error deleting cache file for key: $key - " . $e->getMessage());
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Reset cache for a specific module or group
-   *
-   * @param string $prefix Prefix to identify the cache group to reset
-   * @return bool Success status
-   */
-  public function resetCacheBlock(string $prefix): bool
-  {
-    if (!$this->isCacheEnabled() || !$this->isResetEnabled()) {
-      return false;
-    }
-
-    $template_name = $this->defaultTemplateName;
-    $pattern = $this->cacheDir . '/template_' . $template_name . '_' . md5($prefix) . '*.cache';
-    $files = glob($pattern);
-
-    if ($files === false) {
-      $this->log("Failed to list cache files for prefix: $prefix");
-      return false;
-    }
-
-    $success = true;
-    foreach ($files as $file) {
-      if (!unlink($file)) {
-        $this->log("Failed to delete cache file: $file");
-        $success = false;
-      } else {
-        $this->log("Successfully deleted cache file: $file");
-      }
-    }
-
-    return $success;
-  }
-
-  /**
    * Reset all template cache
    *
    * @return bool Success status
    */
-  public function resetAllCache(bool|null $force = false): bool
+  private function resetAllCache(): bool
   {
-    if ($force === false) {
-      if ($this->isResetEnabled() === false) {
-        return false;
-      }
-    }
-
-    $pattern = $this->cacheDir . '/template_*_*.cache';
-    $files = glob($pattern);
-    $success = true;
-
-    if ($files === false) {
-      return false;
-    }
-
-    foreach ($files as $file) {
-      if (!unlink($file)) {
-        $success = false;
-      }
-    }
+    Cache::clearNamespace(self::CACHE_NAMESPACE);
 
     // Reset status and log files
     $statusFile = $this->cacheDir . '/' . self::LAST_CLEANUP_FILE;
@@ -331,7 +211,7 @@ class TemplateCache
       file_put_contents($logFile, json_encode($initialLog, JSON_PRETTY_PRINT));
     }
 
-    return $success;
+    return true;
   }
 
   /**
@@ -341,17 +221,7 @@ class TemplateCache
    */
   public function isCacheEnabled(): bool
   {
-    return defined('USE_CATALOG_CACHE') && USE_CATALOG_CACHE === 'true';
-  }
-
-  /**
-   * Check if cache reset operations are enabled
-   *
-   * @return bool True if cache reset is enabled
-   */
-  public function isResetEnabled(): bool
-  {
-    return defined('USE_CATALOG_RESET_CACHE') && USE_CATALOG_RESET_CACHE === 'True';
+    return defined('USE_CATALOG_CACHE') && USE_CATALOG_CACHE == 'True';
   }
 
   /**
@@ -421,41 +291,12 @@ class TemplateCache
   }
 
   /**
-   * Get log entries for debugging
-   *
-   * @param int $limit Number of entries to return
-   * @return array Log entries
-   */
-  public function getLogEntries(int $limit = 50): array
-  {
-    if (!file_exists($this->logStaticTemplate)) {
-      return [];
-    }
-
-    $content = file_get_contents($this->logStaticTemplate);
-    if ($content === false) {
-      return [];
-    }
-
-    $logs = json_decode($content, true);
-    if (!is_array($logs)) {
-      return [];
-    }
-
-    return array_slice($logs, -$limit);
-  }
-
-  /**
    * Clear all log entries
    *
    * @return bool Success status
    */
-  public function clearLogs(): bool
+  private function clearLogs(): bool
   {
-    if (!$this->isResetEnabled()) {
-      return false;
-    }
-
     $initialLog = [
       [
         'timestamp' => date('Y-m-d H:i:s'),
@@ -468,37 +309,6 @@ class TemplateCache
     $result = file_put_contents($this->logStaticTemplate, json_encode($initialLog, JSON_PRETTY_PRINT), LOCK_EX);
 
     return $result !== false;
-  }
-
-
-  /**
-   * Compress content before caching
-   *
-   * @param string $content Content to compress
-   * @return string Compressed content
-   */
-  private function compressContent(string $content): string
-  {
-    if (!static::USE_CATALOG_COMPRESS_CACHE) {
-      return $content;
-    }
-
-    return gzcompress($content, 9);
-  }
-
-  /**
-   * Decompress cached content
-   *
-   * @param string $content Compressed content
-   * @return string|false Decompressed content or false on error
-   */
-  private function decompressContent(string $content)
-  {
-    if (!static::USE_CATALOG_COMPRESS_CACHE) {
-      return $content;
-    }
-
-    return gzuncompress($content);
   }
 
   /**
@@ -533,38 +343,17 @@ class TemplateCache
       }
     }
 
-    $pattern = $this->cacheDir . '/template_*_*.cache';
-    $files = glob($pattern);
-    $success = true;
+    $purged = Cache::purgeExpired($this->lifetimeMinutes(), self::CACHE_NAMESPACE);
+    $this->log("Cleanup removed {$purged} expired cache entries");
 
-    if ($files === false) {
-      $this->log('Failed to list cache files during cleanup');
-      return false;
-    }
+    $status['templates'][$this->defaultTemplateName] = [
+      'last_cleanup' => $now,
+      'purged_count' => $purged
+    ];
 
-    foreach ($files as $file) {
-      if (filemtime($file) < ($now - $this->lifetime)) {
-        if (!unlink($file)) {
-          $this->log("Failed to delete expired cache file: $file");
-          $success = false;
-        } else {
-          $this->log("Deleted expired cache file: $file");
-        }
-      }
-    }
+    file_put_contents($statusFile, json_encode($status, JSON_PRETTY_PRINT));
 
-    // Update status file
-    if ($success) {
-      $template_name = $this->defaultTemplateName;
-      $status['templates'][$template_name] = [
-        'last_cleanup' => $now,
-        'files_count' => count($files)
-      ];
-
-      file_put_contents($statusFile, json_encode($status, JSON_PRETTY_PRINT));
-    }
-
-    return $success;
+    return true;
   }
 
   /**
@@ -573,9 +362,31 @@ class TemplateCache
    * @param string $key Cache key.
    * @return string Full path to the cache file.
    */
-  private function getCacheFile(string $key): string
+  private function cacheKey(string $key): string
   {
-    $template_name = $this->defaultTemplateName;
-    return $this->cacheDir . '/template_' . $template_name . '_' . md5($key) . '.cache';
+    // The block name stays IN CLEAR: Cache::clear() purges by prefix, and md5 would destroy the
+    // prefix relation — which is exactly why resetCacheBlock() could never match a file before.
+    return 'template_' . preg_replace('/[^a-zA-Z0-9\-_]/', '-', $this->defaultTemplateName . '_' . $key);
+  }
+
+  /**
+   * The OM\Cache entry backing a template key.
+   *
+   * @param string $key Cache key
+   * @return Cache
+   */
+  private function entry(string $key): Cache
+  {
+    return new Cache($this->cacheKey($key), self::CACHE_NAMESPACE, true);
+  }
+
+  /**
+   * Lifetime in minutes — OM\Cache expresses expiry in minutes, this class in seconds.
+   *
+   * @return int
+   */
+  private function lifetimeMinutes(): int
+  {
+    return max(1, (int)($this->lifetime / 60));
   }
 }

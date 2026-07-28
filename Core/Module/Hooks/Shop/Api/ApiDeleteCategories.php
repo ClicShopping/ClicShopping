@@ -8,7 +8,6 @@
 
 namespace ClicShopping\OM\Module\Hooks\Shop\Api;
 
-use ClicShopping\OM\Cache;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
@@ -84,11 +83,6 @@ class ApiDeleteCategories
 
       $CLICSHOPPING_Hooks->call('Categories', 'DeleteConfirm');
 
-      Cache::clear('category_tree-');
-      Cache::clear('also_purchased');
-      Cache::clear('products_related');
-      Cache::clear('products_cross_sell');
-      Cache::clear('upcoming');
     }
   }
 

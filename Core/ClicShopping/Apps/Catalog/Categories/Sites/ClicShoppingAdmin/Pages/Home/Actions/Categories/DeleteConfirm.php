@@ -6,10 +6,8 @@
  * See LICENSE file.
  */
 
-
 namespace ClicShopping\Apps\Catalog\Categories\Sites\ClicShoppingAdmin\Pages\Home\Actions\Categories;
 
-use ClicShopping\OM\Cache;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -81,11 +79,6 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $CLICSHOPPING_Hooks->call('Categories', 'DeleteConfirm');
 
-      Cache::clear('category_tree-');
-      Cache::clear('also_purchased');
-      Cache::clear('products_related');
-      Cache::clear('products_cross_sell');
-      Cache::clear('upcoming');
     }
 
     $this->app->redirect('Categories&cPath=' . $cPath);

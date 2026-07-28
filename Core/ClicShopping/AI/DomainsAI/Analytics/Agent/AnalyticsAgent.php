@@ -69,6 +69,7 @@ class AnalyticsAgent implements AgentInterface
   private mixed $language;
   private int $languageId;
   private array $correctionLog = [];
+  private ?string $sqlCacheKey = null;
   private bool $enablePromptCache;
   private bool $debug = false;
   private SecurityLogger $securityLogger;
@@ -96,7 +97,6 @@ class AnalyticsAgent implements AgentInterface
   private mixed $app;
   
   private mixed $conversationMemory = null;
-  private string $Usecache;
   private ?AutonomousConfig $autonomousConfig = null;
   private ?AgentAbstentionManager $abstentionManager = null;
   private AnalyticsAbstentionEvaluator $abstentionEvaluator;
@@ -143,7 +143,6 @@ class AnalyticsAgent implements AgentInterface
     $this->dbSecurity = new DbSecurity();
 
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
-    $this->Usecache = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER === 'True';
 
     $this->enablePromptCache = $enablePromptCache;
 
@@ -779,6 +778,29 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
+   * Replace the cached SQL of the query in flight with the one that actually worked.
+   *
+   * generateSqlQueries() caches the FIRST DRAFT, before execution. When that draft turns out to
+   * be wrong and gets corrected, the correction used to be lost: the result cache kept the fixed
+   * SQL, the SQL cache kept the broken one. That is reachable — the result cache is dropped as
+   * soon as a source table moves (CacheFreshnessValidator) while the SQL cache, which has no
+   * freshness rule, survives for its full hour — so the same question replayed the faulty draft
+   * and paid for the correction all over again (BACKLOG lot A).
+   *
+   * @param string $correctedSql The query that executed successfully
+   * @return void
+   */
+  private function promoteCorrectedSqlToCache(string $correctedSql): void
+  {
+    if ($this->sqlCacheKey === null || trim($correctedSql) === '') {
+      return;
+    }
+
+    (new OMCache($this->sqlCacheKey, 'Rag/SQL'))->save($correctedSql);
+    $this->debugLog("  SQL cache updated with the corrected query", "CACHE");
+  }
+
+  /**
    * STEP 3: execute each generated SQL query (with validation, intelligent correction on
    * failure, and result caching), interpret and assemble the analytics response. Extracted
    * verbatim from processAnalyticsQuery. Throws on unrecoverable execution failure.
@@ -936,6 +958,8 @@ class AnalyticsAgent implements AgentInterface
                 'entity_type' => $entityInfo['entity_type']
               ]
             );
+
+            $this->promoteCorrectedSqlToCache($correctedData['executed_query']);
           }
         } elseif (!empty($correctionResult['empty_after_correction'])) {
           // Corrected query ran but returned 0 rows: render an honest empty result (like a
@@ -968,6 +992,23 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
+   * Build the key of the SQL-generation cache ('Rag/SQL').
+   *
+   * Keyed on the ENGLISH form, like every other cache on this path (CacheKeyGenerator): the SQL
+   * is generated from the English query, so two formulations that normalise to the same string
+   * must share the entry instead of paying for the same generation twice. Costs no LLM call —
+   * EnglishQueryNormalizer memoised the translation earlier in the request (abstention, STEP 1).
+   *
+   * @param string $englishQuestion Question already normalised by translateForGeneration()
+   * @param array $feedbackContext Feedback context, part of the key: it changes the prompt
+   * @return string Cache key
+   */
+  private function buildSqlCacheKey(string $englishQuestion, array $feedbackContext): string
+  {
+    return md5($englishQuestion . json_encode($feedbackContext));
+  }
+
+  /**
    * STEP 2: produce the SQL queries for the question (SQL cache hit, else LLM generation +
    * extraction/cleaning, with fresh results cached). Extracted verbatim from processAnalyticsQuery.
    * Throws when no valid SQL can be extracted (caught by the caller's try).
@@ -978,7 +1019,9 @@ class AnalyticsAgent implements AgentInterface
    */
   private function generateSqlQueries(string $question, array $feedbackContext): array
   {
-    $cacheKey = md5($question . json_encode($feedbackContext));
+    $englishQuestion = $this->translateForGeneration($question);
+    $cacheKey = $this->buildSqlCacheKey($englishQuestion, $feedbackContext);
+    $this->sqlCacheKey = $cacheKey;
     $sqlCache = new OMCache($cacheKey, 'Rag/SQL');
 
     if ($sqlCache->exists(60)) { // 60 minutes = 1 hour
@@ -1005,8 +1048,6 @@ class AnalyticsAgent implements AgentInterface
     // Generate SQL via LLM only if not cached
     if (!isset($sqlQueries)) {
       $this->debugLog("❌ SQL CACHE MISS - Calling LLM", "CACHE");
-
-      $englishQuestion = $this->translateForGeneration($question);
 
       // Update system message with Schema RAG if enabled
       $this->updateSystemMessageForQuery($englishQuestion);
@@ -1076,7 +1117,7 @@ class AnalyticsAgent implements AgentInterface
     $cacheResult = $this->queryCache->get($question);
     if ($cacheResult !== null) {
       $this->debugLog("CACHE HIT! Returning cached results", "CACHE");
-      $this->debugLog("Cache entry age: " . (time() - strtotime($cacheResult['created_at'])) . " seconds", "CACHE");
+      $this->debugLog("Cache entry age: " . ($cacheResult['cache_age'] ?? 'unknown') . " seconds", "CACHE");
 
       return [
         'type' => 'analytics_results',
@@ -1092,7 +1133,7 @@ class AnalyticsAgent implements AgentInterface
         'ambiguous' => $ambiguityAnalysis['is_ambiguous'],  // Add ambiguity metadata
         'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
         'cached' => true,
-        'cache_age' => time() - strtotime($cacheResult['created_at'])
+        'cache_age' => $cacheResult['cache_age'] ?? null
       ];
     }
     $this->debugLog("CACHE MISS - Generating new query", "CACHE");
@@ -1214,7 +1255,7 @@ class AnalyticsAgent implements AgentInterface
    */
   private function updateSystemMessageForQuery(string $query): void
   {
-    $useSchemaRAG = CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG;
+    $useSchemaRAG = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG') && CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG == 'True';
 
     if (!$useSchemaRAG) {
       return; // Schema RAG disabled, use cached system message

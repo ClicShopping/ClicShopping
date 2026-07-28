@@ -8,7 +8,6 @@
 
 namespace ClicShopping\AI\DomainsAI\Shared\Embedding;
 
-
 use ClicShopping\OM\Cache;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
@@ -451,8 +450,8 @@ class EmbeddingSearch
   public function clearCache(): void
   {
     try {
-      Cache::clear('Rag/Embedding', 'Rag/Embedding');
-      Cache::clear('Rag/EmbeddingSearch', 'Rag/EmbeddingSearch');
+      Cache::clearNamespace('Rag/Embedding');
+      Cache::clearNamespace('Rag/EmbeddingSearch');
       
       if ($this->debug) {
         $this->logger->logSecurityEvent("EmbeddingSearch: Cache cleared", 'info');

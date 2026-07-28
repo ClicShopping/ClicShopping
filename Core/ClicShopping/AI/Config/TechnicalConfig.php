@@ -23,7 +23,6 @@
 // Default: 'Ecommerce' (backward compatibility with AI app naming)
   if (!defined('CLICSHOPPING_APP_CHATGPT_RA_ACTIVITIES')) define('CLICSHOPPING_APP_CHATGPT_RA_ACTIVITIES', 'Ecommerce');
 
-
 // ============================================================================
 // LIMITS & THRESHOLDS (7 constants)
 // ============================================================================
@@ -71,7 +70,7 @@ if (!defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG'))
   define('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG', 'True');
 
 if (!defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_USE_EMBEDDINGS'))
-  define('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_USE_EMBEDDINGS', 'False');
+  define('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_USE_EMBEDDINGS', 'True');
 
 if (!defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_MAX_TABLES'))
   define('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_MAX_TABLES', 5);
@@ -93,7 +92,7 @@ if (!defined('CLICSHOPPING_APP_CHATGPT_RA_REASONING_MODE'))
   define('CLICSHOPPING_APP_CHATGPT_RA_REASONING_MODE', 'chain_of_thought');
 
 // ============================================================================
-// SECURITY TECHNICAL (6 constants)
+// SECURITY TECHNICAL (5 constants)
 // ============================================================================
 
 if (!defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_THREAT_THRESHOLD'))
@@ -101,9 +100,6 @@ if (!defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_THREAT_THRESHOLD'))
 
 if (!defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_PATTERN_FALLBACK'))
   define('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_PATTERN_FALLBACK', false);
-
-if (!defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LLM_TIMEOUT'))
-  define('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LLM_TIMEOUT', 120);
 
 if (!defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_ALL_QUERIES'))
   define('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_ALL_QUERIES', false);

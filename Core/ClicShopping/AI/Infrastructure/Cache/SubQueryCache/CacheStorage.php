@@ -38,12 +38,15 @@ class CacheStorage
   public function get(string $cacheKey): ?array
   {
     try {
+      // cache_age is computed by the database, never in PHP: created_at is written by a
+      // server-local NOW() while PHP runs on `time_zone = "UTC"` (global.php), so time() - strtotime(created_at) read the age minus 7200s — negative on a fresh entry.
       $query = $this->db->prepare("SELECT  sql_query,
                                           query_results,
                                           interpretation,
                                           entity_id,
                                           entity_type,
                                           created_at,
+                                          TIMESTAMPDIFF(SECOND, created_at, NOW()) AS cache_age,
                                           hit_count
                                   FROM :table_rag_query_cache
                                   WHERE cache_key = :cache_key
@@ -70,6 +73,7 @@ class CacheStorage
           'entity_id' => $query->valueInt('entity_id'),
           'entity_type' => $query->value('entity_type'),
           'created_at' => $query->value('created_at'),
+          'cache_age' => $query->valueInt('cache_age'),
           'hit_count' => $query->valueInt('hit_count'),
           'from_cache' => true
         ];
@@ -211,10 +215,13 @@ class CacheStorage
   public function incrementHitCount(string $cacheKey): void
   {
     try {
-      $this->db->query("UPDATE :table_rag_query_cache
+      $query = $this->db->prepare("UPDATE :table_rag_query_cache
                         SET hit_count = hit_count + 1
-                        WHERE cache_key = '{$cacheKey}'
+                        WHERE cache_key = :cache_key
                       ");
+
+      $query->bindValue(':cache_key', $cacheKey);
+      $query->execute();
     } catch (\Exception $e) {
       error_log("CacheStorage: Error incrementing hit count: " . $e->getMessage());
     }

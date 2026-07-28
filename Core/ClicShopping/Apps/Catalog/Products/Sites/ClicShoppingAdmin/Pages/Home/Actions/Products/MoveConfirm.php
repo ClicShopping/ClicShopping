@@ -6,7 +6,6 @@
  * See LICENSE file.
  */
 
-
 namespace ClicShopping\Apps\Catalog\Products\Sites\ClicShoppingAdmin\Pages\Home\Actions\Products;
 
 use ClicShopping\OM\Cache;
@@ -71,10 +70,6 @@ class MoveConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
 
       Cache::clear('categories');
-      Cache::clear('products-also_purchased');
-      Cache::clear('products_related');
-      Cache::clear('products_cross_sell');
-      Cache::clear('upcoming');
     }
 
     $CLICSHOPPING_Hooks->call('Products', 'Move');

@@ -13,8 +13,6 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\Models\ReputationHistory;
  * 
  * Manages CRUD operations for reputation scores and history.
  * Provides data access layer for the reputation system.
- * 
- * Requirements: 1.1, 2.6, 9.1
  */
 class ReputationStore
 {
@@ -449,11 +447,14 @@ class ReputationStore
      */
     public function getAllCritics(): array
     {
+        // last_decay_age is computed by the database: last_decay_at is written by NOW() in
+        // server-local time while PHP runs on `time_zone = "UTC"`, so an age measured in PHP came out 7200s short and delayed every decay by that much.
         $sql = "
-            SELECT 
+            SELECT
                 critic_id,
                 reputation_score,
-                last_decay_at
+                last_decay_at,
+                TIMESTAMPDIFF(SECOND, last_decay_at, NOW()) AS last_decay_age
             FROM {$this->prefix}rag_agent_reputation
             ORDER BY critic_id
         ";

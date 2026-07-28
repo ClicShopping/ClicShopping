@@ -125,10 +125,6 @@ class CopyConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $this->productsLink();
 
       Cache::clear('categories');
-      Cache::clear('products-also_purchased');
-      Cache::clear('products_related');
-      Cache::clear('products_cross_sell');
-      Cache::clear('upcoming');
 
       $CLICSHOPPING_Hooks->call('Products', 'CopyConfirm');
 

@@ -8,7 +8,6 @@
 
 namespace ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin;
 
-use ClicShopping\OM\Cache;
 use ClicShopping\OM\Registry;
 
 class UpdateAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -31,8 +30,6 @@ class UpdateAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $McpAdmin = Registry::get('McpAdmin');
 
     $McpAdmin->updateAllMcp();
-
-    Cache::clear('mcp');
 
     $this->app->redirect('Mcp&page=' . $page);
   }

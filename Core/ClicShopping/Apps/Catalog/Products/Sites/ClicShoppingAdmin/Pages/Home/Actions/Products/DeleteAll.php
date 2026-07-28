@@ -6,7 +6,6 @@
  * See LICENSE file.
  */
 
-
 namespace ClicShopping\Apps\Catalog\Products\Sites\ClicShoppingAdmin\Pages\Home\Actions\Products;
 
 use ClicShopping\OM\Cache;
@@ -52,10 +51,6 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $this->hooks->call('Products', 'DeleteAll');
 
     Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('products_related');
-    Cache::clear('products_cross_sell');
-    Cache::clear('upcoming');
 
     $this->app->redirect('Products&cPath=' . $this->cPath);
   }

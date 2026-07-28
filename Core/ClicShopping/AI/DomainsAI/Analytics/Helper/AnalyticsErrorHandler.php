@@ -8,7 +8,6 @@
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Helper;
 
-
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
@@ -116,7 +115,18 @@ class AnalyticsErrorHandler
         throw new \Exception("Failed to prepare corrected query");
       }
 
-      $query->execute();
+      if ($query->execute() === false) {
+        $this->logCorrectionDidNotExecute($failedQuery, $correctedQuery, $correctionResult['correction_method'] ?? 'unknown');
+
+        return [
+          'success' => false,
+          'error' => 'Corrected query failed to execute',
+          'correction_attempted' => true,
+          'executed_query' => $correctedQuery,
+          'corrections' => $this->correctionLog,
+        ];
+      }
+
       $rows = $query->fetchAll(\PDO::FETCH_ASSOC);
       $queryResults = $this->queryExecutor->deduplicateRows($rows);
 
@@ -160,6 +170,32 @@ class AnalyticsErrorHandler
         'error' => $e->getMessage(),
         'correction_attempted' => true,
       ];
+    }
+  }
+
+  /**
+   * The corrected query never ran. Distinct from an empty result, and logged as such: conflating
+   * the two is what turned every SQL error into a confident "no results" for the user.
+   *
+   * @param string $failedQuery The query that failed first
+   * @param string $correctedQuery The correction that also failed to execute
+   * @param string $method Correction method that produced it
+   * @return void
+   */
+  private function logCorrectionDidNotExecute(string $failedQuery, string $correctedQuery, string $method): void
+  {
+    try {
+      (new \ClicShopping\AI\Security\SecurityLogger())->logApplicationError(
+        'Corrected query failed to execute (not an empty result)',
+        [
+          'method' => $method,
+          'no_op_correction' => trim($failedQuery) === trim($correctedQuery),
+          'failed_query' => $failedQuery,
+          'corrected_query' => $correctedQuery,
+        ]
+      );
+    } catch (\Throwable $e) {
+      // Never let observability break the request path.
     }
   }
 

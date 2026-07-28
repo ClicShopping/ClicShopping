@@ -212,7 +212,6 @@ class CategoriesAdmin
     return $categories_count;
   }
 
-
   /**
    * Retrieves the total count of products in a specified category, optionally including deactivated products.
    *
@@ -258,7 +257,6 @@ class CategoriesAdmin
     $products_count = $Qproducts->valueInt('total');
 
     $Qchildren = $this->db->get('categories', 'categories_id', ['parent_id' => (int)$categories_id]);
-
 
     while ($Qchildren->fetch() !== false) {
       $products_count += call_user_func(__METHOD__, $Qchildren->valueInt('categories_id'), $include_deactivated);
@@ -381,7 +379,7 @@ class CategoriesAdmin
   }
 
   /**
-   * Clears every cache block that depends on the category tree.
+   * Clears the cache blocks that depend on the category tree (`categories-lang{id}`).
    * Centralises the invalidation that was duplicated across category actions and hooks.
    *
    * @return void
@@ -389,10 +387,6 @@ class CategoriesAdmin
   public static function clearCategoryCaches(): void
   {
     Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('products_related');
-    Cache::clear('products_cross_sell');
-    Cache::clear('upcoming');
   }
 
   /**
@@ -491,7 +485,6 @@ class CategoriesAdmin
         'cd.categories_name'
       ]
     );
-
 
     while ($Qcategories->fetch()) {
       if ($exclude != $Qcategories->valueInt('categories_id')) {

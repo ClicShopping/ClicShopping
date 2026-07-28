@@ -9,7 +9,6 @@
 namespace ClicShopping\Apps\Configuration\Api\Sites\ClicShoppingAdmin\Pages\Home\Actions\Api;
 
 use ClicShopping\Apps\Configuration\Api\Classes\ClicShoppingAdmin\ApiAdmin;
-use ClicShopping\OM\Cache;
 use ClicShopping\OM\Registry;
 
 class UpdateAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -32,8 +31,6 @@ class UpdateAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $ApiAdmin = Registry::get('ApiAdmin');
 
     $ApiAdmin->updateAllApi();
-
-    Cache::clear('api');
 
     $this->app->redirect('Api&page=' . $page);
   }

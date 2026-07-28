@@ -27,12 +27,10 @@ class TemplateCache implements \ClicShopping\OM\Interfaces\ServiceInterface
    */
   public static function start(): bool
   {
-    if (is_file(CLICSHOPPING::BASE_DIR . 'Apps/Configuration/Cache/Classes/Shop/TemplateCache.php')) {
+    if (is_file(CLICSHOPPING::BASE_DIR . 'Apps/Configuration/Cache/Cache.php')) {
       Registry::set('TemplateCache', new NewTemplateCache());
 
       return true;
-    } else {
-      return false;
     }
 
     return false;

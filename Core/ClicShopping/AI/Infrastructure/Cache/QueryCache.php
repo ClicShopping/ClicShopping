@@ -184,8 +184,10 @@ class QueryCache
 
             $this->dbStorage->incrementHitCount($cacheKey);
 
-            if (isset($result['created_at']) && !isset($result['timestamp'])) {
-              $result['timestamp'] = strtotime($result['created_at']);
+            // Derived from the database-computed age, not from strtotime(created_at): the two
+            // clocks differ (server-local NOW() vs PHP UTC) and the difference lands in the value.
+            if (isset($result['cache_age']) && !isset($result['timestamp'])) {
+              $result['timestamp'] = time() - (int)$result['cache_age'];
             }
 
             $result['backend'] = 'database';
@@ -218,8 +220,8 @@ class QueryCache
       }
       $result = $this->dbStorage->get($cacheKey);
       
-      if ($result !== null && isset($result['created_at']) && !isset($result['timestamp'])) {
-        $result['timestamp'] = strtotime($result['created_at']);
+      if ($result !== null && isset($result['cache_age']) && !isset($result['timestamp'])) {
+        $result['timestamp'] = time() - (int)$result['cache_age'];
         $result['backend'] = 'database';
       }
       

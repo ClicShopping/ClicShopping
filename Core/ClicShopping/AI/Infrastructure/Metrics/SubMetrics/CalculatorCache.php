@@ -61,8 +61,11 @@ class CalculatorCache
     try {
       $hash = $this->generateCacheHash($expression, $variables);
 
-      $sql = "SELECT * FROM :table_rag_calculator_cache 
-              WHERE expression_hash = :hash 
+      // The age is computed by the database: created_at is written by a server-local NOW() while
+      // PHP runs on `time_zone = "UTC"` (global.php), so time() - strtotime(created_at) read the age minus 7200s — negative on a fresh entry.
+      $sql = "SELECT *, TIMESTAMPDIFF(SECOND, created_at, NOW()) AS cache_age
+              FROM :table_rag_calculator_cache
+              WHERE expression_hash = :hash
               AND created_at > DATE_SUB(NOW(), INTERVAL :ttl SECOND)
               LIMIT 1";
 
@@ -90,7 +93,7 @@ class CalculatorCache
           'execution_time' => (float)$row['execution_time'],
           'type' => $row['result_type'],
           'from_cache' => true,
-          'cache_age' => time() - strtotime($row['created_at']),
+          'cache_age' => (int)$row['cache_age'],
           'access_count' => (int)$row['access_count'] + 1,
         ];
       }
@@ -207,7 +210,7 @@ class CalculatorCache
     }
 
     try {
-      $this->db->exec("TRUNCATE TABLE calculator_cache");
+      $this->db->query("TRUNCATE TABLE :table_rag_calculator_cache");
 
       if ($this->debug) {
         $this->securityLogger->logSecurityEvent(

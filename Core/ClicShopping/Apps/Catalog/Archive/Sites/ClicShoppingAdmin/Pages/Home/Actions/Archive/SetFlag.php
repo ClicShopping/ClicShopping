@@ -23,14 +23,9 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
     static::getProductArchiveStatus($_GET['aID'], $_GET['flag']);
 
     Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('products_related');
-    Cache::clear('products_cross_sell');
-    Cache::clear('upcoming');
 
     $CLICSHOPPING_Archive->redirect('Archive&', (isset($_GET['page']) ? 'page=' . (int)$_GET['page'] . '&' : '') . 'aID=' . $products_id);
   }
-
 
   /**
    * Status products archive - Sets the archive of a productts

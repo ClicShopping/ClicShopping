@@ -236,30 +236,31 @@ class SchemaRetriever
    */
   private function getTablesBySimilarity(string $query, int $maxTables): array
   {
-    // Create query embedding using NewVector directly
-    $embeddedDocs = NewVector::createEmbedding(null, $query);
-    
-    if (empty($embeddedDocs) || !isset($embeddedDocs[0]->embedding)) {
-      throw new \Exception("Failed to create query embedding");
-    }
-    
-    $queryEmbedding = $embeddedDocs[0]->embedding;
-    
-    if ($this->debug) {
-      error_log("[SchemaRetriever] Query embedding created: " . count($queryEmbedding) . " dimensions");
-    }
-    
-    // Load all table embeddings
+    // Read the store BEFORE paying for a query embedding: on a fresh install it is empty,
+    // and embedding the query would cost an API call for a result we cannot use.
     $tableEmbeddings = $this->schemaEmbedder->getAllTableEmbeddings();
-    
+
     if (empty($tableEmbeddings)) {
       throw new \Exception("No table embeddings found in database");
     }
-    
+
     if ($this->debug) {
       error_log("[SchemaRetriever] Loaded " . count($tableEmbeddings) . " table embeddings");
     }
-    
+
+    // Create query embedding using NewVector directly
+    $embeddedDocs = NewVector::createEmbedding(null, $query);
+
+    if (empty($embeddedDocs) || !isset($embeddedDocs[0]->embedding)) {
+      throw new \Exception("Failed to create query embedding");
+    }
+
+    $queryEmbedding = $embeddedDocs[0]->embedding;
+
+    if ($this->debug) {
+      error_log("[SchemaRetriever] Query embedding created: " . count($queryEmbedding) . " dimensions");
+    }
+
     // Calculate embedding similarity scores
     $embeddingScores = [];
     foreach ($tableEmbeddings as $tableName => $embedding) {
@@ -568,30 +569,18 @@ class SchemaRetriever
    */
   private function buildSchemaWithComments(string $tableName): string
   {
-    $schemaText = "Table {$tableName}:\n";
-    
     // Use SHOW FULL COLUMNS to get column info with comments
     $Qcolumns = $this->db->query("SHOW FULL COLUMNS FROM {$tableName}");
-    
+
     $columns = [];
     while ($Qcolumns->fetch()) {
-      $field = $Qcolumns->value('Field');
-      $type = $Qcolumns->value('Type');
-      $comment = $Qcolumns->value('Comment');
-      
-      if (!empty($comment)) {
-        // Include comment for better LLM understanding
-        $columns[] = "  - {$field} ({$type}): {$comment}";
-      } else {
-        // No comment, just show field and type
-        $columns[] = "  - {$field} ({$type})";
-      }
+      $columns[] = [
+        'Field' => $Qcolumns->value('Field'),
+        'Type' => $Qcolumns->value('Type'),
+        'Comment' => $Qcolumns->value('Comment'),
+      ];
     }
-    
-    if (!empty($columns)) {
-      $schemaText .= implode("\n", $columns);
-    }
-    
-    return $schemaText;
+
+    return SchemaEmbedder::formatTableText($tableName, $columns);
   }
 }

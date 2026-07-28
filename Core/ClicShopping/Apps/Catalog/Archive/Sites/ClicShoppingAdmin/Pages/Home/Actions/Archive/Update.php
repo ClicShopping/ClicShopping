@@ -29,10 +29,6 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $Qupdate->execute();
 
     Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('products_related');
-    Cache::clear('products_cross_sell');
-    Cache::clear('upcoming');
 
     $CLICSHOPPING_Archive->redirect('Archive&' . (isset($_GET['page']) ? 'page=' . (int)$_GET['page'] . '' : ''));
   }

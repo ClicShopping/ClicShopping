@@ -6,7 +6,6 @@
  * See LICENSE file.
  */
 
-
 namespace ClicShopping\Apps\Catalog\Products\Sites\ClicShoppingAdmin\Pages\Home\Actions\Products;
 
 use ClicShopping\OM\Cache;
@@ -48,10 +47,7 @@ class ArchiveConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $Qupdate->bindInt(':products_id', $this->ID);
     $Qupdate->execute();
 
-
     Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('upcoming');
 
     $CLICSHOPPING_Hooks->call('Products', 'Archive');
 

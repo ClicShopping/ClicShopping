@@ -11,6 +11,7 @@ namespace ClicShopping\AI\Infrastructure\Prompt;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\AI\Infrastructure\Schema\SchemaRetriever;
+use ClicShopping\AI\Infrastructure\Schema\SchemaEmbedder;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\OM\CLICSHOPPING;
 
@@ -70,10 +71,10 @@ class PromptBuilder
     $this->tablePrefix = CLICSHOPPING::getConfig('db_table_prefix');
 
     // Initialize SchemaRetriever if Schema RAG is enabled
-    $useSchemaRAG = CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG;
+    $useSchemaRAG = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG') && CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG == 'True';
     if ($useSchemaRAG) {
       // Check if embeddings should be used
-      $useEmbeddings = CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_USE_EMBEDDINGS;
+      $useEmbeddings = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_USE_EMBEDDINGS') && CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_USE_EMBEDDINGS == 'True';
       
       $this->schemaRetriever = new SchemaRetriever($debug, $useEmbeddings);
       
@@ -132,7 +133,7 @@ class PromptBuilder
     $this->modelName = $modelName;
 
     // If Schema RAG is enabled and we have a query, skip caching (analytics only)
-    $useSchemaRAG = CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG;
+    $useSchemaRAG = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG') && CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG == 'True';
 
     if ($agentType === 'analytics' && $useSchemaRAG && !empty($query)) {
       // Build query-specific system message (no caching)
@@ -252,7 +253,6 @@ class PromptBuilder
 
     // Get table structure instructions (Schema RAG or full schema)
     $tableStructureInstructions = $this->getTableStructureInstructions();
-
 
     // Debug logging for loaded components
     if ($this->debug) {
@@ -410,10 +410,10 @@ class PromptBuilder
   private function getTableStructureInstructions(): string
   {
     // Check if Schema RAG is enabled
-    $useSchemaRAG = CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG;
+    $useSchemaRAG = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG') && CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG == 'True';
 
     // Get max tables configuration
-    $maxTables = CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_MAX_TABLES;
+    $maxTables = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_MAX_TABLES') ? (int)CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_MAX_TABLES : 5;
 
     if ($useSchemaRAG && !empty($this->currentQuery) && $this->schemaRetriever !== null) {
       // Use Schema RAG (relevant tables only)
@@ -431,18 +431,9 @@ class PromptBuilder
 
         return $tableStructureInstructions;
       } catch (\Exception $e) {
-        // Fallback to full schema if Schema RAG fails
         error_log("[PromptBuilder] Schema RAG failed: " . $e->getMessage());
 
-        $fallbackEnabled = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_FALLBACK_FULL') && CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_FALLBACK_FULL === 'True';
-
-        if (!$fallbackEnabled) {
-          throw $e; // Re-throw if fallback is disabled
-        }
-
-        if ($this->debug) {
-          error_log("[PromptBuilder] Falling back to full schema");
-        }
+        throw $e;
       }
     }
 
@@ -491,25 +482,20 @@ class PromptBuilder
         continue;
       }
 
-      $schema .= "Table: {$tableName}\n";
-
       // Get columns with comments
       $columnsQuery = "SHOW FULL COLUMNS FROM {$tableName}";
       $columnsResult = $db->query($columnsQuery);
 
+      $columns = [];
       while ($column = $columnsResult->fetch()) {
-        $field = $column['Field'];
-        $type = $column['Type'];
-        $comment = !empty($column['Comment']) ? $column['Comment'] : '';
-
-        if (!empty($comment)) {
-          $schema .= "  - {$field} ({$type}): {$comment}\n";
-        } else {
-          $schema .= "  - {$field} ({$type})\n";
-        }
+        $columns[] = [
+          'Field' => $column['Field'],
+          'Type' => $column['Type'],
+          'Comment' => $column['Comment'] ?? '',
+        ];
       }
 
-      $schema .= "\n";
+      $schema .= SchemaEmbedder::formatTableText($tableName, $columns) . "\n\n";
     }
 
     return $schema;

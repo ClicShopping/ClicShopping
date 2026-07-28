@@ -285,7 +285,5 @@ class ProductRemover
     $this->hooks->call('Products', 'RemoveProduct', ['products_id' => $id]);
 
     Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('upcoming');
   }
 }

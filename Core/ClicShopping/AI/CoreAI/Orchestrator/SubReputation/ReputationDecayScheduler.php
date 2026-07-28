@@ -83,7 +83,7 @@ class ReputationDecayScheduler
                 try {
                     // Check if decay is needed
                     $periodsElapsed = $this->calculatePeriodsElapsed(
-                        $critic['last_decay_at'],
+                        (int)($critic['last_decay_age'] ?? 0),
                         $decayConfig['period_seconds']
                     );
                     
@@ -197,17 +197,17 @@ class ReputationDecayScheduler
     /**
      * Calculate number of decay periods elapsed since last decay
      * 
-     * @param string $lastDecayAt Last decay timestamp
+     * @param int $elapsedSeconds Seconds since the last decay, measured by the database
      * @param int $periodSeconds Decay period in seconds
      * @return int Number of periods elapsed
      */
-    private function calculatePeriodsElapsed(string $lastDecayAt, int $periodSeconds): int
+    private function calculatePeriodsElapsed(int $elapsedSeconds, int $periodSeconds): int
     {
-        $lastDecay = strtotime($lastDecayAt);
-        $now = time();
-        $elapsed = $now - $lastDecay;
-        
-        return (int)floor($elapsed / $periodSeconds);
+        if ($periodSeconds <= 0) {
+            return 0;
+        }
+
+        return (int)floor($elapsedSeconds / $periodSeconds);
     }
     
     /**
@@ -288,22 +288,20 @@ class ReputationDecayScheduler
             $prefix = CLICSHOPPING::getConfig('db_table_prefix');
             
             // Check when decay was last run
-            $sql = "SELECT MAX(last_decay_at) as last_decay
+            // Elapsed seconds come from the database, both sides read on the same clock.
+            $sql = "SELECT MAX(last_decay_at) as last_decay,
+                           TIMESTAMPDIFF(SECOND, MAX(last_decay_at), NOW()) AS elapsed_seconds
                     FROM {$prefix}rag_agent_reputation";
-            
+
             $result = $db->query($sql);
             $row = $result->fetch();
-            
+
             if (!$row || !$row['last_decay']) {
                 return true; // Never run before
             }
-            
-            $lastDecay = strtotime($row['last_decay']);
-            $now = time();
-            $elapsed = $now - $lastDecay;
-            
+
             // Run if at least one period has elapsed
-            return $elapsed >= $config['period_seconds'];
+            return (int)$row['elapsed_seconds'] >= $config['period_seconds'];
             
         } catch (\Exception $e) {
             if ($this->debug) {

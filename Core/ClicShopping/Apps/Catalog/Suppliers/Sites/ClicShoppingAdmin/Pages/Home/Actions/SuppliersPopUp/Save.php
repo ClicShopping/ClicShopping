@@ -8,7 +8,6 @@
 
 namespace ClicShopping\Apps\Catalog\Suppliers\Sites\ClicShoppingAdmin\Pages\Home\Actions\SuppliersPopUp;
 
-use ClicShopping\OM\Cache;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -145,8 +144,6 @@ class Save extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $this->app->db->save('suppliers_info', $sql_data_array);
         $CLICSHOPPING_Hooks->call('SuppliersPopUp', 'Insert');
       }
-
-      Cache::clear('suppliers');
 
       echo 'Success';
       //    echo "From Server : ".json_encode($_POST)."<br>";

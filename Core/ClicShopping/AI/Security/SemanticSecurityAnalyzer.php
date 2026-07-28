@@ -450,8 +450,6 @@ class SemanticSecurityAnalyzer
     return $prompt;
   }
 
-
-
   /**
    * Call LLM for security analysis
    * 
@@ -786,8 +784,8 @@ class SemanticSecurityAnalyzer
    */
   public static function clearCache(): void
   {
-    // Clear all cache files in the Security/Analysis namespace
-    OMCache::clear('*', self::CACHE_NAMESPACE);
+    // Clear all cache files in the Security/Analysis namespace. NOT clear('*')
+    OMCache::clearNamespace(self::CACHE_NAMESPACE);
     
     // Reset statistics
     self::$cacheHits = 0;

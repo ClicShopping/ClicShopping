@@ -32,6 +32,9 @@ class DirectoryListing
   private array $listing = [];
 
   /**
+  private bool $has_read = false;
+
+  /**
    * Constructor method to initialize the object with a directory path and optional statistics setting.
    *
    * @param string $directory The directory path to initialize. Defaults to an empty string.
@@ -41,7 +44,10 @@ class DirectoryListing
    */
   public function __construct(string $directory = '', bool $stats = false)
   {
-    $this->setDirectory(realpath($directory));
+    // realpath() returns false on a missing path — keep the property a string.
+    $resolved = realpath($directory);
+
+    $this->setDirectory($resolved === false ? '' : $resolved);
     $this->setStats($stats);
   }
 
@@ -54,6 +60,8 @@ class DirectoryListing
   public function setDirectory(string $directory)
   {
     $this->directory = $directory;
+    $this->listing = [];
+    $this->has_read = false;
   }
 
   /**
@@ -175,9 +183,7 @@ class DirectoryListing
       $directory = $this->directory;
     }
 
-    if (!is_array($this->listing)) {
-      $this->listing = array();
-    }
+    $this->has_read = true;
 
     if ($dir = @dir($directory)) {
       while (($entry = $dir->read()) !== false) {
@@ -248,11 +254,11 @@ class DirectoryListing
    */
   public function getFiles(bool $sort_by_directories = true): array
   {
-    if (!is_array($this->listing)) {
+    if ($this->has_read === false) {
       $this->read();
     }
 
-    if (is_array($this->listing) && (count($this->listing) > 0)) {
+    if (count($this->listing) > 0) {
       if ($sort_by_directories === true) {
         usort($this->listing, $this->sortListing(...));
       }
@@ -270,7 +276,7 @@ class DirectoryListing
    */
   public function getSize(): int
   {
-    if (!is_array($this->listing)) {
+    if ($this->has_read === false) {
       $this->read();
     }
 

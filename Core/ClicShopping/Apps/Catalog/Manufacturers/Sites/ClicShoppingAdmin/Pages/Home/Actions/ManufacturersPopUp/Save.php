@@ -8,7 +8,6 @@
 
 namespace ClicShopping\Apps\Catalog\Manufacturers\Sites\ClicShoppingAdmin\Pages\Home\Actions\ManufacturersPopUp;
 
-use ClicShopping\OM\Cache;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -61,7 +60,6 @@ class Save extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
         $sql_data_array = ['manufacturers_id' => $manufacturers_id];
 
-
         $insert_sql_data = ['manufacturers_url' => HTML::sanitize($manufacturers_url_array[$language_id]),
           'languages_id' => (int)$language_id
         ];
@@ -72,8 +70,6 @@ class Save extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
         $CLICSHOPPING_Hooks->call('Manufacturer', 'Insert');
       }
-
-      Cache::clear('manufacturers');
 
       echo 'Success';
     } else {

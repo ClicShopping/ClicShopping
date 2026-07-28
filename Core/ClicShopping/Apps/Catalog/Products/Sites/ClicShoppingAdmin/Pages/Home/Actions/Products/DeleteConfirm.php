@@ -70,8 +70,6 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
     }
 
     Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('upcoming');
 
     $this->hooks->call('Products', 'DeleteConfirm');
 

@@ -122,12 +122,11 @@ class ApiShop extends ApiSecurity
     }
   }
 
-
 // (B18) Removed ~100 lines of commented dead code that duplicated and contradicted
 // the parent::checkToken implementation. Inheritance is sufficient.
 
   /**
-   * Clears specific cached data for categories, products also purchased, and upcoming items.
+   * Clears the category cache blocks (`categories-lang{id}`).
    *
    * @return void
    * @throws Exception If cache clearing fails
@@ -135,8 +134,6 @@ class ApiShop extends ApiSecurity
   public static function clearCache(): void
   {
     Cache::clear('categories');
-    Cache::clear('products-also_purchased');
-    Cache::clear('upcoming');
   }
 
   /**

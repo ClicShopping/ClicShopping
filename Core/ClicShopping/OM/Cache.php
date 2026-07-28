@@ -561,9 +561,15 @@ class Cache
 
     $key_length = strlen($key);
 
-    // Supprimer du cache mémoire (use old format for backward compatibility)
+    // Drop the in-process entries BY PREFIX, like the files below: forgetting only the exact key
+    // left the purged content answering from memory for the rest of the request.
     $fullKey = $namespace ? $namespace . '_' . $key : $key;
-    unset(static::$memoryCache[$fullKey]);
+
+    foreach (array_keys(static::$memoryCache) as $memoryKey) {
+      if (str_starts_with($memoryKey, $fullKey)) {
+        static::forgetMemoryEntry($memoryKey);
+      }
+    }
 
     $DLcache = new DirectoryListing($searchPath);
     $DLcache->setIncludeDirectories(false);
@@ -578,7 +584,44 @@ class Cache
   }
 
   /**
-   * Clears all cache files in the specified directory.
+   * Clears every cache file of a namespace, including its sub-namespaces.
+   *
+   * clear() matches a key PREFIX, which cannot express "everything under Rag/Security": entries
+   * there are bare md5 keys sharing no prefix. Callers used to pass '*', rejected by hasSafeName()
+   * — a silent no-op.
+   *
+   * @param string $namespace Namespace to purge, e.g. 'Rag/Security'
+   * @return int Number of cache files removed
+   */
+  public static function clearNamespace(string $namespace): int
+  {
+    $namespace = trim($namespace, '/');
+
+    // No traversal: the purge must never escape the cache root.
+    if (($namespace === '') || (preg_match('/^[a-zA-Z0-9\-_\/]+$/', $namespace) !== 1) || str_contains($namespace, '..')) {
+      trigger_error('ClicShopping\\Cache::clearNamespace(): Invalid namespace ("' . $namespace . '").');
+
+      return 0;
+    }
+
+    $searchPath = static::getPath() . $namespace . '/';
+
+    if (!is_dir($searchPath) || !FileSystem::isWritable($searchPath)) {
+      return 0;
+    }
+
+    // getFullKey() is "<namespace>_<key>", so entries of a sub-namespace start with "<ns>/".
+    foreach (array_keys(static::$memoryCache) as $fullKey) {
+      if (str_starts_with($fullKey, $namespace . '_') || str_starts_with($fullKey, $namespace . '/')) {
+        static::forgetMemoryEntry($fullKey);
+      }
+    }
+
+    return static::deleteCacheFiles($searchPath);
+  }
+
+  /**
+   * Clears all cache files, namespaces included.
    *
    * @return void
    */
@@ -587,9 +630,52 @@ class Cache
     static::clearMemoryCache();
 
     if (FileSystem::isWritable(static::getPath())) {
-      foreach (glob(static::getPath() . '*.cache', GLOB_NOSORT) as $c) {
-        unlink($c);
+      static::deleteCacheFiles(static::getPath());
+    }
+  }
+
+  /**
+   * Recursively removes the *.cache files of a directory. Anything else (state .json, index.php)
+   * is left untouched.
+   *
+   * @param string $directory Absolute path, trailing slash included
+   * @return int Number of files removed
+   */
+  protected static function deleteCacheFiles(string $directory): int
+  {
+    $removed = 0;
+
+    foreach (glob($directory . '*.cache', GLOB_NOSORT) ?: [] as $file) {
+      if (unlink($file)) {
+        $removed++;
       }
+    }
+
+    foreach (glob($directory . '*', GLOB_ONLYDIR | GLOB_NOSORT) ?: [] as $subDirectory) {
+      $removed += static::deleteCacheFiles($subDirectory . '/');
+    }
+
+    return $removed;
+  }
+
+  /**
+   * Drops one in-process entry, keeping the size accounting straight — a plain unset() leaves
+   * its bytes counted and evicts live entries too early.
+   *
+   * @param string $fullKey Namespaced key, as built by getFullKey()
+   * @return void
+   */
+  protected static function forgetMemoryEntry(string $fullKey): void
+  {
+    if (!isset(static::$memoryCache[$fullKey])) {
+      return;
+    }
+
+    static::$memoryCacheSize -= static::$memoryCache[$fullKey]['size'] ?? 0;
+    unset(static::$memoryCache[$fullKey]);
+
+    if (static::$memoryCacheSize < 0) {
+      static::$memoryCacheSize = 0;
     }
   }
 
@@ -653,16 +739,48 @@ class Cache
    * @param int $maxAgeMinutes Maximum age in minutes
    * @return int Number of purged files
    */
-  public static function purgeExpired(int $maxAgeMinutes): int
+  public static function purgeExpired(int $maxAgeMinutes, string $namespace = ''): int
+  {
+    $directory = static::getPath();
+
+    if ($namespace !== '') {
+      $namespace = trim($namespace, '/');
+
+      if ((preg_match('/^[a-zA-Z0-9\-_\/]+$/', $namespace) !== 1) || str_contains($namespace, '..')) {
+        trigger_error('ClicShopping\\Cache::purgeExpired(): Invalid namespace ("' . $namespace . '").');
+
+        return 0;
+      }
+
+      $directory .= $namespace . '/';
+    }
+
+    if (!is_dir($directory)) {
+      return 0;
+    }
+
+    return static::deleteCacheFilesOlderThan($directory, time() - ($maxAgeMinutes * 60));
+  }
+
+  /**
+   * Recursively removes the *.cache files last modified before a cut-off.
+   *
+   * @param string $directory Absolute path, trailing slash included
+   * @param int $cutoffTime Unix timestamp; older files go
+   * @return int Number of files removed
+   */
+  protected static function deleteCacheFilesOlderThan(string $directory, int $cutoffTime): int
   {
     $purged = 0;
-    $cutoffTime = time() - ($maxAgeMinutes * 60);
 
-    foreach (glob(static::getPath() . '*.cache', GLOB_NOSORT) as $file) {
-      if (filemtime($file) < $cutoffTime) {
-        unlink($file);
+    foreach (glob($directory . '*.cache', GLOB_NOSORT) ?: [] as $file) {
+      if (filemtime($file) < $cutoffTime && unlink($file)) {
         $purged++;
       }
+    }
+
+    foreach (glob($directory . '*', GLOB_ONLYDIR | GLOB_NOSORT) ?: [] as $subDirectory) {
+      $purged += static::deleteCacheFilesOlderThan($subDirectory . '/', $cutoffTime);
     }
 
     return $purged;
