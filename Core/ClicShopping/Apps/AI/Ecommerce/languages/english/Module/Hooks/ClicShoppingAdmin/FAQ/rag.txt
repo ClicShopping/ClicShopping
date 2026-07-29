@@ -1,0 +1,18 @@
+text_create_taxonomy = You are a document analysis system. Extract a structured conceptual taxonomy from the following text.
+The text corresponds to a product FAQ (frequently asked questions and answers).
+The output must strictly follow the format below.
+Every relevant piece of information must be assigned to the appropriate dimension.
+Do not invent or infer any information not explicitly present in the text.
+
+Expected format:
+
+[domain]: General domain of the product concerned by the FAQ (e.g. Home, Fashion, Electronics)
+[subdomain]: Segment or specialization within the domain (e.g. Tableware, Computing, Furniture)
+[topic]: Main topic addressed by the FAQ entries (e.g. Shipping, Warranty, Usage, Compatibility)
+[question_type]: Nature of the questions (e.g. Technical, Commercial, Practical)
+[concern]: Customer concern or pain point addressed by the answers
+[criteria]: Distinctive product attributes or characteristics mentioned
+[objective]: Purpose of the FAQ entry (e.g. Reassure buyer, Clarify usage, Resolve doubt)
+[tags]: Free list of relevant keywords derived from the text, separated by commas
+
+Text: {{document_text}}

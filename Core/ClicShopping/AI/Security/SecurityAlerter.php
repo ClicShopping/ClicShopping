@@ -240,16 +240,14 @@ class SecurityAlerter
         
         try {
             $table = ':table_rag_security_events';
-            $startTime = date('Y-m-d H:i:s', strtotime('-1 hour'));
-            
-            $query = "SELECT COUNT(*) as count 
-                     FROM {$table} 
-                     WHERE created_at >= :start_time 
-                     AND threat_type IS NOT NULL 
+
+            $query = "SELECT COUNT(*) as count
+                     FROM {$table}
+                     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+                     AND threat_type IS NOT NULL
                      AND blocked = 1";
-            
+
             $result = $this->db->prepare($query);
-            $result->bindValue(':start_time', $startTime);
             $result->execute();
             
             return (int)($result->fetch()['count'] ?? 0);
@@ -271,20 +269,18 @@ class SecurityAlerter
         
         try {
             $table = ':table_rag_security_events';
-            $startTime = date('Y-m-d H:i:s', strtotime('-1 hour'));
-            
-            $query = "SELECT 
+
+            $query = "SELECT
                         threat_type,
                         COUNT(*) as count,
                         AVG(threat_score) as avg_score
-                     FROM {$table} 
-                     WHERE created_at >= :start_time 
-                     AND threat_type IS NOT NULL 
-                     GROUP BY threat_type 
+                     FROM {$table}
+                     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+                     AND threat_type IS NOT NULL
+                     GROUP BY threat_type
                      ORDER BY count DESC";
-            
+
             $result = $this->db->prepare($query);
-            $result->bindValue(':start_time', $startTime);
             $result->execute();
             
             return $result->fetchAll() ?: [];
@@ -306,20 +302,18 @@ class SecurityAlerter
         
         try {
             $table = ':table_rag_security_events';
-            $startTime = date('Y-m-d H:i:s', strtotime('-1 hour'));
-            
-            $query = "SELECT 
+
+            $query = "SELECT
                         COUNT(*) as total_events,
                         SUM(CASE WHEN blocked = 1 THEN 1 ELSE 0 END) as blocked_count,
                         SUM(CASE WHEN severity = 'critical' THEN 1 ELSE 0 END) as critical_count,
                         SUM(CASE WHEN severity = 'high' THEN 1 ELSE 0 END) as high_count,
                         SUM(CASE WHEN severity = 'medium' THEN 1 ELSE 0 END) as medium_count,
                         SUM(CASE WHEN severity = 'low' THEN 1 ELSE 0 END) as low_count
-                     FROM {$table} 
-                     WHERE created_at >= :start_time";
-            
+                     FROM {$table}
+                     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)";
+
             $result = $this->db->prepare($query);
-            $result->bindValue(':start_time', $startTime);
             $result->execute();
             
             $stats = $result->fetch() ?: ['total_events' => 0];

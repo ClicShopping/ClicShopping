@@ -56,8 +56,6 @@ class ColdCacheMetricsCollector
   public function getCacheStateDistribution(int $days = 7): array
   {
     try {
-      $startDate = date('Y-m-d H:i:s', strtotime("-{$days} days"));
-
       // Get cache state distribution from rag_statistics
       $query = "
         SELECT 
@@ -67,12 +65,12 @@ class ColdCacheMetricsCollector
           ) as cache_state,
           COUNT(*) as count
         FROM :table_rag_statistics
-        WHERE date_added >= :start_date
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
         GROUP BY cache_state
       ";
 
       $result = $this->db->prepare($query);
-      $result->bindValue(':start_date', $startDate);
+      $result->bindValue(':days', $days, \PDO::PARAM_INT);
       $result->execute();
 
       $distribution = [
@@ -133,8 +131,6 @@ class ColdCacheMetricsCollector
   public function getColdVsWarmPerformance(int $days = 7): array
   {
     try {
-      $startDate = date('Y-m-d H:i:s', strtotime("-{$days} days"));
-
       // Get average execution time by cache state
       $query = "
         SELECT 
@@ -145,13 +141,13 @@ class ColdCacheMetricsCollector
           AVG(response_time_ms) / 1000 as avg_time,
           COUNT(*) as count
         FROM :table_rag_statistics
-        WHERE date_added >= :start_date
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
           AND response_time_ms IS NOT NULL
         GROUP BY cache_state
       ";
 
       $result = $this->db->prepare($query);
-      $result->bindValue(':start_date', $startDate);
+      $result->bindValue(':days', $days, \PDO::PARAM_INT);
       $result->execute();
 
       $performance = [
@@ -213,8 +209,6 @@ class ColdCacheMetricsCollector
   public function getTimeoutEvents(int $days = 7): array
   {
     try {
-      $startDate = date('Y-m-d H:i:s', strtotime("-{$days} days"));
-
       // Get timeout events from rag_statistics
       $query = "
         SELECT 
@@ -225,13 +219,13 @@ class ColdCacheMetricsCollector
           JSON_EXTRACT(metadata, '$.timeout_occurred') as timeout_occurred,
           COUNT(*) as count
         FROM :table_rag_statistics
-        WHERE date_added >= :start_date
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
           AND JSON_EXTRACT(metadata, '$.timeout_occurred') = true
         GROUP BY cache_state
       ";
 
       $result = $this->db->prepare($query);
-      $result->bindValue(':start_date', $startDate);
+      $result->bindValue(':days', $days, \PDO::PARAM_INT);
       $result->execute();
 
       $timeouts = [
@@ -292,8 +286,6 @@ class ColdCacheMetricsCollector
   public function getParallelExecutionMetrics(int $days = 7): array
   {
     try {
-      $startDate = date('Y-m-d H:i:s', strtotime("-{$days} days"));
-
       // Get parallel execution metrics from rag_statistics
       $query = "
         SELECT 
@@ -305,13 +297,13 @@ class ColdCacheMetricsCollector
           JSON_EXTRACT(metadata, '$.percentage_faster') as percentage_faster,
           COUNT(*) as count
         FROM :table_rag_statistics
-        WHERE date_added >= :start_date
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
           AND JSON_EXTRACT(metadata, '$.parallel_execution') = true
         GROUP BY query_type
       ";
 
       $result = $this->db->prepare($query);
-      $result->bindValue(':start_date', $startDate);
+      $result->bindValue(':days', $days, \PDO::PARAM_INT);
       $result->execute();
 
       $metrics = [
@@ -414,8 +406,6 @@ class ColdCacheMetricsCollector
   public function getHybridQueryMetrics(int $days = 7): array
   {
     try {
-      $startDate = date('Y-m-d H:i:s', strtotime("-{$days} days"));
-
       // Get hybrid query metrics
       $query = "
         SELECT 
@@ -428,12 +418,12 @@ class ColdCacheMetricsCollector
           SUM(CASE WHEN response_time_ms >= 15000 AND response_time_ms < 30000 THEN 1 ELSE 0 END) as between_15_30s,
           SUM(CASE WHEN response_time_ms >= 30000 THEN 1 ELSE 0 END) as over_30s
         FROM :table_rag_statistics
-        WHERE date_added >= :start_date
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
           AND classification_type = 'hybrid'
       ";
 
       $result = $this->db->prepare($query);
-      $result->bindValue(':start_date', $startDate);
+      $result->bindValue(':days', $days, \PDO::PARAM_INT);
       $result->execute();
 
       $row = $result->fetch();
@@ -533,16 +523,14 @@ class ColdCacheMetricsCollector
   private function getTotalQueries(int $days): int
   {
     try {
-      $startDate = date('Y-m-d H:i:s', strtotime("-{$days} days"));
-
       $query = "
         SELECT COUNT(*) as total
         FROM :table_rag_statistics
-        WHERE date_added >= :start_date
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
       ";
 
       $result = $this->db->prepare($query);
-      $result->bindValue(':start_date', $startDate);
+      $result->bindValue(':days', $days, \PDO::PARAM_INT);
       $result->execute();
 
       $row = $result->fetch();

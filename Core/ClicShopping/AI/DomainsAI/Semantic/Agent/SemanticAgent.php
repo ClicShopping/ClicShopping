@@ -1059,9 +1059,9 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
    *  Create a taxonomy from the given text.
    *  The taxonomy is structured as [domain]: xxx, [type]: yyy, [subject]: zzz, etc.
    * @param string $text
-   * @param int|null $min_character
-   * @param string|null $getdef
+   * @param string $prompt
    * @param string|null $language_code
+   * @param int|null $min_character Minimum TEXT length in characters below which no call is made
    * @return string
    * @throws \Exception
    */
@@ -1070,11 +1070,18 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
     $result = '';
     $text = trim($text);
 
-   // $prompt = CLICSHOPPING::getDef('text_create_taxonomy', ['document_text' => $text]);
+    if ($prompt === '' || $text === '') {
+      self::logApplicationError('createTaxonomy: empty prompt or text, taxonomy skipped');
 
-    if (strlen($prompt) > $min_character && str_word_count($text) > $min_character) {
-      $result = Gpt::getGptResponse($prompt);
+      return '';
     }
+
+    // $min_character guards the TEXT length in characters, not a word count.
+    if (strlen($text) < (int)$min_character) {
+      return '';
+    }
+
+    $result = Gpt::getGptResponse($prompt);
 
     return is_string($result) ? trim($result) : '';
   }

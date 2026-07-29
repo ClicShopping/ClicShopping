@@ -18,7 +18,7 @@ text_orders_products_return_history = [Product Return History from the Order]
 text_orders_products_return_history_comment = [Return History Comment]
 text_orders_products_return_history_date_added = [Return History Date Added]
 
-You are a document analysis system. Extract a structured conceptual taxonomy from the following text.
+text_create_taxonomy = You are a document analysis system. Extract a structured conceptual taxonomy from the following text.
 The text corresponds to an e-commerce return order (not a product, not a supplier, not a general category).
 The output must strictly follow the format below.
 Each relevant piece of information must be assigned to the appropriate dimension.

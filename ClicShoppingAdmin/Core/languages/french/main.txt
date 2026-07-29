@@ -653,8 +653,6 @@ text_multiple_interpretations_review = Plusieurs interprétations fournies. Veui
 text_ambiguous_query_detected = Plusieurs interprétations détectées
 text_clarification_needed = Clarification nécessaire
 
-text_query_too_ambiguous = Votre requête est trop ambiguë. Veuillez être plus précis sur ce que vous voulez savoir.
-
 text_rag_insufficient_information = Je n'ai pas suffisamment d'informations fiables pour répondre à cette question avec précision. Les informations disponibles dans ma base de connaissances sont insuffisantes ou pas directement pertinentes à votre requête.
 text_rag_source_insufficient_information = Informations Insuffisantes - Réponse rejetée en raison d'un score de fiabilité faible
 

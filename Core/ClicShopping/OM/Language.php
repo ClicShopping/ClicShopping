@@ -20,6 +20,12 @@ use function is_null;
  */
 class Language
 {
+  /**
+   * Stamp row written next to a group's definitions: the mtime of the .txt they were built from.
+   * It is what lets a later request notice the file has moved on. Never returned as a definition.
+   */
+  private const SOURCE_STAMP_KEY = '__source_file_mtime__';
+
   public string $language;
   protected array $languages = [];
   protected array $definitions = [];
@@ -401,51 +407,112 @@ class Language
    */
   public function getDefinitions($group, $language_code, $pathname)
   {
-    $defs = [];
-
     $group_key = str_replace(['/', '\\'], '-', $group);
 
     if ($this->use_cache === false) {
       return $this->getDefinitionsFromFile($pathname);
     }
 
-    $DefCache = new Cache('languages-defs-' . $group_key . '-lang' . $this->getId($language_code));
+    $sourceTime = is_file($pathname) ? filemtime($pathname) : 0;
+    $languageId = $this->getId($language_code);
 
-    if ($DefCache->exists()) {
-      $defs = $DefCache->get();
-    } else {
-      $Qdefs = $this->db->get('languages_definitions', [
-        'definition_key',
-        'definition_value'
-      ], [
-          'languages_id' => $this->getId($language_code),
-          'content_group' => $group_key
-        ]
-      );
+    $DefCache = new Cache('languages-defs-' . $group_key . '-lang' . $languageId);
+    $cacheTime = $DefCache->getTime();
 
-      while ($Qdefs->fetch()) {
-        $defs[$Qdefs->value('definition_key')] = $Qdefs->value('definition_value');
-      }
-
-      if (empty($defs)) {
-        $defs = $this->getDefinitionsFromFile($pathname);
-
-        foreach ($defs as $key => $value) {
-          $sql_array = [
-            'languages_id' => $this->getId($language_code),
-            'content_group' => $group_key,
-            'definition_key' => $key,
-            'definition_value' => $value
-          ];
-
-          $this->db->save('languages_definitions', $sql_array);
-        }
-      }
-
-      $DefCache->save($defs);
+    // STRICTLY newer, not ">=": mtime has one-second granularity, so a file edited in the same
+    // second as the cache write would otherwise be judged already covered by it — the exact
+    // same-second blind spot the stale copies used to have. Equal timestamps mean "rebuild".
+    if ($DefCache->exists() && ($cacheTime !== false) && ($cacheTime > $sourceTime)) {
+      return $DefCache->get();
     }
 
+    $stored = [];
+    $Qdefs = $this->db->get('languages_definitions', [
+      'definition_key',
+      'definition_value'
+    ], [
+        'languages_id' => $languageId,
+        'content_group' => $group_key
+      ]
+    );
+
+    while ($Qdefs->fetch()) {
+      $stored[$Qdefs->value('definition_key')] = $Qdefs->value('definition_value');
+    }
+
+    $storedTime = (int)($stored[self::SOURCE_STAMP_KEY] ?? 0);
+    $defs = $stored;
+    unset($defs[self::SOURCE_STAMP_KEY]);
+
+    if (empty($defs) || ($storedTime < $sourceTime)) {
+      $fileDefs = $this->getDefinitionsFromFile($pathname);
+
+      if (!empty($fileDefs)) {
+        $this->storeDefinitions($fileDefs, $stored, $languageId, $group_key, $sourceTime);
+
+        // Only what the file defines is refreshed: keys held solely in the table (an override, or
+        // a key the file no longer carries) are left untouched rather than silently dropped.
+        $defs = array_merge($defs, $fileDefs);
+      }
+    }
+
+    $DefCache->save($defs);
+
     return $defs;
+  }
+
+  /**
+   * Writes a file's definitions into languages_definitions, plus the stamp row recording which
+   * version of the file they came from.
+   *
+   * @param array $fileDefs Definitions parsed from the .txt
+   * @param array $stored Rows currently in the table for this group/language
+   * @param int $languageId Language identifier
+   * @param string $groupKey Content group
+   * @param int $sourceTime Modification time of the source file
+   * @return void
+   */
+  private function storeDefinitions(array $fileDefs, array $stored, int $languageId, string $groupKey, int $sourceTime): void
+  {
+    foreach ($fileDefs as $key => $value) {
+      $this->writeDefinition($key, (string)$value, $stored, $languageId, $groupKey);
+    }
+
+    $this->writeDefinition(self::SOURCE_STAMP_KEY, (string)$sourceTime, $stored, $languageId, $groupKey);
+  }
+
+  /**
+   * Inserts or updates a single definition row.
+   *
+   * @param string $key Definition key
+   * @param string $value Definition value
+   * @param array $stored Rows currently in the table (decides insert vs update)
+   * @param int $languageId Language identifier
+   * @param string $groupKey Content group
+   * @return void
+   */
+  private function writeDefinition(string $key, string $value, array $stored, int $languageId, string $groupKey): void
+  {
+    if (array_key_exists($key, $stored)) {
+      if ($stored[$key] === $value) {
+        return;
+      }
+
+      $this->db->save('languages_definitions', ['definition_value' => $value], [
+        'languages_id' => $languageId,
+        'content_group' => $groupKey,
+        'definition_key' => $key
+      ]);
+
+      return;
+    }
+
+    $this->db->save('languages_definitions', [
+      'languages_id' => $languageId,
+      'content_group' => $groupKey,
+      'definition_key' => $key,
+      'definition_value' => $value
+    ]);
   }
 
   /**

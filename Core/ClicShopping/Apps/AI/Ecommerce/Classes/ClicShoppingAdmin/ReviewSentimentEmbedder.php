@@ -127,7 +127,7 @@ class ReviewSentimentEmbedder
         $embedding_data .= 'Verdict critic : ' . $critic_verdict . "\n";
       }
 
-      $taxonomy = $this->semantics->createTaxonomy($description, $languageCode, null);
+      $taxonomy = $this->semantics->createTaxonomy($description, $this->app->getDef('text_create_taxonomy'), $languageCode, 300);
 
       $tags = [];
       if (!empty($taxonomy)) {
@@ -138,9 +138,11 @@ class ReviewSentimentEmbedder
         }
       }
 
-      $embedding_data .= "\n" . $this->app->getDef('text_review_sentiment_taxonomy') . " :\n";
-      foreach ($tags as $key => $value) {
-        $embedding_data .= "[$key]: $value\n";
+      if ($tags !== []) {
+        $embedding_data .= "\n" . $this->app->getDef('text_review_sentiment_taxonomy') . " :\n";
+        foreach ($tags as $key => $value) {
+          $embedding_data .= "[$key]: $value\n";
+        }
       }
 
       $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);

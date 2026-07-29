@@ -321,7 +321,6 @@ class SchemaRetriever
       $colScore = $columnMatchScores[$table] ?? 0;
       
       // Composite score: semantic similarity leads, lexical column matching complements.
-      // 70/30 (was 30/70): lexical dominance drowned correct embedding ranks — e.g. generic products/description outranked products_recommendations for "recommended products".
       $finalScores[$table] = ($embScore * 0.7) + ($colScore * 0.3);
       
       // Penalty for reference tables

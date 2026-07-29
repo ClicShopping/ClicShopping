@@ -109,7 +109,7 @@ class ResultInterpreter
       $question = $safeQuestion;
     }
 
-    $interpretCacheKey = "interpret_" . $this->cache->generateCacheKey($question . json_encode($cleanResults));
+    $interpretCacheKey = "interpret_" . $this->cache->generateCacheKey($question . json_encode($cleanResults) . md5($sqlQuery));
 
     // Check the cache with expiration logic
     if ($this->enablePromptCache && isset($this->promptCache[$interpretCacheKey])) {
@@ -135,10 +135,12 @@ class ResultInterpreter
     // Load the prompt in English for consistency with AI training
     DomainConfig::loadAgnosticLanguageFile('rag_result_interpreter');
     
+    // The SQL carries the period actually applied. Without it the interpreter cannot name the window it is describing, and an assumed period stays invisible to the user.
     $array = [
       'question' => $question,
       'results' => json_encode($cleanResults, JSON_PRETTY_PRINT),
-      'currentDate' => date('Y-m-d')
+      'currentDate' => date('Y-m-d'),
+      'sqlQuery' => $sqlQuery
     ];
 
     $prompt = $this->language->getDef('text_interpret_results', $array);

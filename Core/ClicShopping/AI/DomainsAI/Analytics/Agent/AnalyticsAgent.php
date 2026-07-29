@@ -17,7 +17,6 @@ use ClicShopping\AI\CoreAI\Orchestrator\CorrectionAgent;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
-use ClicShopping\AI\CoreAI\Query\QueryClassifier;
 use ClicShopping\AI\CoreAI\Orchestrator\SubValidation\ValidationGate;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
@@ -248,7 +247,7 @@ class AnalyticsAgent implements AgentInterface
    *               - results: Query results
    *               - corrections: Any applied corrections
    */
-  public function processBusinessQuery(string $question, bool $includeSQL = true, array $feedbackContext = [], bool $skipClassification = false): array
+  public function processBusinessQuery(string $question, bool $includeSQL = true, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
   {
     $this->debugLog("\n" . str_repeat("=", 100));
     $this->debugLog("DEBUG: AnalyticsAgent.processBusinessQuery() - START");
@@ -287,7 +286,7 @@ class AnalyticsAgent implements AgentInterface
       $this->debugLog("\n--- STEP 2: Execute query ---");
       $this->debugLog("Calling executeQuery()...");
 
-      $results = $this->executeQuery($question, $feedbackContext, $skipClassification);
+      $results = $this->executeQuery($question, $feedbackContext, $skipClassification, $isSubQuery);
 
       $this->debugLog("executeQuery() returned:");
       $this->debugLog("  type: " . ($results['type'] ?? 'unknown'));
@@ -471,7 +470,7 @@ class AnalyticsAgent implements AgentInterface
         $this->debugLog(" Empty results message: " . $interpretation);
       } else {
         // Generate new interpretation only if we have data
-        $interpretation = $this->resultInterpreter->interpretResults($question, $results['results']);
+        $interpretation = $this->resultInterpreter->interpretResults($question, $results['results'], $results['sql_query'] ?? '');
         $this->debugLog(" Generated new interpretation");
 
         // Type-safe logging with TypeSafetyGuard
@@ -532,7 +531,7 @@ class AnalyticsAgent implements AgentInterface
             $regen = $this->executeQuery($question, $feedback);
 
             if (($regen['type'] ?? 'error') !== 'error' && !empty($regen['results'])) {
-              $regenInterp = $this->resultInterpreter->interpretResults($question, $regen['results']);
+              $regenInterp = $this->resultInterpreter->interpretResults($question, $regen['results'], $regen['sql_query'] ?? '');
 
               if (is_string($regenInterp) && $regenInterp !== '') {
                 $regenEval = LlmGuardrails::checkGuardrails($question, $regenInterp);
@@ -596,8 +595,9 @@ class AnalyticsAgent implements AgentInterface
    *
    * @param string $question The business question in natural language
    * @param array $feedbackContext Optional feedback context for query enrichment
-   * @param bool $skipClassification When true, the query is a pre-routed/decomposed sub-query
-   *                                 (from PlanExecutor); ambiguity detection is short-circuited downstream
+   * @param bool $skipClassification When true, the orchestrator already classified this as analytics
+   * @param bool $isSubQuery When true, the query is a decomposed fragment (from PlanExecutor) and the
+   *                         ambiguity gate is skipped — a fragment has no period of its own to ask about
    * @return array Results array containing:
    *               - type: 'success' or 'error'
    *               - message: Result message or error description
@@ -605,7 +605,7 @@ class AnalyticsAgent implements AgentInterface
    *               - suggestion: Error fix suggestion if applicable
    *               - recovery_attempted: Boolean indicating if recovery was attempted
    */
-  public function executeQuery(string $question, array $feedbackContext = [], bool $skipClassification = false): array
+  public function executeQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
   {
     $this->debugLog(str_repeat("-", 100));
     $this->debugLog("DEBUG: AnalyticsAgent.executeQuery() - START");
@@ -630,7 +630,7 @@ class AnalyticsAgent implements AgentInterface
 
     try {
       $this->debugLog("\nCalling processAnalyticsQuery()...");
-      $result = $this->processAnalyticsQuery($question, $feedbackContext, $skipClassification);
+      $result = $this->processAnalyticsQuery($question, $feedbackContext, $skipClassification, $isSubQuery);
 
       $this->debugLog("processAnalyticsQuery() returned:");
       $this->debugLog("  type: " . ($result['type'] ?? 'unknown'));
@@ -666,11 +666,12 @@ class AnalyticsAgent implements AgentInterface
    *               - corrections: Array of applied corrections
    *               - results: Query results
    *               - count: Number of results
-   * @param bool $skipClassification When true (pre-routed/decomposed sub-query from PlanExecutor),
-   *                                 the ambiguity-detection stage is skipped — see STEP 0/0.5 below
+   * @param bool $skipClassification When true, the orchestrator already classified this as analytics
+   * @param bool $isSubQuery When true (decomposed fragment from PlanExecutor), the ambiguity-detection
+   *                         stage is skipped — see STEP 0/0.5 below
    * @throws \Exception When query execution fails after recovery attempts
    */
-  private function processAnalyticsQuery(string $question, array $feedbackContext = [], bool $skipClassification = false): array
+  private function processAnalyticsQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
   {
     $this->debugLog(str_repeat(".", 100));
     $this->debugLog("AnalyticsAgent.processAnalyticsQuery() - START", "QUERY");
@@ -684,11 +685,11 @@ class AnalyticsAgent implements AgentInterface
       }
 
       // Ambiguity detection — the user-query clarification gate.
-      if ($skipClassification) {
+      if ($isSubQuery) {
         $ambiguityAnalysis = [
           'is_ambiguous' => false,
           'skipped' => true,
-          'reason' => 'pre_routed_subquery',
+          'reason' => 'decomposed_subquery',
           'confidence' => 1.0,
         ];
       } else {
@@ -1142,8 +1143,13 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
-   * STEP 0.5 (compute): runs the ambiguity analysis for the query (with the high-confidence
-   * skip-optimization). Extracted verbatim from processAnalyticsQuery (core-method decomposition).
+   * STEP 0.5 (compute): runs the ambiguity analysis for the query.
+   *
+   * The former high-confidence skip is gone: it treated "the classifier is sure this is
+   * analytics" as "this query is unambiguous", which are different things. Measured 2026-07-28 —
+   * "give me the evolution of revenue", "revenue by supplier", "seasonal coefficients of sales"
+   * and "show me revenue" all classify analytics at exactly 0.90, so the detector was never
+   * called for precisely the queries that must ask for their period.
    *
    * @param string $question Original question
    * @param string $queryForAmbiguity Query translated for ambiguity detection
@@ -1151,38 +1157,8 @@ class AnalyticsAgent implements AgentInterface
    */
   private function analyzeAmbiguity(string $question, string $queryForAmbiguity): array
   {
-    // 🚀 OPTIMIZATION: Skip ambiguity detection for high-confidence analytics queries
-    // Get classification confidence from isAnalyticsQuery (already called in processBusinessQuery)
-    // If confidence >= 0.9, skip ambiguity detection to save 1-2 seconds
-    $skipAmbiguity = false;
-    $classificationConfidence = 0.0;
-
-    // Re-classify to get confidence (cached, so very fast)
-    $cleanTranslation = EnglishQueryNormalizer::normalize($question);
-    $classifier = new QueryClassifier($this->debug);
-    $classificationResult = $classifier->classify($cleanTranslation, $cleanTranslation);
-
-    $classificationConfidence = $classificationResult['confidence'] ?? 0.0;
-
-    if ($classificationResult['type'] === 'analytics' && $classificationConfidence >= 0.9) {
-      $skipAmbiguity = true;
-      $this->debugLog("⚡ SKIPPING ambiguity detection (high confidence: {$classificationConfidence})", "OPTIMIZATION");
-      $this->securityLogger->logSecurityEvent(
-        "Ambiguity detection skipped for high-confidence analytics query",
-        'info',
-        [
-          'query' => substr($question, 0, 100),
-          'confidence' => $classificationConfidence,
-          'time_saved_estimate' => '1-2 seconds'
-        ]
-      );
-    }
-
-    $ambiguityAnalysis = $skipAmbiguity
-      ? ['is_ambiguous' => false, 'skipped' => true, 'reason' => 'high_confidence_analytics', 'confidence' => $classificationConfidence]
-      : $this->ambiguityDetector->detectAmbiguity($queryForAmbiguity);
-
-    return $ambiguityAnalysis;
+    // Detector analyses are cached, so the cost is one call per distinct query, not per request.
+    return $this->ambiguityDetector->detectAmbiguity($queryForAmbiguity);
   }
 
   /**
@@ -1401,7 +1377,7 @@ class AnalyticsAgent implements AgentInterface
 
       // If successful, try to get interpretation
       if (($result['type'] ?? 'error') !== 'error' && !empty($result['results'])) {
-        $interpretation = $this->resultInterpreter->interpretResults($subQuery, $result['results']);
+        $interpretation = $this->resultInterpreter->interpretResults($subQuery, $result['results'], $result['sql_query'] ?? '');
         $result['interpretation'] = $interpretation;
       }
 

@@ -34,7 +34,6 @@ class ReasoningAgentStats
    */
   public function getStats(int $days = 30): array
   {
-    $dateLimit = date('Y-m-d H:i:s', strtotime("-{$days} days"));
 
     // Get overall stats
     $Qoverall = $this->db->prepare('
@@ -44,10 +43,10 @@ class ReasoningAgentStats
         SUM(CASE WHEN error_occurred = 1 THEN 1 ELSE 0 END) as failed_reasonings
       FROM :table_rag_statistics
       WHERE agent_type = :agent_type
-        AND date_added >= :date_limit
+        AND date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
     ');
     $Qoverall->bindValue(':agent_type', 'ReasoningAgent');
-    $Qoverall->bindValue(':date_limit', $dateLimit);
+    $Qoverall->bindValue(':days', $days, \PDO::PARAM_INT);
     $Qoverall->execute();
     $overall = $Qoverall->fetch();
 
@@ -62,11 +61,11 @@ class ReasoningAgentStats
         metadata
       FROM :table_rag_statistics
       WHERE agent_type = :agent_type
-        AND date_added >= :date_limit
+        AND date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
       GROUP BY classification_type
     ');
     $Qmodes->bindValue(':agent_type', 'ReasoningAgent');
-    $Qmodes->bindValue(':date_limit', $dateLimit);
+    $Qmodes->bindValue(':days', $days, \PDO::PARAM_INT);
     $Qmodes->execute();
 
     $byMode = [
@@ -102,11 +101,11 @@ class ReasoningAgentStats
         WHERE agent_type = :agent_type
           AND classification_type = :mode
           AND error_occurred = 0
-          AND date_added >= :date_limit
+          AND date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
       ');
       $Qdetails->bindValue(':agent_type', 'ReasoningAgent');
       $Qdetails->bindValue(':mode', $modeName);
-      $Qdetails->bindValue(':date_limit', $dateLimit);
+      $Qdetails->bindValue(':days', $days, \PDO::PARAM_INT);
       $Qdetails->execute();
 
       $totalSteps = 0;

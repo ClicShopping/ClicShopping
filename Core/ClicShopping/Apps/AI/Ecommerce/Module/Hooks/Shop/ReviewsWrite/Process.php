@@ -113,7 +113,8 @@ class Process implements HooksInterface
     if (is_array($review_array)) {
       foreach ($review_array as $item) {
        $language_code = $this->lang->getLanguageCodeById((int)$item['languages_id']);
-        $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/ReviewsWrite/process', $language_code);
+        // Fixed wrong path (ClicShoppingAdmin -> Shop): definitions file lives under Shop/ReviewsWrite.
+        $this->app->loadDefinitions('Module/Hooks/Shop/ReviewsWrite/process', $language_code);
 
         $reviews_text = isset($item['reviews_text']) ? HTMLOverrideCommon::cleanHtmlForEmbedding($item['reviews_text']) : '';
         $reviews_rating = isset($item['reviews_rating']) ? (int)$item['reviews_rating'] : 0;
@@ -139,7 +140,7 @@ class Process implements HooksInterface
         if (!empty($reviews_text)) {
            $embedding_data .= $this->app->getDef('text_reviews_description', ['products_name' => $products_name]) . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($reviews_text) . "\n";
 
-           $taxonomy = $this->semantics->createTaxonomy(HtmlOverrideCommon::cleanHtmlForEmbedding($reviews_text), $language_code, null);
+           $taxonomy = $this->semantics->createTaxonomy(HtmlOverrideCommon::cleanHtmlForEmbedding($reviews_text), $this->app->getDef('text_create_taxonomy'), $language_code, 300);
 
           if (!empty($taxonomy)) {
             $lines = array_filter(array_map('trim', explode("\n", $taxonomy)));
@@ -154,10 +155,12 @@ class Process implements HooksInterface
             $tags = [];
           }
 
-          $embedding_data .= "\n" . $this->app->getDef('text_reviews_taxonomy') . " :\n";
+          if ($tags !== []) {
+            $embedding_data .= "\n" . $this->app->getDef('text_reviews_taxonomy') . " :\n";
 
-          foreach ($tags as $key => $value) {
-            $embedding_data .= "[$key]: $value\n";
+            foreach ($tags as $key => $value) {
+              $embedding_data .= "[$key]: $value\n";
+            }
           }
         }
 

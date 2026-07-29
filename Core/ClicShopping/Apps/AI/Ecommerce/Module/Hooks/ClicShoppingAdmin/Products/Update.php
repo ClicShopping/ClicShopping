@@ -244,7 +244,7 @@ class Update implements HooksInterface
               $taxonomy = '';
 
               if (!empty($products_description)) {
-                $taxonomy = $this->semantics->createTaxonomy(HTMLOverrideCommon::cleanHtmlForEmbedding($products_description), $language_code, null);
+                $taxonomy = $this->semantics->createTaxonomy(HTMLOverrideCommon::cleanHtmlForEmbedding($products_description), $this->app->getDef('text_create_taxonomy'), $language_code, 300);
 
                 if (!empty($taxonomy)) {
                   $lines = array_filter(array_map('trim', explode("\n", $taxonomy)));
@@ -259,10 +259,12 @@ class Update implements HooksInterface
                   $tags = [];
                 }
 
-                $embedding_data .= "\n" . $this->app->getDef('text_product_taxonomy') . " :\n";
+                if ($tags !== []) {
+                  $embedding_data .= "\n" . $this->app->getDef('text_product_taxonomy') . " :\n";
 
-                foreach ($tags as $key => $value) {
-                  $embedding_data .= "[$key]: $value\n";
+                  foreach ($tags as $key => $value) {
+                    $embedding_data .= "[$key]: $value\n";
+                  }
                 }
               }
 

@@ -176,7 +176,7 @@ class Save implements HooksInterface
           $embedding_data .= $this->returnOrdersHistory($return_id);
 
           if (!empty($this->returnOrdersHistory($return_id))) {
-            $taxonomy = $this->semantics->createTaxonomy(HTMLOverrideCommon::cleanHtmlForEmbedding($embedding_data), null);
+            $taxonomy = $this->semantics->createTaxonomy(HTMLOverrideCommon::cleanHtmlForEmbedding($embedding_data), $this->app->getDef('text_create_taxonomy'), $this->lang->getCode(), 300);
 
             if (!empty($taxonomy)) {
               $lines = array_filter(array_map('trim', explode("\n", $taxonomy)));
@@ -191,10 +191,12 @@ class Save implements HooksInterface
               $tags = [];
             }
 
-            $embedding_data .= "\n" . $this->app->getDef('text_return_order_taxonomy') . " :\n";
+            if ($tags !== []) {
+              $embedding_data .= "\n" . $this->app->getDef('text_return_order_taxonomy') . " :\n";
 
-            foreach ($tags as $key => $value) {
-              $embedding_data .= "[$key]: $value\n";
+              foreach ($tags as $key => $value) {
+                $embedding_data .= "[$key]: $value\n";
+              }
             }
           }
 

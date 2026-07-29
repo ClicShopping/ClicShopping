@@ -227,8 +227,11 @@ class AnalyticsExecutor
 
       $executionStart = microtime(true);
 
-      // Execute query — skip classification since orchestrator already classified this as analytics
-      $rawResult = $this->analyticsAgent->processBusinessQuery($query, true, [], true);
+      $planQuery = (string)($context['query'] ?? '');
+      $isSubQuery = $planQuery !== '' && trim($query) !== trim($planQuery);
+
+      // Classification is always skipped here: the orchestrator already routed this as analytics.
+      $rawResult = $this->analyticsAgent->processBusinessQuery($query, true, [], true, $isSubQuery);
       $executionTimeMs = (int)round((microtime(true) - $executionStart) * 1000);
 
       if ($this->debugRAManager) {
@@ -237,6 +240,10 @@ class AnalyticsExecutor
         error_log("  Results count: " . count($rawResult['results'] ?? []));
       }
       
+      if (($rawResult['type'] ?? '') === 'clarification_needed') {
+        return $rawResult;
+      }
+
       //  Handle interpretation being an array or string
       $interpretation = $rawResult['interpretation'] ?? 'N/A';
 

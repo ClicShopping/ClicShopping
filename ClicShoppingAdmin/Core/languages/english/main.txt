@@ -583,8 +583,6 @@ text_multiple_interpretations_review = Multiple interpretations provided. Please
 text_ambiguous_query_detected = Multiple interpretations detected
 text_clarification_needed = Clarification needed
 
-text_query_too_ambiguous = Your query is too ambiguous. Please be more specific about what you want to know.
-
 text_rag_insufficient_information = I don't have enough reliable information to answer this question accurately. The available information in my knowledge base is insufficient or not directly relevant to your query.
 text_rag_source_insufficient_information = Insufficient Information - Answer rejected due to low grounding score
 

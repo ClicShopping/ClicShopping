@@ -117,15 +117,18 @@ class ProductEmbeddingBuilder
     if (!empty($productData['products_description'])) {
       $taxonomy = $this->semantics->createTaxonomy(
         HTMLOverrideCommon::cleanHtmlForEmbedding($productData['products_description']),
+        $this->app->getDef('text_create_taxonomy'),
         $languageCode,
-        null
+        300
       );
 
       $tags = $this->parseTaxonomyTags($taxonomy);
 
-      $content .= "\n" . $this->app->getDef('text_product_taxonomy') . " :\n";
-      foreach ($tags as $key => $value) {
-        $content .= "[$key]: $value\n";
+      if ($tags !== []) {
+        $content .= "\n" . $this->app->getDef('text_product_taxonomy') . " :\n";
+        foreach ($tags as $key => $value) {
+          $content .= "[$key]: $value\n";
+        }
       }
     }
 
@@ -160,10 +163,15 @@ class ProductEmbeddingBuilder
 
       $taxonomy = '';
       if (!empty($productData['products_description'])) {
+        $taxonomyLanguageCode = $productData['language_code'] ?? 'en';
+        // Ensure the prompt definition is loaded regardless of call order with buildEmbeddingContent().
+        $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/Products/rag', $taxonomyLanguageCode);
+
         $taxonomy = $this->semantics->createTaxonomy(
           HTMLOverrideCommon::cleanHtmlForEmbedding($productData['products_description']),
-          $productData['language_code'] ?? 'en',
-          null
+          $this->app->getDef('text_create_taxonomy'),
+          $taxonomyLanguageCode,
+          300
         );
       }
 

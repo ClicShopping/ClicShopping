@@ -1,0 +1,18 @@
+text_create_taxonomy = Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+Le texte correspond à une FAQ produit (questions fréquentes et réponses associées).
+Le résultat doit suivre strictement le format ci-dessous.
+Chaque information pertinente doit être rangée dans la dimension appropriée.
+Aucune information inventée ne doit être ajoutée.
+
+Format attendu :
+
+[domaine]: Domaine général du produit concerné par la FAQ (ex. Maison, Mode, Électronique)
+[sous_domaine]: Segment ou spécialisation au sein du domaine (ex. Arts de la table, Informatique, Mobilier)
+[sujet]: Sujet principal abordé par les entrées de la FAQ (ex. Livraison, Garantie, Utilisation, Compatibilité)
+[type_question]: Nature des questions (ex. Technique, Commerciale, Pratique)
+[preoccupation]: Préoccupation ou point de friction client traité par la réponse
+[criteres]: Attributs ou caractéristiques distinctives du produit mentionnés
+[objectif]: Finalité de l’entrée FAQ (ex. Rassurer l’acheteur, Clarifier l’usage, Lever un doute)
+[mots_cles]: Liste libre de mots-clés pertinents dérivés du texte, séparés par virgules
+
+Texte : {{document_text}}

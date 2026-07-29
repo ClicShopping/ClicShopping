@@ -11,6 +11,12 @@ Si la requête contient des références temporelles EXPLICITES, retournez IMMÉ
 * "today", "yesterday", "tomorrow"
 * "en janvier", "en 2025", "pour Q1", "in January", "in 2025", "for Q1"
 Ce sont des spécifications temporelles EXPLICITES pointant vers une période SPÉCIFIQUE. Retournez is_ambiguous: false immédiatement.
+**RÈGLE CRITIQUE - UNE MESURE STATISTIQUE SANS PÉRIODE DOIT ÊTRE CLARIFIÉE, JAMAIS SUPPOSÉE** :
+Une requête demandant une mesure AGRÉGÉE ou STATISTIQUE calculée dans le temps — un total, une somme, une moyenne, un taux, un ratio, une tendance, une évolution, un coefficient saisonnier, une comparaison entre périodes — alors qu'elle ne porte AUCUNE date, aucun mois, aucun trimestre, aucune année ni aucune référence temporelle relative, EST AMBIGUË. Mettez is_ambiguous: true, ambiguity_type "time", recommendation "clarify".
+La valeur que rend une telle requête dépend ENTIÈREMENT de la période retenue : en choisir une en silence produit un chiffre auquel le lecteur n'a aucun moyen de se fier. N'inventez PAS de date. Ne repliez PAS sur l'année en cours, le mois en cours, ni sur « toutes les données disponibles ». Ne calculez ni ne commentez la mesure : demandez à l'utilisateur quelle période analyser, et listez les périodes plausibles comme interprétations.
+EXCEPTION — une mesure d'ÉTAT COURANT n'est pas une mesure dans le temps et n'a AUCUNE période à choisir : un niveau ou une quantité actuellement disponible, une valeur courante, un statut courant, une configuration présente. Une telle requête se répond à l'instant présent ; ne demandez jamais de période pour elle. La règle vise les mesures qui S'ACCUMULENT sur une fenêtre (totaux, sommes, comptages d'événements, moyennes d'événements, taux, tendances), dont la valeur change selon la fenêtre retenue.
+« clarify » est réservé à EXACTEMENT DEUX cas : cette règle de période manquante, et temporal_unit_missing ci-dessous. Toute autre ambiguïté — périmètre, métrique, quantification — se règle par le défaut le plus raisonnable (« use_default » ou « generate_both ») et ne s'arrête JAMAIS pour demander. En particulier, une simple demande de LISTE d'enregistrements d'un état ou d'une catégorie se répond, ne se clarifie pas : elle a une lecture évidente, et demander « tous ou seulement les actifs ? » n'aide personne.
+Cette règle est PRIORITAIRE sur les règles de langage quantitatif, de chiffre d'affaires, de multi-champs et de GROUP BY ci-dessous. Ces règles tranchent QUELLE mesure calculer et SELON QUELLE dimension regrouper ; elles ne tranchent jamais QUELLE PÉRIODE couvrir. Une requête peut être parfaitement explicite sur sa mesure et manquer malgré tout de sa période — elle est alors ambiguë.
 **RÈGLE CRITIQUE - UNITÉ TEMPORELLE MANQUANTE (temporal_unit_missing)** :
 Un NOMBRE suivi de "derniers"/"dernières"/"last"/"past"/"previous" SANS UNITÉ de temps qui suit (jour/semaine/mois/an/année, day/week/month/year) est AMBIGU — l'unité est manquante et NE DOIT PAS être devinée :
 * "les 12 derniers", "sur les 6 dernières", "les 3 derniers" → AMBIGU (12/6/3 quoi ? jours ? semaines ? mois ? années ?)
@@ -33,14 +39,14 @@ Exemples d'ambiguïté temporal_period_scope :
 {{temporal_scope_ambiguous_examples}}
 Exemples NON ambigus :
 {{temporal_scope_clear_examples}}
-**DEUXIÈME RÈGLE CRITIQUE - LANGAGE QUANTITATIF** :
-Si la requête contient un langage QUANTITATIF/STATISTIQUE, retournez IMMÉDIATEMENT is_ambiguous: false :
+**DEUXIÈME RÈGLE CRITIQUE - LE LANGAGE QUANTITATIF TRANCHE LA MESURE, PAS LA PÉRIODE** :
+Si la requête contient un langage QUANTITATIF/STATISTIQUE, la MESURE est tranchée : ne signalez jamais d'ambiguïté de quantification ou de métrique pour elle. Cela ne dit RIEN de la période — la règle de période ci-dessus s'applique toujours et décide seule si la requête est ambiguë :
 * Comptage : "combien de", "nombre de", "total de", "how many", "number of", "count of", "total number"
 * Somme : "total", "somme de", "montant total", "combiné", "sum of", "total amount", "combined"
 * Moyenne : "moyenne", "moyenne de", "average", "mean", "average of"
 * Extrêmes : "minimum", "maximum", "le plus bas", "le plus haut", "le moins", "le plus", "lowest", "highest", "least", "most"
 **IMPORTANT** : Si référence temporelle EXPLICITE ET langage quantitatif sont TOUS DEUX présents, c'est DOUBLEMENT NON ambigu. Retournez is_ambiguous: false immédiatement.
-SEULEMENT si la requête ne contient PAS de références temporelles explicites OU de langage quantitatif, alors considérez ces types d'ambiguïté :
+La règle de période ci-dessus est toujours évaluée. Au-delà d'elle, ne considérez ces types d'ambiguïté que si la requête ne contient ni référence temporelle explicite ni langage quantitatif :
 1. temporal_period_scope : Termes PÉRIODIQUES sans temps explicite (mensuel, annuel, etc.) - voir NOUVELLE RÈGLE ci-dessus
 2. Quantification : COUNT (nombre d'éléments distincts) vs SUM (quantité totale/valeur)
 3. Portée (Scope) : Tous les éléments vs Éléments récents vs Éléments actifs/visibles
@@ -51,10 +57,10 @@ SEULEMENT si la requête ne contient PAS de références temporelles explicites 
 Si la requête demande PLUSIEURS CHAMPS SPÉCIFIQUES (par exemple, {{multifield_inline_examples}}), ce n'est PAS ambigu :
 {{multifield_examples}}
 Les requêtes multi-champs sont EXPLICITES sur les données nécessaires. Retournez is_ambiguous: false immédiatement.
-**QUATRIÈME RÈGLE CRITIQUE - LES REQUÊTES GROUP BY NE SONT PAS AMBIGUËS** :
-Si la requête contient le motif "par [dimension]" (par exemple, {{groupby_inline_examples}}), ce n'est PAS ambigu :
+**QUATRIÈME RÈGLE CRITIQUE - LE GROUP BY TRANCHE LE REGROUPEMENT, PAS LA PÉRIODE** :
+Si la requête contient le motif "par [dimension]" (par exemple, {{groupby_inline_examples}}), le REGROUPEMENT est tranché et n'est jamais en lui-même une source d'ambiguïté :
 {{groupby_examples}}
-Les requêtes GROUP BY ont une intention d'agrégation CLAIRE avec une dimension de regroupement explicite. Retournez is_ambiguous: false immédiatement.
+Les requêtes GROUP BY ont une intention d'agrégation CLAIRE avec une dimension de regroupement explicite. Retournez is_ambiguous: false — SAUF si la requête est une mesure statistique ne portant aucune période, auquel cas la règle de période ci-dessus l'emporte et vous devez demander une clarification.
 Interprétation par défaut : SUM pour les métriques financières ({{financial_metric_examples}}), COUNT pour les entités ({{entity_examples}}).
 Répondez UNIQUEMENT avec du JSON valide dans ce format exact :
 {
@@ -77,17 +83,17 @@ Répondez UNIQUEMENT avec du JSON valide dans ce format exact :
 Règles :
 - Si la requête mentionne explicitement des fonctions d'agrégation SQL (COUNT, DISTINCT, SUM, TOTAL, AVG, MIN, MAX) -> NON ambiguë.
 - Si la requête demande un RÉSULTAT NUMÉRIQUE UNIQUE avec une intention d'agrégation claire -> NON ambiguë.
-- Si la requête mentionne CHIFFRE D'AFFAIRES, REVENU, VENTES -> NON ambiguë (toujours SUM).
+- Si la requête mentionne CHIFFRE D'AFFAIRES, REVENU, VENTES -> la mesure est tranchée (toujours SUM, jamais COUNT). Cela ne tranche que la MESURE : sans période donnée, la requête reste ambiguë et doit être clarifiée.
 - Si la requête contient des termes PÉRIODIQUES (mensuel, annuel, etc.) SANS référence temporelle explicite -> EST ambiguë (temporal_period_scope).
 - Si la requête est vague sur CE QU'IL FAUT calculer ou COMMENT agréger -> EST ambiguë.
 - Fournir 2 à 4 interprétations si ambiguë.
 - Recommander "generate_both" pour l'ambiguïté temporal_period_scope (période en cours vs répartition).
 - Recommander "generate_both" pour l'ambiguïté de quantification (COUNT vs SUM).
-- Recommander "use_default" pour l'ambiguïté de portée/métrique, en privilégiant l'interprétation la plus courante.
-- Recommander "clarify" pour les requêtes avec ABSENCE COMPLÈTE de référence temporelle (par exemple, {{show_sales_example}} sans aucun indicateur temporel).
+- Recommander "use_default" pour l'ambiguïté de portée/métrique, en privilégiant l'interprétation la plus courante — la portée n'est JAMAIS une raison de clarifier, quelle que soit la requête.
+- Recommander "clarify" pour toute mesure statistique ou agrégée avec ABSENCE COMPLÈTE de référence temporelle (par exemple, {{show_sales_example}} sans aucun indicateur temporel), quelles que soient sa mesure et sa dimension de regroupement.
 - Recommander "clarify" pour temporal_unit_missing (un nombre + derniers/dernières/last/past SANS unité) — ne jamais deviner l'unité.
 - IMPORTANT : Toutes les requêtes sont traduites en anglais avant l'analyse. Se concentrer sur le langage quantitatif anglais.
-- CRITIQUE : Les termes financiers signifiant "revenu" ne sont JAMAIS ambigus - ils signifient toujours SUM de valeurs monétaires, PAS COUNT de transactions.
+- CRITIQUE : Les termes financiers signifiant "revenu" ne sont jamais ambigus SUR LA MESURE - ils signifient toujours SUM de valeurs monétaires, PAS COUNT de transactions. Ils restent ambigus sur la PÉRIODE lorsqu'aucune n'est donnée.
 Exemples :
 {{detect_examples}}
 

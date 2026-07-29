@@ -710,8 +710,6 @@ class SecurityLogger
             $prefix = CLICSHOPPING::getConfig('db_table_prefix');
             $table = ':table_rag_security_events';  // Use :table_ prefix for queries
             
-            $startTime = date('Y-m-d H:i:s', strtotime("-{$hours} hours"));
-            
             // Get counts by severity
             $query = "SELECT 
                         COUNT(*) as total_events,
@@ -721,10 +719,10 @@ class SecurityLogger
                         SUM(CASE WHEN severity = 'low' THEN 1 ELSE 0 END) as low_count,
                         SUM(CASE WHEN blocked = 1 THEN 1 ELSE 0 END) as blocked_count
                      FROM {$table}
-                     WHERE created_at >= :start_time";
-            
+                     WHERE created_at >= DATE_SUB(NOW(), INTERVAL :hours HOUR)";
+
             $result = $this->db->prepare($query);
-            $result->bindValue(':start_time', $startTime);
+            $result->bindValue(':hours', (int)$hours, \PDO::PARAM_INT);
             $result->execute();
             $stats = $result->fetch();
             

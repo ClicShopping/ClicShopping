@@ -19,30 +19,30 @@ text_status_active = [Actif]
 text_status_inactive = [Inactif]
 
 
-You are a document analysis system. Extract a structured conceptual taxonomy from the following text.
-The text corresponds to a supplier or manufacturer profile within an e-commerce context.
-The output must strictly follow the format below.
-Every relevant piece of information must be assigned to the appropriate dimension.
-Do not invent or infer information not explicitly present in the text.
+text_create_taxonomy = Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+Le texte correspond à un profil de fournisseur ou de fabricant dans un contexte e-commerce.
+Le résultat doit suivre strictement le format ci-dessous.
+Chaque information pertinente doit être rangée dans la dimension appropriée.
+Aucune information inventée ne doit être ajoutée.
 
-Expected format:
+Format attendu :
 
-[domain]: General domain of the supplier’s activity (e.g. Home, Fashion, Electronics)
-[subdomain]: Segment or specialization within the domain (e.g. Tableware, Computing, Furniture)
-[company_type]: Nature of the company (e.g. Manufacturer, Distributor, Wholesaler, Brand)
-[company_name]: Official name of the supplier or brand
-[brand_portfolio]: Main brands or product lines managed by the supplier if mentioned
-[product_scope]: Range of products or categories supplied (e.g. Kitchenware, Lighting, Textiles)
-[market_scope]: Geographic or market coverage (e.g. National, European, Global)
-[client_type]: Type of clients targeted (e.g. B2B, B2C, Retailers, Professionals)
-[values]: Declared or implied company values (e.g. Sustainability, Innovation, Quality)
-[certifications]: Standards or certifications obtained (e.g. ISO 9001, Fair Trade)
-[criteria]: Distinctive attributes or strengths (e.g. Reliability, Responsiveness, Expertise)
-[practice]: Operational practices or business methods (e.g. Production, Distribution, Logistics)
-[objective]: Primary business objective (e.g. Expand distribution, Strengthen partnerships)
-[symbolic_dimension]: Symbolic or brand dimension (e.g. Prestige, Trust, Heritage)
-[sensory_dimension]: Aesthetic or experiential aspects if mentioned (e.g. Design, Packaging)
-[source]: Origin or legal identification if mentioned (e.g. Country, Registration number)
-[keywords]: Free list of relevant keywords extracted from the text
+[domaine]: Domaine général de l’activité du fournisseur (ex. Maison, Mode, Électronique)
+[sous_domaine]: Segment ou spécialisation au sein du domaine (ex. Arts de la table, Informatique, Mobilier)
+[type_entreprise]: Nature de l’entreprise (ex. Fabricant, Distributeur, Grossiste, Marque)
+[nom_entreprise]: Nom officiel du fournisseur ou de la marque
+[portefeuille_marques]: Principales marques ou gammes gérées par le fournisseur, si mentionné
+[perimetre_produits]: Éventail de produits ou catégories fournis (ex. Arts de la maison, Éclairage, Textile)
+[perimetre_marche]: Couverture géographique ou de marché (ex. National, Européen, Mondial)
+[type_client]: Type de clients ciblés (ex. B2B, B2C, Détaillants, Professionnels)
+[valeurs]: Valeurs d’entreprise déclarées ou implicites (ex. Durabilité, Innovation, Qualité)
+[certifications]: Normes ou certifications obtenues (ex. ISO 9001, Commerce équitable)
+[criteres]: Attributs ou points forts distinctifs (ex. Fiabilité, Réactivité, Expertise)
+[pratique]: Pratiques opérationnelles ou méthodes commerciales (ex. Production, Distribution, Logistique)
+[objectif]: Objectif commercial principal (ex. Développer la distribution, Renforcer les partenariats)
+[dimension_symbolique]: Dimension symbolique ou de marque (ex. Prestige, Confiance, Héritage)
+[dimension_sensorielle]: Aspects esthétiques ou d’expérience, si mentionnés (ex. Design, Emballage)
+[source]: Origine ou identification légale, si mentionnée (ex. Pays, Numéro d’enregistrement)
+[mots_cles]: Liste libre de mots-clés pertinents extraits du texte
 
-Text: {{document_text}}
+Texte : {{document_text}}

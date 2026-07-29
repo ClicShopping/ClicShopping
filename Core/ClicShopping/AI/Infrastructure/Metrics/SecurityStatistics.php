@@ -417,21 +417,18 @@ class SecurityStatistics
         
         try {
             $table = ':table_rag_security_events';
-            $startDate = date('Y-m-d H:i:s', strtotime("-{$days} days"));
-            $endDate = date('Y-m-d H:i:s');
-            
+
             // Get daily event counts
             $dailyQuery = "SELECT DATE(created_at) as date, 
                                  COUNT(*) as total_events,
                                  SUM(CASE WHEN blocked = 1 THEN 1 ELSE 0 END) as blocked_events,
                                  AVG(threat_score) as avg_threat_score
                           FROM {$table} 
-                          WHERE created_at BETWEEN :start_date AND :end_date 
-                          GROUP BY DATE(created_at) 
+                          WHERE created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)
+                          GROUP BY DATE(created_at)
                           ORDER BY date";
             $dailyResult = $this->db->prepare($dailyQuery);
-            $dailyResult->bindValue(':start_date', $startDate);
-            $dailyResult->bindValue(':end_date', $endDate);
+            $dailyResult->bindValue(':days', $days, \PDO::PARAM_INT);
             $dailyResult->execute();
             $dailyData = $dailyResult->fetchAll();
             
@@ -447,13 +444,12 @@ class SecurityStatistics
             // Get threat type trends
             $threatTypeQuery = "SELECT threat_type, DATE(created_at) as date, COUNT(*) as count 
                                FROM {$table} 
-                               WHERE created_at BETWEEN :start_date AND :end_date 
-                               AND threat_type IS NOT NULL 
-                               GROUP BY threat_type, DATE(created_at) 
+                               WHERE created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)
+                               AND threat_type IS NOT NULL
+                               GROUP BY threat_type, DATE(created_at)
                                ORDER BY threat_type, date";
             $threatTypeResult = $this->db->prepare($threatTypeQuery);
-            $threatTypeResult->bindValue(':start_date', $startDate);
-            $threatTypeResult->bindValue(':end_date', $endDate);
+            $threatTypeResult->bindValue(':days', $days, \PDO::PARAM_INT);
             $threatTypeResult->execute();
             $threatTypeTrends = $threatTypeResult->fetchAll();
             

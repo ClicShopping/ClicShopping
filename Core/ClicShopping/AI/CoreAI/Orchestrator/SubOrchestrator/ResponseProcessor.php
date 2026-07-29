@@ -459,6 +459,15 @@ class ResponseProcessor
       'entity_type' => $entityType,
       'agent_used' => 'orchestrator',
     ];
+
+    if (is_array($rawResult) && ($rawResult['type'] ?? '') === 'clarification_needed') {
+      $response['type'] = 'clarification_needed';
+      $response['clarification_needed'] = true;
+
+      if (!empty($rawResult['text_response'])) {
+        $response['text_response'] = $rawResult['text_response'];
+      }
+    }
     
     // 2026-01-29: Preserve complete analytics structure
     // Issue: Analytics results (SQL, data table) not displaying in chat

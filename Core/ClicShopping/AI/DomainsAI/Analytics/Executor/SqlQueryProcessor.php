@@ -163,7 +163,10 @@ class SqlQueryProcessor
   public function cleanSqlResponse(string $response): string
   {
     $cleaned = preg_replace('/```sql\s*|\s*```/', '', $response);
+    $shield = "\x01CLIC_LT\x01";
+    $cleaned = preg_replace('/<(?![\/a-zA-Z])/', $shield, $cleaned);
     $cleaned = strip_tags($cleaned);
+    $cleaned = str_replace($shield, '<', $cleaned);
     $cleaned = trim($cleaned);
 
     // CRITICAL FIX: Remove SQL comments BEFORE validation

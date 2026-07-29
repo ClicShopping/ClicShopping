@@ -11,6 +11,12 @@ If the query contains EXPLICIT time references, IMMEDIATELY return is_ambiguous:
 * "aujourd'hui", "hier", "demain"
 * "in January", "in 2025", "for Q1", "en janvier", "en 2025", "pour Q1"
 These are EXPLICIT time specifications pointing to a SPECIFIC period. Return is_ambiguous: false immediately.
+**CRITICAL RULE - A STATISTICAL MEASURE WITHOUT A PERIOD MUST BE CLARIFIED, NEVER ASSUMED**:
+A query asking for an AGGREGATE or STATISTICAL measure computed over time — a total, a sum, an average, a rate, a ratio, a trend, an evolution, a seasonal coefficient, a comparison between periods — while carrying NO date, month, quarter, year or relative time reference of any kind, IS AMBIGUOUS. Set is_ambiguous: true, ambiguity_type "time", recommendation "clarify".
+The value such a query returns depends ENTIRELY on the period chosen, so picking one silently produces a figure the reader has no way to trust. Do NOT invent a date. Do NOT fall back on the current year, the current month, or on "all available data". Do NOT compute or comment the measure at all: ask the user which period to analyse, and list plausible periods as the interpretations.
+EXCEPTION — a measure of a CURRENT STATE is not a measure over time and has NO period to choose: a level or quantity currently on hand, a current value, a current status, a present configuration. Such a query is answered as of now; never clarify it for a period. The rule applies to measures that ACCUMULATE over a window (totals, sums, counts of events, averages of events, rates, trends), whose value changes with the window chosen.
+"clarify" is reserved for EXACTLY TWO cases: this missing-period rule, and temporal_unit_missing below. Every other kind of ambiguity — scope, metric, quantification — is answered with the most reasonable default ("use_default" or "generate_both") and NEVER stops to ask. In particular a plain request to LIST records of a state or a category is answered, never clarified: it has an obvious reading, and asking "all or only the active ones?" helps nobody.
+This rule takes PRECEDENCE over the quantitative-language, revenue, multi-field and group-by rules below. Those rules settle WHICH metric to compute and WHICH dimension to group by; they never settle WHICH PERIOD to cover. A query can be perfectly explicit about its metric and still be missing its period — and then it is ambiguous.
 **CRITICAL RULE - MISSING TEMPORAL UNIT (temporal_unit_missing)**:
 A NUMBER followed by "last"/"past"/"previous"/"derniers"/"dernières" WITHOUT a following time UNIT (day/week/month/year, jour/semaine/mois/an/année) is AMBIGUOUS — the unit is missing and MUST NOT be guessed:
 * "the last 12", "over the past 6", "for the previous 3" → AMBIGUOUS (12/6/3 of WHAT? days? weeks? months? years?)
@@ -32,14 +38,14 @@ Examples of temporal_period_scope ambiguity:
 {{temporal_scope_ambiguous_examples}}
 Examples that are NOT ambiguous:
 {{temporal_scope_clear_examples}}
-**SECOND CRITICAL RULE - QUANTITATIVE LANGUAGE**:
-If the query contains QUANTITATIVE/STATISTICAL language, IMMEDIATELY return is_ambiguous: false:
+**SECOND CRITICAL RULE - QUANTITATIVE LANGUAGE SETTLES THE METRIC, NOT THE PERIOD**:
+If the query contains QUANTITATIVE/STATISTICAL language, the METRIC is settled: never report quantification or metric ambiguity for it. This says NOTHING about the period — the period rule above still applies, and decides on its own whether the query is ambiguous:
 * Counting: "how many", "number of", "count of", "total number", "combien de", "nombre de"
 * Summing: "total", "sum of", "total amount", "combined"
 * Averaging: "average", "mean", "average of"
 * Extremes: "minimum", "maximum", "lowest", "highest", "least", "most", "smallest", "largest"
 **IMPORTANT**: If BOTH explicit time reference AND quantitative language are present, this is DOUBLY NOT ambiguous. Return is_ambiguous: false immediately.
-ONLY if the query does NOT contain explicit time references OR quantitative language, then consider these types of ambiguity:
+The period rule above is always evaluated. Beyond it, consider these types of ambiguity only when the query contains neither an explicit time reference nor quantitative language:
 1. temporal_period_scope: PERIODIC terms without explicit time (monthly, yearly, etc.) - see NEW CRITICAL RULE above
 2. Quantification: COUNT (distinct items) vs SUM (total quantity/value)
 3. Scope: All items vs Recent items vs Active/Visible items
@@ -50,10 +56,10 @@ ONLY if the query does NOT contain explicit time references OR quantitative lang
 If the query requests MULTIPLE SPECIFIC FIELDS (e.g., {{multifield_inline_examples}}), this is NOT ambiguous:
 {{multifield_examples}}
 Multi-field queries are EXPLICIT about what data is needed. Return is_ambiguous: false immediately.
-**FOURTH CRITICAL RULE - GROUP BY QUERIES ARE NOT AMBIGUOUS**:
-If the query contains "by [dimension]" pattern (e.g., {{groupby_inline_examples}}), this is NOT ambiguous:
+**FOURTH CRITICAL RULE - GROUP BY SETTLES THE GROUPING, NOT THE PERIOD**:
+If the query contains "by [dimension]" pattern (e.g., {{groupby_inline_examples}}), the GROUPING is settled and is never itself a source of ambiguity:
 {{groupby_examples}}
-GROUP BY queries have CLEAR aggregation intent with explicit grouping dimension. Return is_ambiguous: false immediately.
+GROUP BY queries have CLEAR aggregation intent with an explicit grouping dimension. Return is_ambiguous: false — UNLESS the query is a statistical measure carrying no period at all, in which case the period rule above wins and you must clarify.
 Default interpretation: SUM for financial metrics ({{financial_metric_examples}}), COUNT for entities ({{entity_examples}}).
 Respond ONLY with valid JSON in this exact format:
 {
@@ -76,17 +82,17 @@ Respond ONLY with valid JSON in this exact format:
 Rules:
 - If query explicitly mentions SQL aggregation functions (COUNT, DISTINCT, SUM, TOTAL, AVG, MIN, MAX) -> NOT ambiguous.
 - If query requests a SINGLE NUMERIC RESULT with clear aggregation intent -> NOT ambiguous.
-- If query mentions REVENUE, TURNOVER, INCOME, SALES REVENUE -> NOT ambiguous (always SUM).
+- If query mentions REVENUE, TURNOVER, INCOME, SALES REVENUE -> the metric is settled (always SUM, never COUNT). This settles the METRIC only: if no period is given, the query is still ambiguous and must be clarified.
 - If query is vague about WHAT to calculate or HOW to aggregate -> IS ambiguous.
 - If query contains PERIODIC terms (monthly, yearly, etc.) WITHOUT explicit time reference -> IS ambiguous (temporal_period_scope).
 - Provide 2-4 interpretations if ambiguous.
 - Recommend "generate_both" for temporal_period_scope ambiguity (current period vs breakdown).
 - Recommend "generate_both" for quantification ambiguity (COUNT vs SUM).
-- Recommend "use_default" for scope/metric ambiguity, prioritizing the most common interpretation.
-- Recommend "clarify" for queries with COMPLETE absence of time reference (e.g., {{show_sales_example}} with no time indicator).
+- Recommend "use_default" for scope/metric ambiguity, prioritizing the most common interpretation — scope is NEVER a reason to clarify, whatever the query.
+- Recommend "clarify" for any statistical or aggregate measure with COMPLETE absence of time reference (e.g., {{show_sales_example}} with no time indicator), whatever its metric and grouping are.
 - Recommend "clarify" for temporal_unit_missing (a number + last/past/derniers WITHOUT a unit) — never guess the unit.
 - IMPORTANT: All queries are translated to English before analysis. Focus on English quantitative language.
-- CRITICAL: Financial terms that mean "revenue" are NEVER ambiguous - they always mean SUM of monetary values, NOT COUNT of transactions.
+- CRITICAL: Financial terms that mean "revenue" are never ambiguous ABOUT THE METRIC - they always mean SUM of monetary values, NOT COUNT of transactions. They are still ambiguous about the PERIOD when none is given.
 Examples:
 {{detect_examples}}
 

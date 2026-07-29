@@ -18,7 +18,7 @@ text_suppliers_payment_terms = [Payment terms for {{supplier_name}}]
 text_status_active = [Active for {{supplier_name}}]
 text_status_inactive = [Inactive for {{supplier_name}}]
 
-You are a document analysis system. Extract a structured conceptual taxonomy from the following supplier information.
+text_create_taxonomy = You are a document analysis system. Extract a structured conceptual taxonomy from the following supplier information.
 The text contains supplier/manufacturer profile data including contact details, location, and business information.
 The output must strictly follow the format below.
 Each relevant piece of information must be assigned to the appropriate dimension.

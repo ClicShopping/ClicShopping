@@ -284,6 +284,19 @@ class DateTime
   }
 
   /**
+   * Returns the SQL session offset matching the PHP time zone, as +HH:MM.
+   * Single source of truth so NOW() and date() share one clock.
+   *
+   * @return string The numeric offset usable in SET time_zone.
+   */
+  public static function getSqlSessionOffset(): string
+  {
+    $offset = (new DateTimeZone(date_default_timezone_get()))->getOffset(new \DateTimeImmutable('now'));
+
+    return sprintf('%s%02d:%02d', $offset < 0 ? '-' : '+', intdiv(abs($offset), 3600), intdiv(abs($offset) % 3600, 60));
+  }
+
+  /**
    * Retrieves the current date and time formatted according to the specified format.
    *
    * @param string|null $format The date format to use. If null, a default long date format is applied.

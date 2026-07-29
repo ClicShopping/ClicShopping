@@ -132,7 +132,7 @@ class Update implements HooksInterface
               $categories_description = HTMLOverrideCommon::cleanHtmlForEmbedding($categories_description);
               $embedding_data .= $this->app->getDef('text_category_description', ['category_name' => $categories_name]) . ' : ' . $categories_description . "\n";;
 
-              $taxonomy = $this->semantics->createTaxonomy($categories_description, $language_code, null);
+              $taxonomy = $this->semantics->createTaxonomy($categories_description, $this->app->getDef('text_create_taxonomy'), $language_code, 300);
 
               if (!empty($taxonomy)) {
                   $lines = array_filter(array_map('trim', explode("\n", $taxonomy)));
@@ -148,10 +148,12 @@ class Update implements HooksInterface
                 }
 
                 // Ajouter à embedding_data en texte pour l'embedding
-                $embedding_data .= "\n" . $this->app->getDef('text_category_taxonomy') . " :\n";
-                foreach ($tags as $key => $value) {
-                $embedding_data .= "[$key]: $value\n";
-              }
+                if ($tags !== []) {
+                  $embedding_data .= "\n" . $this->app->getDef('text_category_taxonomy') . " :\n";
+                  foreach ($tags as $key => $value) {
+                    $embedding_data .= "[$key]: $value\n";
+                  }
+                }
             }
 
               if (!empty($seo_categories_title)) {

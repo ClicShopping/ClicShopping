@@ -20,6 +20,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
 
 /**
@@ -47,6 +48,13 @@ class FaqEmbeddingGenerator
   private mixed $db;
 
   /**
+   * Ecommerce app instance, used to read the taxonomy prompt from the language file.
+   *
+   * @var mixed
+   */
+  private mixed $app;
+
+  /**
    * FAQ Repository instance
    *
    * @var FaqRepository
@@ -70,6 +78,11 @@ class FaqEmbeddingGenerator
     $this->db = Registry::get('Db');
     $this->repository = new FaqRepository();
     $this->semantics = new SemanticAgent();
+
+    if (!Registry::exists('Ecommerce')) {
+      Registry::set('Ecommerce', new EcommerceApp());
+    }
+    $this->app = Registry::get('Ecommerce');
   }
 
   /**
@@ -139,12 +152,14 @@ class FaqEmbeddingGenerator
 
       // Step 4: Get language code for taxonomy generation
       $languageCode = $this->getLanguageCode($languageId);
+      $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/FAQ/rag', $languageCode);
 
       // Step 5: Generate taxonomy using SemanticAgent
       $taxonomy = $this->semantics->createTaxonomy(
         HTMLOverrideCommon::cleanHtmlForEmbedding($embeddingData),
+        $this->app->getDef('text_create_taxonomy'),
         $languageCode,
-        null
+        300
       );
 
       $tags = [];

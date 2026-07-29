@@ -17,7 +17,7 @@ text_orders_products_return_history_comment = [Commentaire de l'historique du re
 text_orders_products_return_history_date_added = [Date ajout de l'historique du retour]
 text_return_order_taxonomy = Taxonomie :
 
-Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+text_create_taxonomy = Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
 Le texte correspond à une politique e-commerce de commande ou de retour (ni un produit, ni un fournisseur, ni une catégorie générale).
 Le résultat doit suivre strictement le format ci-dessous.
 Chaque information pertinente doit être rangée dans la dimension appropriée.

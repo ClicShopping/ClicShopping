@@ -12,6 +12,7 @@ use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Cache as OMCache;
 
 /**
  * SchemaEmbedder
@@ -30,6 +31,7 @@ use ClicShopping\OM\Registry;
  */
 class SchemaEmbedder
 {
+  private static bool $currencyChecked = false;
   private mixed $db;
   private bool $debug;
   private string $tablePrefix;
@@ -74,6 +76,108 @@ class SchemaEmbedder
     }
 
     return $embeddings;
+  }
+
+  /**
+   * Fingerprint of the live schema: names, types and comments of every column, in one round-trip.
+   *
+   * Cheap enough (~4 ms) to be tested on every retrieval, unlike buildAllSchemaTexts() which
+   * issues one SHOW FULL COLUMNS per table.
+   *
+   * @return string MD5 of the schema shape, '' when it cannot be computed
+   */
+  public function schemaFingerprint(): string
+  {
+    $Q = $this->db->query(
+      "SELECT MD5(GROUP_CONCAT(CONCAT_WS(0x1f, TABLE_NAME, COLUMN_NAME, COLUMN_TYPE, IFNULL(COLUMN_COMMENT,''))
+                               ORDER BY TABLE_NAME, ORDINAL_POSITION SEPARATOR 0x1e)) AS fingerprint
+       FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()"
+    );
+
+    return $Q->fetch() ? (string)$Q->value('fingerprint') : '';
+  }
+
+  /**
+   * Bring the store back in line with the schema when the schema has moved.
+   *
+   * The weekly `embeddings` cron is the intended refresh, but nothing guarantees it runs — on this
+   * install it does not. Without a second path, a table added, dropped or re-commented degrades
+   * retrieval silently until someone notices. Same principle as the language definitions: the live
+   * schema is the source of truth and the derived store repairs itself.
+   *
+   * A schema is near-constant, so this is throttled to ONE check a day: within that window the
+   * common case costs zero queries. Past it, two stages — a one-query fingerprint, and the exact
+   * missing/stale comparison only when that fingerprint moved. A missing baseline is NOT treated
+   * as drift — it costs one comparison, never a blind re-embedding of the whole store.
+   *
+   * @param int $maxTables Above this many changed tables the work is left to the cron / manual sync
+   * @param string $checkEveryMinutes Throttle window, in minutes (default one day)
+   * @return array Sync statistics, or [] when nothing had to be done
+   */
+  public function ensureCurrent(int $maxTables = 25, string $checkEveryMinutes = '1440'): array
+  {
+    if (self::$currencyChecked) {
+      return [];
+    }
+
+    self::$currencyChecked = true;
+
+    try {
+      $cache = new OMCache('rag-schema-fingerprint');
+
+      if ($cache->exists($checkEveryMinutes)) {
+        return [];
+      }
+
+      $fingerprint = $this->schemaFingerprint();
+
+      if ($fingerprint === '') {
+        return [];
+      }
+
+      $baseline = $cache->get();
+
+      if (is_string($baseline) && $baseline === $fingerprint) {
+        $cache->save($fingerprint);
+
+        return [];
+      }
+
+      $coverage = $this->getCoverage();
+      $changed = count($coverage['missing'] ?? []) + count($coverage['stale'] ?? []);
+
+      if ($changed === 0) {
+        $cache->save($fingerprint);
+
+        return [];
+      }
+
+      $logger = new SecurityLogger();
+
+      if ($changed > $maxTables) {
+        $logger->logApplicationError(
+          "Schema store behind the schema by {$changed} tables — above the inline limit, left to the cron",
+          ['missing' => count($coverage['missing'] ?? []), 'stale' => count($coverage['stale'] ?? [])]
+        );
+
+        return [];
+      }
+
+      $stats = $this->syncAllTables();
+      $cache->save($this->schemaFingerprint());
+
+      $logger->logApplicationError(
+        'Schema store re-synced inline (cron did not run): '
+          . ($stats['created'] ?? 0) . ' created, ' . ($stats['updated'] ?? 0) . ' updated, '
+          . ($stats['deleted'] ?? 0) . ' deleted',
+        ['changed_tables' => $changed]
+      );
+
+      return $stats;
+    } catch (\Throwable $e) {
+      // Never let a freshness check break a user query: degraded retrieval beats no answer.
+      return [];
+    }
   }
 
   /**

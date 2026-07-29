@@ -8,6 +8,8 @@
 
 namespace ClicShopping\AI\CoreAI\Planning\SubPlanExecutor;
 
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\CoreAI\Planning\ExecutionPlan;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ResultValidator;
@@ -42,6 +44,9 @@ class ResultSynthesizer
   {
     $this->logger = new SecurityLogger();
     $this->debug = $debug;
+
+    // User-facing labels: agnostic layer, loaded once via the native loader (AGENTS.md §5.3).
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
     $this->validator = new ResultValidator($debug);
     $this->formatter = new ResultFormatter($this->logger, $this->debug);
 
@@ -83,6 +88,18 @@ class ResultSynthesizer
 
     // Get all step results
     $stepResults = $plan->getAllStepResults();
+    foreach ($stepResults as $stepResult) {
+      if (is_array($stepResult) && ($stepResult['type'] ?? '') === 'clarification_needed') {
+        return $this->formatter->ensureSourceAttribution([
+          'type' => 'clarification_needed',
+          'clarification_needed' => true,
+          'text_response' => $stepResult['message'] ?? '',
+          'ambiguity_type' => $stepResult['ambiguity_type'] ?? null,
+          'query' => $stepResult['query'] ?? '',
+          'data' => [],
+        ]);
+      }
+    }
 
     $validatedResults = $this->validateStepResults($stepResults);
 
@@ -808,32 +825,27 @@ class ResultSynthesizer
    */
   private function generateUserFriendlyErrorMessage(array $errors): string
   {
-    // Check for common error patterns and generate appropriate messages
+    // The needles are INTERNAL validator strings, never shown; only the returned label is.
     foreach ($errors as $error) {
-      // Pattern: "Semantic result missing sources and data"
       if (str_contains($error, 'Semantic result missing sources and data')) {
-        return "I couldn't find any information about that in the database. The requested content (like terms and conditions) may not be available yet. Please try asking about something else or contact support to add this content.";
+        return CLICSHOPPING::getDef('text_synth_error_semantic_no_grounding');
       }
 
-// Pattern: "Analytics result missing data"
       if (str_contains($error, 'Analytics result missing data')) {
-        return "I couldn't retrieve the requested data. This might be because there are no records matching your query, or the data hasn't been entered yet. Please try a different query or check if the data exists.";
+        return CLICSHOPPING::getDef('text_synth_error_analytics_no_data');
       }
 
-// Pattern: "Hybrid result missing"
       if (str_contains($error, 'Hybrid result missing')) {
-        return "I couldn't complete your request because some of the required information is missing. Please try breaking your question into smaller parts or asking about something else.";
+        return CLICSHOPPING::getDef('text_synth_error_hybrid_incomplete');
       }
 
-// Pattern: "Empty response"
-// Note: Using stripos here handles 'empty', 'Empty', 'EMPTY', etc., in one go
+      // stripos covers 'empty', 'Empty', 'EMPTY' in one go
       if (stripos($error, 'empty') !== false) {
-        return "I couldn't find any results for your query. The information you're looking for might not be available in the system yet. Please try rephrasing your question or asking about something else.";
+        return CLICSHOPPING::getDef('text_synth_error_empty_results');
       }
     }
 
-    // Default fallback message
-    return "I encountered an issue processing your request. The information you're looking for might not be available, or there might be a problem with the query. Please try rephrasing your question or contact support if the issue persists.";
+    return CLICSHOPPING::getDef('text_synth_error_default');
   }
 
   /**

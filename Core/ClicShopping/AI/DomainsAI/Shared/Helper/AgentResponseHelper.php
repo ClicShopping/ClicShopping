@@ -426,12 +426,14 @@ class AgentResponseHelper
     ?string $ambiguityType = null,
     ?string $customMessage = null
   ): array {
-    // Use language definition or custom message
-    $message = $customMessage ?? CLICSHOPPING::getDef('text_query_too_ambiguous');
-    
-    // Fallback if translation key is returned (not translated)
-    if ($message === 'text_query_too_ambiguous') {
-      $message = 'Votre requête est trop ambiguë. Veuillez être plus précis sur ce que vous voulez savoir.';
+    // A missing period is not a vague question: the metric is clear, only its window is absent.
+    // Asking "be more specific" there tells the user nothing about WHAT to supply.
+    $definitionKey = $ambiguityType === 'time' ? 'text_query_missing_period' : 'text_query_too_ambiguous';
+    $message = $customMessage ?? CLICSHOPPING::getDef($definitionKey);
+
+    // Fallback if the key comes back unresolved
+    if ($message === $definitionKey) {
+      $message = CLICSHOPPING::getDef('text_query_too_ambiguous');
     }
 
     return [

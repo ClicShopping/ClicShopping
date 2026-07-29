@@ -10,6 +10,7 @@ namespace ClicShopping\OM\Db;
 
 use PDO;
 use ClicShopping\Apps\Configuration\Cache\Classes\ClicShoppingAdmin\CacheAdmin;
+use ClicShopping\OM\DateTime;
 
 /**
  * Represents a MySQL database connection and driver with specific implementations
@@ -55,7 +56,8 @@ class MySQL extends \ClicShopping\OM\Db
     }
 
     if (!isset($this->driver_options[\Pdo\Mysql::ATTR_INIT_COMMAND])) {
-      $this->driver_options[\Pdo\Mysql::ATTR_INIT_COMMAND] = 'set session sql_mode="STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"';
+      // time_zone aligns NOW() on the PHP clock (Conf/global.php time_zone), so both write the same instant
+      $this->driver_options[\Pdo\Mysql::ATTR_INIT_COMMAND] = 'set session sql_mode="STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION", time_zone="' . DateTime::getSqlSessionOffset() . '"';
     }
 
     $this->establishConnection();

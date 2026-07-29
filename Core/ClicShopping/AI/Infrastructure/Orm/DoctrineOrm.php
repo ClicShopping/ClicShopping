@@ -24,7 +24,7 @@ use ClicShopping\AI\Rag\EmbeddingTableDiscovery;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\Config\DomainFields;
-
+use ClicShopping\OM\DateTime;
 /**
 * Class DoctrineOrm
  *
@@ -113,7 +113,8 @@ class DoctrineOrm
       'host' => CLICSHOPPING::getConfig('db_server'),
       'charset' => 'utf8mb4',
       'driverOptions' => [
-        \Pdo\Mysql::ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+        // time_zone aligns NOW() on the PHP clock, same rule as OM\Db\MySQL
+        \Pdo\Mysql::ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci, time_zone="' . DateTime::getSqlSessionOffset() . '"',
         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
       ],
