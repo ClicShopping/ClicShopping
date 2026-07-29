@@ -155,9 +155,10 @@ class FaqEmbeddingGenerator
       $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/FAQ/rag', $languageCode);
 
       // Step 5: Generate taxonomy using SemanticAgent
+      $taxonomyText = HTMLOverrideCommon::cleanHtmlForEmbedding($embeddingData);
       $taxonomy = $this->semantics->createTaxonomy(
-        HTMLOverrideCommon::cleanHtmlForEmbedding($embeddingData),
-        $this->app->getDef('text_create_taxonomy'),
+        $taxonomyText,
+        $this->app->getDef('text_create_taxonomy', ['document_text' => $taxonomyText]),
         $languageCode,
         300
       );

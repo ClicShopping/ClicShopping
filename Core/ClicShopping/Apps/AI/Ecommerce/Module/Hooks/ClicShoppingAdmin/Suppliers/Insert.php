@@ -183,7 +183,8 @@ class Insert implements HooksInterface
 
             // Get default language code for taxonomy (suppliers don't have language_id)
             $default_language_code = $this->lang->getCode() ?? 'en';
-            $taxonomy = $this->semantics->createTaxonomy(HtmlOverrideCommon::cleanHtmlForEmbedding($embedding_data), $this->app->getDef('text_create_taxonomy'), $default_language_code, 300);
+            $taxonomy_text = HtmlOverrideCommon::cleanHtmlForEmbedding($embedding_data);
+            $taxonomy = $this->semantics->createTaxonomy($taxonomy_text, $this->app->getDef('text_create_taxonomy', ['document_text' => $taxonomy_text]), $default_language_code, 300);
 
             if (!empty($taxonomy)) {
               $lines = array_filter(array_map('trim', explode("\n", $taxonomy)));

@@ -162,7 +162,8 @@ class Update implements HooksInterface
             if (!empty($reviews_text)) {
               $embedding_data .= $this->app->getDef('text_reviews_description', ['products_name' => $products_name]) . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($reviews_text) . "\n";
 
-              $taxonomy = $this->semantics->createTaxonomy(HTMLOverrideCommon::cleanHtmlForEmbedding($reviews_text), $this->app->getDef('text_create_taxonomy'), $language_code, 300);
+              $taxonomy_text = HTMLOverrideCommon::cleanHtmlForEmbedding($reviews_text);
+              $taxonomy = $this->semantics->createTaxonomy($taxonomy_text, $this->app->getDef('text_create_taxonomy', ['document_text' => $taxonomy_text]), $language_code, 300);
 
               if (!empty($taxonomy)) {
                 $lines = array_filter(array_map('trim', explode("\n", $taxonomy)));

@@ -21,6 +21,7 @@
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\FeedbackCollector;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\RuleAdjuster;
   use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\SeoCronRunner;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\EmbeddingCronRunner;
   use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment\ReviewSentimentCronRunner;
   use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
   
@@ -103,6 +104,11 @@ class Process implements HooksInterface
     // so they run independently whether triggered by the full sweep
     
     $this->runCockpitAiCron();
+
+    // Entity embeddings (categories, manufacturers, products, reviews,
+    // suppliers) — consolidated here from the former ChatGpt app Cron class:
+    // these are e-commerce entities, so their generation belongs to AI/Ecommerce.
+    (new EmbeddingCronRunner())->run();
 
     // Review-sentiment daily generation — shared runner, self-gated on its own
     // cron code + master switch. Consolidated here from the former Reviews app

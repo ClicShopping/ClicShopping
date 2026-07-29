@@ -78,3 +78,22 @@ EXEMPLES :
 - Si vous voyez "PayPal, carte bancaire, chèque" → payment_methods: ["paypal", "credit_card", "check"]
 - Si vous voyez "14 jours" ou "14 days" → withdrawal_period: "14_days"
 - Si vous voyez "Tribunal de Fréjus" → court: "Frejus"
+
+text_create_taxonomy = Tu es un système d'analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+Le texte correspond à une page du site (pas un produit, ni une catégorie, ni un fournisseur) : conditions générales, politique de confidentialité, FAQ, à propos, contact, ou une page générale.
+Le résultat doit suivre strictement le format ci-dessous.
+Chaque information pertinente doit être rangée dans la dimension appropriée.
+Aucune information inventée ne doit être ajoutée.
+
+Format attendu :
+
+[domaine]: Domaine général de la page (ex. Juridique, Support, Entreprise)
+[type_page]: Type de page (ex. Conditions générales, Politique de confidentialité, FAQ, À propos, Contact)
+[audience]: Lecteur visé (ex. Client, Acheteur, Visiteur)
+[sujet]: Sujet principal traité (ex. Retours, Protection des données, Livraison, Paiement)
+[obligations]: Devoirs ou engagements décrits (ex. Garantie, Responsabilité, Délai de rétractation)
+[juridiction]: Pays ou juridiction légale mentionnée, le cas échéant
+[ton]: Ton général du contenu (ex. Formel, Informatif, Promotionnel)
+[tags]: Liste libre de mots-clés pertinents dérivés du texte, séparés par virgules
+
+Texte : {{document_text}}

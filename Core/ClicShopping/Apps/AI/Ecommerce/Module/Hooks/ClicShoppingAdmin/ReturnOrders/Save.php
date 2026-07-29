@@ -176,7 +176,8 @@ class Save implements HooksInterface
           $embedding_data .= $this->returnOrdersHistory($return_id);
 
           if (!empty($this->returnOrdersHistory($return_id))) {
-            $taxonomy = $this->semantics->createTaxonomy(HTMLOverrideCommon::cleanHtmlForEmbedding($embedding_data), $this->app->getDef('text_create_taxonomy'), $this->lang->getCode(), 300);
+            $taxonomy_text = HTMLOverrideCommon::cleanHtmlForEmbedding($embedding_data);
+            $taxonomy = $this->semantics->createTaxonomy($taxonomy_text, $this->app->getDef('text_create_taxonomy', ['document_text' => $taxonomy_text]), $this->lang->getCode(), 300);
 
             if (!empty($taxonomy)) {
               $lines = array_filter(array_map('trim', explode("\n", $taxonomy)));

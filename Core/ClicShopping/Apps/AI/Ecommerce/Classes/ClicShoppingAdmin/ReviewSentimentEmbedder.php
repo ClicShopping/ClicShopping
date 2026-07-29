@@ -127,7 +127,7 @@ class ReviewSentimentEmbedder
         $embedding_data .= 'Verdict critic : ' . $critic_verdict . "\n";
       }
 
-      $taxonomy = $this->semantics->createTaxonomy($description, $this->app->getDef('text_create_taxonomy'), $languageCode, 300);
+      $taxonomy = $this->semantics->createTaxonomy($description, $this->app->getDef('text_create_taxonomy', ['document_text' => $description]), $languageCode, 300);
 
       $tags = [];
       if (!empty($taxonomy)) {

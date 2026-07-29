@@ -1059,7 +1059,7 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
    *  Create a taxonomy from the given text.
    *  The taxonomy is structured as [domain]: xxx, [type]: yyy, [subject]: zzz, etc.
    * @param string $text
-   * @param string $prompt
+   * @param string $prompt Must arrive already substituted (e.g. via getDef()); a leftover placeholder aborts the call
    * @param string|null $language_code
    * @param int|null $min_character Minimum TEXT length in characters below which no call is made
    * @return string
@@ -1078,6 +1078,13 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
 
     // $min_character guards the TEXT length in characters, not a word count.
     if (strlen($text) < (int)$min_character) {
+      return '';
+    }
+
+    // A leftover placeholder means the caller forgot to substitute; refuse rather than let the LLM tag from the template examples.
+    if (preg_match('/\{\{[A-Za-z0-9_-]+\}\}/', $prompt)) {
+      self::logApplicationError('createTaxonomy: unresolved placeholder in prompt, taxonomy skipped');
+
       return '';
     }
 
