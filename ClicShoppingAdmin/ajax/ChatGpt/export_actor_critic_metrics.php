@@ -12,7 +12,7 @@ use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\Adm
 use ClicShopping\AI\Infrastructure\Metrics\ActorCriticMetricsProvider;
 
 define('PAGE_PARSE_START_TIME', microtime());
-define('CLICSHOPPING_BASE_DIR', realpath(__DIR__ . '/../../../Core/ClicShopping/') . '/');
+define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/');
 
 require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
 spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');

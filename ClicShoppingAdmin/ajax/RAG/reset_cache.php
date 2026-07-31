@@ -21,7 +21,7 @@ use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\Adm
 
 // Bootstrap
 define('PAGE_PARSE_START_TIME', microtime());
-define('CLICSHOPPING_BASE_DIR', realpath(__DIR__ . '/../../../Core/ClicShopping/') . '/');
+define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/');
 
 require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
 
