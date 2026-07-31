@@ -79,14 +79,14 @@ maintainer. Response will be provided within a reasonable timeframe,
 typically within 15 business days.
 
 **Contact**
-For all questions via github : https:://github.com/clicshopping
+For all questions via github : [https:://github.com/clicshopping](https://github.com/ClicShopping)
 
 Please include in your inquiry: your intended use case, approximate
 scale of deployment, and any questions regarding AGPLv3 compliance.
 
 
 **Clause update**
-The copyright holder reserves the right to modify commercial licensing policies, revenue thresholds, and related terms at any time.
+The copyright holder reserves the right to revise commercial licensing policies, revenue thresholds, and related terms at any time.
 
 Any modification shall apply only to future versions, future deployments, or newly executed commercial agreements and shall not alter rights previously granted under a signed agreement.
 

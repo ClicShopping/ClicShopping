@@ -67,8 +67,8 @@ AGPLv3 terms for external users.
 
 **Governing Law**
 
-This CLA is governed by the residence of the city of the product owner. Disputes shall be submitted to the
-competent courts of place of the residence of the city of the product owner.
+This Agreement shall be governed by the laws of the country of habitual residence of the copyright holder at the time the dispute arises.
+The competent courts of that jurisdiction shall have exclusive jurisdiction.
 
 **Enforcement**
 
