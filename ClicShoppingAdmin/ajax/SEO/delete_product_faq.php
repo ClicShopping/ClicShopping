@@ -10,7 +10,7 @@
   use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ\FaqRepository;
 
-  define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . DIRECTORY_SEPARATOR);
+  define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/');
 
   require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
   spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');

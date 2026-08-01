@@ -34,16 +34,9 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
             class="col-md-4 pageHeading"><?php echo '&nbsp;' . $CLICSHOPPING_ChatGpt->getDef('heading_title'); ?></span>
           <span class="col-md-7 text-end">
           <?php
-
-
-
-
           echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_configure'), null, $CLICSHOPPING_ChatGpt->link('Configure'), 'primary') . ' ';
-
-
           //modal to build
-            echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_add_model'), null, $CLICSHOPPING_ChatGpt->link('Create'), 'primary') . ' ';
-
+          echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_add_model'), null, $CLICSHOPPING_ChatGpt->link('Edit'), 'primary') . ' ';
 
           if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA_STATUS === 'True') {
             echo HTML::button($CLICSHOPPING_ChatGpt->getDef('button_rag_dashboard'), null, $CLICSHOPPING_ChatGpt->link('Dashboard'), 'danger') . ' ';

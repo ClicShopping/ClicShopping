@@ -28,8 +28,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use \ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
 // Include the necessary core files
-define('CLICSHOPPING_BASE_DIR', realpath(__DIR__ . '/../../../../Core/ClicShopping/') . '/');
-
+define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 4) . '/');
 
 require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
 spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');
