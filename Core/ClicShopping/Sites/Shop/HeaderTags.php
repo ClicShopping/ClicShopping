@@ -11,7 +11,6 @@ namespace ClicShopping\Sites\Shop;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
-use function is_array;
 /**
  * Retrieves and formats the meta tag information for the footer.
  * The data is fetched from the database for the current language
@@ -66,23 +65,19 @@ class HeaderTags
    */
   public static function getCanonicalUrl(): string
   {
-    $domain = CLICSHOPPING::getConfig('http_server', 'Shop');
+    // Same source as the strict router and the canonical tag when it arbitrated the request.
+    $canonical = UrlCanonicalizer::getCanonicalUrl();
 
-    $string = $_SERVER['REQUEST_URI'];   // gets the url
-    $search = '\&clicshopid.*|\?clicshopid.*'; // searches for the session id in the url
-    $replace = '';   // replaces with nothing i.e. deletes
-    $str = $string;
-    $chars = preg_split('/&/', $str, -1);
-    $newstring = '';
-
-    if (is_array($chars)) {
-      foreach ($chars as $value) {
-        $newstring = '?' . ($value[1] ?? 'NULL') . '&' . ($value[2] ?? 'NULL');
-      }
+    if ($canonical !== null) {
+      return HTML::outputProtected($canonical);
     }
 
-    $canonical_link = $domain . preg_replace('#' . $search . '#', $replace, $string);
+    $request_uri = (string)($_SERVER['REQUEST_URI'] ?? '');
 
-    return HTML::outputProtected($canonical_link);
+    // Drop the session id, in both the query string and the SEO PRO path form.
+    $request_uri = (string)preg_replace('#[&?]' . preg_quote(session_name(), '#') . '=[^&]*#', '', $request_uri);
+    $request_uri = (string)preg_replace('#/' . preg_quote(session_name(), '#') . '-[^/]+#', '', $request_uri);
+
+    return HTML::outputProtected(CLICSHOPPING::getConfig('http_server', 'Shop') . $request_uri);
   }
 }

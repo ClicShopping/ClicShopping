@@ -78,7 +78,7 @@ class bm_manufacturer_info
         }
 
         if (!empty($Qmanufacturers->value('manufacturers_url'))) {
-          $manufacturer_info_string .= '<div class="col-md-12">-&nbsp;' . HTML::link(CLICSHOPPING::link('redirect.php', 'action=manufacturer&manufacturersId=' . $Qmanufacturers->valueInt('manufacturers_id'), true, false), sprintf(CLICSHOPPING::getDef('module_boxes_manufacturer_info_box_homepage'), $Qmanufacturers->value('manufacturers_name')), '" target="_blank" rel="noopener"') . '</div>';
+          $manufacturer_info_string .= '<div class="col-md-12">-&nbsp;' . HTML::link(CLICSHOPPING::link('redirect.php', 'action=manufacturer&manufacturersId=' . $Qmanufacturers->valueInt('manufacturers_id'), true, false), sprintf(CLICSHOPPING::getDef('module_boxes_manufacturer_info_box_homepage'), $Qmanufacturers->value('manufacturers_name')), 'target="_blank" rel="noopener"') . '</div>';
         }
 
         $manufacturer_info_string .= '<div class="col-md-12">-&nbsp;' . HTML::link($manufacturer_url, CLICSHOPPING::getDef('module_boxes_manufacturer_info_box_other_products')) . '</div>';

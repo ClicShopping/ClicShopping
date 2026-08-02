@@ -28,6 +28,11 @@
       }
     }
   },
+  "canonical": {
+    "Shop": {
+      "parameters": []
+    }
+  },
   "routes": {
     "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
     "Shop": {

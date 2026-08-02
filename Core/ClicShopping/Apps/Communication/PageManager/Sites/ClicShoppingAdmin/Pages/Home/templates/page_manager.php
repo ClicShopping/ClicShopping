@@ -6,6 +6,7 @@
  * See LICENSE file.
  */
 
+use ClicShopping\Apps\Communication\PageManager\PageManager as PageManagerApp;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
@@ -238,7 +239,7 @@ $languages = $CLICSHOPPING_Language->getLanguages();
               echo '<a href="' . $CLICSHOPPING_PageManager->link('Edit&bID=' . $Qpages->valueInt('pages_id') . '&page=' . $page) . '"><h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_PageManager->getDef('icon_edit') . '"></i></h4></a>';
               echo '&nbsp;';
 
-              if ($Qpages->valueInt('pages_id') === 3 || $Qpages->valueInt('pages_id') === 4 || $Qpages->valueInt('pages_id' === 5)) {
+              if (in_array($Qpages->valueInt('pages_id'), PageManagerApp::LOCKED_PAGES_ID, true)) {
                 echo '&nbsp;';
               } else {
                 echo '<h4><i class="bi bi-trash2" title="' . $CLICSHOPPING_PageManager->getDef('icon_delete') . '"></i></h4>';

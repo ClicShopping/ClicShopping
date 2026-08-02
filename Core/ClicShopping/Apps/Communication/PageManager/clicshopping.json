@@ -21,6 +21,9 @@
       "Sitemap": "Module\\HeaderTags\\Sitemap"
     },
     "Hooks": {
+      "Shop/SiteUrl": {
+        "Canonical": "Module\\Hooks\\Shop\\SiteUrl\\Canonical"
+      },
       "ClicShoppingAdmin/Langues": {
         "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
         "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"

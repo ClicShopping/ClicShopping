@@ -35,3 +35,6 @@ ALTER TABLE clic_orders_total ADD COLUMN IF NOT EXISTS total_sign TINYINT NOT NU
 
 ===========
 DELETE FROM clic_configuration WHERE configuration_key = 'USE_CATALOG_RESET_CACHE';
+===========
+  update clic_configuration set configuration_value = replace(configuration_value, 'index.php?', '')
+  where configuration_key in ('SHOP_CODE_URL_CONFIDENTIALITY','SHOP_CODE_URL_CONDITIONS_VENTE');

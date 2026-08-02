@@ -24,7 +24,7 @@ class Gdpr extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     if (!$CLICSHOPPING_Customer->isLoggedOn()) {
       $CLICSHOPPING_NavigationHistory->setSnapshot();
-      CLICSHOPPING::redirect(null, 'Account&Gdpr');
+      CLICSHOPPING::redirect(null, 'Account&LogIn');
     }
 
     $CLICSHOPPING_Hooks->call('Gdpr', 'PreAction');

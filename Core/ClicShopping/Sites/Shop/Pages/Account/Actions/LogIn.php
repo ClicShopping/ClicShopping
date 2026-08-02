@@ -38,7 +38,7 @@ class LogIn extends \ClicShopping\OM\Domains\PagesActionsAbstract
         CLICSHOPPING::redirect(null, 'Account&LogIn&' . $all_get . (empty($all_get) ? '' : '&') . 'cookie_test=1');
       }
 
-      CLICSHOPPING::redirect(null, 'Info&CookieUsage');
+      CLICSHOPPING::redirect(null, 'Info&Cookies');
     }
 
     $CLICSHOPPING_Language->loadDefinitions('login');

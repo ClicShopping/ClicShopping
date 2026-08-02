@@ -80,7 +80,7 @@ class pre_products_recommendations
           sortOrder: (int)$this->sort_order,
           trackingWeight: 0.45,
           listingCommentLabel: 'Products Recommandations',
-          hiddenUrlField: 'Products&Recommandations',
+          hiddenUrlField: 'Products&Recommendations',
           displayCartButton: defined('MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_CART_BUTTON') && MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_CART_BUTTON === 'True',
           displayDetailsButton: defined('MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_DETAILS_BUTTON') && MODULE_PRODUCTS_RECOMMENDATIONS_DISPLAY_DETAILS_BUTTON === 'True',
           displaySortBar: false,

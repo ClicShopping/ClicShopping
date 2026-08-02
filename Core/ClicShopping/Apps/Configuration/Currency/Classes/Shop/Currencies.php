@@ -315,28 +315,61 @@ class Currencies
       reset($this->currencies);
       $currency_header = '';
 
-      $currencies_array = $this->getAll();
+      if (isset($_GET['Checkout'])) {
+        return '';
+      }
 
-      $hidden_get_variables = '';
+      // Each option carries a URL built by the routing helper, so switching currency lands on the
+      // canonical SEO PRO path. The former GET form let the browser serialize every $_GET key into
+      // "?key=value&..." — a shape the rewriting can never produce, so the visitor left the SEO
+      // URLs for a duplicate of the same page. Same approach as the language switcher.
+      $get_params = self::buildCurrentParameters();
+      $options = [];
+      $selected = null;
 
-      foreach ($_GET as $key => $value) {
-        if (is_string($value) && ($key != 'currency') && ($key != session_name()) && ($key != 'x') && ($key != 'y')) {
-          $hidden_get_variables .= HTML::hiddenField($key, $value);
+      foreach ($this->getAll() as $currency) {
+        $url = CLICSHOPPING::link(null, $get_params . 'currency=' . $currency['id']);
+
+        $options[] = [
+          'id' => $url,
+          'text' => $currency['text']
+        ];
+
+        if (isset($_SESSION['currency']) && $currency['id'] === $_SESSION['currency']) {
+          $selected = $url;
         }
       }
 
-      if (!isset($_GET['Checkout'])) {
-        $currency_header .= HTML::form('currencies', CLICSHOPPING::link(), 'get', null, ['session_id' => true]);
-        $aria = $aria_label !== '' ? ' aria-label="' . HTML::outputProtected($aria_label) . '"' : '';
+      $aria = $aria_label !== '' ? ' aria-label="' . HTML::outputProtected($aria_label) . '"' : '';
 
-        $currency_header .= $hidden_get_variables . HTML::selectField('currency', $currencies_array, HTML::sanitize($_SESSION['currency']), 'class="' . $class . '"' . $aria . ' onchange="this.form.submit();"');
-        $currency_header .= '</form>';
-      } else {
-        $currency_header = '';
-      }
+      $currency_header .= HTML::selectField('currency', $options, $selected, 'class="' . $class . '"' . $aria . ' onchange="if (this.value) window.location.href = this.value;"');
 
       return $currency_header;
     }
+  }
+
+  /**
+   * Rebuilds the parameters of the current request so the currency switch keeps the visitor on the
+   * same page. Valued keys are re-emitted as "key=value" and empty ones as the bare key, which is
+   * what preserves the route segments (Info, Content, ...) through CLICSHOPPING::link().
+   *
+   * @return string A parameter string ending with '&', or an empty string.
+   */
+  private static function buildCurrentParameters(): string
+  {
+    $get_params = [];
+
+    foreach ($_GET as $key => $value) {
+      if (!is_string($value) || $key === 'currency' || $key === session_name() || $key === 'x' || $key === 'y') {
+        continue;
+      }
+
+      $get_params[] = ($value !== '') ? $key . '=' . $value : $key;
+    }
+
+    $get_params = implode('&', $get_params);
+
+    return $get_params !== '' ? $get_params . '&' : '';
   }
 
 

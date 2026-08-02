@@ -11,8 +11,8 @@ namespace ClicShopping\Apps\Communication\PageManager\Sites\Shop\Pages\Content\A
 use ClicShopping\Apps\Communication\PageManager\PageManager as PageManagerApp;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Shop\UrlCanonicalizer;
 
 class Content extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
@@ -46,8 +46,9 @@ class Content extends \ClicShopping\OM\Domains\PagesActionsAbstract
 //Content
         $this->page->data['content'] = $CLICSHOPPING_Template->getTemplateFiles('page_manager');
       } else {
-        $url = HTTP::redirect(HTTP::getShopUrlDomain() . 'index.php');
-        header('Location: ' . $url);
+        // Unpublished or unknown page: 404 directly. The former redirect built a doubled
+        // absolute URL and read as a soft 404 for search engines.
+        UrlCanonicalizer::notFound();
       }
     } else {
       $CLICSHOPPING_PageManager->redirect();

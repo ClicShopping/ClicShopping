@@ -251,6 +251,9 @@ class Shop extends SitesAbstract
 // en relation avec SitesAbstract
     $page_code = $this->default_page;
 
+// number of leading $_GET keys the routing has consumed, for UrlCanonicalizer
+    $consumed = 0;
+
     if (class_exists('ClicShopping\Custom\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code)) {
       $class = 'ClicShopping\Custom\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code;
     } elseif (class_exists('ClicShopping\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code)) {
@@ -271,6 +274,7 @@ class Shop extends SitesAbstract
 
           if (class_exists('ClicShopping\Apps\\' . $vendor_app . '\\' . $page . '\\' . $page_code)) {
             $class = 'ClicShopping\Apps\\' . $vendor_app . '\\' . $page . '\\' . $page_code;
+            $consumed = count(explode('&', (string)($route['path'] ?? '')));
           }
         }
       } else {
@@ -288,10 +292,12 @@ class Shop extends SitesAbstract
           $page_code = $req;
 
           $class = 'ClicShopping\Custom\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code;
+          $consumed = 1;
         } elseif (class_exists('ClicShopping\Sites\\' . $this->code . '\Pages\\' . $req . '\\' . $req)) {
           $page_code = $req;
 
           $class = 'ClicShopping\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code;
+          $consumed = 1;
         }
       }
     }
@@ -301,10 +307,16 @@ class Shop extends SitesAbstract
         $this->page = new $class($this);
 
         $this->page->runActions();
+
+        if ($consumed > 0) {
+          $consumed = max($consumed, 1 + count($this->page->getActionsRun()));
+        }
       } else {
         trigger_error('ClicShopping\Sites\Shop\Shop::setPage() - ' . $page_code . ': Page does not implement ClicShopping\OM\Interfaces\PagesInterface and cannot be loaded.');
       }
     }
+
+    UrlCanonicalizer::enforce(array_keys(array_slice($_GET, 0, $consumed, true)), $this->route ?? null);
   }
 
   /**

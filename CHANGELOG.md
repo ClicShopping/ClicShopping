@@ -5,7 +5,7 @@ version4.33
 - error_log management improved
 - Allow to manage 3 taxes (europe, CA, US for example) 
 - Order total caculation improvement
-- URL error improvement (front office)
+- URL canonical improvement (front office) for SEO
 - AI
   - Add distinction between Agents and Actors
   - AI review sentiment analysis improved and refactored with agentic approach
@@ -14,6 +14,7 @@ version4.33
     - New features and configuration
   - AI response time optimization
   - Some refactorisation and improvement
+  - best solidity chat response
 
   
 ---------------

@@ -39,6 +39,11 @@
       }
     }
   },
+  "canonical": {
+    "Shop": {
+      "parameters": ["products_id", "reviews_id", "Success"]
+    }
+  },
   "routes": {
     "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
     "Shop": {

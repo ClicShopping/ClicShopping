@@ -8,7 +8,6 @@ namespace ClicShopping\Apps\Communication\PageManager\Classes\Shop;
 use ClicShopping\OM\Cache;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
 /**
  * PageManagerShop is a class that provides functionality to interact with
@@ -262,12 +261,12 @@ class PageManagerShop
 
     while ($QPage->fetch() !== false) {
       if (!empty($QPage->value('externallink'))) {
-        $search = str_contains($QPage->value('externallink'), 'index.php');
+        $search = !self::isExternalLink($QPage->value('externallink'));
 
         if ($search === false) {
           $page_liste_box .= '<span class="InformationFooter">' . HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . ' rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"') . '</span>';
         } else {
-          $page_liste_box .= '<span class="InformationFooter">' . HTML::link(CLICSHOPPING::link($QPage->value('externallink')), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"') . '</span>' . '<br />';
+          $page_liste_box .= '<span class="InformationFooter">' . HTML::link(self::buildStoredLinkUrl($QPage->value('externallink')), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"') . '</span>' . '<br />';
         }
       } else {
         if ($QPage->valueInt('pages_id') != 3) {
@@ -352,12 +351,12 @@ class PageManagerShop
         }
 
         if (!empty($QPageSecondary->value('externallink'))) {
-          $search = str_contains($QPageSecondary->value('externallink'), 'index.php');
+          $search = !self::isExternalLink($QPageSecondary->value('externallink'));
 
           if ($search === false) {
             $page_liste_box_secondary .= '<span class="SecondaryBoxInformation">' . HTML::link($QPageSecondary->value('externallink'), $QPageSecondary->value('pages_title'), 'target="' . $QPageSecondary->value('links_target') . '" rel="noreferrer" title="' . $QPageSecondary->value('pages_title') . '"  id="' . $QPageSecondary->value('pages_title') . '"') . '</span>';
           } else {
-            $page_liste_box_secondary .= '<span class="SecondaryBoxInformation">' . HTML::link(CLICSHOPPING::link($QPageSecondary->value('externallink')), $QPageSecondary->value('pages_title'), 'target="' . $QPageSecondary->value('links_target') . '" title="' . $QPageSecondary->value('pages_title') . '"  id="' . $QPageSecondary->value('pages_title') . '"') . '</span><br />';
+            $page_liste_box_secondary .= '<span class="SecondaryBoxInformation">' . HTML::link(self::buildStoredLinkUrl($QPageSecondary->value('externallink')), $QPageSecondary->value('pages_title'), 'target="' . $QPageSecondary->value('links_target') . '" title="' . $QPageSecondary->value('pages_title') . '"  id="' . $QPageSecondary->value('pages_title') . '"') . '</span><br />';
           }
         } else {
           if ($QPageSecondary->valueInt('pages_id') != 3) {
@@ -441,20 +440,15 @@ class PageManagerShop
       }
 
       if (!empty($QPage->value('externallink'))) {
-        $search = (str_contains($QPage->value('externallink'), 'index.php'));
-        $search1 = (str_contains($QPage->value('externallink'), 'http'));
-
-        if ($search === true) {
+        // The "contains index.php" branch used to link to link(null, null) — the home page —
+        // silently discarding the parameters the entry carries.
+        if (self::isExternalLink($QPage->value('externallink'))) {
           $page_menu_header .= $start_class . $separ;
-          $page_menu_header .= HTML::link(CLICSHOPPING::link(null, null), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '" class="menuHeaderPageManager" rel="noreferrer"  title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
-          $page_menu_header .= $end_class;
-        } elseif ($search1 === true) {
-          $page_menu_header .= $start_class . $separ;
-          $page_menu_header .= HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'class="menuHeaderPageManager" target="' . $QPage->value('links_target') . '" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
+          $page_menu_header .= HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'class="menuHeaderPageManager" target="' . $QPage->value('links_target') . '" rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
           $page_menu_header .= $end_class;
         } else {
           $page_menu_header .= $start_class . $separ;
-          $page_menu_header .= HTML::link(CLICSHOPPING::link(null, $QPage->value('externallink')), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '" class="menuHeaderPageManager" rel="noreferrer"  title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
+          $page_menu_header .= HTML::link(self::buildStoredLinkUrl($QPage->value('externallink')), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '" class="menuHeaderPageManager" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
           $page_menu_header .= $end_class;
         }
       }
@@ -519,12 +513,12 @@ class PageManagerShop
       }
 
       if (!empty($QPage->value('externallink'))) {
-        $search = str_contains($QPage->value('externallink'), 'index.php');
+        $search = !self::isExternalLink($QPage->value('externallink'));
 
         if ($search === false) {
           $page_menu_header .= $start_class . $separ . HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . ' class="menuFooterPageManager" rel="noreferrer"  title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"') . $end_class;
         } else {
-          $page_menu_header .= $start_class . $separ . HTML::link(CLICSHOPPING::link($QPage->value('externallink')), $QPage->value('pages_title'), 'class="menuHeaderPageManager" target="' . $QPage->value('links_target') . '"  title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"') . $end_class;
+          $page_menu_header .= $start_class . $separ . HTML::link(self::buildStoredLinkUrl($QPage->value('externallink')), $QPage->value('pages_title'), 'class="menuHeaderPageManager" target="' . $QPage->value('links_target') . '"  title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"') . $end_class;
         }
       }
     }
@@ -590,11 +584,11 @@ class PageManagerShop
       }
 
       if (!empty($QPage->value('externallink'))) {
-        $search = str_contains($QPage->value('externallink'), 'index.php');
+        $search = !self::isExternalLink($QPage->value('externallink'));
         if ($search === false) {
           $page_liste_footer .= $separation . HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '"', 'class="footerPageManager" rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
         } else {
-          $page_liste_footer .= $separation . HTML::link(CLICSHOPPING::link($QPage->value('externallink')), $QPage->value('pages_title'), 'class="footerPageManager" target="' . $QPage->value('links_target') . '" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
+          $page_liste_footer .= $separation . HTML::link(self::buildStoredLinkUrl($QPage->value('externallink')), $QPage->value('pages_title'), 'class="footerPageManager" target="' . $QPage->value('links_target') . '" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
         }
       } else {
         if ($QPage->valueInt('pages_id') != 3) {
@@ -620,11 +614,12 @@ class PageManagerShop
    *
    * This method queries the database to fetch the page details associated with the given
    * page ID, considering filters such as page type, status, language, and customer group.
-   * If the page type matches a specific value, it redirects to a predefined URL.
-   * If the page is not found, it redirects to the shop's homepage.
+   * A page_type 3 entry is a redirection entry towards the contact page, so it redirects.
+   * An unknown page returns an empty string: deciding what an unknown page means belongs
+   * to the caller (the Content action answers 404), not to a getter.
    *
    * @param int $id The ID of the page to retrieve from the page manager.
-   * @return string The HTML content of the page, or redirects to a URL if applicable.
+   * @return string The HTML content of the page, empty when the page does not exist.
    */
   public function pageManagerDisplayInformation(int $id): string
   {
@@ -653,7 +648,9 @@ class PageManagerShop
 
     if ($QPage->fetch() !== false) {
       if ($QPage->value('page_type') == 3) {
-        CLICSHOPPING::redirect(HTTP::getShopUrlDomain() . 'index.php?Info&Contact');
+        // Redirection entry towards the contact page. link() expects a page and parameters:
+        // handing it an absolute URL used to produce a doubled domain in the Location header.
+        CLICSHOPPING::redirect(null, 'Info&Contact');
       } else {
         $pages = [
           'pages_id' => $QPage->valueInt('pages_id'),
@@ -661,11 +658,9 @@ class PageManagerShop
           'pages_html_text' => $QPage->value('pages_html_text')
         ];
       }
-    } else {
-      CLICSHOPPING::redirect(HTTP::getShopUrlDomain() . 'index.php');
     }
 
-    return $pages['pages_html_text'];
+    return $pages['pages_html_text'] ?? '';
   }
 
   /**
@@ -706,7 +701,8 @@ class PageManagerShop
 
     if ($QPage->fetch() !== false) {
       if ($QPage->valueInt('page_type') == 3) {
-        CLICSHOPPING::redirect(HTTP::getShopUrlDomain() . 'index.php?Info&Contact');
+        // See pageManagerDisplayInformation(): an absolute URL doubled the domain.
+        CLICSHOPPING::redirect(null, 'Info&Contact');
       } else {
         $pages = [
           'pages_id' => $QPage->valueInt('pages_id'),
@@ -715,7 +711,90 @@ class PageManagerShop
       }
     }
 
-    return $pages['pages_title'];
+    return $pages['pages_title'] ?? null;
+  }
+
+  /**
+   * Tells whether a stored `externallink` points OUTSIDE the shop.
+   *
+   * The rendering blocks used to decide with `str_contains($link, 'index.php')`, so a value like
+   * "Products&Specials" — the shape every page_type 5 entry uses — was taken for an external URL
+   * and emitted raw, i.e. as a RELATIVE link resolved against the current path.
+   *
+   * @param string|null $link The stored value.
+   * @return bool True for an absolute or protocol-relative destination, false for a shop route.
+   */
+  private static function isExternalLink(?string $link): bool
+  {
+    $link = trim((string)$link);
+
+    if ($link === '') {
+      return false;
+    }
+
+    return preg_match('#^([a-z][a-z0-9+.-]*:)?//#i', $link) === 1
+      || preg_match('#^(mailto|tel):#i', $link) === 1;
+  }
+
+  /**
+   * Turns a stored `externallink` into a usable URL.
+   *
+   * The column holds a page AND its query string ("index.php?Info&RSS"), so handing the whole
+   * value to CLICSHOPPING::link() as a page was wrong: under SEO PRO the '?' is stripped and
+   * the emitted URL became "index.phpInfo/RSS", which designates nothing.
+   *
+   * @param string|null $link The stored value.
+   * @return string An absolute URL built by the routing helper.
+   */
+  private static function buildStoredLinkUrl(?string $link): string
+  {
+    $link = trim((string)$link);
+    $page = null;
+    $parameters = $link;
+
+    if (str_contains($link, '?')) {
+      [$page, $parameters] = explode('?', $link, 2);
+    } elseif (str_ends_with($link, '.php')) {
+      $page = $link;
+      $parameters = '';
+    }
+
+    // index.php is the bootstrap file: leave the page out so link() picks the SEO PRO form.
+    if ($page === 'index.php') {
+      $page = null;
+    }
+
+    return CLICSHOPPING::link($page, $parameters);
+  }
+
+  /**
+   * Tells whether a page id designates a page this App can display, WITHOUT any side effect.
+   * The display getters above redirect on a page_type 3 entry, so they cannot be used as a
+   * predicate by the router: probing an id would redirect the visitor.
+   *
+   * @param int $id The page id to probe.
+   * @return bool True when the page exists, is published and visible to the current group.
+   */
+  public function pageManagerContentExists(int $id): bool
+  {
+    $QPage = $this->db->prepare('select p.pages_id
+                                   from :table_pages_manager p,
+                                        :table_pages_manager_description s
+                                   where p.pages_id = s.pages_id
+                                   and p.status = 1
+                                   and (p.page_type = 3 or p.page_type = 4)
+                                   and p.pages_id = :pages_id
+                                   and (s.language_id = :language_id or s.language_id = 0)
+                                   and (p.customers_group_id = :customers_group_id or p.customers_group_id = 99)
+                                 ');
+
+    $QPage->bindInt(':pages_id', $id);
+    $QPage->bindInt(':language_id', $this->lang->getId());
+    $QPage->bindInt(':customers_group_id', $this->customer->getCustomersGroupID());
+
+    $QPage->execute();
+
+    return $QPage->fetch() !== false;
   }
 
   /**

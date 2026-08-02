@@ -254,7 +254,11 @@ class Banner
         $output = $banner['banners_html_text'];
       } else {
         if (is_numeric($banner['banners_id'])) {
-          $output = HTML::link(CLICSHOPPING::link('redirect.php', 'action=banner&goto=' . (int)$banner['banners_id'], true, false) . '" target="' . $banner['banners_target'], HTML::image($CLICSHOPPING_Template->getDirectoryTemplateImages() . $banner['banners_image'], HTML::outputProtected($banner['banners_title'])));
+           $output = HTML::link(
+            CLICSHOPPING::link('redirect.php', 'action=banner&goto=' . (int)$banner['banners_id'], true, false),
+            HTML::image($CLICSHOPPING_Template->getDirectoryTemplateImages() . $banner['banners_image'], HTML::outputProtected($banner['banners_title'])),
+            'target="' . HTML::outputProtected($banner['banners_target']) . '"'
+          );
         }
       }
 

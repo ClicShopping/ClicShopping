@@ -8,10 +8,12 @@
 
 namespace ClicShopping\Sites\ClicShoppingAdmin;
 
+use ClicShopping\OM\Apps;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
+use DirectoryIterator;
 use function in_array;
 use function is_null;
 /**
@@ -283,62 +285,154 @@ class TemplateAdmin extends \ClicShopping\Sites\Shop\Template
    * @param string|null $catalog_files Optional specific catalog file to replace the array contents. If null, returns the default array.
    * @return array Returns an array of catalog file paths, formatted based on SEO settings if applicable.
    */
+  /**
+   * Markers the box matching understands but that designate no page class: "Categories" stands for
+   * any category listing (see Sites/Shop/Template.php, which substitutes it when a cPath is set)
+   * and "cPath" for the parameter itself. They cannot be discovered, so they are declared here.
+   */
+  private const VIRTUAL_PAGES = ['Categories', 'cPath'];
+
   public static function getCatalogFiles(?string $catalog_files = null): array
   {
-    $file_array = [
-      'Account&AddressBook',
-      'Account&Create',
-      'Account&CreatePro',
-      'Account&CreateProSuccess',
-      'Account&Delete',
-      'Account&Edit',
-      'Account&History',
-      'Account&HistoryInfo',
-      'Account&LogIn',
-      'Account&MyFeedBack',
-      'Account&Newsletter',
-      'Account&NewsletterNoAccount',
-      'Account&NewsletterNoAccountSuccess',
-      'Account&Notification',
-      'Account&Password',
-      'Blog&Categories',
-      'Blog&Content',
-      'Categories',
-      'cPath',
-      'Cart',
-      'Checkout&Shipping',
-      'Checkout&ShippingAddress',
-      'Checkout&Billing',
-      'Checkout&PaymentAddress',
-      'Checkout&Confirmation',
-      'Checkout&Success',
-      'Compare&ProductsCompare',
-      'Info&Contact',
-      'Info&Cookies',
-      'Info&Content',
-      'Info&SiteMap',
-      'Info&SSLcheck',
-      'FlashSelling&ProductsFlashSelling',
-      'Products&Description',
-      'Products&Favorites',
-      'Products&Featured',
-      'Products&ProductsNew',
-      'Products&Specials',
-      'Products&TellAFriend',
-      'Products&Recommendations',
-      'search&AdvancedSearch',
-      'search&Q',
-    ];
+    if (!is_null($catalog_files)) {
+      return [$catalog_files];
+    }
+
+    $file_array = array_merge(self::VIRTUAL_PAGES, static::discoverShopPages());
+
+    sort($file_array);
 
     if (SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true' || SEARCH_ENGINE_FRIENDLY_URLS == 'true') {
       $file_array = str_replace(['&'], ['/'], $file_array);
     }
 
-    if (!is_null($catalog_files)) {
-      $file_array = [$catalog_files];
+    return $file_array;
+  }
+
+  /**
+   * Lists every Shop page an administrator can attach a module to, discovered from the same
+   * sources the router itself resolves: the core pages, the Custom/ overrides and the routes the
+   * installed Apps declare in their clicshopping.json.
+   *
+   * A page qualifies only when it owns a `templates/` directory, i.e. when it actually renders a
+   * page a box could appear on. That single derived criterion is what keeps the machine endpoints
+   * out (api, mcp, cronjob, webservice, payment webhooks, RSS, sitemap) without maintaining any
+   * exclusion list.
+   *
+   * Replaces a list of 42 hardcoded entries of which 9 designated pages that no longer existed
+   * (`Account&Newsletter` for `Newsletters`, `search&Q` in lowercase, `Compare&ProductsCompare`...):
+   * selecting one produced a rule that could never match, and no App installed afterwards could
+   * ever appear.
+   *
+   * @return array The page identifiers, in the "Page&Action" form.
+   */
+  protected static function discoverShopPages(): array
+  {
+    static $discovered = null;
+
+    if ($discovered !== null) {
+      return $discovered;
     }
 
-    return $file_array;
+    $pages = [];
+
+    foreach (['Sites/Shop/Pages', 'Custom/Sites/Shop/Pages'] as $directory) {
+      $pages = array_merge($pages, static::discoverPagesDirectory(CLICSHOPPING::BASE_DIR . $directory));
+    }
+
+    $pages = array_merge($pages, static::discoverAppRoutes());
+
+    $discovered = array_values(array_unique($pages));
+
+    return $discovered;
+  }
+
+  /**
+   * Reads one Pages/ directory: a page contributes its own code plus one entry per action class.
+   *
+   * @param string $directory Absolute path of a Pages/ directory.
+   * @return array The identifiers found, empty when the directory does not exist.
+   */
+  private static function discoverPagesDirectory(string $directory): array
+  {
+    $pages = [];
+
+    if (!is_dir($directory)) {
+      return $pages;
+    }
+
+    foreach (new DirectoryIterator($directory) as $entry) {
+      if ($entry->isDot() || !$entry->isDir()) {
+        continue;
+      }
+
+      $page = $entry->getFilename();
+      $path = $entry->getPathname();
+
+      if (!CLICSHOPPING::isValidClassName($page) || !is_file($path . '/' . $page . '.php') || !is_dir($path . '/templates')) {
+        continue;
+      }
+
+      $pages[] = $page;
+
+      if (!is_dir($path . '/Actions')) {
+        continue;
+      }
+
+      foreach (new DirectoryIterator($path . '/Actions') as $action) {
+        if (!$action->isDot() && !$action->isDir() && $action->getExtension() === 'php') {
+          $pages[] = $page . '&' . $action->getBasename('.php');
+        }
+      }
+    }
+
+    return $pages;
+  }
+
+  /**
+   * Reads the Shop routes declared by the installed Apps, keeping the ones whose destination page
+   * renders a template.
+   *
+   * @return array The route identifiers.
+   */
+  private static function discoverAppRoutes(): array
+  {
+    $routes = [];
+    $vendor_directory = CLICSHOPPING::BASE_DIR . 'Apps';
+
+    if (!is_dir($vendor_directory)) {
+      return $routes;
+    }
+
+    foreach (new DirectoryIterator($vendor_directory) as $vendor) {
+      if ($vendor->isDot() || !$vendor->isDir()) {
+        continue;
+      }
+
+      foreach (new DirectoryIterator($vendor->getPathname()) as $app) {
+        if ($app->isDot() || !$app->isDir()) {
+          continue;
+        }
+
+        $vendor_app = $vendor->getFilename() . '\\' . $app->getFilename();
+
+        if (!Apps::exists($vendor_app) || (($json = Apps::getInfo($vendor_app)) === false)) {
+          continue;
+        }
+
+        foreach ($json['routes']['Shop'] ?? [] as $stem => $destination) {
+          if (!is_string($destination)) {
+            continue;
+          }
+
+          if (is_dir($app->getPathname() . '/' . str_replace('\\', '/', $destination) . '/templates')) {
+            $routes[] = $stem;
+          }
+        }
+      }
+    }
+
+    return $routes;
   }
 
   /**

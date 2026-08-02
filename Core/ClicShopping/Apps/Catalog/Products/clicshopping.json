@@ -26,6 +26,9 @@
       "ProductsMonitor": "Module\\ClicShoppingAdmin\\Dashboard\\ProductsMonitor"
     },
     "Hooks": {
+      "Shop/SiteUrl": {
+        "Canonical": "Module\\Hooks\\Shop\\SiteUrl\\Canonical"
+      },
       "ClicShoppingAdmin/StatsDashboard": {
         "PageTabContent": "Module\\Hooks\\ClicShoppingAdmin\\StatsDashboard\\PageTabContent"
       },

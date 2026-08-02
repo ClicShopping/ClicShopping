@@ -8,9 +8,8 @@
 
 namespace ClicShopping\Sites\Shop\Pages\Products;
 
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Shop\UrlCanonicalizer;
 
 /**
  * Products page controller
@@ -44,12 +43,12 @@ class Products extends \ClicShopping\OM\Domains\PagesAbstract
     $CLICSHOPPING_ProductsCommon = Registry::get('ProductsCommon');
     
     // Check if product exists and is valid
-    if ($CLICSHOPPING_ProductsCommon->getProductsCount() < 1 || 
-        \is_null($CLICSHOPPING_ProductsCommon->getID()) || 
+    if ($CLICSHOPPING_ProductsCommon->getProductsCount() < 1 ||
+        \is_null($CLICSHOPPING_ProductsCommon->getID()) ||
         $CLICSHOPPING_ProductsCommon->getID() === false) {
-      
-      http_response_code(404);
-      HTTP::redirect(CLICSHOPPING::getConfig('http_server', 'Shop') . CLICSHOPPING::getConfig('http_path', 'Shop') . 'error_documents/404.php');
+
+      // Direct 404: the former 302 towards error_documents/404.php reads as a soft 404.
+      UrlCanonicalizer::notFound();
     }
   }
 }

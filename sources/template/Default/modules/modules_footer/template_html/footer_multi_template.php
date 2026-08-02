@@ -23,7 +23,7 @@ use ClicShopping\OM\HTML;
           <li><?php echo HTML::link(CLICSHOPPING::link(null, 'Account&History'), CLICSHOPPING::getDef('module_footer_multi_template_account_box_order_history')); ?></li>
           <br/>
           <label for="buttonLogOff"><a class="btn btn-danger btn-sm btn-block" role="button"
-                                       href="<?php echo CLICSHOPPING::link(null, 'Account&Logoff') ?>"><i
+                                       href="<?php echo CLICSHOPPING::link(null, 'Account&LogOff') ?>"><i
                 class="bi bi-box-arrow-right"></i><?php echo CLICSHOPPING::getDef('module_footer_multi_template_account_box_logoff') ?>
             </a></label>
           <?php
@@ -98,7 +98,7 @@ if (!empty($whatsapp_url)) {
       </address>
       <ul class="list-unstyled">
         <li><label
-            for="buttonFooterContactUs"><?php echo HTML::button(CLICSHOPPING::getDef('module_footer_multi_template_contact_us_email_link'), 'bi bi-person-lines-fill', 'index.php?Info&Contact', 'primary'); ?></label>
+            for="buttonFooterContactUs"><?php echo HTML::button(CLICSHOPPING::getDef('module_footer_multi_template_contact_us_email_link'), 'bi bi-person-lines-fill', CLICSHOPPING::link(null, 'Info&Contact'), 'primary'); ?></label>
         </li>
       </ul>
     </div>

@@ -52,7 +52,7 @@ class LogInAuth extends \ClicShopping\OM\Domains\PagesActionsAbstract
         CLICSHOPPING::redirect(null, 'Account&LogInAuth&' . $all_get . (empty($all_get) ? '' : '&') . 'cookie_test=1');
       }
 
-      CLICSHOPPING::redirect(null, 'Info&CookieUsage');
+      CLICSHOPPING::redirect(null, 'Info&Cookies');
     }
 
     $CLICSHOPPING_Language->loadDefinitions('login_auth');
