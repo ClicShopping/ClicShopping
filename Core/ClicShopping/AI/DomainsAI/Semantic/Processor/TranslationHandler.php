@@ -106,7 +106,8 @@ class TranslationHandler
       error_log("Prompt preview: " . substr($prompt, 0, 100));
       error_log("Calling Gpt::getGptResponse()...");
       
-      $translation = Gpt::getGptResponse($prompt, 80);
+      // Temperature 0.0: this is a normalisation, not a piece of writing.
+      $translation = Gpt::getGptResponse($prompt, 80, 0.0);
 
       // 🔍 DIAGNOSTIC: Log résultat GPT
       if ($translation === false) {

@@ -110,9 +110,9 @@ class ClassificationEngine
   public static function checkSemantics(string $text): array
   {
     // Request-scoped memoization. checkSemantics is re-invoked on the SAME text at multiple
-    // pipeline stages (analytics ×2–3, hybrid ×4). Unlike translateToEnglish it had no result
-    // cache and runs at the provider's default temperature (≠0), so repeated calls both waste
-    // ~1–2 s each AND can disagree → inconsistent routing. Classify once per request.
+    // pipeline stages (analytics ×2–3, hybrid ×4), and has no result cache: without this each
+    // stage pays ~1–2 s again. The disagreement it also used to hide is fixed at the source —
+    // computeSemantics now pins temperature 0.0.
     $__key = md5($text);
     if (array_key_exists($__key, self::$classificationCache)) {
       return self::$classificationCache[$__key];
@@ -196,8 +196,9 @@ class ClassificationEngine
       DomainConfig::loadLanguageFile('rag_classification');
       $prompt = $CLICSHOPPING_Language->getDef('text_rag_classification', array_merge(['QUERY' => $text], self::classificationExampleVars($CLICSHOPPING_Language)));
 
-      // Get GPT response (expecting JSON)
-      $response = Gpt::getGptResponse($prompt, 200); // Increased max tokens for JSON response
+      // Temperature 0.0: routing must not depend on a draw. Measured at 0.5: 6 distinct
+      // responses out of 6, confidence oscillating 0.90/0.95 across threshold gates.
+      $response = Gpt::getGptResponse($prompt, 200, 0.0);
       
       // Log raw response for debugging
       if (self::$logger && defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') &&  CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
@@ -424,7 +425,8 @@ class ClassificationEngine
         self::resolveDomainPlaceholders($CLICSHOPPING_Language, 'text_rag_classification_fallback', 'text_classification_')
       ));
 
-      $response = Gpt::getGptResponse($prompt, 20);
+      // Same rule as the primary path: the fallback classifies too, so it must not draw either.
+      $response = Gpt::getGptResponse($prompt, 20, 0.0);
       $type = trim(strtolower($response));
       
       // Validate old prompt response - default to 'semantic' if invalid

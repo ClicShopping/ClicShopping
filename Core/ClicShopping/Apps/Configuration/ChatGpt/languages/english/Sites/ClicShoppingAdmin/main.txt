@@ -109,3 +109,7 @@ button_reset_all_stats = Reset Stats
 text_query_too_ambiguous = Your query is too ambiguous. Please be more specific about what you want to know.
 
 text_alert_dashboard = To benefit from all the results provided by the indicators, please activate RAG-BI.
+
+title_help_llm = Help choosing an LLM
+text_help_options = Not all LLMs perform equally when it comes to analysis; performance depends on various factors—such as configurable settings—but above all on the LLM's ability to interpret and process the question.<br>
+We do not recommend using LLMs with a limited context window. Ideally, choose an LLM capable of handling a context of at least 128,000 tokens.

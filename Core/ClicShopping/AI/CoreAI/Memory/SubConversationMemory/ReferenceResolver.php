@@ -105,11 +105,38 @@ class ReferenceResolver
       return $unchanged;
     }
 
+   // A resolution that rewrote nothing resolved nothing. 
+    if ($this->isNoOpRewrite($query, $resolved)) {
+      $this->logger->logSecurityEvent(
+        "ReferenceResolver: claimed a reference but rewrote nothing on '{$query}' - verdict refused",
+        'info'
+      );
+
+      return $unchanged;
+    }
+
     if ($this->debug) {
       $this->logger->logSecurityEvent("ReferenceResolver: '{$query}' → '{$resolved}'", 'info');
     }
 
     return ['resolved_query' => $resolved, 'references_entity' => true];
+  }
+
+  /**
+   * Whether the "resolved" query is the input again, once spacing and case are set aside.
+   *
+   * Comparison is deliberately loose: trimming or re-capitalising is not a rewrite either, and a
+   * verdict resting on that much is not evidence that a reference was resolved.
+   *
+   * @param string $query Query submitted to the resolver
+   * @param string $resolved Query the model returned
+   * @return bool True when nothing meaningful changed
+   */
+  private function isNoOpRewrite(string $query, string $resolved): bool
+  {
+    $normalise = static fn(string $s): string => mb_strtolower(preg_replace('/\s+/u', ' ', trim($s)) ?? '');
+
+    return $normalise($query) === $normalise($resolved);
   }
 
   /**

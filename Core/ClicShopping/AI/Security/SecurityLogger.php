@@ -431,8 +431,6 @@ class SecurityLogger
      * @param string $eventType Event type (threat_detected, threat_blocked, etc.)
      * @param array $details Event details including query, threat info, detection details
      * @return bool True if logged successfully
-     * 
-     * Requirements: 8.1, 8.2
      */
     private const ALLOWED_EVENT_TYPES = [
         'threat_detected', 'threat_blocked', 'false_positive',
@@ -550,8 +548,6 @@ class SecurityLogger
      * @param string $reasoning Human-readable reasoning
      * @param array $context Additional context
      * @return bool True if logged successfully
-     * 
-     * Requirements: 8.1, 8.2
      */
     public function logThreat(string $query, string $threatType, float $threatScore, string $reasoning, array $context = []): bool
     {
@@ -590,8 +586,6 @@ class SecurityLogger
      * @param string|null $startDate Optional start date (Y-m-d format)
      * @param string|null $endDate Optional end date (Y-m-d format)
      * @return array Report data with statistics and event summaries
-     * 
-     * Requirements: 8.3
      */
     public function generateReport(string $period = 'daily', ?string $startDate = null, ?string $endDate = null): array
     {
@@ -603,9 +597,8 @@ class SecurityLogger
             case 'weekly':
                 return 	$this->stats->generateWeeklyReport($startDate);
             case 'monthly':
-                // Monthly is 30 days
-                $start = $startDate ?? date('Y-m-d', strtotime('-30 days'));
-                $end = $endDate ?? date('Y-m-d');
+                // Monthly is 30 days. Bound read from the DB, like the reports it feeds.
+                $start = $startDate ?? $this->stats->dbDate(-30);
                 return 	$this->stats->generateWeeklyReport($start); // Use weekly format for monthly
             default:
                 return 	$this->stats->generateDailyReport($startDate);
@@ -618,8 +611,6 @@ class SecurityLogger
      * @param string $startDate Start date (Y-m-d H:i:s)
      * @param string $endDate End date (Y-m-d H:i:s)
      * @return array Detection rate statistics
-     * 
-     * Requirements: 8.3
      */
     public function calculateDetectionRates(string $startDate, string $endDate): array
     {

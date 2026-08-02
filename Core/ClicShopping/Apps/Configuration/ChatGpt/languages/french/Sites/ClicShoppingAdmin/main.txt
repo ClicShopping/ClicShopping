@@ -107,3 +107,7 @@ button_reset_all_stats = Réinitialiser Stats
 
 text_query_too_ambiguous = Votre requête est trop ambiguë. Veuillez être plus précis sur ce que vous voulez savoir.
 text_alert_dashboard = Pour avoir bénéficier de l'ensemble des résultats données par les indicateurs, veuillez activer le RAG-BI
+
+title_help_llm = Aide choix LLM
+text_help_options = Tous les LLms ne sont pas égaux dans les analyses, cela dépend de différents facteurs qui sont liés à des constantes paramétrables mais surtout dans les capacités du llm à interpréter la question et à la traiter.<br>
+Nous ne vous conseillons pas d'utiliser les llm avec un faible contexte. Idéalement prendre un llm qui peut traiter un contexte de 128 000 au minimum.

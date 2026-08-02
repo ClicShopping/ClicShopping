@@ -163,6 +163,8 @@ class AmbiguityHandler
     }
     
     // Nothing ran: give the failures the same second chance the normal path gives every query.
+    // Healing is attempted here only, not per failure: while one reading works there is nothing
+    // to repair, and reviving a dead one would manufacture an ambiguity out of a broken query.
     if (empty($interpretationResults) && !empty($failures)) {
       $healed = $this->healFailedInterpretations($question, $failures);
 
@@ -175,6 +177,8 @@ class AmbiguityHandler
       error_log("*" . str_repeat("*", 99) . "\n");
     }
 
+    // Every reading failed and none could be repaired. Raising keeps the failure visible, like
+    // executeSqlQueries does: returning here let the caller read the missing rows as "no data".
     if (empty($interpretationResults) && !empty($failures)) {
       throw new \Exception(
         'Every interpretation of the ambiguous query failed: ' . $failures[0]['error']

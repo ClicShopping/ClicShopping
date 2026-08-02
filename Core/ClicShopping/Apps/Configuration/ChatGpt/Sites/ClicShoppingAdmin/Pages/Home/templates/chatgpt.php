@@ -215,5 +215,11 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
     ?>
     </tbody>
   </table>
+  <div class="mt-1"></div>
+  <div class="alert alert-info">
+    <i class="bi bi-info-circle"></i><?php echo $CLICSHOPPING_ChatGpt->getDef('title_help_llm'); ?>
+    <div class="mt-1"></div>
+    <div><?php echo $CLICSHOPPING_ChatGpt->getDef('text_help_options'); ?></div>
+  </div>
 </div>
 <div class="py-4"></div>

@@ -193,6 +193,38 @@ class SecurityStatistics
         }
     }
     
+
+    /**
+     * A calendar date read from the DB, optionally shifted by a number of days.
+     *
+     * The reports filter `created_at` on this value, so it has to come from the clock the rows
+     * were written on. Computed in PHP it can name a different day than the DB session.
+     *
+     * @param int $dayOffset Days to shift (negative = past)
+     * @return string Date in Y-m-d, PHP clock only if the DB is unreachable
+     */
+    public function dbDate(int $dayOffset = 0): string
+    {
+        if (!$this->db) {
+            return date('Y-m-d', strtotime("{$dayOffset} days"));
+        }
+
+        try {
+            $statement = $this->db->prepare('SELECT DATE(DATE_ADD(NOW(), INTERVAL :offset DAY)) AS d');
+            $statement->bindValue(':offset', $dayOffset, \PDO::PARAM_INT);
+            $statement->execute();
+            $row = $statement->fetch();
+
+            if (!empty($row['d'])) {
+                return (string)$row['d'];
+            }
+        } catch (\Exception $e) {
+            // Fall through to the PHP clock below.
+        }
+
+        return date('Y-m-d', strtotime("{$dayOffset} days"));
+    }
+
     /**
      * Generate daily security report
      * 
@@ -203,7 +235,7 @@ class SecurityStatistics
      */
     public function generateDailyReport(?string $date = null): array
     {
-        $date = $date ?? date('Y-m-d');
+        $date = $date ?? $this->dbDate();
         $startDate = $date . ' 00:00:00';
         $endDate = $date . ' 23:59:59';
         
@@ -304,8 +336,8 @@ class SecurityStatistics
      */
     public function generateWeeklyReport(?string $startDate = null): array
     {
-        $endDate = date('Y-m-d');
-        $startDate = $startDate ?? date('Y-m-d', strtotime('-7 days'));
+        $endDate = $this->dbDate();
+        $startDate = $startDate ?? $this->dbDate(-7);
         
         if (!$this->db) {
             return ['error' => 'Database connection not available'];
@@ -466,6 +498,18 @@ class SecurityStatistics
                 ];
             }
             
+            // Period bounds read from the DB, on the same clock as the aggregates above: those
+            // filter on DATE_SUB(NOW(), INTERVAL :days DAY), so computing the bounds in PHP would
+            // report a window the figures were never taken over (see the UTC canonical clock rule).
+            $periodQuery = "SELECT DATE_SUB(NOW(), INTERVAL :days DAY) AS start_date, NOW() AS end_date";
+            $periodResult = $this->db->prepare($periodQuery);
+            $periodResult->bindValue(':days', $days, \PDO::PARAM_INT);
+            $periodResult->execute();
+            $period = $periodResult->fetch();
+
+            $startDate = $period['start_date'] ?? null;
+            $endDate = $period['end_date'] ?? null;
+
             // Calculate trend for each threat type
             $threatTypeTrendAnalysis = [];
             foreach ($threatTypeData as $type => $data) {
