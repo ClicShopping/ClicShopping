@@ -1,10 +1,12 @@
-**LICENSE**
+# LICENSE
 
-**Copyright**
+## Copyright
 
-Copyright (c) 2008--2026 Loic Richard (ClicShoppingAI / ClicShopping
-Project)
+Copyright (c) 2008–2026 Loic Richard (ClicShoppingAI / ClicShopping Project)
 
+All rights reserved on original works and compilation where applicable.
+
+---
 All rights reserved on original works and compilation where applicable.
 
 **Version History and License Transition**
@@ -12,8 +14,7 @@ All rights reserved on original works and compilation where applicable.
 **IMPORTANT --- Transition from previous licenses:**
 
 Prior to version 3.282, ClicShopping was distributed under the MIT
-License and/or GPLv2+. Those prior versions remain available under their
-original license terms.
+License and/or GPLv2+. Those prior versions remain available under their original license terms.
 
 Starting from version 3.30 (released 23/05/2026), all new code and
 contributions are governed exclusively by this dual licensing model
@@ -21,31 +22,40 @@ contributions are governed exclusively by this dual licensing model
 licenses are incorporated with their consent or were authored solely by
 the copyright holder.
 
-If you use a version predating this transition, your rights are governed
-by the license in effect at that version.
+If you use a version predating this transition, your rights are governed by the license in effect at that version.
 
-**Open Source License (AGPLv3)**
+---
 
-This project is licensed under the GNU Affero General Public License
-v3.0 (AGPLv3).
-
-Full text: https://www.gnu.org/licenses/agpl-3.0.html
-
-**Dual Licensing Model**
+## Dual Licensing Model Open Source License (AGPLv3) and Commercial License
 
 This project is distributed under a dual licensing model:
 
--   AGPLv3 for open-source use
--   Commercial license for non-AGPL-compatible use
+- AGPLv3 for open-source use available at : https://www.gnu.org/licenses/agpl-3.0.html
+- Commercial license for non-AGPL-compatible use
 
-The copyright holder reserves the right to offer alternative commercial
-licensing terms.
+The copyright holder reserves the right to offer alternative commercial licensing terms.
 
-**Related Documents**
+---
 
--   Commercial license terms: COMMERCIAL.md
--   Contributor License Agreement: CLA.md
--   Trademark Policy: TRADEMARK.md
+## Commercial License
+
+See: `COMMERCIAL.md`
+
+---
+
+## Contributor License Agreement (CLA)
+
+See: `CLA.md`
+
+---
+
+## Trademark Policy
+
+See: `TRADEMARK.md`
+
+---
+
+## Disclaimer
 
 **Governing Law and Jurisdiction**
 

@@ -5,13 +5,17 @@ version4.33
 - error_log management improved
 - Allow to manage 3 taxes (europe, CA, US for example) 
 - Order total caculation improvement
+- URL error improvement (front office)
 - AI
   - Add distinction between Agents and Actors
   - AI review sentiment analysis improved and refactored with agentic approach
   - ChatGpt Apps refactored
+    - Gpt-4 series removed by Gpt-5
+    - New features and configuration
   - AI response time optimization
   - Some refactorisation and improvement
 
+  
 ---------------
 version4.32
 - Schema updated
