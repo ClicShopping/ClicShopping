@@ -193,26 +193,28 @@ class AnalyticsAgent implements AgentInterface
     // Initialize AmbiguousQueryDetector with chat instance for LLM-based detection
     $this->ambiguityDetector = new AmbiguousQueryDetector($this->chat, $this->securityLogger, $this->debug);
     
+    // Initialize AnalyticsErrorHandler for error recovery and messaging.
+    // Built before AmbiguityHandler, which shares it to self-heal its interpretations.
+    $this->errorHandler = new AnalyticsErrorHandler(
+      $this->db,
+      $this->correctionAgent,
+      $this->queryExecutor,
+      $this->debug
+    );
+
     // Initialize AmbiguityHandler for handling ambiguous queries
     $this->ambiguityHandler = new AmbiguityHandler(
       $this->ambiguityDetector,
       $this->queryProcessor,
       $this->queryExecutor,
+      $this->errorHandler,
       $this->debug
     );
-    
+
     // Initialize CompoundQueryHandler for handling compound queries (multiple questions)
     $this->compoundQueryHandler = new CompoundQueryHandler(
       $this->chat,
       $this->securityLogger,
-      $this->debug
-    );
-    
-    // Initialize AnalyticsErrorHandler for error recovery and messaging
-    $this->errorHandler = new AnalyticsErrorHandler(
-      $this->db,
-      $this->correctionAgent,
-      $this->queryExecutor,
       $this->debug
     );
 

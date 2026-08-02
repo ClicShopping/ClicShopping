@@ -65,6 +65,7 @@ class AiModelsAdmin
                               n.model_display_name, 
                               n.ai_model_description, 
                               n.ai_model_status,
+                              n.ai_model_status_llm_recommended,
                               n.ai_model_status_default, 
                               n.ai_model_status_fallback,
                               n.ai_model_token_input_price, 
@@ -123,6 +124,19 @@ class AiModelsAdmin
     $db = Registry::get('Db');
     $db->save('ai_models_name', ['ai_model_status_default' => 0], ['ai_model_status_default' => 1]);
     $db->save('ai_models_name', ['ai_model_status_default' => 1], ['ai_model_name_id' => $id]);
+
+    ModelManager::clearCatalogCache();
+  }
+
+  /**
+   * Marks $id as THE default Llm Recommended. Enforces global uniqueness: the current default
+   * (there is at most one) is reset to 0 first, then $id is set to 1.
+   */
+  public static function setDefaulLlmRecommendded(int $id): void
+  {
+    $db = Registry::get('Db');
+    $db->save('ai_models_name', ['ai_model_status_llm_recommended' => 0], ['ai_model_status_llm_recommended' => 1]);
+    $db->save('ai_models_name', ['ai_model_status_llm_recommended' => 1], ['ai_model_name_id' => $id]);
 
     ModelManager::clearCatalogCache();
   }

@@ -163,6 +163,8 @@ wasted time** — treat documentation as part of every deliverable.
 ✗ Writing application SQL in sql_upgrade/ (documentation only — not executed)
 ✗ Business logic or DB access in templates (see TEMPLATES.md)
 ✗ Hardcoded channel identifiers (B2B/B2C must be dynamic, never hardcoded)
+✗ Hardcoded DB table prefix (`clic_`) — it is one install's `db_table_prefix`. In PHP use
+  `CLICSHOPPING::getConfig('db_table_prefix')`; in prompt `.txt` write `{{table_prefix}}products`
 ✗ Hardcoded API keys or LLM provider selection
 ✗ Direct LLM API calls without LLPhant abstraction
 ✗ Direct agent instantiation from business code (use Orchestrator)

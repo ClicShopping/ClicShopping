@@ -34,6 +34,8 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
         AiModelsAdmin::setDefault($id);
       } elseif ($field === 'fallback') {
         AiModelsAdmin::setFallback($id);
+      } elseif ($field === 'Recommended') {
+        AiModelsAdmin::setDefaulLlmRecommendded($id);
       }
     }
 

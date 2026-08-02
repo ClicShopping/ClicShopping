@@ -516,7 +516,8 @@ class AgentResponseHelper
     string $query,
     string $ambiguityType,
     array $interpretationResults,
-    ?string $recommendation = null
+    ?string $recommendation = null,
+    ?string $defaultInterpretation = null
   ): array {
     $interpretations = array_map(function($result) {
       return $result['type'] ?? 'unknown';
@@ -532,6 +533,8 @@ class AgentResponseHelper
       'ambiguity_type' => $ambiguityType,
       'interpretations' => $interpretations,
       'interpretation_results' => $interpretationResults,
+      // Which reading the detector considers the default: the selection criterion downstream.
+      'default_interpretation' => $defaultInterpretation,
       'count' => count($interpretationResults),
       'recommendation' => $recommendation ?? $defaultRecommendation
     ];

@@ -92,6 +92,10 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
       <div class="col-md-5"><?php echo HTML::checkboxField('ai_model_status', '1', ((int)($m['ai_model_status'] ?? 0) === 1)); ?></div>
     </div>
     <div class="form-group row">
+      <label class="col-5 col-form-label"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_status_recommended_llm'); ?></label>
+      <div class="col-md-5"><?php echo HTML::checkboxField('ai_model_status_llm_recommended', '1', ((int)($m['ai_model_status_llm_recommended'] ?? 0) === 1)); ?></div>
+    </div>
+    <div class="form-group row">
       <label class="col-5 col-form-label"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_status_default'); ?></label>
       <div class="col-md-5"><?php echo HTML::checkboxField('ai_model_status_default', '1', ((int)($m['ai_model_status_default'] ?? 0) === 1)); ?></div>
     </div>

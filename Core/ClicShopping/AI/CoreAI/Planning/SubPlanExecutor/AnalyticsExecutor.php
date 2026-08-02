@@ -376,31 +376,15 @@ class AnalyticsExecutor
       $interpretationResults = $rawResult['interpretation_results'] ?? [];
 
       if (!empty($interpretationResults)) {
-        // Find the interpretation with the most results
-        $bestInterpretation = null;
-        $maxResults = 0;
-
-        foreach ($interpretationResults as $key => $interpretation) {
-          $resultCount = count($interpretation['results'] ?? []);
-          if ($this->debugRAManager) {
-            error_log("  Interpretation '{$key}': {$resultCount} results");
-            error_log("    Has 'interpretation' key: " . (isset($interpretation['interpretation']) ? 'YES' : 'NO'));
-          }
-
-          if (isset($interpretation['interpretation'])) {
-            error_log("    Interpretation text: " . substr($interpretation['interpretation'], 0, 100));
-          }
-
-          if ($resultCount > $maxResults) {
-            $maxResults = $resultCount;
-            $bestInterpretation = $interpretation;
-          }
-        }
+        $bestInterpretation = $this->selectInterpretation(
+          $interpretationResults,
+          $rawResult['default_interpretation'] ?? null
+        );
 
         // If we found a good interpretation, use it
         if ($bestInterpretation !== null && !empty($bestInterpretation['results'])) {
           if ($this->debugRAManager) {
-            error_log("  Selected best interpretation with {$maxResults} results");
+            error_log("  Selected interpretation '{$bestInterpretation['type']}'");
           }
           // Use the interpretation from the best result, or generate one
           $interpretation = $bestInterpretation['interpretation'] ?? null;
@@ -581,6 +565,41 @@ class AnalyticsExecutor
 
     // Fallback
     return "{$count} result" . ($count > 1 ? 's' : '') . " found";
+  }
+
+  /**
+   * Pick which reading of an ambiguous query answers the user.
+   *
+   * Selection follows the detector's own `default_interpretation`, with generation order as the
+   * tie-break. It deliberately ignores row counts: a single-value reading returns one row and a
+   * breakdown returns one per period, so "most rows" always elected the breakdown — the reading
+   * the user did not ask for. An interpretation that returned nothing is never selected.
+   *
+   * @param array $interpretationResults Executed interpretations
+   * @param string|null $preferredType Type the detector considers the default reading
+   * @return array|null The winning interpretation, or null when none produced rows
+   */
+  private function selectInterpretation(array $interpretationResults, ?string $preferredType): ?array
+  {
+    $firstViable = null;
+
+    foreach ($interpretationResults as $key => $interpretation) {
+      if (empty($interpretation['results'])) {
+        if ($this->debugRAManager) {
+          error_log("  Interpretation '{$key}' returned no rows - skipped");
+        }
+
+        continue;
+      }
+
+      if ($preferredType !== null && ($interpretation['type'] ?? '') === $preferredType) {
+        return $interpretation;
+      }
+
+      $firstViable ??= $interpretation;
+    }
+
+    return $firstViable;
   }
 
   /**

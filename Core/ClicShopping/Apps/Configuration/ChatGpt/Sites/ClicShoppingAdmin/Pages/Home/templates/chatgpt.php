@@ -174,6 +174,7 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
       <th data-field="technical"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_technical'); ?></th>
       <th data-field="context" class="text-center"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_context'); ?></th>
       <th data-field="status" class="text-center"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_status'); ?></th>
+      <th data-field="recommended" class="text-center"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_recommended'); ?></th>
       <th data-field="default" class="text-center"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_default'); ?></th>
       <th data-field="fallback" class="text-center"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_fallback'); ?></th>
       <th data-field="action" data-switchable="false" class="text-end"><?php echo $CLICSHOPPING_ChatGpt->getDef('table_heading_action'); ?></th>
@@ -196,6 +197,7 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
           echo HTML::link($CLICSHOPPING_ChatGpt->link('ChatGpt&SetFlag&field=status&cID=' . $mid . '&flag=' . $flag), '<i class="bi ' . $icon . '"></i>');
           ?>
         </td>
+        <td class="text-center"><?php echo ((int)$m['ai_model_status_llm_recommended'] === 1) ? '<i class="bi bi-check text-primary"></i>' : ''; ?></td>
         <td class="text-center"><?php echo ((int)$m['ai_model_status_default'] === 1) ? '<i class="bi bi-star-fill text-warning"></i>' : ''; ?></td>
         <td class="text-center"><?php echo ((int)$m['ai_model_status_fallback'] === 1) ? '<i class="bi bi-shield-fill text-info"></i>' : ''; ?></td>
         <td class="text-end">

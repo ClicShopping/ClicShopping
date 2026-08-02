@@ -45,6 +45,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
         'ai_model_token_output_price' => (float)($_POST['ai_model_token_output_price'] ?? 0),
         'ai_model_ai_capable' => isset($_POST['ai_model_ai_capable']) ? 1 : 0,
         'ai_model_status' => isset($_POST['ai_model_status']) ? 1 : 0,
+        'ai_model_status_llm_recommended' => isset($_POST['ai_model_status_llm_recommended']) ? 1 : 0,
         'ai_model_status_default' => isset($_POST['ai_model_status_default']) ? 1 : 0,
         'ai_model_status_fallback' => isset($_POST['ai_model_status_fallback']) ? 1 : 0,
       ];
