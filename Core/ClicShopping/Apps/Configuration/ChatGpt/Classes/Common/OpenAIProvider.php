@@ -3,7 +3,7 @@
  * OpenAI Provider Implementation
  *
  * Implements LLM provider interface for OpenAI API.
- * Supports GPT-4, GPT-3.5, and reasoning models (o1, o3).
+ * Supports GPT-4, GPT-4.1, GPT-5 and reasoning models (o1, o3, o4).
  *
  * @package ClicShopping\Apps\Configuration\ChatGpt\Classes
  * @since 4.11
@@ -31,10 +31,8 @@ class OpenAIProvider extends AbstractLLMProvider
   /**
    * Build API request body for OpenAI
    *
-   * Constructs request body in OpenAI's format.
-   * Special handling for reasoning models (o1, o3):
-   * - No temperature parameter
-   * - Uses max_completion_tokens instead of max_tokens
+   * Constructs request body in OpenAI's format. Per-model parameter differences (token budget
+   * spelling, temperature support) come from ModelManager, the single definition.
    *
    * @param string $prompt The prompt to send
    * @param array $options Optional parameters:
@@ -48,7 +46,6 @@ class OpenAIProvider extends AbstractLLMProvider
   {
     $model = $options['model'] ?? $this->model;
 
-    // Build base request body
     $body = [
       'model' => $model,
       'messages' => $options['messages'] ?? [
@@ -56,18 +53,10 @@ class OpenAIProvider extends AbstractLLMProvider
       ],
     ];
 
-    // Handle reasoning models (o1, o3) - they have different parameters
-    if ($this->isReasoningModel($model)) {
-      // Reasoning models don't support temperature
-      // They use max_completion_tokens instead of max_tokens
-      $body['max_completion_tokens'] = $options['max_tokens'] ?? $this->maxTokens;
-    } else {
-      // Standard models support temperature and max_tokens
-      $body['temperature'] = $options['temperature'] ?? $this->temperature;
-      $body['max_tokens'] = $options['max_tokens'] ?? $this->maxTokens;
-    }
-
-    return $body;
+    return $body + ModelManager::normalizeGenerationOptions($model, [
+      'temperature' => $options['temperature'] ?? $this->temperature,
+      'max_tokens' => $options['max_tokens'] ?? $this->maxTokens,
+    ]);
   }
 
   /**
@@ -103,39 +92,14 @@ class OpenAIProvider extends AbstractLLMProvider
   }
 
   /**
-   * Check if model is a reasoning model
-   *
-   * Reasoning models (o1, o3) have different API parameters.
-   * They don't support temperature and use max_completion_tokens.
-   *
-   * @param string $model Model name to check
-   * @return bool True if model is a reasoning model
-   */
-  private function isReasoningModel(string $model): bool
-  {
-    return str_starts_with($model, 'o1-') || str_starts_with($model, 'o3-');
-  }
-
-  /**
-   * Same distinction as buildRequestBody(): reasoning models reject temperature and spell the
-   * output budget max_completion_tokens. Sending the standard keys would make the call fail.
+   * Same rewrite as buildRequestBody(), from the same single definition: a model that reasons
+   * rejects temperature, and gpt-4.1/gpt-5 spell the budget max_completion_tokens.
    *
    * @return array<string, mixed> Generation options in OpenAI wire format
    */
   protected function llphantModelOptions(): array
   {
-    $options = parent::llphantModelOptions();
-
-    if ($this->isReasoningModel($this->model)) {
-      unset($options['temperature']);
-
-      if (isset($options['max_tokens'])) {
-        $options['max_completion_tokens'] = $options['max_tokens'];
-        unset($options['max_tokens']);
-      }
-    }
-
-    return $options;
+    return ModelManager::normalizeGenerationOptions($this->model, parent::llphantModelOptions());
   }
 
   /**

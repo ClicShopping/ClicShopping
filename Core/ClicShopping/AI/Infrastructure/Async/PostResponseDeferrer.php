@@ -60,17 +60,17 @@ class PostResponseDeferrer
 
     if (!self::$registered) {
       self::$registered = true;
-      register_shutdown_function([self::class, 'flushAndRun']);
+      register_shutdown_function(self::flushAndRun(...));
     }
   }
 
   /**
    * Shutdown handler: flush the response to the client (PHP-FPM), then drain the queue.
    *
-   * Public only so register_shutdown_function() can reach it — not part of the intended API;
-   * callers use defer() (or runNow() in CLI/tests).
+   * Not part of the public API: the shutdown closure is built in class scope, so callers use
+   * defer() (or runNow() in CLI/tests).
    */
-  public static function flushAndRun(): void
+  private static function flushAndRun(): void
   {
     if (\function_exists('fastcgi_finish_request')) {
       @\fastcgi_finish_request();

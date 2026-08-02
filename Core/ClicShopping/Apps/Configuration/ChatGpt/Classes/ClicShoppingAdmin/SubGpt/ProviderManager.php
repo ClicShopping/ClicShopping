@@ -275,7 +275,7 @@ class ProviderManager
       'mistral-moderation-latest'
     ];
 
-    if (empty($model) || !in_array($model, $valid_models)) {
+    if (empty($model) || !in_array($model, $valid_models, true)) {
       $model = 'mistral-large-latest';
     }
 
@@ -379,7 +379,11 @@ class ProviderManager
         $parameters += ModelManager::getModelApiParameters($model, (int) $parameters['maxtoken']);
         unset($parameters['maxtoken']);
       }
-      
+
+      // Same wire rewrite as OpenAIProvider: this path also reaches gpt-5, which rejects
+      // max_tokens and any temperature but its default.
+      $parameters = ModelManager::normalizeGenerationOptions($model, $parameters);
+
       return self::getOpenAiGpt($parameters);
     }
     

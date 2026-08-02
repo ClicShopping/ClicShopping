@@ -330,8 +330,8 @@ class EntityRegistry
     $this->classificationCache = EntityTableClassifier::classify(
       $this->getAllEntityTables(),
       $prefix,
-      static fn(string $table): array => DoctrineOrm::getTableColumns($table),
-      fn(string $entityName): ?string => $this->getIdColumnForEntityType($entityName)
+      DoctrineOrm::getTableColumns(...),
+      $this->getIdColumnForEntityType(...)
     );
 
     return $this->classificationCache;

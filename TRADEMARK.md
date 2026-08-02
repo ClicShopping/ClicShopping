@@ -70,4 +70,4 @@ The current version is available in the project repository.
 
 **Contact**
 
-For trademark usage requests or questions via github : [https:://github.com/clicshopping](https://github.com/ClicShopping)
+For trademark usage requests or questions via github : [https:://github.com/clicshopping/clicshopping](https://github.com/clicshopping/clicshopping)

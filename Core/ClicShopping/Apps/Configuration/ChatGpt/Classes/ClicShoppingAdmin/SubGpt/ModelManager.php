@@ -31,6 +31,26 @@ class ModelManager
   private static ?array $catalogCache = null;
 
   /**
+   * Tokens added on top of the caller's budget so hidden reasoning does not eat the answer.
+   * Measured 2026-08-02 on the ambiguity prompt: reasoning alone reaches 501 and, at a budget of
+   * 600, consumes all 600 (finish_reason=length, empty content). A larger cap costs nothing —
+   * unused tokens are not billed and latency stayed flat from 600 to 4096.
+   */
+  public const REASONING_TOKEN_HEADROOM = 1024;
+
+  /**
+   * gpt-5 members whose OWN default is not to reason: with no reasoning_effort sent they spend 0
+   * reasoning tokens and accept a temperature, like a standard chat model.
+   */
+  private const NON_REASONING_GPT5_MODELS = ['gpt-5.4-mini'];
+
+  /** Models the API enumerates as taking 'none' (and 'xhigh'), but NOT 'minimal'. */
+  private const REASONING_EFFORT_NONE_MODELS = ['gpt-5.4-mini', 'gpt-5.6-luna'];
+
+  /** Models the API enumerates as taking 'minimal', but NOT 'none'. */
+  private const REASONING_EFFORT_MINIMAL_MODELS = ['gpt-5-mini', 'gpt-5'];
+
+  /**
    * Retrieves the default model.
    *
    * @return string the model.
@@ -257,8 +277,11 @@ class ModelManager
    * Get model-specific API parameters based on the model name
    * 
    * Different OpenAI models require different parameter names for token limits:
-   * - max_completion_tokens: GPT-4o-mini, GPT-5 series, GPT-4.1 series
-   * - max_tokens: GPT-4o, Anthropic, Mistral, LM Studio models
+   * - max_completion_tokens: GPT-4.1 series, GPT-5 series (they reject max_tokens with HTTP 400)
+   * - max_tokens: GPT-4, GPT-4o, Anthropic, Mistral, LM Studio models
+   *
+   * Reasoning headroom is applied here too, so a caller going through this helper gets the same
+   * budget as one going through normalizeGenerationOptions().
    *
    * @param string $model The model name (e.g., 'gpt-4o', 'gpt-4.1-mini', 'gpt-5')
    * @param int $maxtoken The maximum number of tokens
@@ -266,49 +289,221 @@ class ModelManager
    */
   public static function getModelApiParameters(string $model, int $maxtoken): array
   {
-    $params = [];
-
-    // Model-specific parameter mapping
-    // GPT-4o-mini, GPT-4.1 series, GPT-5 series use max_completion_tokens
-    if (str_starts_with($model, 'gpt-4.1-mini') || 
-        str_starts_with($model, 'gpt-4.1') ||
-        str_starts_with($model, 'gpt-5')) {
-      $params['max_completion_tokens'] = $maxtoken;
-    } else {
-      // Default for GPT-4o, Anthropic, Mistral, LM Studio, and other models
-      $params['max_tokens'] = $maxtoken;
+    if (self::usesCompletionTokenBudget($model)) {
+      return ['max_completion_tokens' => self::applyReasoningHeadroom($model, $maxtoken)];
     }
 
-    return $params;
+    return ['max_tokens' => $maxtoken];
+  }
+
+  /**
+   * Does this model spell its output budget max_completion_tokens?
+   *
+   * Measured 2026-08-02: gpt-5* and gpt-4.1* reject max_tokens with HTTP 400; every other model
+   * accepts it. See unit_test/2026_08_02/gpt5_api_parameter_probe.php.
+   *
+   * @param string $model Model name
+   * @return bool True when max_tokens must be renamed max_completion_tokens
+   */
+  public static function usesCompletionTokenBudget(string $model): bool
+  {
+    return str_starts_with($model, 'gpt-4.1') || str_starts_with($model, 'gpt-5');
+  }
+
+  /**
+   * Can this model reason before answering (whether or not it will on a given call)?
+   *
+   * @param string $model Model name
+   * @return bool True for the gpt-5 and o-series families
+   */
+  public static function isReasoningCapableModel(string $model): bool
+  {
+    return str_starts_with($model, 'gpt-5')
+        || str_starts_with($model, 'o1')
+        || str_starts_with($model, 'o3')
+        || str_starts_with($model, 'o4');
+  }
+
+  /**
+   * Reasoning-effort values this model accepts, as enumerated BY THE API itself (an invalid value
+   * makes it list them). The families disagree on the cheapest tier: gpt-5.4/5.6 offer 'none' and
+   * refuse 'minimal', gpt-5-mini the exact opposite. An unmeasured model gets only the tiers all
+   * of them share, so an unknown addition degrades instead of failing.
+   *
+   * @param string $model Model name
+   * @return array<int, string> Accepted values, empty when the model takes no reasoning effort
+   */
+  public static function supportedReasoningEfforts(string $model): array
+  {
+    if (!self::isReasoningCapableModel($model)) {
+      return [];
+    }
+
+    return match (true) {
+      in_array($model, self::REASONING_EFFORT_NONE_MODELS, true) => ['none', 'low', 'medium', 'high', 'xhigh'],
+      in_array($model, self::REASONING_EFFORT_MINIMAL_MODELS, true) => ['minimal', 'low', 'medium', 'high'],
+      default => ['low', 'medium', 'high'],
+    };
+  }
+
+  /**
+   * The configured reasoning effort (CLICSHOPPING_APP_CHATGPT_CH_REASONING_EFFORT), translated to
+   * something this model accepts. 'none' and 'minimal' are the same intent — do not think — so one
+   * stands in for the other; anything else unsupported is dropped rather than guessed.
+   *
+   * @param string $model Model name
+   * @return string|null Value to send, or null to leave the model on its own default
+   */
+  public static function resolveReasoningEffort(string $model): ?string
+  {
+    $supported = self::supportedReasoningEfforts($model);
+    $configured = defined('CLICSHOPPING_APP_CHATGPT_CH_REASONING_EFFORT')
+      ? strtolower(trim((string)CLICSHOPPING_APP_CHATGPT_CH_REASONING_EFFORT))
+      : '';
+
+    // 'text' is the "not set" placeholder of the admin select.
+    if ($supported === [] || $configured === '' || $configured === 'text') {
+      return null;
+    }
+
+    if (in_array($configured, $supported, true)) {
+      return $configured;
+    }
+
+    $equivalent = match ($configured) {
+      'minimal' => 'none',
+      'none' => 'minimal',
+      'xhigh' => 'high',
+      default => null,
+    };
+
+    return in_array($equivalent, $supported, true) ? $equivalent : null;
+  }
+
+  /**
+   * The configured verbosity (CLICSHOPPING_APP_CHATGPT_CH_VERBOSITY), or null when the model would
+   * reject it. Measured: gpt-5* takes low|medium|high, gpt-4o and gpt-4.1-mini reject the parameter.
+   *
+   * @param string $model Model name
+   * @return string|null Value to send, or null to omit the parameter
+   */
+  public static function resolveVerbosity(string $model): ?string
+  {
+    $configured = defined('CLICSHOPPING_APP_CHATGPT_CH_VERBOSITY')
+      ? strtolower(trim((string)CLICSHOPPING_APP_CHATGPT_CH_VERBOSITY))
+      : '';
+
+    if (!str_starts_with($model, 'gpt-5') || !in_array($configured, ['low', 'medium', 'high'], true)) {
+      return null;
+    }
+
+    return $configured;
+  }
+
+  /**
+   * Will THIS call actually spend hidden reasoning tokens?
+   *
+   * Not a fixed model property: it follows the effective effort. Measured 2026-08-02 —
+   * gpt-5.6-luna reasons on its own default but spends 0 at effort 'none', and gpt-5.4-mini
+   * defaults to no reasoning at all. Drives both the token headroom and the temperature rule.
+   *
+   * @param string $model Model name
+   * @return bool True when the call reasons before answering
+   */
+  public static function willReason(string $model): bool
+  {
+    if (!self::isReasoningCapableModel($model)) {
+      return false;
+    }
+
+    $effort = self::resolveReasoningEffort($model);
+
+    if ($effort !== null) {
+      return $effort !== 'none';
+    }
+
+    // No effort sent: the model falls back to its own default.
+    return !in_array($model, self::NON_REASONING_GPT5_MODELS, true);
+  }
+
+  /**
+   * Widen an output budget sized for a non-reasoning model so hidden reasoning is paid on top of
+   * the answer, not out of it.
+   *
+   * Every caller budget in the pipeline (15 to 2300) counts VISIBLE tokens, because that is all a
+   * gpt-4* model spends. A reasoning model bills its thinking to the same budget and thinks first:
+   * the call then returns HTTP 200 with an EMPTY string, which the caller reads as "the model
+   * answered nothing" rather than as an error. Measured on gpt-5.6-luna with the ambiguity prompt
+   * (gpt5_budget_floor_probe.php and the campaign of 2026-08-02): 600 requested => 600 spent on
+   * reasoning, nothing left; the same call at 1624 answers in the same 5-6 s.
+   *
+   * @param string $model Model name
+   * @param int $maxtoken Budget the caller asked for, in visible tokens
+   * @return int Budget to send
+   */
+  public static function applyReasoningHeadroom(string $model, int $maxtoken): int
+  {
+    if (!self::willReason($model)) {
+      return $maxtoken;
+    }
+
+    return $maxtoken + self::REASONING_TOKEN_HEADROOM;
+  }
+
+  /**
+   * Rewrite generation options into what the target model actually accepts.
+   *
+   * Single chokepoint for the OpenAI wire format: renames the token budget, carries the configured
+   * reasoning effort and verbosity to the models that take them, grants reasoning its own token
+   * headroom, and drops a temperature the call would reject. Anything else is passed through.
+   *
+   * @param string $model Model name
+   * @param array<string, mixed> $options Generation options in OpenAI wire format
+   * @return array<string, mixed> Options safe to send for this model
+   */
+  public static function normalizeGenerationOptions(string $model, array $options): array
+  {
+    if (isset($options['max_tokens']) && self::usesCompletionTokenBudget($model)) {
+      $options['max_completion_tokens'] = (int)$options['max_tokens'];
+      unset($options['max_tokens']);
+    }
+
+    $effort = self::resolveReasoningEffort($model);
+
+    if ($effort !== null) {
+      $options['reasoning_effort'] = $effort;
+    }
+
+    $verbosity = self::resolveVerbosity($model);
+
+    if ($verbosity !== null) {
+      $options['verbosity'] = $verbosity;
+    }
+
+    if (isset($options['max_completion_tokens'])) {
+      $options['max_completion_tokens'] = self::applyReasoningHeadroom($model, (int)$options['max_completion_tokens']);
+    }
+
+    // A call that reasons accepts only the default temperature (1); any value is a 400.
+    if (self::willReason($model)) {
+      unset($options['temperature']);
+    }
+
+    return $options;
   }
 
   /**
    * Check if model uses reasoning API approach (GPT-5 style)
-   * 
-   * GPT-5 models use reasoning_effort and verbosity parameters instead of
-   * temperature, top_p, frequency_penalty, presence_penalty.
+   *
+   * Kept for the public Gpt facade; delegates so there is ONE definition. A third rule living here
+   * is what let gpt-5 reach the API with gpt-4 parameters.
    *
    * @param string $model Model name
    * @return bool True if model uses reasoning API approach
    */
   public static function isReasoningApiModel(string $model): bool
   {
-    // Get all models from the list
-    $models = self::getGptModel();
-    
-    foreach ($models as $modelInfo) {
-      if ($modelInfo['id'] === $model) {
-        // Check if this is a GPT-5 series model (uses reasoning API)
-        if (str_starts_with($modelInfo['id'], 'gpt-5')) {
-          return true;
-        }
-        
-        return false;
-      }
-    }
-    
-    // Model not found in list - check by prefix as fallback
-    return str_starts_with($model, 'gpt-5');
+    return self::isReasoningCapableModel($model);
   }
 
   /**

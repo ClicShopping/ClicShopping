@@ -287,7 +287,7 @@ class IntentRouter
     }
 
     // Validate required fields
-    if (!isset($intent['intent']) || !in_array($intent['intent'], ['comparative_lookup', 'entity_discovery', 'market_research', 'trend_analysis'])) {
+    if (!isset($intent['intent']) || !in_array($intent['intent'], ['comparative_lookup', 'entity_discovery', 'market_research', 'trend_analysis'], true)) {
       return null;
     }
 
@@ -304,7 +304,7 @@ class IntentRouter
     // Validate mode_hint if present
     if ($validatedIntent['mode_hint'] !== null) {
       $validModeHints = ['mode_a', 'mode_b', 'mode_c', 'hybrid'];
-      if (!in_array($validatedIntent['mode_hint'], $validModeHints)) {
+      if (!in_array($validatedIntent['mode_hint'], $validModeHints, true)) {
         $validatedIntent['mode_hint'] = null;
       }
     }

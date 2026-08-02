@@ -192,7 +192,6 @@ class SecurityStatistics
             ];
         }
     }
-    
 
     /**
      * A calendar date read from the DB, optionally shifted by a number of days.

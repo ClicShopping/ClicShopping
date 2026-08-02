@@ -129,10 +129,9 @@ class AiModelsAdmin
   }
 
   /**
-   * Marks $id as THE default Llm Recommended. Enforces global uniqueness: the current default
-   * (there is at most one) is reset to 0 first, then $id is set to 1.
+   * Marks $id as THE recommended model. Same global-uniqueness enforcement as setDefault().
    */
-  public static function setDefaulLlmRecommendded(int $id): void
+  public static function setLlmRecommended(int $id): void
   {
     $db = Registry::get('Db');
     $db->save('ai_models_name', ['ai_model_status_llm_recommended' => 0], ['ai_model_status_llm_recommended' => 1]);
@@ -196,7 +195,7 @@ class AiModelsAdmin
 
   /**
    * Inserts a model row and returns its new id. When the row carries default/fallback = 1,
-   * uniqueness is enforced afterwards via setDefault()/setFallback().
+   * uniqueness is enforced afterwards via setDefault()/setFallback()/setLlmRecommended().
    *
    * @param array<string,mixed> $data column => value (raw, already validated by the caller)
    */
@@ -212,6 +211,9 @@ class AiModelsAdmin
     if (!empty($data['ai_model_status_fallback'])) {
       self::setFallback($id);
     }
+    if (!empty($data['ai_model_status_llm_recommended'])) {
+      self::setLlmRecommended($id);
+    }
 
     ModelManager::clearCatalogCache();
 
@@ -219,7 +221,7 @@ class AiModelsAdmin
   }
 
   /**
-   * Updates a model row. Enforces default/fallback uniqueness when those flags are set to 1.
+   * Updates a model row. Enforces default/fallback/recommended uniqueness when those flags are set to 1.
    *
    * @param array<string,mixed> $data column => value
    */
@@ -233,6 +235,9 @@ class AiModelsAdmin
     }
     if (!empty($data['ai_model_status_fallback'])) {
       self::setFallback($id);
+    }
+    if (!empty($data['ai_model_status_llm_recommended'])) {
+      self::setLlmRecommended($id);
     }
 
     ModelManager::clearCatalogCache();
