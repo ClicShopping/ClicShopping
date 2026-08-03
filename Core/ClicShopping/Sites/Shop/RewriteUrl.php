@@ -1107,36 +1107,34 @@ class RewriteUrl
   /**
    * Generates the URL for a category image based on the provided category ID and optional parameters.
    *
-   * @param string $categories_id The ID of the category for which the image URL should be generated.
+   * Unlike the other generators this one receives an already built parameter, `cPath=3_5`, not a
+   * bare id: Category::getPathCategories() supplies the prefix and the value is concatenated as-is.
+   *
+   * @param string $categories_id A `cPath=…` parameter, or a bare cPath.
    * @param string $parameters Optional additional parameters to append to the URL.
    * @return string The generated URL for the category image.
    */
   public function getCategoryImageUrl(string $categories_id, string $parameters = ''): string
   {
-    if (defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true' && CLICSHOPPING::getSite() != 'ClicShoppingAdmin') {
-      if (defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true') {
-        $link_title = $this->title ?? 'category';
-        $link_title = $this->replaceString($link_title);
-
-        $categories_url_rewrited = $link_title . '&' . $categories_id;
-      } else {
-        $categories_url_rewrited = $categories_id;
-//          $categories_url_rewrited = 'cPath=' . $categories_id;	  
-      }
+    if (defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true') {
+      $categories_url_rewrited = $this->getCategorySlug(self::extractCPath($categories_id)) . '&' . $categories_id;
     } else {
-      if (defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true') {
-        $link_title = $this->title ?? 'category';
-        $link_title = $this->replaceString($link_title);
-
-        $categories_url_rewrited = $link_title . '&' . $categories_id;
-      } else {
-        $categories_url_rewrited = $categories_id;
-      }
+      $categories_url_rewrited = $categories_id;
     }
 
     $url = CLICSHOPPING::link(null, $categories_url_rewrited . $parameters);
 
     return $url;
+  }
+
+  /**
+   * Reads the cPath out of a `cPath=3_5` parameter. Without this the slug resolver would cast
+   * "cPath=3" to 0 and describe the wrong category.
+   *  @return string
+   */
+  private static function extractCPath(string $categories_id): string
+  {
+    return str_starts_with($categories_id, 'cPath=') ? substr($categories_id, \strlen('cPath=')) : $categories_id;
   }
 
   /**
@@ -1171,8 +1169,8 @@ class RewriteUrl
   /**
    * Génère une version propre d'un titre pour une URL (slug).
    *
-   * @param string $title Le titre original à convertir.
-   * @return string Le slug généré, propre pour une URL.
+   * @param string $title original title to convert.
+   * @return string generated slug, for url.
    */
   private static function generate(string $title): string
   {

@@ -39,12 +39,12 @@ See `DATABASE.md` §2 for the complete rule, rationale, and code examples.
 
 The system combines three retrieval modes based on detected intent:
 
-| Mode | Mechanism | Example Query |
-|---|---|---|
+| Mode          | Mechanism                        | Example Query                              |
+|---------------|----------------------------------|--------------------------------------------|
 | **Analytics** | Natural language → Generated SQL | "What are the top 10 products by revenue?" |
-| **Semantic** | Vector search `VECTOR(3072)` | "Find products similar to this one" |
-| **Web** | External search | "Latest trends in e-commerce 2026" |
-| **Hybrid** | Weighted combination | "Compare our sales with market trends" |
+| **Semantic**  | Vector search `VECTOR(3072)`     | "Find products similar to this one"        |
+| **Web**       | External search                  | "Latest trends in e-commerce 2026"         |
+| **Hybrid**    | Weighted combination             | "Compare our sales with market trends"     |
 
 Mode is automatically selected by `QueryClassifier` before execution.
 
@@ -120,15 +120,15 @@ Abstraction via **LLPhant** — never call LLM APIs directly.
 
 ### Supported Providers
 
-| Provider | Configuration Constant | Models |
-|---|---|---|
-| **OpenAI** | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY` | GPT-5.x, GPT-4.1, GPT-4o |
-| **Anthropic** | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_ANTHROPIC` | Claude Sonnet 3.5, Opus, Haiku |
-| **Mistral** | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL` | Mistral Large Latest |
-| **Google Gemini** | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_GEMINI` | Gemini 2.5 Flash (planned) |
-| **VoyageAI** | `CLICSHOPPING_APP_CHATGPT_RA_API_KEY_VOYAGE_AI` | Voyage embeddings |
-| **LM Studio** | `CLICSHOPPING_APP_CHATGPT_LMSTUDIO_URL` | GPT-OSS, Qwen3, Phi-4 |
-| **Ollama** | Local server (port 11434) | Mistral, Llama, etc. |
+| Provider          | Configuration Constant                          | Models                         |
+|-------------------|-------------------------------------------------|--------------------------------|
+| **OpenAI**        | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY`           | GPT-5.x, GPT-4.1, GPT-4o       |
+| **Anthropic**     | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_ANTHROPIC` | Claude Sonnet 3.5, Opus, Haiku |
+| **Mistral**       | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL`   | Mistral Large Latest           |
+| **Google Gemini** | `CLICSHOPPING_APP_CHATGPT_CH_API_KEY_GEMINI`    | Gemini 2.5 Flash (planned)     |
+| **VoyageAI**      | `CLICSHOPPING_APP_CHATGPT_RA_API_KEY_VOYAGE_AI` | Voyage embeddings              |
+| **LM Studio**     | `CLICSHOPPING_APP_CHATGPT_LMSTUDIO_URL`         | GPT-OSS, Qwen3, Phi-4, etc.    |
+| **Ollama**        | Local server (port 11434)                       | Mistral, Llama, etc.           |
 
 The administrator selects one provider for the whole system via the admin interface.
 A second provider can be used in specific cases — see `Gpt::getGptResponse()` for customization.
@@ -186,11 +186,11 @@ Rules:
 
 Three-tier memory architecture managed by `MemoryRetentionService`:
 
-| Tier | Scope | Storage | Use Case |
-|---|---|---|---|
-| **Short-term** | Current conversation | Session / Redis | Context continuity |
-| **Medium-term** | User session history | Database | Personalization |
-| **Long-term** | System knowledge | Vector embeddings | Pattern learning |
+| Tier            | Scope                | Storage           | Use Case           |
+|-----------------|----------------------|-------------------|--------------------|
+| **Short-term**  | Current conversation | Session / Redis   | Context continuity |
+| **Medium-term** | User session history | Database          | Personalization    |
+| **Long-term**   | System knowledge     | Vector embeddings | Pattern learning   |
 
 Do not create alternative memory mechanisms.
 
@@ -215,37 +215,37 @@ Entity (Product, Category, etc.)
 `clic_` below is this install's `db_table_prefix`, not a fixed name — always resolve it with
 `CLICSHOPPING::getConfig('db_table_prefix')`, never hardcode it.
 
-| Table | Entity |
-|---|---|
-| `clic_products_embedding` | Products |
-| `clic_products_seo_embedding` | Product SEO |
-| `clic_products_description_faq_embedding` | Product FAQ |
-| `clic_products_cockpit_ai_embedding` | CockpitAI product state |
-| `clic_categories_embedding` | Categories |
-| `clic_categories_seo_embedding` | Category SEO |
-| `clic_reviews_embedding` | Customer reviews |
-| `clic_reviews_sentiment_embedding` | Review sentiment |
-| `clic_orders_embedding` | Orders |
-| `clic_pages_manager_embedding` | CMS pages |
-| `clic_manufacturers_embedding` | Manufacturers |
-| `clic_suppliers_embedding` | Suppliers |
-| `clic_return_orders_embedding` | Order returns |
-| `clic_rag_conversation_memory_embedding` | Conversational memory |
-| `clic_rag_correction_patterns_embedding` | Correction patterns |
-| `clic_rag_schema_embedding` | DB schema (semantic table retrieval) |
-| `clic_rag_web_cache_embedding` | Web-search cache |
-| `clic_rag_agent_order_insights_embedding` | Order insights |
+| Table                                     | Entity                               |
+|-------------------------------------------|--------------------------------------|
+| `clic_products_embedding`                 | Products                             |
+| `clic_products_seo_embedding`             | Product SEO                          |
+| `clic_products_description_faq_embedding` | Product FAQ                          |
+| `clic_products_cockpit_ai_embedding`      | CockpitAI product state              |
+| `clic_categories_embedding`               | Categories                           |
+| `clic_categories_seo_embedding`           | Category SEO                         |
+| `clic_reviews_embedding`                  | Customer reviews                     |
+| `clic_reviews_sentiment_embedding`        | Review sentiment                     |
+| `clic_orders_embedding`                   | Orders                               |
+| `clic_pages_manager_embedding`            | CMS pages                            |
+| `clic_manufacturers_embedding`            | Manufacturers                        |
+| `clic_suppliers_embedding`                | Suppliers                            |
+| `clic_return_orders_embedding`            | Order returns                        |
+| `clic_rag_conversation_memory_embedding`  | Conversational memory                |
+| `clic_rag_correction_patterns_embedding`  | Correction patterns                  |
+| `clic_rag_schema_embedding`               | DB schema (semantic table retrieval) |
+| `clic_rag_web_cache_embedding`            | Web-search cache                     |
+| `clic_rag_agent_order_insights_embedding` | Order insights                       |
 
 ### Common Table Structure
 
-| Column | Type | Role |
-|---|---|---|
-| `embedding` | `VECTOR(3072)` | Semantic vector |
-| `entity_id` | INT | FK to source table |
-| `content` | TEXT | Original indexed text |
-| `metadata` | JSON | Contextual enrichment (v4.11+) |
-| `chunknumber` | INT | Sequential chunk index (128 tokens/chunk) |
-| `date_modified` | DATETIME | Last updated timestamp |
+| Column          | Type           | Role                                      |
+|-----------------|----------------|-------------------------------------------|
+| `embedding`     | `VECTOR(3072)` | Semantic vector                           |
+| `entity_id`     | INT            | FK to source table                        |
+| `content`       | TEXT           | Original indexed text                     |
+| `metadata`      | JSON           | Contextual enrichment (v4.11+)            |
+| `chunknumber`   | INT            | Sequential chunk index (128 tokens/chunk) |
+| `date_modified` | DATETIME       | Last updated timestamp                    |
 
 Pipeline rules:
 - Embedding generation managed by **existing crons** — do not recreate this mechanism
@@ -274,12 +274,12 @@ User Input
 
 Rate limiting constants:
 
-| Constant | Value | Role |
-|---|---|---|
-| `CLICSHOPPING_APP_API_AI_RATE_LIMIT_WINDOW` | 900s | Time window |
-| `CLICSHOPPING_APP_API_AI_MAX_REQUEST_PER_WINDOW` | 20 | Max queries per identifier |
-| `CLICSHOPPING_APP_API_AI_MAX_LOGIN_ATTEMPTS` | 5 | Attempts before lock |
-| `CLICSHOPPING_APP_API_AI_ACCOUNT_LOCK_DURATION` | 1800s | Lockdown duration |
+| Constant                                         | Value | Role                       |
+|--------------------------------------------------|-------|----------------------------|
+| `CLICSHOPPING_APP_API_AI_RATE_LIMIT_WINDOW`      | 900s  | Time window                |
+| `CLICSHOPPING_APP_API_AI_MAX_REQUEST_PER_WINDOW` | 20    | Max queries per identifier |
+| `CLICSHOPPING_APP_API_AI_MAX_LOGIN_ATTEMPTS`     | 5     | Attempts before lock       |
+| `CLICSHOPPING_APP_API_AI_ACCOUNT_LOCK_DURATION`  | 1800s | Lockdown duration          |
 
 Related tables:
 - `clic_api_rate_limit` — tracking requests by identifier + timestamp
@@ -326,12 +326,12 @@ Do not modify the MCP protocol without human coder agreement.
 
 ## 11. References
 
-| Subject | File |
-|---|---|
-| Agent operational rules | `AGENTS.md` |
-| Directory structure, orchestrator, patterns | `AI_ARCHITECTURE.md` |
-| DB paradigm and code examples | `DATABASE.md` §2 |
-| Vector database and embeddings schema | `DATABASE.md` §6 |
-| AI security and guardrails | `SECURITY.md` §5 |
-| Framework architecture | `ARCHITECTURE.md` |
-| DeepWiki AI | https://deepwiki.com/ClicShopping/ClicShopping/5-ai-integration-and-rag-system |
+| Subject                                     | File                                                                           |
+|---------------------------------------------|--------------------------------------------------------------------------------|
+| Agent operational rules                     | `AGENTS.md`                                                                    |
+| Directory structure, orchestrator, patterns | `AI_ARCHITECTURE.md`                                                           |
+| DB paradigm and code examples               | `DATABASE.md` §2                                                               |
+| Vector database and embeddings schema       | `DATABASE.md` §6                                                               |
+| AI security and guardrails                  | `SECURITY.md` §5                                                               |
+| Framework architecture                      | `ARCHITECTURE.md`                                                              |
+| DeepWiki AI                                 | https://deepwiki.com/ClicShopping/ClicShopping/5-ai-integration-and-rag-system |

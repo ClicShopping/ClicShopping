@@ -316,7 +316,7 @@ class RSS
     $xml .= '<copyright>' . $this->setTitle() . '</copyright>' . "\n";
 
 
-    $link_atom = CLICSHOPPING::link(null, 'Info&Rss');
+    $link_atom = CLICSHOPPING::link(null, 'Info&RSS');
     $link_atom = str_replace('&', '&amp;', $link_atom);
 
     $xml .= '<atom:link href="' . $link_atom . '" type="application/rss+xml"/>' . "\n";

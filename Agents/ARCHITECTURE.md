@@ -81,20 +81,20 @@ Always use `Registry::get('Db')`, `Registry::get('Language')`, etc. No exception
 
 ### Core Services
 
-| Key | Role |
-|---|---|
-| `Db` | DB service based on `\ClicShopping\OM\Db` (extends `PDO`) |
-| `Session` | Redis / Database / File |
-| `Language` | Multilingual support |
-| `Cookies` | Cookie management |
-| `Hooks` | Events system |
-| `Interfaces` | Interfaces system |
-| `Domains` | Domains abstract |
-| `HttpRequest` | http request, api |
-| `Modules` | modules |
-| `Service` | Modular container |
-| `Template` | Front-office rendering (Shop) |
-| `TemplateAdmin` | Back-office rendering (ClicShoppingAdmin) |
+| Key             | Role                                                      |
+|-----------------|-----------------------------------------------------------|
+| `Db`            | DB service based on `\ClicShopping\OM\Db` (extends `PDO`) |
+| `Session`       | Redis / Database / File                                   |
+| `Language`      | Multilingual support                                      |
+| `Cookies`       | Cookie management                                         |
+| `Hooks`         | Events system                                             |
+| `Interfaces`    | Interfaces system                                         |
+| `Domains`       | Domains abstract                                          |
+| `HttpRequest`   | http request, api                                         |
+| `Modules`       | modules                                                   |
+| `Service`       | Modular container                                         |
+| `Template`      | Front-office rendering (Shop)                             |
+| `TemplateAdmin` | Back-office rendering (ClicShoppingAdmin)                 |
 
 > **Registry vs DI:** ClicShopping uses the Registry as a service locator.
 > Do not create an alternative DI container — use `Registry::set/get`.
@@ -147,12 +147,12 @@ Never create an alternative autoload mechanism.
 
 Complete documentation: **`TEMPLATES.md`**
 
-| Aspect | Shop (Front office) | ClicShoppingAdmin (Back-office) |
-|---|---|---|
-| Service Registry | `Template` | `TemplateAdmin` |
-| Resolution | App → global theme (fallback) | App only — no fallback |
-| Cache | Yes — catalog pages | No — fresh data |
-| SEO | Applicable | Not applicable |
+| Aspect           | Shop (Front office)           | ClicShoppingAdmin (Back-office) |
+|------------------|-------------------------------|---------------------------------|
+| Service Registry | `Template`                    | `TemplateAdmin`                 |
+| Resolution       | App → global theme (fallback) | App only — no fallback          |
+| Cache            | Yes — catalog pages           | No — fresh data                 |
+| SEO              | Applicable                    | Not applicable                  |
 
 Business logic lives in `Sites/*/Pages/`; HTML templates live in `sources/`.
 
@@ -160,11 +160,11 @@ Business logic lives in `Sites/*/Pages/`; HTML templates live in `sources/`.
 
 ## 7. Languages — Layer Resolution
 
-| Layer | Path | Scope |
-|---|---|---|
-| **App / Module** | `Core/ClicShopping/Apps/*/languages/{lang}/` | High priority for Apps (Shop and Admin) |
-| **Admin core** | `ClicShoppingAdmin/Core/languages/{lang}/` | Back-office global labels |
-| **Overall / Theme** | `sources/languages/{lang}/` | Transversal texts and front-office fallback |
+| Layer               | Path                                         | Scope                                       |
+|---------------------|----------------------------------------------|---------------------------------------------|
+| **App / Module**    | `Core/ClicShopping/Apps/*/languages/{lang}/` | High priority for Apps (Shop and Admin)     |
+| **Admin core**      | `ClicShoppingAdmin/Core/languages/{lang}/`   | Back-office global labels                   |
+| **Overall / Theme** | `sources/languages/{lang}/`                  | Transversal texts and front-office fallback |
 
 Rules:
 - No visible hardcoded string in PHP or templates — always use `getDef('')`
@@ -238,13 +238,13 @@ comment IP address whitelist for API access control
 
 ## 9. Cache — 5-Tier Architecture
 
-| Tier | Technology | Scope |
-|---|---|---|
-| 1 | OpCache | PHP bytecode |
-| 2 | Static cache | Pre-rendered Shop catalog pages |
-| 3 | Memcached | Multi-server distributed cache |
-| 4 | Redis | Sessions + application data |
-| 5 | APCu | User space cache |
+| Tier | Technology   | Scope                           |
+|------|--------------|---------------------------------|
+| 1    | OpCache      | PHP bytecode                    |
+| 2    | Static cache | Pre-rendered Shop catalog pages |
+| 3    | Memcached    | Multi-server distributed cache  |
+| 4    | Redis        | Sessions + application data     |
+| 5    | APCu         | User space cache                |
 
 Do not introduce a sixth mechanism without explicit agreement.
 
@@ -262,20 +262,20 @@ Four backends with automatic fallback:
 
 ## 11. Cross-References
 
-| Subject | File |
-|---|---|
-| Agent operational rules | `AGENTS.md` |
-| AI system: agents, RAG, LLM, memory, embeddings | `AI_SYSTEM.md` |
-| AI directory structure, orchestrator, patterns | `AI_ARCHITECTURE.md` |
-| Database, SQL, embeddings schema | `DATABASE.md` |
-| Security, guardrails, GDPR | `SECURITY.md` |
-| Templates, rendering, SEO, i18n | `TEMPLATES.md` |
-| Official Wiki | https://github.com/ClicShopping/ClicShopping/wiki |
-| DeepWiki | https://deepwiki.com/ClicShopping/ClicShopping |
-| Tech Framework | https://github.com/ClicShopping/ClicShopping/wiki/Tech--Framework |
-| Modern App Architecture | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Modern-App-Architecture |
-| Tech Configuration | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Configuration |
-| Tech Database | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Database |
-| Tech Registry | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Registry |
-| Tech Hooks | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Hooks |
-| Tech Cache | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Cache |
+| Subject                                         | File                                                                           |
+|-------------------------------------------------|--------------------------------------------------------------------------------|
+| Agent operational rules                         | `AGENTS.md`                                                                    |
+| AI system: agents, RAG, LLM, memory, embeddings | `AI_SYSTEM.md`                                                                 |
+| AI directory structure, orchestrator, patterns  | `AI_ARCHITECTURE.md`                                                           |
+| Database, SQL, embeddings schema                | `DATABASE.md`                                                                  |
+| Security, guardrails, GDPR                      | `SECURITY.md`                                                                  |
+| Templates, rendering, SEO, i18n                 | `TEMPLATES.md`                                                                 |
+| Official Wiki                                   | https://github.com/ClicShopping/ClicShopping/wiki                              |
+| DeepWiki                                        | https://deepwiki.com/ClicShopping/ClicShopping                                 |
+| Tech Framework                                  | https://github.com/ClicShopping/ClicShopping/wiki/Tech--Framework              |
+| Modern App Architecture                         | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Modern-App-Architecture |
+| Tech Configuration                              | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Configuration           |
+| Tech Database                                   | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Database                |
+| Tech Registry                                   | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Registry                |
+| Tech Hooks                                      | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Hooks                   |
+| Tech Cache                                      | https://github.com/ClicShopping/ClicShopping/wiki/Tech-Cache                   |

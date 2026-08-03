@@ -157,57 +157,27 @@ class Category
   }
 
   /**
-   * Retrieves the path of categories for the current or specified category.
-   * Constructs a cPath parameter based on the current category ID and the categories path array.
+   * Builds the cPath parameter designating a category, as a full branch from the root.
    *
-   * @param string $current_category_id The ID of the current category. If empty, uses the existing path array.
-   * @return string The constructed cPath string representing the categories path.
+   * The `cPath=` prefix is part of the contract: RewriteUrl::getCategoryImageUrl() concatenates
+   * the returned value as-is.
+   *
+   * It used to append the target to the branch BEING BROWSED, comparing parents to tell a
+   * descent from a sibling. That produced a truncated cPath whenever there was no current
+   * branch (a front page linking to a nested category emitted `cPath=5` instead of `cPath=3_5`),
+   * which the strict router answers with a 301. Resolving the target's own branch is correct
+   * wherever the visitor stands, and gives the same answer for descents and siblings.
+   *
+   * @param string|int $current_category_id The category to designate. Empty = the branch currently browsed.
+   * @return string The cPath string, `cPath=` prefix included.
    */
   public function getPathCategories($current_category_id = '')
   {
-    $cPath_array = $this->getPathArray();
-
     if (empty($current_category_id)) {
-      $cPath_new = $this->getPathArray($cPath_array);
-    } else {
-      if (count($cPath_array) == 0) {
-        $cPath_new = $current_category_id;
-      } else {
-        $cPath_new = '';
-
-        $insert_sql = [
-          'categories_id' => (int)$cPath_array[(count($cPath_array) - 1)],
-          'status' => 1
-        ];
-
-        $Qlast = $this->db->get('categories', 'parent_id', $insert_sql);
-
-        $insert_sql = [
-          'categories_id' => (int)$current_category_id,
-          'status' => 1
-        ];
-
-        $Qcurrent = $this->db->get('categories', 'parent_id', $insert_sql);
-
-        if ($Qlast->valueInt('parent_id') === $Qcurrent->valueInt('parent_id')) {
-          for ($i = 0, $n = count($cPath_array) - 1; $i < $n; $i++) {
-            $cPath_new .= '_' . $cPath_array[$i];
-          }
-} else {
-          for ($i = 0, $n = count($cPath_array); $i < $n; $i++) {
-            $cPath_new .= $cPath_array[$i];
-          }
-}
-
-        $cPath_new .= '_' . $current_category_id;
-
-        if (substr($cPath_new, 0, 1) == '_') {
-          $cPath_new = substr($cPath_new, 1);
-        }
-}
+      return 'cPath=' . (string)$this->getPath();
     }
 
-    return 'cPath=' . $cPath_new;
+    return 'cPath=' . (string)$this->categoryTree->buildBreadcrumb((string)$current_category_id);
   }
 
   /**

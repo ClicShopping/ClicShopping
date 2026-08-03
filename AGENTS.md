@@ -21,16 +21,16 @@ designed for B2B, B2C, and B2B-B2C businesses, enhanced with advanced Agentic an
 ## Reference Documentation
 
 All technical documentation lives in the `Agents/` directory.
-Seven files — all must be checked for the Self-Correction Protocol.
+Six files — all must be checked for the Self-Correction Protocol.
 
-| File | Content |
-|---|---|
-| `Agents/ARCHITECTURE.md` | Bootstrap, routing, Registry, hooks, namespaces, Custom/, cache |
-| `Agents/AI_SYSTEM.md` | Agents, RAG, LLM providers, reasoning, memory, embeddings, MCP |
-| `Agents/AI_ARCHITECTURE.md` | AI directory structure, OrchestratorAgent components, domain-agnostic patterns |
-| `Agents/DATABASE.md` | MariaDB 11.7+, SQL schema, SQL file routing, migrations |
-| `Agents/SECURITY.md` | 10 security layers, AI guardrails, rate limiting, GDPR |
-| `Agents/TEMPLATES.md` | Front-office vs back-office rendering, helpers, SEO, i18n |
+| File                        | Content                                                                                                    |
+|-----------------------------|------------------------------------------------------------------------------------------------------------|
+| `Agents/ARCHITECTURE.md`    | Bootstrap, routing, Registry, hooks, namespaces, Custom/, cache                                            |
+| `Agents/AI_SYSTEM.md`       | Agents, RAG, LLM providers, reasoning, memory, embeddings, MCP                                             |
+| `Agents/AI_ARCHITECTURE.md` | AI directory structure, OrchestratorAgent components, domain-agnostic patterns                             |
+| `Agents/DATABASE.md`        | MariaDB 11.7+, SQL schema, SQL file routing, migrations                                                    |
+| `Agents/SECURITY.md`        | 10 security layers, AI guardrails, rate limiting, GDPR                                                     |
+| `Agents/TEMPLATES.md`       | Front-office vs back-office rendering, helpers, SEO, i18n                                                  |
 
 ---
 

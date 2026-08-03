@@ -160,11 +160,11 @@ Do not copy the entire `Default/` into a custom theme, Just the files you need t
 Each module in `modules/` has its own subdirectory, with two subfolders
 depending on the type of rendering — do not confuse them.
 
-| Type | Subdirectory | Usage |
-|---|---|---|
-| **Header / Footer** | `Default/header.php` and `Default/footer.php` | At the **root of `Default/`** — outside `modules/` |
-| **Fixed template** | `modules/{module_name}/content/` | Module HTML — single block rendering |
-| **Template listing** | `modules/{module_name}/template_html/` | HTML listing — only when the module displays a list |
+| Type                 | Subdirectory                                  | Usage                                               |
+|----------------------|-----------------------------------------------|-----------------------------------------------------|
+| **Header / Footer**  | `Default/header.php` and `Default/footer.php` | At the **root of `Default/`** — outside `modules/`  |
+| **Fixed template**   | `modules/{module_name}/content/`              | Module HTML — single block rendering                |
+| **Template listing** | `modules/{module_name}/template_html/`        | HTML listing — only when the module displays a list |
 
 The `template_html/` subdirectory is only present if the module manages a listing.
 A simple module only has `content/`. Do not create `template_html/` by default.
@@ -296,11 +296,11 @@ Core/ClicShopping/Sites/
 ## 5. Languages — common rules
 
 
-| Layer | Path | Scope |
-|---|---|---|
-| **App / Module** | `Core/ClicShopping/Apps/*/languages/{lang}/` | High priority for Apps (Shop and Admin) |
-| **Admin core** | `ClicShoppingAdmin/Core/languages/{lang}/` | Back office global labels |
-| **Overall / Theme** | `sources/languages/{lang}/` | Transversal texts and front-office fallback |
+| Layer               | Path                                         | Scope                                       |
+|---------------------|----------------------------------------------|---------------------------------------------|
+| **App / Module**    | `Core/ClicShopping/Apps/*/languages/{lang}/` | High priority for Apps (Shop and Admin)     |
+| **Admin core**      | `ClicShoppingAdmin/Core/languages/{lang}/`   | Back office global labels                   |
+| **Overall / Theme** | `sources/languages/{lang}/`                  | Transversal texts and front-office fallback |
 
 
 - No visible hardcoded string — always via `getDef()`
@@ -375,6 +375,7 @@ $ai->generate('...');
 [ ] Custom theme: only contains overloaded files — no copy of Default/
 [ ] New template intended for all themes → create it in Default/
 [ ] SEO tags (title, meta) → via dedicated modules header_tag which inject into header/footer
+[ ] SEO URLs Canonical for all link
 [ ] Front: unique h1 per page, alt on all images
 [ ] Front: Core/ClicShopping/Work/ cache invalidation planned via the administration
 [ ] CSRF token on each Shop and Admin form — HTML::form() with ['tokenize' => true]
@@ -387,6 +388,6 @@ $ai->generate('...');
 
 ## 8. References
 - Architecture core, controllers, routing: `ARCHITECTURE.md`
-- Security and escape: `SECURITY.md`
+- Security and escape: `SECURITY.md` ==> create
 - Wiki front office display template: https://github.com/ClicShopping/ClicShopping/wiki/How-to-display-information-inside-a-template
 - DeepWiki templates: https://deepwiki.com/ClicShopping/ClicShopping/8-template-and-module-system

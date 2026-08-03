@@ -1,5 +1,5 @@
 version4.33
-- fix / bug resolution
+- fix / bug
 - libraries updated
 - Cron Improvement
 - error_log management improved
@@ -10,10 +10,10 @@ version4.33
   - Add distinction between Agents and Actors
   - AI review sentiment analysis improved and refactored with agentic approach
   - ChatGpt Apps refactored
-    - Gpt-4 series removed by Gpt-5
-    - New features and configuration
+    - Gpt-4 series removed for Gpt-5 only
+    - New features and configuration for use Llm
   - AI response time optimization
-  - Some refactorisation and improvement
+  - Some AI refactorisation and improvement to solidify the code, reponse
   - best solidity chat response
 
   

@@ -62,10 +62,10 @@ $agent = new AnalyticsAgent();
 $result = $agent->execute($query);
 ```
 
-| Agent type | Registration location |
-|---|---|
-| Core infrastructure agents | `Core/ClicShopping/AI/CoreAI/` |
-| Domain-specific agents | `Core/ClicShopping/Apps/AI/{Domain}/` |
+| Agent type                 | Registration location                 |
+|----------------------------|---------------------------------------|
+| Core infrastructure agents | `Core/ClicShopping/AI/CoreAI/`        |
+| Domain-specific agents     | `Core/ClicShopping/Apps/AI/{Domain}/` |
 
 Rules:
 - Agents implement `AgentInterface` ; actor-critic role classes implement `ActorInterface`/`CriticInterface` (all in `Core/ClicShopping/AI/InterfacesAI/`)
@@ -79,12 +79,12 @@ Rules:
 Following a single-responsibility refactoring (2026-04-30), OrchestratorAgent
 delegates to four specialized components:
 
-| Component | Location | Responsibility |
-|---|---|---|
-| **DomainRouter** | `DomainsAI/DomainRouter.php` | Routes queries to the right domain (semantic, analytics, hybrid, web) |
-| **QueryProcessor** | `Handler/Query/QueryProcessor.php` | Query processing with retry logic and parallel execution |
-| **HybridQueryHandler** | `DomainsAI/Hybrid/Handler/HybridQueryHandler.php` | Handles hybrid queries (analytics + semantic + web) |
-| **PerformanceTracker** | `Infrastructure/Monitoring/PerformanceTracker.php` | Query-level performance monitoring with markers |
+| Component              | Location                                           | Responsibility                                                        |
+|------------------------|----------------------------------------------------|-----------------------------------------------------------------------|
+| **DomainRouter**       | `DomainsAI/DomainRouter.php`                       | Routes queries to the right domain (semantic, analytics, hybrid, web) |
+| **QueryProcessor**     | `Handler/Query/QueryProcessor.php`                 | Query processing with retry logic and parallel execution              |
+| **HybridQueryHandler** | `DomainsAI/Hybrid/Handler/HybridQueryHandler.php`  | Handles hybrid queries (analytics + semantic + web)                   |
+| **PerformanceTracker** | `Infrastructure/Monitoring/PerformanceTracker.php` | Query-level performance monitoring with markers                       |
 
 Integration pattern:
 
@@ -102,6 +102,16 @@ $hybridResult = $this->hybridQueryHandler->handleHybridQuery($query, ...);
 $this->performanceTracker->startTracking();
 ```
 
+### Entry gates — `processWithValidation()`
+
+Four gates run before the orchestration pipeline; each returns a fixed response shape and stops.
+
+| Order | Gate                  | Condition                                                                              | LLM call      |
+|-------|-----------------------|----------------------------------------------------------------------------------------|---------------|
+| 1     | **Empty input**       | `trim($query) === ''` (never `empty()`: `empty('0')` is true and `0` is a valid query) | none          |
+| 2     | **Primary (boolean)** | `OutOfContextGate` → `is_out_of_context === true`                                      | yes           |
+| 3     | **Threshold**         | `context_relevance < CONTEXT_RELEVANCE_THRESHOLD`                                      | reuses gate 2 |
+| 4     | **Nuanced action**    | `suggested_action` = `reject` / `ask_clarification` / `redirect_to_web_search`         | reuses gate 2 |
 Documentation:
 - Current state: `Core/ClicShopping/AI/ARCHITECTURE_EVOLUTION.md`
 
@@ -111,27 +121,27 @@ Documentation:
 
 Added May 2026 — separates business validation logic from Actor-Critic infrastructure.
 
-| Layer | Location | Role |
-|---|---|---|
-| **Business validators** | `DomainsAI/Analytics/Validator/` | Testable independently, no Actor-Critic dependency |
-| **Infrastructure wrappers** | `CoreAI/Orchestrator/SubActorCritic/Critics/` | Minimal delegation to validators |
+| Layer                       | Location                                      | Role                                               |
+|-----------------------------|-----------------------------------------------|----------------------------------------------------|
+| **Business validators**     | `DomainsAI/Analytics/Validator/`              | Testable independently, no Actor-Critic dependency |
+| **Infrastructure wrappers** | `CoreAI/Orchestrator/SubActorCritic/Critics/` | Minimal delegation to validators                   |
 
 ### Validators
 
-| Validator | Responsibility |
-|---|---|
-| `SqlQualityValidator` | SQL quality (SELECT *, LIMIT, WHERE) |
-| `SqlSecurityValidator` | Security (dangerous patterns, injection) |
-| `SqlPerformanceValidator` | Performance (indexes, joins) |
-| `SchemaValidator` | Schema (tables, columns) |
-| `AnalyticsQualityEvaluator` | Orchestrates all validators |
+| Validator                   | Responsibility                           |
+|-----------------------------|------------------------------------------|
+| `SqlQualityValidator`       | SQL quality (SELECT *, LIMIT, WHERE)     |
+| `SqlSecurityValidator`      | Security (dangerous patterns, injection) |
+| `SqlPerformanceValidator`   | Performance (indexes, joins)             |
+| `SchemaValidator`           | Schema (tables, columns)                 |
+| `AnalyticsQualityEvaluator` | Orchestrates all validators              |
 
 ### Wrappers
 
-| Wrapper | Delegates To |
-|---|---|
-| `SqlQualityCriticWrapper` | `SqlQualityValidator` |
-| `AnalyticsCriticWrapper` | `AnalyticsQualityEvaluator` |
+| Wrapper                   | Delegates To                |
+|---------------------------|-----------------------------|
+| `SqlQualityCriticWrapper` | `SqlQualityValidator`       |
+| `AnalyticsCriticWrapper`  | `AnalyticsQualityEvaluator` |
 
 ```php
 // Direct validator usage (outside Actor-Critic)
@@ -205,13 +215,13 @@ final class WebSearchRegistration {
 
 The registry exposes **five** agnostic hooks — a domain App registers whichever it needs:
 
-| Hook | Interface | Purpose |
-|------|-----------|---------|
-| `registerProvider` | `WebSearchEngineProviderInterface` | A brand-specific engine (Mode D, ...) |
-| `registerSiteRouter` | `SiteRouterInterface` | `target_site → modes` routing |
-| `registerResultEnhancer` | `WebSearchResultEnhancerInterface` | Post-search result rewriting |
-| `registerQueryEnricher` | `QueryEnricherInterface` | Pre-search query rewriting (context) |
-| `registerIntentDetector` | `QueryIntentDetectorInterface` | **Fallback** intent verdict when the LLM signal is absent (Core owns no keywords) |
+| Hook                     | Interface                          | Purpose                                                                           |
+|--------------------------|------------------------------------|-----------------------------------------------------------------------------------|
+| `registerProvider`       | `WebSearchEngineProviderInterface` | A brand-specific engine (Mode D, ...)                                             |
+| `registerSiteRouter`     | `SiteRouterInterface`              | `target_site → modes` routing                                                     |
+| `registerResultEnhancer` | `WebSearchResultEnhancerInterface` | Post-search result rewriting                                                      |
+| `registerQueryEnricher`  | `QueryEnricherInterface`           | Pre-search query rewriting (context)                                              |
+| `registerIntentDetector` | `QueryIntentDetectorInterface`     | **Fallback** intent verdict when the LLM signal is absent (Core owns no keywords) |
 
 The intent-detector hook is how a *domain concept* like price comparison stays out of Core: `HybridQueryDecomposer` detects `comparative_lookup` PRIMARY via the
 LLM intent, and FALLBACK by iterating the registered detectors — the Ecommerce App owns the keywords in `PriceComparisonIntentDetector`. The Core intent
@@ -238,12 +248,12 @@ a new domain (HR, CRM, Finance, Trading, ...) is added.
 
 ### Built-in agnostic engines (allowed in Core)
 
-| Mode | Identifier | Engine | Reason it stays in Core |
-|------|-----------|--------|--------------------------|
-| A | `mode_a_ai_overview` | `GoogleAIOverviewEngine` | Public Google/SerpAPI protocol, no merchant brand |
-| B | `mode_b_google_shopping` | `GoogleShoppingEngine` | Public Google/SerpAPI protocol, no merchant brand |
-| C | `mode_c_rag_websearch` | `RagWebSearchEngine` | Generic site-filtered Google search |
-| E | `mode_e_google_trends` | `GoogleTrendsEngine` | Public Google/SerpAPI protocol |
+| Mode  | Identifier               | Engine                   | Reason it stays in Core                           |
+|-------|--------------------------|--------------------------|---------------------------------------------------|
+| A     | `mode_a_ai_overview`     | `GoogleAIOverviewEngine` | Public Google/SerpAPI protocol, no merchant brand |
+| B     | `mode_b_google_shopping` | `GoogleShoppingEngine`   | Public Google/SerpAPI protocol, no merchant brand |
+| C     | `mode_c_rag_websearch`   | `RagWebSearchEngine`     | Generic site-filtered Google search               |
+| E     | `mode_e_google_trends`   | `GoogleTrendsEngine`     | Public Google/SerpAPI protocol                    |
 
 Mode D is **always domain-registered**. The Ecommerce App ships
 `mode_d_amazon_shopping` via `AmazonShoppingProvider`.
@@ -254,10 +264,10 @@ RAG/agent **prompts are language files**, never hardcoded strings (no heredoc or
 text in classes — always `getDef()`). There are **three** buckets, distinguished by *who reads
 the text* (the LLM vs the end user) and therefore *whether French is actually used*:
 
-| Bucket | Location | Read by | Content | FR |
-|--------|----------|---------|---------|----|
-| **Agnostic prompt** | `…/languages/{lang}/Agents/rag_*.txt` | LLM | Instructions/logic with NO domain entities (critic selection, weight bounds, anomaly detection, …) | kept, **unused** |
-| **Domain prompt** | `…/languages/{lang}/{domain}/rag_*.txt` (e.g. `ecommerce/`) | LLM | NL-to-SQL with the real schema, entity extraction, domain few-shot examples | kept, **unused** |
+| Bucket                 | Location                                                                          | Read by  | Content                                                                                                                                       | FR                           |
+|------------------------|-----------------------------------------------------------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
+| **Agnostic prompt**    | `…/languages/{lang}/Agents/rag_*.txt`                                             | LLM      | Instructions/logic with NO domain entities (critic selection, weight bounds, anomaly detection, …)                                            | kept, **unused**             |
+| **Domain prompt**      | `…/languages/{lang}/{domain}/rag_*.txt` (e.g. `ecommerce/`)                       | LLM      | NL-to-SQL with the real schema, entity extraction, domain few-shot examples                                                                   | kept, **unused**             |
 | **User-facing labels** | `…/languages/{lang}/ai_response_labels.txt` (platform root, alongside `main.txt`) | End user | Agnostic chat-rendering labels & error/empty-result messages (formatter titles, mode names, month names, "No results", correction notices, …) | **used** (really translated) |
 
 > **The whole AI process runs in English** (queries are translated to EN, the pipeline reasons
@@ -338,14 +348,14 @@ The PRIMARY method is **Pure LLM Mode** via LLPhant.
 
 ### Pattern Status
 
-| Pattern Class | Location | Type | Status | Purpose |
-|---|---|---|---|---|
-| `IntentDetectionPatterns` | `DomainsAI/WebSearch/Patterns/` | Agnostic | @deprecated (fallback) | Intent routing when LLM fails |
-| `WebSearchPatterns` | `DomainsAI/WebSearch/Patterns/` | Agnostic | @deprecated (fallback) | Generic web search keywords |
-| `WebSearchPostFilter` | `DomainsAI/WebSearch/Patterns/` | Agnostic | @deprecated (fallback) | Post-filtering patterns |
-| `WebSearchPatterns` | `Apps/AI/Ecommerce/.../Patterns/` | Domain-specific | Active | Price extraction & comparison |
-| `AnalyticsPatterns` | `Apps/AI/Ecommerce/.../Patterns/` | Domain-specific | Active | Ecommerce analytics patterns |
-| `GuardrailsPattern` | `Apps/AI/Ecommerce/.../Patterns/` | Domain-specific | Active | Table filtering for security |
+| Pattern Class             | Location                          | Type            | Status                 | Purpose                       |
+|---------------------------|-----------------------------------|-----------------|------------------------|-------------------------------|
+| `IntentDetectionPatterns` | `DomainsAI/WebSearch/Patterns/`   | Agnostic        | @deprecated (fallback) | Intent routing when LLM fails |
+| `WebSearchPatterns`       | `DomainsAI/WebSearch/Patterns/`   | Agnostic        | @deprecated (fallback) | Generic web search keywords   |
+| `WebSearchPostFilter`     | `DomainsAI/WebSearch/Patterns/`   | Agnostic        | @deprecated (fallback) | Post-filtering patterns       |
+| `WebSearchPatterns`       | `Apps/AI/Ecommerce/.../Patterns/` | Domain-specific | Active                 | Price extraction & comparison |
+| `AnalyticsPatterns`       | `Apps/AI/Ecommerce/.../Patterns/` | Domain-specific | Active                 | Ecommerce analytics patterns  |
+| `GuardrailsPattern`       | `Apps/AI/Ecommerce/.../Patterns/` | Domain-specific | Active                 | Table filtering for security  |
 
 > There are **two different `WebSearchPatterns` classes** — they cannot be merged:
 > 1. **Agnostic** (`DomainsAI/WebSearch/Patterns/`) — generic keyword patterns
@@ -393,11 +403,11 @@ FALLBACK ONLY: Pattern-based detection
 
 ## 7. References
 
-| Subject | File |
-|---|---|
-| Agent operational rules | `AGENTS.md` |
-| AI concepts, RAG, LLM, memory, embeddings | `AI_SYSTEM.md` |
-| Framework architecture, hooks, registry | `ARCHITECTURE.md` |
-| Database, SQL, vector tables | `DATABASE.md` |
-| Security, guardrails, GDPR | `SECURITY.md` |
-| DeepWiki AI | https://deepwiki.com/ClicShopping/ClicShopping/5-ai-integration-and-rag-system |
+| Subject                                   | File                                                                           |
+|-------------------------------------------|--------------------------------------------------------------------------------|
+| Agent operational rules                   | `AGENTS.md`                                                                    |
+| AI concepts, RAG, LLM, memory, embeddings | `AI_SYSTEM.md`                                                                 |
+| Framework architecture, hooks, registry   | `ARCHITECTURE.md`                                                              |
+| Database, SQL, vector tables              | `DATABASE.md`                                                                  |
+| Security, guardrails, GDPR                | `SECURITY.md`                                                                  |
+| DeepWiki AI                               | https://deepwiki.com/ClicShopping/ClicShopping/5-ai-integration-and-rag-system |

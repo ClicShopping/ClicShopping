@@ -11,12 +11,12 @@
 
 MySQL 9.x is **incompatible** with the project's native vector features.
 
-| Feature | Requirement |
-|---|---|
-| Vector type | MariaDB native `VECTOR` |
-| Vector index | `VECTOR INDEX` native MariaDB |
-| JSON | JSON `metadata` column (v4.11+) |
-| Dimensions | Respect the existing dimensions per table (3072) |
+| Feature      | Requirement                                      |
+|--------------|--------------------------------------------------|
+| Vector type  | MariaDB native `VECTOR`                          |
+| Vector index | `VECTOR INDEX` native MariaDB                    |
+| JSON         | JSON `metadata` column (v4.11+)                  |
+| Dimensions   | Respect the existing dimensions per table (3072) |
 
 Cloud or PaaS environments: explicitly check the MariaDB version before any deployment.
 If in doubt, query `SELECT VERSION();` and validate ≥ 11.7.
@@ -27,10 +27,10 @@ If in doubt, query `SELECT VERSION();` and validate ≥ 11.7.
 
 Two paradigms coexist. They are **mutually exclusive per file** — never mix them.
 
-| Directory | Paradigm | Reason |
-|---|---|---|
-| `Core/ClicShopping/AI/` | **Doctrine ORM only** | Agnostic layer — must stay framework-independent |
-| Everywhere else | **`Registry::get('Db')` only** | Framework layer — single managed connection |
+| Directory               | Paradigm                       | Reason                                           |
+|-------------------------|--------------------------------|--------------------------------------------------|
+| `Core/ClicShopping/AI/` | **Doctrine ORM only**          | Agnostic layer — must stay framework-independent |
+| Everywhere else         | **`Registry::get('Db')` only** | Framework layer — single managed connection      |
 
 ```
 PARADIGM SHIFT — CRITICAL RULE:
@@ -85,13 +85,13 @@ Do not use `Registry::get('Db')` anywhere inside `Core/ClicShopping/AI/`.
 
 Five distinct slots with non-interchangeable roles:
 
-| Location | Role | Agent access |
-|---|---|---|
-| `Core/ClicShopping/Schema/MariaDb/` | Canonical schema of all tables — source of truth | Read only |
-| `install/Db/*.sql` | Initial seed data for fresh installation | Read only |
-| `Core/ClicShopping/Apps/{Vendor}/{AppName}/Sql/MariaDb/` | App SQL (CREATE, INSERT) activated when App is enabled | **Writing** |
-| `Core/ClicShopping/Custom/Schema/` | Additional tables for Custom overloads (*.txt files) | **Writing** |
-| `sql_upgrade/` | Migration guide for end user — documentation only | Read only |
+| Location                                                 | Role                                                   | Agent access |
+|----------------------------------------------------------|--------------------------------------------------------|--------------|
+| `Core/ClicShopping/Schema/MariaDb/`                      | Canonical schema of all tables — source of truth       | Read only    |
+| `install/Db/*.sql`                                       | Initial seed data for fresh installation               | Read only    |
+| `Core/ClicShopping/Apps/{Vendor}/{AppName}/Sql/MariaDb/` | App SQL (CREATE, INSERT) activated when App is enabled | **Writing**  |
+| `Core/ClicShopping/Custom/Schema/`                       | Additional tables for Custom overloads (*.txt files)   | **Writing**  |
+| `sql_upgrade/`                                           | Migration guide for end user — documentation only      | Read only    |
 
 ### Decision rule
 
@@ -153,19 +153,19 @@ Agent rules:
 
 These tables are managed by the AI pipeline — do not modify them manually.
 
-| Table | Entity |
-|---|---|
-| `clic_products_embedding` | Products |
-| `clic_categories_embedding` | Categories |
-| `clic_reviews_embedding` | Customer reviews |
-| `clic_reviews_sentiment_embedding` | Review sentiment |
-| `clic_orders_embedding` | Orders |
-| `clic_pages_manager_embedding` | CMS pages |
-| `clic_manufacturers_embedding` | Manufacturers |
-| `clic_suppliers_embedding` | Suppliers |
-| `clic_return_orders_embedding` | Order returns |
+| Table                                | Entity                |
+|--------------------------------------|-----------------------|
+| `clic_products_embedding`            | Products              |
+| `clic_categories_embedding`          | Categories            |
+| `clic_reviews_embedding`             | Customer reviews      |
+| `clic_reviews_sentiment_embedding`   | Review sentiment      |
+| `clic_orders_embedding`              | Orders                |
+| `clic_pages_manager_embedding`       | CMS pages             |
+| `clic_manufacturers_embedding`       | Manufacturers         |
+| `clic_suppliers_embedding`           | Suppliers             |
+| `clic_return_orders_embedding`       | Order returns         |
 | `clic_conversation_memory_embedding` | Conversational memory |
-| `clic_correction_pattern_embedding` | Correction patterns |
+| `clic_correction_pattern_embedding`  | Correction patterns   |
 
 ### Common Structure
 
@@ -214,12 +214,12 @@ Expected use:
 
 These tables are managed by the security and monitoring layers — do not modify them:
 
-| Table | Role |
-|---|---|
-| `clic_api_rate_limit` | Tracking requests by identifier + timestamp |
-| `clic_api_failed_attempts` | Failed login attempts |
-| `clic_rag_security_events` | AI security event audit |
-| `clic_mcp_performance_history` | MCP metrics (latency, uptime, errors) |
+| Table                          | Role                                        |
+|--------------------------------|---------------------------------------------|
+| `clic_api_rate_limit`          | Tracking requests by identifier + timestamp |
+| `clic_api_failed_attempts`     | Failed login attempts                       |
+| `clic_rag_security_events`     | AI security event audit                     |
+| `clic_mcp_performance_history` | MCP metrics (latency, uptime, errors)       |
 
 ---
 
