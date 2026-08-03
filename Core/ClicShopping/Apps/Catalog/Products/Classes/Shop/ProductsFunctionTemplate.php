@@ -535,12 +535,7 @@ class ProductsFunctionTemplate
    */
   public function getManufacturerName(int $products_id): string
   {
-    if (isset($_GET['manufacturersId']) && !is_null($_GET['manufacturersId']) && is_numeric($_GET['manufacturersId'])) {
-      $manufacturer_id = HTML::sanitize($_GET['manufacturersId']);
-      $name = HTML::link(CLICSHOPPING::link(null, 'Products&Description&manufacturersId=' . $manufacturer_id . '&products_id=' . $products_id), '<span itemprop="name">' . $this->productsCommon->getProductsName($products_id) . '</span>', 'itemprop="url"');
-    } else {
-      $name = HTML::link(CLICSHOPPING::link(null, 'Products&Description&' . ($this->category->getPath() ? 'cPath=' . $this->category->getPath() . '&' : '') . 'products_id=' . $products_id), '<span itemprop="name">' . $this->productsCommon->getProductsName($products_id) . '</span>', 'itemprop="url"');
-    }
+    $name = HTML::link($this->rewriteUrl->getProductNameUrl($products_id), '<span itemprop="name">' . $this->productsCommon->getProductsName($products_id) . '</span>', 'itemprop="url"');
 
     return $name;
   }
@@ -554,12 +549,7 @@ class ProductsFunctionTemplate
    */
   public function getManufacturerImage(int $products_id, string $products_image): string
   {
-    if (isset($_GET['manufacturersId']) && is_numeric($_GET['manufacturersId'])) {
-      $manufacturer_id = HTML::sanitize($_GET['manufacturersId']);
-      $image = HTML::link(CLICSHOPPING::link(null, 'Products&Description&manufacturersId=' . $manufacturer_id . '&products_id=' . $products_id), HTML::image($this->template->getDirectoryTemplateImages() . $products_image, HTML::outputProtected($this->productsCommon->getProductsName($products_id)), (int)SMALL_IMAGE_WIDTH, (int)SMALL_IMAGE_HEIGHT, null, true));
-    } else {
-      $image = HTML::link($this->rewriteUrl->getProductNameUrl($products_id, 'products_id=', ($this->category->getPath() ? 'cPath=' . $this->category->getPath() . '&' : '') . 'products_id=' . $products_id), HTML::image($this->template->getDirectoryTemplateImages() . $products_image, HTML::outputProtected($this->productsCommon->getProductsName($products_id)), (int)SMALL_IMAGE_WIDTH, (int)SMALL_IMAGE_HEIGHT, null, true));
-    }
+    $image = HTML::link($this->rewriteUrl->getProductNameUrl($products_id), HTML::image($this->template->getDirectoryTemplateImages() . $products_image, HTML::outputProtected($this->productsCommon->getProductsName($products_id)), (int)SMALL_IMAGE_WIDTH, (int)SMALL_IMAGE_HEIGHT, null, true));
 
     return $image;
   }

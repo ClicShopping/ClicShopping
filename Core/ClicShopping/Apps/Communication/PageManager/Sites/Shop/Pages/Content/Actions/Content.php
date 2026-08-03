@@ -9,7 +9,6 @@
 namespace ClicShopping\Apps\Communication\PageManager\Sites\Shop\Pages\Content\Actions;
 
 use ClicShopping\Apps\Communication\PageManager\PageManager as PageManagerApp;
-use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Shop\UrlCanonicalizer;
@@ -40,10 +39,11 @@ class Content extends \ClicShopping\OM\Domains\PagesActionsAbstract
       if (!empty($CLICSHOPPING_PageManagerShop->pageManagerDisplayInformation($id))) {
         $page_title = $CLICSHOPPING_PageManagerShop->pageManagerDisplayTitle($id);
 
-        $CLICSHOPPING_Breadcrumb->add($page_title, CLICSHOPPING::link(null, 'Info&Content&pagesId=' . $id));
-// templates
+        // A hand-built link is the slugless spelling the router then has to 301.
+        $CLICSHOPPING_Breadcrumb->add($page_title, Registry::get('RewriteUrl')->getPageManagerContentUrl($id));
+        // templates
         $this->page->setFile('content.php');
-//Content
+        //Content
         $this->page->data['content'] = $CLICSHOPPING_Template->getTemplateFiles('page_manager');
       } else {
         // Unpublished or unknown page: 404 directly. The former redirect built a doubled

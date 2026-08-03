@@ -65,11 +65,50 @@ class UrlCanonicalizer
   private static array $stem = [];
 
   /**
+   * The App route the router resolved, kept so the canonical can be recomputed after the fact
+   * for another language — the default provider reads the owning App from it.
+   */
+  private static ?array $route = null;
+
+  /**
    * @return string|null The canonical URL of the request being served, null when no App claimed it.
    */
   public static function getCanonicalUrl(): ?string
   {
     return self::$canonical;
+  }
+
+  /**
+   * Canonical URL of the CURRENT resource as it is spelled in another language.
+   *
+   * The language switcher used to rebuild its links from $_GET, where the slug is the one of
+   * the language being left: /dinning-bar/cPath-3/language-fr, which the router then had to
+   * 301 onto /art-de-la-table-bar/…. Asking the providers again with a target language gives
+   * the right spelling straight away — the slug is the only part that changes.
+   *
+   * @param int $language_id The target language.
+   * @param string $language_code Its code, appended as the `language` presentation parameter.
+   * @return string|null The canonical URL in that language, null when no App claims the request
+   *                     (the caller must then keep its own fallback).
+   */
+  public static function getCanonicalUrlInLanguage(int $language_id, string $language_code): ?string
+  {
+    if (!Registry::exists('Hooks')) {
+      return null;
+    }
+
+    if (!\defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') || SEARCH_ENGINE_FRIENDLY_URLS_PRO != 'true') {
+      return null;
+    }
+
+    $leftover = array_slice($_GET, \count(self::$stem), null, true);
+
+    // The target language replaces whatever the current URL carries.
+    $leftover['language'] = $language_code;
+
+    $verdict = self::askProviders(self::$stem, $leftover, self::$route, $language_id);
+
+    return isset($verdict['canonical']) ? (string)$verdict['canonical'] : null;
   }
 
   /**
@@ -93,6 +132,7 @@ class UrlCanonicalizer
     // Recorded before any early return: the page identity is useful even when the strict
     // contract does not apply (query string URL, logged-in session, POST).
     self::$stem = $stem;
+    self::$route = $route;
 
     if (!self::isEnforceable()) {
       return;
@@ -157,14 +197,16 @@ class UrlCanonicalizer
    *
    * @return array The claiming provider's verdict, or an empty array when none claims it.
    */
-  private static function askProviders(array $stem, array $leftover, ?array $route): array
+  private static function askProviders(array $stem, array $leftover, ?array $route, ?int $language_id = null): array
   {
     $parameters = [
       'stem' => $stem,
       'stem_key' => implode('&', $stem),
       'leftover' => $leftover,
       'presentation' => self::buildPresentationParameters($leftover),
-      'route' => $route
+      'route' => $route,
+      // null = the language of the request; set only when another spelling is being asked for.
+      'language_id' => $language_id
     ];
 
     $answers = Registry::get('Hooks')->call('SiteUrl', 'Canonical', $parameters);
@@ -200,6 +242,54 @@ class UrlCanonicalizer
     }
 
     return false;
+  }
+
+  /**
+   * Reorders the presentation parameters of a link being generated so the shop emits the
+   * canonical spelling straight away.
+   *
+   * Generators rebuild their query from $_GET, which carries the order the VISITOR arrived
+   * with: the same listing linked to `/view-line/page-1/sort-1a` and to
+   * `/page-1/sort-1a/view-line` depending on the path taken, and every click that guessed
+   * wrong paid a 301. Only `key=value` pairs are moved — a bare segment is a slug, not a
+   * parameter, and reordering it would rewrite the resource being addressed.
+   *
+   * @param string $parameters An '&' separated parameter string, as passed to CLICSHOPPING::link().
+   * @return string The same parameters with the presentation ones last, in canonical order.
+   */
+  public static function canonicalizeParameterOrder(string $parameters): string
+  {
+    if ($parameters === '') {
+      return '';
+    }
+
+    $kept = [];
+    $presentation = [];
+
+    foreach (explode('&', $parameters) as $pair) {
+      if ($pair === '') {
+        continue;
+      }
+
+      [$key, $value] = array_pad(explode('=', $pair, 2), 2, null);
+
+      if ($value === null || $value === '' || !in_array($key, self::PRESENTATION_PARAMETERS, true)) {
+        $kept[] = $pair;
+
+        continue;
+      }
+
+      // Last occurrence wins, as PHP itself resolves a repeated query key.
+      $presentation[$key] = $pair;
+    }
+
+    foreach (self::PRESENTATION_PARAMETERS as $key) {
+      if (isset($presentation[$key])) {
+        $kept[] = $presentation[$key];
+      }
+    }
+
+    return implode('&', $kept);
   }
 
   /**

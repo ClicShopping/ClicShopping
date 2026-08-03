@@ -71,16 +71,16 @@ BEFORE DELIVERY:
 
 ## Stack — Critical Constraints
 
-| Constraint | Rule |
-|---|---|
-| **PHP** | ≥ 8.4 — `public private(set)` on critical service properties |
-| **MariaDB** | ≥ 11.7 — MySQL incompatible with `VECTOR(3072)` |
-| **LLPhant** | Only access layer to LLMs — no direct API call. Check version in `composer.json` |
-| **Autoload** | `CLICSHOPPING::autoload` + Composer vendor (`Core/ClicShopping/External/vendor`) — no alternative |
-| **DB in `AI/`** | `Core/ClicShopping/AI/` → Doctrine ORM only |
-| **DB elsewhere** | `Registry::get('Db')` only — NEVER mix both paradigms in the same file |
-| **Sessions** | 4 backends with automatic fallback (Database, File, Memcached, Redis) |
-| **Cache** | 5-tier architecture (OpCache, Static, Memcached, Redis, APCu) |
+| Constraint       | Rule                                                                                              |
+|------------------|---------------------------------------------------------------------------------------------------|
+| **PHP**          | ≥ 8.4 — `public private(set)` on critical service properties                                      |
+| **MariaDB**      | ≥ 11.7 — MySQL incompatible with `VECTOR(3072)`                                                   |
+| **LLPhant**      | Only access layer to LLMs — no direct API call. Check version in `composer.json`                  |
+| **Autoload**     | `CLICSHOPPING::autoload` + Composer vendor (`Core/ClicShopping/External/vendor`) — no alternative |
+| **DB in `AI/`**  | `Core/ClicShopping/AI/` → Doctrine ORM only                                                       |
+| **DB elsewhere** | `Registry::get('Db')` only — NEVER mix both paradigms in the same file                            |
+| **Sessions**     | 4 backends with automatic fallback (Database, File, Memcached, Redis)                             |
+| **Cache**        | 5-tier architecture (OpCache, Static, Memcached, Redis, APCu)                                     |
 
 For AI-specific rules (LLPhant, agents, RAG, guardrails) → `AI_SYSTEM.md`.
 For DB paradigm details and code examples → `DATABASE.md`.
@@ -95,6 +95,7 @@ For cache and session details → `ARCHITECTURE.md`.
 - Keep comments short: MAX 2 lines per comment. Prefer none over verbose; never
   restore verbosity the maintainer trimmed. Class/PSR docblocks are exempt.
 - All class comments must respect PSR standardization
+- Be less verbose with code comments (keep only those that add value and clean up the others), except for function comments.
 - No visible hardcoded string in PHP or templates — always use getDef('')
   (this includes RAG/agent PROMPTS: no heredoc/inline prompt text in classes)
 - Minimum language compatibility: EN + FR

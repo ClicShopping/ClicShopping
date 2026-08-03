@@ -914,17 +914,19 @@ class RewriteUrl
    *
    * @param int|string $products_id The ID of the product for which the URL is to be generated.
    * @param string $parameters Additional query parameters to append to the generated URL.
+   * @param int|null $language_id Target language for the slug; null for the language of the request.
    * @return string The generated URL for the specified product.
    */
 
-  public function getProductNameUrl($products_id, string $parameters = ''): string
+  public function getProductNameUrl($products_id, string $parameters = '', ?int $language_id = null): string
   {
     $CLICSHOPPING_Language = Registry::get('Language');
     $CLICSHOPPING_Db = Registry::get('Db');
     $products_name = null;
+    $language_id = $language_id ?? (int)$CLICSHOPPING_Language->getId();
 
-    // Fallback for product name if ProductsCommon is not registered (e.g., in admin context)
-    if (Registry::exists('ProductsCommon')) {
+    // ProductsCommon answers in the language of the request only, so an explicit target language goes to the table. Same fallback when it is not registered (admin context).
+    if (Registry::exists('ProductsCommon') && $language_id === (int)$CLICSHOPPING_Language->getId()) {
       $CLICSHOPPING_ProductsCommon = Registry::get('ProductsCommon');
       $products_name = $CLICSHOPPING_ProductsCommon->getProductsName($products_id);
     } else {
@@ -934,7 +936,7 @@ class RewriteUrl
                                              and language_id = :language_id
                                            ');
       $Qname->bindInt(':products_id', $products_id);
-      $Qname->bindInt(':language_id', $CLICSHOPPING_Language->getId());
+      $Qname->bindInt(':language_id', $language_id);
       $Qname->execute();
       $products_name = $Qname->value('products_name');
     }
@@ -977,16 +979,21 @@ class RewriteUrl
    *
    * @param int|string $page_id The unique identifier of the page for which the content URL is to be created.
    * @param string $parameters Optional additional URL parameters to append to the generated URL.
+   * @param int|null $language_id Target language for the slug; null for the language of the request.
    * @return string The generated page manager content URL.
    */
 
-  public function getPageManagerContentUrl($page_id, string $parameters = ''): string
+  public function getPageManagerContentUrl($page_id, string $parameters = '', ?int $language_id = null): string
   {
     $CLICSHOPPING_PageManagerShop = Registry::get('PageManagerShop');
 
     if (defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true' && CLICSHOPPING::getSite() != 'ClicShoppingAdmin') {
       if (defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true') {
-        $page_title = $CLICSHOPPING_PageManagerShop->pageManagerDisplayTitle($page_id);
+        // pageManagerDisplayTitle() answers in the language of the request AND redirects on a page_type 3 entry, so a target language reads the table directly.
+        $page_title = $language_id === null
+          ? $CLICSHOPPING_PageManagerShop->pageManagerDisplayTitle($page_id)
+          : $this->getPageTitleInLanguage((int)$page_id, $language_id);
+
         $page_title = $this->replaceString($page_title) ?? 'Info';
         $content_url_rewrited = 'Info&Content&' . $page_title . '&pagesId=' . $page_id;
       } else {
@@ -1002,7 +1009,24 @@ class RewriteUrl
   }
 
   /**
+   * Reads an editorial page title in a given language, without the side effects of the
+   * PageManagerShop display getters.
+   */
+  private function getPageTitleInLanguage(int $page_id, int $language_id): string
+  {
+    $Qpage = Registry::get('Db')->get('pages_manager_description', 'pages_title', [
+      'pages_id' => $page_id,
+      'language_id' => $language_id
+    ]);
+
+    return (string)$Qpage->value('pages_title');
+  }
+
+  /**
    * Sets the category tree title and returns it.
+   *
+   * Kept as an override for callers that already hold the title; the slug no longer
+   * depends on it, so forgetting the call is not a defect any more.
    *
    * @param string $title The title of the category tree to be set.
    * @return string The title that was set.
@@ -1015,42 +1039,59 @@ class RewriteUrl
   }
 
   /**
+   * Resolves the slug describing a cPath, from the category the path ENDS on.
+   *
+   * The slug used to be read from $this->title, primed by a separate getCategoryTreeTitle()
+   * call: every caller that forgot it emitted the generic "category" slug the router then had
+   * to 301 (the breadcrumb is built before anything primes it), and a stale title leaked the
+   * previous category's name. Resolving from the id makes the generator self-sufficient, the
+   * way getProductNameUrl() and getManufacturerUrl() already are.
+   *
+   * @param string $categories_id A cPath, possibly a full branch such as "3_5".
+   * @param int|null $language_id Target language; null for the language of the request.
+   */
+  private function getCategorySlug(string $categories_id, ?int $language_id = null): string
+  {
+    $branch = explode('_', $categories_id);
+    $leaf = (int)end($branch);
+
+    $Qcategory = Registry::get('Db')->prepare('select categories_name,
+                                                      categories_seo_url
+                                                 from :table_categories_description
+                                                 where categories_id = :categories_id
+                                                 and language_id = :language_id
+                                               ');
+    $Qcategory->bindInt(':categories_id', $leaf);
+    $Qcategory->bindInt(':language_id', $language_id ?? Registry::get('Language')->getId());
+
+    $Qcategory->execute();
+
+    foreach (['categories_seo_url', 'categories_name'] as $column) {
+      $value = $Qcategory->value($column);
+
+      if (!empty($value)) {
+        return $this->replaceString($value);
+      }
+    }
+
+    return $this->replaceString($this->title ?? 'category');
+  }
+
+  /**
    * Generates a URL for the category tree based on the provided category ID and optional parameters.
    * Utilizes search engine friendly URLs if configured and available.
    *
    * @param string $categories_id The category ID used to generate the URL.
    * @param string $parameters Optional query parameters to append to the URL.
+   * @param int|null $language_id Target language for the slug; null for the language of the request.
    * @return string The generated category tree URL.
    */
 
-  public function getCategoryTreeUrl(string $categories_id, string $parameters = ''): string
+  public function getCategoryTreeUrl(string $categories_id, string $parameters = '', ?int $language_id = null): string
   {
-    $CLICSHOPPING_Language = Registry::get('Language');
-    $CLICSHOPPING_Db = Registry::get('Db');
-
     if (defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true' && CLICSHOPPING::getSite() != 'ClicShoppingAdmin') {
       if (defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true') {
-        $Qseo = $CLICSHOPPING_Db->prepare('select categories_seo_url
-                                             from :table_categories_description
-                                             where categories_id = :categories_id
-                                             and language_id = :language_id
-                                           ');
-        $Qseo->bindInt(':categories_id', $categories_id);
-        $Qseo->bindInt(':language_id', $CLICSHOPPING_Language->getId());
-
-        $Qseo->execute();
-
-        $categories_seo_url = $Qseo->value('categories_seo_url');
-
-        if (empty($categories_seo_url) || is_null($categories_seo_url)) {
-          $link_title = $this->title ?? 'category';
-          $link_title = $this->replaceString($link_title);
-
-          $categories_url_rewrited = $link_title . '&cPath=' . $categories_id;
-        } else {
-          $link_title = $this->replaceString($categories_seo_url);
-          $categories_url_rewrited = $link_title . '&cPath=' . $categories_id;
-        }
+        $categories_url_rewrited = $this->getCategorySlug($categories_id, $language_id) . '&cPath=' . $categories_id;
       } else {
         $categories_url_rewrited = 'cPath=' . $categories_id;
       }

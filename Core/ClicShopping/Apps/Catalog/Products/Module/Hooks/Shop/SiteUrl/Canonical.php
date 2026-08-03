@@ -50,7 +50,11 @@ class Canonical implements HooksInterface
       return ['not_found' => true];
     }
 
-    $canonical = Registry::get('RewriteUrl')->getProductNameUrl((int)$id, (string)($parameters['presentation'] ?? ''));
+    $canonical = Registry::get('RewriteUrl')->getProductNameUrl(
+      (int)$id,
+      (string)($parameters['presentation'] ?? ''),
+      $parameters['language_id'] ?? null
+    );
 
     return ['canonical' => $canonical];
   }

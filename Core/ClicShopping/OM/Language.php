@@ -6,6 +6,7 @@
 namespace ClicShopping\OM;
 
 use ClicShopping\Service\Shop\SEFU;
+use ClicShopping\Sites\Shop\UrlCanonicalizer;
 use function call_user_func;
 use function count;
 use function defined;
@@ -715,7 +716,10 @@ class Language
       if (is_array($_GET)) {
         foreach ($_GET as $key => $value) {
           if (($key != 'language') && ($key != Registry::get('Session')->getName()) && ($key != 'x') && ($key != 'y')) {
-            $get_params[] = ($value !== null) ? "$key=" . (is_array($value) ? CLICSHOPPING::arrayToString($value) : $value) : $key;
+            // A route segment carries '' not null: "!== null" appended a "=", rewritten by SEFU into a trailing "-" ("Products-/Description-") the router had to 301.
+            $get_params[] = ($value === null || $value === '')
+              ? $key
+              : "$key=" . (is_array($value) ? CLICSHOPPING::arrayToString($value) : $value);
           }
         }
       }
@@ -729,11 +733,36 @@ class Language
 
     if (is_array($languages)) {
       foreach ($languages as $value) {
-        $content .= HTML::link(CLICSHOPPING::link(null, $get_params . 'language=' . $value['code']), $this->getImage($value['code'])) . '&nbsp;&nbsp;';
+        $content .= HTML::link($this->buildLanguageUrl($value['code'], $get_params), $this->getImage($value['code'])) . '&nbsp;&nbsp;';
       }
     }
 
     return $content;
+  }
+
+  /**
+   * URL of the current page in another language.
+   *
+   * Rebuilding it from $_GET keeps the slug of the language being LEFT
+   * (`/dinning-bar/cPath-3/language-fr`), which the router then has to 301 onto the target
+   * language spelling. The canonicalizer knows how to spell the current resource in any
+   * language, so it answers first; the $_GET rebuild stays the fallback for everything it
+   * does not claim (non SEO PRO, query-string URLs, pages no App owns).
+   *
+   * @param string $language_code The language being switched to.
+   * @param string $get_params The '&' terminated rebuild of $_GET, used when nothing claims the request.
+   */
+  private function buildLanguageUrl(string $language_code, string $get_params): string
+  {
+    if (CLICSHOPPING::getSite() === 'Shop') {
+      $canonical = UrlCanonicalizer::getCanonicalUrlInLanguage($this->getId($language_code), $language_code);
+
+      if ($canonical !== null) {
+        return $canonical;
+      }
+    }
+
+    return CLICSHOPPING::link(null, $get_params . 'language=' . $language_code);
   }
 
   /**

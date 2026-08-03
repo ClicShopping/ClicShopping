@@ -44,10 +44,6 @@ class Canonical implements HooksInterface
 
     $rewrite_url = Registry::get('RewriteUrl');
 
-    // getCategoryTreeUrl() slugs the title the caller has set; without this it would emit
-    // the generic "category" slug and fight the links the shop itself produces.
-    $rewrite_url->getCategoryTreeTitle($category->getTitle());
-
     // getPath() rebuilds the full breadcrumb path, so a truncated cPath normalizes itself.
     $cPath = (string)$category->getPath();
 
@@ -55,6 +51,10 @@ class Canonical implements HooksInterface
       $cPath = (string)$parameters['leftover']['cPath'];
     }
 
-    return ['canonical' => $rewrite_url->getCategoryTreeUrl($cPath, (string)($parameters['presentation'] ?? ''))];
+    return ['canonical' => $rewrite_url->getCategoryTreeUrl(
+      $cPath,
+      (string)($parameters['presentation'] ?? ''),
+      $parameters['language_id'] ?? null
+    )];
   }
 }

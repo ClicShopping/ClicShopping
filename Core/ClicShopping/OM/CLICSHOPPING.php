@@ -9,6 +9,7 @@
 namespace ClicShopping\OM;
 
 use ClicShopping\Service\Shop\SEFU;
+use ClicShopping\Sites\Shop\UrlCanonicalizer;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
@@ -291,6 +292,11 @@ class CLICSHOPPING
     $link = self::getConfig('http_server', $req_site) . self::getConfig('http_path', $req_site) . $page;
 
     if (!empty($parameters)) {
+      if (self::$site === 'Shop' && \defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true'
+        && \defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true') {
+        $parameters = UrlCanonicalizer::canonicalizeParameterOrder($parameters);
+      }
+
       $p = HTML::sanitize($parameters);
 
       if (self::$site == 'ClicShoppingAdmin') {
