@@ -598,6 +598,61 @@ class Template
   }
 
   /**
+   * Identifies the current page the way the admin page selector names it, so a stored
+   * DISPLAY_PAGES selection can be compared by equality instead of by substring.
+   *
+   * The identifiers come from the canonical route stem the router already records for every
+   * request, which is the same vocabulary TemplateAdmin::getCatalogFiles() offers. A category
+   * listing owns no stem and answers to the two markers the selector declares for it.
+   *
+   * @return array One identifier, or the two category markers.
+   */
+  public static function getCurrentPageIdentifiers(): array
+  {
+    $stem = UrlCanonicalizer::getRouteStem();
+
+    if ($stem !== '') {
+      return [str_replace('&', '/', $stem)];
+    }
+
+    if (isset($_GET['cPath'])) {
+      return ['Categories', 'cPath'];
+    }
+
+    return [CLICSHOPPING::getConfig('bootstrap_file')];
+  }
+
+  /**
+   * Decides whether a module renders on the current page, from its stored DISPLAY_PAGES value.
+   * A ticked page HIDES the module there; everywhere else it renders.
+   *
+   * `all` keeps the meaning it ships with — display everywhere. It is the seeded default of every
+   * module declaring the setting, so reinterpreting it would hide them all on an existing shop.
+   *
+   * Both sides are normalised on `/` because the selector stores `&` or `/` depending on whether
+   * SEO friendly URLs were on when the value was saved.
+   *
+   * @param string $pages The stored DISPLAY_PAGES value, a `;` separated selection.
+   * @param array|null $identifiers The page to judge; defaults to the current one.
+   * @return bool True when the module must render here.
+   */
+  public static function modulePagesAllow(string $pages, ?array $identifiers = null): bool
+  {
+    $pages = trim($pages);
+
+    if ($pages === '' || $pages === 'all') {
+      return true;
+    }
+
+    $selected = array_filter(
+      array_map('trim', explode(';', str_replace('&', '/', $pages))),
+      static fn(string $page): bool => $page !== ''
+    );
+
+    return \count(array_intersect($selected, $identifiers ?? static::getCurrentPageIdentifiers())) === 0;
+  }
+
+  /**
    * Retrieves the default directories for read modules based on the specified source folder.
    *
    * @param string $source_folder The prefix of the source folder to read. Defaults to 'modules_'.
@@ -710,43 +765,10 @@ class Template
             if (class_exists($class)) {
               $mb = new $class();
 
-              // Dynamic boxe
-              if (!isset($mb->pages) && ($mb->isEnabled())) {
-                $this->pages = 'all';
+              // A module without the setting always renders; otherwise its DISPLAY_PAGES
+              // selection decides. Ticking a page HIDES the module on it.
+              if ($mb->isEnabled() && (!isset($mb->pages) || static::modulePagesAllow((string)$mb->pages))) {
                 $mb->execute();
-              } else {
-
-                // hide or display the box left / right
-                if (!empty($mb->pages)) {
-                  $page = explode(';', $mb->pages);
-                }
-
-                if (($mb->isEnabled() && $mb->pages == 'all')) {
-                  $mb->execute();
-                } else {
-                  if ($mb->isEnabled() && isset($mb->pages)) {
-                    $string = $this->getUrlWithoutSEFU();
-                    // categories
-                    // identify a categorie like index page
-                    if ($CLICSHOPPING_Category->getPath()) {
-                      $string = CLICSHOPPING::getConfig('bootstrap_file') . '?Categories';
-                    }
-
-                    //index page
-                    // Boxe does'nt work when the page is refreshed with a query_string
-                    if (empty($string)) {
-                      if (CLICSHOPPING::getBaseNameIndex()) {
-                        $string = CLICSHOPPING::getConfig('bootstrap_file');
-                      }
-                    }
-
-                    if ($this->match($page, $string) === true) {
-                      $mb->execute();
-                    } else {
-                      $mb->isEnabled();
-                    }
-                  }
-                }
               }
             }
           }

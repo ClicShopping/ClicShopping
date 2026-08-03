@@ -52,10 +52,10 @@ text_info_heading_move_category = Move a category
 
 text_categories = Administrator menu:
 text_subcategories = Subcategories:
-text_top = top
+text_top = --- Top ---
 
 
-text_top = top
+text_top = --- Top ---
 text_edit_link = Link
 text_edit_access_administrator = Access rights
 text_edit_sort_order = Sort order

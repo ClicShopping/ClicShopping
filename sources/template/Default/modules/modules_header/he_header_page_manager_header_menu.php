@@ -213,10 +213,10 @@ class he_header_page_manager_header_menu
     );
 
     $CLICSHOPPING_Db->save('configuration', [
-        'configuration_title' => 'Indicate the page where the module is displayed',
+        'configuration_title' => 'Please indicate where boxing should not be displayed',
         'configuration_key' => 'MODULE_HEADER_PAGE_MANAGER_HEADER_MENU_DISPLAY_PAGES',
         'configuration_value' => 'all',
-        'configuration_description' => 'Select the page where the module is displayed.',
+        'configuration_description' => 'Select the pages where the module must NOT be displayed.',
         'configuration_group_id' => '6',
         'sort_order' => '5',
         'set_function' => 'clic_cfg_set_select_pages_list',

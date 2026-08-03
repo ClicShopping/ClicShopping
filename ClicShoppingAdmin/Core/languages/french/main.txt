@@ -338,8 +338,8 @@ text_cache_products_cross_sell = Module des produits croisés
 text_cache_new = Nouveaux produits
 text_cache_upcoming = Produits à venir
 
-text_none = --Aucun--
-text_top = Haut
+text_none = --- Aucun ---
+text_top = --- Haut ---
 
 text_twitter_message = Votre message a bien été envoyé sur twitter<br />
 text_twitter_profile =  Voir votre profil
@@ -435,10 +435,10 @@ no_script_text = <strong>JavaScript ne semble pas activé ou a été désactivé
 title_help_general = Aide
 
 text_top = --- Haut ---
-text_all_pages = Toutes les pages
-text_one_by_one =  Une par une
-text_chek_all = Tout cocher
-text_deselect_all = Tout décocher
+text_all_pages = Toutes les pages (module affiché)
+text_one_by_one =  Une par une (module caché)
+text_chek_all = Tout cocher (module caché)
+text_deselect_all = Tout décocher (module affiché)
 
 text_address_first_name = Prénom
 text_address_last_name = Nom

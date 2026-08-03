@@ -55,7 +55,7 @@ text_info_heading_move_category = Déplacer une catégorie
 
 text_categories = Menus administration :
 text_subcategories = Sous-catégories :
-text_top = top
+text_top = --- Top ---
 
 text_edit_link = Lien
 text_edit_access_administrator = Droits administation

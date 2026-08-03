@@ -314,10 +314,11 @@ class TemplateAdmin extends \ClicShopping\Sites\Shop\Template
    * sources the router itself resolves: the core pages, the Custom/ overrides and the routes the
    * installed Apps declare in their clicshopping.json.
    *
-   * A page qualifies only when it owns a `templates/` directory, i.e. when it actually renders a
-   * page a box could appear on. That single derived criterion is what keeps the machine endpoints
-   * out (api, mcp, cronjob, webservice, payment webhooks, RSS, sitemap) without maintaining any
-   * exclusion list.
+   * Two derived criteria, no exclusion list. A page qualifies when it owns a `templates/`
+   * directory: that keeps the machine endpoints out (api, mcp, cronjob, webservice, payment
+   * webhooks, RSS, sitemap), none of which has one. An action of a qualifying page qualifies in
+   * turn only when it fixes a template — see actionRendersPage() — which keeps out the processing
+   * actions that redirect, stream a file or print XML (Cart&Add, Checkout&Process, Account&LogOff).
    *
    * Replaces a list of 42 hardcoded entries of which 9 designated pages that no longer existed
    * (`Account&Newsletter` for `Newsletters`, `search&Q` in lowercase, `Compare&ProductsCompare`...):
@@ -380,7 +381,11 @@ class TemplateAdmin extends \ClicShopping\Sites\Shop\Template
       }
 
       foreach (new DirectoryIterator($path . '/Actions') as $action) {
-        if (!$action->isDot() && !$action->isDir() && $action->getExtension() === 'php') {
+        if ($action->isDot() || $action->isDir() || $action->getExtension() !== 'php') {
+          continue;
+        }
+
+        if (static::actionRendersPage($action->getPathname())) {
           $pages[] = $page . '&' . $action->getBasename('.php');
         }
       }
@@ -425,14 +430,150 @@ class TemplateAdmin extends \ClicShopping\Sites\Shop\Template
             continue;
           }
 
-          if (is_dir($app->getPathname() . '/' . str_replace('\\', '/', $destination) . '/templates')) {
-            $routes[] = $stem;
+          $target = $app->getPathname() . '/' . str_replace('\\', '/', $destination);
+
+          if (!is_dir($target . '/templates')) {
+            continue;
           }
+
+          // The last segment of the stem names an action of the destination page, when it names
+          // one at all: "Sitemap" and "cronjob&runall" resolve to no action file.
+          $segments = explode('&', $stem);
+          $action = $target . '/Actions/' . basename(end($segments)) . '.php';
+
+          if (is_file($action) && !static::actionRendersPage($action)) {
+            continue;
+          }
+
+          $routes[] = $stem;
         }
       }
     }
 
     return $routes;
+  }
+
+  /**
+   * Tells a rendering action from a processing one. An action renders when it explicitly fixes the
+   * template file: a $this->page->setFile() call, or a $file property that
+   * PagesActionsAbstract::__construct() forwards to setFile(). An action that sets neither still
+   * renders the page's default main.php, but that case is already covered by the bare page entry.
+   *
+   * The property must default to a literal string: the constructor guards it with isset(), so the
+   * `$file = null` spelling used by the ajax and export actions means the opposite.
+   *
+   * Read by tokenizing the source, never by loading or running the class: this is called while an
+   * admin configuration form is being rendered. An unreadable file renders nothing.
+   *
+   * @param string $file Absolute path of an action class file.
+   * @return bool True when the action fixes a template.
+   */
+  private static function actionRendersPage(string $file): bool
+  {
+    static $verdicts = [];
+
+    if (isset($verdicts[$file])) {
+      return $verdicts[$file];
+    }
+
+    $source = @file_get_contents($file);
+
+    if ($source === false) {
+      return $verdicts[$file] = false;
+    }
+
+    $tokens = token_get_all($source);
+    $renders = false;
+
+    for ($i = 0, $count = count($tokens); $i < $count; $i++) {
+      $token = $tokens[$i];
+
+      if (!is_array($token)) {
+        continue;
+      }
+
+      if ($token[0] === T_OBJECT_OPERATOR || $token[0] === T_NULLSAFE_OBJECT_OPERATOR) {
+        $next = $tokens[$i + 1] ?? null;
+
+        if (is_array($next) && $next[0] === T_STRING && $next[1] === 'setFile') {
+          $renders = true;
+          break;
+        }
+
+        continue;
+      }
+
+      if ($token[0] === T_VARIABLE && $token[1] === '$file' && static::isTemplateProperty($tokens, $i)) {
+        $renders = true;
+        break;
+      }
+    }
+
+    return $verdicts[$file] = $renders;
+  }
+
+  /**
+   * Checks that the $file token at $position is a property declaration whose default is a literal
+   * string, and not a local variable nor a null default.
+   *
+   * @param array $tokens The tokenized action source.
+   * @param int $position Index of the $file token.
+   * @return bool True when the declaration fixes a template.
+   */
+  private static function isTemplateProperty(array $tokens, int $position): bool
+  {
+    $modifiers = [T_PUBLIC, T_PROTECTED, T_PRIVATE, T_VAR];
+    $type_tokens = [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT, T_STRING, T_ARRAY, T_CALLABLE, T_STATIC, T_READONLY, T_NS_SEPARATOR];
+    $declared = false;
+
+    for ($i = $position - 1; $i >= 0; $i--) {
+      $token = $tokens[$i];
+
+      if ($token === '?' || $token === '|') {
+        continue;
+      }
+
+      if (!is_array($token)) {
+        return false;
+      }
+
+      if (in_array($token[0], $modifiers, true)) {
+        $declared = true;
+        break;
+      }
+
+      if (!in_array($token[0], $type_tokens, true)) {
+        return false;
+      }
+    }
+
+    if ($declared === false) {
+      return false;
+    }
+
+    for ($i = $position + 1, $count = count($tokens); $i < $count; $i++) {
+      $token = $tokens[$i];
+
+      if (is_array($token) && $token[0] === T_WHITESPACE) {
+        continue;
+      }
+
+      if ($token !== '=') {
+        return false;
+      }
+
+      for ($i++; $i < $count; $i++) {
+        $value = $tokens[$i];
+
+        if (is_array($value) && $value[0] === T_WHITESPACE) {
+          continue;
+        }
+
+        return is_array($value) && $value[0] === T_CONSTANT_ENCAPSED_STRING;
+      }
+    }
+
+    return false;
   }
 
   /**

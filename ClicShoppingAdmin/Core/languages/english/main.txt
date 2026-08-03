@@ -304,8 +304,8 @@ text_cache_products_related = Related Products Module
 text_cache_products_cross_sell = Cross Sell Products Module
 text_cache_new = New Products
 text_cache_upcoming = Upcoming Products
-text_none = --none--
-text_top = Top
+text_none = --- none ---
+text_top = --- Top ---
 text_twitter_message = Your message has been sent on Twitter!.<br />
 text_twitter_profile =  See your profile
 text_error_twitter_post = Error, please insert a message and try again.<br />
@@ -383,11 +383,13 @@ text_select =  --- Select ---
 text_all_orders = All statuses
 no_script_text = <strong>JavaScript seems to be disabled in your browser or has been deactivated by an add-block.</strong><br />You must have JavaScript enabled in your browser to utilise the functionality of this website. <a href="https://www.enable-javascript.com/" target="_blank" rel="noreferrer">Click here for instructions on enabling javascript in your browser</a>.
 title_help_general = Help
+
 text_top = --- Top ---
-text_all_pages = all Pages
-text_one_by_one =  One by one
-text_chek_all = Check All
-text_deselect_all = Deselect all
+text_all_pages = all Pages (module displayed)
+text_one_by_one =  One by one (module not displayed)
+text_chek_all = Check All (module not displayed)
+text_deselect_all = Deselect all (module displayed)
+
 text_address_first_name = First Name
 text_address_last_name = Last Name
 text_address_company = Company
