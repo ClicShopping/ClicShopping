@@ -51,6 +51,34 @@ class UrlCanonicalizer
   private const PRESENTATION_PARAMETERS = ['page', 'sort', 'view', 'filter_id', 'language', 'currency'];
 
   /**
+   * The presentation parameters only a LISTING honours. The other two (`language`, `currency`) are
+   * global display state every page carries — the language switcher rebuilds its links from the
+   * canonical, so stripping them would break it.
+   *
+   * The shape gates admit any integer, so `page` and `filter_id` alone keep the URL space infinite
+   * on a page that paginates nothing: `…/Description/<slug>/Id-3/page-99999` answered 200 with a
+   * self-referencing canonical. Only the owning App knows whether its page is a listing, hence
+   * withoutListingParameters() and the `"listing": false` declaration.
+   */
+  private const LISTING_PARAMETERS = ['page', 'sort', 'view', 'filter_id'];
+
+  /**
+   * The shape each presentation value must have to reach a canonical URL, mirroring what the
+   * consumers already enforce (DbStatement::setPageSet wants is_numeric, ProductsListing wants
+   * /^[1-8][ad]$/, ProductsListingContext only honours view=line). The canonicalizer was the one
+   * component copying these values verbatim, which turned the six keys into an unbounded 200
+   * space: /Id-3/sort-anything-i-want answered 200 with a self-referencing canonical.
+   */
+  private const PRESENTATION_VALUE_SHAPES = [
+    'page' => '/^[1-9][0-9]*$/',
+    'sort' => '/^[0-9]+[ad]$/',
+    'view' => '/^(line|grid)$/',
+    'filter_id' => '/^[1-9][0-9]*$/',
+    'language' => '/^[a-z]{2,5}$/',
+    'currency' => '/^[A-Za-z]{3}$/'
+  ];
+
+  /**
    * Canonical URL computed for the request being served, so the `<link rel="canonical">` tag can
    * reuse it instead of re-deriving it from $_GET with its own guards — the two used to disagree,
    * and the category and editorial pages ended up with no tag at all.
@@ -69,6 +97,12 @@ class UrlCanonicalizer
    * for another language — the default provider reads the owning App from it.
    */
   private static ?array $route = null;
+
+  /**
+   * Path entries left once the route stem is removed, kept so the canonical can be recomputed
+   * after the listings have run — an out-of-range page number is only visible then.
+   */
+  private static array $leftover = [];
 
   /**
    * @return string|null The canonical URL of the request being served, null when no App claimed it.
@@ -138,7 +172,7 @@ class UrlCanonicalizer
       return;
     }
 
-    $leftover = array_slice($_GET, \count($stem), null, true);
+    $leftover = self::$leftover = array_slice($_GET, \count($stem), null, true);
     $verdict = self::askProviders($stem, $leftover, $route);
 
     if (isset($verdict['not_found'])) {
@@ -157,6 +191,52 @@ class UrlCanonicalizer
     // No App claims this request: it may still designate nothing at all.
     if (self::designatesNothing($stem, $leftover)) {
       self::notFound();
+    }
+  }
+
+  /**
+   * Second pass, run once every listing of the request has queried: drops a page number no listing
+   * can serve. `/dinning-bar/cPath-3/page-999` used to answer 200 with an empty listing and a
+   * self-referencing canonical — the form gate proves `999` is well-formed, only the query knows
+   * the shop stops at page 1.
+   *
+   * Deliberately conservative, because several listings share the `page` keyword on one page: the
+   * bound used is the HIGHEST any of them offers, so a page is dropped only when none can serve it.
+   *
+   * ⚠️ Must be called while the response body has not started — hence the chokepoint at the end of
+   * Template::buildBlocks(), measured to be after every page set of the request and before the
+   * first byte of output. A listing querying LATER than that is not accounted for.
+   *
+   * @param array $bounds Page-set bounds observed on the request, keyword => highest page servable.
+   */
+  public static function enforceListingBounds(array $bounds): void
+  {
+    if (self::$canonical === null || $bounds === [] || headers_sent() || !self::isEnforceable()) {
+      return;
+    }
+
+    $reachable = self::$leftover;
+
+    foreach ($bounds as $keyword => $pages) {
+      if (!in_array($keyword, self::PRESENTATION_PARAMETERS, true)) {
+        continue;
+      }
+
+      if (isset($reachable[$keyword]) && (int)$reachable[$keyword] > (int)$pages) {
+        unset($reachable[$keyword]);
+      }
+    }
+
+    if ($reachable === self::$leftover) {
+      return;
+    }
+
+    $verdict = self::askProviders(self::$stem, $reachable, self::$route);
+
+    if (isset($verdict['canonical'])) {
+      self::$canonical = (string)$verdict['canonical'];
+
+      self::redirectIfNotCanonical(self::$canonical);
     }
   }
 
@@ -293,21 +373,109 @@ class UrlCanonicalizer
   }
 
   /**
+   * Drops the listing facets from a presentation suffix, for a page that paginates and sorts
+   * nothing. A provider calls it on the `presentation` it receives; the declaration
+   * `"canonical": {"Shop": {"listing": false}}` does the same without code.
+   *
+   * Relevance is the half the router cannot judge: the shape gates prove `page-99999` is
+   * well-formed, only the owning App knows its page has no pagination at all.
+   *
+   * @param string $presentation The '&key=value' suffix supplied to the provider.
+   * @return string The same suffix without page, sort, view and filter_id.
+   */
+  public static function withoutListingParameters(string $presentation): string
+  {
+    if ($presentation === '') {
+      return '';
+    }
+
+    $kept = '';
+
+    foreach (explode('&', $presentation) as $pair) {
+      if ($pair === '') {
+        continue;
+      }
+
+      [$key] = explode('=', $pair, 2);
+
+      if (!in_array($key, self::LISTING_PARAMETERS, true)) {
+        $kept .= '&' . $pair;
+      }
+    }
+
+    return $kept;
+  }
+
+  /**
    * Rebuilds the presentation parameters in canonical order, dropping junk segments.
+   *
+   * A leftover entry qualifies only if it passes BOTH gates: it sits in the trailing run of the
+   * path (see trailingParameters()) and its value has the shape the shop honours. Anything else
+   * is re-emitted junk — the canonical of a product whose slug reads "page-turner" used to grow
+   * a '/page-turner' tail, so the product's own link 301'd onto a duplicated URL.
    *
    * @return string A '&key=value' suffix ready for the URL generators, or an empty string.
    */
   private static function buildPresentationParameters(array $leftover): string
   {
+    $addressed = self::parametersAfterTheResource($leftover);
     $extra = '';
 
     foreach (self::PRESENTATION_PARAMETERS as $key) {
-      if (isset($leftover[$key]) && $leftover[$key] !== '') {
-        $extra .= '&' . $key . '=' . $leftover[$key];
+      if (isset($addressed[$key]) && self::isHonouredValue($key, $addressed[$key])) {
+        $extra .= '&' . $key . '=' . $addressed[$key];
       }
     }
 
     return $extra;
+  }
+
+  /**
+   * The entries that follow the resource being addressed, i.e. everything after the last segment
+   * that carries a value and is not a presentation key — which is where the shop puts them, since
+   * canonicalizeParameterOrder() emits the presentation parameters last.
+   *
+   * SEFU::start() splits EVERY path segment on the first '-', so a decorative slug becomes a
+   * key/value pair like any parameter: "set-of-6-glasses" lands as $_GET['set'], and the slug of a
+   * product named "Page turner" lands as $_GET['page']. Position is what separates the two — a
+   * slug describes the resource, so it always precedes the identifier, never follows it.
+   *
+   * A valueless entry is NOT a boundary: it is a bare segment (a route code, a junk segment the
+   * canonical drops anyway), never the identifier, which always carries its value (`cPath-3`).
+   *
+   * @param array $leftover $_GET minus the route stem, in path order.
+   */
+  private static function parametersAfterTheResource(array $leftover): array
+  {
+    $addressed = [];
+
+    foreach (array_reverse($leftover, true) as $key => $value) {
+      if ($value !== '' && !in_array($key, self::PRESENTATION_PARAMETERS, true)) {
+        break;
+      }
+
+      $addressed[$key] = $value;
+    }
+
+    return $addressed;
+  }
+
+  /**
+   * Tells whether a presentation value is one the shop would actually honour: the right shape,
+   * and for language and currency an installed code. The installed check is skipped when the
+   * service is not registered yet — the shape gate still stands.
+   */
+  private static function isHonouredValue(string $key, mixed $value): bool
+  {
+    if (!\is_string($value) || preg_match(self::PRESENTATION_VALUE_SHAPES[$key], $value) !== 1) {
+      return false;
+    }
+
+    return match ($key) {
+      'language' => !Registry::exists('Language') || Registry::get('Language')->exists($value),
+      'currency' => !Registry::exists('Currencies') || Registry::get('Currencies')->isSet($value),
+      default => true
+    };
   }
 
   /**

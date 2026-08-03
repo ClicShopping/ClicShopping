@@ -35,6 +35,27 @@ class DbStatement extends \PDOStatement
   protected $result;
 
   /**
+   * Highest page number each page-set keyword can serve on the current request, keyword => pages.
+   *
+   * A page number is the one URL parameter whose upper bound only the query knows, and it is known
+   * only once the query has run. Several listings share the SAME keyword on one page (measured: 3
+   * to 4 per request on this shop, with different bounds), so the maximum is what matters: a page
+   * number is out of range only when NO listing of the request can serve it.
+   *
+   * Recorded here rather than acted upon: OM/ knows nothing of the front-office router. The Shop
+   * reads it at its own chokepoint (Sites/Shop/Template::buildBlocks()).
+   */
+  private static array $page_set_bounds = [];
+
+  /**
+   * @return array The page-set bounds observed on this request, keyword => highest page servable.
+   */
+  public static function getPageSetBounds(): array
+  {
+    return self::$page_set_bounds;
+  }
+
+  /**
    * Binds a boolean value to a parameter for use in a prepared statement.
    *
    * @param string|int $parameter The parameter identifier to bind the value to.
@@ -136,6 +157,8 @@ class DbStatement extends \PDOStatement
         if (isset($this->cache_data['data'], $this->cache_data['total'])) {
           $this->page_set_total_rows = $this->cache_data['total'];
           $this->cache_data = $this->cache_data['data'];
+
+          $this->recordPageSetBound();
         }
 
         $this->cache_read = true;
@@ -164,6 +187,8 @@ class DbStatement extends \PDOStatement
 
       if (str_contains($this->queryString, ' SQL_CALC_FOUND_ROWS ')) {
         $this->page_set_total_rows = $this->pdo->query('select found_rows()')->fetchColumn();
+
+        $this->recordPageSetBound();
       } elseif (isset($this->page_set)) {
         trigger_error(
           'ClicShopping\OM\DbStatement::execute(): Page Set query does not contain SQL_CALC_FOUND_ROWS. Query: ' .
@@ -173,6 +198,26 @@ class DbStatement extends \PDOStatement
     }
 
     return ($this->is_error === false);
+  }
+
+  /**
+   * Records how far this page set can be paged, keeping the highest bound seen for the keyword.
+   *
+   * A listing with no result at all still offers page 1, so the floor is 1: it must not turn a
+   * pageless URL into an out-of-range one.
+   */
+  private function recordPageSetBound(): void
+  {
+    if (!isset($this->page_set) || (int)$this->page_set_results_per_page < 1) {
+      return;
+    }
+
+    $pages = max(1, (int)ceil((int)$this->page_set_total_rows / (int)$this->page_set_results_per_page));
+
+    self::$page_set_bounds[$this->page_set_keyword] = max(
+      self::$page_set_bounds[$this->page_set_keyword] ?? 1,
+      $pages
+    );
   }
 
   /**

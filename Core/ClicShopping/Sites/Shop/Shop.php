@@ -23,6 +23,7 @@ use ClicShopping\OM\Service;
 use ClicShopping\OM\Session;
 
 use ClicShopping\Security\RequestSanitizer;
+use ClicShopping\Service\Shop\SEFU;
 use ClicShopping\Apps\Tools\WhosOnline\Classes\Shop\WhosOnlineShop;
 use ClicShopping\Apps\Configuration\Cache\Classes\ClicShoppingAdmin\CacheAdmin;
 
@@ -176,6 +177,8 @@ class Shop extends SitesAbstract
 
       HTTP::redirect($url_req, 301);
     }
+
+    SEFU::start();
 
 // If you need to exclude a file from cleansing then you can add it like below
 //$request_sanitizer->addExclusion( 'some_file.php' );

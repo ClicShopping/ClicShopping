@@ -283,10 +283,10 @@ class fo_footer_multi_template
     );
 
     $CLICSHOPPING_Db->save('configuration', [
-        'configuration_title' => 'Please indicate where boxing should not be displayed',
+        'configuration_title' => 'Please, indicate where the boxe must not be displayed',
         'configuration_key' => 'MODULE_FOOTER_MULTI_TEMPLATE_DISPLAY_PAGES',
         'configuration_value' => 'all',
-        'configuration_description' => 'Select the pages where the module must NOT be displayed.',
+        'configuration_description' => 'Select the page where the boxe must not be displayed',
         'configuration_group_id' => '6',
         'sort_order' => '10',
         'set_function' => 'clic_cfg_set_select_pages_list',

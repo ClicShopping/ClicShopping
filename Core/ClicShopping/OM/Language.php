@@ -617,8 +617,10 @@ class Language
    */
   public function getLanguageCode()
   {
-    if (!is_null($this->getUrlValueLanguage())) {
-      $_GET['language'] = $this->getUrlValueLanguage();
+    $value_language = $this->getUrlValueLanguage();
+
+    if (!is_null($value_language)) {
+      $_GET['language'] = $value_language;
     }
 
     if (!isset($_SESSION['language']) || isset($_GET['language'])) {

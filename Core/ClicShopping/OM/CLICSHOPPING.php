@@ -8,7 +8,6 @@
 
 namespace ClicShopping\OM;
 
-use ClicShopping\Service\Shop\SEFU;
 use ClicShopping\Sites\Shop\UrlCanonicalizer;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\HTML;
@@ -353,16 +352,15 @@ class CLICSHOPPING
      */
 
     if (self::getSite() === 'Shop') {
-//SEO with htaccess
-      if ($search_engine_safe === true && SEFU::start() && \defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true' && (defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true')) {
-//SEO with htaccess
-// remove seo htaccess if the customer is connected
+       //SEO with htaccess
+      if ($search_engine_safe === true && \defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true' && (defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true')) {
+       // remove seo htaccess if the customer is connected
         if (isset($_SESSION['login_customer_id'])) {
           $link = str_replace(['?', '&', '='], ['/', '/', '-'], $link);
         } else {
           $link = str_replace(['?', '&', '='], ['', '/', '-'], $link);
         }
-      } elseif ($search_engine_safe === true && SEFU::start() && (\defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true')) {
+      } elseif ($search_engine_safe === true && (\defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true')) {
         $link = str_replace(['?', '&', '='], ['/', '/', '-'], $link);
       }
     }

@@ -144,7 +144,7 @@ class bm_page_manager_customize
     );
 
     $CLICSHOPPING_Db->save('configuration', [
-        'configuration_title' => 'Indicate the page where the module is displayed',
+        'configuration_title' => 'Please indicate where boxing should not be displayed',
         'configuration_key' => 'MODULE_BOXES_PAGE_MANAGER_CUSTOMIZE_PAGES',
         'configuration_value' => 'all',
         'configuration_description' => 'Select the page where the module is displayed.',

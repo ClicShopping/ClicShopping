@@ -12,12 +12,17 @@ namespace ClicShopping\Apps\Catalog\Products\Module\Hooks\Shop\SiteUrl;
 
 use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Shop\UrlCanonicalizer;
 
 /**
  * Canonical URL provider for the product description page.
  *
  * Claims the Products&Description stem, whatever key carries the id: the shop emits both
  * `Id-103` and `products_id-103`, and both must consolidate on the single slugged form.
+ *
+ * A product sheet is not a listing: it paginates and sorts nothing, so the listing facets are
+ * dropped from its canonical. Without that, `…/Id-103/page-99999` answered 200, indexable, with a
+ * self-referencing canonical — an infinite URL space on the most numerous pages of the shop.
  */
 class Canonical implements HooksInterface
 {
@@ -52,7 +57,7 @@ class Canonical implements HooksInterface
 
     $canonical = Registry::get('RewriteUrl')->getProductNameUrl(
       (int)$id,
-      (string)($parameters['presentation'] ?? ''),
+      UrlCanonicalizer::withoutListingParameters((string)($parameters['presentation'] ?? '')),
       $parameters['language_id'] ?? null
     );
 

@@ -12,6 +12,8 @@ namespace ClicShopping\Service\Shop;
  */
 class SEFU implements \ClicShopping\OM\Interfaces\ServiceInterface
 {
+  private static bool $started = false;
+
   /**
    * Retrieves the path information from the server's global variables.
    *
@@ -36,9 +38,15 @@ class SEFU implements \ClicShopping\OM\Interfaces\ServiceInterface
    */
   public static function start(): bool
   {
+    if (self::$started === true) {
+      return true;
+    }
+
+    self::$started = true;
+
     $path_info = static::getPathInfo();
 
-    if (isset($path_info) && (\strlen($path_info) > 1)) {
+    if (\strlen($path_info) > 1) {
       $parameters = explode('/', substr($path_info, 1));
 
       $_GET = [];
@@ -84,33 +92,28 @@ class SEFU implements \ClicShopping\OM\Interfaces\ServiceInterface
   }
 
   /**
-   * Retrieves the value of the 'language' parameter from the URL path information.
+   * Retrieves the value of a parameter from the URL path information, wherever it sits in the path.
    *
-   * @return string|null Returns the value of the 'language' parameter if found, otherwise null.
+   * @param string $key The parameter to look for, e.g. 'language' or 'currency'.
+   * @return string|null Returns the value of the parameter if found, otherwise null.
    */
-  public static function getUrlValue()
+  public static function getUrlValue(string $key = 'language'): ?string
   {
     $path_info = static::getPathInfo();
-    $value_language = null;
 
-    if (isset($path_info) && (\strlen($path_info) > 1)) {
+    if (\strlen($path_info) > 1) {
       $parameters = explode('/', substr($path_info, 1));
 
       foreach ($parameters as $parameter) {
         $param_array = explode('-', $parameter, 2);
 
-        if (!isset($param_array[1])) {
-          $param_array[1] = '';
-        }
-
-        if ($param_array[0] == 'language') {
-          $value_language = $param_array[1];
-        } else {
-          $value_language = null;
+        // The value is re-injected into $_GET and re-emitted into links: escape it as start() does.
+        if ($param_array[0] === $key && isset($param_array[1]) && $param_array[1] !== '') {
+          return htmlspecialchars($param_array[1], ENT_QUOTES, 'UTF-8');
         }
       }
-
-      return $value_language;
     }
+
+    return null;
   }
 }
