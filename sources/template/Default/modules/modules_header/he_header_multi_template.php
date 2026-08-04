@@ -6,10 +6,10 @@
  * See LICENSE file.
  */
 
-use ClicShopping\Apps\Catalog\Categories\Classes\Shop\CategoryTree;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Catalog\Categories\Classes\Shop\CategoryTree;
 
 class he_header_multi_template
 {
@@ -34,54 +34,6 @@ class he_header_multi_template
       $this->enabled = \defined('MODULES_HEADER_MULTI_TEMPLATE_STATUS') ? (MODULES_HEADER_MULTI_TEMPLATE_STATUS == 'True') : false;
       $this->pages = \defined('MODULES_HEADER_MULTI_TEMPLATE_TEMPLATE_DISPLAY_PAGES') ? MODULES_HEADER_MULTI_TEMPLATE_TEMPLATE_DISPLAY_PAGES : 'all';
     }
-  }
-
-  /**
-   * Builds the header category selector.
-   *
-   * Each option carries the SEO URL of its category and the selector navigates to it: it used to
-   * POST to index.php, a target that carries no $_GET, so choosing a category led to the home page.
-   *
-   * @param CategoryTree $category_tree The shop category tree.
-   * @param string $cPath The branch currently browsed, preselected when it belongs to the tree.
-   * @return string The selector, or an empty string when the shop has no category.
-   */
-  private function getCategoriesDropdown(CategoryTree $category_tree, string $cPath): string
-  {
-    $categories = [];
-    $selected = '';
-
-    foreach ($category_tree->getShopCategoryTree() as $category) {
-      // The "select" entry the tree adds itself: it designates no category, so it carries no URL.
-      if ((string)$category['id'] === '' || (string)$category['id'] === '0') {
-        continue;
-      }
-
-      $category_url = $category_tree->getCategoryTreeUrl((string)$category['id']);
-
-      $categories[] = [
-        'id' => $category_url,
-        'text' => $category['text']
-      ];
-
-      if ((string)$category['id'] === $cPath) {
-        $selected = $category_url;
-      }
-    }
-
-    if (\count($categories) < 1) {
-      return '';
-    }
-
-    array_unshift($categories, [
-      'id' => '',
-      'text' => CLICSHOPPING::getDef('text_selected')
-    ]);
-
-    $dropdown = '<label for="categoriesDropdown" class="visually-hidden">' . CLICSHOPPING::getDef('modules_header_multi_template_template_categories') . '</label>';
-    $dropdown .= HTML::selectField('cPath', $categories, $selected, 'onchange="if (this.value) window.location.href = this.value;" id="categoriesDropdown"');
-
-    return $dropdown;
   }
 
   public function execute()
@@ -113,7 +65,7 @@ class he_header_multi_template
     $form = HTML::form('loginForm', CLICSHOPPING::link(null, 'Account&LogIn&Process'), 'post', 'id="loginForm"', ['tokenize' => true]);
     $endform = '</form>';
 
-    $categories_dropdown = $this->getCategoriesDropdown($CLICSHOPPING_CategoryTree, (string)$cPath);
+    $categories_dropdown = $CLICSHOPPING_CategoryTree->getCategoriesDropdown($CLICSHOPPING_CategoryTree, (string)$cPath);
 
     if ($CLICSHOPPING_Service->isStarted('Banner')) {
       if ($banner = $CLICSHOPPING_Banner->bannerExists('dynamic', MODULES_HEADER_MULTI_MODULE_LOGO_BANNER_GROUP)) {
