@@ -35,6 +35,23 @@ class bm_manufacturers
     }
   }
 
+  /**
+   * Shortens a manufacturer name to the configured width.
+   *
+   * @param string $name The manufacturer name.
+   * @return string The name, truncated and suffixed with '..' when it exceeds the configured width.
+   */
+  private function truncateName(string $name): string
+  {
+    $length = \defined('MODULE_BOXES_MANUFACTURERS_MAX_DISPLAY_MANUFACTURER_NAME_LEN') ? (int)MODULE_BOXES_MANUFACTURERS_MAX_DISPLAY_MANUFACTURER_NAME_LEN : 0;
+
+    if ($length < 1 || \strlen($name) <= $length) {
+      return $name;
+    }
+
+    return substr($name, 0, $length) . '..';
+  }
+
   public function getData()
   {
     $CLICSHOPPING_Manufacturers = Registry::get('Manufacturers');
@@ -52,8 +69,9 @@ class bm_manufacturers
           foreach ($manufacturers as $m) {
             $manufacturer_url = $CLICSHOPPING_Manufacturers->getManufacturerUrlRewrited()->getManufacturerUrl((int)$m['id']);
 
-            $manufacturers_name = ((\strlen($m['name']) > (defined('MODULE_BOXES_MANUFACTURERS_MAX_DISPLAY_MANUFACTURER_NAME_LEN') ? (int)MODULE_BOXES_MANUFACTURERS_MAX_DISPLAY_MANUFACTURER_NAME_LEN : 0)) ? substr($m['name'], 0, defined('MAX_DISPLAY_MANUFACTURER_NAME_LEN') ? MAX_DISPLAY_MANUFACTURER_NAME_LEN : 0) . '..' : $m['name']);
-            if (isset($_GET['manufacturersId']) && ($_GET['manufacturersId'] == $m['id'])) {
+            $manufacturers_name = $this->truncateName($m['name']);
+
+            if ((int)$CLICSHOPPING_Manufacturers->getID() === (int)$m['id']) {
               $manufacturers_name = '<strong>' . $manufacturers_name . '</strong>';
             }
 
@@ -65,27 +83,29 @@ class bm_manufacturers
           $data = $manufacturers_list;
         }
       } else {
-// Display a drop-down
-        $manufacturers_array = [];
-
-        if (\count($manufacturers) < 2) {
-          $manufacturers_array[] = ['id' => '',
+       // Display a drop-down
+        $manufacturers_array = [
+          ['id' => '',
             'text' => CLICSHOPPING::getDef('pull_down_default')
-          ];
-        }
+          ]
+        ];
+
+        $selected = '';
 
         foreach ($manufacturers as $m) {
-          $manufacturers_name = ((\strlen($m['name']) > (defined('MODULE_BOXES_MANUFACTURERS_MAX_DISPLAY_MANUFACTURER_NAME_LEN') ? (int)MODULE_BOXES_MANUFACTURERS_MAX_DISPLAY_MANUFACTURER_NAME_LEN : 0)) ? substr($m['name'], 0, defined('MAX_DISPLAY_MANFACTURER_NAME_LEN') ? MAX_DISPLAY_MANFACTURER_NAME_LEN : 0) . '..' : $m['name']);
+          $manufacturer_url = $CLICSHOPPING_Manufacturers->getManufacturerUrlRewrited()->getManufacturerUrl((int)$m['id']);
 
-          $manufacturers_array[] = ['id' => $m['id'],
-            'text' => $manufacturers_name
+          $manufacturers_array[] = ['id' => $manufacturer_url,
+            'text' => $this->truncateName($m['name'])
           ];
+
+          if ((int)$CLICSHOPPING_Manufacturers->getID() === (int)$m['id']) {
+            $selected = $manufacturer_url;
+          }
         }
 
-        $data = HTML::form('manufacturers', CLICSHOPPING::link(), 'get', null, ['session_id' => true]);
-        $data .= '<label for="manufacturerDropDown" class="visually-hidden"></label>';
-        $data .= HTML::selectField('manufacturersId', $manufacturers_array, (isset($_GET['manufacturersId']) ? $_GET['manufacturersId'] : ''), 'onchange="this.form.submit();" id="manufacturerDropDown" class="boxePullDownManufacturer" size="' . (defined('MODULE_BOXES_MANUFACTURERS_MANUFACTURERS_LIST') ? MODULE_BOXES_MANUFACTURERS_MANUFACTURERS_LIST : '') . '"');
-        $data .= '</form>';
+        $data = '<label for="manufacturerDropDown" class="visually-hidden">' . CLICSHOPPING::getDef('module_boxes_manufacturers_title') . '</label>';
+        $data .= HTML::selectField('manufacturersId', $manufacturers_array, $selected, 'onchange="if (this.value) window.location.href = this.value;" id="manufacturerDropDown" class="boxePullDownManufacturer"');
         $data .= '<div class="mt-1"></div>';
       }
     }

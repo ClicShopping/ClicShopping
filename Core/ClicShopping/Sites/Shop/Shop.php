@@ -291,12 +291,15 @@ class Shop extends SitesAbstract
           HTTP::redirect(CLICSHOPPING::getConfig('http_server', 'Shop') . CLICSHOPPING::getConfig('http_path', 'Shop') . 'error_documents/404.php');
         }
 
-        if (class_exists('ClicShopping\Custom\Sites\\' . $this->code . '\Pages\\' . $req . '\\' . $req)) {
+        $custom_site_dir = CLICSHOPPING::BASE_DIR . 'Custom' . DIRECTORY_SEPARATOR . 'Sites' . DIRECTORY_SEPARATOR . $this->code;
+        $core_site_dir = CLICSHOPPING::BASE_DIR . 'Sites' . DIRECTORY_SEPARATOR . $this->code;
+
+        if (CLICSHOPPING::hasExactCasePage($custom_site_dir, $req) && class_exists('ClicShopping\Custom\Sites\\' . $this->code . '\Pages\\' . $req . '\\' . $req)) {
           $page_code = $req;
 
           $class = 'ClicShopping\Custom\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code;
           $consumed = 1;
-        } elseif (class_exists('ClicShopping\Sites\\' . $this->code . '\Pages\\' . $req . '\\' . $req)) {
+        } elseif (CLICSHOPPING::hasExactCasePage($core_site_dir, $req) && class_exists('ClicShopping\Sites\\' . $this->code . '\Pages\\' . $req . '\\' . $req)) {
           $page_code = $req;
 
           $class = 'ClicShopping\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code;

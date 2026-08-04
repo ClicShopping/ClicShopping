@@ -287,7 +287,9 @@ class ClicShoppingAdmin extends \ClicShopping\OM\Domains\SitesAbstract
           }
         }
       } else {
-        if (class_exists('ClicShopping\Sites\\' . $this->code . '\Pages\\' . $req . '\\' . $req)) {
+        $site_dir = CLICSHOPPING::BASE_DIR . 'Sites' . DIRECTORY_SEPARATOR . $this->code;
+
+        if (CLICSHOPPING::hasExactCasePage($site_dir, $req) && class_exists('ClicShopping\Sites\\' . $this->code . '\Pages\\' . $req . '\\' . $req)) {
           $page_code = $req;
 
           $class = 'ClicShopping\Sites\\' . $this->code . '\Pages\\' . $page_code . '\\' . $page_code;

@@ -2431,12 +2431,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "3c9ad688ad8826203588ec49363f73f4deb590c1"
+                "reference": "87faae4ca4b824c493788fac487f2e212be4fd22"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/3c9ad688ad8826203588ec49363f73f4deb590c1",
-                "reference": "3c9ad688ad8826203588ec49363f73f4deb590c1",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/87faae4ca4b824c493788fac487f2e212be4fd22",
+                "reference": "87faae4ca4b824c493788fac487f2e212be4fd22",
                 "shasum": ""
             },
             "conflict": {
@@ -2788,7 +2788,7 @@
                 "gregwar/rst": "<1.0.3",
                 "grumpydictator/firefly-iii": "<=6.6.2",
                 "gugoan/economizzer": "<=0.9.0.0-beta1",
-                "guzzlehttp/guzzle": "<7.15.1",
+                "guzzlehttp/guzzle": "<7.15.2|>=8,<8.0.1",
                 "guzzlehttp/guzzle-services": "<1.5.4",
                 "guzzlehttp/oauth-subscriber": "<0.8.1",
                 "guzzlehttp/psr7": "<2.12.3",
@@ -3513,7 +3513,7 @@
                 "zoujingli/thinkadmin": "<=6.1.53",
                 "zumba/json-serializer": "<3.2.3"
             },
-            "time": "2026-08-01T00:01:24+00:00",
+            "time": "2026-08-03T22:59:19+00:00",
             "default-branch": true,
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",

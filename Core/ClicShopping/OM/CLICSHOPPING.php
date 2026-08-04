@@ -687,7 +687,9 @@ class CLICSHOPPING
    */
   protected static function siteApplicationExists(string $application): bool
   {
-    $class = self::isValidClassName($application) && class_exists('ClicShopping\\Sites\\' . self::getSite() . '\\Pages\\' . $application . '\\' . $application);
+    $class = self::isValidClassName($application)
+      && self::hasExactCasePage(self::BASE_DIR . 'Sites' . DIRECTORY_SEPARATOR . self::getSite(), $application)
+      && class_exists('ClicShopping\\Sites\\' . self::getSite() . '\\Pages\\' . $application . '\\' . $application);
 
     return $class;
   }
@@ -856,6 +858,31 @@ class CLICSHOPPING
   public static function isValidClassName(string $classname): bool
   {
     return preg_match(self::VALID_CLASS_NAME_REGEXP, $classname) === 1;
+  }
+
+  /**
+   * Checks that a page code exists on disk with the EXACT case requested.
+   *
+   * Companion guard of self::autoload(), which resolves a namespace to a file path tested by
+   * is_file(): on a case-insensitive filesystem (macOS, Windows) 'Pages/products/products.php'
+   * resolves to the directory 'Products', and PHP class names are case-insensitive, so
+   * class_exists() alone lets a lowercased page code load an unrelated controller. A SEO URL
+   * fills the first $_GET key with the first token of a slug, always lowercased.
+   * readdir() returns the name as stored, so this comparison stays exact on every filesystem.
+   *
+   * @param string $site_dir Absolute path of the site directory holding Pages/.
+   * @param string $page_code Page code requested by the URL.
+   * @return bool True when Pages/ holds an entry spelled exactly like $page_code.
+   */
+  public static function hasExactCasePage(string $site_dir, string $page_code): bool
+  {
+    $pages_dir = $site_dir . DIRECTORY_SEPARATOR . 'Pages';
+
+    if (!is_dir($pages_dir)) {
+      return false;
+    }
+
+    return \in_array($page_code, scandir($pages_dir), true);
   }
 
   /**

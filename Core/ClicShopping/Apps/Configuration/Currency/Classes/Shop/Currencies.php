@@ -14,7 +14,6 @@ use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Shop\Tax;
 use function count;
 use function is_null;
-use function is_string;
 
 class Currencies
 {
@@ -323,12 +322,13 @@ class Currencies
       // canonical SEO PRO path. The former GET form let the browser serialize every $_GET key into
       // "?key=value&..." — a shape the rewriting can never produce, so the visitor left the SEO
       // URLs for a duplicate of the same page. Same approach as the language switcher.
-      $get_params = self::buildCurrentParameters();
+      // Un seul endroit sait quels $_GET se ré-émettent : celui qui sert déjà la pagination.
+      $get_params = CLICSHOPPING::getAllGET(['currency']);
       $options = [];
       $selected = null;
 
       foreach ($this->getAll() as $currency) {
-        $url = CLICSHOPPING::link(null, $get_params . 'currency=' . $currency['id']);
+        $url = CLICSHOPPING::link(null, ($get_params !== '' ? $get_params . '&' : '') . 'currency=' . $currency['id']);
 
         $options[] = [
           'id' => $url,
@@ -347,31 +347,6 @@ class Currencies
       return $currency_header;
     }
   }
-
-  /**
-   * Rebuilds the parameters of the current request so the currency switch keeps the visitor on the
-   * same page. Valued keys are re-emitted as "key=value" and empty ones as the bare key, which is
-   * what preserves the route segments (Info, Content, ...) through CLICSHOPPING::link().
-   *
-   * @return string A parameter string ending with '&', or an empty string.
-   */
-  private static function buildCurrentParameters(): string
-  {
-    $get_params = [];
-
-    foreach ($_GET as $key => $value) {
-      if (!is_string($value) || $key === 'currency' || $key === session_name() || $key === 'x' || $key === 'y') {
-        continue;
-      }
-
-      $get_params[] = ($value !== '') ? $key . '=' . $value : $key;
-    }
-
-    $get_params = implode('&', $get_params);
-
-    return $get_params !== '' ? $get_params . '&' : '';
-  }
-
 
   /**
    * Retrieves all currencies as an array of associative arrays containing their ID and title.

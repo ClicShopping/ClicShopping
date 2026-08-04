@@ -4,8 +4,9 @@ version4.33
 - Cron Improvement
 - error_log management improved
 - Allow to manage 3 taxes (europe, CA, US for example) 
-- Order total caculation improvement
+- Order total calculation improved
 - URL canonical improvement (front office) for SEO
+- Improvement :Page resolution now requires the exact case of the page code, so a category slug can no longer serve another page on a case-insensitive filesystem (macOS, Windows)
 - AI
   - Add distinction between Agents and Actors
   - AI review sentiment analysis improved and refactored with agentic approach
@@ -13,7 +14,7 @@ version4.33
     - Gpt-4 series removed for Gpt-5 only
     - New features and configuration for use Llm
   - AI response time optimization
-  - Some AI refactorisation and improvement to solidify the code, reponse
+  - Some AI refactorisation and improvement to solidify the code, response
   - best solidity chat response
 
   

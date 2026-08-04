@@ -383,6 +383,8 @@ class ProductsListing
 
     $Qlisting = $this->db->prepare($search_query);
 
+    // :categories_id takes the LEAF, never getPath(): bindInt() casts the breadcrumb branch "3_4"
+    // to 3, so a nested category listed its ancestor's products. getPath() still gates the branch.
     if ($CLICSHOPPING_Customer->getCustomersGroupID() != 0) {
       if (isset($manufacturers_id) && is_numeric($manufacturers_id) && !empty($manufacturers_id)) {
         if (isset($filter_id) && !is_null($filter_id)) {

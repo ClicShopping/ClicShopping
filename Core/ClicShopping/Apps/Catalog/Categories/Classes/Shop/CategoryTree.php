@@ -800,11 +800,17 @@ class CategoryTree
    * @param string $exclude The ID of a category to exclude from the tree, if any.
    * @param string $category_tree_array The current category tree array being built. If not provided, an empty array will be initialized.
    * @param bool $include_itself Indicates whether to include the parent category itself in the tree, defaults to false.
+   * @param string $cPath_prefix The branch already walked, the recursion feeds it; empty at the entry point.
    * @return array An array representing the hierarchical category tree structure.
    */
-  public function getShopCategoryTree(int|string $parent_id = 0, string $spacing = '', $exclude = '', $category_tree_array = '', bool $include_itself = false): array
+  public function getShopCategoryTree(int|string $parent_id = 0, string $spacing = '', $exclude = '', $category_tree_array = '', bool $include_itself = false, string $cPath_prefix = ''): array
   {
     $this->lang = Registry::get('Language');
+
+    // A partial tree keeps designating its categories from where it starts, as it used to.
+    if ($cPath_prefix === '' && (int)$parent_id !== 0) {
+      $cPath_prefix = (string)(int)$parent_id;
+    }
 
     if (!is_array($category_tree_array)) {
       $category_tree_array = [];
@@ -831,6 +837,20 @@ class CategoryTree
       ];
     }
 
+    $conditions = [
+      'c.categories_id' => [
+        'rel' => 'cd.categories_id'
+      ],
+      'cd.language_id' => (int)$this->lang->getId(),
+      'c.parent_id' => (int)$parent_id
+    ];
+
+    // The same rule the constructor applies to $this->data: a disabled category does not exist for
+    // the shop, so Category::getID() is null on it and the strict router answers its URL with a 404.
+    if (CLICSHOPPING::getSite() === 'Shop') {
+      $conditions['c.status'] = 1;
+    }
+
     $Qcategories = $this->db->get([
       'categories c',
       'categories_description cd'
@@ -838,34 +858,25 @@ class CategoryTree
       'c.categories_id',
       'cd.categories_name',
       'c.parent_id'
-    ], [
-      'c.categories_id' => [
-        'rel' => 'cd.categories_id'
-      ],
-      'cd.language_id' => (int)$this->lang->getId(),
-      'c.parent_id' => (int)$parent_id
-    ], [
+    ], $conditions, [
         'c.sort_order',
         'cd.categories_name'
       ]
     );
 
     while ($Qcategories->fetch()) {
-      if ($exclude != $Qcategories->valueInt('categories_id')) {
-        if ($Qcategories->valueInt('parent_id') !== 0) {
-          $category_tree_array[] = [
-            'id' => $Qcategories->valueInt('parent_id') . '_' . $Qcategories->valueInt('categories_id'),
-            'text' => $spacing . $Qcategories->value('categories_name')
-          ];
-        } else {
-          $category_tree_array[] = [
-            'id' => $Qcategories->valueInt('categories_id'),
-            'text' => $spacing . $Qcategories->value('categories_name')
-          ];
-        }
-}
+      // The whole branch, not just the parent read on the row: a third level built from parent_id
+      // alone gives `4_8` where the category is `3_4_8`, a misspelling the strict router answers 301.
+      $cPath = ($cPath_prefix === '' ? '' : $cPath_prefix . '_') . $Qcategories->valueInt('categories_id');
 
-      $category_tree_array = $this->getShopCategoryTree($Qcategories->valueInt('categories_id'), $spacing . '&nbsp;&nbsp;&nbsp;', $exclude, $category_tree_array);
+      if ($exclude != $Qcategories->valueInt('categories_id')) {
+        $category_tree_array[] = [
+          'id' => $cPath,
+          'text' => $spacing . $Qcategories->value('categories_name')
+        ];
+      }
+
+      $category_tree_array = $this->getShopCategoryTree($Qcategories->valueInt('categories_id'), $spacing . '&nbsp;&nbsp;&nbsp;', $exclude, $category_tree_array, false, $cPath);
     }
 
     return $category_tree_array;
