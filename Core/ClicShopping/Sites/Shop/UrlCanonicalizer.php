@@ -168,6 +168,9 @@ class UrlCanonicalizer
     self::$stem = $stem;
     self::$route = $route;
 
+    // Before any listing runs, hence before ProductsListing::getData() rewrites $_GET['sort'].
+    ListingParameterWitness::snapshot();
+
     if (!self::isEnforceable()) {
       return;
     }
@@ -195,36 +198,48 @@ class UrlCanonicalizer
   }
 
   /**
-   * Second pass, run once every listing of the request has queried: drops a page number no listing
-   * can serve. `/dinning-bar/cPath-3/page-999` used to answer 200 with an empty listing and a
-   * self-referencing canonical — the form gate proves `999` is well-formed, only the query knows
-   * the shop stops at page 1.
+   * Second pass, run once every listing of the request has queried: drops the listing parameters
+   * the request carried but no listing served. `/dinning-bar/cPath-3/page-999`, `/…/sort-99999a`
+   * and `/…/filter_id-99999` all used to answer 200 with a self-referencing canonical — the form
+   * gates prove the values are well-formed, only the listings know none of them means anything.
    *
-   * Deliberately conservative, because several listings share the `page` keyword on one page: the
-   * bound used is the HIGHEST any of them offers, so a page is dropped only when none can serve it.
+   * Two registers, one contract: a page number is out of range past the bound the queries report
+   * (DbStatement::getPageSetBounds()), a sort or a filter is invalid when no listing honoured it
+   * (ListingParameterWitness::getVerdicts()). Both are deliberately conservative, because several
+   * listings share these keywords on one page: a parameter is dropped only when NONE served it.
    *
    * ⚠️ Must be called while the response body has not started — hence the chokepoint at the end of
    * Template::buildBlocks(), measured to be after every page set of the request and before the
    * first byte of output. A listing querying LATER than that is not accounted for.
    *
    * @param array $bounds Page-set bounds observed on the request, keyword => highest page servable.
+   * @param array $honoured Listing verdicts, parameter => honoured. An absent parameter was judged
+   *                        by no listing and is therefore kept.
    */
-  public static function enforceListingBounds(array $bounds): void
+  public static function enforceListingBounds(array $bounds, array $honoured = []): void
   {
-    if (self::$canonical === null || $bounds === [] || headers_sent() || !self::isEnforceable()) {
+    if (self::$canonical === null || ($bounds === [] && $honoured === []) || headers_sent() || !self::isEnforceable()) {
       return;
     }
 
     $reachable = self::$leftover;
 
     foreach ($bounds as $keyword => $pages) {
-      if (!in_array($keyword, self::PRESENTATION_PARAMETERS, true)) {
+      if (!in_array($keyword, self::LISTING_PARAMETERS, true)) {
         continue;
       }
 
       if (isset($reachable[$keyword]) && (int)$reachable[$keyword] > (int)$pages) {
         unset($reachable[$keyword]);
       }
+    }
+
+    foreach ($honoured as $parameter => $served) {
+      if ($served !== false || !in_array($parameter, self::LISTING_PARAMETERS, true)) {
+        continue;
+      }
+
+      unset($reachable[$parameter]);
     }
 
     if ($reachable === self::$leftover) {

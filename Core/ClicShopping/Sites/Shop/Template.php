@@ -778,8 +778,8 @@ class Template
     }
 
     // Every listing of the request has queried by now, and nothing has been echoed yet: the only
-    // moment where a page number no listing can serve is both KNOWN and still redirectable.
-    UrlCanonicalizer::enforceListingBounds(DbStatement::getPageSetBounds());
+    // moment where a page, sort or filter no listing served is both KNOWN and still redirectable.
+    UrlCanonicalizer::enforceListingBounds(DbStatement::getPageSetBounds(), ListingParameterWitness::getVerdicts());
   }
 
   /**

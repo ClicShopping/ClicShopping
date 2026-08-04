@@ -9,6 +9,7 @@
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Shop\ListingParameterWitness;
 
 class pl_products_listing_filter
 {
@@ -63,16 +64,16 @@ class pl_products_listing_filter
                                                        and g.products_group_view = 1
                                                        and p.products_id = p2c.products_id
                                                        and p2c.categories_id = c.categories_id
+                                                       and cd.categories_id = c.categories_id
                                                        and c.status = 1
                                                        and cd.language_id = :language_id
-                                                       and (p.manufacturers_id = :manufacturers_id1 or p = :filter)
+                                                       and p.manufacturers_id = :manufacturers_id
                                                        and p.products_archive = 0
                                                        order by cd.categories_name
                                                      ');
                 $Qfilter->bindInt(':customers_group_id', $CLICSHOPPING_Customer->getCustomersGroupID());
                 $Qfilter->bindInt(':language_id', $CLICSHOPPING_Language->getId());
                 $Qfilter->bindInt(':manufacturers_id', $CLICSHOPPING_Manufacturers->getID());
-                $Qfilter->bindInt(':manufacturers_id1', $_GET['filter_id']);
                 $Qfilter->execute();
               } else {
                 $Qfilter = $CLICSHOPPING_Db->prepare('select SQL_CALC_FOUND_ROWS distinct m.manufacturers_id as id,
@@ -116,7 +117,7 @@ class pl_products_listing_filter
                                                          and p2c.categories_id = cd.categories_id
                                                          and p.products_archive = 0
                                                          and cd.language_id = :language_id
-                                                          and (p.manufacturers_id = :manufacturers_id1 or p = :filter)
+                                                         and p.manufacturers_id = :manufacturers_id
                                                          order by cd.categories_name
                                                        ');
 
@@ -150,42 +151,43 @@ class pl_products_listing_filter
             }
 
             if ($Qfilter->rowCount() > 0) {
+              $get_params = CLICSHOPPING::getAllGET(['filter_id', 'page']);
+              $get_params = $get_params !== '' ? $get_params . '&' : '';
+
+              $unfiltered = CLICSHOPPING::link(null, rtrim($get_params, '&'));
+
               $products_listing_filter .= '<!-- product_listing_manufacturers start -->' . "\n";
-              $products_listing_filter .= HTML::form('filter', CLICSHOPPING::link(null, '', false), 'get', null, ['session_id' => true]);
               $products_listing_filter .= '<div class="col-md-' . $bootstrap_column . '">';
 
-              if ($CLICSHOPPING_Manufacturers->getID() && !empty($CLICSHOPPING_Manufacturers->getID())) {
-                $products_listing_filter .= HTML::hiddenField('manufacturersId', $CLICSHOPPING_Manufacturers->getID());
+              $label = $CLICSHOPPING_Manufacturers->getID() && !empty($CLICSHOPPING_Manufacturers->getID())
+                ? CLICSHOPPING::getDef('text_all_categories')
+                : CLICSHOPPING::getDef('text_all_filter');
 
-                $options = [
-                  [
-                    'id' => '',
-                    'text' => CLICSHOPPING::getDef('text_all_categories')
-                  ]
-                ];
-              } else {
-                $products_listing_filter .= HTML::hiddenField('cPath', $CLICSHOPPING_Category->getPath());
+              $options = [
+                [
+                  'id' => $unfiltered,
+                  'text' => $label
+                ]
+              ];
 
-                $options =  [
-                  [
-                    'id' => '',
-                    'text' => CLICSHOPPING::getDef('text_all_filter')
-                  ]
-                ];
-              }
-
-              $products_listing_filter .= HTML::hiddenField('sort', HTML::sanitize($_GET['sort']));
+              $selected = $unfiltered;
+              $requested = ListingParameterWitness::requested('filter_id');
 
               while ($Qfilter->fetch()) {
+                $url = CLICSHOPPING::link(null, $get_params . 'filter_id=' . $Qfilter->valueInt('id'));
+
                 $options[] = [
-                  'id' => $Qfilter->valueInt('id'),
+                  'id' => $url,
                   'text' => $Qfilter->value('name')
                 ];
+
+                if ($requested !== null && $requested === (string)$Qfilter->valueInt('id')) {
+                  $selected = $url;
+                }
               }
 
-              $products_listing_filter .= HTML::selectMenu('filter_id', $options, (isset($_GET['filter_id']) ? $_GET['filter_id'] : ''), 'onchange="this.form.submit()"');
+              $products_listing_filter .= HTML::selectField('filter_id', $options, $selected, 'onchange="if (this.value) window.location.href = this.value;"');
               $products_listing_filter .= '</div>';
-              $products_listing_filter .= '</form>';
             }
 
             $products_listing_filter .= '<!-- product_listing_manufacturers end -->' . "\n";

@@ -11,6 +11,7 @@ namespace ClicShopping\Apps\Catalog\Products\Classes\Shop;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Shop\ListingParameterWitness;
 use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\CockpitAI\ProductsTracking;
 
 /**
@@ -202,10 +203,14 @@ final class ProductsListingRenderer
   }
 
   /**
-   * Resolve the ORDER BY column expression from $_GET['sort'] against the
+   * Resolve the ORDER BY column expression from the requested sort against the
    * declared sortColumns, falling back to $default when sorting is disabled,
    * absent or malformed. The returned value excludes the "order by" keyword
    * so callers can compose it into their own query.
+   *
+   * Also witnesses the verdict for {@see ListingParameterWitness}, which the
+   * canonicalizer uses to drop a sort no listing served. A listing whose sort
+   * bar is off ABSTAINS: falling back to the default proves nothing there.
    *
    * @param string $default Column expression used when no valid sort is requested (e.g. "rand(), p.products_date_added desc").
    */
@@ -213,11 +218,19 @@ final class ProductsListingRenderer
   {
     $columns = array_values($this->context->sortColumns);
 
-    if (!$this->context->displaySortBar || $columns === [] || !isset($_GET['sort'])) {
+    if (!$this->context->displaySortBar || $columns === []) {
       return $default;
     }
 
-    if (!preg_match('/^([0-9]+)([ad])$/', HTML::sanitize($_GET['sort']), $matches)) {
+    $requested = ListingParameterWitness::requested('sort');
+
+    if ($requested === null) {
+      return $default;
+    }
+
+    if (!preg_match('/^([0-9]+)([ad])$/', HTML::sanitize($requested), $matches)) {
+      ListingParameterWitness::witness('sort', false);
+
       return $default;
     }
 
@@ -225,8 +238,12 @@ final class ProductsListingRenderer
     $direction = $matches[2] === 'd' ? 'desc' : 'asc';
 
     if (!isset($columns[$index], self::SORT_SQL[$columns[$index]])) {
+      ListingParameterWitness::witness('sort', false);
+
       return $default;
     }
+
+    ListingParameterWitness::witness('sort', true);
 
     return self::SORT_SQL[$columns[$index]] . ' ' . $direction;
   }

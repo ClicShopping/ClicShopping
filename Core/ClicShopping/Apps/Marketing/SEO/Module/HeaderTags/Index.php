@@ -172,7 +172,8 @@ EOD;
    */
   public function keys()
   {
-    return ['MODULE_HEADER_TAGS_INDEX_STATUS',
+    return [
+      'MODULE_HEADER_TAGS_INDEX_STATUS',
       'MODULE_HEADER_TAGS_INDEX_SORT_ORDER'
     ];
   }

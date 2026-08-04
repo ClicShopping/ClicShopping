@@ -116,11 +116,11 @@ class ProductsListing
       }
     }
 
-    if (isset($filter_id)) {
-      $filter_id = HTML::sanitize($filter_id);
-    } else {
-      $filter_id = null;
-    }
+    $requested_filter = ListingParameterWitness::requested('filter_id');
+
+    $filter_id = ($requested_filter !== null && preg_match('/^[1-9][0-9]*$/', $requested_filter) === 1)
+      ? (int)$requested_filter
+      : null;
 
     if (!is_null($CLICSHOPPING_Manufacturers->getID())) {
       $manufacturers_id = HTML::sanitize($CLICSHOPPING_Manufacturers->getID());
@@ -324,7 +324,15 @@ class ProductsListing
 // ####### END B2B #######
     $search_query .= ' group by p.products_id ';
 
-    if ((!isset($_GET['sort'])) || (!preg_match('/^[1-8][ad]$/', $_GET['sort'])) || (substr($_GET['sort'], 0, 1) > count($column_list))) {
+    $requested_sort = ListingParameterWitness::requested('sort');
+
+    $sort_honoured = $requested_sort !== null
+      && preg_match('/^[1-8][ad]$/', $requested_sort) === 1
+      && substr($requested_sort, 0, 1) <= count($column_list);
+
+    ListingParameterWitness::witness('sort', $sort_honoured);
+
+    if (!$sort_honoured) {
       for ($i = 0, $n = count($column_list); $i < $n; $i++) {
         if ($column_list[$i] == 'PRODUCT_LIST_NAME') {
           $_GET['sort'] = $i + 1 . 'a';
@@ -337,8 +345,8 @@ class ProductsListing
         }
       }
     } else {
-      $sort_col = substr($_GET['sort'], 0, 1);
-      $sort_order = substr($_GET['sort'], 1);
+      $sort_col = substr($requested_sort, 0, 1);
+      $sort_order = substr($requested_sort, 1);
 
       switch ($column_list[$sort_col - 1]) {
 
@@ -395,11 +403,11 @@ class ProductsListing
           $Qlisting->bindInt(':customers_group_id', (int)$CLICSHOPPING_Customer->getCustomersGroupID());
           $Qlisting->bindInt(':manufacturers_id', $filter_id);
           $Qlisting->bindInt(':language_id', (int)$CLICSHOPPING_Language->getId());
-          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getPath());
+          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getID());
         } elseif (!empty($CLICSHOPPING_Category->getPath())) {
           $Qlisting->bindInt(':customers_group_id', (int)$CLICSHOPPING_Customer->getCustomersGroupID());
           $Qlisting->bindInt(':language_id', $CLICSHOPPING_Language->getId());
-          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getPath());
+          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getID());
         } elseif (isset($manufacturers_id) && is_numeric($manufacturers_id) && !empty($manufacturers_id)) {
           $Qlisting->bindInt(':customers_group_id', (int)$CLICSHOPPING_Customer->getCustomersGroupID());
           $Qlisting->bindInt(':manufacturers_id', $manufacturers_id);
@@ -407,7 +415,7 @@ class ProductsListing
         } else {
           $Qlisting->bindInt(':customers_group_id', (int)$CLICSHOPPING_Customer->getCustomersGroupID());
           $Qlisting->bindInt(':language_id', $CLICSHOPPING_Language->getId());
-          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getPath());
+          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getID());
         }
       }
 
@@ -415,7 +423,7 @@ class ProductsListing
 // Clients Grand Public
 // ***************************
     } else {
-      if (isset($manufacturers_id) && !empty($filter_id)) {
+      if (isset($manufacturers_id) && is_numeric($manufacturers_id) && !empty($manufacturers_id)) {
 
         if (isset($filter_id) && !is_null($filter_id)) {
 // Affichage des produits sur la selection d'une marque depuis la boxe manufacturer avec filtrage de la categorie
@@ -432,23 +440,27 @@ class ProductsListing
 // Affichage general de la liste des produits d'une categorie avec un filtrage des Marques
           $Qlisting->bindInt(':manufacturers_id', $filter_id);
           $Qlisting->bindInt(':language_id', $CLICSHOPPING_Language->getId());
-          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getPath());
+          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getID());
         } elseif (!empty($CLICSHOPPING_Category->getPath())) {
 // Affichage general de la liste des produits d'une categorie avec tout les Marques
           $Qlisting->bindInt(':language_id', $CLICSHOPPING_Language->getId());
-          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getPath());
+          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getID());
         } elseif (isset($manufacturers_id) && is_numeric($manufacturers_id) && !empty($manufacturers_id)) {
           $Qlisting->bindInt(':manufacturers_id', $manufacturers_id);
           $Qlisting->bindInt(':language_id', $CLICSHOPPING_Language->getId());
         } else {
           $Qlisting->bindInt(':language_id', $CLICSHOPPING_Language->getId());
-          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getPath());
+          $Qlisting->bindInt(':categories_id', $CLICSHOPPING_Category->getID());
         }
       }
     }
 
     $Qlisting->setPageSet((int)MAX_DISPLAY_SEARCH_RESULTS);
-    $Qlisting->execute();
+    $executed = $Qlisting->execute();
+
+    if ($executed === true) {
+      ListingParameterWitness::witness('filter_id', $filter_id !== null && $Qlisting->getPageSetTotalRows() > 0);
+    }
 
     return $Qlisting;
   }
