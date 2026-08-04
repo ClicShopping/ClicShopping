@@ -431,7 +431,7 @@ class Category
 
       $cPath = implode('_', $categories);
 
-      if (!is_null($cPath)) {
+      if ($cPath !== '') {
         $cPath .= '_';
       }
 

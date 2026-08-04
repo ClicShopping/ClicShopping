@@ -25,6 +25,13 @@ class RewriteUrl
   protected string|null $title = null;
 
   /**
+   * Slug reads already answered in this request, keyed by entity and language. Every link, image,
+   * button and JSON-LD block a product card emits asks for the same URL again, and each ask used
+   * to re-read the slug from the database.
+   */
+  private array $slugs = [];
+
+  /**
    * Determines if a given string appears to be encoded in UTF-8.
    *
    * @param string $str The string to check for UTF-8 encoding.
@@ -943,17 +950,23 @@ class RewriteUrl
 
     if (defined('SEARCH_ENGINE_FRIENDLY_URLS') && SEARCH_ENGINE_FRIENDLY_URLS == 'true' && CLICSHOPPING::getSite() != 'ClicShoppingAdmin') {
       if (defined('SEARCH_ENGINE_FRIENDLY_URLS_PRO') && SEARCH_ENGINE_FRIENDLY_URLS_PRO == 'true') {
-        $Qseo = $CLICSHOPPING_Db->prepare('select products_seo_url
-                                             from :table_products_description
-                                             where products_id = :products_id
-                                             and language_id = :language_id
-                                           ');
-        $Qseo->bindInt(':products_id', $products_id);
-        $Qseo->bindInt(':language_id', $CLICSHOPPING_Language->getId());
+        $seo_key = 'product:' . $products_id . ':' . $CLICSHOPPING_Language->getId();
 
-        $Qseo->execute();
+        if (!\array_key_exists($seo_key, $this->slugs)) {
+          $Qseo = $CLICSHOPPING_Db->prepare('select products_seo_url
+                                               from :table_products_description
+                                               where products_id = :products_id
+                                               and language_id = :language_id
+                                             ');
+          $Qseo->bindInt(':products_id', $products_id);
+          $Qseo->bindInt(':language_id', $CLICSHOPPING_Language->getId());
 
-        $products_seo_url = $Qseo->value('products_seo_url');
+          $Qseo->execute();
+
+          $this->slugs[$seo_key] = $Qseo->value('products_seo_url');
+        }
+
+        $products_seo_url = $this->slugs[$seo_key];
 
         if (empty($products_seo_url) || is_null($products_seo_url)) {
           $products_name = $this->replaceString($products_name) ?? 'product';
@@ -1054,20 +1067,30 @@ class RewriteUrl
   {
     $branch = explode('_', $categories_id);
     $leaf = (int)end($branch);
+    $language = $language_id ?? Registry::get('Language')->getId();
+    $key = 'category:' . $leaf . ':' . $language;
 
-    $Qcategory = Registry::get('Db')->prepare('select categories_name,
-                                                      categories_seo_url
-                                                 from :table_categories_description
-                                                 where categories_id = :categories_id
-                                                 and language_id = :language_id
-                                               ');
-    $Qcategory->bindInt(':categories_id', $leaf);
-    $Qcategory->bindInt(':language_id', $language_id ?? Registry::get('Language')->getId());
+    // Only the read is kept: the fallback below reads $this->title, which callers still mutate.
+    if (!\array_key_exists($key, $this->slugs)) {
+      $Qcategory = Registry::get('Db')->prepare('select categories_name,
+                                                        categories_seo_url
+                                                   from :table_categories_description
+                                                   where categories_id = :categories_id
+                                                   and language_id = :language_id
+                                                 ');
+      $Qcategory->bindInt(':categories_id', $leaf);
+      $Qcategory->bindInt(':language_id', $language);
 
-    $Qcategory->execute();
+      $Qcategory->execute();
+
+      $this->slugs[$key] = [
+        'categories_seo_url' => $Qcategory->value('categories_seo_url'),
+        'categories_name' => $Qcategory->value('categories_name')
+      ];
+    }
 
     foreach (['categories_seo_url', 'categories_name'] as $column) {
-      $value = $Qcategory->value($column);
+      $value = $this->slugs[$key][$column];
 
       if (!empty($value)) {
         return $this->replaceString($value);

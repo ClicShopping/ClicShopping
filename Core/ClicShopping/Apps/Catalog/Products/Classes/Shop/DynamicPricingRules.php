@@ -29,6 +29,13 @@
     protected mixed $db;
 
     /**
+     * Prices already decided in this request, keyed by product, base price and customer group.
+     * A listing asks the same product for its price once per emitted attribute; without this each
+     * ask would re-read stock and sales AND replay the specials write and the history row.
+     */
+    private array $applied = [];
+
+    /**
      * Constructor.
      *
      * Initializes the DynamicPricingRules class and retrieves the database object from the Registry.
@@ -48,6 +55,26 @@
      * @param int $customer_group_id The customer group ID for rule application (default is 0).
      */
     public function apply(int $product_id, float $base_price, int $customer_group_id = 0): mixed
+    {
+      $key = $product_id . ':' . $base_price . ':' . $customer_group_id;
+
+      if (!\array_key_exists($key, $this->applied)) {
+        $this->applied[$key] = $this->decide($product_id, $base_price, $customer_group_id);
+      }
+
+      return $this->applied[$key];
+    }
+
+    /**
+     * The uncached decision behind {@see apply()}: reads the facts, runs the rules, and writes the
+     * specials and history rows the matched rule asks for.
+     *
+     * @param int $product_id The product ID.
+     * @param float $base_price The base price of the product.
+     * @param int $customer_group_id The customer group ID for rule application.
+     * @return float The final price after applying dynamic rules.
+     */
+    private function decide(int $product_id, float $base_price, int $customer_group_id): mixed
     {
       $stock = $this->getStock($product_id);
       $sales = $this->getSalesLast30Days($product_id);

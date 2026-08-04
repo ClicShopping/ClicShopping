@@ -65,7 +65,7 @@ class he_header_multi_template
     $form = HTML::form('loginForm', CLICSHOPPING::link(null, 'Account&LogIn&Process'), 'post', 'id="loginForm"', ['tokenize' => true]);
     $endform = '</form>';
 
-    $categories_dropdown = $CLICSHOPPING_CategoryTree->getCategoriesDropdown($CLICSHOPPING_CategoryTree, (string)$cPath);
+    $categories_dropdown = $CLICSHOPPING_CategoryTree->getCategoriesDropdown((string)$cPath);
 
     if ($CLICSHOPPING_Service->isStarted('Banner')) {
       if ($banner = $CLICSHOPPING_Banner->bannerExists('dynamic', MODULES_HEADER_MULTI_MODULE_LOGO_BANNER_GROUP)) {

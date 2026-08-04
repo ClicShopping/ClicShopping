@@ -29,6 +29,12 @@ class CategoryTree
 
   protected $show_total_products = false;
   protected $data = [];
+  /**
+   * The whole tree of each language, loaded once per process. Keyed by language: a process that
+   * serves two languages used to hand the first one's tree to the second.
+   */
+  protected static array $tree_data = [];
+  private int $data_language_id = 0;
   protected $root_category_id = 0;
   protected $max_level = 0;
   protected $root_start_string = '';
@@ -64,31 +70,40 @@ class CategoryTree
    */
   public function __construct()
   {
-    static $category_tree_data;
-
     $this->db = Registry::get('Db');
     $this->lang = Registry::get('Language');
 
-    if (isset($category_tree_data)) {
-      $this->data = $category_tree_data;
-    } else {
-      if (CLICSHOPPING::getSite() === 'Shop') {
-        $Qcategories = $this->db->prepare('select c.categories_id,
-                                                     c.parent_id,
-                                                     c.categories_image,
-                                                     cd.categories_name,
-                                                     cd.categories_description
-                                              from :table_categories c,
-                                                   :table_categories_description cd
-                                              where c.categories_id = cd.categories_id
-                                              and cd.language_id = :language_id
-                                              and c.status = 1
-                                              order by c.parent_id,
-                                                       c.sort_order,
-                                                       cd.categories_name
-                                              ');
-      } else {
-        $Qcategories = $this->db->prepare('select c.categories_id,
+    $this->data_language_id = (int)$this->lang->getId();
+    $this->data = $this->loadTreeData($this->data_language_id);
+
+    if ($this->show_total_products === true) {
+      $this->calculateProductTotals();
+    }
+
+    if (!Registry::exists('RewriteUrl')) {
+      Registry::set('RewriteUrl', new RewriteUrl());
+    }
+
+    $this->rewriteUrl = Registry::get('RewriteUrl');
+  }
+
+  /**
+   * Loads the whole category tree of a language, once per process, indexed by parent then by
+   * category. It is the single source of truth every walker of this class reads.
+   *
+   * @param int $language_id The language the names are read in.
+   * @return array The tree indexed by parent id, each parent holding its categories in display order.
+   */
+  protected function loadTreeData(int $language_id): array
+  {
+    if (isset(static::$tree_data[$language_id])) {
+      return static::$tree_data[$language_id];
+    }
+
+    // A disabled category does not exist for the shop: Category::getID() is null on it and the
+    // canonical hook answers its URL with a 404.
+    if (CLICSHOPPING::getSite() === 'Shop') {
+      $Qcategories = $this->db->prepare('select c.categories_id,
                                                    c.parent_id,
                                                    c.categories_image,
                                                    cd.categories_name,
@@ -97,38 +112,44 @@ class CategoryTree
                                                  :table_categories_description cd
                                             where c.categories_id = cd.categories_id
                                             and cd.language_id = :language_id
+                                            and c.status = 1
                                             order by c.parent_id,
                                                      c.sort_order,
                                                      cd.categories_name
                                             ');
-      }
-
-      $Qcategories->bindInt(':language_id', $this->lang->getId());
-      $Qcategories->setCache('categories-lang' . $this->lang->getId());
-
-      $Qcategories->execute();
-
-      while ($Qcategories->fetch()) {
-        $this->data[$Qcategories->valueInt('parent_id')][$Qcategories->valueInt('categories_id')] = [
-          'name' => $Qcategories->value('categories_name'),
-          'description' => $Qcategories->value('categories_description'),
-          'image' => $Qcategories->value('categories_image'),
-          'count' => 0
-        ];
-      }
-
-      if ($this->show_total_products === true) {
-        $this->calculateProductTotals();
-      }
-
-      $category_tree_data = $this->data;
+    } else {
+      $Qcategories = $this->db->prepare('select c.categories_id,
+                                                 c.parent_id,
+                                                 c.categories_image,
+                                                 cd.categories_name,
+                                                 cd.categories_description
+                                          from :table_categories c,
+                                               :table_categories_description cd
+                                          where c.categories_id = cd.categories_id
+                                          and cd.language_id = :language_id
+                                          order by c.parent_id,
+                                                   c.sort_order,
+                                                   cd.categories_name
+                                          ');
     }
 
-    if (!Registry::exists('RewriteUrl')) {
-      Registry::set('RewriteUrl', new RewriteUrl());
+    $Qcategories->bindInt(':language_id', $language_id);
+    $Qcategories->setCache('categories-lang' . $language_id);
+
+    $Qcategories->execute();
+
+    $data = [];
+
+    while ($Qcategories->fetch()) {
+      $data[$Qcategories->valueInt('parent_id')][$Qcategories->valueInt('categories_id')] = [
+        'name' => $Qcategories->value('categories_name'),
+        'description' => $Qcategories->value('categories_description'),
+        'image' => $Qcategories->value('categories_image'),
+        'count' => 0
+      ];
     }
 
-    $this->rewriteUrl = Registry::get('RewriteUrl');
+    return static::$tree_data[$language_id] = $data;
   }
 
   /**
@@ -741,12 +762,9 @@ class CategoryTree
    */
   public function setShowCategoryProductCount(int $show_category_product_count): void
   {
-    if ($show_category_product_count === true) {
-      $this->show_total_products = true;
-    } else {
-      $this->show_total_products = false;
-    }
-}
+    // An int is never identical to true: the flag could not be raised through this door.
+    $this->show_total_products = $show_category_product_count > 0;
+  }
 
   /**
    * Sets the start and end strings for displaying the product count associated with a category.
@@ -792,7 +810,7 @@ class CategoryTree
 
   /**
    * Builds and returns a hierarchical array representing the category tree for a shop.
-   * The method retrieves categories from the database and formats them into a nested structure
+   * The method walks the tree loaded by loadTreeData() and formats it into a nested structure
    * suitable for displays such as dropdown menus or navigational elements.
    *
    * @param int|string $parent_id The ID of the parent category to start building the tree from, defaults to 0.
@@ -837,46 +855,24 @@ class CategoryTree
       ];
     }
 
-    $conditions = [
-      'c.categories_id' => [
-        'rel' => 'cd.categories_id'
-      ],
-      'cd.language_id' => (int)$this->lang->getId(),
-      'c.parent_id' => (int)$parent_id
-    ];
+    // The tree is already in memory, in display order and filtered on the status the site imposes:
+    // walking it costs no query where the recursion used to spend one per node.
+    $language_id = (int)$this->lang->getId();
+    $data = $language_id === $this->data_language_id ? $this->data : $this->loadTreeData($language_id);
 
-    // The same rule the constructor applies to $this->data: a disabled category does not exist for
-    // the shop, so Category::getID() is null on it and the strict router answers its URL with a 404.
-    if (CLICSHOPPING::getSite() === 'Shop') {
-      $conditions['c.status'] = 1;
-    }
-
-    $Qcategories = $this->db->get([
-      'categories c',
-      'categories_description cd'
-    ], [
-      'c.categories_id',
-      'cd.categories_name',
-      'c.parent_id'
-    ], $conditions, [
-        'c.sort_order',
-        'cd.categories_name'
-      ]
-    );
-
-    while ($Qcategories->fetch()) {
-      // The whole branch, not just the parent read on the row: a third level built from parent_id
+    foreach ($data[(int)$parent_id] ?? [] as $categories_id => $category) {
+      // The whole branch, not just the parent it hangs from: a third level built from the parent
       // alone gives `4_8` where the category is `3_4_8`, a misspelling the strict router answers 301.
-      $cPath = ($cPath_prefix === '' ? '' : $cPath_prefix . '_') . $Qcategories->valueInt('categories_id');
+      $cPath = ($cPath_prefix === '' ? '' : $cPath_prefix . '_') . $categories_id;
 
-      if ($exclude != $Qcategories->valueInt('categories_id')) {
+      if ($exclude != $categories_id) {
         $category_tree_array[] = [
           'id' => $cPath,
-          'text' => $spacing . $Qcategories->value('categories_name')
+          'text' => $spacing . $category['name']
         ];
       }
 
-      $category_tree_array = $this->getShopCategoryTree($Qcategories->valueInt('categories_id'), $spacing . '&nbsp;&nbsp;&nbsp;', $exclude, $category_tree_array, false, $cPath);
+      $category_tree_array = $this->getShopCategoryTree($categories_id, $spacing . '&nbsp;&nbsp;&nbsp;', $exclude, $category_tree_array, false, $cPath);
     }
 
     return $category_tree_array;
@@ -888,11 +884,10 @@ class CategoryTree
    * Each option carries the SEO URL of its category and the selector navigates to it: it used to
    * POST to index.php, a target that carries no $_GET, so choosing a category led to the home page.
    *
-   * @param CategoryTree $category_tree The shop category tree.
    * @param string $cPath The branch currently browsed, preselected when it belongs to the tree.
    * @return string The selector, or an empty string when the shop has no category.
    */
-  public function getCategoriesDropdown(CategoryTree $category_tree, string $cPath): string
+  public function getCategoriesDropdown(string $cPath): string
   {
     $categories = [];
     $selected = '';

@@ -72,6 +72,13 @@ class ProductsCommon extends Prod
   protected $dynamicPricingRules;
   protected string $button;
 
+  /**
+   * Per-request memo for the single-row product reads below. The render pipeline asks the same
+   * product for the same field once per emitted attribute — name, link, image, button, JSON-LD —
+   * so without it one product card replays each of those one-row queries a dozen times.
+   */
+  private array $memo = [];
+
   public function __construct()
   {
     $this->db = Registry::get('Db');
@@ -80,6 +87,47 @@ class ProductsCommon extends Prod
 
     Registry::set('DynamicPricingRules',new DynamicPricingRules());
     $this->dynamicPricingRules = Registry::get('DynamicPricingRules');
+  }
+
+  /**
+   * Runs $read once per request and replays its result afterwards.
+   *
+   * The key MUST name everything the read depends on — the product, and the language or the
+   * customer group when the query binds them — otherwise one product answers for another.
+   *
+   * @param string $key Identifies the read and all of its inputs.
+   * @param callable $read The uncached read, executed at most once per key.
+   * @return mixed Whatever $read returned the first time it ran.
+   */
+  private function memo(string $key, callable $read): mixed
+  {
+    if (!\array_key_exists($key, $this->memo)) {
+      $this->memo[$key] = $read();
+    }
+
+    return $this->memo[$key];
+  }
+
+  /**
+   * One column of a published product, read once per request.
+   *
+   * The id is taken as given: the getters below disagree on whether an absent id falls back to the
+   * instance one, and this helper must not settle that for them.
+   *
+   * @param string $column A column of :table_products, named by this class only.
+   * @param int $id The product to read.
+   * @return string The value protected for output, empty when the product is not published.
+   */
+  private function productColumn(string $column, int $id): string
+  {
+    return $this->memo($column . ':' . $id, function () use ($column, $id): string {
+      $Qproducts = $this->db->get('products', [$column], [
+        'products_status' => 1,
+        'products_id' => $id
+      ]);
+
+      return HTML::outputProtected($Qproducts->value($column));
+    });
   }
 
   /**
@@ -137,6 +185,16 @@ class ProductsCommon extends Prod
    * @return mixed $result Returns an array of product data if successful, or false otherwise.
    */
   private function setData()
+  {
+    return $this->memo('data:' . $this->getID() . ':' . $this->customer->getCustomersGroupID(), fn() => $this->readData());
+  }
+
+  /**
+   * The uncached read behind {@see setData()}.
+   *
+   * @return mixed Returns an array of product data if successful, or false otherwise.
+   */
+  private function readData()
   {
     if ($this->customer->getCustomersGroupID() != 0) {
       $Qproducts = $this->db->prepare('select p.products_id,
@@ -264,18 +322,20 @@ class ProductsCommon extends Prod
   public function getProductsQuantity(?int $id = null)
   {
     if ($id !== null) {
-      $Qproduct = $this->db->prepare('select products_quantity
-                                      from :table_products
-                                      where products_id = :products_id
-                                     ');
-      $Qproduct->bindInt(':products_id', $id);
-      $Qproduct->execute();
+      return $this->memo('quantity:' . $id, function () use ($id) {
+        $Qproduct = $this->db->prepare('select products_quantity
+                                        from :table_products
+                                        where products_id = :products_id
+                                       ');
+        $Qproduct->bindInt(':products_id', $id);
+        $Qproduct->execute();
 
-      if ($Qproduct->fetch() === false) {
-        return 0;
-      }
+        if ($Qproduct->fetch() === false) {
+          return 0;
+        }
 
-      return $Qproduct->valueInt('products_quantity');
+        return $Qproduct->valueInt('products_quantity');
+      });
     }
 
     return $this->get('products_quantity');
@@ -470,23 +530,23 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $Qproducts = $this->db->prepare('select pd.products_name
-                                      from :table_products p,
-                                           :table_products_description pd
-                                      where p.products_status = 1
-                                      and p.products_id = :products_id
-                                      and pd.products_id = p.products_id
-                                      and pd.language_id = :language_id
-                                     ');
+    return $this->memo('name:' . $id . ':' . $this->language->getId(), function () use ($id): string {
+      $Qproducts = $this->db->prepare('select pd.products_name
+                                        from :table_products p,
+                                             :table_products_description pd
+                                        where p.products_status = 1
+                                        and p.products_id = :products_id
+                                        and pd.products_id = p.products_id
+                                        and pd.language_id = :language_id
+                                       ');
 
-    $Qproducts->bindInt(':products_id', $id);
-    $Qproducts->bindInt(':language_id', $this->language->getId());
+      $Qproducts->bindInt(':products_id', $id);
+      $Qproducts->bindInt(':language_id', $this->language->getId());
 
-    $Qproducts->execute();
+      $Qproducts->execute();
 
-    $products_name = HTML::output($Qproducts->value('products_name'));
-
-    return $products_name;
+      return HTML::output($Qproducts->value('products_name'));
+    });
   }
 
   /**
@@ -500,16 +560,7 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_image'], $array);
-
-    $products_image = HTML::outputProtected($Qproducts->value('products_image'));
-
-    return $products_image;
+    return $this->productColumn('products_image', (int)$id);
   }
 
   /**
@@ -537,16 +588,7 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_image_medium'], $array);
-
-    $products_image_medium = HTML::outputProtected($Qproducts->value('products_image_medium'));
-
-    return $products_image_medium;
+    return $this->productColumn('products_image_medium', (int)$id);
   }
 
   /**
@@ -574,16 +616,7 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_date_available'], $array);
-
-    $products_date_available = HTML::outputProtected($Qproducts->value('products_date_available'));
-
-    return $products_date_available;
+    return $this->productColumn('products_date_available', (int)$id);
   }
 
   /**
@@ -593,16 +626,7 @@ class ProductsCommon extends Prod
    */
   public function getProductsEAN(): string
   {
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$this->getID()
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_ean'], $array);
-
-    $products_ean = HTML::outputProtected($Qproducts->value('products_ean'));
-
-    return $products_ean;
+    return $this->productColumn('products_ean', (int)$this->getID());
   }
 
   /**
@@ -616,16 +640,7 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_sku'], $array);
-
-    $products_sku = HTML::outputProtected($Qproducts->value('products_sku'));
-
-    return $products_sku;
+    return $this->productColumn('products_sku', (int)$id);
   }
 
   /**
@@ -635,16 +650,7 @@ class ProductsCommon extends Prod
    */
   public function getProductsJAN( int|null $id = null): string
   {
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_jan'], $array);
-
-    $products_jan = HTML::outputProtected($Qproducts->value('products_jan'));
-
-    return $products_jan;
+    return $this->productColumn('products_jan', (int)$id);
   }
 
   /**
@@ -654,16 +660,7 @@ class ProductsCommon extends Prod
    */
   public function getProductsISBN( int|null $id = null): string
   {
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_isbn'], $array);
-
-    $products_isbn = HTML::outputProtected($Qproducts->value('products_isbn'));
-
-    return $products_isbn;
+    return $this->productColumn('products_isbn', (int)$id);
   }
 
   /**
@@ -674,16 +671,7 @@ class ProductsCommon extends Prod
    */
   public function getProductsMNP( int|null $id = null): string
   {
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_mpn'], $array);
-
-    $products_mpn = HTML::outputProtected($Qproducts->value('products_mpn'));
-
-    return $products_mpn;
+    return $this->productColumn('products_mpn', (int)$id);
   }
 
   /**
@@ -693,16 +681,7 @@ class ProductsCommon extends Prod
    */
   public function getProductsUPC( int|null $id = null): string
   {
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_upc'], $array);
-
-    $products_upc = HTML::outputProtected($Qproducts->value('products_upc'));
-
-    return $products_upc;
+    return $this->productColumn('products_upc', (int)$id);
   }
 
   /**
@@ -711,16 +690,7 @@ class ProductsCommon extends Prod
    */
   public function getProductsBarCode(): string
   {
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$this->getID()
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_barcode'], $array);
-
-    $products_barcode = HTML::outputProtected($Qproducts->value('products_barcode'));
-
-    return $products_barcode;
+    return $this->productColumn('products_barcode', (int)$this->getID());
   }
 
   /**
@@ -735,21 +705,23 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $Qproducts = $this->db->prepare('select pd.products_description
-                                        from :table_products p,
-                                             :table_products_description pd
-                                        where p.products_status = 1
-                                        and p.products_id = :products_id
-                                        and pd.products_id = p.products_id
-                                        and pd.language_id = :language_id
-                                       ');
+    return $this->memo('description:' . $id . ':' . $this->language->getId(), function () use ($id): string {
+      $Qproducts = $this->db->prepare('select pd.products_description
+                                          from :table_products p,
+                                               :table_products_description pd
+                                          where p.products_status = 1
+                                          and p.products_id = :products_id
+                                          and pd.products_id = p.products_id
+                                          and pd.language_id = :language_id
+                                         ');
 
-    $Qproducts->bindInt(':products_id', $id);
-    $Qproducts->bindInt(':language_id', $this->language->getId());
+      $Qproducts->bindInt(':products_id', $id);
+      $Qproducts->bindInt(':language_id', $this->language->getId());
 
-    $Qproducts->execute();
+      $Qproducts->execute();
 
-    return $Qproducts->value('products_description');
+      return $Qproducts->value('products_description');
+    });
   }
 
   /**
@@ -769,21 +741,24 @@ class ProductsCommon extends Prod
     $delete_word = HTML::sanitize($delete_word);
     $products_short_description_number = HTML::sanitize($products_short_description_number);
 
-    $Qproducts = $this->db->prepare('select pd.products_description_summary
-                                        from :table_products p,
-                                             :table_products_description pd
-                                        where p.products_status = 1
-                                        and p.products_id = :products_id
-                                        and pd.products_id = p.products_id
-                                        and pd.language_id = :language_id
-                                       ');
+    // Only the read is memoized: the trimming below depends on the caller's two extra arguments.
+    $description_summary = $this->memo('summary:' . $id . ':' . $this->language->getId(), function () use ($id): string {
+      $Qproducts = $this->db->prepare('select pd.products_description_summary
+                                          from :table_products p,
+                                               :table_products_description pd
+                                          where p.products_status = 1
+                                          and p.products_id = :products_id
+                                          and pd.products_id = p.products_id
+                                          and pd.language_id = :language_id
+                                         ');
 
-    $Qproducts->bindInt(':products_id', $id);
-    $Qproducts->bindInt(':language_id', $this->language->getId());
+      $Qproducts->bindInt(':products_id', $id);
+      $Qproducts->bindInt(':language_id', $this->language->getId());
 
-    $Qproducts->execute();
+      $Qproducts->execute();
 
-    $description_summary = $Qproducts->value('products_description_summary');
+      return (string)$Qproducts->value('products_description_summary');
+    });
 
     if ($products_short_description_number > 0) {
       $short_description = substr($description_summary, (int)$delete_word, (int)$products_short_description_number);
@@ -853,31 +828,33 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $Qproducts = $this->db->prepare('select manufacturers_id
-                                        from :table_products
-                                        where  products_id = :products_id
-                                        limit 1
-                                       ');
+    return $this->memo('manufacturer:' . $id, function () use ($id, $manufacturer_search) {
+      $Qproducts = $this->db->prepare('select manufacturers_id
+                                          from :table_products
+                                          where  products_id = :products_id
+                                          limit 1
+                                         ');
 
-    $Qproducts->bindInt(':products_id', $id);
-    $Qproducts->execute();
+      $Qproducts->bindInt(':products_id', $id);
+      $Qproducts->execute();
 
-    $Qmanufacturer = $this->db->prepare('select m.manufacturers_name
-                                          from :table_manufacturers m,
-                                               :table_products p
-                                          where m.manufacturers_id = :manufacturers_id
-                                          and p.products_id = :products_id
-                                        ');
-    $Qmanufacturer->bindInt(':manufacturers_id', $Qproducts->valueInt('manufacturers_id'));
-    $Qmanufacturer->bindInt(':products_id', $id);
+      $Qmanufacturer = $this->db->prepare('select m.manufacturers_name
+                                            from :table_manufacturers m,
+                                                 :table_products p
+                                            where m.manufacturers_id = :manufacturers_id
+                                            and p.products_id = :products_id
+                                          ');
+      $Qmanufacturer->bindInt(':manufacturers_id', $Qproducts->valueInt('manufacturers_id'));
+      $Qmanufacturer->bindInt(':products_id', $id);
 
-    $Qmanufacturer->execute();
+      $Qmanufacturer->execute();
 
-    if ($Qmanufacturer->fetch()) {
-      $manufacturer_search = $Qmanufacturer->value('manufacturers_name');
-    }
+      if ($Qmanufacturer->fetch()) {
+        $manufacturer_search = $Qmanufacturer->value('manufacturers_name');
+      }
 
-    return $manufacturer_search;
+      return $manufacturer_search;
+    });
   }
 
   /**
@@ -947,16 +924,15 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
+    // Not productColumn(): this one answers the raw column, not an output-protected one.
+    return $this->memo('only_shop:' . $id, function () use ($id): string {
+      $Qproducts = $this->db->get('products', ['products_only_shop'], [
+        'products_status' => 1,
+        'products_id' => (int)$id
+      ]);
 
-    $Qproducts = $this->db->get('products', ['products_only_shop'], $array);
-
-    $products_only_shop = $Qproducts->value('products_only_shop');
-
-    return $products_only_shop;
+      return $Qproducts->value('products_only_shop');
+    });
   }
 
   /**
@@ -971,16 +947,15 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
+    // Not productColumn(): this one answers the raw column, not an output-protected one.
+    return $this->memo('only_online:' . $id, function () use ($id): string {
+      $Qproducts = $this->db->get('products', ['products_only_online'], [
+        'products_status' => 1,
+        'products_id' => (int)$id
+      ]);
 
-    $Qproducts = $this->db->get('products', ['products_only_online'], $array);
-
-    $products_only_online = $Qproducts->value('products_only_online');
-
-    return $products_only_online;
+      return $Qproducts->value('products_only_online');
+    });
   }
 
   /**
@@ -995,16 +970,7 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_packaging'], $array);
-
-    $products_packaging = HTML::outputProtected($Qproducts->value('products_packaging'));
-
-    return $products_packaging;
+    return $this->productColumn('products_packaging', (int)$id);
   }
 
   /**
@@ -1072,20 +1038,22 @@ class ProductsCommon extends Prod
   {
     $language_id = $this->language->getId();
 
-    $Qproducts = $this->db->prepare('select pd.products_shipping_delay
-                                        from :table_products p,
-                                             :table_products_description pd
-                                        where p.products_status = 1
-                                        and p.products_id = :products_id
-                                        and pd.products_id = p.products_id
-                                        and pd.language_id = :language_id
-                                       ');
+    $products_shipping_delay = $this->memo('shipping_delay:' . $this->getID() . ':' . $language_id, function () use ($language_id): string {
+      $Qproducts = $this->db->prepare('select pd.products_shipping_delay
+                                          from :table_products p,
+                                               :table_products_description pd
+                                          where p.products_status = 1
+                                          and p.products_id = :products_id
+                                          and pd.products_id = p.products_id
+                                          and pd.language_id = :language_id
+                                         ');
 
-    $Qproducts->bindInt(':products_id', $this->getID());
-    $Qproducts->bindInt(':language_id', (int)$language_id);
-    $Qproducts->execute();
+      $Qproducts->bindInt(':products_id', $this->getID());
+      $Qproducts->bindInt(':language_id', (int)$language_id);
+      $Qproducts->execute();
 
-    $products_shipping_delay = $Qproducts->value('products_shipping_delay');
+      return $Qproducts->value('products_shipping_delay');
+    });
 
     if (empty($products['products_shipping_delay'])) {
       $products_shipping_delay = HTML::outputProtected(\defined('DISPLAY_SHIPPING_DELAY') ? DISPLAY_SHIPPING_DELAY : '');
@@ -1380,6 +1348,17 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
+    return $this->memo('model:' . $id . ':' . $this->customer->getCustomersGroupID(), fn(): string => $this->readProductsModel($id));
+  }
+
+  /**
+   * The uncached read behind {@see setProductsModel()}.
+   *
+   * @param int|null $id The product to read.
+   * @return string The model, group-specific when the customer belongs to one.
+   */
+  private function readProductsModel( int|null $id): string
+  {
     if ($this->customer->getCustomersGroupID() != 0) {
       $Qproducts = $this->db->prepare('select g.products_model_group
                                           from :table_products p left join :table_products_groups g on p.products_id = g.products_id
@@ -1626,10 +1605,14 @@ class ProductsCommon extends Prod
    */
   private function resolvePublicMinimumQuantity(int $id): int
   {
-    $QproductMinOrder = $this->db->get('products', ['products_min_qty_order'], ['products_id' => $id]);
+    $min_qty_order = $this->memo('min_qty_order:' . $id, function () use ($id): int {
+      $QproductMinOrder = $this->db->get('products', ['products_min_qty_order'], ['products_id' => $id]);
 
-    if ($QproductMinOrder->valueInt('products_min_qty_order') > 0.1) {
       return $QproductMinOrder->valueInt('products_min_qty_order');
+    });
+
+    if ($min_qty_order > 0.1) {
+      return $min_qty_order;
     }
 
     $max_min_in_cart = \defined('MAX_MIN_IN_CART') ? (int)MAX_MIN_IN_CART : 0;
@@ -2035,6 +2018,17 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
+    return $this->memo('price:' . $id . ':' . $this->customer->getCustomersGroupID(), fn() => $this->readPrice($id));
+  }
+
+  /**
+   * The uncached read behind {@see setPrice()}.
+   *
+   * @param mixed $id The product to price.
+   * @return float The price after group pricing and dynamic rules.
+   */
+  private function readPrice($id)
+  {
     $Qproduct = $this->db->prepare('select products_id,
                                              products_price
                                        from :table_products

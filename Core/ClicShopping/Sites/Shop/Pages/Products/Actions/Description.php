@@ -47,7 +47,6 @@ class Description extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $products_name_url = $CLICSHOPPING_ProductsFunctionTemplate->getProductsUrlRewrited()->getProductNameUrl($id);
 
-    $CLICSHOPPING_Breadcrumb->add(CLICSHOPPING::getDef('navbar_title'), $products_name_url);
     $CLICSHOPPING_Breadcrumb->add($CLICSHOPPING_ProductsCommon->getProductsName(), $products_name_url);
   }
 }

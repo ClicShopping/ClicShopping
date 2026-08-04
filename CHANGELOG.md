@@ -6,6 +6,7 @@ version4.33
 - Allow to manage 3 taxes (europe, CA, US for example) 
 - Order total calculation improved
 - URL canonical improvement (front office) for SEO
+- Catalog speed optimization queries optimization
 - Improvement :Page resolution now requires the exact case of the page code, so a category slug can no longer serve another page on a case-insensitive filesystem (macOS, Windows)
 - AI
   - Add distinction between Agents and Actors
