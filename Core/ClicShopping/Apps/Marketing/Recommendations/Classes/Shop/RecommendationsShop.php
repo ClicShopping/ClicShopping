@@ -401,7 +401,6 @@ class RecommendationsShop
                   and (pr.customers_group_id = :customers_group_id or pr.customers_group_id = 99)
                   and p.products_id = p2c.products_id
                   and p2c.categories_id = c.categories_id
-                  and c.virtual_categories = 0
                   and c.status = 1
                   and pr.status = 1
                   group by pr.products_id
@@ -422,7 +421,6 @@ class RecommendationsShop
                     and (pr.customers_group_id = 0 or pr.customers_group_id = 99)
                     and p.products_id = p2c.products_id
                     and p2c.categories_id = c.categories_id
-                    and c.virtual_categories = 0
                     and c.status = 1
                     and pr.status = 1
                     group by pr.products_id

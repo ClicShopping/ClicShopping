@@ -107,7 +107,6 @@ CREATE TABLE :table_categories (
   sort_order int(3),
   date_added datetime,
   last_modified datetime,
-  virtual_categories tinyint(1) default(0) NOT NULL,
   status tinyint(0) default(0) NOT NULL,
   customers_group_id int default (99) not null,
   PRIMARY KEY (categories_id),

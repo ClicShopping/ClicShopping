@@ -38,8 +38,7 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $insert_sql_data = [
       'parent_id' => (int)$parent_id,
-      'date_added' => 'now()',
-      'virtual_categories' => 0
+      'date_added' => 'now()'
     ];
 
     $sql_data_array = array_merge($sql_data_array, $insert_sql_data);

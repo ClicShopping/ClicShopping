@@ -346,7 +346,6 @@ class Category
                                         where c.parent_id = :parent_id
                                         and c.categories_id = cd.categories_id
                                         and cd.language_id = :language_id
-                                        and c.virtual_categories = 0
                                         and c.status = 1
                                         order by sort_order,
                                                  cd.categories_name

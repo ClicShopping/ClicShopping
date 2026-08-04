@@ -118,7 +118,6 @@ class fp_new_products
                                                       and g.products_group_view = 1
                                                       and p.products_status = 1
                                                       and p.products_archive = 0
-                                                      and c.virtual_categories = 0
                                                       and c.status = 1
                                                       group by p.products_id
                                                       order by ' . $order_by . '
@@ -142,7 +141,6 @@ class fp_new_products
                                                     and p.products_archive = 0
                                                     and p.products_id = p2c.products_id
                                                     and p2c.categories_id = c.categories_id
-                                                    and c.virtual_categories = 0
                                                     and c.status = 1
                                                     group by p.products_id
                                                     order by ' . $order_by . '
@@ -163,7 +161,6 @@ class fp_new_products
                                                     and p.products_status = 1
                                                     and p.products_view = 1
                                                     and p.products_archive = 0
-                                                    and c.virtual_categories = 0
                                                     and c.status = 1
                                                     group by p.products_id
                                                     order by ' . $order_by . '

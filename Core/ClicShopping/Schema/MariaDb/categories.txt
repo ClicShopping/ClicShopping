@@ -4,14 +4,12 @@ parent_id int unsigned default(0) not_null comment(FK to categories table - pare
 sort_order int(3) comment(Display order for sorting categories)
 date_added datetime comment(Timestamp when category was created)
 last_modified datetime comment(Timestamp of last modification)
-virtual_categories tinyint(1) default(0) not_null comment(Flag indicating if category is virtual - 0: physical, 1: virtual)
 status tinyint(1) default(1) not_null comment(Category status - 0: inactive, 1: active)
 customers_group_id int(11) default(99) not_null comment(FK to customers_groups table - customer group with access to this category, 99: all groups)
 
 --
 primary categories_id
 idx_categories_parent_id parent_id
-idx_categories_status_virtual virtual_categories
 idx_customers_group_id customers_group_id
 
 ##

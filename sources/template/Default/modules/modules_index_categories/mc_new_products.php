@@ -126,7 +126,6 @@ class mc_new_products
                                                       and g.products_group_view = 1
                                                       and p.products_status = 1
                                                       and p.products_archive = 0
-                                                      and c.virtual_categories = 0
                                                       group by p.products_id
                                                       order by ' . $order_by . '
                                                       limit :products_limit

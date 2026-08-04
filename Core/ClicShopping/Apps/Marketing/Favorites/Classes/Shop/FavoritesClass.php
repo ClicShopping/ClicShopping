@@ -177,7 +177,6 @@ class FavoritesClass
                             and (ph.customers_group_id = :customers_group_id or ph.customers_group_id = 99)
                             and p.products_id = p2c.products_id
                             and p2c.categories_id = c.categories_id
-                            and c.virtual_categories = 0
                             and c.status = 1                          
                    ';
     } else {
@@ -195,7 +194,6 @@ class FavoritesClass
                     and (ph.customers_group_id = 0 or ph.customers_group_id = 99)
                     and p.products_id = p2c.products_id
                     and p2c.categories_id = c.categories_id
-                    and c.virtual_categories = 0
                     and c.status = 1
                    ';
     }

@@ -512,7 +512,6 @@ class Search
     // Conditions obligatoires
     $where .= ' AND p.products_status = 1
                 AND p.products_archive = 0
-                AND c.virtual_categories = 0
                 AND c.status = 1
                 AND p.products_id = pd.products_id
                 AND p.products_id = p2c.products_id

@@ -326,7 +326,6 @@ class Products
                                      LEFT JOIN :table_categories_description cd ON c.categories_id = cd.categories_id
                                      WHERE ptc.products_id = :product_id
                                      AND cd.language_id = :language_id
-                                     AND c.virtual_categories = 0
                                      AND c.status = 1
                                     ");
 
@@ -366,7 +365,6 @@ class Products
             LEFT JOIN :table_categories_description cd ON c.categories_id = cd.categories_id
             WHERE cd.language_id = :language_id
             AND c.status = 1
-            AND c.virtual_categories = 0
             ";
 
     $params = [':language_id' => (int)$this->lang->getId()];
@@ -595,7 +593,6 @@ class Products
                   AND p.products_archive = 0
                   AND p.products_view = 1
                   AND p.orders_view = 1
-                  AND c.virtual_categories = 0
                   AND c.status = 1
                   AND cd.language_id = :language_id
                   AND pd.language_id = :language_id
@@ -897,7 +894,6 @@ class Products
             AND p.products_archive = 0
             AND p.products_view = 1
             AND p.orders_view = 1
-            AND c.virtual_categories = 0
             AND c.status = 1
             AND cd.language_id = :language_id";
 

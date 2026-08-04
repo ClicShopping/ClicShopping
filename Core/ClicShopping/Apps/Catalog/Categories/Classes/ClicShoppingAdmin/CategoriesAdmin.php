@@ -68,8 +68,7 @@ class CategoriesAdmin
                                                                      c.sort_order,
                                                                      c.date_added,
                                                                      c.last_modified ,
-                                                                     c.status,
-                                                                     c.virtual_categories
+                                                                     c.status
                                           from :table_categories c,
                                                :table_categories_description cd
                                           where c.categories_id = cd.categories_id
@@ -91,8 +90,7 @@ class CategoriesAdmin
                                                                      c.sort_order,
                                                                      c.date_added,
                                                                      c.last_modified,
-                                                                     c.status,
-                                                                     c.virtual_categories
+                                                                     c.status
                                         from :table_categories c,
                                              :table_categories_description cd
                                         where c.parent_id = :parent_id
