@@ -155,6 +155,18 @@ class UrlCanonicalizer
   }
 
   /**
+   * The keys whose value changes how a resource is displayed without designating another one.
+   * Read by the modules that must decide what a URL carrying one deserves — the SEO NoRobotIndex
+   * header tag derives its noindex triggers from here rather than from a list typed by hand.
+   *
+   * @return array The presentation parameters, in declaration order.
+   */
+  public static function getPresentationParameters(): array
+  {
+    return self::PRESENTATION_PARAMETERS;
+  }
+
+  /**
    * Enforces the strict contract for the current request. Returns without doing anything
    * whenever the request is outside the SEO perimeter — the safe default is always to serve.
    *

@@ -12,7 +12,7 @@ use \ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\Ad
 // The McpMonitor class is no longer needed in this script.
 // use ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin\McpMonitor;
 
-define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/');
+define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/Core/ClicShopping/');
 
 require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
 spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');

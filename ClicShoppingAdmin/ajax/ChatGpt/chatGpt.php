@@ -30,7 +30,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 // ============================================
 // INITIALIZATION
 // ============================================
-define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/');
+define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/Core/ClicShopping/');
 
 require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
 spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');

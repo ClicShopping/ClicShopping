@@ -1,26 +1,30 @@
 # Rules for ClicShopping (https://www.clicshopping.org)
 User-agent: *
 
-# Block pages with no unique content
+# Block pages with no unique content.
+# Page identifiers are CASE SENSITIVE and must match Sites/Shop/Pages/ byte for byte.
 Disallow: /Account/CreatePro
 Disallow: /Account/Create
 Disallow: /Account/LogIn
-Disallow: /Account/logoff
+Disallow: /Account/LogOff
 Disallow: /Account/PasswordForgotten
 Disallow: /Search/AdvancedSearch
 Disallow: /Search/Q
-Disallow: /Infos/Cookies
-Disallow: /Infos/SSLCheck
+Disallow: /Info/Cookies
+Disallow: /Info/SSLcheck
 Disallow: /Cart
 
-# Block faceted pages and parameterized URLs
-Disallow: /*?page=
-Disallow: /*?sort=
-Disallow: /*currency=
+# Faceted URLs are handled by the meta robots tag, NOT here.
+# Under SEO PRO a facet is a PATH SEGMENT (/page-1/sort-1a), never a query string, so the
+# `Disallow: /*?sort=` family that stood here matched nothing. Do not translate them into path
+# patterns either: a disallowed URL is never fetched, so the crawler would never read the
+# `noindex` the NoRobotIndex header tag module serves on it. Blocking here would keep those
+# URLs indexable.
 
 #ai
 Content-Signal: ai-train=no, search=yes, ai-input=no
 
 
-# Sitemap URL
-Sitemap: https://demo.clicshopping.org/index.php?Sitemap&GoogleSitemapIndex
+# Sitemap URL — REPLACE the host with your own shop domain before going live.
+# The SEO PRO spelling /Sitemap redirects; the index is served by the query-string form.
+Sitemap: https://www.example.com/index.php?Sitemap&GoogleSitemapIndex

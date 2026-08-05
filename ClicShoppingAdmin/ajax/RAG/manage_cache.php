@@ -11,7 +11,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
-define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/');
+define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/Core/ClicShopping/');
 
 require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
 spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');

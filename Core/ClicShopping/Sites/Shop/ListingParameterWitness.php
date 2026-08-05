@@ -71,6 +71,18 @@ final class ListingParameterWitness
   }
 
   /**
+   * The parameters this class can answer for. A caller reading a value for any OTHER parameter
+   * must go to $_GET itself — and must not use $_GET as a fallback for one of THESE, because a
+   * listing rewrites them after the snapshot and $_GET then reports a value nobody requested.
+   *
+   * @return array The witnessable parameters.
+   */
+  public static function getWitnessableParameters(): array
+  {
+    return self::WITNESSABLE;
+  }
+
+  /**
    * @return string|null The value the request carried for this parameter, null when it carried none.
    */
   public static function requested(string $parameter): ?string

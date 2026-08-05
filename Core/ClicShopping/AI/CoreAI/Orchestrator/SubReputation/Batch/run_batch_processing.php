@@ -21,7 +21,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\Batch\BatchReputationProce
 use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\Batch\BatchCacheWarmer;
 
 define('PAGE_PARSE_START_TIME', microtime());
-define('CLICSHOPPING_BASE_DIR', __DIR__ . '/../../../../../../');
+define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 7) . '/Core/ClicShopping/');
 
 require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
 spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');

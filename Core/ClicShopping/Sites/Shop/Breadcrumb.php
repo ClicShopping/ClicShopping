@@ -22,7 +22,7 @@ class Breadcrumb implements \Iterator
   private array $_path = [];
   private string $_separator = ' &raquo; ';
   private $rewriteUrl;
-  private array $_pathArray;
+  private array $_pathArray = [];
 
   /**
    * Resets the internal path array to an empty state.
@@ -32,6 +32,7 @@ class Breadcrumb implements \Iterator
   public function reset(): void
   {
     $this->_path = [];
+    $this->_pathArray = [];
   }
 
   /**
@@ -44,13 +45,16 @@ class Breadcrumb implements \Iterator
 
   public function add(string $title, string $link = ''): void
   {
+    $displayed = $title;
+
     if (!empty($link)) {
-      $title = '<span class="breadcrumb-item breadcrumbCustomize">' . HTML::link(HTML::output($link), $title) . '</span>';
+      $displayed = '<span class="breadcrumb-item breadcrumbCustomize">' . HTML::link(HTML::output($link), $title) . '</span>';
     }
 
-    $this->_path[] = $title;
+    $this->_path[] = $displayed;
+    // Raw values: the JSON-LD consumer escapes for JSON, not for HTML
     $this->_pathArray[] = [
-      'link' => HTML::outputProtected($link),
+      'link' => trim($link),
       'title' => $title
     ];
   }
@@ -67,12 +71,21 @@ class Breadcrumb implements \Iterator
     $array = $this->_pathArray;
 
     foreach ($array as $k => $v) {
-      $itemlistelement[] = [
+      // Raw title: strip_tags() would eat a legitimate "<10 EUR" up to the end of the string
+      $element = [
         '@type' => 'ListItem',
-        'position' => $k,
-        'item' => array('@id' => $v['link'],
-          'name' => strip_tags($v['title']))
+        'position' => $k + 1 // schema.org positions are 1-based
       ];
+
+      // A linkless crumb carries its name alone: an empty "@id" would be an unidentified node
+      if ($v['link'] === '') {
+        $element['name'] = $v['title'];
+      } else {
+        $element['item'] = array('@id' => $v['link'],
+          'name' => $v['title']);
+      }
+
+      $itemlistelement[] = $element;
     }
 
     $schema_breadcrumb = ['@context' => 'https://schema.org',
@@ -80,7 +93,8 @@ class Breadcrumb implements \Iterator
       'itemListElement' => $itemlistelement
     ];
 
-    $data = json_encode($schema_breadcrumb);
+    // HEX flags keep a "</script>" inside a title from closing the block
+    $data = json_encode($schema_breadcrumb, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
     $data = '<script type="application/ld+json">' . $data . '</script>';
 
