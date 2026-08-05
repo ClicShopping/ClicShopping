@@ -388,6 +388,6 @@ $ai->generate('...');
 
 ## 8. References
 - Architecture core, controllers, routing: `ARCHITECTURE.md`
-- Security and escape: `SECURITY.md` ==> create
+- Security and escape: `SECURITY.md`
 - Wiki front office display template: https://github.com/ClicShopping/ClicShopping/wiki/How-to-display-information-inside-a-template
 - DeepWiki templates: https://deepwiki.com/ClicShopping/ClicShopping/8-template-and-module-system

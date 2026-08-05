@@ -19,7 +19,8 @@
     },
     "HeaderTags": {
       "Index": "Module\\HeaderTags\\Index",
-      "AdvancedSearchResult": "Module\\HeaderTags\\AdvancedSearchResult"
+      "AdvancedSearchResult": "Module\\HeaderTags\\AdvancedSearchResult",
+      "NoRobotIndex": "Module\\HeaderTags\\NoRobotIndex"
     },
     "Hooks": {
       "ClicShoppingAdmin/Langues": {

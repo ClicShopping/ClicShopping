@@ -76,8 +76,8 @@ Rules:
 
 ## 3. OrchestratorAgent — Specialized Components
 
-Following a single-responsibility refactoring (2026-04-30), OrchestratorAgent
-delegates to four specialized components:
+OrchestratorAgent delegates to four specialized components; keep it a delegator, never grow a
+fifth responsibility inside it:
 
 | Component              | Location                                           | Responsibility                                                        |
 |------------------------|----------------------------------------------------|-----------------------------------------------------------------------|
@@ -409,5 +409,5 @@ FALLBACK ONLY: Pattern-based detection
 | AI concepts, RAG, LLM, memory, embeddings | `AI_SYSTEM.md`                                                                 |
 | Framework architecture, hooks, registry   | `ARCHITECTURE.md`                                                              |
 | Database, SQL, vector tables              | `DATABASE.md`                                                                  |
-| Security, guardrails, GDPR                | `SECURITY.md`                                                                  |
+| AI guardrails, prompt injection, self-optim gate | `AI_SECURITY.md`                                                         |
 | DeepWiki AI                               | https://deepwiki.com/ClicShopping/ClicShopping/5-ai-integration-and-rag-system |

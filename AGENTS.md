@@ -20,17 +20,36 @@ designed for B2B, B2C, and B2B-B2C businesses, enhanced with advanced Agentic an
 
 ## Reference Documentation
 
-All technical documentation lives in the `Agents/` directory.
-Six files — all must be checked for the Self-Correction Protocol.
+The `Agents/` directory holds **instructions**, not documentation: imperative rules, no history, no
+measurements, no dates. Narrative — how a defect was found, what was measured, what a lot changed —
+belongs to `docs/` and to `BACKLOG_ARCHIVE.md`. See "Documentation Synchronization" below.
 
-| File                        | Content                                                                                                    |
-|-----------------------------|------------------------------------------------------------------------------------------------------------|
-| `Agents/ARCHITECTURE.md`    | Bootstrap, routing, Registry, hooks, namespaces, Custom/, cache                                            |
-| `Agents/AI_SYSTEM.md`       | Agents, RAG, LLM providers, reasoning, memory, embeddings, MCP                                             |
-| `Agents/AI_ARCHITECTURE.md` | AI directory structure, OrchestratorAgent components, domain-agnostic patterns                             |
-| `Agents/DATABASE.md`        | MariaDB 11.7+, SQL schema, SQL file routing, migrations                                                    |
-| `Agents/SECURITY.md`        | 10 security layers, AI guardrails, rate limiting, GDPR                                                     |
-| `Agents/TEMPLATES.md`       | Front-office vs back-office rendering, helpers, SEO, i18n                                                  |
+Seven files — all must be checked for the Self-Correction Protocol.
+
+| File                                 | Content                                                                                                    |
+|--------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `Agents/ARCHITECTURE.md`             | Bootstrap, routing, Registry, hooks, namespaces, Custom/, cache                                            |
+| `Agents/AI_SYSTEM.md`                | Agents, RAG, LLM providers, reasoning, memory, embeddings, MCP                                             |
+| `Agents/AI_ARCHITECTURE.md`          | AI directory structure, OrchestratorAgent components, domain-agnostic patterns                             |
+| `Agents/DATABASE.md`                 | MariaDB 11.7+, SQL schema, SQL file routing, migrations                                                    |
+| `Agents/SECURITY.md`                 | **Platform** security: escaping, CSRF, cryptography, rate limiting, authorisation, GDPR                    |
+| `Agents/AI_SECURITY.md`              | **AI framework** security: guardrails, prompt injection, LLM response evaluation, self-optimization gate   |
+| `Agents/TEMPLATES.md`                | Front-office vs back-office rendering, helpers, SEO, i18n                                                  |
+
+Descriptive material is NOT in `Agents/` — it lives in `docs/`, see its index `docs/README.md`:
+
+| File                                       | Content                                                                     |
+|--------------------------------------------|-----------------------------------------------------------------------------|
+| `docs/benchmarks/AI_BENCHMARK.md`          | Quality scorecard of `Core/ClicShopping/AI/` — re-assess after every major refactor |
+| `docs/architecture/AI_ARCHITECTURE_DIAGRAMS.md` | AI architecture diagrams                                               |
+| `docs/architecture/<NAME>-notes.md`        | The reasoning behind the rules of `Agents/<NAME>.md`                         |
+
+The two security files have **separate scopes and never substitute for each other**: `SECURITY.md`
+covers everything outside `Core/ClicShopping/AI/`, `AI_SECURITY.md` covers that directory only. A
+query cleared by the AI guardrails still owes every platform check.
+
+> Both are deliberately incomplete: each ends with a "To be covered" section listing its known
+> gaps. Extend them as ground is covered; never invent a rule to fill one.
 
 ---
 
@@ -38,15 +57,17 @@ Six files — all must be checked for the Self-Correction Protocol.
 
 ```
 BEFORE ANY CODE GENERATION:
-1. Constraint Check: compare your plan against all PROHIBITED sections
-   in AGENTS.md, DATABASE.md (PARADIGM SHIFT), SECURITY.md, and ARCHITECTURE.md.
+1. Constraint Check: compare your plan against all PROHIBITED sections in AGENTS.md,
+   DATABASE.md (PARADIGM SHIFT), ARCHITECTURE.md, and the security file matching your
+   scope — SECURITY.md, or AI_SECURITY.md inside Core/ClicShopping/AI/.
    Auto-correct your plan if a violation is found before writing any code.
 2. Read existing files in the target scope — never assume structure.
 3. Check hooks before any other approach (see Scalability Priority Order below).
 
 BEFORE DELIVERY:
 1. Self-Correction Protocol: verify output against the Absolute Prohibitions list
-   in ALL SEVEN .md files. If a conflict is found, prioritize AGENTS.md and SECURITY.md.
+   in ALL SEVEN Agents/*.md files. If a conflict is found, prioritize AGENTS.md and the
+   security file of your scope.
 2. Documentation Sync: if the change alters structure, behavior, file/class locations,
    routes or constants described in any .md, UPDATE those .md to match reality
    (see "Documentation Synchronization" below). Outdated docs = bug.

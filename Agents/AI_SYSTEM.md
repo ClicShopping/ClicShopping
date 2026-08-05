@@ -332,6 +332,6 @@ Do not modify the MCP protocol without human coder agreement.
 | Directory structure, orchestrator, patterns | `AI_ARCHITECTURE.md`                                                           |
 | DB paradigm and code examples               | `DATABASE.md` §2                                                               |
 | Vector database and embeddings schema       | `DATABASE.md` §6                                                               |
-| AI security and guardrails                  | `SECURITY.md` §5                                                               |
+| AI security and guardrails                  | `AI_SECURITY.md`                                                               |
 | Framework architecture                      | `ARCHITECTURE.md`                                                              |
 | DeepWiki AI                                 | https://deepwiki.com/ClicShopping/ClicShopping/5-ai-integration-and-rag-system |

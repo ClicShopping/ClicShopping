@@ -245,6 +245,6 @@ These tables are managed by the security and monitoring layers — do not modify
 
 - Architecture framework: `ARCHITECTURE.md`
 - AI embedding pipeline: `AI_SYSTEM.md` §7
-- Security audit tables: `SECURITY.md` §5
+- Platform security rules: `SECURITY.md` — AI security tables and channels: `AI_SECURITY.md`
 - DeepWiki DB: https://deepwiki.com/ClicShopping/ClicShopping/2.2-database-schema-and-version-migrations
 - DB architecture: https://github.com/ClicShopping/ClicShopping/wiki/Tech-Database

@@ -2,7 +2,7 @@
 
 > Core architecture of the PHP framework.
 > Agent rules: `AGENTS.md` | AI concepts: `AI_SYSTEM.md` | AI directories: `AI_ARCHITECTURE.md`
-> DB: `DATABASE.md` | Security: `SECURITY.md` | Templates: `TEMPLATES.md`
+> DB: `DATABASE.md` | Security: `SECURITY.md` (AI: `AI_SECURITY.md`) | Templates: `TEMPLATES.md`
 
 ---
 
@@ -18,7 +18,8 @@ ARCHITECTURE.md    ← framework core: bootstrap, hooks, templates, namespaces
 AI_SYSTEM.md       ← agents, RAG, LLM providers, memory, embeddings, MCP
 AI_ARCHITECTURE.md ← AI directory structure, orchestrator components, patterns
 DATABASE.md        ← MariaDB, SQL schema, routing, migrations
-SECURITY.md        ← 10 security layers, guardrails, GDPR
+SECURITY.md        ← platform: escaping, CSRF, crypto, rate limiting, GDPR
+AI_SECURITY.md     ← Core/ClicShopping/AI/ only: guardrails, prompt injection
 TEMPLATES.md       ← front-office vs back-office rendering, SEO, i18n
 ```
 
@@ -34,6 +35,7 @@ index.php
 → Site determination (Shop | ClicShoppingAdmin)
 → Core services: Db, Session, Language
 → setPage() — controller resolution via URL parameter
+→ UrlCanonicalizer::enforce() — strict SEO PRO routing (301 / 404)
 → Controller execution (implements PagesInterface)
 ```
 
@@ -268,7 +270,8 @@ Four backends with automatic fallback:
 | AI system: agents, RAG, LLM, memory, embeddings | `AI_SYSTEM.md`                                                                 |
 | AI directory structure, orchestrator, patterns  | `AI_ARCHITECTURE.md`                                                           |
 | Database, SQL, embeddings schema                | `DATABASE.md`                                                                  |
-| Security, guardrails, GDPR                      | `SECURITY.md`                                                                  |
+| Platform security (escaping, CSRF, crypto, GDPR) | `SECURITY.md`                                                                 |
+| AI guardrails and prompt injection              | `AI_SECURITY.md`                                                              |
 | Templates, rendering, SEO, i18n                 | `TEMPLATES.md`                                                                 |
 | Official Wiki                                   | https://github.com/ClicShopping/ClicShopping/wiki                              |
 | DeepWiki                                        | https://deepwiki.com/ClicShopping/ClicShopping                                 |
