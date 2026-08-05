@@ -124,6 +124,18 @@ class Reviews extends HeaderTagsAbstract
         'date_added' => 'now()'
       ]
     );
+
+    $this->app->db->save('configuration', [
+        'configuration_title' => 'Please, indicate where the module must not be displayed',
+        'configuration_key' => 'MODULE_HEADER_TAGS_PRODUCT_REVIEWS_DISPLAY_PAGES',
+        'configuration_value' => 'all',
+        'configuration_description' => 'Select the pages where the module must not be displayed',
+        'configuration_group_id' => '6',
+        'sort_order' => '215',
+        'set_function' => 'clic_cfg_set_select_pages_list',
+        'date_added' => 'now()'
+      ]
+    );
   }
 
   /**
@@ -135,7 +147,8 @@ class Reviews extends HeaderTagsAbstract
   {
     return [
       'MODULE_HEADER_TAGS_PRODUCT_REVIEWS_STATUS',
-      'MODULE_HEADER_TAGS_PRODUCT_REVIEWS_SORT_ORDER'
+      'MODULE_HEADER_TAGS_PRODUCT_REVIEWS_SORT_ORDER',
+      'MODULE_HEADER_TAGS_PRODUCT_REVIEWS_DISPLAY_PAGES'
     ];
   }
 }

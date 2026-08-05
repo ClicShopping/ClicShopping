@@ -23,6 +23,7 @@ use ReflectionClass;
  * - $description: Description of the module's functionality.
  * - $sort_order: An optional integer to determine the order of execution.
  * - $enabled: A boolean indicating whether the module is enabled.
+ * - $pages: The page selection restricting where the module renders.
  *
  * Methods:
  * - init(): Abstract method for initializing module-specific logic.
@@ -42,6 +43,7 @@ abstract class HeaderTagsAbstract implements HeaderTagsInterface
   public $description;
   public int|null $sort_order = null;
   public bool $enabled = false;
+  public string $pages = '';
 
   private mixed $db;
 
@@ -65,6 +67,38 @@ abstract class HeaderTagsAbstract implements HeaderTagsInterface
     $this->db = Registry::get('Db');
 
     $this->init();
+
+    $this->pages = $this->resolveDisplayPages();
+  }
+
+  /**
+   * The `_DISPLAY_PAGES` key the module declares in keys(). Declaring it is the whole opt-in to
+   * the page gate: a module declaring none renders on every page, which is what every header tags
+   * module did before the setting existed.
+   *
+   * @return string The key, empty when the module offers no such setting.
+   */
+  public function displayPagesKey(): string
+  {
+    foreach ($this->keys() as $key) {
+      if (str_ends_with($key, '_DISPLAY_PAGES')) {
+        return $key;
+      }
+    }
+
+    return '';
+  }
+
+  /**
+   * Reads the page selection of the module.
+   *
+   * @return string The stored selection, empty when the module offers no such setting.
+   */
+  private function resolveDisplayPages(): string
+  {
+    $key = $this->displayPagesKey();
+
+    return $key !== '' && \defined($key) ? (string)\constant($key) : '';
   }
 
   /**

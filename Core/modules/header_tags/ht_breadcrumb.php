@@ -135,7 +135,8 @@ class ht_breadcrumb
    */
   public function keys()
   {
-    return ['MODULE_HEADER_TAGS_BREADCRUMB_STATUS',
+    return [
+      'MODULE_HEADER_TAGS_BREADCRUMB_STATUS',
       'MODULE_HEADER_TAGS_BREADCRUMB_SORT_ORDER'
     ];
   }

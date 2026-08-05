@@ -363,7 +363,9 @@ class Template
           try {
             $ad = new $class();
 
-            if ($ad->isEnabled()) {
+            // Same gate as buildBlocks(): a module without the setting always renders, otherwise
+            // its DISPLAY_PAGES selection decides. Ticking a page HIDES the module on it.
+            if ($ad->isEnabled() && (!isset($ad->pages) || static::modulePagesAllow((string)$ad->pages))) {
               echo $ad->getOutput();
             }
           } catch (\Throwable $e) {

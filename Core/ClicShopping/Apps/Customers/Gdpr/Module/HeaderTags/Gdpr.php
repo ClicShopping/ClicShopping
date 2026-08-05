@@ -266,6 +266,18 @@ class Gdpr extends HeaderTagsAbstract
         'date_added' => 'now()'
       ]
     );
+
+    $this->app->db->save('configuration', [
+        'configuration_title' => 'Please, indicate where the module must not be displayed',
+        'configuration_key' => 'MODULE_HEADER_TAGS_GDPR_DISPLAY_PAGES',
+        'configuration_value' => 'all',
+        'configuration_description' => 'Select the pages where the module must not be displayed',
+        'configuration_group_id' => '6',
+        'sort_order' => '1000',
+        'set_function' => 'clic_cfg_set_select_pages_list',
+        'date_added' => 'now()'
+      ]
+    );
   }
 
   /**
@@ -287,7 +299,8 @@ class Gdpr extends HeaderTagsAbstract
       'MODULE_HEADER_TAGS_GDPR_BUTTON_FONT_BACKGROUND_ACCEPT_COLOR',
       'MODULE_HEADER_TAGS_GDPR_BUTTON_BACKGROUND_REJECT_COLOR',
       'MODULE_HEADER_TAGS_GDPR_BUTTON_FONT_BACKGROUND_REJECT_COLOR',
-      'MODULE_HEADER_TAGS_GDPR_SORT_ORDER'
+      'MODULE_HEADER_TAGS_GDPR_SORT_ORDER',
+      'MODULE_HEADER_TAGS_GDPR_DISPLAY_PAGES'
     ];
   }
 }
