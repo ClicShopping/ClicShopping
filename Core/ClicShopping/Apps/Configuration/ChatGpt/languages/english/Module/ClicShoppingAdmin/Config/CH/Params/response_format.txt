@@ -1,6 +1,0 @@
-cfg_chatgpt_response_format_title = Response format
-cfg_chatgpt_response_format_description = Set text or json for response format
-
-cfg_chatgpt_response_format_text = text
-cfg_chatgpt_response_format_json = json
-

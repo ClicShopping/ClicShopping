@@ -1,3 +1,0 @@
-cfg_chatgpt_frequency_penality_title = Frequency penality
-cfg_chatgpt_frequency_penality_description = Please, insert number<br />
-Nombre entre -2.0 et 2.0. Les valeurs positives pénalisent les nouveaux jetons en fonction de leur fréquence existante dans le texte jusqu'à présent, réduisant ainsi la probabilité que le modèle répète exactement la même phrase.

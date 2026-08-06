@@ -173,8 +173,9 @@ class ar_reset_password
    */
   public function keys()
   {
-    return array('MODULE_ACTION_RECORDER_RESET_PASSWORD_MINUTES',
+    return [
+      'MODULE_ACTION_RECORDER_RESET_PASSWORD_MINUTES',
       'MODULE_ACTION_RECORDER_RESET_PASSWORD_ATTEMPTS'
-    );
+    ];
   }
 }

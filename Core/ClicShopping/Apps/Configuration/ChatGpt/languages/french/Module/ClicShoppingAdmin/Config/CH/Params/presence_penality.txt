@@ -1,3 +1,0 @@
-cfg_chatgpt_presence_penality_title = Présence de la penalité
-cfg_chatgpt_presence_penality_description = Veuillez insérer un nombre<br />
-Nombre entre -2.0 et 2.0. Les valeurs positives pénalisent les nouveaux jetons en fonction de leur fréquence existante dans le texte jusqu'à présent, diminuant ainsi la probabilité que le modèle répète la même phrase exactement.

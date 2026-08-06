@@ -65,7 +65,7 @@ class UIGenerator
                         <div class="card">
                             <div class="input-group">
                                 <!-- Container des messages avec ID pour le feedback -->
-                                <div class="chat-box-message text-start" id="chat-messages">
+                                <div class="chat-box-message text-start col-md-12" id="chat-messages">
                                     <div id="chatGpt-output" class="text-bg-light"></div>
                                     <div class="mt-1"></div>
                                     <div class="col-md-12">
@@ -209,8 +209,6 @@ class UIGenerator
  let modelGpt = "' . $model . '";
  let temperatureGpt = parseFloat("' . (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE . '");
  let top_p_gpt = parseFloat("' . (float)CLICSHOPPING_APP_CHATGPT_CH_TOP_P . '");
- let frequency_penalty_gpt = parseFloat("' . (float)CLICSHOPPING_APP_CHATGPT_CH_FREQUENCY_PENALITY . '");
- let presence_penalty_gpt = parseFloat("' . (float)CLICSHOPPING_APP_CHATGPT_CH_PRESENCE_PENALITY . '");
  let max_tokens_gpt = parseInt("' . (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN . '");
  let reasoning_effort_gpt = "' . CLICSHOPPING_APP_CHATGPT_CH_REASONING_EFFORT . '";
  let verbosity_gpt = "' . CLICSHOPPING_APP_CHATGPT_CH_VERBOSITY . '";

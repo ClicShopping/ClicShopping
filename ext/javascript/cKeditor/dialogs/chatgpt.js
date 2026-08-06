@@ -96,8 +96,6 @@ CKEDITOR.dialog.add('chatgptDialog', function (editor) {
               } else {
                 payload = {
                   model: modelGpt,
-                  frequency_penalty: frequency_penalty_gpt,
-                  presence_penalty: presence_penalty_gpt,
                   max_tokens: max_tokens_gpt,
                   temperature: temperatureGpt,
                   top_p: top_p_gpt,
