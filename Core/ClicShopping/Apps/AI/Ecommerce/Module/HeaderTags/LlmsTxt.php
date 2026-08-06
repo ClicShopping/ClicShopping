@@ -158,6 +158,17 @@
         'sort_order'                => '200',
         'date_added'                => 'now()'
       ]);
+
+      $this->app->db->save('configuration', [
+        'configuration_title'       => 'Please, indicate where the module must not be displayed',
+        'configuration_key'         => 'MODULE_HEADER_TAGS_LLMS_TXT_DISPLAY_PAGES',
+        'configuration_value'       => 'all',
+        'configuration_description' => 'Select the pages where the module must not be displayed',
+        'configuration_group_id'    => '6',
+        'sort_order'                => '210',
+        'set_function'              => 'clic_cfg_set_select_pages_list',
+        'date_added'                => 'now()'
+      ]);
     }
 
     public function keys(): array
@@ -166,6 +177,7 @@
         'MODULE_HEADER_TAGS_LLMS_TXT_STATUS',
         'MODULE_HEADER_TAGS_LLMS_TXT_CACHE',
         'MODULE_HEADER_TAGS_LLMS_TXT_SORT_ORDER',
+        'MODULE_HEADER_TAGS_LLMS_TXT_DISPLAY_PAGES',
       ];
     }
   }

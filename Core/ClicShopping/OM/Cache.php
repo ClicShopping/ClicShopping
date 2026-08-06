@@ -1,261 +1,293 @@
 <?php
-/**
- * Copyright (c) 2008–2026 Loic Richard
- *
- * Licensed under AGPLv3 or commercial license.
- * See LICENSE file.
- */
+  /**
+   * Copyright (c) 2008–2026 Loic Richard
+   *
+   * Licensed under AGPLv3 or commercial license.
+   * See LICENSE file.
+   */
 
-namespace ClicShopping\OM;
+  namespace ClicShopping\OM;
 
-use function strlen;
-
-/**
- * Class Cache
- * Manages caching operations including saving, retrieving, checking existence, and clearing cache data.
- */
-class Cache
-{
-  protected static string $path;
-  protected const SAFE_KEY_NAME_REGEX = 'a-zA-Z0-9-_';
-  protected string $key;
-  protected mixed $data = null;
-  protected bool $compressionEnabled = false;
-  protected string $namespace = '';
-
-  // Cache en mémoire pour éviter les lectures répétées
-  protected static array $memoryCache = [];
-  protected static int $memoryCacheSize = 0;
-  protected static int $maxMemoryCacheSize = 1048576; // 1MB
+  use function strlen;
 
   /**
-   * Constructor method for initializing the class.
-   *
-   * @param string $key A unique identifier key to set during the object instantiation.
-   * @param string $namespace Optional namespace to avoid key collisions
-   * @param bool $enableCompression Enable data compression for large datasets
+   * Class Cache
+   * Manages caching operations including saving, retrieving, checking existence, and clearing cache data.
    */
-  public function __construct(string $key, string $namespace = '', bool $enableCompression = false)
+  class Cache
   {
-    static::setPath();
+    protected static string $path;
+    protected const SAFE_KEY_NAME_REGEX = 'a-zA-Z0-9-_';
+    protected string $key;
+    protected mixed $data = null;
+    protected bool $compressionEnabled = false;
+    protected string $namespace = '';
 
-    $this->namespace = $namespace;
-    $this->compressionEnabled = $enableCompression;
-    $this->setKey($key);
-  }
+    // Cache en mémoire pour éviter les lectures répétées
+    protected static array $memoryCache = [];
+    protected static int $memoryCacheSize = 0;
+    protected static int $maxMemoryCacheSize = 1048576; // 1MB
 
-  /**
-   * Sets the cache key if it matches the valid key name pattern.
-   *
-   * @param string $key The cache key to set. It must comply with the valid naming convention.
-   * @return static Returns the current instance for method chaining
-   * @throws \InvalidArgumentException If the key name is invalid
-   */
-  public function setKey(string $key): static
-  {
-    if (!static::hasSafeName($key)) {
-      $error = 'ClicShopping\\OM\\Cache: Invalid key name ("' . $key . '"). Valid characters are ' . static::SAFE_KEY_NAME_REGEX;
-      trigger_error($error);
-      throw new \InvalidArgumentException($error);
+    /**
+     * Constructor method for initializing the class.
+     *
+     * @param string $key A unique identifier key to set during the object instantiation.
+     * @param string $namespace Optional namespace to avoid key collisions
+     * @param bool $enableCompression Enable data compression for large datasets
+     */
+    public function __construct(string $key, string $namespace = '', bool $enableCompression = false)
+    {
+      static::setPath();
+
+      $this->namespace = $namespace;
+      $this->compressionEnabled = $enableCompression;
+      $this->setKey($key);
     }
 
-    $this->key = $key;
-    return $this;
-  }
-
-  /**
-   * Retrieves the key value.
-   *
-   * @return string The value of the key property.
-   */
-  public function getKey(): string
-  {
-    return $this->key;
-  }
-
-  /**
-   * Saves the provided data to a cache file with metadata - Version simplifiée sans rename()
-   *
-   * @param mixed $data The data to be saved
-   * @param array $metadata Optional metadata (tags, dependencies, etc.)
-   * @return bool Returns true if the data was successfully written to the cache file, otherwise false.
-   */
-  public function save($data, array $metadata = []): bool
-  {
-    if (!FileSystem::isWritable(static::getPath())) {
-      return false;
-    }
-
-    // Ensure namespace directory exists
-    if (!$this->ensureNamespaceDirectory()) {
-      return false;
-    }
-
-    $filename = $this->getFilePath();
-
-    // Préparer les données avec métadonnées
-    $cacheData = [
-      'data' => $data,
-      'metadata' => array_merge($metadata, [
-        'created_at' => time(),
-        'compressed' => $this->compressionEnabled,
-        'size' => 0
-      ])
-    ];
-
-    $serializedData = serialize($cacheData);
-
-    // Compression si activée
-    if ($this->compressionEnabled && function_exists('gzcompress')) {
-      $compressedData = gzcompress($serializedData, 6);
-      if ($compressedData !== false) {
-        $serializedData = $compressedData;
-        $cacheData['metadata']['compressed'] = true;
+    /**
+     * Sets the cache key if it matches the valid key name pattern.
+     *
+     * @param string $key The cache key to set. It must comply with the valid naming convention.
+     * @return static Returns the current instance for method chaining
+     * @throws \InvalidArgumentException If the key name is invalid
+     */
+    public function setKey(string $key): static
+    {
+      if (!static::hasSafeName($key)) {
+        $error = 'ClicShopping\\OM\\Cache: Invalid key name ("' . $key . '"). Valid characters are ' . static::SAFE_KEY_NAME_REGEX;
+        trigger_error($error);
+        throw new \InvalidArgumentException($error);
       }
+
+      $this->key = $key;
+      return $this;
     }
 
-    if (is_file($filename) && !is_writable($filename)) {
-      return false;
+    /**
+     * Retrieves the key value.
+     *
+     * @return string The value of the key property.
+     */
+    public function getKey(): string
+    {
+      return $this->key;
     }
 
-    // Écriture directe avec verrouillage exclusif
-    // LOCK_EX empêche les écritures concurrentes. Le @ évite qu'un échec d'écriture (permissions,
-    // disque plein, course) ne remonte en PHP Warning : la valeur de retour false suffit à l'appelant.
-    $result = @file_put_contents($filename, $serializedData, LOCK_EX);
+    /**
+     * Saves the provided data to a cache file with metadata.
+     * Écriture atomique : on écrit dans un fichier temporaire puis on le renomme (rename() est
+     * atomique sur un même filesystem POSIX). Un lecteur concurrent verra toujours soit l'ancien
+     * fichier complet, soit le nouveau complet — jamais un fichier partiellement écrit.
+     *
+     * @param mixed $data The data to be saved
+     * @param array $metadata Optional metadata (tags, dependencies, etc.)
+     * @return bool Returns true if the data was successfully written to the cache file, otherwise false.
+     */
+    public function save($data, array $metadata = []): bool
+    {
+      if (!FileSystem::isWritable(static::getPath())) {
+        return false;
+      }
 
-    if ($result !== false) {
+      // Ensure namespace directory exists
+      if (!$this->ensureNamespaceDirectory()) {
+        return false;
+      }
+
+      $filename = $this->getFilePath();
+
+      // Préparer les données avec métadonnées
+      $cacheData = [
+        'data' => $data,
+        'metadata' => array_merge($metadata, [
+          'created_at' => time(),
+          'compressed' => $this->compressionEnabled,
+          'size' => 0
+        ])
+      ];
+
+      $serializedData = serialize($cacheData);
+
+      // Compression si activée
+      if ($this->compressionEnabled && function_exists('gzcompress')) {
+        $compressedData = gzcompress($serializedData, 6);
+        if ($compressedData !== false) {
+          $serializedData = $compressedData;
+          $cacheData['metadata']['compressed'] = true;
+        }
+      }
+
+      if (is_file($filename) && !is_writable($filename)) {
+        return false;
+      }
+
+      // Écriture dans un fichier temporaire unique du même répertoire (même filesystem requis
+      // pour que rename() soit atomique), puis publication par rename().
+      $tmpFilename = $filename . '.' . uniqid('', true) . '.tmp';
+
+      $result = @file_put_contents($tmpFilename, $serializedData, LOCK_EX);
+
+      if ($result === false) {
+        @unlink($tmpFilename);
+        return false;
+      }
+
       // Forcer les permissions pour contourner le umask
-      @chmod($filename, 0664);
+      @chmod($tmpFilename, 0664);
 
-      // Mettre à jour le cache mémoire (use full key for backward compatibility)
-      $fullKey = $this->getFullKey();
-      $this->updateMemoryCache($fullKey, $data);
+      if (!@rename($tmpFilename, $filename)) {
+        @unlink($tmpFilename);
+        return false;
+      }
+
+      // Mettre à jour le cache mémoire
+      $memoryKey = $this->getMemoryKey();
+      $this->updateMemoryCache($memoryKey, $data);
 
       return true;
     }
 
-    return false;
-  }
-
-  /**
-   * Gets the full key including namespace
-   *
-   * @return string
-   * @deprecated Use getNamespacePath() and key separately
-   */
-  protected function getFullKey(): string
-  {
-    return $this->namespace ? $this->namespace . '_' . $this->key : $this->key;
-  }
-
-  /**
-   * Gets the namespace as a directory path
-   *
-   * @return string The namespace path with trailing slash, or empty string
-   */
-  protected function getNamespacePath(): string
-  {
-    if (empty($this->namespace)) {
-      return '';
+    /**
+     * Builds the in-process memory-cache key (namespace + key). This is the internal
+     * replacement for the deprecated getFullKey() — same value, but not deprecated, so it's
+     * safe to keep calling from inside the class without triggering deprecation notices.
+     *
+     * @return string
+     */
+    protected function getMemoryKey(): string
+    {
+      return $this->namespace ? $this->namespace . '_' . $this->key : $this->key;
     }
-    
-    // Convert namespace to directory path
-    // 'Rag/Intent' → 'Rag/Intent/'
-    // 'context' → 'context/'
-    return rtrim($this->namespace, '/') . '/';
-  }
 
-  /**
-   * Ensures the namespace directory exists
-   *
-   * @return bool True if directory exists or was created successfully
-   */
-  protected function ensureNamespaceDirectory(): bool
-  {
-    $namespacePath = $this->getNamespacePath();
-    
-    if (empty($namespacePath)) {
+    /**
+     * Gets the full key including namespace
+     *
+     * @return string
+     * @deprecated Use getNamespacePath() and key separately
+     */
+    protected function getFullKey(): string
+    {
+      return $this->getMemoryKey();
+    }
+
+    /**
+     * Gets the namespace as a directory path
+     *
+     * @return string The namespace path with trailing slash, or empty string
+     */
+    protected function getNamespacePath(): string
+    {
+      if (empty($this->namespace)) {
+        return '';
+      }
+
+      // Convert namespace to directory path
+      // 'Rag/Intent' → 'Rag/Intent/'
+      // 'context' → 'context/'
+      return rtrim($this->namespace, '/') . '/';
+    }
+
+    /**
+     * Ensures the namespace directory exists
+     *
+     * @return bool True if directory exists or was created successfully
+     */
+    protected function ensureNamespaceDirectory(): bool
+    {
+      $namespacePath = $this->getNamespacePath();
+
+      if (empty($namespacePath)) {
+        return true;
+      }
+
+      $fullPath = static::getPath() . $namespacePath;
+
+      if (!is_dir($fullPath)) {
+        return mkdir($fullPath, 0775, true);
+      }
+
       return true;
     }
-    
-    $fullPath = static::getPath() . $namespacePath;
-    
-    if (!is_dir($fullPath)) {
-      return mkdir($fullPath, 0775, true);
+
+    /**
+     * Gets the full file path for the cache file
+     *
+     * @return string The complete file path
+     */
+    protected function getFilePath(): string
+    {
+      $namespacePath = $this->getNamespacePath();
+      return static::getPath() . $namespacePath . $this->key . '.cache';
     }
-    
-    return true;
-  }
 
-  /**
-   * Gets the full file path for the cache file
-   *
-   * @return string The complete file path
-   */
-  protected function getFilePath(): string
-  {
-    $namespacePath = $this->getNamespacePath();
-    return static::getPath() . $namespacePath . $this->key . '.cache';
-  }
+    /**
+     * Checks if the cache file exists and optionally verifies if it has not expired.
+     *
+     * @param string|null $expire Optional expiration time in minutes. If provided, checks if the cache file's age is less than the given value.
+     * @return bool Returns true if the cache file exists and meets the expiration criteria (if provided), otherwise false.
+     */
+    public function exists(?string $expire = null): bool
+    {
+      $memoryKey = $this->getMemoryKey();
 
-  /**
-   * Checks if the cache file exists and optionally verifies if it has not expired.
-   *
-   * @param string|null $expire Optional expiration time in minutes. If provided, checks if the cache file's age is less than the given value.
-   * @return bool Returns true if the cache file exists and meets the expiration criteria (if provided), otherwise false.
-   */
-  public function exists(?string $expire = null): bool
-  {
-    $fullKey = $this->getFullKey();
+      // Vérifier d'abord le cache mémoire
+      if (isset(static::$memoryCache[$memoryKey])) {
+        if (!isset($expire)) {
+          return true;
+        }
 
-    // Vérifier d'abord le cache mémoire
-    if (isset(static::$memoryCache[$fullKey])) {
-      if (!isset($expire)) {
-        return true;
+        $difference = floor((time() - static::$memoryCache[$memoryKey]['timestamp']) / 60);
+        return is_numeric($expire) && ($difference < $expire);
       }
 
-      $difference = floor((time() - static::$memoryCache[$fullKey]['timestamp']) / 60);
-      return is_numeric($expire) && ($difference < $expire);
-    }
+      $filename = $this->getFilePath();
 
-    $filename = $this->getFilePath();
+      if (is_file($filename)) {
+        if (!isset($expire)) {
+          return true;
+        }
 
-    if (is_file($filename)) {
-      if (!isset($expire)) {
-        return true;
+        // filemtime() peut échouer si le fichier a été supprimé entre le is_file() ci-dessus et
+        // cet appel (suppression concurrente par un autre process : clear(), purgeExpired(), ...).
+        $mtime = @filemtime($filename);
+
+        if ($mtime === false) {
+          return false;
+        }
+
+        $difference = floor((time() - $mtime) / 60);
+        return is_numeric($expire) && ($difference < $expire);
       }
 
-      $difference = floor((time() - filemtime($filename)) / 60);
-      return is_numeric($expire) && ($difference < $expire);
+      return false;
     }
 
-    return false;
-  }
+    /**
+     * Retrieves the cached data associated with the current key.
+     *
+     * @return mixed Returns the cached data if it exists, or null if no cache is found.
+     */
+    public function get()
+    {
+      $memoryKey = $this->getMemoryKey();
 
-  /**
-   * Retrieves the cached data associated with the current key.
-   *
-   * @return mixed Returns the cached data if it exists, or null if no cache is found.
-   */
-  public function get()
-  {
-    $fullKey = $this->getFullKey();
-
-    // Vérifier le cache mémoire en premier
-    if (isset(static::$memoryCache[$fullKey])) {
-      return static::$memoryCache[$fullKey]['data'];
-    }
-
-    $filename = $this->getFilePath();
-
-    if (is_file($filename)) {
-      $contents = file_get_contents($filename);
-
-      if ($contents === false) {
-        return null;
+      // Vérifier le cache mémoire en premier
+      if (isset(static::$memoryCache[$memoryKey])) {
+        return static::$memoryCache[$memoryKey]['data'];
       }
 
-      try {
+      $filename = $this->getFilePath();
+
+      if (is_file($filename)) {
+        // file_get_contents() peut échouer si le fichier a été supprimé entre le is_file()
+        // ci-dessus et cet appel (suppression concurrente). C'est un cache miss normal, pas une
+        // erreur à propager : on supprime le warning et on retourne null.
+        $contents = @file_get_contents($filename);
+
+        if ($contents === false) {
+          return null;
+        }
+
         // Essayer de décompresser si nécessaire
         if ($this->isCompressed($contents)) {
           $contents = gzuncompress($contents);
@@ -264,7 +296,18 @@ class Cache
           }
         }
 
-        $cacheData = unserialize($contents, ['allowed_classes' => false]);
+        // unserialize() n'émet PAS d'exception sur des données corrompues/tronquées : elle
+        // déclenche un E_WARNING et retourne false. On supprime le warning et on teste
+        // explicitement le retour plutôt que de s'appuyer sur un try/catch qui ne se déclenche
+        // jamais.
+        $cacheData = @unserialize($contents, ['allowed_classes' => false]);
+
+        if ($cacheData === false && $contents !== serialize(false)) {
+          // Fichier réellement corrompu (ex : lu pendant une écriture concurrente, ou tronqué
+          // par un disque plein) : on le supprime pour ne pas répéter l'erreur indéfiniment.
+          @unlink($filename);
+          return null;
+        }
 
         // Retrocompatibilité : si ce n'est pas le nouveau format avec métadonnées
         if (!is_array($cacheData) || !isset($cacheData['data'])) {
@@ -274,515 +317,514 @@ class Cache
         }
 
         // Mettre à jour le cache mémoire
-        $this->updateMemoryCache($fullKey, $this->data);
+        $this->updateMemoryCache($memoryKey, $this->data);
+      }
 
-      } catch (\Exception $e) {
-        // En cas d'erreur de désérialisation, supprimer le fichier corrompu
-        unlink($filename);
+      return $this->data ?? null;
+    }
+
+    /**
+     * Gets cache metadata
+     *
+     * @return array|null
+     */
+    public function getMetadata(): ?array
+    {
+      $filename = $this->getFilePath();
+
+      if (!is_file($filename)) {
         return null;
       }
-    }
 
-    return $this->data ?? null;
-  }
+      $contents = @file_get_contents($filename);
 
-  /**
-   * Gets cache metadata
-   *
-   * @return array|null
-   */
-  public function getMetadata(): ?array
-  {
-    $filename = $this->getFilePath();
-
-    if (!is_file($filename)) {
-      return null;
-    }
-
-    $contents = file_get_contents($filename);
-
-    if ($contents === false) {
-      return null;
-    }
-
-    try {
-      if ($this->isCompressed($contents)) {
-        $contents = gzuncompress($contents);
+      if ($contents === false) {
+        return null;
       }
 
-      $cacheData = unserialize($contents, ['allowed_classes' => false]);
+      if ($this->isCompressed($contents)) {
+        $contents = gzuncompress($contents);
+
+        if ($contents === false) {
+          return null;
+        }
+      }
+
+      $cacheData = @unserialize($contents, ['allowed_classes' => false]);
+
+      if ($cacheData === false && $contents !== serialize(false)) {
+        return null;
+      }
 
       return is_array($cacheData) && isset($cacheData['metadata'])
         ? $cacheData['metadata']
         : ['created_at' => filemtime($filename), 'size' => filesize($filename)];
-
-    } catch (\Exception $e) {
-      return null;
     }
-  }
 
-  /**
-   * Batch save operation
-   *
-   * @param array $items Array of ['key' => 'data'] pairs
-   * @param array $metadata Common metadata for all items
-   * @return array Results array with success/failure for each key
-   */
-  public static function saveBatch(array $items, array $metadata = []): array
-  {
-    $results = [];
+    /**
+     * Batch save operation
+     *
+     * @param array $items Array of ['key' => 'data'] pairs
+     * @param array $metadata Common metadata for all items
+     * @return array Results array with success/failure for each key
+     */
+    public static function saveBatch(array $items, array $metadata = []): array
+    {
+      $results = [];
 
-    foreach ($items as $key => $data) {
-      try {
-        $cache = new static($key);
-        $results[$key] = $cache->save($data, $metadata);
-      } catch (\Exception $e) {
-        $results[$key] = false;
+      foreach ($items as $key => $data) {
+        try {
+          $cache = new static($key);
+          $results[$key] = $cache->save($data, $metadata);
+        } catch (\Exception $e) {
+          $results[$key] = false;
+        }
       }
+
+      return $results;
     }
 
-    return $results;
-  }
+    /**
+     * Batch get operation
+     *
+     * @param array $keys Array of cache keys
+     * @return array Results array with data for each key
+     */
+    public static function getBatch(array $keys): array
+    {
+      $results = [];
 
-  /**
-   * Batch get operation
-   *
-   * @param array $keys Array of cache keys
-   * @return array Results array with data for each key
-   */
-  public static function getBatch(array $keys): array
-  {
-    $results = [];
-
-    foreach ($keys as $key) {
-      try {
-        $cache = new static($key);
-        $results[$key] = $cache->get();
-      } catch (\Exception $e) {
-        $results[$key] = null;
+      foreach ($keys as $key) {
+        try {
+          $cache = new static($key);
+          $results[$key] = $cache->get();
+        } catch (\Exception $e) {
+          $results[$key] = null;
+        }
       }
+
+      return $results;
     }
 
-    return $results;
-  }
-
-  /**
-   * Checks if the given data is compressed.
-   *
-   * @param string $data The data to check.
-   * @return bool Returns true if the data is compressed, false otherwise.
-   */
-  protected function isCompressed(string $data): bool
-  {
-    // Vérification basique : les données gzcompressed commencent par des bytes spécifiques
-    return strlen($data) > 2 && ord($data[0]) === 0x1f && ord($data[1]) === 0x8b;
-  }
-
-  /**
-   * Updates the in-memory cache with the provided data.
-   *
-   * @param string $key The cache key.
-   * @param mixed $data The data to be cached.
-   * @param array $additionalInfo Optional additional information to store with the cache entry.
-   * @return void
-   */
-  protected function updateMemoryCache(string $key, $data, array $additionalInfo = []): void
-  {
-    $serializedSize = strlen(serialize($data));
-
-    // Si l'élément est trop gros ou si on dépasse la limite, ne pas mettre en cache
-    if ($serializedSize > static::$maxMemoryCacheSize / 4) {
-      return;
+    /**
+     * Checks if the given data is compressed.
+     *
+     * @param string $data The data to check.
+     * @return bool Returns true if the data is compressed, false otherwise.
+     */
+    protected function isCompressed(string $data): bool
+    {
+      // Vérification basique : les données gzcompressed commencent par des bytes spécifiques
+      return strlen($data) > 2 && ord($data[0]) === 0x1f && ord($data[1]) === 0x8b;
     }
 
-    // Nettoyer le cache mémoire si nécessaire
-    while (static::$memoryCacheSize + $serializedSize > static::$maxMemoryCacheSize && !empty(static::$memoryCache)) {
-      $oldestKey = array_key_first(static::$memoryCache);
-      static::$memoryCacheSize -= static::$memoryCache[$oldestKey]['size'];
-      unset(static::$memoryCache[$oldestKey]);
+    /**
+     * Updates the in-memory cache with the provided data.
+     *
+     * @param string $key The cache key.
+     * @param mixed $data The data to be cached.
+     * @param array $additionalInfo Optional additional information to store with the cache entry.
+     * @return void
+     */
+    protected function updateMemoryCache(string $key, $data, array $additionalInfo = []): void
+    {
+      $serializedSize = strlen(serialize($data));
+
+      // Si l'élément est trop gros ou si on dépasse la limite, ne pas mettre en cache
+      if ($serializedSize > static::$maxMemoryCacheSize / 4) {
+        return;
+      }
+
+      // Nettoyer le cache mémoire si nécessaire
+      while (static::$memoryCacheSize + $serializedSize > static::$maxMemoryCacheSize && !empty(static::$memoryCache)) {
+        $oldestKey = array_key_first(static::$memoryCache);
+        static::$memoryCacheSize -= static::$memoryCache[$oldestKey]['size'];
+        unset(static::$memoryCache[$oldestKey]);
+      }
+
+      static::$memoryCache[$key] = array_merge([
+        'data' => $data,
+        'size' => $serializedSize,
+        'timestamp' => time()
+      ], $additionalInfo);
+
+      static::$memoryCacheSize += $serializedSize;
     }
 
-    static::$memoryCache[$key] = array_merge([
-      'data' => $data,
-      'size' => $serializedSize,
-      'timestamp' => time()
-    ], $additionalInfo);
+    /**
+     * Clears the in-memory cache.
+     *
+     * @return void
+     */
+    public static function clearMemoryCache(): void
+    {
+      static::$memoryCache = [];
+      static::$memoryCacheSize = 0;
+    }
 
-    static::$memoryCacheSize += $serializedSize;
-  }
+    /**
+     * Sets the maximum size for the in-memory cache.
+     *
+     * @param int $bytes The maximum size in bytes.
+     * @return void
+     */
+    public static function setMaxMemoryCacheSize(int $bytes): void
+    {
+      static::$maxMemoryCacheSize = $bytes;
+    }
 
-  /**
-   * Clears the in-memory cache.
-   *
-   * @return void
-   */
-  public static function clearMemoryCache(): void
-  {
-    static::$memoryCache = [];
-    static::$memoryCacheSize = 0;
-  }
+    /**
+     * Checks if the provided key has a safe name based on a predefined regex pattern.
+     *
+     * @param string $key The key to be checked.
+     * @return bool Returns true if the key matches the safe name criteria, false otherwise.
+     */
+    public static function hasSafeName(string $key): bool
+    {
+      return preg_match('/^[' . static::SAFE_KEY_NAME_REGEX . ']+$/', $key) === 1;
+    }
 
-  /**
-   * Sets the maximum size for the in-memory cache.
-   *
-   * @param int $bytes The maximum size in bytes.
-   * @return void
-   */
-  public static function setMaxMemoryCacheSize(int $bytes): void
-  {
-    static::$maxMemoryCacheSize = $bytes;
-  }
+    /**
+     * Retrieves the last modification time of the cache file associated with the current key.
+     *
+     * @return int|false The file modification time as a Unix timestamp if the file exists, or false if the file does not exist.
+     */
+    public function getTime()
+    {
+      $filename = $this->getFilePath();
+      return is_file($filename) ? @filemtime($filename) : false;
+    }
 
-  /**
-   * Checks if the provided key has a safe name based on a predefined regex pattern.
-   *
-   * @param string $key The key to be checked.
-   * @return bool Returns true if the key matches the safe name criteria, false otherwise.
-   */
-  public static function hasSafeName(string $key): bool
-  {
-    return preg_match('/^[' . static::SAFE_KEY_NAME_REGEX . ']+$/', $key) === 1;
-  }
+    /**
+     * Finds whether a cache file exists for the given key.
+     *
+     * @param string $key The cache key to search for. Must consist of valid characters (a-zA-Z0-9-_).
+     * @param bool $strict If true, an exact match is required for the key. If false, a partial match is allowed.
+     * @param string $namespace Optional namespace
+     * @return bool Returns true if a matching cache file is found, otherwise false.
+     */
+    public static function find(string $key, bool $strict = true, string $namespace = ''): bool
+    {
+      if (!static::hasSafeName($key)) {
+        trigger_error('ClicShopping\\OM\\Cache::find(): Invalid key name (\'' . $key . '\'). Valid characters are a-zA-Z0-9-_');
+        return false;
+      }
 
-  /**
-   * Retrieves the last modification time of the cache file associated with the current key.
-   *
-   * @return int|false The file modification time as a Unix timestamp if the file exists, or false if the file does not exist.
-   */
-  public function getTime()
-  {
-    $filename = $this->getFilePath();
-    return is_file($filename) ? filemtime($filename) : false;
-  }
+      // Get namespace path
+      $namespacePath = '';
+      if (!empty($namespace)) {
+        $namespacePath = rtrim($namespace, '/') . '/';
+      }
 
-  /**
-   * Finds whether a cache file exists for the given key.
-   *
-   * @param string $key The cache key to search for. Must consist of valid characters (a-zA-Z0-9-_).
-   * @param bool $strict If true, an exact match is required for the key. If false, a partial match is allowed.
-   * @param string $namespace Optional namespace
-   * @return bool Returns true if a matching cache file is found, otherwise false.
-   */
-  public static function find(string $key, bool $strict = true, string $namespace = ''): bool
-  {
-    if (!static::hasSafeName($key)) {
-      trigger_error('ClicShopping\\OM\\Cache::find(): Invalid key name (\'' . $key . '\'). Valid characters are a-zA-Z0-9-_');
+      $searchPath = static::getPath() . $namespacePath;
+      $filename = $searchPath . $key . '.cache';
+
+      if (is_file($filename)) {
+        return true;
+      }
+
+      if ($strict === false) {
+        $key_length = strlen($key);
+
+        if (!is_dir($searchPath)) {
+          return false;
+        }
+
+        $d = dir($searchPath);
+
+        while (($entry = $d->read()) !== false) {
+          if ((strlen($entry) >= $key_length) && str_starts_with($entry, $key)) {
+            $d->close();
+            return true;
+          }
+        }
+      }
+
       return false;
     }
 
-    // Get namespace path
-    $namespacePath = '';
-    if (!empty($namespace)) {
-      $namespacePath = rtrim($namespace, '/') . '/';
+    /**
+     * Sets the path to the cache directory.
+     *
+     * @return void
+     */
+    public static function setPath()
+    {
+      static::$path = CLICSHOPPING::BASE_DIR . 'Work/Cache/';
     }
 
-    $searchPath = static::getPath() . $namespacePath;
-    $filename = $searchPath . $key . '.cache';
+    /**
+     * Retrieves the path. If the path is not set, it initializes the path by calling setPath().
+     *
+     * @return string The current stored path.
+     */
+    public static function getPath()
+    {
+      if (!isset(static::$path)) {
+        static::setPath();
+      }
 
-    if (is_file($filename)) {
+      return static::$path;
+    }
+
+    /**
+     * Clears cached files associated with the specified key.
+     *
+     * @param string $key The key identifying cached files to be cleared. Only safe key names are allowed.
+     * @param string $namespace Optional namespace
+     * @return bool Returns true if the cache path is writable and the operation is performed; false otherwise.
+     */
+    public static function clear(string $key, string $namespace = ''): bool
+    {
+      $key = basename($key);
+
+      if (!static::hasSafeName($key)) {
+        trigger_error('ClicShopping\\Cache::clear(): Invalid key name ("' . $key . '"). Valid characters are ' . static::SAFE_KEY_NAME_REGEX);
+        return false;
+      }
+
+      if (!FileSystem::isWritable(static::getPath())) {
+        return false;
+      }
+
+      // Get namespace path
+      $namespacePath = '';
+      if (!empty($namespace)) {
+        $namespacePath = rtrim($namespace, '/') . '/';
+      }
+
+      $searchPath = static::getPath() . $namespacePath;
+
+      if (!is_dir($searchPath)) {
+        return true; // Nothing to clear
+      }
+
+      $key_length = strlen($key);
+
+      // Drop the in-process entries BY PREFIX, like the files below: forgetting only the exact key
+      // left the purged content answering from memory for the rest of the request.
+      $fullKey = $namespace ? $namespace . '_' . $key : $key;
+
+      foreach (array_keys(static::$memoryCache) as $memoryKey) {
+        if (str_starts_with($memoryKey, $fullKey)) {
+          static::forgetMemoryEntry($memoryKey);
+        }
+      }
+
+      $DLcache = new DirectoryListing($searchPath);
+      $DLcache->setIncludeDirectories(false);
+
+      foreach ($DLcache->getFiles() as $file) {
+        if ((strlen($file['name']) >= $key_length) && str_starts_with($file['name'], $key)) {
+          @unlink($searchPath . $file['name']);
+        }
+      }
+
       return true;
     }
 
-    if ($strict === false) {
-      $key_length = strlen($key);
-      
-      if (!is_dir($searchPath)) {
-        return false;
-      }
-      
-      $d = dir($searchPath);
-
-      while (($entry = $d->read()) !== false) {
-        if ((strlen($entry) >= $key_length) && str_starts_with($entry, $key)) {
-          $d->close();
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Sets the path to the cache directory.
-   *
-   * @return void
-   */
-  public static function setPath()
-  {
-    static::$path = CLICSHOPPING::BASE_DIR . 'Work/Cache/';
-  }
-
-  /**
-   * Retrieves the path. If the path is not set, it initializes the path by calling setPath().
-   *
-   * @return string The current stored path.
-   */
-  public static function getPath()
-  {
-    if (!isset(static::$path)) {
-      static::setPath();
-    }
-
-    return static::$path;
-  }
-
-  /**
-   * Clears cached files associated with the specified key.
-   *
-   * @param string $key The key identifying cached files to be cleared. Only safe key names are allowed.
-   * @param string $namespace Optional namespace
-   * @return bool Returns true if the cache path is writable and the operation is performed; false otherwise.
-   */
-  public static function clear(string $key, string $namespace = ''): bool
-  {
-    $key = basename($key);
-
-    if (!static::hasSafeName($key)) {
-      trigger_error('ClicShopping\\Cache::clear(): Invalid key name ("' . $key . '"). Valid characters are ' . static::SAFE_KEY_NAME_REGEX);
-      return false;
-    }
-
-    if (!FileSystem::isWritable(static::getPath())) {
-      return false;
-    }
-
-    // Get namespace path
-    $namespacePath = '';
-    if (!empty($namespace)) {
-      $namespacePath = rtrim($namespace, '/') . '/';
-    }
-
-    $searchPath = static::getPath() . $namespacePath;
-    
-    if (!is_dir($searchPath)) {
-      return true; // Nothing to clear
-    }
-
-    $key_length = strlen($key);
-
-    // Drop the in-process entries BY PREFIX, like the files below: forgetting only the exact key
-    // left the purged content answering from memory for the rest of the request.
-    $fullKey = $namespace ? $namespace . '_' . $key : $key;
-
-    foreach (array_keys(static::$memoryCache) as $memoryKey) {
-      if (str_starts_with($memoryKey, $fullKey)) {
-        static::forgetMemoryEntry($memoryKey);
-      }
-    }
-
-    $DLcache = new DirectoryListing($searchPath);
-    $DLcache->setIncludeDirectories(false);
-
-    foreach ($DLcache->getFiles() as $file) {
-      if ((strlen($file['name']) >= $key_length) && str_starts_with($file['name'], $key)) {
-        unlink($searchPath . $file['name']);
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Clears every cache file of a namespace, including its sub-namespaces.
-   *
-   * clear() matches a key PREFIX, which cannot express "everything under Rag/Security": entries
-   * there are bare md5 keys sharing no prefix. Callers used to pass '*', rejected by hasSafeName()
-   * — a silent no-op.
-   *
-   * @param string $namespace Namespace to purge, e.g. 'Rag/Security'
-   * @return int Number of cache files removed
-   */
-  public static function clearNamespace(string $namespace): int
-  {
-    $namespace = trim($namespace, '/');
-
-    // No traversal: the purge must never escape the cache root.
-    if (($namespace === '') || (preg_match('/^[a-zA-Z0-9\-_\/]+$/', $namespace) !== 1) || str_contains($namespace, '..')) {
-      trigger_error('ClicShopping\\Cache::clearNamespace(): Invalid namespace ("' . $namespace . '").');
-
-      return 0;
-    }
-
-    $searchPath = static::getPath() . $namespace . '/';
-
-    if (!is_dir($searchPath) || !FileSystem::isWritable($searchPath)) {
-      return 0;
-    }
-
-    // getFullKey() is "<namespace>_<key>", so entries of a sub-namespace start with "<ns>/".
-    foreach (array_keys(static::$memoryCache) as $fullKey) {
-      if (str_starts_with($fullKey, $namespace . '_') || str_starts_with($fullKey, $namespace . '/')) {
-        static::forgetMemoryEntry($fullKey);
-      }
-    }
-
-    return static::deleteCacheFiles($searchPath);
-  }
-
-  /**
-   * Clears all cache files, namespaces included.
-   *
-   * @return void
-   */
-  public static function clearAll(): void
-  {
-    static::clearMemoryCache();
-
-    if (FileSystem::isWritable(static::getPath())) {
-      static::deleteCacheFiles(static::getPath());
-    }
-  }
-
-  /**
-   * Recursively removes the *.cache files of a directory. Anything else (state .json, index.php)
-   * is left untouched.
-   *
-   * @param string $directory Absolute path, trailing slash included
-   * @return int Number of files removed
-   */
-  protected static function deleteCacheFiles(string $directory): int
-  {
-    $removed = 0;
-
-    foreach (glob($directory . '*.cache', GLOB_NOSORT) ?: [] as $file) {
-      if (unlink($file)) {
-        $removed++;
-      }
-    }
-
-    foreach (glob($directory . '*', GLOB_ONLYDIR | GLOB_NOSORT) ?: [] as $subDirectory) {
-      $removed += static::deleteCacheFiles($subDirectory . '/');
-    }
-
-    return $removed;
-  }
-
-  /**
-   * Drops one in-process entry, keeping the size accounting straight — a plain unset() leaves
-   * its bytes counted and evicts live entries too early.
-   *
-   * @param string $fullKey Namespaced key, as built by getFullKey()
-   * @return void
-   */
-  protected static function forgetMemoryEntry(string $fullKey): void
-  {
-    if (!isset(static::$memoryCache[$fullKey])) {
-      return;
-    }
-
-    static::$memoryCacheSize -= static::$memoryCache[$fullKey]['size'] ?? 0;
-    unset(static::$memoryCache[$fullKey]);
-
-    if (static::$memoryCacheSize < 0) {
-      static::$memoryCacheSize = 0;
-    }
-  }
-
-  /**
-   * Retrieves statistics about the cache, including total files, total size, and memory cache details.
-   *
-   * @return array An associative array containing cache statistics.
-   */
-  public static function getStats(): array
-  {
-    $path = static::getPath();
-    $files = glob($path . '*.cache', GLOB_NOSORT);
-    $totalSize = 0;
-    $totalFiles = count($files);
-
-    foreach ($files as $file) {
-      $totalSize += filesize($file);
-    }
-
-    return [
-      'total_files' => $totalFiles,
-      'total_size' => $totalSize,
-      'total_size_formatted' => static::formatBytes($totalSize),
-      'memory_cache_items' => count(static::$memoryCache),
-      'memory_cache_size' => static::$memoryCacheSize,
-      'memory_cache_size_formatted' => static::formatBytes(static::$memoryCacheSize),
-      'cache_path' => $path
-    ];
-  }
-
-  /**
-   * Format bytes to human readable format
-   *
-   * @param int $bytes The number of bytes
-   * @param int $precision The decimal precision
-   * @return string Formatted bytes string
-   */
-  protected static function formatBytes(int $bytes, int $precision = 2): string
-  {
-    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-
-    for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
-      $bytes /= 1024;
-    }
-
-    return round($bytes, $precision) . ' ' . $units[$i];
-  }
-
-  /**
-   * @param string $fullKey
-   * @return mixed
-   */
-  public static function memoryCache(string $fullKey): mixed
-  {
-    return static::$memoryCache[$fullKey] ?? null;
-  }
-
-  /**
-   * Purge expired cache files
-   *
-   * @param int $maxAgeMinutes Maximum age in minutes
-   * @return int Number of purged files
-   */
-  public static function purgeExpired(int $maxAgeMinutes, string $namespace = ''): int
-  {
-    $directory = static::getPath();
-
-    if ($namespace !== '') {
+    /**
+     * Clears every cache file of a namespace, including its sub-namespaces.
+     *
+     * clear() matches a key PREFIX, which cannot express "everything under Rag/Security": entries
+     * there are bare md5 keys sharing no prefix. Callers used to pass '*', rejected by hasSafeName()
+     * — a silent no-op.
+     *
+     * @param string $namespace Namespace to purge, e.g. 'Rag/Security'
+     * @return int Number of cache files removed
+     */
+    public static function clearNamespace(string $namespace): int
+    {
       $namespace = trim($namespace, '/');
 
-      if ((preg_match('/^[a-zA-Z0-9\-_\/]+$/', $namespace) !== 1) || str_contains($namespace, '..')) {
-        trigger_error('ClicShopping\\Cache::purgeExpired(): Invalid namespace ("' . $namespace . '").');
+      // No traversal: the purge must never escape the cache root.
+      if (($namespace === '') || (preg_match('/^[a-zA-Z0-9\-_\/]+$/', $namespace) !== 1) || str_contains($namespace, '..')) {
+        trigger_error('ClicShopping\\Cache::clearNamespace(): Invalid namespace ("' . $namespace . '").');
 
         return 0;
       }
 
-      $directory .= $namespace . '/';
+      $searchPath = static::getPath() . $namespace . '/';
+
+      if (!is_dir($searchPath) || !FileSystem::isWritable($searchPath)) {
+        return 0;
+      }
+
+      // getMemoryKey() is "<namespace>_<key>", so entries of a sub-namespace start with "<ns>/".
+      foreach (array_keys(static::$memoryCache) as $memoryKey) {
+        if (str_starts_with($memoryKey, $namespace . '_') || str_starts_with($memoryKey, $namespace . '/')) {
+          static::forgetMemoryEntry($memoryKey);
+        }
+      }
+
+      return static::deleteCacheFiles($searchPath);
     }
 
-    if (!is_dir($directory)) {
-      return 0;
-    }
+    /**
+     * Clears all cache files, namespaces included.
+     *
+     * @return void
+     */
+    public static function clearAll(): void
+    {
+      static::clearMemoryCache();
 
-    return static::deleteCacheFilesOlderThan($directory, time() - ($maxAgeMinutes * 60));
-  }
-
-  /**
-   * Recursively removes the *.cache files last modified before a cut-off.
-   *
-   * @param string $directory Absolute path, trailing slash included
-   * @param int $cutoffTime Unix timestamp; older files go
-   * @return int Number of files removed
-   */
-  protected static function deleteCacheFilesOlderThan(string $directory, int $cutoffTime): int
-  {
-    $purged = 0;
-
-    foreach (glob($directory . '*.cache', GLOB_NOSORT) ?: [] as $file) {
-      if (filemtime($file) < $cutoffTime && unlink($file)) {
-        $purged++;
+      if (FileSystem::isWritable(static::getPath())) {
+        static::deleteCacheFiles(static::getPath());
       }
     }
 
-    foreach (glob($directory . '*', GLOB_ONLYDIR | GLOB_NOSORT) ?: [] as $subDirectory) {
-      $purged += static::deleteCacheFilesOlderThan($subDirectory . '/', $cutoffTime);
+    /**
+     * Recursively removes the *.cache files of a directory. Anything else (state .json, index.php)
+     * is left untouched.
+     *
+     * @param string $directory Absolute path, trailing slash included
+     * @return int Number of files removed
+     */
+    protected static function deleteCacheFiles(string $directory): int
+    {
+      $removed = 0;
+
+      foreach (glob($directory . '*.cache', GLOB_NOSORT) ?: [] as $file) {
+        if (@unlink($file)) {
+          $removed++;
+        }
+      }
+
+      foreach (glob($directory . '*', GLOB_ONLYDIR | GLOB_NOSORT) ?: [] as $subDirectory) {
+        $removed += static::deleteCacheFiles($subDirectory . '/');
+      }
+
+      return $removed;
     }
 
-    return $purged;
+    /**
+     * Drops one in-process entry, keeping the size accounting straight — a plain unset() leaves
+     * its bytes counted and evicts live entries too early.
+     *
+     * @param string $memoryKey Namespaced key, as built by getMemoryKey()
+     * @return void
+     */
+    protected static function forgetMemoryEntry(string $memoryKey): void
+    {
+      if (!isset(static::$memoryCache[$memoryKey])) {
+        return;
+      }
+
+      static::$memoryCacheSize -= static::$memoryCache[$memoryKey]['size'] ?? 0;
+      unset(static::$memoryCache[$memoryKey]);
+
+      if (static::$memoryCacheSize < 0) {
+        static::$memoryCacheSize = 0;
+      }
+    }
+
+    /**
+     * Retrieves statistics about the cache, including total files, total size, and memory cache details.
+     *
+     * @return array An associative array containing cache statistics.
+     */
+    public static function getStats(): array
+    {
+      $path = static::getPath();
+      $files = glob($path . '*.cache', GLOB_NOSORT);
+      $totalSize = 0;
+      $totalFiles = count($files);
+
+      foreach ($files as $file) {
+        $totalSize += filesize($file);
+      }
+
+      return [
+        'total_files' => $totalFiles,
+        'total_size' => $totalSize,
+        'total_size_formatted' => static::formatBytes($totalSize),
+        'memory_cache_items' => count(static::$memoryCache),
+        'memory_cache_size' => static::$memoryCacheSize,
+        'memory_cache_size_formatted' => static::formatBytes(static::$memoryCacheSize),
+        'cache_path' => $path
+      ];
+    }
+
+    /**
+     * Format bytes to human readable format
+     *
+     * @param int $bytes The number of bytes
+     * @param int $precision The decimal precision
+     * @return string Formatted bytes string
+     */
+    protected static function formatBytes(int $bytes, int $precision = 2): string
+    {
+      $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+      for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+        $bytes /= 1024;
+      }
+
+      return round($bytes, $precision) . ' ' . $units[$i];
+    }
+
+    /**
+     * @param string $fullKey
+     * @return mixed
+     */
+    public static function memoryCache(string $fullKey): mixed
+    {
+      return static::$memoryCache[$fullKey] ?? null;
+    }
+
+    /**
+     * Purge expired cache files
+     *
+     * @param int $maxAgeMinutes Maximum age in minutes
+     * @return int Number of purged files
+     */
+    public static function purgeExpired(int $maxAgeMinutes, string $namespace = ''): int
+    {
+      $directory = static::getPath();
+
+      if ($namespace !== '') {
+        $namespace = trim($namespace, '/');
+
+        if ((preg_match('/^[a-zA-Z0-9\-_\/]+$/', $namespace) !== 1) || str_contains($namespace, '..')) {
+          trigger_error('ClicShopping\\Cache::purgeExpired(): Invalid namespace ("' . $namespace . '").');
+
+          return 0;
+        }
+
+        $directory .= $namespace . '/';
+      }
+
+      if (!is_dir($directory)) {
+        return 0;
+      }
+
+      return static::deleteCacheFilesOlderThan($directory, time() - ($maxAgeMinutes * 60));
+    }
+
+    /**
+     * Recursively removes the *.cache files last modified before a cut-off.
+     *
+     * @param string $directory Absolute path, trailing slash included
+     * @param int $cutoffTime Unix timestamp; older files go
+     * @return int Number of files removed
+     */
+    protected static function deleteCacheFilesOlderThan(string $directory, int $cutoffTime): int
+    {
+      $purged = 0;
+
+      foreach (glob($directory . '*.cache', GLOB_NOSORT) ?: [] as $file) {
+        $mtime = @filemtime($file);
+
+        if ($mtime !== false && $mtime < $cutoffTime && @unlink($file)) {
+          $purged++;
+        }
+      }
+
+      foreach (glob($directory . '*', GLOB_ONLYDIR | GLOB_NOSORT) ?: [] as $subDirectory) {
+        $purged += static::deleteCacheFilesOlderThan($subDirectory . '/', $cutoffTime);
+      }
+
+      return $purged;
+    }
   }
-}

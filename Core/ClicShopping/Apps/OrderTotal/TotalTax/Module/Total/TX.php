@@ -131,7 +131,7 @@ class TX implements OrderTotalInterface
         if ($value >= 0) {
           $this->output[] = [
             'title' => $key,
-            'text' => $CLICSHOPPING_Currencies->format($value, true, $CLICSHOPPING_Order->info['currency'], $CLICSHOPPING_Order->info['currency_value']),
+            'text' => $CLICSHOPPING_Currencies->format($value, true, $CLICSHOPPING_Order->info['currency'] ?? ($_SESSION['currency'] ?? DEFAULT_CURRENCY), $CLICSHOPPING_Order->info['currency_value'] ?? null),
             'value' => $value
           ];
         }

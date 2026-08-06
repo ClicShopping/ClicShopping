@@ -143,7 +143,7 @@ class SH implements OrderTotalInterface
       }
 
       $this->output[] = ['title' => $CLICSHOPPING_Order->info['shipping_method'],
-        'text' => $CLICSHOPPING_Currencies->format($CLICSHOPPING_Order->info['shipping_cost'], true, $CLICSHOPPING_Order->info['currency'], $CLICSHOPPING_Order->info['currency_value']),
+        'text' => $CLICSHOPPING_Currencies->format($CLICSHOPPING_Order->info['shipping_cost'], true, $CLICSHOPPING_Order->info['currency'] ?? ($_SESSION['currency'] ?? DEFAULT_CURRENCY), $CLICSHOPPING_Order->info['currency_value'] ?? null),
         'value' => $CLICSHOPPING_Order->info['shipping_cost']
       ];
     }

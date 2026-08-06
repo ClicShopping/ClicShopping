@@ -73,3 +73,9 @@ express or implied, including but not limited to the warranties of
 merchantability, fitness for a particular purpose, and non-infringement.
 In no event shall the copyright holder be liable for any claim, damages,
 or other liability arising from the use of the software.
+
+**Articial Intelligence**
+
+The AI-generated content remains under the responsibility of the user.
+
+ClicShopping AI only assists content generation and does not guarantee the accuracy or legality of generated content.

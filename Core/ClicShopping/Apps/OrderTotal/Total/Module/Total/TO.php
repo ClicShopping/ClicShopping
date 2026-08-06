@@ -69,7 +69,7 @@ class TO implements OrderTotalInterface
     $CLICSHOPPING_Order = Registry::get('Order');
 
     $this->output[] = ['title' => $this->title,
-      'text' => ' ' . $CLICSHOPPING_Currencies->format($CLICSHOPPING_Order->info['total'], true, $CLICSHOPPING_Order->info['currency'], $CLICSHOPPING_Order->info['currency_value']) . ' ',
+      'text' => ' ' . $CLICSHOPPING_Currencies->format($CLICSHOPPING_Order->info['total'], true, $CLICSHOPPING_Order->info['currency'] ?? ($_SESSION['currency'] ?? DEFAULT_CURRENCY), $CLICSHOPPING_Order->info['currency_value'] ?? null) . ' ',
       'value' => $CLICSHOPPING_Order->info['total']
     ];
   }

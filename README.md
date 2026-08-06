@@ -202,7 +202,7 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
  - Step2 : Install ClicShopping : https://www.mysite.com/install
  - Step3 : Follow Checklist
 
-#  Checklist
+# Checklist
 - [x] read this README document
 - [x] Check the server requirement
 - [ ] Download ClicShopping & perform installation
@@ -218,8 +218,19 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 - [ ] Create your catalog
 - [ ] Perform a test checkout
 
-#documentation
+# documentation
 
+## Legal information
+- [![AI_PROVIDERS.md](docs/AI_PROVIDERS.md)
+- [![AI_LIMITATIONS.md](docs/AI_LIMITATIONS.md)
+- [![AI_ACT_COMPLIANCE.md](docs/AI_ACT_COMPLIANCE.md)
+- [![LICENCE.md](LICENCE.md)
+- [![CLA.md](CLA.md)
+- [![COMMERCIAL.md](COMMERCIAL.md)
+- [![TRADEMARK.md](TRADEMARK.md)
+- [![SECURITY.md](SECURITY.md)
+
+## Technical documentation
 - Wiki on github : https://github.com/ClicShopping/ClicShopping/wiki
 - DeepWiki :[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ClicShopping/ClicShopping)
 
@@ -235,7 +246,7 @@ Get Started Today : Use the Artificial Intelligence to your Ecommerce business w
 
 # License 
 - ClicShopping(tm) has a dual license : AGPLv3 et commercial license
--  See LICENSE.md
+- See LEGAl iNFORMATION
 
 # One-Click Installation
 Available in most hosting control panels
