@@ -1,2 +1,0 @@
-cfg_chatgpt_bestoff_title = Best of
-cfg_chatgpt_bestoff_description = Generates best_of completions server-side and returns the "best". Use an Integer

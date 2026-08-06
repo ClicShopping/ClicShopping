@@ -536,7 +536,9 @@ value_empty = -
 value_unknown = Unknown
 
 
-text_chat_loading_analyzing = Analyzing your request. Please wait. Thank you.
+text_chat_loading_analyzing = Analyzing your request. Please wait. Thank you.<br />
+Note: Please always verify the AI's response.
+
 text_chat_loading_request = Sending your request...
 text_chat_validation_empty = Please enter a question
 text_chat_validation_too_long = Your question is too long (max {{maxLength}} characters)
