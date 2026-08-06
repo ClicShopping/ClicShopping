@@ -8,7 +8,6 @@
 > ⚠️ **This file is a STARTING POINT.** It states only what is verified in
 > `Core/ClicShopping/AI/Security/` (10 classes, ~5 700 lines). It is not an exhaustive audit —
 > extend it as ground is covered, never invent a rule to fill a gap.
-
 ---
 
 ## 1. Absolute Prohibitions
@@ -49,16 +48,16 @@ a `llm_error` verdict as a clean bill of health.
 
 ## 3. The other layers
 
-| Class | Role |
-|---|---|
-| `InputValidator` | shape and size of the input, before any LLM sees it |
-| `LlmGuardrails` | the guardrail rules themselves |
-| `LlmResponseEvaluator` | judges what comes BACK from the LLM, not only what goes in |
-| `DbSecurity` | the database surface an AI query may touch |
-| `RateLimit` | per-user quotas on the AI path, distinct from `OM/RateLimiter` |
-| `SecurityLogger` | the security channel — layer performance, obfuscation, fallback usage |
-| `SecurityAlerter` | escalation when the logger records a real threat |
-| `SqlSecurityValidator` (`DomainsAI/Analytics/Validator/`) | the generated SQL, before execution |
+| Class                                                     | Role                                                                  |
+|-----------------------------------------------------------|-----------------------------------------------------------------------|
+| `InputValidator`                                          | shape and size of the input, before any LLM sees it                   |
+| `LlmGuardrails`                                           | the guardrail rules themselves                                        |
+| `LlmResponseEvaluator`                                    | judges what comes BACK from the LLM, not only what goes in            |
+| `DbSecurity`                                              | the database surface an AI query may touch                            |
+| `RateLimit`                                               | per-user quotas on the AI path, distinct from `OM/RateLimiter`        |
+| `SecurityLogger`                                          | the security channel — layer performance, obfuscation, fallback usage |
+| `SecurityAlerter`                                         | escalation when the logger records a real threat                      |
+| `SqlSecurityValidator` (`DomainsAI/Analytics/Validator/`) | the generated SQL, before execution                                   |
 
 `SecurityLogger` writes to the **security** channel. An application error on the AI path goes to
 `logApplicationError()` instead — do not mix the two, or a crash reads as an attack.
