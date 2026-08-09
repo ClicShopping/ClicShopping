@@ -809,6 +809,18 @@ class ResultFormatter
         error_log("[ResultSynthesizer] ✅ Setting primaryType to 'clarification_needed' (only clarification results present)");
       }
     }
+    // Nothing but errors: terminal, like a clarification. Left as 'mixed' it failed the final
+    // validation ("Mixed result missing data and sources") and its message was replaced.
+    elseif (!empty($aggregated['error_results']) &&
+            empty($aggregated['analytics_results']) &&
+            empty($aggregated['semantic_results']) &&
+            empty($aggregated['web_results'])) {
+      $primaryType = 'error';
+
+      if ($this->debug) {
+        error_log("[ResultSynthesizer] Setting primaryType to 'error' (every result is an error)");
+      }
+    }
     // Check for web_results first (highest priority for display)
     elseif (!empty($aggregated['web_results'])) {
       $primaryType = 'web_search_response';

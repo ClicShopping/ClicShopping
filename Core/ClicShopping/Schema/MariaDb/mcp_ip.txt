@@ -10,3 +10,4 @@ engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
 comment IP address whitelist for MCP server access control and security
+ai_schema = exclude

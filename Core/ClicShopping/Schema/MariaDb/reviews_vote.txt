@@ -15,3 +15,4 @@ idx_reviews_vote vote
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Helpfulness votes cast on a product review, one row per vote. This is engagement, NOT a rating: the star rating of a review is in reviews.

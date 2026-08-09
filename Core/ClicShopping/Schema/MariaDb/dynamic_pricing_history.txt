@@ -15,5 +15,4 @@ idx_date_added date_added
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-
-
+comment APPLIED dynamic pricing history: one row per price computed by a rule, with the base price, the resulting price, the rule applied and the source. It is OUR OWN price history - the current selling price is products_price in products, the price actually sold is in orders_products, and competitor prices are in web_search_product_price_tracking_history. Use it to follow how a price MOVED and which rule moved it.

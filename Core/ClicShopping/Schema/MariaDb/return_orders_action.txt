@@ -8,3 +8,4 @@ idx_name name
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language label of a return action (repair, exchange, refund). Lookup table: join it for the label, never count returns here - the returns are in return_orders.

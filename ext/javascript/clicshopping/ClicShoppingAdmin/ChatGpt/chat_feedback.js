@@ -198,7 +198,8 @@
         },
         body: JSON.stringify(data)
       })
-      .then(response => response.json())
+      // Garde partagée : rejette aussi un 200 non-JSON (redirection suivie vers login, page WAF)
+      .then(response => window.ChatHttp.expectJson(response))
       .then(result => {
         this.setLoadingState(container, false);
         

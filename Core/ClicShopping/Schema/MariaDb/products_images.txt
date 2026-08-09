@@ -10,3 +10,4 @@ products_images_prodid products_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Additional images of a product beyond the main one, with their display order. The main image is products_image in products.

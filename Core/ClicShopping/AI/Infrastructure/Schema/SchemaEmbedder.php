@@ -11,6 +11,7 @@ namespace ClicShopping\AI\Infrastructure\Schema;
 use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Db;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\Cache as OMCache;
 
@@ -32,6 +33,7 @@ use ClicShopping\OM\Cache as OMCache;
 class SchemaEmbedder
 {
   private static bool $currencyChecked = false;
+  private static ?array $declaredOutOfRetrieval = null;
   private mixed $db;
   private bool $debug;
   private string $tablePrefix;
@@ -79,7 +81,10 @@ class SchemaEmbedder
   }
 
   /**
-   * Fingerprint of the live schema: names, types and comments of every column, in one round-trip.
+   * Fingerprint of the live schema: every column, plus the comment of every table, in one round-trip.
+   *
+   * The TABLE comment belongs to the fingerprint because it is embedded in schema_text: leaving it
+   * out froze the store on re-commented tables, ensureCurrent() concluding "nothing moved".
    *
    * Cheap enough (~4 ms) to be tested on every retrieval, unlike buildAllSchemaTexts() which
    * issues one SHOW FULL COLUMNS per table.
@@ -89,9 +94,14 @@ class SchemaEmbedder
   public function schemaFingerprint(): string
   {
     $Q = $this->db->query(
-      "SELECT MD5(GROUP_CONCAT(CONCAT_WS(0x1f, TABLE_NAME, COLUMN_NAME, COLUMN_TYPE, IFNULL(COLUMN_COMMENT,''))
-                               ORDER BY TABLE_NAME, ORDINAL_POSITION SEPARATOR 0x1e)) AS fingerprint
-       FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()"
+      "SELECT MD5(CONCAT_WS(0x1d,
+                (SELECT IFNULL(GROUP_CONCAT(CONCAT_WS(0x1f, TABLE_NAME, COLUMN_NAME, COLUMN_TYPE, IFNULL(COLUMN_COMMENT,''))
+                                            ORDER BY TABLE_NAME, ORDINAL_POSITION SEPARATOR 0x1e), '')
+                 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()),
+                (SELECT IFNULL(GROUP_CONCAT(CONCAT_WS(0x1f, TABLE_NAME, IFNULL(TABLE_COMMENT,''))
+                                            ORDER BY TABLE_NAME SEPARATOR 0x1e), '')
+                 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE')
+              )) AS fingerprint"
     );
 
     return $Q->fetch() ? (string)$Q->value('fingerprint') : '';
@@ -110,11 +120,13 @@ class SchemaEmbedder
    * missing/stale comparison only when that fingerprint moved. A missing baseline is NOT treated
    * as drift — it costs one comparison, never a blind re-embedding of the whole store.
    *
-   * @param int $maxTables Above this many changed tables the work is left to the cron / manual sync
+   * @param int|null $maxTables Above this many changed tables the work is left to the cron / manual
+   *                            sync; null lifts the limit, for offline callers with no user waiting
    * @param string $checkEveryMinutes Throttle window, in minutes (default one day)
-   * @return array Sync statistics, or [] when nothing had to be done
+   * @return array Sync statistics, ['skipped' => true, …] when the limit refused the work,
+   *               or [] when nothing had to be done
    */
-  public function ensureCurrent(int $maxTables = 25, string $checkEveryMinutes = '1440'): array
+  public function ensureCurrent(?int $maxTables = 25, string $checkEveryMinutes = '1440'): array
   {
     if (self::$currencyChecked) {
       return [];
@@ -154,13 +166,20 @@ class SchemaEmbedder
 
       $logger = new SecurityLogger();
 
-      if ($changed > $maxTables) {
+      // A refusal must not read like "nothing to do": the caller has to be able to tell them apart.
+      if ($maxTables !== null && $changed > $maxTables) {
         $logger->logApplicationError(
           "Schema store behind the schema by {$changed} tables — above the inline limit, left to the cron",
           ['missing' => count($coverage['missing'] ?? []), 'stale' => count($coverage['stale'] ?? [])]
         );
 
-        return [];
+        return [
+          'skipped' => true,
+          'changed' => $changed,
+          'limit' => $maxTables,
+          'missing' => count($coverage['missing'] ?? []),
+          'stale' => count($coverage['stale'] ?? [])
+        ];
       }
 
       $stats = $this->syncAllTables();
@@ -333,13 +352,89 @@ class SchemaEmbedder
   /**
    * Technical stores carry no business semantics and must stay out of the schema retrieval
    *
+   * Two channels, both name-free here: a naming convention (`_embedding`, `rag_`, `aieval_`), and
+   * the declaration a table carries in its own schema file — see declaredOutOfRetrieval().
+   *
+   * `aieval_` covers the transient backups the eval harness creates and drops around a run: embedded
+   * as business tables, they survive their own table as orphan rows and fail the coverage gate.
+   *
    * @param string $tableName Table name
    * @param string $prefix Table prefix of the install
    * @return bool
    */
   public static function isTechnicalTable(string $tableName, string $prefix): bool
   {
-    return str_contains($tableName, '_embedding') || str_starts_with($tableName, $prefix . 'rag_');
+    if (str_contains($tableName, '_embedding')
+      || str_starts_with($tableName, $prefix . 'rag_')
+      || str_starts_with($tableName, $prefix . 'aieval_')) {
+      return true;
+    }
+
+    $unprefixed = str_starts_with($tableName, $prefix) ? substr($tableName, strlen($prefix)) : $tableName;
+
+    return isset(self::declaredOutOfRetrieval()[$unprefixed]);
+  }
+
+  /**
+   * Tables their own schema definition declares out of the AI schema retrieval
+   *
+   * The schema window is zero-sum: an infrastructure table that scores holds a place no business
+   * table can take. Which tables are infrastructure is a business question, so the answer is
+   * declared BY the table — a line `ai_schema = exclude` in the `##` property block of its schema
+   * definition — and never listed here: Core/ClicShopping/AI/ knows no table name.
+   *
+   * The `##` block is required: the declaration is read as a schema PROPERTY by the native parser,
+   * while the same line above the block is read as a column and lands in the CREATE TABLE.
+   *
+   * @return array Unprefixed table names, as a lookup set
+   */
+  public static function declaredOutOfRetrieval(): array
+  {
+    if (self::$declaredOutOfRetrieval !== null) {
+      return self::$declaredOutOfRetrieval;
+    }
+
+    $declared = [];
+
+    foreach (self::schemaDefinitionFiles() as $file) {
+      try {
+        $schema = Db::getSchemaFromFile($file);
+      } catch (\Throwable $e) {
+        // A file the schema parser refuses declares nothing; it is not this class's error to raise.
+        continue;
+      }
+
+      if (($schema['property']['ai_schema'] ?? '') === 'exclude') {
+        $declared[$schema['name']] = true;
+      }
+    }
+
+    return self::$declaredOutOfRetrieval = $declared;
+  }
+
+  /**
+   * Every schema definition file of the install, whoever owns the table
+   *
+   * Core tables, install-local tables and App-owned tables each declare where they live; the
+   * patterns name directories, never a table.
+   *
+   * @return array Absolute file paths
+   */
+  private static function schemaDefinitionFiles(): array
+  {
+    $patterns = [
+      CLICSHOPPING::BASE_DIR . 'Schema/MariaDb/*.txt',
+      CLICSHOPPING::BASE_DIR . 'Custom/Schema/*.txt',
+      CLICSHOPPING::BASE_DIR . 'Apps/*/*/Sql/MariaDb/Schema/*.txt'
+    ];
+
+    $files = [];
+
+    foreach ($patterns as $pattern) {
+      $files = array_merge($files, glob($pattern) ?: []);
+    }
+
+    return $files;
   }
 
   /**

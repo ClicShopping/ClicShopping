@@ -12,3 +12,4 @@ idx_return_id return_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment TIMELINE of a return (RMA): one row per status change, with the comment and who made it. The return itself is in return_orders.

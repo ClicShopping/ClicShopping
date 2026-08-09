@@ -1,11 +1,11 @@
-products_favorites_id int not_null auto_increment comment(Primary key - unique identifier for each favorite/wishlist product)
-products_id int not_null default(0) comment(FK to products table - product in favorites/wishlist)
-products_favorites_date_added datetime comment(Timestamp when product was added to favorites)
+products_favorites_id int not_null auto_increment comment(Primary key - unique identifier for each admin pick)
+products_id int not_null default(0) comment(FK to products table - product picked by the shop, no customer involved)
+products_favorites_date_added datetime comment(Timestamp when the shop picked this product)
 products_favorites_last_modified datetime comment(Timestamp of last modification)
-scheduled_date datetime comment(Future date for scheduled favorites display - null for immediate)
-expires_date datetime comment(Expiration date for favorites promotion - null for no expiration)
+scheduled_date datetime comment(Future date when the pick starts being displayed - null for immediate)
+expires_date datetime comment(Date when the pick stops being displayed - null for no expiration)
 date_status_change datetime comment(Timestamp when status was last changed)
-status tinyint(1) not_null default(1) comment(Favorites status - 0: inactive, 1: active)
+status tinyint(1) not_null default(1) comment(Pick status - 0: inactive, 1: active)
 customers_group_id int not_null default(0) comment(FK to customers_groups table - customer group, 0: all groups)
 --
 primary products_favorites_id
@@ -14,3 +14,4 @@ idx_specials_products_id products_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment ADMIN MERCHANDISING PICKS - products the shop chooses to highlight, with a scheduling window (scheduled_date, expires_date). Despite the name this is NOT a customer wishlist: no customer is referenced here. Per-customer suggestions live in products_recommendations.

@@ -597,6 +597,12 @@ class ResultSynthesizer
           $aggregated['error_results'] = [];
         }
         $aggregated['error_results'][] = $result;
+
+        // Its text is the answer: without it the final result has none, and the synthesizer
+        // substitutes its own "no results" wording for what the step actually said.
+        if (!empty($result['text_response'])) {
+          $addTextResponse($result['text_response']);
+        }
         break;
     }
   }

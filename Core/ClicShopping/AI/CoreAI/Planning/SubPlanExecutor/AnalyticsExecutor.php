@@ -364,6 +364,13 @@ class AnalyticsExecutor
     if ($this->debugRAManager) {
       error_log(str_repeat("=", 100) . "\n");
     }
+
+    // A failed run carries no 'results' key, and counting its rows says 0 — which used to be
+    // served as the empty-results message, announcing "no data" for a query never executed.
+    if (($rawResult['type'] ?? '') === 'error') {
+      return $this->formatExecutionFailure($rawResult);
+    }
+
     // 🔧 FIX: Handle ambiguous results type
     // When query is ambiguous, the system returns multiple interpretations
     // Instead of passing ambiguous results to UI (which doesn't handle them),
@@ -503,6 +510,49 @@ class AnalyticsExecutor
     }
 
     return $formatted;
+  }
+
+  /**
+   * Render a run that produced no query (declined generation, failed validation, abstention).
+   *
+   * Says that nothing was measured, instead of the empty-results message which claims the
+   * database was asked and had nothing to give.
+   *
+   * @param array $rawResult Error result from AnalyticsAgent
+   * @return array Analytics response carrying the honest failure message
+   */
+  private function formatExecutionFailure(array $rawResult): array
+  {
+    $message = CLICSHOPPING::getDef('text_query_generation_failed');
+
+    if ($message === '' || $message === 'text_query_generation_failed') {
+      $message = 'No query could be built for this question.';
+    }
+
+    if ($this->debugRAManager) {
+      error_log('[AnalyticsExecutor] No query was executed: ' . ($rawResult['error'] ?? $rawResult['message'] ?? 'unknown'));
+    }
+
+    // Typed as an error on purpose: ResultValidator drops any step carrying success === false,
+    // and the synthesizer then replaces this message with its own "no results" wording. An error
+    // step is the one shape both validators pass through, provided it carries a text_response.
+    return [
+      'type' => 'error',
+      'success' => false,
+      'message' => $message,
+      'error' => $rawResult['error'] ?? $rawResult['message'] ?? 'Analytics query produced no SQL',
+      'question' => $rawResult['question'] ?? $rawResult['query'] ?? '',
+      'interpretation' => $message,
+      'text_response' => $message,
+      'results' => [],
+      'sql_query' => '',
+      'source_attribution' => [
+        'source_type' => 'Analytics Database',
+        'source_icon' => '⚠️',
+        'source_details' => 'No query was executed for this question',
+        'table_name' => 'unknown',
+      ],
+    ];
   }
 
   /**
@@ -708,15 +758,12 @@ class AnalyticsExecutor
       'error'
     );
 
-    return [
-      'type' => 'analytics_response',
-      'success' => false,
+    // Same honest rendering as any other run that produced no query — and the exception message
+    // stays in the log instead of being shown to the user.
+    return $this->formatExecutionFailure([
       'error' => $e->getMessage(),
       'question' => $query,
-      'interpretation' => 'Error: ' . $e->getMessage(),
-      'results' => [],
-      'sql_query' => '',
-    ];
+    ]);
   }
 
   /**

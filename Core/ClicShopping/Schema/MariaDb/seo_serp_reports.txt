@@ -29,3 +29,4 @@ idx_created_at created_at
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment SEO AUDIT REPORT of one entity (product, category, page): the search-engine result data for a query, the SEO content before and after, the proposed changes and the scores. It answers SEO questions - ranking, keyword, optimisation gain. It holds no price, no stock and no sales figure.

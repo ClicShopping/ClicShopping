@@ -11,3 +11,4 @@ idx_categories_id categories_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Mapping of a recommended product to the categories where the recommendation is shown. The recommendation itself is in products_recommendations.

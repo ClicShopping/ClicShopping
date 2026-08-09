@@ -64,3 +64,4 @@ idx_has_children has_children
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment PRODUCT CATALOG - one row per sellable product. Authoritative source for the CURRENT SELLING PRICE (products_price), stock on hand (products_quantity), model/SKU/EAN and active status. The product NAME is not here, it is in products_description; the price actually sold and the quantities sold are in orders_products. Use it for catalogue questions (price of a product, stock, active products), never for sales figures.

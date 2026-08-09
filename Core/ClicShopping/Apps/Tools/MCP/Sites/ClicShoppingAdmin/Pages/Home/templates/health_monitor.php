@@ -103,7 +103,7 @@ $CLICSHOPPING_Page = Registry::get('Site')->getPage();
         <div class="col-md-4">
           <div class="card border-success">
             <div class="card-body">
-              <h6 class="card-title"><?php echo $CLICSHOPPING_MCP->getDef('text_connectivity'); ?></h6>
+              <h6 class="card-title"><?php echo $CLICSHOPPING_MCP->getDef('text_inbound_activity'); ?></h6>
               <div id="connectivityStatus">
                 <div class="text-muted"><?php echo $CLICSHOPPING_MCP->getDef('text_waiting_data'); ?></div>
               </div>
@@ -113,7 +113,7 @@ $CLICSHOPPING_Page = Registry::get('Site')->getPage();
         <div class="col-md-4">
           <div class="card border-warning">
             <div class="card-body">
-              <!--<h6 class="card-title">Performance</h6>-->
+              <h6 class="card-title"><?php echo $CLICSHOPPING_MCP->getDef('text_load_title'); ?></h6>
               <div id="performanceStatus">
                 <div class="text-muted"><?php echo $CLICSHOPPING_MCP->getDef('text_waiting_data'); ?></div>
               </div>
@@ -156,10 +156,26 @@ $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 
 <?php
 $event_url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/MCP/Event/McpHealthStream.php';
+
+// The stream sends counters only; the wording belongs here, where getDef lives. json_encode escapes
+// newlines, which would otherwise cut the inline script in two.
+$mcp_labels = [];
+
+foreach ([
+  'text_valid', 'text_invalid', 'text_no_issue',
+  'text_issue_no_configuration', 'text_issue_no_active_configuration', 'text_issue_no_permission_granted',
+  'text_configurations_active',
+  'text_inbound_received', 'text_inbound_never', 'text_inbound_sessions', 'text_inbound_last_seen',
+  'text_inbound_refused',
+  'text_load_title', 'text_load_calls_last_hour', 'text_load_alerts', 'text_load_no_alert',
+] as $key) {
+  $mcp_labels[$key] = $CLICSHOPPING_MCP->getDef($key);
+}
 ?>
 
 <script defer>
   var eventUrl = "<?php echo $event_url; ?>";
+  var mcpLabels = <?php echo json_encode($mcp_labels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
 </script>
 <script defer src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/MCP/health_monitor.js'); ?>"></script>
 

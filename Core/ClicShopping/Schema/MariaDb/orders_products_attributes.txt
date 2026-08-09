@@ -13,3 +13,4 @@ idx_orders_products_att_orders_id orders_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Option values chosen by the customer on ONE ordered line (size, colour) with the price delta applied. Sold quantities and prices are in orders_products; the catalogue definition of the options is in products_options.

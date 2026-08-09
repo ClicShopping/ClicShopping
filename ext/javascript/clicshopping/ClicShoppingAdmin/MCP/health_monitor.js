@@ -263,21 +263,25 @@ class HealthMonitor {
       const statusDiv = document.createElement('div');
       statusDiv.className = statusClass;
       const strong = document.createElement('strong');
-      strong.textContent = config.valid ? '✓ Valid' : '✗ Invalid';
+      strong.textContent = (config.valid ? '✓ ' : '✗ ') + this.label(config.valid ? 'text_valid' : 'text_invalid');
       statusDiv.appendChild(strong);
       configStatusEl.appendChild(statusDiv);
 
+      const small = document.createElement('small');
+      small.className = 'text-muted';
+
       if (config.issues && config.issues.length) {
-        const small = document.createElement('small');
-        small.className = 'text-muted';
-        small.textContent = config.issues.length + ' issue(s) found';
-        configStatusEl.appendChild(small);
+        // The stream sends issue keys, never prose: each one has its own translated label.
+        small.textContent = config.issues.map((issue) => this.label('text_issue_' + issue)).join(' — ');
       } else {
-        const small = document.createElement('small');
-        small.className = 'text-muted';
-        small.textContent = 'No issues';
-        configStatusEl.appendChild(small);
+        small.textContent = this.label('text_configurations_active', {
+          active: config.active,
+          total: config.configurations,
+          granted: config.permissions_granted
+        });
       }
+
+      configStatusEl.appendChild(small);
     }
 
     // Connectivity status
@@ -290,17 +294,31 @@ class HealthMonitor {
       const statusDiv = document.createElement('div');
       statusDiv.className = statusClass;
       const strong = document.createElement('strong');
-      strong.textContent = conn.connected ? '✓ Connected' : '✗ Disconnected';
+      // Inbound: MCP calls us. "Never called yet" is a fact, not a failure.
+      strong.textContent = (conn.connected ? '✓ ' : '· ')
+        + this.label(conn.connected ? 'text_inbound_received' : 'text_inbound_never');
       statusDiv.appendChild(strong);
       connStatusEl.appendChild(statusDiv);
 
       const small = document.createElement('small');
       small.className = 'text-muted';
-      if (conn.latency) {
-        small.textContent = 'Latency: ' + conn.latency + 'ms';
-      } else {
-        small.textContent = conn.error || 'Checking...';
+
+      if (conn.connected) {
+        small.appendChild(document.createTextNode(
+          this.label('text_inbound_sessions', {sessions: conn.sessions, last_day: conn.sessions_last_day})
+        ));
+
+        if (conn.last_seen) {
+          small.appendChild(document.createElement('br'));
+          small.appendChild(document.createTextNode(this.label('text_inbound_last_seen') + ' ' + conn.last_seen));
+        }
       }
+
+      if (conn.refused) {
+        small.appendChild(document.createElement('br'));
+        small.appendChild(document.createTextNode(this.label('text_inbound_refused', {refused: conn.refused})));
+      }
+
       connStatusEl.appendChild(small);
     }
 
@@ -316,27 +334,38 @@ class HealthMonitor {
       const statusDiv = document.createElement('div');
       statusDiv.className = statusClass;
       const strong = document.createElement('strong');
-      strong.textContent = 'Performance';
+      strong.textContent = this.label('text_load_title');
       statusDiv.appendChild(strong);
       perfStatusEl.appendChild(statusDiv);
 
       const small = document.createElement('small');
       small.className = 'text-muted';
-      const uptime = Math.floor((perf.uptime || 0) / 3600);
-      const requests = perf.total_requests || 0;
-      const errorRate = perf.error_rate || 0;
-      const uptimeLine = document.createTextNode('Uptime: ' + uptime + 'h');
-      small.appendChild(uptimeLine);
-      const br1 = document.createElement('br');
-      small.appendChild(br1);
-      const requestsLine = document.createTextNode('Requests: ' + requests);
-      small.appendChild(requestsLine);
-      const br2 = document.createElement('br');
-      small.appendChild(br2);
-      const errorLine = document.createTextNode('Error Rate: ' + errorRate + '%');
-      small.appendChild(errorLine);
+      small.appendChild(document.createTextNode(this.label('text_load_calls_last_hour', {
+        calls: perf.calls_last_hour || 0,
+        callers: perf.callers_last_hour || 0
+      })));
+      small.appendChild(document.createElement('br'));
+      small.appendChild(document.createTextNode(
+        perf.alerts_last_day
+          ? this.label('text_load_alerts', {alerts: perf.alerts_last_day})
+          : this.label('text_load_no_alert')
+      ));
       perfStatusEl.appendChild(small);
     }
+  }
+
+  /**
+   * Translated label, with {{var}} interpolation. Falls back to the key so a missing definition
+   * is visible instead of silently blank.
+   */
+  label(key, vars = {}) {
+    let text = (typeof mcpLabels !== 'undefined' && mcpLabels[key]) ? mcpLabels[key] : key;
+
+    Object.keys(vars).forEach((name) => {
+      text = text.split('{{' + name + '}}').join(vars[name]);
+    });
+
+    return text;
   }
 
   updateConnectionStatus(status, text, colorClass) {

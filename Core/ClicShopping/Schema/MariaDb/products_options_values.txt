@@ -7,3 +7,4 @@ primary products_options_values_id language_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language value of a product option (red, XL). The option it belongs to is in products_options.

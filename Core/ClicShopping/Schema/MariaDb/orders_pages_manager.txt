@@ -8,3 +8,4 @@ primary orders_page_manager_id orders_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Frozen COPY of the terms and conditions the customer accepted on a given order, one row per order. It is legal evidence attached to a sale, not a catalogue page: the editable pages live in pages_manager.

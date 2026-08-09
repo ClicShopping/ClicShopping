@@ -20,3 +20,4 @@ idx_price_group_view price_group_view
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment CUSTOMER-GROUP PRICING - one row per product and customer group, carrying the price that group pays (customers_group_price) and its visibility flags. This is B2B / group pricing, not a promotion (specials) and not the price actually sold (orders_products).

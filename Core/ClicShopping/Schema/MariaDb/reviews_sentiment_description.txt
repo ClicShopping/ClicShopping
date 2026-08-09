@@ -11,3 +11,4 @@ primary id language_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language output of the review sentiment analysis: prose description, structured LLM analysis (analysis_json), and the critic verdict. Metrics are not here, they are in reviews_sentiment.

@@ -182,6 +182,22 @@ class SqlQueryProcessor
   }
 
   /**
+   * Tell a query apart from a model that declined to write one.
+   *
+   * cleanSqlResponse() cleans whatever it is given, so a refusal sentence comes back out of it
+   * looking like a query. Only a statement the pipeline would actually run counts as SQL.
+   *
+   * @param string $candidate Payload the generation step produced
+   * @return bool True when it opens on a read statement
+   */
+  public function looksLikeSqlStatement(string $candidate): bool
+  {
+    $opening = ltrim($candidate, " \t\n\r\0\x0B(;");
+
+    return preg_match('/^(SELECT|WITH)\b/i', $opening) === 1;
+  }
+
+  /**
    * Removes SQL comments from query
    * =============================================================
    * This method is part of the error correction strategy for SQL generation.

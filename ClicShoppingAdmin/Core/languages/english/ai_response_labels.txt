@@ -1,7 +1,3 @@
-# ai_response_labels — agnostic user-facing labels for AI chat rendering
-# Consolidated from the rag_*_formatter + rag_error_handler files.
-# Loaded via standard platform i18n (current interface language).
-
 text_rag_web_search_results_for = Web search results for:
 text_rag_web_search_summary = Summary:
 text_rag_web_search_price_comparison = Price Comparison
@@ -68,7 +64,6 @@ price_comparison_recommendation = RECOMMENDATION:
 price_comparison_no_competitors = No competitor prices found for comparison
 price_comparison_recommendation_label = Recommendation:
 
-# Temporal Labels
 temporal_month_january = January
 temporal_month_february = February
 temporal_month_march = March
@@ -140,6 +135,7 @@ text_column_reference_does_not_exist = The column or reference mentioned in your
 text_sql_query_generated_error = The SQL query generated has a syntax error. Please try rephrasing your question more clearly.
 text_table_referenced_does_not_exist = The table referenced in your question does not exist in the database. Please verify the entity name.
 text_error_executing_query = An error occurred while executing your query. Please try rephrasing your question or contact support if the problem persists.
+text_query_generation_failed = I could not build a query for this question, so nothing was measured. Try rephrasing it, or name the figure you want (for example: revenue, number of orders, units sold).<br />
 text_empty_results_base = I found no results for your query. Could you clarify your question so I can better assist you?<br />
 text_empty_results_product_title = **Suggestions to refine your search:**<br />
 text_empty_results_product_spelling = - Check the spelling of the product name<br />

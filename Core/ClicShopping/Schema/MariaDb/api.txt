@@ -37,3 +37,4 @@ engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
 comment REST API configurations with granular permission control for external integrations
+ai_schema = exclude

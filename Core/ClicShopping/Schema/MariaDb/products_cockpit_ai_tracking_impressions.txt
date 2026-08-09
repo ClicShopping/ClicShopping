@@ -27,3 +27,4 @@ idx_spam_check session_hash products_id module_code displayed_at
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment PRODUCT IMPRESSIONS: one row each time a product is displayed to a visitor, with the page, the module, its position and a weight. It measures EXPOSURE (how often a product was shown, by which module), never a sale - quantities sold are in orders_products. Use it for merchandising performance and visibility questions.

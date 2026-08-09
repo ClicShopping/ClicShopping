@@ -13,3 +13,4 @@ idx_pages_title pages_title
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language title, HTML body and SEO tags of a CMS page. This is where the text of the terms and conditions is read.

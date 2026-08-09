@@ -19,3 +19,4 @@ idx_query query
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment MARKET price watch: prices observed on external web sources for a product name, with the source, the search query and the date. These are COMPETITOR prices, NOT the price of the shop - the selling price is products_price in products, and the price actually sold is in orders_products. Use it only to compare the shop with the market.

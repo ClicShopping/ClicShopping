@@ -8,3 +8,4 @@ idx_products_quantity_unit_title products_quantity_unit_title
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language label of a quantity unit (piece, kg, litre). Lookup table: join it for the unit name.

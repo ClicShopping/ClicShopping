@@ -13,13 +13,13 @@ use ClicShopping\OM\Registry;
 
 /**
  * ColumnIndex
- * 
- * Builds and maintains an inverted index of column names and comments
- * for dynamic table selection based on query keywords
- * 
+ *
+ * Builds and maintains an inverted index of column names and comments, and of the
+ * TABLE comment, for dynamic table selection based on query keywords
+ *
  * Pure LLM Mode - NO synonym expansion, NO pattern matching
  * The LLM handles understanding - this class only provides raw data
- * 
+ *
  * @package ClicShopping\AI\Infrastructure\Schema
  */
 class ColumnIndex
@@ -27,11 +27,12 @@ class ColumnIndex
   private mixed $db;
   private array $columnToTables = [];
   private bool $debug;
-  
+
   // Statistics
   private int $totalTables = 0;
   private int $totalColumns = 0;
   private int $columnsWithComments = 0;
+  private int $tablesWithComments = 0;
   
   /**
    * Constructor
@@ -61,8 +62,10 @@ class ColumnIndex
     $this->totalTables = 0;
     $this->totalColumns = 0;
     $this->columnsWithComments = 0;
+    $this->tablesWithComments = 0;
 
     $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+    $tableComments = $this->readTableComments();
     $Qtables = $this->db->query("SHOW TABLES LIKE '{$prefix}%'");
     
     $tablesList = [];
@@ -82,23 +85,26 @@ class ColumnIndex
       }
       
       $this->totalTables++;
-      
+
       // Get columns with comments
       $Qcolumns = $this->db->query("SHOW FULL COLUMNS FROM {$tableName}");
-      
+
+      // Keywords already pointing at this table, so the table comment adds no duplicate entry
+      $indexedForTable = [];
+
       while ($Qcolumns->fetch()) {
         $this->totalColumns++;
         $columnName = $Qcolumns->value('Field');
         $comment = $Qcolumns->value('Comment');
-        
+
         if (!empty($comment)) {
           $this->columnsWithComments++;
         }
-        
+
         // Extract keywords from column name and comment
         $text = $columnName . ' ' . $comment;
         $keywords = $this->extractKeywords($text);
-        
+
         foreach ($keywords as $keyword) {
           if (!isset($this->columnToTables[$keyword])) {
             $this->columnToTables[$keyword] = [];
@@ -107,8 +113,11 @@ class ColumnIndex
             'table' => $tableName,
             'column' => $columnName
           ];
+          $indexedForTable[$keyword] = true;
         }
       }
+
+      $this->indexTableComment($tableName, $tableComments[$tableName] ?? '', $indexedForTable);
     }
     
     $duration = round((microtime(true) - $startTime) * 1000, 2);
@@ -119,8 +128,65 @@ class ColumnIndex
   }
   
   /**
+   * Table-level comments of the install, in one round-trip
+   *
+   * @return array table_name => table comment
+   */
+  private function readTableComments(): array
+  {
+    $comments = [];
+
+    $Qcomments = $this->db->query("SELECT TABLE_NAME, TABLE_COMMENT
+                                   FROM information_schema.TABLES
+                                   WHERE TABLE_SCHEMA = DATABASE()
+                                     AND TABLE_TYPE = 'BASE TABLE'
+                                     AND TABLE_COMMENT <> ''");
+
+    while ($Qcomments->fetch()) {
+      $comments[(string)$Qcomments->value('TABLE_NAME')] = (string)$Qcomments->value('TABLE_COMMENT');
+    }
+
+    return $comments;
+  }
+
+  /**
+   * Index the TABLE comment of one table
+   *
+   * The table comment is what says what the table MEANS (a sale, a live cart…). Without it a
+   * table can only be reached by a word of its own columns, whatever its comment declares.
+   *
+   * @param string $tableName Table name
+   * @param string $tableComment Table-level comment, '' when the table carries none
+   * @param array $indexedForTable Keywords already pointing at this table
+   * @return void
+   */
+  private function indexTableComment(string $tableName, string $tableComment, array $indexedForTable): void
+  {
+    if ($tableComment === '') {
+      return;
+    }
+
+    $this->tablesWithComments++;
+
+    foreach ($this->extractKeywords($tableComment) as $keyword) {
+      if (isset($indexedForTable[$keyword])) {
+        continue;
+      }
+
+      if (!isset($this->columnToTables[$keyword])) {
+        $this->columnToTables[$keyword] = [];
+      }
+
+      $this->columnToTables[$keyword][] = [
+        'table' => $tableName,
+        'column' => null
+      ];
+    }
+  }
+
+  /**
    * Find tables that match a keyword
-   * 
+   *
    * @param string $keyword Keyword to search
    * @return array Array of table/column matches
    */
@@ -182,6 +248,7 @@ class ColumnIndex
       'total_tables' => $this->totalTables,
       'total_columns' => $this->totalColumns,
       'columns_with_comments' => $this->columnsWithComments,
+      'tables_with_comments' => $this->tablesWithComments,
       'total_keywords' => count($this->columnToTables),
       'total_matches' => $totalMatches
     ];

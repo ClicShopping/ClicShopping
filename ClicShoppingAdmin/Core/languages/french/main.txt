@@ -614,6 +614,7 @@ text_chat_error_prefix = Erreur:
 text_chat_error_config_missing = Configuration manquante
 text_chat_error_unknown = Erreur inconnue
 text_chat_error_server = Erreur serveur
+text_chat_error_session_expired = Votre session a expiré ou la requête a été bloquée avant d'atteindre le serveur. Reconnectez-vous, puis renvoyez votre question.
 text_chat_error_empty_response = Réponse vide du serveur
 text_chat_error_invalid_response = Réponse invalide
 text_chat_metrics_confidence_title = Niveau de confiance de l'IA

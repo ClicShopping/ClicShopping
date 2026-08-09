@@ -41,3 +41,90 @@ DELETE FROM clic_configuration WHERE configuration_key = 'USE_CATALOG_RESET_CACH
   where configuration_key in ('SHOP_CODE_URL_CONFIDENTIALITY','SHOP_CODE_URL_CONDITIONS_VENTE');
 
 ===========
+AALTER TABLE clic_products COMMENT = 'PRODUCT CATALOG - one row per sellable product. Authoritative source for the CURRENT SELLING PRICE (products_price), stock on hand (products_quantity), model/SKU/EAN and active status.
+   The product NAME is not here, it is in products_description; the price actually sold and the quantities sold are in orders_products. Use it for catalogue questions (price of a product, stock, active products), never for
+   sales figures.';
+   ALTER TABLE clic_products_description COMMENT = 'PRODUCT NAMES and marketing texts, one row per product and per language (language_id). The name a user types when naming a product is here (products_name), not in products
+   - join it to products for any question that names a product. Prices and stock are in products, quantities sold in orders_products.';
+   ALTER TABLE clic_products_to_categories COMMENT = 'LINK TABLE between products and categories - one row per product/category pair, a product may belong to several categories. Use it to scope a catalogue question to a
+   category. It carries no price, no stock and no sales figure.';
+   ALTER TABLE clic_return_orders COMMENT = 'RETURNS / RMA - one row per product return request, joined to the original order (order_id) and product (product_id). Use it for return volume, reasons and refunds. A return is
+   NOT a sale: the sale itself stays in orders and orders_products, and a return never appears there.';
+   ALTER TABLE clic_products_groups COMMENT = 'CUSTOMER-GROUP PRICING - one row per product and customer group, carrying the price that group pays (customers_group_price) and its visibility flags. This is B2B / group
+   pricing, not a promotion (specials) and not the price actually sold (orders_products).';
+   ALTER TABLE clic_products_attributes COMMENT = 'PRODUCT VARIANTS - one row per product and option value (size, colour), with the price adjustment applied on top of the base price (options_values_price with price_prefix +
+   or -). Use it for questions about variants and option surcharges; the base price stays in products.';
+   ALTER TABLE clic_specials COMMENT = 'DISCOUNT CAMPAIGN - one row per product on promotion, with the promotional price (specials_new_products_price) and its validity window. It overrides the catalogue price of products
+   while active. It is not the price actually sold, which is in orders_products.';
+   ALTER TABLE clic_reviews COMMENT = 'CUSTOMER REVIEWS - one row per review of a product, with its rating (reviews_rating) and its author. Use it for satisfaction, average rating and review volume. The review text itself is
+   in reviews_description, the computed sentiment in reviews_sentiment.';
+   ALTER TABLE clic_products_favorites COMMENT = 'ADMIN MERCHANDISING PICKS - products the shop chooses to highlight, with a scheduling window (scheduled_date, expires_date). Despite the name this is NOT a customer wishlist:
+   no customer is referenced here. Per-customer suggestions live in products_recommendations.';
+   ALTER TABLE clic_products_featured COMMENT = 'ADMIN MERCHANDISING - products the shop puts forward, with a scheduling window (scheduled_date, expires_date). Like products_favorites this is an editorial selection made by
+   the shop, not customer behaviour and not a sales figure.';
+   ALTER TABLE clic_products_recommendations COMMENT = 'PER-CUSTOMER RECOMMENDATIONS produced by the system - one row per customer and recommended product, with a score and a grouping tag. Unlike products_favorites and
+   products_featured, which are admin picks, these are targeted at one customer (customers_id).';
+
+   #remove wishlist:
+    ALTER TABLE clic_products_favorites MODIFY products_favorites_id int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary key - unique identifier for each admin pick';
+     ALTER TABLE clic_products_favorites MODIFY products_id int(11) NOT NULL DEFAULT 0 COMMENT 'FK to products table - product picked by the shop, no customer involved';
+     ALTER TABLE clic_products_favorites MODIFY products_favorites_date_added datetime NULL COMMENT 'Timestamp when the shop picked this product';
+     ALTER TABLE clic_products_favorites MODIFY scheduled_date datetime NULL COMMENT 'Future date when the pick starts being displayed - null for immediate';
+     ALTER TABLE clic_products_favorites MODIFY expires_date datetime NULL COMMENT 'Date when the pick stops being displayed - null for no expiration';
+     ALTER TABLE clic_products_favorites MODIFY status tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Pick status - 0: inactive, 1: active';
+
+# add comment
+ALTER TABLE clic_reviews_sentiment_history COMMENT = 'AUDIT TRAIL of product review sentiment - one snapshot per analysis run, never overwritten. The CURRENT sentiment of a product is in reviews_sentiment; use this table only to follow how a sentiment CHANGED over time.';
+ALTER TABLE clic_reviews_sentiment COMMENT = 'CURRENT sentiment state of a product, one row per analysis. The percentages (positive_pct, neutral_pct, negative_pct, rating_stddev) are computed deterministically from star ratings, not by the LLM. The prose and the LLM analysis are in reviews_sentiment_description, the historical snapshots in reviews_sentiment_history.';
+ALTER TABLE clic_reviews_sentiment_description COMMENT = 'Per-language output of the review sentiment analysis: prose description, structured LLM analysis (analysis_json), and the critic verdict. Metrics are not here, they are in reviews_sentiment.';
+ALTER TABLE clic_reviews_description COMMENT = 'The TEXT of a product review, per language. The rating, the author and the approval status are in reviews - join on reviews_id. Never count reviews here.';
+ALTER TABLE clic_reviews_vote COMMENT = 'Helpfulness votes cast on a product review, one row per vote. This is engagement, NOT a rating: the star rating of a review is in reviews.';
+ALTER TABLE clic_feedback_order_reviews COMMENT = 'Rating of an ORDER and of the shop experience, one row per order feedback - NOT a product review (those are in reviews). Use it for satisfaction about the purchase, never for the opinion on an article.';
+ALTER TABLE clic_feedback_order_reviews_description COMMENT = 'The TEXT of an order feedback, per language. The rating and the status are in feedback_order_reviews.';
+ALTER TABLE clic_orders_pages_manager COMMENT = 'Frozen COPY of the terms and conditions the customer accepted on a given order, one row per order. It is legal evidence attached to a sale, not a catalogue page: the editable pages live in pages_manager.';
+ALTER TABLE clic_seo COMMENT = 'Site-wide SEO CONFIGURATION, one row per language: default title, keywords, description and footer of the shop pages. It contains no product, category or sales data - never join it to answer a catalogue or analytics question.';
+ALTER TABLE clic_orders_products_attributes COMMENT = 'Option values chosen by the customer on ONE ordered line (size, colour) with the price delta applied. Sold quantities and prices are in orders_products; the catalogue definition of the options is in products_options.';
+ALTER TABLE clic_orders_products_download COMMENT = 'Downloadable files delivered with an ordered line, with the download quota. Not a catalogue table: the file attached to an attribute is in products_attributes_download.';
+ALTER TABLE clic_orders_status_history COMMENT = 'TIMELINE of an order: one row per status change, with the tracking number, who changed it and whether the customer was notified. Use it for delays and order follow-up, never for amounts.';
+ALTER TABLE clic_orders_status_tracking COMMENT = 'Per-language label and URL template of a carrier tracking link. Lookup table: join it for the carrier name, never count rows in it.';
+ALTER TABLE clic_suppliers COMMENT = 'Supplier identity and contact details, one row per supplier. Purchase prices are not here: the cost of a product is products_cost in products.';
+ALTER TABLE clic_suppliers_info COMMENT = 'Per-language website URL of a supplier, with click tracking. The supplier identity is in suppliers.';
+ALTER TABLE clic_manufacturers COMMENT = 'Manufacturer (brand) identity, one row per brand. The products of a brand reference it by manufacturers_id in products.';
+ALTER TABLE clic_manufacturers_info COMMENT = 'Per-language URL, description and SEO fields of a manufacturer, with click tracking. The brand identity is in manufacturers.';
+ALTER TABLE clic_products_options COMMENT = 'CATALOGUE definition of a product option (the name of the axis: size, colour), per language. What a customer actually chose on a sale is in orders_products_attributes.';
+ALTER TABLE clic_products_options_values COMMENT = 'Per-language value of a product option (red, XL). The option it belongs to is in products_options.';
+ALTER TABLE clic_products_attributes_download COMMENT = 'Downloadable file attached to a product attribute, with the download quota. What was actually delivered on a sale is in orders_products_download.';
+ALTER TABLE clic_products_discount_quantity COMMENT = 'Quantity price breaks of a product, per customer group and supplier. It is a pricing RULE, not a sale: quantities actually sold are in orders_products.';
+ALTER TABLE clic_products_images COMMENT = 'Additional images of a product beyond the main one, with their display order. The main image is products_image in products.';
+ALTER TABLE clic_products_notifications COMMENT = 'Customers who asked to be warned when a product is back in stock. It is an intent, NOT a sale and NOT a wishlist.';
+ALTER TABLE clic_products_quantity_unit COMMENT = 'Per-language label of a quantity unit (piece, kg, litre). Lookup table: join it for the unit name.';
+ALTER TABLE clic_products_recommendations_to_categories COMMENT = 'Mapping of a recommended product to the categories where the recommendation is shown. The recommendation itself is in products_recommendations.';
+ALTER TABLE clic_products_extra_fields COMMENT = 'Definition of the custom product fields of this install (name, type, order, per language and customer group). It holds field DEFINITIONS, not their values.';
+ALTER TABLE clic_return_orders_history COMMENT = 'TIMELINE of a return (RMA): one row per status change, with the comment and who made it. The return itself is in return_orders.';
+ALTER TABLE clic_return_orders_action COMMENT = 'Per-language label of a return action (repair, exchange, refund). Lookup table: join it for the label, never count returns here - the returns are in return_orders.';
+ALTER TABLE clic_return_orders_reason COMMENT = 'Per-language label of a return reason (damaged, wrong size). Lookup table: join it for the label, never count returns here - the returns are in return_orders.';
+ALTER TABLE clic_return_orders_status COMMENT = 'Per-language label of a return status. Lookup table: join it for the label, never count returns here - the returns are in return_orders.';
+ALTER TABLE clic_banners_history COMMENT = 'Daily impressions and clicks of an advertising banner. It measures banner display, NOT product views and NOT sales.';
+ALTER TABLE clic_blog_categories COMMENT = 'Blog category tree (image, parent, order, customer group). Editorial content only - it has nothing to do with the product categories in categories.';
+ALTER TABLE clic_blog_categories_description COMMENT = 'Per-language name, description and SEO tags of a blog category. Editorial content, not a product category.';
+ALTER TABLE clic_blog_content COMMENT = 'Blog article: publication status, dates, author and audience. The title and the body are in blog_content_description. Editorial content, never a product.';
+ALTER TABLE clic_blog_content_description COMMENT = 'Per-language title, body, URL and SEO tags of a blog article, with its view counter. Editorial content, never a product description.';
+ALTER TABLE clic_pages_manager COMMENT = 'CMS page of the shop (terms, legal notice, help): type, status, dates and audience. The title and the HTML body are in pages_manager_description. The copy accepted on an order is in orders_pages_manager.';
+ALTER TABLE clic_pages_manager_description COMMENT = 'Per-language title, HTML body and SEO tags of a CMS page. This is where the text of the terms and conditions is read.';
+ALTER TABLE clic_contact_customers COMMENT = 'Message sent through the contact form: department, sender, subject and enquiry. Pre-sales contact, not tied to an order - after-sales requests are in customers_support.';
+ALTER TABLE clic_contact_customers_follow COMMENT = 'Administrator replies to a contact form message, one row per reply. The original message is in contact_customers.';
+ALTER TABLE clic_customers_gdpr COMMENT = 'GDPR consent record of a customer: opt-out of IP address storage, with its date. Compliance data, never used for sales or marketing figures.';
+ALTER TABLE clic_discount_coupons COMMENT = 'DEFINITION of a discount coupon: amount or rate, validity window, usage limits and eligibility. A coupon actually used on an order appears in the order totals, not here.';
+ALTER TABLE clic_dynamic_pricing_rules COMMENT = 'DEFINITION of the dynamic pricing rules: condition, type, value, priority and target customer group. It holds rules, not prices: the selling price of a product is products_price in products.';
+ALTER TABLE clic_groups_to_categories COMMENT = 'Discount granted to a customer group on a whole category. It is a pricing RULE, not a sale.';
+ALTER TABLE clic_information_email_customers COMMENT = 'Configuration of the reminder email delays (90, 60, 30, 15 and 7 days). Settings only, no customer and no sales data.';
+ALTER TABLE clic_address_book COMMENT = 'Postal addresses of the customers, including the company identifiers for B2B. The customer identity is in customers; the address used on a sale is copied into orders.';
+ALTER TABLE clic_customers_support COMMENT = 'Customer support tickets. Personal data (name/email/phone) is encrypted at rest. See Apps/Customers/CustomersSupport.';
+ALTER TABLE clic_customers_support_follow COMMENT = 'Conversation thread linked to a customers_support ticket. One row per reply (admin or - future - customer).';
+ALTER TABLE clic_web_search_product_price_tracking_history COMMENT = 'MARKET price watch: prices observed on external web sources for a product name, with the source, the search query and the date. These are COMPETITOR prices, NOT the price of the shop - the selling price is products_price in products, and the price actually sold is in orders_products. Use it only to compare the shop with the market.';
+
+ALTER TABLE clic_dynamic_pricing_history COMMENT = 'APPLIED dynamic pricing history: one row per price computed by a rule, with the base price, the resulting price, the rule applied and the source. It is OUR OWN price history - the current selling price is products_price in products, the price actually sold is in orders_products, and competitor prices are in web_search_product_price_tracking_history. Use it to follow how a price MOVED and which rule moved it.';
+ALTER TABLE clic_products_cooccurrence COMMENT = 'CO-PURCHASE affinity between two products, with a score: how often product_id and related_id are bought together. Derived from the order history, it answers cross-sell and bundle questions - it holds no price, no quantity and no revenue, those are in orders_products.';
+ALTER TABLE clic_whos_online COMMENT = 'LIVE AUDIENCE: one row per visitor currently browsing, refreshed on each click - entry time, last click, last page seen, referrer and user agent. It is real-time traffic, NOT a sale and NOT a cart: purchases are in orders, live carts in customers_basket. Rows disappear when the session ends, so it answers only questions about NOW.';
+ALTER TABLE clic_products_cockpit_ai_tracking_impressions COMMENT = 'PRODUCT IMPRESSIONS: one row each time a product is displayed to a visitor, with the page, the module, its position and a weight. It measures EXPOSURE (how often a product was shown, by which module), never a sale - quantities sold are in orders_products. Use it for merchandising performance and visibility questions.';
+ALTER TABLE clic_seo_serp_reports COMMENT = 'SEO AUDIT REPORT of one entity (product, category, page): the search-engine result data for a query, the SEO content before and after, the proposed changes and the scores. It answers SEO questions - ranking, keyword, optimisation gain. It holds no price, no stock and no sales figure.';

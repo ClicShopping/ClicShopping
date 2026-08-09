@@ -307,15 +307,8 @@ document.addEventListener("DOMContentLoaded", function() {
       .then(response => {
         console.log('ChatSend: Response received, status:', response.status);
 
-        // 🔧Vérifier si la réponse est OK avant de parser le JSON
-        if (!response.ok) {
-          return response.text().then(text => {
-            console.error('ChatSend: Server error response:', text.substring(0, 500));
-            throw new Error(`${t('error_server')} ${response.status}: ${text.substring(0, 100)}`);
-          });
-        }
-
-        return response.json();
+        // Garde partagée : rejette aussi un 200 non-JSON (redirection suivie vers login, page WAF)
+        return window.ChatHttp.expectJson(response);
       })
       .then(data => {
         console.log('ChatSend: Data parsed:', data);

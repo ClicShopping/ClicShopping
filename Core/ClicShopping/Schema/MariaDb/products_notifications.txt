@@ -7,3 +7,4 @@ primary products_id customers_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Customers who asked to be warned when a product is back in stock. It is an intent, NOT a sale and NOT a wishlist.

@@ -7,3 +7,4 @@ primary reviews_id languages_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment The TEXT of a product review, per language. The rating, the author and the approval status are in reviews - join on reviews_id. Never count reviews here.

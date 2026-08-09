@@ -8,3 +8,4 @@ idx_name name
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language label of a return reason (damaged, wrong size). Lookup table: join it for the label, never count returns here - the returns are in return_orders.

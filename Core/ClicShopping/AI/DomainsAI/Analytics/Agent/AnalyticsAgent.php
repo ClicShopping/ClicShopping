@@ -990,6 +990,13 @@ class AnalyticsAgent implements AgentInterface
       }
     }
 
+    // Every candidate was skipped by validation: returning [] here made the caller report an empty
+    // result set, i.e. "no data" for a question no query ever asked.
+    if ($results === []) {
+      $this->debugLog("  No candidate SQL passed validation — nothing was executed", "EXECUTION");
+      throw new \Exception('No generated SQL query passed validation');
+    }
+
     $this->debugLog("\n" . "." . str_repeat(".", 99) . "\n");
     return $results;
   }
@@ -1086,6 +1093,13 @@ class AnalyticsAgent implements AgentInterface
     if (empty($sqlQueries[0])) {
       $this->debugLog("ERROR: No valid SQL query extracted", "SQL");
       throw new \Exception('No valid SQL query could be extracted');
+    }
+
+    // The model is told to answer a fixed sentence when the injected schema cannot answer
+    // (rag_analytics_agent). That sentence is not a query: it must never be run, and never cached.
+    if (!$this->queryProcessor->looksLikeSqlStatement($sqlQueries[0])) {
+      $this->debugLog("MODEL DECLINED - the generation is not a SQL statement: " . substr($sqlQueries[0], 0, 200), "SQL");
+      throw new \Exception('The model declined to generate SQL for this question');
     }
 
     // Only cache if this was a fresh LLM generation (not from cache)

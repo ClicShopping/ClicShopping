@@ -10,3 +10,4 @@ idx_banners_history_banners_id banners_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Daily impressions and clicks of an advertising banner. It measures banner display, NOT product views and NOT sales.

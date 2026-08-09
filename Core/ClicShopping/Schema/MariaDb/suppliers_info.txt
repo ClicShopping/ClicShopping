@@ -9,3 +9,4 @@ primary suppliers_id languages_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language website URL of a supplier, with click tracking. The supplier identity is in suppliers.

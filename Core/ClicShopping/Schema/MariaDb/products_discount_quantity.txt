@@ -11,3 +11,4 @@ primary id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Quantity price breaks of a product, per customer group and supplier. It is a pricing RULE, not a sale: quantities actually sold are in orders_products.

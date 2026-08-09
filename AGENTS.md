@@ -38,11 +38,11 @@ Seven files — all must be checked for the Self-Correction Protocol.
 
 Descriptive material is NOT in `Agents/` — it lives in `docs/`, see its index `docs/README.md`:
 
-| File                                       | Content                                                                     |
-|--------------------------------------------|-----------------------------------------------------------------------------|
-| `docs/benchmarks/AI_BENCHMARK.md`          | Quality scorecard of `Core/ClicShopping/AI/` — re-assess after every major refactor |
-| `docs/architecture/AI_ARCHITECTURE_DIAGRAMS.md` | AI architecture diagrams                                               |
-| `docs/architecture/<NAME>-notes.md`        | The reasoning behind the rules of `Agents/<NAME>.md`                         |
+| File                                            | Content                                                                                                                                                                |
+|-------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `docs/benchmarks/AI_BENCHMARK.md`               | Quality scorecard of `Core/ClicShopping/AI/` — re-assess after every major refactor                                                                                    |
+| `docs/architecture/AI_ARCHITECTURE_DIAGRAMS.md` | AI architecture diagrams                                                                                                                                               |
+| `docs/architecture/<NAME>-notes.md`             | The reasoning behind the rules of `Agents/<NAME>.md`                                                                                                                   |
 
 The two security files have **separate scopes and never substitute for each other**: `SECURITY.md`
 covers everything outside `Core/ClicShopping/AI/`, `AI_SECURITY.md` covers that directory only. A
@@ -50,7 +50,7 @@ query cleared by the AI guardrails still owes every platform check.
 
 > Both are deliberately incomplete: each ends with a "To be covered" section listing its known
 > gaps. Extend them as ground is covered; never invent a rule to fill one.
-
+> Just focus on the specificity of the document, nothing helse. If something is introducing and not in relation with the focus for the AI agent, remove it.
 ---
 
 ## Agent Workflow — Mandatory Steps

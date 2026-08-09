@@ -11,3 +11,4 @@ idx_orders_products_download_orders_id orders_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Downloadable files delivered with an ordered line, with the download quota. Not a catalogue table: the file attached to an attribute is in products_attributes_download.

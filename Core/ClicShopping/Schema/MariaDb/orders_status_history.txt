@@ -17,3 +17,4 @@ idx_orders_status_history_orders_id orders_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment TIMELINE of an order: one row per status change, with the tracking number, who changed it and whether the customer was notified. Use it for delays and order follow-up, never for amounts.

@@ -19,3 +19,4 @@ engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
 comment System configuration settings for store behavior and features
+ai_schema = exclude

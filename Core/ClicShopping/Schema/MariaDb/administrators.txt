@@ -20,3 +20,4 @@ engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
 comment Administrator accounts with authentication and access control
+ai_schema = exclude

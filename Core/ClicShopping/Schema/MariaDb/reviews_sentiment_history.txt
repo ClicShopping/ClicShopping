@@ -14,3 +14,4 @@ idx_reviews_sentiment_history_products_id products_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment AUDIT TRAIL of product review sentiment - one snapshot per analysis run, never overwritten. The CURRENT sentiment of a product is in reviews_sentiment; use this table only to follow how a sentiment CHANGED over time.

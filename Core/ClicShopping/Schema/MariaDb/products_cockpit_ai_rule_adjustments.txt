@@ -16,3 +16,4 @@ idx_date_created date_created
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+ai_schema = exclude

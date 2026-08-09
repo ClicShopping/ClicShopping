@@ -10,3 +10,4 @@ idx_related_id related_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment CO-PURCHASE affinity between two products, with a score: how often product_id and related_id are bought together. Derived from the order history, it answers cross-sell and bundle questions - it holds no price, no quantity and no revenue, those are in orders_products.

@@ -12,3 +12,4 @@ idx_manufacturers_name manufacturers_name
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Manufacturer (brand) identity, one row per brand. The products of a brand reference it by manufacturers_id in products.

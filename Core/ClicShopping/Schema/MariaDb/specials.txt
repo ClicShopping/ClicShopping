@@ -16,3 +16,4 @@ idx_specials_products_id products_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment DISCOUNT CAMPAIGN - one row per product on promotion, with the promotional price (specials_new_products_price) and its validity window. It overrides the catalogue price of products while active. It is not the price actually sold, which is in orders_products.

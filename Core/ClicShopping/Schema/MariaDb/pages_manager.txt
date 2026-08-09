@@ -18,3 +18,4 @@ primary pages_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment CMS page of the shop (terms, legal notice, help): type, status, dates and audience. The title and the HTML body are in pages_manager_description. The copy accepted on an order is in orders_pages_manager.

@@ -10,8 +10,6 @@ namespace ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin\Exceptions\McpConnectionException;
-use ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin\MCPConnector;
 
 /**
  * Class McpHealth
@@ -109,59 +107,89 @@ class McpHealth
    */
   private function checkConfiguration(): array
   {
-    $validation = $this->service->validateConfiguration();
+    $issues = [];
+    $db = Registry::get('Db');
+
+    $Qmcp = $db->prepare('SELECT COUNT(*) AS total,
+                                 SUM(status) AS active,
+                                 SUM(select_data + update_data + create_data + delete_data + create_db) AS granted
+                          FROM :table_mcp
+                         ');
+    $Qmcp->execute();
+    $Qmcp->fetch();
+
+    $total = $Qmcp->valueInt('total');
+    $active = $Qmcp->valueInt('active');
+    $granted = $Qmcp->valueInt('granted');
+
+    if ($total === 0) {
+      $issues[] = 'no_configuration';
+    } elseif ($active === 0) {
+      $issues[] = 'no_active_configuration';
+    } elseif ($granted === 0) {
+      $issues[] = 'no_permission_granted';
+    }
+
     return [
-      'valid' => $validation['valid'],
-      'issues' => $validation['issues'],
-      'status' => $validation['valid'] ? 'healthy' : 'error'
+      'valid' => $issues === [],
+      'issues' => $issues,
+      'configurations' => $total,
+      'active' => $active,
+      'permissions_granted' => $granted,
+      'status' => $issues === [] ? 'healthy' : 'error'
     ];
   }
 
   /**
-   * Checks the connectivity status with the MCP server.
+   * Reports the INBOUND traffic: MCP calls ClicShopping, never the reverse.
    *
-   * This method sends a 'ping' message to the server to test the connection and measure latency.
+   * It used to ping an outbound MCP server on server_host:server_port. No such server exists in
+   * this governance, so the probe was permanently red and said nothing about the traffic that
+   * does happen. What matters is whether callers reach us, and whether they are being refused.
    *
-   * @return array An array with connection status, latency, and error message if the connection fails.
+   * @return array Inbound session counters, with no prose (the page owns the wording).
    */
   private function checkConnectivity(): array
   {
-    try {
-      $startTime = microtime(true);
-      $this->service->sendMessage('ping');
-      $latency = (microtime(true) - $startTime) * 1000;
+    $db = Registry::get('Db');
 
-      $result = [
-        'connected' => true,
-        'latency' => round($latency, 2),
-        'status' => $latency < 1000 ? 'healthy' : 'warning'
-      ];
+    $Qsession = $db->prepare('SELECT COUNT(*) AS total,
+                                     MAX(date_modified) AS last_seen,
+                                     SUM(date_modified >= DATE_SUB(NOW(), INTERVAL 24 HOUR)) AS last_day
+                              FROM :table_mcp_session
+                             ');
+    $Qsession->execute();
+    $Qsession->fetch();
 
-      return $result;
-    } catch (McpConnectionException $e) {
-      // Fallback: raw TCP connectivity check to avoid endpoint-specific failures
-      $config = MCPConnector::getInstance()->getConfig();
-      $host = $config['server_host'] ?? 'localhost';
-      $port = (int)($config['server_port'] ?? 0);
-      $timeout = 2;
+    $total = $Qsession->valueInt('total');
+    $lastSeen = $Qsession->value('last_seen');
+    $lastDay = $Qsession->valueInt('last_day');
 
-      $socket = @fsockopen($host, $port, $errno, $errstr, $timeout);
-      if (is_resource($socket)) {
-        fclose($socket);
-        return [
-          'connected' => true,
-          'latency' => null,
-          'status' => 'warning',
-          'error' => 'Ping failed, but TCP connection to MCP server succeeded.'
-        ];
-      }
+    $Qrefused = $db->prepare('SELECT COALESCE(SUM(attempts), 0) AS refused
+                              FROM :table_mcp_failed_attempts
+                             ');
+    $Qrefused->execute();
+    $Qrefused->fetch();
 
-      return [
-        'connected' => false,
-        'error' => $e->getMessage(),
-        'status' => 'error'
-      ];
+    $refused = $Qrefused->valueInt('refused');
+
+    // Never contacted is not a failure: it is an integration nobody has called yet.
+    $status = 'healthy';
+
+    if ($refused > 0) {
+      $status = 'warning';
     }
+
+    return [
+      'connected' => $total > 0,
+      'latency' => null,
+      'direction' => 'inbound',
+      'sessions' => $total,
+      'sessions_last_day' => $lastDay,
+      'last_seen' => $lastSeen,
+      'refused' => $refused,
+      'status' => $status
+    ];
   }
 
   /**
@@ -174,32 +202,41 @@ class McpHealth
    */
   private function checkPerformance(): array
   {
-    // This calls your getHealthStatus() function
-    $stats = $this->service->getHealthStatus();
+    // It used to read the outbound transport counters, which are per-instance and therefore always
+    // zero on a fresh request: uptime 0h, 0 requests, 0% errors, whatever had actually happened.
+    $db = Registry::get('Db');
 
-    // If getHealthStatus returned an error, pass that on
-    if ($stats['status'] === 'error') {
-      return ['status' => 'error', 'message' => $stats['message']];
-    }
+    $Qload = $db->prepare('SELECT COUNT(*) AS calls_last_hour,
+                                  COUNT(DISTINCT identifier) AS callers
+                           FROM :table_mcp_rate_limit
+                           WHERE timestamp >= :timestamp
+                          ');
+    $Qload->bindInt(':timestamp', time() - 3600);
+    $Qload->execute();
+    $Qload->fetch();
 
-    // Build the performance array from the stats
+    $Qalerts = $db->prepare('SELECT COUNT(*) AS total,
+                                    COALESCE(MAX(severity_level), 0) AS worst
+                             FROM :table_mcp_alerts
+                             WHERE alert_timestamp >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                            ');
+    $Qalerts->execute();
+    $Qalerts->fetch();
+
+    $alerts = $Qalerts->valueInt('total');
+    $worst = $Qalerts->valueInt('worst');
+
     $performance = [
-      'status' => $stats['status'], // Use the status from getHealthStatus
-      'uptime' => $stats['uptime'] ?? 0,
-      'total_requests' => $stats['total_requests'] ?? 0,
+      'status' => 'healthy',
+      'calls_last_hour' => $Qload->valueInt('calls_last_hour'),
+      'callers_last_hour' => $Qload->valueInt('callers'),
+      'alerts_last_day' => $alerts,
+      'worst_severity' => $worst,
       'error_rate' => 0,
     ];
 
-    if (($stats['total_requests'] ?? 0) > 0) {
-      $performance['error_rate'] = round(($stats['errors'] ?? 0) / $stats['total_requests'] * 100, 2);
-    }
-
-    // Override status if error rate is too high
-    if ($performance['error_rate'] > 5) {
-      $performance['status'] = 'warning';
-    }
-    if ($performance['error_rate'] > 20) {
-      $performance['status'] = 'error';
+    if ($alerts > 0) {
+      $performance['status'] = $worst >= 3 ? 'error' : 'warning';
     }
 
     return $performance;

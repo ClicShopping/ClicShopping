@@ -28,3 +28,4 @@ idx_origin_date origin started_at
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+ai_schema = exclude

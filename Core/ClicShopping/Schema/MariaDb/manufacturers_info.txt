@@ -13,3 +13,4 @@ primary manufacturers_id languages_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language URL, description and SEO fields of a manufacturer, with click tracking. The brand identity is in manufacturers.

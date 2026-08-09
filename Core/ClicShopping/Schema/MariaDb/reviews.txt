@@ -17,3 +17,4 @@ idx_reviews_customers_id customers_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment CUSTOMER REVIEWS - one row per review of a product, with its rating (reviews_rating) and its author. Use it for satisfaction, average rating and review volume. The review text itself is in reviews_description, the computed sentiment in reviews_sentiment.

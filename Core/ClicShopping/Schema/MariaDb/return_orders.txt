@@ -25,3 +25,4 @@ primary return_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment RETURNS / RMA - one row per product return request, joined to the original order (order_id) and product (product_id). Use it for return volume, reasons and refunds. A return is NOT a sale: the sale itself stays in orders and orders_products, and a return never appears there.

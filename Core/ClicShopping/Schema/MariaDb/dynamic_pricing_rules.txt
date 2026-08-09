@@ -18,3 +18,4 @@ idx_rules_id rules_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment DEFINITION of the dynamic pricing rules: condition, type, value, priority and target customer group. It holds rules, not prices: the selling price of a product is products_price in products.

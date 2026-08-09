@@ -18,3 +18,4 @@ idx_recommendation_date recommendation_date
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment PER-CUSTOMER RECOMMENDATIONS produced by the system - one row per customer and recommended product, with a score and a grouping tag. Unlike products_favorites and products_featured, which are admin picks, these are targeted at one customer (customers_id).

@@ -19,3 +19,4 @@ idx_reviews_products_id products_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment CURRENT sentiment state of a product, one row per analysis. The percentages (positive_pct, neutral_pct, negative_pct, rating_stddev) are computed deterministically from star ratings, not by the LLM. The prose and the LLM analysis are in reviews_sentiment_description, the historical snapshots in reviews_sentiment_history.
