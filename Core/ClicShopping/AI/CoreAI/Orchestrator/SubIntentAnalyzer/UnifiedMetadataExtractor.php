@@ -10,6 +10,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\Sites\Common\HTMLOverrideCommon;
 
 /**
  * UnifiedMetadataExtractor
@@ -241,20 +242,6 @@ class UnifiedMetadataExtractor
    */
   private function cleanJsonResponse(string $response): string
   {
-    // Remove markdown code blocks (```json ... ``` or ``` ... ```)
-    $response = trim($response);
-
-    // Pattern 1: ```json\n{...}\n```
-    if (preg_match('/^```(?:json)?\s*\n(.*?)\n```$/s', $response, $matches)) {
-      return trim($matches[1]);
-    }
-
-    // Pattern 2: ```{...}```
-    if (preg_match('/^```(?:json)?\s*(\{.*?\})\s*```$/s', $response, $matches)) {
-      return trim($matches[1]);
-    }
-
-    // No markdown blocks found, return as-is
-    return $response;
+    return HTMLOverrideCommon::extractJsonFromMarkdown($response);
   }
 }

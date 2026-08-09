@@ -1,9 +1,10 @@
 cfg_chatgpt_reasoning_title = Reasoning effort
-cfg_chatgpt_reasoning_description = Select your option. Only available for chatgpt-5.
+cfg_chatgpt_reasoning_description = Select your option. Only the tiers accepted by the default model are listed.
 
 cfg_chatgpt_response_reasoning_select = --Select Reasoning Effort--
+cfg_chatgpt_response_reasoning_none = None (fastest, no reasoning)
 cfg_chatgpt_response_reasoning_minimal = Minimal
 cfg_chatgpt_response_reasoning_low = Low
 cfg_chatgpt_response_reasoning_medium = Medium
 cfg_chatgpt_response_reasoning_high = High
-
+cfg_chatgpt_response_reasoning_xhigh = Extra high (slowest)

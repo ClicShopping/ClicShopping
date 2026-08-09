@@ -288,12 +288,11 @@
           return null;
         }
 
-        // Essayer de décompresser si nécessaire
-        if ($this->isCompressed($contents)) {
-          $contents = gzuncompress($contents);
-          if ($contents === false) {
-            return null;
-          }
+        // Décompresser selon l'en-tête réellement écrit (zlib ou gzip).
+        $contents = $this->decompress($contents);
+
+        if ($contents === false) {
+          return null;
         }
 
         // unserialize() n'émet PAS d'exception sur des données corrompues/tronquées : elle
@@ -342,12 +341,10 @@
         return null;
       }
 
-      if ($this->isCompressed($contents)) {
-        $contents = gzuncompress($contents);
+      $contents = $this->decompress($contents);
 
-        if ($contents === false) {
-          return null;
-        }
+      if ($contents === false) {
+        return null;
       }
 
       $cacheData = @unserialize($contents, ['allowed_classes' => false]);
@@ -414,8 +411,55 @@
      */
     protected function isCompressed(string $data): bool
     {
-      // Vérification basique : les données gzcompressed commencent par des bytes spécifiques
-      return strlen($data) > 2 && ord($data[0]) === 0x1f && ord($data[1]) === 0x8b;
+      return $this->compressionFormat($data) !== null;
+    }
+
+    /**
+     * Which compression save() used, sniffed from the header: 'zlib' (gzcompress, RFC 1950),
+     * 'gzip' (gzencode, RFC 1952), or null when the payload is plain serialized data.
+     *
+     * save() writes gzcompress(), whose header is 0x78 — NOT the 0x1f8b gzip magic. Testing only
+     * for gzip meant a compressed entry was never recognised and went raw into unserialize(),
+     * which is the "Error at offset 0" warning. Serialized data starts with a type letter
+     * (a: s: i: …), never 0x78 or 0x1f, so sniffing cannot collide with it.
+     *
+     * @param string $data Raw file contents
+     * @return string|null 'zlib', 'gzip', or null
+     */
+    protected function compressionFormat(string $data): ?string
+    {
+      if (strlen($data) < 2) {
+        return null;
+      }
+
+      $first = ord($data[0]);
+      $second = ord($data[1]);
+
+      if ($first === 0x1f && $second === 0x8b) {
+        return 'gzip';
+      }
+
+      // RFC 1950: CMF=0x78 for deflate/32K window, and (CMF<<8|FLG) must be a multiple of 31.
+      if ($first === 0x78 && ((($first << 8) + $second) % 31) === 0) {
+        return 'zlib';
+      }
+
+      return null;
+    }
+
+    /**
+     * Decompress cache contents according to their own header.
+     *
+     * @param string $contents Raw file contents
+     * @return string|false Plain contents, or false when decompression fails
+     */
+    protected function decompress(string $contents): string|false
+    {
+      return match ($this->compressionFormat($contents)) {
+        'gzip' => @gzdecode($contents),
+        'zlib' => @gzuncompress($contents),
+        default => $contents,
+      };
     }
 
     /**

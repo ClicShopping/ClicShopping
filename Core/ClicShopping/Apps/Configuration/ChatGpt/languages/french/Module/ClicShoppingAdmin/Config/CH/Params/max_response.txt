@@ -1,3 +1,0 @@
-cfg_chatgpt_max_response_title = Résponse maximale
-cfg_chatgpt_max_response_description = Veuillez insérer un nombre<br />
-Contrôle le nombre de rèponse à créer

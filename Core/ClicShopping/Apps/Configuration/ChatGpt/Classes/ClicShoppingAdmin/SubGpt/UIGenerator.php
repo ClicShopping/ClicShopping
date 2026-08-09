@@ -194,55 +194,26 @@ class UIGenerator
    */
   public static function gptCkeditorParameters(): string|bool
   {
-    $model = ModelManager::defaultModel();
-
-    $url = "https://api.openai.com/v1/chat/completions";
-
-    $organization = '';
-    if (!empty(ModelManager::getProviderApiKey('openai')['organisation'])) {
-      $organization = 'let organizationGpt = "' . ModelManager::getProviderApiKey('openai')['organisation'] . '";';
-    }
+    // The browser talks to ClicShopping, never to a provider: the model, its provider, the API
+    // key and the wire format are all resolved server-side by the Gpt facade. Nothing here is
+    // OpenAI-specific, so switching the catalogued model to another provider needs no edit.
+    $url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin')
+         . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin')
+         . 'ajax/ChatGpt/chatGptCkeditor.php';
 
     $script = '<script>
  let apiGptUrl = "' . $url . '";
- ' . $organization . '
- let modelGpt = "' . $model . '";
- let temperatureGpt = parseFloat("' . (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE . '");
- let top_p_gpt = parseFloat("' . (float)CLICSHOPPING_APP_CHATGPT_CH_TOP_P . '");
- let max_tokens_gpt = parseInt("' . (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN . '");
- let reasoning_effort_gpt = "' . CLICSHOPPING_APP_CHATGPT_CH_REASONING_EFFORT . '";
- let verbosity_gpt = "' . CLICSHOPPING_APP_CHATGPT_CH_VERBOSITY . '";
- let nGpt = parseInt("' . (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_RESPONSE . '");
  let titleGpt = "' . CLICSHOPPING::getDef('text_chat_title') . '";
 </script>';
 
     $script .= '<script>
  function callChatGpt(prompt, callback) {
-   const payload = {
-     prompt: prompt,
-     model: modelGpt
-   };
-
-   if (modelGpt.startsWith("gpt-5-")) {
-     payload.max_output_tokens = max_tokens_gpt;
-     payload.reasoning_effort = reasoning_effort_gpt;
-     payload.verbosity = verbosity_gpt;     
-   } else {
-     payload.temperature = temperatureGpt;
-     payload.top_p = top_p_gpt;
-     payload.frequency_penalty = frequency_penalty_gpt;
-     payload.presence_penalty = presence_penalty_gpt;
-     payload.max_tokens = max_tokens_gpt;
-     payload.n = nGpt;
-     payload.best_of = best_of_gpt;
-   }
-
    fetch(apiGptUrl, {
      method: "POST",
      headers: {
        "Content-Type": "application/json"
      },
-     body: JSON.stringify(payload)
+     body: JSON.stringify({message: prompt})
    })
    .then(response => response.json())
    .then(data => callback(data))

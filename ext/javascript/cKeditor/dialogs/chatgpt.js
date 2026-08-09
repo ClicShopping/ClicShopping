@@ -1,6 +1,5 @@
 CKEDITOR.dialog.add('chatgptDialog', function (editor) {
   var botUrl = apiGptUrl;
-  var apiKey = apiKeyGpt; // Replace with your own API key
   var conversationState = '';
 
   return {
@@ -39,81 +38,40 @@ CKEDITOR.dialog.add('chatgptDialog', function (editor) {
               xhr.open('POST', botUrl, true);
               xhr.setRequestHeader('Accept', 'application/json');
               xhr.setRequestHeader('Content-Type', 'application/json');
-              xhr.setRequestHeader('Authorization', 'Bearer ' + apiKey);
               xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                  var response = JSON.parse(xhr.responseText);
-                  // Check if choices array exists and has at least one item
-                  if (
-                    response.choices &&
-                    Array.isArray(response.choices) &&
-                    response.choices.length > 0 &&
-                    response.choices[0].message &&
-                    response.choices[0].message.content
-                  ) {
-                    var text = response.choices[0].message.content;
+                if (xhr.readyState != 4) {
+                  return;
+                }
 
-                    // Append the response to the editor
-                    editor.editable().insertHtml(`<p>${text}</p>`);
-                  } else {
-                    // Handle the case when response is empty or invalid
-                    console.error('Invalid response from the API');
+                var text = '';
+
+                if (xhr.status == 200) {
+                  try {
+                    var response = JSON.parse(xhr.responseText);
+                    text = response.success === true ? (response.text_response || '') : '';
+                  } catch (e) {
+                    text = '';
                   }
+                }
 
-                  // Append the response to the editor
-                  editor.editable().insertHtml(`<p>${text}</p>`);
+                if (text !== '') {
+                  editor.editable().insertHtml('<p>' + text + '</p>');
+                } else {
+                  console.error('Invalid response from ClicShopping GPT endpoint');
+                }
 
-                  // Clear the message input
-                  dialog.getContentElement('tab1', 'message').setValue('');
+                dialog.getContentElement('tab1', 'message').setValue('');
 
-                  if (preloader) {
-                    // Remove spinner
-                    preloader.style.display = 'none';
-                    preloader.classList.remove('blur'); // Remove blur class
-                  }
+                // The spinner is cleared on every outcome, not only on success.
+                if (preloader) {
+                  preloader.style.display = 'none';
+                  preloader.classList.remove('blur');
                 }
               };
 
-              let payload;
-
-              if (modelGpt.startsWith("gpt-5-")) {
-                payload = {
-                  model: modelGpt,
-                  max_output_tokens: max_tokens_gpt,
-                  reasoning_effort: reasoning_effort_gpt,
-                  verbosity: verbosity_gpt,
-                  messages: [
-                    {
-                      role: 'system',
-                      content: "\n\nYou are an expert in E-Commerce Marketing."
-                    },
-                    {
-                      role: 'user',
-                      content: conversationState + message,
-                    }
-                  ]
-                };
-              } else {
-                payload = {
-                  model: modelGpt,
-                  max_tokens: max_tokens_gpt,
-                  temperature: temperatureGpt,
-                  top_p: top_p_gpt,
-                  n: nGpt,
-                  messages: [
-                    {
-                      role: 'system',
-                      content: "\n\nYou are an expert in E-Commerce Marketing."
-                    },
-                    {
-                      role: 'user',
-                      content: conversationState + message,
-                    }
-                  ]
-                };
-              }
-
-              xhr.send(JSON.stringify(payload));
+              // The server owns model, provider, prompt and wire format: the dialog only sends
+              // what the user typed.
+              xhr.send(JSON.stringify({message: conversationState + message}));
 
               conversationState += message + '\n';
             },

@@ -59,3 +59,4 @@ idx_orders_customers_id customers_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment COMPLETED SALES - one row per order actually placed. This is the authoritative source for every sales metric (revenue, order count, average basket, seasonality, per-customer spend); the monetary amounts live in orders_total and the line items in orders_products. Do NOT use customers_basket, which is the live cart.

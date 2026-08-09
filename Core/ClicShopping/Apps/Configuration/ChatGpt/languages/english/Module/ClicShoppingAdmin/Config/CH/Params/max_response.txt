@@ -1,3 +1,0 @@
-cfg_chatgpt_max_response_title = Max response
-cfg_chatgpt_max_response_description = Please, a number<br>
-Control the response to create

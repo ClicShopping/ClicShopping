@@ -580,6 +580,6 @@ class SchemaRetriever
       ];
     }
 
-    return SchemaEmbedder::formatTableText($tableName, $columns);
+    return SchemaEmbedder::formatTableText($tableName, $columns, SchemaEmbedder::readTableComment($this->db, $tableName));
   }
 }

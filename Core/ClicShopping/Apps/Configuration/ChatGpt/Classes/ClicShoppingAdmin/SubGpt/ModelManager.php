@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt;
 
+use ClicShopping\OM\Cache;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
@@ -29,6 +30,9 @@ class ModelManager
 {
   /** In-process catalog cache for the current request (null = not loaded). */
   private static ?array $catalogCache = null;
+
+  /** Cache key of the last catalog read from the database (safety net for a DB outage). */
+  private const CATALOG_SNAPSHOT_KEY = 'ai_models_catalog_snapshot';
 
   /**
    * Tokens added on top of the caller's budget so hidden reasoning does not eat the answer.
@@ -67,28 +71,30 @@ class ModelManager
   }
 
   /**
-   * Minimal emergency fallback catalog — used ONLY when the DB catalog is empty/unreachable.
+   * Last catalog successfully read from the database, kept so model resolution survives a DB
+   * outage. No model is named in PHP: the snapshot only ever holds what the admin catalogued.
    *
-   * The authoritative catalog lives in the `ai_models_*` tables (managed via the admin CRUD).
-   * This is NOT that catalog: it is the last-resort safety net so that model/provider resolution
-   * (`defaultModel`, `getModelProviderMap`) keeps working during a DB outage or before the seed
-   * has run. It intentionally carries only the two rows that carry the net — the active default
-   * and the active fallback — not the full model list (that is the DB's job).
-   *
-   * @return array<int,array<string,mixed>> rows: id,text,provider,context_window,status,is_default,is_fallback,ai_capable
+   * @return array<int,array<string,mixed>> rows, or [] when nothing was ever cached
    */
-  private static function getStaticCatalog(): array
+  private static function getCatalogSnapshot(): array
   {
-    $array = [
-      ['id' => 'gpt-4.1-mini',  'text' => 'OpenAI GPT-4.1 mini (64K context, embeddings, reasoning)',  'provider' => 'openai',   'context_window' => 64000,   'status' => 1, 'is_default' => 1, 'is_fallback' => 0, 'ai_capable' => 1],
-      ['id' => 'gpt-4o-mini',   'text' => 'OpenAI GPT-4o mini (128K context, embeddings, reasoning)', 'provider' => 'openai',   'context_window' => 128000,  'status' => 1, 'is_default' => 0, 'is_fallback' => 1, 'ai_capable' => 1],
-    ];
+    try {
+      $cache = new Cache(self::CATALOG_SNAPSHOT_KEY);
 
-    return $array;
+      if (!$cache->exists()) {
+        return [];
+      }
+
+      $snapshot = $cache->get();
+    } catch (\Throwable $e) {
+      return [];
+    }
+
+    return is_array($snapshot) ? $snapshot : [];
   }
 
   /**
-   * Loads the model catalog (DB first, static list as fallback), cached in-process.
+   * Loads the model catalog (DB first, last-known-good snapshot as safety net), cached in-process.
    *
    * @return array<int,array<string,mixed>> rows: id,text,provider,context_window,status,is_default,is_fallback,ai_capable
    */
@@ -100,8 +106,18 @@ class ModelManager
 
     $catalog = self::loadCatalogFromDb();
 
-    if (empty($catalog)) {
-      $catalog = self::getStaticCatalog();
+    if (!empty($catalog)) {
+      try {
+        (new Cache(self::CATALOG_SNAPSHOT_KEY))->save($catalog);
+      } catch (\Throwable $e) {
+        // A snapshot that cannot be written must not break the request it was read for.
+      }
+    } else {
+      $catalog = self::getCatalogSnapshot();
+
+      if (empty($catalog)) {
+        error_log('[INFO : ALERT] ModelManager: model catalog unreachable and no snapshot cached — no model can be resolved.');
+      }
     }
 
     self::$catalogCache = $catalog;
@@ -112,7 +128,7 @@ class ModelManager
   /**
    * Reads the ai_models_* catalog from the database, ordered by sort_order.
    * Returns [] on any failure (DB not registered, query error, empty table) so the
-   * caller falls back to the static list. Never throws.
+   * caller falls back to the cached snapshot. Never throws.
    *
    * @return array<int,array<string,mixed>>
    */
@@ -205,13 +221,25 @@ class ModelManager
    */
   public static function getTechnicalFallbackModel(): string
   {
-    foreach (self::loadCatalog() as $m) {
+    $catalog = self::loadCatalog();
+
+    foreach ($catalog as $m) {
       if (!empty($m['is_fallback'])) {
         return $m['id'];
       }
     }
 
-    return 'gpt-4.1-mini';
+    // No row flagged: take the first active model rather than name one here — the admin owns
+    // the catalog and may rename or replace every model of it.
+    foreach ($catalog as $m) {
+      if (!empty($m['status'])) {
+        return $m['id'];
+      }
+    }
+
+    error_log('[INFO : ALERT] ModelManager: no fallback and no active model in the catalog.');
+
+    return '';
   }
 
   /**
@@ -538,10 +566,9 @@ class ModelManager
   {
     foreach (self::loadCatalog() as $m) {
       if ($m['id'] === $model) {
-        // Only DB-catalog rows carry price keys; the static fallback list does not.
-        // When present, the catalog is authoritative — including a legitimate 0 for local models.
-        // When absent (static fallback / model not in catalog), return null so the caller
-        // falls back to its own pricing table.
+        // The catalog is authoritative when it prices a model — including a legitimate 0 for
+        // local models. Absent price keys mean "not catalogued", so the caller falls back to
+        // its own pricing table.
         if (array_key_exists('input_price', $m)) {
           return [(float)$m['input_price'], (float)$m['output_price']];
         }

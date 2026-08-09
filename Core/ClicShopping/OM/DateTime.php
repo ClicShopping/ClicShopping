@@ -66,7 +66,10 @@ class DateTime
     }
 
     if (($strict === true) && ($strict_log === true)) {
-      trigger_error('DateTime: ' . $datetime . ' (' . $new_datetime . ') cannot be formatted to ' . $pattern);
+      // An empty second field used to mean "strtotime refused the value" — unreadable in a log.
+      $seen = $new_datetime === false ? 'unparseable' : (string)$new_datetime;
+
+      trigger_error('DateTime: ' . $datetime . ' (' . $seen . ') cannot be formatted to ' . $pattern);
     }
   }
 
@@ -122,9 +125,12 @@ class DateTime
    *
    * @param string $raw_datetime The raw datetime string to be converted.
    * @param bool $with_time Indicates whether the result should include time. Defaults to false.
+   * @param bool $strict Log a PHP notice when the value is not a parseable date. Off by default:
+   *                     this method already degrades to an empty string, so an unparseable value
+   *                     is a display case, not an application error. Pass true to diagnose.
    * @return string The formatted short date string or an empty string if the input is invalid.
    */
-  public static function toShort(string $raw_datetime, bool $with_time = false, bool $strict = true): string
+  public static function toShort(string $raw_datetime, bool $with_time = false, bool $strict = false): string
     {
       $result = '';
 
@@ -148,7 +154,7 @@ class DateTime
    * @param bool $with_time Indicates whether the result should include time. Defaults to false.
    * @return string The formatted date string or an empty string if the input is invalid.
    */
-    public static function toShortWithoutFormat(string $raw_datetime, bool $with_time = false, bool $strict = true) :string
+    public static function toShortWithoutFormat(string $raw_datetime, bool $with_time = false, bool $strict = false) :string
     {
       $result = '';
 
@@ -186,7 +192,7 @@ class DateTime
    * @param string $raw_datetime The raw datetime string to be converted.
    * @return string The formatted long date string, or an empty string if the datetime string is invalid.
    */
-    public static function toLong(string $raw_datetime, bool $strict = true) :string
+    public static function toLong(string $raw_datetime, bool $strict = false) :string
     {
       $result = '';
 
@@ -389,7 +395,7 @@ class DateTime
    * @param string $raw_datetime The raw datetime string to be converted.
    * @return string The formatted short date reference. Returns an empty string if the datetime is invalid or empty.
    */
-    public static function toDateReferenceShort(string $raw_datetime, bool $strict = true): string
+    public static function toDateReferenceShort(string $raw_datetime, bool $strict = false): string
     {
 
       $result = '';

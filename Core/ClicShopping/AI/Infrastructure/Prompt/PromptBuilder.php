@@ -116,11 +116,11 @@ class PromptBuilder
    *
    * @param string $agentType Agent type (analytics, semantic, websearch, hybrid)
    * @param string $query User query (optional, for Schema RAG)
-   * @param string $modelName Model name (optional, for Schema RAG)
+   * @param string|null $modelName Model name (optional, for Schema RAG); null keeps the catalogued default
    * @return string Complete system message
    * @throws \InvalidArgumentException If agent type is invalid
    */
-  public function getSystemMessage(string $agentType = 'analytics', string $query = '', string $modelName = 'gpt-4o-mini'): string
+  public function getSystemMessage(string $agentType = 'analytics', string $query = '', ?string $modelName = null): string
   {
     // Validate agent type
     if (!in_array($agentType, self::AGENT_TYPES, true)) {
@@ -130,7 +130,10 @@ class PromptBuilder
     // Store parameters for buildSystemMessage()
     $this->agentType = $agentType;
     $this->currentQuery = $query;
-    $this->modelName = $modelName;
+    
+    if ($modelName !== null && $modelName !== '') {
+      $this->modelName = $modelName;
+    }
 
     // If Schema RAG is enabled and we have a query, skip caching (analytics only)
     $useSchemaRAG = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG') && CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG == 'True';
@@ -495,7 +498,7 @@ class PromptBuilder
         ];
       }
 
-      $schema .= SchemaEmbedder::formatTableText($tableName, $columns) . "\n\n";
+      $schema .= SchemaEmbedder::formatTableText($tableName, $columns, SchemaEmbedder::readTableComment($db, $tableName)) . "\n\n";
     }
 
     return $schema;

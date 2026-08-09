@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Dashb
 
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
 use ClicShopping\AI\Infrastructure\Metrics\ApiCostCalculator;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ModelManager;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
@@ -122,7 +123,8 @@ class TokenChartDataProvider
     );
 
     while ($Qcost->fetch()) {
-      $model = $Qcost->value('model') ?: 'gpt-4.1-mini';
+      // A statistics row with no model recorded is priced against the catalogued default.
+      $model = $Qcost->value('model') ?: ModelManager::defaultModel();
       $month = $Qcost->value('month');
       $promptTokens = (int)$Qcost->value('prompt_tokens');
       $completionTokens = (int)$Qcost->value('completion_tokens');

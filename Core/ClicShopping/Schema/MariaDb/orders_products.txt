@@ -15,3 +15,4 @@ idx_orders_products_products_id products_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment LINE ITEMS of a completed order - what was actually sold, at the price and quantity sold. Use it for units sold and per-product sales; the live cart equivalent (customers_basket) is not a sale.

@@ -67,43 +67,43 @@ $CLICSHOPPING_Hooks = Registry::get('Hooks');
       <div class="row">
         <div class="col-md-12">
           <div class="d-flex flex-wrap">
-<?php
-if (\defined('MODULE_ADMIN_DASHBOARD_INSTALLED') && !\is_null(MODULE_ADMIN_DASHBOARD_INSTALLED)) {
-  $adm_array = explode(';', MODULE_ADMIN_DASHBOARD_INSTALLED);
+            <?php
+            if (\defined('MODULE_ADMIN_DASHBOARD_INSTALLED') && !\is_null(MODULE_ADMIN_DASHBOARD_INSTALLED)) {
+              $adm_array = explode(';', MODULE_ADMIN_DASHBOARD_INSTALLED);
 
-  if (!empty(MODULE_ADMIN_DASHBOARD_INSTALLED)) {
+              if (!empty(MODULE_ADMIN_DASHBOARD_INSTALLED)) {
 
-    $col = 0;
+                $col = 0;
 
-    foreach ($adm_array as $adm) {
-      if (!str_contains($adm, '\\')) {
-        continue;
-      }
+                foreach ($adm_array as $adm) {
+                  if (!str_contains($adm, '\\')) {
+                    continue;
+                  }
 
-      $class = Apps::getModuleClass($adm, 'AdminDashboard');
+                  $class = Apps::getModuleClass($adm, 'AdminDashboard');
 
-      if (empty($class) || !class_exists($class)) {
-        continue;
-      }
+                  if (empty($class) || !class_exists($class)) {
+                    continue;
+                  }
 
-      try {
-        $ad = new $class();
+                  try {
+                    $ad = new $class();
 
-        if ($ad->isEnabled()) {
-          echo $ad->getOutput();
-        }
-      } catch (\Throwable $e) {
-        trigger_error('ClicShopping: AdminDashboard module "' . $adm . '" failed at runtime: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
-      }
-    }
-  } else {
-    echo '<div class="alert alert-primary">';
-    echo '<div class="col-md-12 text-center">' . HTML::link(CLICSHOPPING::link(null, 'A&Configuration\Modules&Modules&set=dashboard&list=new'), ClicShopping::getDef('text_install_dashboard')) . '<br /></div>';
-    echo '<div class="col-md-12 text-center">' . ClicShopping::getDef('text_good_luck') . '</div>';
-    echo '</div>';
-  }
-}
-?>
+                    if ($ad->isEnabled()) {
+                      echo $ad->getOutput();
+                    }
+                  } catch (\Throwable $e) {
+                    trigger_error('ClicShopping: AdminDashboard module "' . $adm . '" failed at runtime: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
+                  }
+                }
+              } else {
+                echo '<div class="alert alert-primary">';
+                echo '<div class="col-md-12 text-center">' . HTML::link(CLICSHOPPING::link(null, 'A&Configuration\Modules&Modules&set=dashboard&list=new'), ClicShopping::getDef('text_install_dashboard')) . '<br /></div>';
+                echo '<div class="col-md-12 text-center">' . ClicShopping::getDef('text_good_luck') . '</div>';
+                echo '</div>';
+              }
+            }
+            ?>
         </div>
       </div>
     </div>

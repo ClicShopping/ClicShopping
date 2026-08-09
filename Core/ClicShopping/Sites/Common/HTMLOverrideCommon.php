@@ -348,6 +348,33 @@ class HTMLOverrideCommon extends HTML
   }
 
   /**
+   * Extract the JSON payload out of a markdown code fence.
+   *
+   * Differs from {@see self::cleanJsonResponse()}: it EXTRACTS the fenced block instead of
+   * deleting fence markers, and leaves HTML entities alone. An answer carrying no fence is
+   * returned unchanged, so the caller parses exactly what the model sent.
+   *
+   * @param string $response Raw LLM response
+   * @return string JSON string, or the input unchanged when it carries no code fence
+   */
+  public static function extractJsonFromMarkdown(string $response): string
+  {
+    $response = trim($response);
+
+    // Pattern 1: ```json\n{...}\n```
+    if (preg_match('/^```(?:json)?\s*\n(.*?)\n```$/s', $response, $matches)) {
+      return trim($matches[1]);
+    }
+
+    // Pattern 2: ```{...}```
+    if (preg_match('/^```(?:json)?\s*(\{.*?\})\s*```$/s', $response, $matches)) {
+      return trim($matches[1]);
+    }
+
+    return $response;
+  }
+
+  /**
    * Escape HTML content for JavaScript injection
    * 
    * @param string $html HTML content to escape

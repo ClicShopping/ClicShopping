@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\CH\Params;
 
 use ClicShopping\OM\HTML;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ModelManager;
 
 /**
  * Class reasoning_effort
@@ -19,7 +20,7 @@ use ClicShopping\OM\HTML;
  */
 class reasoning_effort extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = 'medium';
+  public $default = 'none';
   public int|null $sort_order = 42;
 
   /**
@@ -38,17 +39,30 @@ class reasoning_effort extends \ClicShopping\Apps\Configuration\ChatGpt\Module\C
    */
   public function getInputField()
   {
-    // $value = $this->getInputValue();
+    $value = (string)$this->getInputValue();
+
+    // Only the tiers the current default model actually accepts: the families disagree
+    // (none/xhigh against minimal), so a fixed list offers values the API rejects.
+    $supported = ModelManager::supportedReasoningEfforts(ModelManager::defaultModel());
+
+    // A value stored for a previous model stays listed, otherwise the form would show
+    // nothing selected and silently rewrite the configuration on the next save.
+    if ($value !== '' && $value !== 'text' && !in_array($value, $supported, true)) {
+      $supported[] = $value;
+    }
 
     $array = [
       ['id' => 'text', 'text' => $this->app->getDef('cfg_chatgpt_response_reasoning_select')],
-      ['id' => 'minimal', 'text' => $this->app->getDef('cfg_chatgpt_response_reasoning_minimal')],
-      ['id' => 'low', 'text' => $this->app->getDef('cfg_chatgpt_response_reasoning_low')],
-      ['id' => 'medium', 'text' => $this->app->getDef('cfg_chatgpt_response_reasoning_medium')],
-      ['id' => 'high', 'text' => $this->app->getDef('cfg_chatgpt_response_reasoning_high')],
     ];
 
-    $input = HTML::selectField($this->key, $array, $this->getInputValue(), 'id="model_reasoning"');
+    foreach ($supported as $effort) {
+      $array[] = [
+        'id' => $effort,
+        'text' => $this->app->getDef('cfg_chatgpt_response_reasoning_' . $effort),
+      ];
+    }
+
+    $input = HTML::selectField($this->key, $array, $value, 'id="model_reasoning"');
 
     return $input;
   }

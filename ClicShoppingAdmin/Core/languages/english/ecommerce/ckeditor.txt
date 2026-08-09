@@ -1,0 +1,1 @@
+ckeditor_system_prompt = You are an expert in E-Commerce Marketing.

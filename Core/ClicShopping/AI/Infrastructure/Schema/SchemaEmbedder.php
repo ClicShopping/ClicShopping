@@ -289,7 +289,7 @@ class SchemaEmbedder
     $texts = [];
 
     foreach ($this->listSchemaTables() as $tableName) {
-      $texts[$tableName] = self::formatTableText($tableName, $this->getTableColumns($tableName));
+      $texts[$tableName] = self::formatTableText($tableName, $this->getTableColumns($tableName), self::readTableComment($this->db, $tableName));
     }
 
     return $texts;
@@ -345,15 +345,25 @@ class SchemaEmbedder
   /**
    * Format the schema text of one table
    *
-   * Same shape as the schema injected in the prompt: "Table: x" then one line per column.
+   * Same shape as the schema injected in the prompt: "Table: x", the table's own comment when it
+   * has one, then one line per column.
+   *
+   * The table comment is what says what the table MEANS (a sale, a live cart…). Without it the
+   * model picks a table by name resemblance — that is how "panier moyen" landed on
+   * customers_basket instead of orders.
    *
    * @param string $tableName Table name
    * @param array $columns Rows of SHOW FULL COLUMNS (Field, Type, Comment)
+   * @param string|null $tableComment Table-level comment, null/'' when the table has none
    * @return string
    */
-  public static function formatTableText(string $tableName, array $columns): string
+  public static function formatTableText(string $tableName, array $columns, ?string $tableComment = null): string
   {
     $text = "Table: {$tableName}\n";
+
+    if (!empty($tableComment)) {
+      $text .= "  {$tableComment}\n";
+    }
 
     foreach ($columns as $column) {
       $comment = $column['Comment'] ?? '';
@@ -361,6 +371,28 @@ class SchemaEmbedder
     }
 
     return trim($text);
+  }
+
+  /**
+   * Table-level comment of one table, '' when it carries none.
+   *
+   * @param mixed $db Registry Db connection
+   * @param string $tableName Table name
+   * @return string
+   */
+  public static function readTableComment($db, string $tableName): string
+  {
+    try {
+      $Q = $db->query("SHOW TABLE STATUS LIKE '" . str_replace(['\\', '_', '%'], ['\\\\', '\_', '\%'], $tableName) . "'");
+
+      if ($Q !== false && $Q->fetch()) {
+        return (string)$Q->value('Comment');
+      }
+    } catch (\Throwable $e) {
+      // A missing comment must never break schema generation.
+    }
+
+    return '';
   }
 
   /**

@@ -279,7 +279,10 @@ class Tax
    * @param array  $tax_groups      Order::info['tax_groups'] — only used as the
    *                                "is there taxable content" guard, exactly as before.
    * @param string $currency        Order currency code.
-   * @param float  $currency_value  Order currency value.
+   * @param float|null $currency_value Order currency value; null lets Currencies::format() resolve
+   *                                   the configured rate. NOT typed float: an order built before
+   *                                   the currency is known has no value, and (float)null = 0.0
+   *                                   would convert every tax line by ZERO instead of falling back.
    * @return array{rows: array<int, array{title: string, text: string, value: float}>, tax_total: float}
    */
   public static function computeDoubleTaxRows(
@@ -289,7 +292,7 @@ class Tax
     float  $shipping_cost,
     array  $tax_groups,
     string $currency,
-    float  $currency_value
+    ?float $currency_value = null
   ): array {
     $CLICSHOPPING_Db = Registry::get('Db');
     $CLICSHOPPING_Currencies = Registry::get('Currencies');

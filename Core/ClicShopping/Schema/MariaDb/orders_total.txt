@@ -13,3 +13,4 @@ idx_orders_total_orders_id orders_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment MONETARY TOTALS of a completed order, one row per total line (subtotal, shipping, tax, discount, grand total) identified by class. Revenue and average-basket figures aggregate value on the grand-total line, joined to orders - never on customers_basket.

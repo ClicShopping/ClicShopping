@@ -1,9 +1,10 @@
 cfg_chatgpt_reasoning_title = Effort de raisonnement
-cfg_chatgpt_reasoning_description = Selectionnez votre option. Fonctionne uniquement avec chatgpt-5.
+cfg_chatgpt_reasoning_description = Selectionnez votre option. Seuls les paliers acceptes par le modele par defaut sont proposes.
 
 cfg_chatgpt_response_reasoning_select = --Selectionner  votre option--
+cfg_chatgpt_response_reasoning_none = Aucun (le plus rapide, sans raisonnement)
 cfg_chatgpt_response_reasoning_minimal = Minimal
 cfg_chatgpt_response_reasoning_low = Basse
 cfg_chatgpt_response_reasoning_medium = Moyen
 cfg_chatgpt_response_reasoning_high = Haute
-
+cfg_chatgpt_response_reasoning_xhigh = Tres haute (le plus lent)

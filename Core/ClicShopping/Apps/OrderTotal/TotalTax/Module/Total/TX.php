@@ -109,8 +109,8 @@ class TX implements OrderTotalInterface
         (float)$CLICSHOPPING_Order->info['subtotal'],
         (float)$CLICSHOPPING_Order->info['shipping_cost'],
         $CLICSHOPPING_Order->info['tax_groups'],
-        $CLICSHOPPING_Order->info['currency'],
-        (float)$CLICSHOPPING_Order->info['currency_value']
+        $CLICSHOPPING_Order->info['currency'] ?? ($_SESSION['currency'] ?? DEFAULT_CURRENCY),
+        $CLICSHOPPING_Order->info['currency_value'] ?? null
       );
 
       foreach ($double_tax['rows'] as $row) {

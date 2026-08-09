@@ -1,5 +1,5 @@
 cfg_chatgpt_verbosity_title = Verbosity
-cfg_chatgpt_verbosity_description = niveau de détail ou de développement de la réponse. Fonctionne uniquement avec chatgpt-5.
+cfg_chatgpt_verbosity_description = niveau de détail ou de développement de la réponse. Ignore par les modeles qui ne le supportent pas.
 
 cfg_chatgpt_response_verbosity_select = --Selectionner  votre option--
 cfg_chatgpt_response_verbosity_low =  Réponse courte, synthétique

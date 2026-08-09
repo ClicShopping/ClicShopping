@@ -11,4 +11,4 @@ idx_customers_basket_customers_id customers_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment Customer shopping basket items with quantities and pricing
+comment LIVE shopping cart - items a customer has added but NOT yet purchased. Rows disappear when the cart is emptied or checked out. This is NOT a sale: never use it for revenue, average basket, seasonality or any sales metric - those come from orders and orders_total.
