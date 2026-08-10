@@ -22,4 +22,4 @@ idx_suppliers_name suppliers_name
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment Supplier identity and contact details, one row per supplier. Purchase prices are not here: the cost of a product is products_cost in products.
+comment Supplier identity and contact details, one row per supplier: company name, account manager, telephone, e-mail, postal address, country and internal notes.

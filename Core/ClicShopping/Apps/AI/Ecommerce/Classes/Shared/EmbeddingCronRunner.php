@@ -473,9 +473,8 @@ class EmbeddingCronRunner
         $embedding_data .= $this->app->getDef('text_product_seo_tag') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($seo_product_tag) . "\n";
       }
 
+      // The description itself is appended above; only its taxonomy is added here.
       if (!empty($products_description)) {
-        $embedding_data .= $this->app->getDef('text_product_description') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_description) . "\n";
-
         $taxonomy = $this->semantics->createTaxonomy($products_description, $this->app->getDef('text_create_taxonomy', ['document_text' => $products_description]), $language_code, 300);
         if (!empty($taxonomy)) {
           $embedding_data .= $this->app->getDef('text_product_taxonomy') . ' : ' . "\n" . $taxonomy . "\n";

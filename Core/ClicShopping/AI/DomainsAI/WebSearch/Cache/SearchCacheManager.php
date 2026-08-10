@@ -164,7 +164,9 @@ class SearchCacheManager
           );
         }
 
-        $splitDocs = DocumentSplitter::splitDocument($document, $this->maxChunkSize, $this->chunkOverlap);
+        // Overlap is the FOURTH argument; the third is the separator. Passing it third made the
+        // integer the separator, so the document was never split on anything but that digit string.
+        $splitDocs = DocumentSplitter::splitDocument($document, $this->maxChunkSize, ' ', $this->chunkOverlap);
 
         $storedCount = 0;
 

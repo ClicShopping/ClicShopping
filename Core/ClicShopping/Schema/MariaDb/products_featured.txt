@@ -14,4 +14,4 @@ idx_products_featured_id products_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment ADMIN MERCHANDISING - products the shop puts forward, with a scheduling window (scheduled_date, expires_date). Like products_favorites this is an editorial selection made by the shop, not customer behaviour and not a sales figure.
+comment ADMIN MERCHANDISING - editorial selection of the products the shop puts forward on its storefront, one row per product, with the scheduling window that opens and closes the exposure (scheduled_date, expires_date) and the customer group that sees it.

@@ -19,4 +19,4 @@ products_name products_name
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment PRODUCT NAMES and marketing texts, one row per product and per language (language_id). The name a user types when naming a product is here (products_name), not in products - join it to products for any question that names a product. Prices and stock are in products, quantities sold in orders_products.
+comment PRODUCT NAMES and marketing texts, one row per product and per language (language_id). The name a user types when naming a product is here (products_name), together with the description, the summary, the SEO tags and the shipping delay messages.

@@ -10,4 +10,4 @@ primary information_email_customers_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment Configuration of the reminder email delays (90, 60, 30, 15 and 7 days). Settings only, no customer and no sales data.
+comment Configuration of the reminder e-mail schedule of a customer: one flag per delay step (90, 60, 30, 15 and 7) after the last activity. Settings only.

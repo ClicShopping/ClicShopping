@@ -16,4 +16,4 @@ idx_products_attributes_products_id products_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment PRODUCT VARIANTS - one row per product and option value (size, colour), with the price adjustment applied on top of the base price (options_values_price with price_prefix + or -). Use it for questions about variants and option surcharges; the base price stays in products.
+comment PRODUCT VARIANTS - one row per product and option value (size, colour), each carrying its own surcharge in options_values_price, signed by price_prefix (+ or -). Use it for questions about variants and option surcharges.

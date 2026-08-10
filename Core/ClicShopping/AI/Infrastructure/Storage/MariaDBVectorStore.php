@@ -161,10 +161,11 @@ class MariaDBVectorStore extends VectorStoreBase
    *
    * @param string $content The content to embed
    * @param array $metadata Metadata associated with the content
+   * @param array|null $embedding Already computed vector; embedded here only when not supplied
    * @return array Prepared data including embedding and metadata
    */
-  private function prepareEmbeddingAndMetadata(string $content, array $metadata): array {
-    $embedding = $this->embeddingGenerator->embedText($content);
+  private function prepareEmbeddingAndMetadata(string $content, array $metadata, ?array $embedding = null): array {
+    $embedding ??= $this->embeddingGenerator->embedText($content);
     $embeddingText = '[' . implode(',', $embedding) . ']';
 
     return [
@@ -204,7 +205,7 @@ class MariaDBVectorStore extends VectorStoreBase
 
     $metadata = isset($document->metadata) ? $document->metadata : [];
 
-    $preparedData = $this->prepareEmbeddingAndMetadata($document->content, $metadata);
+    $preparedData = $this->prepareEmbeddingAndMetadata($document->content, $metadata, $embedding);
 
     $documentMetadata = [
       'id' => $document->id ?? null,
@@ -671,7 +672,7 @@ class MariaDBVectorStore extends VectorStoreBase
       $metadata = isset($document->metadata) ? $document->metadata : [];
 
       // Prepare embedding and metadata
-      $preparedData = $this->prepareEmbeddingAndMetadata($document->content, $metadata);
+      $preparedData = $this->prepareEmbeddingAndMetadata($document->content, $metadata, $embedding);
 
       // Prepare metadata JSON
       $documentMetadata = [

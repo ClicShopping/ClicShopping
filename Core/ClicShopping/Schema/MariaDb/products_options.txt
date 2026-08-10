@@ -9,4 +9,4 @@ primary products_options_id language_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment CATALOGUE definition of a product option (the name of the axis: size, colour), per language. What a customer actually chose on a sale is in orders_products_attributes.
+comment CATALOGUE definition of a product option - the name of the axis a customer can choose (size, colour), one row per option and per language.

@@ -34,4 +34,4 @@ idx_seo_seo_id seo_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment Site-wide SEO CONFIGURATION, one row per language: default title, keywords, description and footer of the shop pages. It contains no product, category or sales data - never join it to answer a catalogue or analytics question.
+comment Site-wide SEO CONFIGURATION, one row per language: default title, keywords, description and footer used on the shop pages. Settings only.

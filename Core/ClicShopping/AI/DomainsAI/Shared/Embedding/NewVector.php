@@ -617,6 +617,15 @@ class NewVector
 
       error_log("NewVector::saveEmbeddingsWithChunks: Processing {$totalChunks} chunk(s) for entity {$entityId} in table {$tableName}");
 
+      // Delete + inserts must be atomic: on a failed chunk the entity used to keep NO embedding
+      // at all until the next cron pass. Only own the transaction when no caller opened one.
+      $ownTransaction = false;
+
+      if (!$db->inTransaction()) {
+        $db->beginTransaction();
+        $ownTransaction = true;
+      }
+
       // Delete old chunks if this is an update
       if ($isUpdate) {
         try {
@@ -633,6 +642,11 @@ class NewVector
           error_log("NewVector::saveEmbeddingsWithChunks: Deleted old chunks for entity {$entityId}, {$langInfo}");
         } catch (\Exception $e) {
           error_log("NewVector::saveEmbeddingsWithChunks: Failed to delete old chunks for entity {$entityId}: " . $e->getMessage());
+
+          if ($ownTransaction && $db->inTransaction()) {
+            $db->rollBack();
+          }
+
           return ['success' => false, 'chunks_saved' => 0, 'error' => 'Failed to delete old chunks: ' . $e->getMessage()];
         }
       }
@@ -690,8 +704,19 @@ class NewVector
 
         } catch (\Exception $e) {
           error_log("NewVector::saveEmbeddingsWithChunks: Failed to save chunk " . ($chunkIndex + 1) . " for entity {$entityId}: " . $e->getMessage());
+
+          // Roll back so the previous chunks survive instead of leaving the entity with none.
+          if ($ownTransaction && $db->inTransaction()) {
+            $db->rollBack();
+            $chunksSaved = 0;
+          }
+
           return ['success' => false, 'chunks_saved' => $chunksSaved, 'error' => "Failed to save chunk " . ($chunkIndex + 1) . ": " . $e->getMessage()];
         }
+      }
+
+      if ($ownTransaction && $db->inTransaction()) {
+        $db->commit();
       }
 
       error_log("NewVector::saveEmbeddingsWithChunks: Successfully saved all {$chunksSaved} chunk(s) for entity {$entityId}");
@@ -700,6 +725,11 @@ class NewVector
 
     } catch (\Exception $e) {
       error_log("NewVector::saveEmbeddingsWithChunks: Unexpected error for entity {$entityId}: " . $e->getMessage());
+
+      if (isset($ownTransaction) && $ownTransaction && $db->inTransaction()) {
+        $db->rollBack();
+      }
+
       return ['success' => false, 'chunks_saved' => 0, 'error' => 'Unexpected error: ' . $e->getMessage()];
     }
   }

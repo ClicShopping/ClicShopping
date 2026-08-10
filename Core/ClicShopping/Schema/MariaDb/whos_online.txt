@@ -14,4 +14,4 @@ idx_whos_online_session_id session_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment LIVE AUDIENCE: one row per visitor currently browsing, refreshed on each click - entry time, last click, last page seen, referrer and user agent. It is real-time traffic, NOT a sale and NOT a cart: purchases are in orders, live carts in customers_basket. Rows disappear when the session ends, so it answers only questions about NOW.
+comment LIVE AUDIENCE - one row per visitor currently browsing, refreshed on each click: entry time, last click, last page seen, referrer and user agent. Rows disappear when the session ends, so it answers only questions about the present moment.

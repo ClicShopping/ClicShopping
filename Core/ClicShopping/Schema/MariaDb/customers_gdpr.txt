@@ -9,4 +9,4 @@ primary id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment GDPR consent record of a customer: opt-out of IP address storage, with its date. Compliance data, never used for sales or marketing figures.
+comment GDPR consent record of a customer: opt-out of IP address storage, with its date. Compliance data.

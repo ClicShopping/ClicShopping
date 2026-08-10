@@ -7,4 +7,4 @@ primary customers_group_id categories_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment Discount granted to a customer group on a whole category. It is a pricing RULE, not a sale.
+comment Discount rate, in percent, granted to a customer group on a whole category - one row per group and category. It is a catalogue rule.

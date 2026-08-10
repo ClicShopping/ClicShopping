@@ -30,6 +30,24 @@ use function defined;
 class UIGenerator
 {
   /**
+   * Encodes a value as a JavaScript literal for inline <script> embedding.
+   *
+   * Language definitions may legitimately span several lines or carry quotes; interpolated raw
+   * they break the script and leave window.CHAT_CONFIG undefined. HEX flags also neutralise a
+   * closing </script> hidden in a definition.
+   *
+   * @param mixed $value Value to embed
+   * @return string JavaScript literal, safe inside a <script> block
+   */
+  private static function encodeForScript(mixed $value): string
+  {
+    return json_encode(
+      $value,
+      JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+    );
+  }
+
+  /**
    * Generates and returns the HTML for the GPT modal menu. The menu includes a chat interface triggered by a modal,
    * along with an option to toggle saving chat data. It verifies certain conditions such as the state of the ChatGPT
    * module and the presence of an API key before rendering the menu.
@@ -109,75 +127,81 @@ class UIGenerator
       $resetContextUrl = $httpServer . $httpPath . 'ajax/RAG/reset_context.php';
       $maxLength = 1000;
 
+      $i18n = [
+        'loading_analyzing' => CLICSHOPPING::getDef('text_chat_loading_analyzing'),
+        'loading_request' => CLICSHOPPING::getDef('text_chat_loading_request'),
+        'validation_empty' => CLICSHOPPING::getDef('text_chat_validation_empty'),
+        'validation_too_long' => CLICSHOPPING::getDef('text_chat_validation_too_long', ['maxLength' => $maxLength]),
+        'error_prefix' => CLICSHOPPING::getDef('text_chat_error_prefix'),
+        'error_config_missing' => CLICSHOPPING::getDef('text_chat_error_config_missing'),
+        'error_unknown' => CLICSHOPPING::getDef('text_chat_error_unknown'),
+        'error_server' => CLICSHOPPING::getDef('text_chat_error_server'),
+        'error_session_expired' => CLICSHOPPING::getDef('text_chat_error_session_expired'),
+        'error_empty_response' => CLICSHOPPING::getDef('text_chat_error_empty_response'),
+        'error_invalid_response' => CLICSHOPPING::getDef('text_chat_error_invalid_response'),
+        'metrics_confidence_title' => CLICSHOPPING::getDef('text_chat_metrics_confidence_title'),
+        'metrics_confidence_label' => CLICSHOPPING::getDef('text_chat_metrics_confidence_label'),
+        'metrics_security_title' => CLICSHOPPING::getDef('text_chat_metrics_security_title'),
+        'metrics_security_label' => CLICSHOPPING::getDef('text_chat_metrics_security_label'),
+        'metrics_hallucination_title' => CLICSHOPPING::getDef('text_chat_metrics_hallucination_title'),
+        'metrics_hallucination_label' => CLICSHOPPING::getDef('text_chat_metrics_hallucination_label'),
+        'metrics_quality_title' => CLICSHOPPING::getDef('text_chat_metrics_quality_title'),
+        'metrics_quality_label' => CLICSHOPPING::getDef('text_chat_metrics_quality_label'),
+        'metrics_relevance_title' => CLICSHOPPING::getDef('text_chat_metrics_relevance_title'),
+        'metrics_relevance_label' => CLICSHOPPING::getDef('text_chat_metrics_relevance_label'),
+        'metrics_fidelity_title' => CLICSHOPPING::getDef('text_chat_metrics_fidelity_title'),
+        'metrics_fidelity_label' => CLICSHOPPING::getDef('text_chat_metrics_fidelity_label'),
+        'metrics_to_verify_title' => CLICSHOPPING::getDef('text_chat_metrics_to_verify_title'),
+        'metrics_to_verify_label' => CLICSHOPPING::getDef('text_chat_metrics_to_verify_label'),
+        'reset_confirm' => CLICSHOPPING::getDef('text_chat_reset_confirm'),
+        'reset_loading' => CLICSHOPPING::getDef('text_chat_reset_loading'),
+        'reset_success_title' => CLICSHOPPING::getDef('text_chat_reset_success_title'),
+        'reset_success_body' => CLICSHOPPING::getDef('text_chat_reset_success_body'),
+        'error_context_prefix' => CLICSHOPPING::getDef('text_chat_error_context_prefix'),
+        'error_context_unknown' => CLICSHOPPING::getDef('text_chat_error_context_unknown'),
+        'error_context_missing_output' => CLICSHOPPING::getDef('text_chat_error_context_missing_output'),
+        'clarification_title' => CLICSHOPPING::getDef('text_chat_clarification_title'),
+        'clarification_placeholder' => CLICSHOPPING::getDef('text_chat_clarification_placeholder'),
+        'clarification_send' => CLICSHOPPING::getDef('text_chat_clarification_send'),
+        'clarification_info' => CLICSHOPPING::getDef('text_chat_clarification_info'),
+        'clarification_error_missing' => CLICSHOPPING::getDef('text_chat_clarification_error_missing'),
+        'clarification_error_empty' => CLICSHOPPING::getDef('text_chat_clarification_error_empty'),
+        'clarification_error_request' => CLICSHOPPING::getDef('text_chat_clarification_error_request'),
+        'clarification_status_sending' => CLICSHOPPING::getDef('text_chat_clarification_status_sending'),
+        'clarification_status_received' => CLICSHOPPING::getDef('text_chat_clarification_status_received'),
+        'clarification_error_invalid_response' => CLICSHOPPING::getDef('text_chat_clarification_error_invalid_response'),
+        'clarification_response_prefix' => CLICSHOPPING::getDef('text_chat_clarification_response_prefix'),
+        'clarification_retry' => CLICSHOPPING::getDef('text_chat_clarification_retry')
+      ];
+
+      $config = [
+        'ajaxUrl' => $ajaxUrl,
+        'feedbackUrl' => $recordUrl,
+        'resetContextUrl' => $resetContextUrl,
+        'i18n' => $i18n,
+        'userId' => $userId,
+        'languageId' => $languageId,
+        'enableFeedback' => true,
+        'enableDiagnostics' => true,
+        'enableWebSearch' => true,
+        'showConfidence' => true,
+        'showTypeBadge' => true,
+        'autoScroll' => true,
+        'modalMode' => true
+      ];
+
       $script .='
 <script>
   // Configuration globale du chat modal
-  window.CHAT_FEEDBACK_AJAX_URL = "' . $recordUrl . '";
+  window.CHAT_FEEDBACK_AJAX_URL = ' . self::encodeForScript($recordUrl) . ';
 
-  window.CHAT_CONFIG = {
-    ajaxUrl: " ' . $ajaxUrl . '",
-    feedbackUrl: "' . $recordUrl . '",
-    resetContextUrl: "' . $resetContextUrl . '",
-    i18n: {
-      loading_analyzing: "' . CLICSHOPPING::getDef('text_chat_loading_analyzing') . '",
-      loading_request: "' . CLICSHOPPING::getDef('text_chat_loading_request') . '",
-      validation_empty: "' . CLICSHOPPING::getDef('text_chat_validation_empty') . '",
-      validation_too_long: "' . CLICSHOPPING::getDef('text_chat_validation_too_long', ['maxLength' => $maxLength]) . '",
-      error_prefix: "' . CLICSHOPPING::getDef('text_chat_error_prefix') . '",
-      error_config_missing: "' . CLICSHOPPING::getDef('text_chat_error_config_missing') . '",
-      error_unknown: "' . CLICSHOPPING::getDef('text_chat_error_unknown') . '",
-      error_server: "' . CLICSHOPPING::getDef('text_chat_error_server') . '",
-      error_empty_response: "' . CLICSHOPPING::getDef('text_chat_error_empty_response') . '",
-      error_invalid_response: "' . CLICSHOPPING::getDef('text_chat_error_invalid_response') . '",
-      metrics_confidence_title: "' . CLICSHOPPING::getDef('text_chat_metrics_confidence_title') . '",
-      metrics_confidence_label: "' . CLICSHOPPING::getDef('text_chat_metrics_confidence_label') . '",
-      metrics_security_title: "' . CLICSHOPPING::getDef('text_chat_metrics_security_title') . '",
-      metrics_security_label: "' . CLICSHOPPING::getDef('text_chat_metrics_security_label') . '",
-      metrics_hallucination_title: "' . CLICSHOPPING::getDef('text_chat_metrics_hallucination_title') . '",
-      metrics_hallucination_label: "' . CLICSHOPPING::getDef('text_chat_metrics_hallucination_label') . '",
-      metrics_quality_title: "' . CLICSHOPPING::getDef('text_chat_metrics_quality_title') . '",
-      metrics_quality_label: "' . CLICSHOPPING::getDef('text_chat_metrics_quality_label') . '",
-      metrics_relevance_title: "' . CLICSHOPPING::getDef('text_chat_metrics_relevance_title') . '",
-      metrics_relevance_label: "' . CLICSHOPPING::getDef('text_chat_metrics_relevance_label') . '",
-      metrics_fidelity_title: "' . CLICSHOPPING::getDef('text_chat_metrics_fidelity_title') . '",
-      metrics_fidelity_label: "' . CLICSHOPPING::getDef('text_chat_metrics_fidelity_label') . '",
-      metrics_to_verify_title: "' . CLICSHOPPING::getDef('text_chat_metrics_to_verify_title') . '",
-      metrics_to_verify_label: "' . CLICSHOPPING::getDef('text_chat_metrics_to_verify_label') . '",
-      reset_confirm: "' . CLICSHOPPING::getDef('text_chat_reset_confirm') . '",
-      reset_loading: "' . CLICSHOPPING::getDef('text_chat_reset_loading') . '",
-      reset_success_title: "' . CLICSHOPPING::getDef('text_chat_reset_success_title') . '",
-      reset_success_body: "' . CLICSHOPPING::getDef('text_chat_reset_success_body') . '",
-      error_context_prefix: "' . CLICSHOPPING::getDef('text_chat_error_context_prefix') . '",
-      error_context_unknown: "' . CLICSHOPPING::getDef('text_chat_error_context_unknown') . '",
-      error_context_missing_output: "' . CLICSHOPPING::getDef('text_chat_error_context_missing_output') . '",
-      clarification_title: "' . CLICSHOPPING::getDef('text_chat_clarification_title') . '",
-      clarification_placeholder: "' . CLICSHOPPING::getDef('text_chat_clarification_placeholder') . '",
-      clarification_send: "' . CLICSHOPPING::getDef('text_chat_clarification_send') . '",
-      clarification_info: "' . CLICSHOPPING::getDef('text_chat_clarification_info') . '",
-      clarification_error_missing: "' . CLICSHOPPING::getDef('text_chat_clarification_error_missing') . '",
-      clarification_error_empty: "' . CLICSHOPPING::getDef('text_chat_clarification_error_empty') . '",
-      clarification_error_request: "' . CLICSHOPPING::getDef('text_chat_clarification_error_request') . '",
-      clarification_status_sending: "' . CLICSHOPPING::getDef('text_chat_clarification_status_sending') . '",
-      clarification_status_received: "' . CLICSHOPPING::getDef('text_chat_clarification_status_received') . '",
-      clarification_error_invalid_response: "' . CLICSHOPPING::getDef('text_chat_clarification_error_invalid_response') . '",
-      clarification_response_prefix: "' . CLICSHOPPING::getDef('text_chat_clarification_response_prefix') . '",
-      clarification_retry: "' . CLICSHOPPING::getDef('text_chat_clarification_retry') . '"
-    },
-    userId: ' . $userId . ',
-    languageId:  ' . $languageId . ',
-    enableFeedback: true,
-    enableDiagnostics: true,
-    enableWebSearch: true,
-    showConfidence: true,
-    showTypeBadge: true,
-    autoScroll: true,
-    modalMode: true
-  };
+  window.CHAT_CONFIG = ' . self::encodeForScript($config) . ';
 </script>
 ';
 
       // Charger les scripts JavaScript
       $script .= '<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.7/purify.min.js"></script>' . "\n";
+      $script .= '<script src="' . HTTP::getShopUrlDomain() . 'ext/javascript/clicshopping/ClicShoppingAdmin/ChatGpt/chat_http.js"></script>' . "\n";
       $script .= '<script src="' . HTTP::getShopUrlDomain() . 'ext/javascript/clicshopping/ClicShoppingAdmin/ChatGpt/chat_clarification.js"></script>' . "\n";
       $script .= '<script src="' . HTTP::getShopUrlDomain() . 'ext/javascript/clicshopping/ClicShoppingAdmin/ChatGpt/chat_send.js"></script>' . "\n";
       $script .= '<script src="' . HTTP::getShopUrlDomain() . 'ext/javascript/clicshopping/ClicShoppingAdmin/ChatGpt/chat_feedback.js"></script>' . "\n";

@@ -8,4 +8,4 @@ primary products_attributes_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment Downloadable file attached to a product attribute, with the download quota. What was actually delivered on a sale is in orders_products_download.
+comment Downloadable file attached to a product attribute: its filename and the download quota (maximum count and availability window).

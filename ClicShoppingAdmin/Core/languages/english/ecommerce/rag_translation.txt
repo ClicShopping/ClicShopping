@@ -40,9 +40,13 @@ text_translation_entity_examples = product, order, customer
 text_translation_financial_terms_mapping = - CONCEPT: TOP-LINE TOTALS (The total monetary value of goods/services sold)
 -> ALWAYS use: "revenue"
 -> FORBIDDEN: "sales", "turnover", "income", "chiffre d'affaires", "营业额", "Umsatz", etc.
+- CONCEPT: MARGIN (What is left of the revenue once the cost of the goods sold is deducted, before general expenses)
+-> ALWAYS use: "gross margin"
+-> FORBIDDEN: "profit", "markup", "marge", "marge brute", "marge commerciale", "Marge", "margen", "毛利", etc.
 - CONCEPT: BOTTOM-LINE TOTALS (The net profit after all expenses)
 -> ALWAYS use: "profit"
 -> FORBIDDEN: "earnings", "net", "gain", "bénéfice", "利润", "Gewinn", etc.
+⚠️ MARGIN vs BOTTOM-LINE: these are two different figures, computed from different columns. A bare reference to the margin of a product, a category, an order or the shop IS the MARGIN concept and maps to "gross margin" - never to "profit", whatever the source language and even with no qualifier such as "gross" or "commercial". Keep "profit" for the net result after ALL expenses.
 - CONCEPT: OPERATIONAL OUTFLOWS (The money spent to generate revenue)
 -> ALWAYS use: "expenses"
 -> FORBIDDEN: "costs", "charges", "fees", "depenses", "支出", "Kosten", etc.

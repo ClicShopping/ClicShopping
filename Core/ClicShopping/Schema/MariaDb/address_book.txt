@@ -24,4 +24,4 @@ idx_address_book_customers_id customers_id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment Postal addresses of the customers, including the company identifiers for B2B. The customer identity is in customers; the address used on a sale is copied into orders.
+comment Postal addresses of the customers, one or more rows per customer, including the company identifiers used for B2B.

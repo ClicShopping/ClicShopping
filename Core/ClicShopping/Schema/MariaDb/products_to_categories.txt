@@ -9,4 +9,4 @@ engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
 
-comment LINK TABLE between products and categories - one row per product/category pair, a product may belong to several categories. Use it to scope a catalogue question to a category. It carries no price, no stock and no sales figure.
+comment LINK TABLE between products and categories - one row per product/category pair, a product may belong to several categories. Use it to scope a catalogue question to a category.

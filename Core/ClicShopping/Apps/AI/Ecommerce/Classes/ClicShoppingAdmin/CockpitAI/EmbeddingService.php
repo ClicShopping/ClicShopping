@@ -210,7 +210,9 @@ class EmbeddingService
 
 
       // Step 1: Generate embedding vector from content using LLPhant
-      $embeddedDocuments = NewVector::createEmbedding(null, $content, 128);
+      // No hardcoded length: 128 was meant as tokens but is consumed as characters downstream.
+      // Left null, the model's own optimal chunk size applies, as on every other call site.
+      $embeddedDocuments = NewVector::createEmbedding(null, $content);
       
       if ($embeddedDocuments === null || empty($embeddedDocuments)) {
         if ($this->debug) {
