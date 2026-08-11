@@ -173,7 +173,8 @@ class MariaDBVectorStore extends VectorStoreBase
       'type' => $metadata['type'] ?? null,
       'sourcetype' => $metadata['sourcetype'] ?? 'manual',
       'sourcename' => $metadata['sourcename'] ?? 'manual',
-      'chunknumber' => $metadata['chunknumber'] ?? 128,
+      // Cap this row was produced under; 0 when the document was stored whole.
+      'chunknumber' => $metadata['chunknumber'] ?? 0,
       'language_id' => $metadata['language_id'] ?? 1,
       'date_modified' => date('Y-m-d H:i:s'),
       'entity_id' => $metadata['entity_id'] ?? null,
@@ -482,7 +483,7 @@ class MariaDBVectorStore extends VectorStoreBase
         $doc->content = $r['content'];
         $doc->sourceType = $r['sourcetype'] ?? 'manual';
         $doc->sourceName = $r['sourcename'] ?? 'manual';
-        $doc->chunkNumber = $r['chunknumber'] ?? 128;
+        $doc->chunkNumber = $r['chunknumber'] ?? 0;
 
         $storedMetadata = [];
         if ($hasMetadataColumn && !empty($r['metadata'])) {

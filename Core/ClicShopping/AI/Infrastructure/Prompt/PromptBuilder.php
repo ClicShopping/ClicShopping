@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\Infrastructure\Prompt;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\AI\Infrastructure\Schema\SchemaRetriever;
 use ClicShopping\AI\Infrastructure\Schema\SchemaEmbedder;
@@ -416,7 +417,7 @@ class PromptBuilder
     $useSchemaRAG = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG') && CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_RAG == 'True';
 
     // Get max tables configuration
-    $maxTables = defined('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_MAX_TABLES') ? (int)CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_MAX_TABLES : 5;
+    $maxTables = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_SCHEMA_MAX_TABLES');
 
     if ($useSchemaRAG && !empty($this->currentQuery) && $this->schemaRetriever !== null) {
       // Use Schema RAG (relevant tables only)

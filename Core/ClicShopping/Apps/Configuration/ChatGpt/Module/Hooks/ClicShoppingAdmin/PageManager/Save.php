@@ -47,7 +47,8 @@ class Save implements HooksInterface
       Registry::set('Semantics', new SemanticAgent());
     }
     $this->semantics = Registry::get('Semantics');
-    $this->app->loadDefinitions('Module/Hooks/ClicShoppingAdmin/PagesManager/rag');
+    // No load here: the directory is PageManager, not PagesManager, so this resolved
+    // to nothing. The real per-language load happens before use, further down.
   }
 
   /**

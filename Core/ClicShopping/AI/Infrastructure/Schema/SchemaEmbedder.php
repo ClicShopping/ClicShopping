@@ -301,6 +301,8 @@ class SchemaEmbedder
   /**
    * Build the schema text of every business table of the install
    *
+   * This is the EMBEDDING consumer: comments are de-negated here, and nowhere else.
+   *
    * @return array table_name => schema text
    */
   public function buildAllSchemaTexts(): array
@@ -308,7 +310,7 @@ class SchemaEmbedder
     $texts = [];
 
     foreach ($this->listSchemaTables() as $tableName) {
-      $texts[$tableName] = self::formatTableText($tableName, $this->getTableColumns($tableName), self::readTableComment($this->db, $tableName));
+      $texts[$tableName] = self::formatTableText($tableName, $this->getTableColumns($tableName), self::readTableComment($this->db, $tableName), true);
     }
 
     return $texts;
@@ -450,11 +452,16 @@ class SchemaEmbedder
    * @param string $tableName Table name
    * @param array $columns Rows of SHOW FULL COLUMNS (Field, Type, Comment)
    * @param string|null $tableComment Table-level comment, null/'' when the table has none
+   * @param bool $forEmbedding True for the retrieval consumer: the comment is de-negated first
    * @return string
    */
-  public static function formatTableText(string $tableName, array $columns, ?string $tableComment = null): string
+  public static function formatTableText(string $tableName, array $columns, ?string $tableComment = null, bool $forEmbedding = false): string
   {
     $text = "Table: {$tableName}\n";
+
+    if ($forEmbedding && !empty($tableComment)) {
+      $tableComment = self::denegateComment($tableComment);
+    }
 
     if (!empty($tableComment)) {
       $text .= "  {$tableComment}\n";
@@ -466,6 +473,58 @@ class SchemaEmbedder
     }
 
     return trim($text);
+  }
+
+  /**
+   * Drop the negative clauses of a table comment, keep the positive ones
+   *
+   * An embedding carries no negation: "aggregate value on the grand total, never on
+   * customers_basket" imports the competitor's vocabulary instead of pushing it away. The
+   * prompt reads the negation correctly, retrieval cannot — hence two consumers. Cutting at
+   * SENTENCE level is refuted by measurement (it takes the useful money vocabulary with it),
+   * so only the clause carrying the negation is removed, never the first one of a sentence
+   * since that is where the definition lives.
+   *
+   * @param string $comment Table-level comment
+   * @return string Comment without its negative clauses
+   */
+  public static function denegateComment(string $comment): string
+  {
+    // Nothing to remove: return the maintainer's text untouched rather than re-punctuate it.
+    if (!preg_match('/\b(not|never|no)\b/i', $comment)) {
+      return $comment;
+    }
+
+    $sentences = preg_split('/(?<=[.!?])\s+/', trim($comment), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    $keptSentences = [];
+
+    foreach ($sentences as $sentence) {
+      $clauses = preg_split('/\s*(?:[,;:]|\s[-–—]\s)\s*/u', $sentence, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+      $kept = [];
+
+      foreach ($clauses as $i => $clause) {
+        if ($i > 0 && preg_match('/\b(not|never|no)\b/i', $clause)) {
+          continue;
+        }
+
+        $kept[] = trim($clause);
+      }
+
+      if ($kept === []) {
+        continue;
+      }
+
+      $text = rtrim(implode(', ', $kept), " .,;:-");
+
+      // A first clause that is itself the negation leaves nothing worth keeping.
+      if (count($kept) === 1 && preg_match('/\b(not|never|no)\b/i', $text)) {
+        continue;
+      }
+
+      $keptSentences[] = $text . '.';
+    }
+
+    return trim(implode(' ', $keptSentences));
   }
 
   /**

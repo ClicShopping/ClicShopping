@@ -1,30 +1,30 @@
 
-text_key_domain = domaine
-text_key_entity = entite
+text_key_domain = domain
+text_key_entity = entity
 
 text_key_document_id = document.id
 text_key_document_type = document.type
-text_key_document_title = document.titre
-text_key_document_language = document.langue
+text_key_document_title = document.title
+text_key_document_language = document.language
 
-text_key_seo_title = seo.titre
+text_key_seo_title = seo.title
 text_key_seo_description = seo.description
-text_key_seo_keywords = seo.mots_cles
+text_key_seo_keywords = seo.keywords
 
-text_key_jurisdiction = document.juridiction
-text_key_party_seller = partie.vendeur
-text_key_party_buyer = partie.acheteur
-text_key_governing_law = clause.loi_applicable
-text_key_court = clause.tribunal
+text_key_jurisdiction = document.jurisdiction
+text_key_party_seller = party.seller
+text_key_party_buyer = party.buyer
+text_key_governing_law = clause.governing_law
+text_key_court = clause.court
 
 text_key_clause_order = clause.commande
 text_key_clause_prices = clause.prix
-text_key_clause_payment_methods = clause.methodes_paiement
-text_key_clause_delivery_method = clause.methode_livraison
-text_key_clause_withdrawal = clause.retractation
-text_key_clause_warranty = clause.garantie
-text_key_clause_liability = clause.responsabilite
-text_key_clause_data_protection = clause.protection_donnees
+text_key_clause_payment_methods = clause.payment.methods
+text_key_clause_delivery_method = clause.delivery.method
+text_key_clause_withdrawal = clause.withdrawal
+text_key_clause_warranty = clause.warranty
+text_key_clause_liability = clause.liability
+text_key_clause_data_protection = clause.data_protection
 
 text_value_domain_ecommerce = ecommerce
 text_value_entity_document = document

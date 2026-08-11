@@ -111,7 +111,7 @@ CREATE TABLE :table_categories (
   customers_group_id int default (99) not null,
   PRIMARY KEY (categories_id),
   KEY idx_categories_parent_id (parent_id)
-  ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Product categories with hierarchical structure and access control';
 EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
@@ -132,7 +132,7 @@ CREATE TABLE :table_categories_description (
 
  PRIMARY KEY categories_id (language_id),
  KEY idx_categories_name (categories_name)
-) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Multi-language descriptions and SEO metadata for product categories';
 EOD;
       $CLICSHOPPING_Db->exec($sql);
     }

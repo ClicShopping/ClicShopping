@@ -22,6 +22,29 @@ use LLPhant\Embeddings\Document;
 class ChunkReconstructor
 {
   /**
+   * Position of a chunk in its document, ZERO-based.
+   *
+   * `chunk_index` is the canonical key. Rows written before that convention carry
+   * only the one-based `chunk_number`; without the bridge below they would all
+   * resolve to 0 and reassemble in whatever order the SELECT happened to return.
+   *
+   * @param array $metadata Chunk metadata as stored.
+   * @return int
+   */
+  private static function orderOf(array $metadata): int
+  {
+    if (isset($metadata['chunk_index'])) {
+      return (int)$metadata['chunk_index'];
+    }
+
+    if (isset($metadata['chunk_number'])) {
+      return max(0, (int)$metadata['chunk_number'] - 1);
+    }
+
+    return 0;
+  }
+
+  /**
    * Groups search result documents (chunks) by their 'interaction_id'.
    * Also handles single (non-chunked) interactions.
    *
@@ -57,7 +80,7 @@ class ChunkReconstructor
         // Add the current chunk detail
         $grouped[$interactionId]['chunks'][] = [
           'content' => $doc->content,
-          'chunk_index' => $metadata['chunk_index'] ?? 0,
+          'chunk_index' => self::orderOf($metadata),
           'score' => $score,
         ];
 

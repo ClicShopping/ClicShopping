@@ -18,6 +18,7 @@
 namespace ClicShopping\AI\CoreAI\Planning\SubTaskPlanning;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainConfig;
@@ -93,15 +94,15 @@ class HybridQueryDecomposer
     private function loadConfiguration(): void
     {
         // Default: enabled (True)
-        $statusConfig = \defined('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS') ? CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS : 'True';
+        $statusConfig = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS');
         $this->decompositionEnabled = ($statusConfig === 'True' || $statusConfig === true);
 
         // Default: null (uses the default model (Gpt::defaultModel()))
-        $this->llmProvider = \defined('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_LLM_PROVIDER') ? CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_LLM_PROVIDER : null;
+        $this->llmProvider = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_LLM_PROVIDER');
         
         // Load debug mode (Requirement 12.3)
         // Default: null (uses default RAG debug from CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER)
-        $debugConfig = \defined('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_DEBUG') ? CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_DEBUG : null;
+        $debugConfig = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_DEBUG');
         
         // If debug config is null, use default RAG debug setting
         if ($debugConfig === null) {

@@ -12,6 +12,7 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Common\CronLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
 use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
@@ -19,8 +20,8 @@ use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\ProductsAdmin;
 
 /**
- * EmbeddingCronRunner — daily upsert of e-commerce entity embeddings: creates
- * the embedding when missing, replaces its chunks when it already exists.
+ * EmbeddingCronRunner — weekly upsert of e-commerce entity embeddings: creates
+ * the embedding when missing, replaces its chunks when the source changed.
  *
  * Reached through the unified Cronjob/Process dispatch (Shop/Cronjob/Process),
  * exactly like SeoCronRunner and ReviewSentimentCronRunner. Consolidated here
@@ -35,14 +36,67 @@ use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\ProductsAdmin;
  * this runner and the ChatGpt page-manager/schema sync) exactly like the
  * ChatGpt Shop/ClicShoppingAdmin Cronjob\Process hooks already do for the same
  * code, plus the same master switch the former Cron::execute() applied.
+ *
+ * Work is bounded twice, because a pass that re-vectorises the whole catalogue
+ * neither fits its time budget nor pays for itself:
+ *
+ *   1. Source fingerprint — every entity is hashed over the exact fields that
+ *      feed its document (including the joined category / manufacturer / product
+ *      names) plus DOCUMENT_REVISION. The hash is stored in the row metadata and
+ *      compared BEFORE any LLM call, so an unchanged entity costs one hash and
+ *      no API round-trip. A modification date cannot do this: stock and
+ *      products_ordered are embedded in the product document yet are written by
+ *      the order path without touching products_last_modified, and a category or
+ *      manufacturer rename touches no product row at all.
+ *   2. Batch cap — CLICSHOPPING_APP_ECOMMERCE_EC_CRON_EMBEDDING_BATCH_SIZE
+ *      (default 50) entities of REAL work per entity type per pass, so the pass
+ *      always fits the trigger's time budget. Same pattern and same reasoning as
+ *      SeoCronRunner::$batchSize. Skipped entities do not consume the cap, so an
+ *      unchanged catalogue still sweeps end to end; a backlog drains across
+ *      passes because every completed entity writes its fingerprint.
+ *
+ * Bump DOCUMENT_REVISION whenever the document BUILDER changes (a new field, a
+ * removed duplicate, a reworded label): the fingerprints stop matching and every
+ * entity is rebuilt once. Without it a builder fix would never reach the rows
+ * already in the store.
  */
 class EmbeddingCronRunner
 {
   private const CRON_CODE = 'embeddings';
+  private const DEFAULT_BATCH_SIZE = 50;
+
+  /**
+   * Bumped when the document builder changes, to invalidate every fingerprint.
+   * .2 — chunk order moves to the canonical `metadata.chunk_index` (3bis-b-bis) and
+   *      the duplicated product description is gone (3bis-i): both need a rebuild.
+   */
+  private const DOCUMENT_REVISION = '2026-08-10.2';
+
+  /** Store table => [source table, source primary key], for the orphan sweep. */
+  private const ENTITY_SOURCES = [
+    'categories_embedding' => ['categories', 'categories_id'],
+    'manufacturers_embedding' => ['manufacturers', 'manufacturers_id'],
+    'products_embedding' => ['products', 'products_id'],
+    'reviews_embedding' => ['reviews', 'reviews_id'],
+    'suppliers_embedding' => ['suppliers', 'suppliers_id'],
+  ];
 
   private mixed $app;
   private mixed $lang;
   private mixed $semantics;
+
+  private int $batchSize;
+
+  /** Remaining entities of real work for the current entity type. */
+  private int $budget = 0;
+
+  /** Fingerprints already in the store for the table/language being swept. */
+  private array $storedFingerprints = [];
+
+  /** Fingerprint of the entity currently being rebuilt, written to its metadata. */
+  private string $currentFingerprint = '';
+
+  private array $counters = [];
 
   public function __construct()
   {
@@ -58,6 +112,10 @@ class EmbeddingCronRunner
     }
 
     $this->semantics = Registry::get('Semantics');
+
+    $this->batchSize = defined('CLICSHOPPING_APP_ECOMMERCE_EC_CRON_EMBEDDING_BATCH_SIZE')
+      ? max(1, (int)CLICSHOPPING_APP_ECOMMERCE_EC_CRON_EMBEDDING_BATCH_SIZE)
+      : self::DEFAULT_BATCH_SIZE;
   }
 
   /**
@@ -102,7 +160,8 @@ class EmbeddingCronRunner
   }
 
   /**
-   * Generates the missing embeddings for every e-commerce entity, per language.
+   * Rebuilds the embeddings whose source changed, for every e-commerce entity
+   * and language, then reports the pass in clic_cron_log.
    *
    * @return void
    */
@@ -110,15 +169,217 @@ class EmbeddingCronRunner
   {
     $language_array = $this->lang->getLanguages();
 
+    $log = new CronLogger('embedding', self::CRON_CODE);
+    $log->start();
+
+    $this->counters = [
+      'found' => 0,
+      'processed' => 0,
+      'skipped' => 0,
+      'deferred' => 0,
+      'failed' => 0,
+      'by_type' => [],
+      'orphans_purged' => [],
+    ];
+
+    // Each entity type gets its own cap so a large product backlog can never
+    // starve the smaller stores.
+    $this->budget = $this->batchSize;
+
     foreach ($language_array as $value) {
       $this->updateAllEmbeddingCategories($value['id']);
+    }
+
+    $this->budget = $this->batchSize;
+
+    foreach ($language_array as $value) {
       $this->updateAllEmbeddingManufacturers($value['id']);
+    }
+
+    $this->budget = $this->batchSize;
+
+    foreach ($language_array as $value) {
       $this->updateAllEmbeddingProducts($value['id']);
+    }
+
+    $this->budget = $this->batchSize;
+
+    foreach ($language_array as $value) {
       $this->updateAllEmbeddingReviews($value['id']);
     }
 
     // Suppliers doesn't use language_id, so it's called once outside the loop
+    $this->budget = $this->batchSize;
     $this->updateAllEmbeddingSuppliers();
+
+    $this->purgeOrphanEmbeddings();
+
+    $deferred = $this->counters['deferred'];
+    $failed = $this->counters['failed'];
+    $status = ($failed > 0 || $deferred > 0) ? 'partial' : 'completed';
+
+    $log->finish($status, [
+      'targets_found' => $this->counters['found'],
+      'targets_processed' => $this->counters['processed'],
+      'success_count' => $this->counters['processed'] - $failed,
+      'failure_count' => $failed,
+      'skipped_count' => $this->counters['skipped'] + $deferred,
+      'metadata' => [
+        'batch_size' => $this->batchSize,
+        'document_revision' => self::DOCUMENT_REVISION,
+        'unchanged' => $this->counters['skipped'],
+        'deferred_to_next_pass' => $deferred,
+        'by_type' => $this->counters['by_type'],
+        'orphans_purged' => $this->counters['orphans_purged'],
+      ],
+    ]);
+  }
+
+  /**
+   * Loads the fingerprints already stored for a table, so the sweep costs one
+   * query instead of one per entity.
+   *
+   * @param string $table Embedding store table, without prefix.
+   * @param int|null $languageId Null for the language-less stores (suppliers).
+   * @return void
+   */
+  private function loadStoredFingerprints(string $table, ?int $languageId): void
+  {
+    $this->storedFingerprints = [];
+
+    $sql = 'select entity_id,
+                   json_unquote(json_extract(metadata, \'$.source_fingerprint\')) as fingerprint
+            from :table_' . $table;
+
+    if ($languageId !== null) {
+      $sql .= ' where language_id = :language_id';
+    }
+
+    $Qfingerprints = $this->app->db->prepare($sql);
+
+    if ($languageId !== null) {
+      $Qfingerprints->bindInt(':language_id', $languageId);
+    }
+
+    $Qfingerprints->execute();
+
+    foreach ($Qfingerprints->fetchAll() as $row) {
+      $fingerprint = $row['fingerprint'] ?? null;
+
+      // A row with no fingerprint predates this gate: leave it out so it rebuilds once.
+      if (is_string($fingerprint) && $fingerprint !== '') {
+        $this->storedFingerprints[(int)$row['entity_id']] = $fingerprint;
+      }
+    }
+  }
+
+  /**
+   * Decides whether an entity has to be rebuilt, and books it against the cap.
+   *
+   * @param string $type Entity type, for the per-type counters.
+   * @param int $entityId
+   * @param array $sourceFields Every value that feeds the document, joined ones included.
+   * @return bool False when the entity is unchanged or deferred to the next pass.
+   */
+  private function shouldRebuild(string $type, int $entityId, array $sourceFields): bool
+  {
+    $this->counters['found']++;
+    $this->counters['by_type'][$type]['found'] = ($this->counters['by_type'][$type]['found'] ?? 0) + 1;
+
+    $fingerprint = hash('xxh128', self::DOCUMENT_REVISION . "\x1f" . implode("\x1f", array_map(
+      static fn($value) => $value === null ? '' : (string)$value,
+      $sourceFields
+    )));
+
+    if (($this->storedFingerprints[$entityId] ?? null) === $fingerprint) {
+      $this->counters['skipped']++;
+      $this->counters['by_type'][$type]['unchanged'] = ($this->counters['by_type'][$type]['unchanged'] ?? 0) + 1;
+
+      return false;
+    }
+
+    if ($this->budget < 1) {
+      $this->counters['deferred']++;
+      $this->counters['by_type'][$type]['deferred'] = ($this->counters['by_type'][$type]['deferred'] ?? 0) + 1;
+
+      return false;
+    }
+
+    $this->budget--;
+    $this->currentFingerprint = $fingerprint;
+
+    return true;
+  }
+
+  /**
+   * Records the outcome of one rebuilt entity.
+   *
+   * @param string $type Entity type, for the per-type counters.
+   * @param int $entityId
+   * @param array $result Return value of NewVector::saveEmbeddingsWithChunks().
+   * @return void
+   */
+  private function recordEntityResult(string $type, int $entityId, array $result): void
+  {
+    $this->counters['processed']++;
+
+    if (!$result['success']) {
+      $this->counters['failed']++;
+      $this->counters['by_type'][$type]['failed'] = ($this->counters['by_type'][$type]['failed'] ?? 0) + 1;
+
+      error_log("Cron embeddings: failed to save {$type} {$entityId} - " . $result['error']);
+
+      return;
+    }
+
+    $this->counters['by_type'][$type]['rebuilt'] = ($this->counters['by_type'][$type]['rebuilt'] ?? 0) + 1;
+
+    // Publish the fingerprint for the rest of THIS pass: the reviews query joins
+    // reviews_vote and can hand out the same entity twice, which would otherwise
+    // rebuild it — and bill it — a second time.
+    $this->storedFingerprints[$entityId] = $this->currentFingerprint;
+
+    error_log("Cron embeddings: saved {$result['chunks_saved']} chunk(s) for {$type} {$entityId}");
+  }
+
+  /**
+   * Deletes the rows of entities that left the catalogue — nothing else ever
+   * removes them, so they stay searchable long after the entity is gone.
+   *
+   * Fail-safe: a source table that reads empty is treated as a transient fault
+   * and purges nothing, so an incident can never wipe a store.
+   *
+   * @return void
+   */
+  private function purgeOrphanEmbeddings(): void
+  {
+    foreach (self::ENTITY_SOURCES as $table => [$sourceTable, $sourceKey]) {
+      $Qsource = $this->app->db->query('select count(*) as total from :table_' . $sourceTable);
+
+      if ($Qsource->valueInt('total') < 1) {
+        continue;
+      }
+
+      $orphanCondition = 'not exists (select 1 from :table_' . $sourceTable . ' s
+                                      where s.' . $sourceKey . ' = e.entity_id)';
+
+      $Qorphans = $this->app->db->query('select count(*) as total
+                                         from :table_' . $table . ' e
+                                         where ' . $orphanCondition);
+      $orphans = $Qorphans->valueInt('total');
+
+      if ($orphans < 1) {
+        continue;
+      }
+
+      $Qpurge = $this->app->db->prepare('delete e from :table_' . $table . ' e
+                                         where ' . $orphanCondition);
+      $Qpurge->execute();
+
+      $this->counters['orphans_purged'][$table] = $orphans;
+
+      error_log("Cron embeddings: purged {$orphans} orphan row(s) from {$table}");
+    }
   }
 
   /**
@@ -148,7 +409,21 @@ class EmbeddingCronRunner
 
     $check_array = $Qcheck->fetchAll();
 
+    $this->loadStoredFingerprints('categories_embedding', $language_id);
+
     foreach ($check_array as $item) {
+      if (!$this->shouldRebuild('categories', (int)$item['categories_id'], [
+        $item['categories_id'],
+        $item['language_id'],
+        $item['categories_name'],
+        $item['categories_description'],
+        $item['categories_head_title_tag'],
+        $item['categories_head_desc_tag'],
+        $item['categories_head_keywords_tag'],
+      ])) {
+        continue;
+      }
+
       $language_code = $this->lang->getLanguageCodeById((int)$item['language_id']);
       $categories_name = $item['categories_name'];
       $categories_description = $item['categories_description'];
@@ -203,6 +478,7 @@ class EmbeddingCronRunner
        'content' => $embedding_data,
        'type' => 'category',
        'tags' => $tags,
+       'source_fingerprint' => $this->currentFingerprint,
        'source' => ['type' => 'manual', 'name' => 'manual']
      ];
 
@@ -217,11 +493,7 @@ class EmbeddingCronRunner
        true  // isUpdate = true (upsert: repair existing embeddings)
      );
 
-     if (!$result['success']) {
-       error_log("Cron Categories: Failed to save embeddings for category {$item['categories_id']} - " . $result['error']);
-     } else {
-       error_log("Cron Categories: Successfully saved {$result['chunks_saved']} chunks for category {$item['categories_id']}");
-     }
+     $this->recordEntityResult('categories', (int)$item['categories_id'], $result);
     }
   }
 
@@ -253,7 +525,22 @@ class EmbeddingCronRunner
 
     $check_array = $Qcheck->fetchAll();
 
+    $this->loadStoredFingerprints('manufacturers_embedding', $language_id);
+
     foreach ($check_array as $item) {
+      if (!$this->shouldRebuild('manufacturers', (int)$item['manufacturers_id'], [
+        $item['manufacturers_id'],
+        $item['languages_id'],
+        $item['manufacturers_name'],
+        $item['suppliers_id'],
+        $item['manufacturer_description'],
+        $item['manufacturer_seo_title'],
+        $item['manufacturer_seo_description'],
+        $item['manufacturer_seo_keyword'],
+      ])) {
+        continue;
+      }
+
       $language_code = $this->lang->getLanguageCodeById((int)$item['languages_id']);
       $manufacturers_name = $item['manufacturers_name'];
       $manufacturers_description = $item['manufacturer_description'];
@@ -300,6 +587,7 @@ class EmbeddingCronRunner
         'brand_name' => $manufacturers_name,
         'content' => $embedding_data,
         'type' => 'manufacturers',
+        'source_fingerprint' => $this->currentFingerprint,
         'source' => ['type' => 'manual', 'name' => 'manual']
       ];
 
@@ -314,11 +602,7 @@ class EmbeddingCronRunner
         true  // isUpdate = true (upsert: repair existing embeddings)
       );
 
-      if (!$result['success']) {
-        error_log("Cron Manufacturers: Failed to save embeddings for manufacturer {$item['manufacturers_id']} - " . $result['error']);
-      } else {
-        error_log("Cron Manufacturers: Successfully saved {$result['chunks_saved']} chunks for manufacturer {$item['manufacturers_id']}");
-      }
+      $this->recordEntityResult('manufacturers', (int)$item['manufacturers_id'], $result);
     }
   }
 
@@ -360,6 +644,8 @@ class EmbeddingCronRunner
 
     $check_array = $QcheckProducts->fetchAll();
 
+    $this->loadStoredFingerprints('products_embedding', $language_id);
+
     foreach ($check_array as $item) {
       $Qcategories = $this->app->db->get('products_to_categories', 'categories_id', ['products_id' => $item['products_id']]);
 
@@ -393,6 +679,33 @@ class EmbeddingCronRunner
 
       $Qcategories = $this->app->db->get('categories_description', 'categories_name', ['categories_id' => $Qcategories->valueInt('categories_id'), 'language_id' => $item['language_id']]);
       $categories_name = $Qcategories->value('categories_name');
+
+      // The joined names and the stock/ordered counters belong to the fingerprint:
+      // they are in the document, and none of them moves products_last_modified.
+      if (!$this->shouldRebuild('products', (int)$item['products_id'], [
+        $item['products_id'],
+        $item['language_id'],
+        $products_name,
+        $products_model,
+        $products_ean,
+        $products_sku,
+        $products_date_added,
+        $products_status,
+        $products_ordered,
+        $products_quantity,
+        $products_quantity_alert,
+        $products_stock_reorder_level,
+        $products_description,
+        $products_description_summary,
+        $seo_product_title,
+        $seo_product_description,
+        $seo_product_keywords,
+        $seo_product_tag,
+        $manufacturer_name,
+        $categories_name,
+      ])) {
+        continue;
+      }
 
 //********************
 // add embedding
@@ -488,6 +801,7 @@ class EmbeddingCronRunner
         'brand_name' => $manufacturer_name ?? '',
         'content' => $embedding_data,
         'type' => 'products',
+        'source_fingerprint' => $this->currentFingerprint,
         'source' => ['type' => 'manual', 'name' => 'manual']
       ];
 
@@ -502,11 +816,7 @@ class EmbeddingCronRunner
         true  // isUpdate = true (upsert: repair existing embeddings)
       );
 
-      if (!$result['success']) {
-        error_log("Cron Products: Failed to save embeddings for product {$item['products_id']} - " . $result['error']);
-      } else {
-        error_log("Cron Products: Successfully saved {$result['chunks_saved']} chunks for product {$item['products_id']}");
-      }
+      $this->recordEntityResult('products', (int)$item['products_id'], $result);
     }
   }
 
@@ -548,6 +858,8 @@ class EmbeddingCronRunner
 
     $check_array = $Qcheck->fetchAll();
 
+    $this->loadStoredFingerprints('reviews_embedding', $language_id);
+
     foreach ($check_array as $item) {
       $products_id = $item['products_id'];
       $reviews_text = $item['reviews_text'];
@@ -566,6 +878,23 @@ class EmbeddingCronRunner
       $sentiment = $item['sentiment'];
 
       $products_name = $CLICSHOPPING_ProductsAdmin->getProductsName($products_id, $language_id);
+
+      // $status already carries its resolved label here, so a label change is caught too.
+      if (!$this->shouldRebuild('reviews', (int)$item['reviews_id'], [
+        $item['reviews_id'],
+        $language_id,
+        $products_id,
+        $products_name,
+        $reviews_text,
+        $reviews_rating,
+        $date_added,
+        $status,
+        $customers_tag,
+        $vote,
+        $sentiment,
+      ])) {
+        continue;
+      }
 
       //********************
       // add embedding
@@ -611,6 +940,7 @@ class EmbeddingCronRunner
         'brand_name' => $products_name,
         'content' => $embedding_data,
         'type' => 'reviews',
+        'source_fingerprint' => $this->currentFingerprint,
         'source' => ['type' => 'manual', 'name' => 'manual']
       ];
 
@@ -625,11 +955,7 @@ class EmbeddingCronRunner
         true  // isUpdate = true (upsert: repair existing embeddings)
       );
 
-      if (!$result['success']) {
-        error_log("Cron Reviews: Failed to save embeddings for review {$item['reviews_id']} - " . $result['error']);
-      } else {
-        error_log("Cron Reviews: Successfully saved {$result['chunks_saved']} chunks for review {$item['reviews_id']}");
-      }
+      $this->recordEntityResult('reviews', (int)$item['reviews_id'], $result);
     }
   }
 
@@ -671,6 +997,8 @@ class EmbeddingCronRunner
 
     $check_array = $Qcheck->fetchAll();
 
+    $this->loadStoredFingerprints('suppliers_embedding', null);
+
     foreach ($check_array as $item) {
       $supplier_name = $item['suppliers_name'];
       $date_added = $item['date_added'];
@@ -686,6 +1014,19 @@ class EmbeddingCronRunner
       $suppliers_city = $item['suppliers_city'];
       $suppliers_notes = $item['suppliers_notes'];
       $suppliers_states = $item['suppliers_states'];
+
+      if (!$this->shouldRebuild('suppliers', (int)$item['suppliers_id'], [
+        $item['suppliers_id'],
+        $supplier_name,
+        $date_added,
+        $suppliers_status,
+        $suppliers_states,
+        $suppliers_city,
+        $suppliers_country_id,
+        $suppliers_notes,
+      ])) {
+        continue;
+      }
 
       //********************
       // add embedding
@@ -723,6 +1064,7 @@ class EmbeddingCronRunner
         'brand_name' => $supplier_name,
         'content' => $embedding_data,
         'type' => 'suppliers',
+        'source_fingerprint' => $this->currentFingerprint,
         'source' => ['type' => 'manual', 'name' => 'manual']
       ];
 
@@ -738,11 +1080,7 @@ class EmbeddingCronRunner
         true  // isUpdate = true (upsert: repair existing embeddings)
       );
 
-      if (!$result['success']) {
-        error_log("Cron Suppliers: Failed to save embeddings for supplier {$item['suppliers_id']} - " . $result['error']);
-      } else {
-        error_log("Cron Suppliers: Successfully saved {$result['chunks_saved']} chunks for supplier {$item['suppliers_id']}");
-      }
+      $this->recordEntityResult('suppliers', (int)$item['suppliers_id'], $result);
     }
   }
 }

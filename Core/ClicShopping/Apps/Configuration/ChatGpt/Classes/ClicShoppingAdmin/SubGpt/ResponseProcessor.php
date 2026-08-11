@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt;
 
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
+use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Infrastructure\Prompt\PromptOptimizer;
@@ -220,7 +221,7 @@ class ResponseProcessor
    */
   public static function getGptResponse(string $question, int|null $maxtoken = null, ?float $temperature = null, ?string $engine = null, int|null $max = 1): bool|string
   {
-    $maxPromptLength = defined('CLICSHOPPING_APP_CHATGPT_RA_MAX_PROMPT_LENGTH') ? CLICSHOPPING_APP_CHATGPT_RA_MAX_PROMPT_LENGTH : 100000;
+    $maxPromptLength = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_MAX_PROMPT_LENGTH');
     $chatgpt_debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
 
     if (ConfigManager::checkGptStatus() === false) {

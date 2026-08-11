@@ -14,7 +14,8 @@ use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use LLPhant\Embeddings\Document;
-use LLPhant\Embeddings\DocumentSplitter\DocumentSplitter;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\Chunking\ChunkPolicy;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\Chunking\DocumentChunker;
 
 /**
  * SearchCacheManager Class
@@ -164,9 +165,9 @@ class SearchCacheManager
           );
         }
 
-        // Overlap is the FOURTH argument; the third is the separator. Passing it third made the
-        // integer the separator, so the document was never split on anything but that digit string.
-        $splitDocs = DocumentSplitter::splitDocument($document, $this->maxChunkSize, ' ', $this->chunkOverlap);
+        // Cap is explicit here, not derived from the embedding model: it must not move when the
+        // model changes. The separator/overlap mix-up is impossible through the policy.
+        $splitDocs = DocumentChunker::split($document, ChunkPolicy::ofChars($this->maxChunkSize, [' '], false, $this->chunkOverlap));
 
         $storedCount = 0;
 
@@ -177,6 +178,8 @@ class SearchCacheManager
 
           $chunk->metadata['is_chunked'] = true;
           $chunk->metadata['chunk_parent_query'] = $query;
+          // Record the cap actually applied, so a later cap change can spot stale rows.
+          $chunk->metadata['chunknumber'] = $this->maxChunkSize;
 
           $this->vectorStore->addDocument($chunk);
           $storedCount++;

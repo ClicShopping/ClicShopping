@@ -381,7 +381,9 @@ class MultiDBRAGManager
       $document->content = $content;
       $document->sourceType = $sourceType;
       $document->sourceName = $sourceName;
-      $document->chunkNumber = 128;
+      // This path never splits: no cap was applied, so the column records 0 rather than a
+      // meaningless 128 (see the column's DDL comment - it holds the generation cap).
+      $document->chunkNumber = 0;
 
        $array_data = [
         'type' => $type,

@@ -52,54 +52,54 @@ Retournez votre analyse au format JSON:
   "summary": "Résumé bref des recommandations"
 }
 
-embedding_key_domain = Domaine
-embedding_key_entity = Entité
-embedding_key_order_id = ID Commande
-embedding_key_language = Langue
-embedding_key_summary = Résumé
-embedding_key_key_insights = Insights Clés
+embedding_key_domain = Domain
+embedding_key_entity = Entity
+embedding_key_order_id = Order ID
+embedding_key_language = Language
+embedding_key_summary = Summary
+embedding_key_key_insights = Key Insights
 embedding_key_insight = Insight
-embedding_key_recommendations = Recommandations
+embedding_key_recommendations = Recommendations
 embedding_key_recommendation = Recommandation
-embedding_value_domain = E-commerce
-embedding_value_entity = Insights Commande
+embedding_value_domain = Ecommerce
+embedding_value_entity = Order Insights
 
-text_key_domain = domaine
-text_key_entity = entite
+text_key_domain = domain
+text_key_entity = entity
 
-text_key_order_id = commande.id
-text_key_order_date = commande.date
-text_key_order_status = commande.statut
-text_key_order_currency = commande.devise
-text_key_order_payment_method = commande.methode_paiement
+text_key_order_id = order.id
+text_key_order_date = order.date
+text_key_order_status = order.status
+text_key_order_currency = order.currency
+text_key_order_payment_method = order.payment_method
 
-text_key_customer_name = client.nom
-text_key_customer_company = client.entreprise
-text_key_customer_city = client.ville
-text_key_customer_country = client.pays
+text_key_customer_name = customer.name
+text_key_customer_company = customer.company
+text_key_customer_city = customer.city
+text_key_customer_country = customer.country
 
-text_key_delivery_city = livraison.ville
-text_key_delivery_country = livraison.pays
+text_key_delivery_city = delivery.city
+text_key_delivery_country = delivery.country
 
-text_key_product_name = produit.nom
-text_key_product_model = produit.modele
-text_key_product_price = produit.prix
-text_key_product_quantity = produit.quantite
-text_key_product_tax_rate = produit.taux_taxe
+text_key_product_name = product.name
+text_key_product_model = product.model
+text_key_product_price = product.price
+text_key_product_quantity = product.quantity
+text_key_product_tax_rate = product.tax_rate
 
-text_key_product_attribute_option = produit.attribut.option
-text_key_product_attribute_value = produit.attribut.valeur
+text_key_product_attribute_option = product.attribute.option
+text_key_product_attribute_value = product.attribute.value
 
-text_key_total_subtotal = total.sous_total
-text_key_total_shipping = total.expedition
-text_key_total_tax = total.taxe
+text_key_total_subtotal = total.subtotal
+text_key_total_shipping = total.shipping
+text_key_total_tax = total.tax
 text_key_total_total = total.total
 
-text_key_history_date = historique.date
-text_key_history_status = historique.statut
-text_key_history_comment = historique.commentaire
-text_key_history_tracking = historique.suivi
-text_key_history_admin = historique.admin
+text_key_history_date = history.date
+text_key_history_status = history.status
+text_key_history_comment = history.comment
+text_key_history_tracking = history.tracking
+text_key_history_admin = history.admin
 
 text_value_domain_ecommerce = ecommerce
-text_value_entity_order = commande
+text_value_entity_order = order

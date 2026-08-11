@@ -12,10 +12,11 @@ namespace ClicShopping\AI\DomainsAI\Shared\Embedding;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Cache;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\Chunking\ChunkPolicy;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\Chunking\DocumentChunker;
 
 use LLPhant\Embeddings\DataReader\FileDataReader;
 use LLPhant\Embeddings\Document;
-use LLPhant\Embeddings\DocumentSplitter\DocumentSplitter;
 use LLPhant\Embeddings\EmbeddingFormatter\EmbeddingFormatter;
 use LLPhant\Embeddings\EmbeddingGenerator\OpenAI\OpenAI3LargeEmbeddingGenerator;
 use LLPhant\Embeddings\EmbeddingGenerator\OpenAI\OpenAI3SmallEmbeddingGenerator;
@@ -228,13 +229,25 @@ class NewVector
           error_log("Info : File content: ~{$estimatedTokens} tokens, will split into chunks of {$token_length} tokens");
         }
 
-        $splitDocuments = DocumentSplitter::splitDocuments($documents, $token_length);
+        // File branch keeps the '.' separator it inherited from splitDocuments().
+        $splitDocuments = [];
+        foreach ($documents as $fileDocument) {
+          foreach (DocumentChunker::split($fileDocument, ChunkPolicy::ofChars($token_length, ['.'])) as $piece) {
+            $splitDocuments[] = $piece;
+          }
+        }
         $formattedDocuments = EmbeddingFormatter::formatEmbeddings($splitDocuments);
 
         // Generate embeddings (API call 200-500ms)
         $embeddedDocuments = $embeddingGenerator->embedDocuments($formattedDocuments);
 
         // Save to cache (24h)
+        // The column records the cap the row was produced under, as its DDL comment says
+        // ('Chunk size used for embedding generation'). 0 means no cap was applied.
+        foreach ($embeddedDocuments as $embeddedDocument) {
+          $embeddedDocument->chunkNumber = $token_length;
+        }
+
         $cache->save(self::serializeEmbeddings($embeddedDocuments));
         error_log("[INFO TIME] EMBEDDING CACHED (file) - TTL: 24h - Model: {$model}");
 
@@ -276,13 +289,19 @@ class NewVector
           $tempDocument->sourceName = 'manual';
           $tempDocument->sourceType = 'manual';
 
-          $splitDocuments = DocumentSplitter::splitDocument($tempDocument, $token_length);
+          $splitDocuments = DocumentChunker::split($tempDocument, ChunkPolicy::ofChars($token_length));
           $formattedDocuments = EmbeddingFormatter::formatEmbeddings($splitDocuments);
 
           // Generate embeddings (API call 200-500ms)
           $embeddedDocuments = $embeddingGenerator->embedDocuments($formattedDocuments);
 
           // Save to cache (24h)
+          // The column records the cap the row was produced under, as its DDL comment says
+            // ('Chunk size used for embedding generation'). 0 means no cap was applied.
+          foreach ($embeddedDocuments as $embeddedDocument) {
+            $embeddedDocument->chunkNumber = $token_length;
+          }
+
           $cache->save(self::serializeEmbeddings($embeddedDocuments));
           error_log("[INFO TIME] EMBEDDING CACHED (text-multi) - TTL: 24h - Model: {$model}");
 
@@ -315,6 +334,8 @@ class NewVector
           $document->embedding = $embedded;
           $document->sourceName = 'manual';
           $document->sourceType = 'manual';
+          // Stored whole: no cap was applied.
+          $document->chunkNumber = 0;
 
           $embeddedDocuments = [$document];
 
@@ -446,7 +467,7 @@ class NewVector
    * 
    * ## Key Features:
    * - Saves ALL chunks from multi-chunk documents (not just the first one)
-   * - Adds consistent chunk metadata (chunk_number, total_chunks, is_chunked)
+   * - Adds consistent chunk metadata (chunk_index, total_chunks, is_chunked)
    * - Handles both insert and update operations
    * - Deletes old chunks before inserting new ones (for updates)
    * - Provides comprehensive error handling and logging
@@ -459,7 +480,7 @@ class NewVector
    *   "entity_id": 123,
    *   "language_id": 1,
    *   "type": "pages_manager",
-   *   "chunk_number": 1,
+   *   "chunk_index": 0,
    *   "total_chunks": 13,
    *   "is_chunked": true,
    *   "date_modified": "2024-12-26 10:30:00",
@@ -664,9 +685,12 @@ class NewVector
           // Convert embedding vector to JSON string
           $embeddingLiteral = json_encode($embeddingVector, JSON_THROW_ON_ERROR);
 
-          // Prepare chunk-specific metadata
+          // Prepare chunk-specific metadata. 'chunk_index' is the canonical order key,
+          // ZERO-based: it is what ChunkReconstructor sorts on and what
+          // LongTermMemoryManager already writes. The former 'chunk_number' was
+          // one-based and read by nobody, so order was stored where no one looked.
           $chunkMetadata = array_merge($baseMetadata, [
-            'chunk_number' => $chunkIndex + 1,
+            'chunk_index' => $chunkIndex,
             'total_chunks' => $totalChunks,
             'is_chunked' => $isChunked,
             'date_modified' => date('Y-m-d H:i:s')
@@ -677,9 +701,19 @@ class NewVector
             $chunkMetadata['language_id'] = $languageId;
           }
 
+          // chunknumber carries the cap this row was produced under, as its DDL comment states
+          // ('Chunk size used for embedding generation'), so a later cap change can tell which
+          // rows are stale. 0 = the document was stored whole.
+          $producedUnderCap = 0;
+
+          if (isset($embeddedDocuments[$chunkIndex]) && is_object($embeddedDocuments[$chunkIndex])) {
+            $producedUnderCap = (int)($embeddedDocuments[$chunkIndex]->chunkNumber ?? 0);
+          }
+
           // Prepare SQL data
           $sqlData = [
             'entity_id' => $entityId,
+            'chunknumber' => $producedUnderCap,
             'content' => $content,
             'type' => $baseMetadata['type'],
             'sourcetype' => $baseMetadata['source']['type'] ?? 'manual',

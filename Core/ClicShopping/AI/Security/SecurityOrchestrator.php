@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\Security;
 
 use ClicShopping\AI\Security\SemanticSecurityAnalyzer;
+use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\AI\Security\SecurityLogger;
 
 /**
@@ -212,10 +213,10 @@ class SecurityOrchestrator
     }
 
     // Provide safe defaults when RAG/RA config is not installed
-    $patternFallbackEnabled = defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_PATTERN_FALLBACK') ? CLICSHOPPING_APP_CHATGPT_RA_SECURITY_PATTERN_FALLBACK : false;
-    $threatThreshold = defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_THREAT_THRESHOLD') ? CLICSHOPPING_APP_CHATGPT_RA_SECURITY_THREAT_THRESHOLD : 0.7;
-    $logAllQueries = defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_ALL_QUERIES') ? CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_ALL_QUERIES : false;
-    $logBlockedOnly = defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_BLOCKED_ONLY') ? CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_BLOCKED_ONLY : true;
+    $patternFallbackEnabled = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_PATTERN_FALLBACK');
+    $threatThreshold = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_THREAT_THRESHOLD');
+    $logAllQueries = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_ALL_QUERIES');
+    $logBlockedOnly = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_BLOCKED_ONLY');
 
     return [
       // LLM-based security (PRIMARY)

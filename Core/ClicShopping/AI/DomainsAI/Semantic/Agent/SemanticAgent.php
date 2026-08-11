@@ -10,6 +10,7 @@ namespace ClicShopping\AI\DomainsAI\Semantic\Agent;
 
 
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
@@ -830,8 +831,8 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
       }
 
       // Apply admin defaults first
-      $defaultMinScore = defined('CLICSHOPPING_APP_CHATGPT_RA_MIN_SIMILARITY_SCORE') ? (float)CLICSHOPPING_APP_CHATGPT_RA_MIN_SIMILARITY_SCORE : 0.25;
-      $defaultLimit = defined('CLICSHOPPING_APP_CHATGPT_RA_MAX_RESULTS_PER_STORE') ? (int)CLICSHOPPING_APP_CHATGPT_RA_MAX_RESULTS_PER_STORE : 5;
+      $defaultMinScore = TechnicalDefaults::float('CLICSHOPPING_APP_CHATGPT_RA_MIN_SIMILARITY_SCORE');
+      $defaultLimit = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_MAX_RESULTS_PER_STORE');
 
       $finalMinScore = $defaultMinScore;
       $finalLimit = $defaultLimit;

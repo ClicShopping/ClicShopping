@@ -132,7 +132,7 @@ CREATE TABLE :table_manufacturers (
   suppliers_id int(11) NULL,
   PRIMARY KEY (manufacturers_id),
   KEY idx_manufacturers_name (manufacturers_name)
-) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Manufacturer (brand) identity, one row per brand. The products of a brand reference it by manufacturers_id in products.';
 EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
@@ -152,7 +152,7 @@ CREATE TABLE :table_manufacturers_info (
   manufacturer_seo_description varchar(255) Null,
   manufacturer_seo_keyword text  Null,
   PRIMARY KEY (manufacturers_id, languages_id)
-) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Per-language URL, description and SEO fields of a manufacturer, with click tracking. The brand identity is in manufacturers.';
 EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
