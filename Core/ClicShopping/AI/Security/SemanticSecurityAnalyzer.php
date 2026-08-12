@@ -547,7 +547,7 @@ class SemanticSecurityAnalyzer
    * }
    * 
    * Implements robust JSON parsing with multiple fallback strategies:
-   * 1. HTML entity decoding (handles htmlspecialchars encoding)
+   * 1. HTML entity decoding (defensive: some models emit entities on their own)
    * 2. Markdown code block removal
    * 3. JSON extraction from mixed text
    * 4. Common JSON syntax fixes
@@ -560,8 +560,8 @@ class SemanticSecurityAnalyzer
    */
   private static function parseLlmResponse(string $llmResponse): array
   {
-    // Step 1: Decode HTML entities (Gpt::getGptResponse applies htmlspecialchars)
-    // Do multiple passes to handle nested encoding
+    // Step 1: Decode HTML entities, defensive only — the prompt is no longer escaped on send.
+    // Multiple passes handle nested encoding.
     $decoded = $llmResponse;
     for ($i = 0; $i < 3; $i++) {
       $decoded = html_entity_decode($decoded, ENT_QUOTES | ENT_HTML5, 'UTF-8');

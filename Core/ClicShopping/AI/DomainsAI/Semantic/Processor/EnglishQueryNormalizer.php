@@ -72,6 +72,10 @@ class EnglishQueryNormalizer
 
     self::$memo[$memoKey] = $normalized;
 
+    // Idempotence: normalising the English form again must return it, not pay a second
+    // translation that paraphrases it (measured: "sales" became "revenue" in 6 draws out of 8).
+    self::$memo[self::memoKey($normalized)] = $normalized;
+
     return $normalized;
   }
 

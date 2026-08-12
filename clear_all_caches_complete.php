@@ -216,31 +216,43 @@ try {
 // ========================================
 // 5. CLEAR DATABASE QUERY CACHE
 // ========================================
-echo "\n5. Clearing database query cache...\n";
+// ⚠️ THE TRAP OF THIS REPOSITORY — read before removing anything here.
+// rag_query_cache is keyed on the RAW user question, so a single stale row replays a whole
+// answer built with the previous prompt, schema window or schema store, and no file cache
+// shows it. It bit us again on 2026-08-10: the row held the very question being measured.
+// A count is printed per table on purpose: "cleared" without a number cannot be trusted.
+echo "\n5. Clearing database query caches (rag_query_cache, rag_calculator_cache)...\n";
 try {
   $db = Registry::get('Db');
-  
-  // Clear rag_query_cache
-  $result = $db->query('DELETE FROM :table_rag_query_cache WHERE 1=1');
-  echo "   ✅ Cleared rag_query_cache table\n";
-  $totalCleared++;
-  
-  // Clear any cached translations
-  $result = $db->query('DELETE FROM :table_rag_query_cache WHERE cache_key LIKE "%translation%"');
-  echo "   ✅ Cleared translation cache entries\n";
-  
-  // Clear any cached classifications
-  $result = $db->query('DELETE FROM :table_rag_query_cache WHERE cache_key LIKE "%classification%"');
-  echo "   ✅ Cleared classification cache entries\n";
-  
-  // Clear any cached ambiguity detections
-  $result = $db->query('DELETE FROM :table_rag_query_cache WHERE cache_key LIKE "%ambiguity%"');
-  echo "   ✅ Cleared ambiguity cache entries\n";
+  $prefix = CLICSHOPPING::getConfig('db_table_prefix');
 
-  // Clear any cached ambiguity detections
-  $result = $db->query('DELETE FROM :table_rag_query_cache WHERE cache_key LIKE "%intent%"');
-  echo "   ✅ Cleared intent cache entries\n";
-  
+  // A full DELETE covers every cache_key: translation, classification, ambiguity, intent…
+  // Listing them one by one after it deleted nothing and only pretended to work.
+  foreach (['rag_query_cache', 'rag_calculator_cache'] as $cacheTable) {
+    try {
+      $stmt = $db->prepare("DELETE FROM {$prefix}{$cacheTable}");
+      $stmt->execute();
+      $rows = $stmt->rowCount();
+      echo "   ✅ {$cacheTable}: {$rows} row(s) deleted\n";
+      $totalCleared += $rows;
+    } catch (\Exception $e) {
+      echo "   ❌ {$cacheTable}: {$e->getMessage()}\n";
+      $errors[] = "{$cacheTable} clear failed: {$e->getMessage()}";
+    }
+  }
+
+  // NOT a cache: rag_schema_embedding is DERIVED data and must be REBUILT, never emptied.
+  // Deleting it silently degrades retrieval; the operator gate is the way back.
+  try {
+    $Q = $db->query("SELECT COUNT(*) AS c FROM {$prefix}rag_schema_embedding");
+    $stored = $Q->fetch()['c'] ?? 0;
+    echo "   ℹ️  rag_schema_embedding: {$stored} row(s) LEFT IN PLACE (derived, not a cache).\n";
+    echo "       After changing a table comment or the embedded-text rules, rebuild it:\n";
+    echo "       php unit_test/2026_07_26/schema_embeddings_sync.php --sync\n";
+  } catch (\Exception $e) {
+    echo "   ⚠️  rag_schema_embedding unreadable: {$e->getMessage()}\n";
+  }
+
 } catch (Exception $e) {
   echo "   ❌ Error: {$e->getMessage()}\n";
   $errors[] = "Database cache clear failed: {$e->getMessage()}";
@@ -829,11 +841,13 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 // ========================================
 echo "\n12. Clearing language cache and database synchronization...\n";
 try {
-  // Clear language cache files
+  // Clear language cache files. Real name is `languages-defs-{group}-lang{id}.cache` (HYPHENS):
+  // the former `languages_*` / `lang_*` globs never matched a single file.
   $languageCacheDir = __DIR__ . '/Core/ClicShopping/Work/Cache/';
-  $languageFiles = glob($languageCacheDir . 'languages_*.cache');
-  $languageFiles = array_merge($languageFiles, glob($languageCacheDir . 'lang_*.cache'));
-  
+  $languageFiles = glob($languageCacheDir . 'languages-defs-*.cache');
+  $languageFiles = array_merge($languageFiles, glob($languageCacheDir . 'languages-*.cache'));
+  $languageFiles = array_unique($languageFiles);
+
   $cleared = 0;
   foreach ($languageFiles as $file) {
     if (unlink($file)) {
@@ -858,19 +872,25 @@ try {
   try {
     $checkTable = $db->query("SHOW TABLES LIKE '{$prefix}languages_definitions'");
     if ($checkTable->rowCount() > 0) {
-      // Count prompt-related entries before deletion
-      $countStmt = $db->prepare("SELECT COUNT(*) as count FROM {$prefix}languages_definitions WHERE definition_key LIKE :key");
-      $countStmt->execute([':key' => '%prompt%']);
-      $promptCount = $countStmt->fetch()['count'];
-      
-      if ($promptCount > 0) {
-        // Clear prompt-related language entries
-        $deleteStmt = $db->prepare("DELETE FROM {$prefix}languages_definitions WHERE definition_key LIKE :key");
-        $deleteStmt->execute([':key' => '%prompt%']);
-        echo "   ✅ Cleared {$promptCount} language prompt definitions from database\n";
-        $totalCleared += $promptCount;
+      // Drop ONLY the freshness stamps, never the definitions themselves.
+      // Language::getDefinitions() re-reads a .txt when the group is empty OR its stamp is older
+      // than the file; removing the stamp forces that re-read, so every key the file defines is
+      // rebuilt while DB-only overrides survive. Deleting definition rows instead is data loss:
+      // the surviving stamp then tells the loader the group is current and the file is NEVER
+      // re-read (this is what the former `definition_key LIKE '%prompt%'` delete did).
+      $stampKey = '__source_file_mtime__';
+
+      $countStmt = $db->prepare("SELECT COUNT(*) as count FROM {$prefix}languages_definitions WHERE definition_key = :key");
+      $countStmt->execute([':key' => $stampKey]);
+      $stampCount = (int)$countStmt->fetch()['count'];
+
+      if ($stampCount > 0) {
+        $deleteStmt = $db->prepare("DELETE FROM {$prefix}languages_definitions WHERE definition_key = :key");
+        $deleteStmt->execute([':key' => $stampKey]);
+        echo "   ✅ Cleared {$stampCount} language source stamps from database (definitions rebuild on next load)\n";
+        $totalCleared += $stampCount;
       } else {
-        echo "   ℹ️  No language prompt definitions found in database\n";
+        echo "   ℹ️  No language source stamps found in database\n";
       }
     } else {
       echo "   ℹ️  Language definitions table not found\n";

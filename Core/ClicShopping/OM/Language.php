@@ -356,8 +356,11 @@ class Language
       return true;
     }
 
+    // Same site-loss as loadDefinitions(): re-attach the resolved site, the prefix was stripped above.
     if ($language_code != DEFAULT_LANGUAGE) {
-      return call_user_func([$this, __FUNCTION__], $group, DEFAULT_LANGUAGE);
+      $qualified = CLICSHOPPING::siteExists($site) ? $site . '/' . $group : $group;
+
+      return call_user_func([$this, __FUNCTION__], $qualified, DEFAULT_LANGUAGE);
     }
 
     return false;
@@ -394,8 +397,10 @@ class Language
 
     $pathname .= '.txt';
 
+    // Default-language fallback: $group has lost its site prefix above, so the resolved $site must
+    // be forced — otherwise the recursion re-reads getSite() and looks for the file in another site.
     if ($language_code != DEFAULT_LANGUAGE) {
-      call_user_func([$this, __FUNCTION__], $group, DEFAULT_LANGUAGE, $scope);
+      call_user_func([$this, __FUNCTION__], $group, DEFAULT_LANGUAGE, $scope, $site);
     }
 
     $defs = $this->getDefinitions($site . DIRECTORY_SEPARATOR . $group, $language_code, $pathname);

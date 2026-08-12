@@ -278,11 +278,14 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
 
       if (ob_get_length()) ob_clean();
 
+      // chat_send.js:326 renders `error` verbatim in the DOM, so it must be localized.
+      $errorLanguage = Registry::get('Language');
+      $errorLanguage->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+
       echo json_encode([
         'success' => false,
-        'error' => 'Une erreur est survenue lors du traitement de votre requête',
+        'error' => $errorLanguage->getDef('text_error_request_processing_failed'),
         'error_code' => 'INTERNAL_ERROR',
-        'error_details' => $e->getMessage(),
         'interaction_id' => null
       ], JSON_UNESCAPED_UNICODE);
     }

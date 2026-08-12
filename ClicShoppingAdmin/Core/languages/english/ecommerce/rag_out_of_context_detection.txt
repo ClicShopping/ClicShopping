@@ -47,6 +47,8 @@ Query: "show me our best products"
 Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "underspecified", "confidence": 0.7, "explanation": "'best' does not specify the ranking metric - units sold, revenue, margin or ratings. No safe default, ask which metric", "suggested_action": "ask_clarification", "clarification_options": ["Sales (quantity)", "Revenue", "Margin", "Customer ratings and reviews"]}
 Query: "les 5 produits les plus vendus"
 Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Ranking metric is explicit ('les plus vendus' = by units sold), so the request is clear. Core e-commerce analytics", "suggested_action": "allow"}
+Query: "Peux-tu me lister les produits recommandés ?"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "'recommandés' names a list the store already maintains, not a ranking metric to arbitrate - the membership is stored, so nothing needs to be asked", "suggested_action": "allow"}
 Query: "Marie Claire Collection wine accessories"
 Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Query is a product search with specific product name and category, core e-commerce functionality", "suggested_action": "allow"}
 Query: "iPhone price on Amazon"
