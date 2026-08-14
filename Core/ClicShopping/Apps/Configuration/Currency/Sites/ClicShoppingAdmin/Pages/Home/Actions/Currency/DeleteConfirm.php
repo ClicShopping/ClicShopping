@@ -26,15 +26,21 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-    $currencies_id = HTML::sanitize($_GET['cID']);
+    $currencies_id = (int)HTML::sanitize($_GET['cID']);
 
-    $Qcurrency = $this->app->db->get('currencies', 'currencies_id', ['code' => DEFAULT_CURRENCY]);
+    $Qcurrency = $this->app->db->get('currencies', 'code', ['currencies_id' => $currencies_id]);
 
-    if ($Qcurrency->valueInt('currencies_id') === (int)$currencies_id) {
-      $this->app->db->save('configuration', ['configuration_value' => ''], ['configuration_key' => 'DEFAULT_CURRENCY']);
+    // Fail-closed : la devise par défaut n'est pas supprimable, y compris par appel direct de
+    // l'action. Le bouton du formulaire est déjà masqué, ce qui ne protégeait que l'affichage.
+    if ($Qcurrency->value('code') == DEFAULT_CURRENCY) {
+      Registry::get('MessageStack')->add($this->app->getDef('error_remove_default_currency'), 'error');
+
+      $this->app->redirect('Currency&page=' . $page);
+
+      return;
     }
 
-    $this->app->db->delete('currencies', ['currencies_id' => (int)$currencies_id]);
+    $this->app->db->delete('currencies', ['currencies_id' => $currencies_id]);
 
     Cache::clear('currencies');
 

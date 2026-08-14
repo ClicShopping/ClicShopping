@@ -141,6 +141,12 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
     $formattedResponse = ResponseFormatter::format($aiResponse, $userQuery, $metadata, $memoryContext);
     $formatted = $formattedResponse['content'];
 
+    // NEVER ship 0 characters to the browser. On an error-typed result the formatter
+    if (trim(strip_tags($formatted)) === '') {
+      $formatted = MemoryManager::extractResponseText($aiResponse)
+        ?: CLICSHOPPING::getDef('text_synth_error_default');
+    }
+
     // ============================================
     // 10. TRACK STATISTICS
     // ============================================

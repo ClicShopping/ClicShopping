@@ -75,4 +75,4 @@ text_info_delete_info =  Supprimer cette devise
 text_info_common_currency = Devises communes
 text_info_currency_choice = Choix de la devise
 
-error_remove_default_currency = Erreur : La devise par défaut ne peut �tre supprimée. Merci de choisir une autre devise par défaut et de réessayer.
+error_remove_default_currency = Erreur : La devise par défaut ne peut être supprimée. Merci de choisir une autre devise par défaut et de réessayer.

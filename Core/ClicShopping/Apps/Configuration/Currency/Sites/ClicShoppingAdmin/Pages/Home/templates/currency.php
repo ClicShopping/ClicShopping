@@ -135,8 +135,11 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
             <?php
             echo HTML::link($CLICSHOPPING_Currency->link('Edit&page=' . $page . '&cID=' . $Qcurrency->valueInt('currencies_id')), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_Currency->getDef('icon_edit') . '"></i></h4>');
             echo '&nbsp;';
-            echo HTML::link($CLICSHOPPING_Currency->link('Delete&page=' . $page . '&cID=' . $Qcurrency->valueInt('currencies_id')), '<h4><i class="bi bi-trash2" title="' . $CLICSHOPPING_Currency->getDef('icon_delete') . '"></i></h4>');
-            echo '&nbsp;';
+            // Pas de corbeille sur la devise par défaut : l'action la refuse (comme la colonne statut).
+            if (DEFAULT_CURRENCY != $Qcurrency->value('code')) {
+              echo HTML::link($CLICSHOPPING_Currency->link('Delete&page=' . $page . '&cID=' . $Qcurrency->valueInt('currencies_id')), '<h4><i class="bi bi-trash2" title="' . $CLICSHOPPING_Currency->getDef('icon_delete') . '"></i></h4>');
+              echo '&nbsp;';
+            }
             ?>
           </div>
         </td>

@@ -46,6 +46,7 @@ use ClicShopping\AI\DomainsAI\DomainRouter;
 use ClicShopping\AI\DomainsAI\Hybrid\Handler\HybridQueryHandler;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\TranslationHandler;
 use ClicShopping\AI\Handler\Error\ErrorHandler as ErrorHandlerComponent;
 use ClicShopping\AI\Handler\Query\ComplexQueryHandler;
 use ClicShopping\AI\Handler\Query\QueryProcessor;
@@ -743,10 +744,36 @@ class OrchestratorAgent implements AgentInterface
         }
       }
 
+      // A truncated normalisation means the rest of the pipeline would answer a DIFFERENT
+      // question than the one asked — a partial answer looks correct, which is the costliest
+      // failure mode. Refuse instead, and say why.
+      if ($translatedQuery !== '' && TranslationHandler::lastCallWasTruncated()) {
+        $truncationMessage = CLICSHOPPING::getDef('text_error_query_truncated_too_long');
+
+        $this->securityLogger->logSecurityEvent(
+          "Query refused: the English normalisation hit its token ceiling and truncated the question",
+          'warning'
+        );
+
+        return [
+          'success' => false,
+          'type' => 'error',
+          'error' => 'query_truncated_too_long',
+          'text_response' => $truncationMessage,
+          'response' => $truncationMessage,
+          'original_query' => $query,
+          'sources' => [],
+          'data' => []
+        ];
+      }
+
       $queryForResolution = $translatedQuery !== '' ? $translatedQuery : $query;
       $resolved = $this->memoryManager->resolveContextualReferences($queryForResolution);
       $contextUsed = $resolved['has_references'] ?? false;
-      $queryToProcess = $contextUsed ? (string)$resolved['resolved_query'] : $query;
+      // Both branches hand the ENGLISH form downstream (§4quinquies-bis). Safe because the
+      // normalisation chokepoint is idempotent; needed because ResolveQueryAgainstContextStage
+      // judges the query with English-only patterns and misses every French follow-up otherwise.
+      $queryToProcess = $contextUsed ? (string)$resolved['resolved_query'] : $queryForResolution;
 
       if ($contextUsed && $this->debug) {
         $this->securityLogger->logSecurityEvent(

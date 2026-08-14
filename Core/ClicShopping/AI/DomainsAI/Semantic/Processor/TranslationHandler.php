@@ -14,6 +14,7 @@ use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Infrastructure\Cache\TranslationCache;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * TranslationHandler
@@ -30,7 +31,21 @@ use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 class TranslationHandler
 {
   private static ?SecurityLogger $logger = null;
-  
+
+  /** Whether the last normalisation hit its output ceiling (i.e. the query came back truncated). */
+  private static bool $lastTruncated = false;
+
+  /**
+   * Did the last normalisation truncate the input?
+   *
+   * @return bool True when the previous call hit its output ceiling
+   */
+  public static function lastCallWasTruncated(): bool
+  {
+    return self::$lastTruncated;
+  }
+
+
   /**
    * Initialize components
    */
@@ -58,6 +73,9 @@ class TranslationHandler
   public static function translateToEnglish(string $prompt, int $cacheTTL = 3600, ?string $originalQuery = null): string
   {
     self::init();
+
+    // Reset per call: a cache hit returns early and must not inherit the previous verdict.
+    self::$lastTruncated = false;
 
     // Extract original query from prompt if not provided
     // The prompt format is: "[translation instructions] [original query]"
@@ -107,7 +125,20 @@ class TranslationHandler
       error_log("Calling Gpt::getGptResponse()...");
       
       // Temperature 0.0: this is a normalisation, not a piece of writing.
-      $translation = Gpt::getGptResponse($prompt, 80, 0.0);
+      $maxTokens = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN');
+      $translation = Gpt::getGptResponse($prompt, $maxTokens, 0.0);
+
+      // A hit ceiling truncates the normalised input mid-sentence and it travels downstream as
+      // the question — a wrong answer to a question nobody asked. `completion == budget` is the
+      // signature; never let it pass unreported.
+      self::$lastTruncated = ((int)(Gpt::getLastTokenUsage()['completion_tokens'] ?? 0)) >= $maxTokens;
+
+      if (self::$lastTruncated) {
+        self::$logger->logSecurityEvent(
+          sprintf('Input normalisation hit its %d-token ceiling — the query was truncated', $maxTokens),
+          'warning'
+        );
+      }
 
       // 🔍 DIAGNOSTIC: Log résultat GPT
       if ($translation === false) {

@@ -17,7 +17,7 @@ version4.33
   - AI response time optimization
   - Some AI refactorisation and improvement to solidify the code, response
   - best solidity chat response
-- Add AI ACT Eropean Law, ClicShopping conformity
+  - Add AI ACT European Law, ClicShopping conformity (almost not perfect)
   
 ---------------
 version4.32

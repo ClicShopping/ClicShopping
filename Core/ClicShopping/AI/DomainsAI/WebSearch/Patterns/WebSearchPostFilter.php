@@ -134,13 +134,17 @@ class WebSearchPostFilter
     // STEP 2: Check for competitor keywords (ENGLISH ONLY)
     // ========================================================================
     
-    foreach (WebSearchPatterns::$competitorKeywords as $keyword) {
-      if (str_contains($query, $keyword)) {
-        $analysis['intent_type'] = 'web_search';
-        $analysis['confidence'] = 0.95;
-        $analysis['override_reason'] = "Competitor keyword detected: $keyword";
-        $analysis['detection_method'] = 'pattern_post_filter';
-        return $analysis;
+    // Same deference as STEP 1: a competitor name inside a confident analytics question is a
+    // filter value ("orders from supplier X"), not a reason to leave the database.
+    if (!$llmSaysAnalytics) {
+      foreach (WebSearchPatterns::$competitorKeywords as $keyword) {
+        if (str_contains($query, $keyword)) {
+          $analysis['intent_type'] = 'web_search';
+          $analysis['confidence'] = 0.95;
+          $analysis['override_reason'] = "Competitor keyword detected: $keyword";
+          $analysis['detection_method'] = 'pattern_post_filter';
+          return $analysis;
+        }
       }
     }
     
@@ -194,7 +198,10 @@ class WebSearchPostFilter
       }
     }
     
-    if ($hasPriceKeyword) {
+    // Same deference as STEP 1. "compare" + a price word describes a year-on-year margin report
+    // just as well as a web price check, and the LLM already told them apart: overriding a
+    // confident analytics verdict here sent every internal comparison to a web search (§4vicies).
+    if ($hasPriceKeyword && !$llmSaysAnalytics) {
       foreach (WebSearchPatterns::$comparisonKeywords as $keyword) {
         if (str_contains($query, $keyword)) {
           // Additional check: ensure it's not just internal comparison

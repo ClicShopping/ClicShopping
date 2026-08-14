@@ -68,10 +68,19 @@ class Currencies
         'value' => (float)$c['value'],
         'surcharge' => (float)$c['surcharge']
       ];
+
+      // Dans la boucle : la devise pivot n'est pas forcément la dernière lue.
+      if (!isset($this->default) && ((float)$c['value'] === 1.0)) {
+        $this->default = $c['code'];
+      }
     }
 
-    if (!isset($this->default) && ((float)$c['value'] === 1.0)) {
-      $this->default = $c['code'];
+    // Aucune devise au taux 1 : la propriété doit rester initialisée, getDefault() est appelé
+    // sans devise en session (CLI, cron, premier accès) et fatalerait sinon.
+    if (!isset($this->default)) {
+      $this->default = isset($this->currencies[DEFAULT_CURRENCY])
+        ? DEFAULT_CURRENCY
+        : (string)(array_key_first($this->currencies) ?? '');
     }
   }
 
@@ -85,7 +94,7 @@ class Currencies
   public function format(float|null $number, bool $calculate_currency_value = true, string|null $currency_type = null, mixed $currency_value = null): ?string
   {
     if (empty($currency_type) && CLICSHOPPING::getSite() === 'Shop') {
-      $currency_type = $_SESSION['currency'];
+      $currency_type = $_SESSION['currency'] ?? DEFAULT_CURRENCY;
     }
 
     if (CLICSHOPPING::getSite() === 'ClicShoppingAdmin') {
@@ -115,7 +124,9 @@ class Currencies
    */
   public function calculatePrice(float|null $products_price, $products_tax, int $quantity = 1)
   {
-    return round(Tax::addTax($products_price, $products_tax), $this->currencies[$_SESSION['currency']]['decimal_places']) * $quantity;
+    $currency_type = $_SESSION['currency'] ?? DEFAULT_CURRENCY;
+
+    return round(Tax::addTax($products_price, $products_tax), $this->currencies[$currency_type]['decimal_places']) * $quantity;
   }
 
   /**
@@ -252,7 +263,7 @@ class Currencies
 
     $dec_point = '.';
 
-    $currency = $_SESSION['currency'];
+    $currency = $_SESSION['currency'] ?? DEFAULT_CURRENCY;
 
     if (!empty($this->currencies[$currency]['thousands_point'])) {
       $dec_point = $this->currencies[$currency]['thousands_point'];
@@ -474,7 +485,9 @@ class Currencies
    */
   public function getSelected(): string|null
   {
-    return $this->selected;
+    // Propriété typée non initialisée tant que setSelected() n'a pas réussi : le contrat de
+    // retour annonce null, il ne doit pas fataler.
+    return $this->selected ?? null;
   }
 
   /**

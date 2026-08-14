@@ -1,0 +1,2 @@
+text_seo_thin_content_critical = Contenu critiquement insuffisant : seulement {{wordCount}} mots détectés. Le texte est bien trop court pour que l'optimisation SEO produise un résultat exploitable, et le score SEO est plafonné en conséquence. Visez au moins 300 mots.
+text_seo_thin_content_warning = Contenu insuffisant : seulement {{wordCount}} mots détectés. Le texte est trop court pour une analyse SEO fiable, et le score SEO est plafonné en conséquence. Visez au moins 300 mots.
