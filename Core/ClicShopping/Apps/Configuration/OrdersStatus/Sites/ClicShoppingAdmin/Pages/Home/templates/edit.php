@@ -92,6 +92,40 @@ $oInfo = new ObjectInfo($Qstatus->toArray())
     }
     ?>
     <div class="mt-1"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group row">
+          <label for="<?php echo $CLICSHOPPING_OrdersStatus->getDef('text_info_orders_status_definition'); ?>"
+                 class="col-5 col-form-label"><?php echo $CLICSHOPPING_OrdersStatus->getDef('text_info_orders_status_definition'); ?></label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group row">
+          <span class="col-8 form-text"><?php echo $CLICSHOPPING_OrdersStatus->getDef('text_info_orders_status_definition_help'); ?></span>
+        </div>
+      </div>
+    </div>
+
+    <?php
+    for ($i = 0, $n = \count($languages); $i < $n; $i++) {
+      ?>
+      <div class="row">
+        <div class="col-md-8">
+          <div class="form-group row">
+            <label for="code"
+                   class="col-2 col-form-label"><?php echo $CLICSHOPPING_Language->getImage($languages[$i]['code']); ?></label>
+            <div class="col-md-9">
+              <?php echo HTML::textAreaField('orders_status_definition[' . $languages[$i]['id'] . ']', OrderStatusAdmin::getOrdersStatusDefinition($oInfo->orders_status_id, $languages[$i]['id']), 60, 3, 'required aria-required="true" maxlength="512"'); ?>
+            </div>
+          </div>
+        </div>
+      </div>
+      <?php
+    }
+    ?>
+    <div class="mt-1"></div>
     <div class="col-md-12" id="public_flag">
       <span class="col-md-3"></span>
       <ul class="list-group-slider list-group-flush">

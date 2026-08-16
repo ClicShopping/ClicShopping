@@ -96,6 +96,7 @@ CREATE TABLE :table_orders_status (
   orders_status_id int default(0) NOT NULL,
   language_id int default(1) NOT NULL,
   orders_status_name varchar(255) NOT NULL,
+  orders_status_definition varchar(512) default('') NOT NULL COMMENT 'Business meaning of this status written by the merchant - what it applies to. Authoritative source for interpreting orders.orders_status; never infer a meaning from the id',
   public_flag tinyint(1) default(1),
   downloads_flag tinyint(1) default(0),
   support_orders_flag int(1) default(0),

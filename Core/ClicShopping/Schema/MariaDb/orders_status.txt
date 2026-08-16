@@ -1,6 +1,7 @@
 orders_status_id int default(0) not_null comment(Primary key - unique identifier for each order status)
 language_id int default(1) not_null comment(FK to languages table - language for this status name)
 orders_status_name varchar(255) not_null comment(Status name - e.g. Pending, Processing, Shipped, Delivered, Cancelled)
+orders_status_definition varchar(512) default('') not_null comment(Business meaning of this status written by the merchant - what it applies to. Authoritative source for interpreting orders.orders_status; never infer a meaning from the id)
 public_flag tinyint(1) default(1) comment(Public visibility - 0: admin only, 1: visible to customers)
 downloads_flag tinyint(1) default(0) comment(Enable downloads - 0: no downloads, 1: allow digital product downloads)
 support_orders_flag tinyint(1) default(0) comment(Support ticket flag - 0: no support, 1: enable support tickets for this status)
@@ -12,3 +13,4 @@ idx_orders_status_name orders_status_name
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language catalogue of order lifecycle states. Join orders.orders_status to it to read a state; the set is install-specific and the merchant can add states such as Refunded at any time. Lookup table: never count its rows as orders.

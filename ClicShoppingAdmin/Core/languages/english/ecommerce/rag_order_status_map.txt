@@ -1,0 +1,8 @@
+text_order_status_map_intro = ORDER STATUS SEMANTICS - AUTHORITATIVE FOR THIS INSTALL
+The lines below are written by the merchant and read from the database. They are the only correct meaning of a status id on this shop. Never infer a meaning from an id, from its name alone, or from a convention seen elsewhere: the set of statuses is install-specific and the merchant can add or rename one at any time. When a question names a business state ("delivered", "invoiced", "cancelled"), match it against these definitions and filter on the id it gives. When no definition matches the state the question asks about, say the state does not exist on this shop instead of picking the closest id.
+
+text_order_status_map_section_orders = orders.orders_status - lifecycle state of the order:
+text_order_status_map_section_invoice = orders.orders_status_invoice - invoicing state of the order:
+text_order_status_map_section_support = orders_status_history.orders_status_support_id - customer-support state attached to an order history entry:
+text_order_status_map_section_tracking = orders_status_history.orders_status_tracking_id - shipping carrier of the tracking link. These are carriers, not order states:
+text_order_status_map_row = - {{id}} = {{name}} : {{definition}}

@@ -86,6 +86,40 @@ echo HTML::button($CLICSHOPPING_OrdersStatusInvoice->getDef('button_cancel'), nu
     }
     if (DEFAULT_PRODUCTS_QUANTITY_UNIT_STATUS_ID != $oInfo->orders_status_invoice_id) {
       ?>
+    <div class="mt-1"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group row">
+          <label for="<?php echo $CLICSHOPPING_OrdersStatusInvoice->getDef('text_info_orders_status_invoice_definition'); ?>"
+                 class="col-5 col-form-label"><?php echo $CLICSHOPPING_OrdersStatusInvoice->getDef('text_info_orders_status_invoice_definition'); ?></label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group row">
+          <span class="col-8 form-text"><?php echo $CLICSHOPPING_OrdersStatusInvoice->getDef('text_info_orders_status_invoice_definition_help'); ?></span>
+        </div>
+      </div>
+    </div>
+
+    <?php
+    for ($i = 0, $n = \count($languages); $i < $n; $i++) {
+      ?>
+      <div class="row">
+        <div class="col-md-8">
+          <div class="form-group row">
+            <label for="code"
+                   class="col-2 col-form-label"><?php echo $CLICSHOPPING_Language->getImage($languages[$i]['code']); ?></label>
+            <div class="col-md-9">
+              <?php echo HTML::textAreaField('orders_status_invoice_definition[' . $languages[$i]['id'] . ']', Status::getOrdersStatusInvoiceDefinition($oInfo->orders_status_invoice_id, $languages[$i]['id']), 60, 3, 'required aria-required="true" maxlength="512"'); ?>
+            </div>
+          </div>
+        </div>
+      </div>
+      <?php
+    }
+    ?>
       <div class="row">
         <div class="col-md-5">
           <div class="form-group row">

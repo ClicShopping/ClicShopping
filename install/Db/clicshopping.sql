@@ -2145,34 +2145,26 @@ INSERT INTO mcp VALUES(1, 'RagBI', 'd0a36b839700b60727fe13998e22aa0af197c61d8b37
 INSERT INTO mcp_ip VALUES(1, 1, '127.0.0.1', 'localhost');
 
 
-INSERT INTO orders_status VALUES(1, 1, 'Pending', 1, 0, 0, 1);
-INSERT INTO orders_status VALUES(1, 2, 'En instance', 1, 0, 0, 1);
-INSERT INTO orders_status VALUES(2, 2, 'Traitement en cours', 1, 0, 0, 1);
-INSERT INTO orders_status VALUES(2, 1, 'processing', 1, 0, 0, 1);
-INSERT INTO orders_status VALUES(3, 2, 'Livré', 1, 0, 0, 0);
-INSERT INTO orders_status VALUES(3, 1, 'Delivered', 1, 0, 0, 0);
-INSERT INTO orders_status VALUES(4, 2, 'Annulé', 1, 0, 0, 1);
-INSERT INTO orders_status VALUES(4, 1, 'Cancelled', 1, 0, 0, 1);
+INSERT INTO orders_status VALUES(1, 1, 'Pending', 'Order recorded but not yet handled. Counts as a sale in revenue; not yet shipped or delivered.', 1, 0, 0, 1);
+INSERT INTO orders_status VALUES(1, 2, 'En instance', 'Commande enregistrée mais pas encore traitée. Compte comme une vente dans le chiffre d''affaires ; ni expédiée ni livrée.', 1, 0, 0, 1);
+INSERT INTO orders_status VALUES(2, 2, 'Traitement en cours', 'Commande en cours de préparation : paiement accepté, marchandise pas encore remise au transporteur. Compte comme une vente.', 1, 0, 0, 1);
+INSERT INTO orders_status VALUES(2, 1, 'processing', 'Order being prepared: payment accepted, goods not yet handed to the carrier. Counts as a sale.', 1, 0, 0, 1);
+INSERT INTO orders_status VALUES(3, 2, 'Livré', 'Commande livrée au client. C''est l''état à compter pour les commandes livrées et pour les délais d''expédition.', 1, 0, 0, 0);
+INSERT INTO orders_status VALUES(3, 1, 'Delivered', 'Order delivered to the customer. This is the state to count for delivered orders and for shipping-delay measures.', 1, 0, 0, 0);
+INSERT INTO orders_status VALUES(4, 2, 'Annulé', 'Commande annulée : à exclure du chiffre d''affaires, de la marge et du panier moyen. Ce n''est PAS un remboursement — aucun état « remboursée » n''existe par défaut.', 1, 0, 0, 1);
+INSERT INTO orders_status VALUES(4, 1, 'Cancelled', 'Order cancelled: exclude it from revenue, margin and average cart. This is NOT a refund - no refunded state exists by default.', 1, 0, 0, 1);
 
 
-INSERT INTO orders_status_invoice VALUES(1, 1, 'Order');
-INSERT INTO orders_status_invoice VALUES(1, 2, 'Commande');
-INSERT INTO orders_status_invoice VALUES(2, 1, 'Invoice');
-INSERT INTO orders_status_invoice VALUES(2, 2, 'Facture');
-INSERT INTO orders_status_invoice VALUES(3, 1, 'Cancelled');
-INSERT INTO orders_status_invoice VALUES(3, 2, 'Annuler');
-INSERT INTO orders_status_invoice VALUES(4, 1, 'Have a bill');
-INSERT INTO orders_status_invoice VALUES(4, 2, 'Avoir');
+INSERT INTO orders_status_invoice VALUES(1, 1, 'Order', 'Order not invoiced yet. No accounting document has been issued.');
+INSERT INTO orders_status_invoice VALUES(1, 2, 'Commande', 'Commande pas encore facturée. Aucun document comptable n''a été émis.');
+INSERT INTO orders_status_invoice VALUES(2, 1, 'Invoice', 'Invoice issued for this order. This is the state that means invoiced.');
+INSERT INTO orders_status_invoice VALUES(2, 2, 'Facture', 'Facture émise pour cette commande. C''est l''état qui signifie « facturée ».');
+INSERT INTO orders_status_invoice VALUES(3, 1, 'Cancelled', 'Invoicing cancelled for this order.');
+INSERT INTO orders_status_invoice VALUES(3, 2, 'Annuler', 'Facturation annulée pour cette commande.');
+INSERT INTO orders_status_invoice VALUES(4, 1, 'Have a bill', 'Credit note issued (avoir): money owed back to the customer, not a sale.');
+INSERT INTO orders_status_invoice VALUES(4, 2, 'Avoir', 'Avoir émis : somme due au client, ce n''est pas une vente.');
 
 
-INSERT INTO orders_status_support  VALUES(1, 1, '-- No request --');
-INSERT INTO orders_status_support  VALUES(1, 2, '-- Aucune demande --');
-INSERT INTO orders_status_support  VALUES(2, 1, 'Support request');
-INSERT INTO orders_status_support  VALUES(2, 2, 'Demande de support');
-INSERT INTO orders_status_support  VALUES(3, 1, 'Support Treatment');
-INSERT INTO orders_status_support  VALUES(3, 2, 'Traitement du support');
-INSERT INTO orders_status_support  VALUES(4, 1, 'Support realised');
-INSERT INTO orders_status_support  VALUES(4, 2, 'Support terminé');
 
 
 INSERT INTO pages_manager VALUES(1, '', 0, 1, 1, 0, '', NULL, NULL, '1000-01-01 00:00:00', '2008-09-08 15:39:50', '2008-09-03 20:38:09', 0, 0);

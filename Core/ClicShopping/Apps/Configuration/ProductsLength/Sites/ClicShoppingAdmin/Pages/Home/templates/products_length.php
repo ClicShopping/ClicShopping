@@ -127,7 +127,6 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
               echo '&nbsp;';
               ?>
             </div>
-            >
           </td>
         </tr>
         <?php
@@ -154,3 +153,4 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
   }
   ?>
 </div>
+<div class="py-4"></div>

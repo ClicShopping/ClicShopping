@@ -9,7 +9,6 @@ text_intro = Cette app vous permet d'inclure un Statut des commandes <br /><br /
 - Activer ce module qui est situé dans le menu Configuration
 
 module_or_introduction = Le processus d'installation installe la base de données et le menu
-module_or_short_title = Products quantities units
 
 button_install_title = Installer
 button_configure = Configurer
@@ -25,8 +24,6 @@ button_back = Retour
 button_reset = Réinitialiser
 button_update = Mettre à jour
 
-dialog_uninstall_title = Désinstaller
-dialog_uninstall_body = Souhaitez-vous installer cette App ?
 dialog_uninstall_title = Désinstaller le module?
 dialog_uninstall_body = Etes vous sur de désinstaller ce module?
 
@@ -50,6 +47,8 @@ table_heading_action = Action
 
 text_info_edit_intro = Merci de faire les changements nécessaires
 text_info_orders_status_name = Statut des commandes :
+text_info_orders_status_definition = Définition métier :
+text_info_orders_status_definition_help = Décrivez ce à quoi ce statut s'applique, en termes métier. Ce texte fait autorité pour interpréter les commandes : l'analyse le lit au lieu de deviner ce que signifie l'identifiant du statut. Obligatoire dans chaque langue, 512 caractères maximum.
 text_info_insert_intro = Merci de compléter cette nouvelle commande avec les données liées
 text_info_delete_intro = Etes vous sur de vouloir supprimer ce statut de commande ?
 text_info_heading_new_orders_status = Nouveau statut de commande
@@ -70,3 +69,4 @@ text_info_edit_public_download_noview = Invisible
 error_remove_default_order_status = Erreur : Le statut par défaut ne peut pas être supprimé. Merci de choisir un autre statut par défaut et de réessayer
 error_status_used_in_orders = Erreur : Ce statut de commande est actuellement utilisé.
 error_status_used_in_history = Erreur : Ce statut de commande est déjà utilisé dans l'historique de commande.
+error_orders_status_definition_required = Erreur : la définition métier est obligatoire dans chaque langue. Sans elle, le sens de ce statut doit être deviné et les rapports peuvent être faux.

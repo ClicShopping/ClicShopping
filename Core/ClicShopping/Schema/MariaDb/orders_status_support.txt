@@ -1,6 +1,7 @@
 orders_status_support_id int default(0) not_null comment(Primary key - unique identifier for each support status)
 language_id int default(1) not_null comment(FK to languages table - language for status name)
 orders_status_support_name varchar(64) not_null comment(Support status name - e.g. No Support, Open, In Progress, Resolved, Closed)
+orders_status_support_definition varchar(512) default('') not_null comment(Business meaning of this support status written by the merchant - what it applies to. Authoritative source for interpreting orders_status_history.orders_status_support_id; never infer a meaning from the id)
 --
 primary orders_status_support_id language_id
 idx_orders_status_support_name orders_status_support_name
@@ -8,3 +9,4 @@ idx_orders_status_support_name orders_status_support_name
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Per-language catalogue of customer-support states attached to an order history entry. Join orders_status_history.orders_status_support_id to it to read a state; the set is install-specific and the merchant can add states at any time. Lookup table: never count its rows as orders or as support tickets.

@@ -149,3 +149,97 @@ ALTER TABLE clic_contact_customers COMMENT = 'Message sent through the contact f
 ALTER TABLE clic_customers_gdpr COMMENT = 'GDPR consent record of a customer: opt-out of IP address storage, with its date. Compliance data.';
 ALTER TABLE clic_groups_to_categories COMMENT = 'Discount rate, in percent, granted to a customer group on a whole category - one row per group and category. It is a catalogue rule.';
 ALTER TABLE clic_products_to_categories COMMENT = 'LINK TABLE between products and categories - one row per product/category pair, a product may belong to several categories. Use it to scope a catalogue question to a category.';
+
+===============================
+ALTER TABLE clic_orders_status
+  ADD COLUMN IF NOT EXISTS orders_status_definition varchar(512) NOT NULL DEFAULT ''
+  COMMENT 'Business meaning of this status written by the merchant - what it applies to. Authoritative source for interpreting orders.orders_status; never infer a meaning from the id'
+  AFTER orders_status_name;
+
+ALTER TABLE clic_orders_status_invoice
+  ADD COLUMN IF NOT EXISTS orders_status_invoice_definition varchar(512) NOT NULL DEFAULT ''
+  COMMENT 'Business meaning of this invoice status written by the merchant - what it applies to. Authoritative source for interpreting orders.orders_status_invoice; never infer a meaning from the id'
+  AFTER orders_status_invoice_name;
+
+ALTER TABLE clic_orders_status_tracking
+  ADD COLUMN IF NOT EXISTS orders_status_tracking_definition varchar(512) NOT NULL DEFAULT ''
+  COMMENT 'Business meaning of this carrier entry written by the merchant - what it applies to. This table lists carriers not order states'
+  AFTER orders_status_tracking_link;
+
+-- --------------------------------------------------------------------------
+-- 2. Commentaire de TABLE sur orders_status — elle n'en avait aucun.
+--    Il sert un AUTRE consommateur que la définition de ligne : la sélection
+--    de tables (SchemaRetriever) décide avec le commentaire de table, la
+--    génération SQL raisonne avec la définition de ligne.
+-- --------------------------------------------------------------------------
+ALTER TABLE clic_orders_status
+  COMMENT = 'Per-language catalogue of order lifecycle states. Join orders.orders_status to it to read a state; the set is install-specific and the merchant can add states such as Refunded at any time. Lookup table: never count its rows as orders.';
+
+-- --------------------------------------------------------------------------
+-- 3. Définitions par défaut des statuts existants (language_id 1 = EN, 2 = FR)
+--    ⚠️ À RELIRE ET CORRIGER par le marchand : ce sont des valeurs de départ,
+--    pas une vérité. C'est précisément ce texte que le modèle lira pour décider
+--    ce qu'il compte.
+--    Ces UPDATE sont GÉNÉRÉS depuis install/Db/clicshopping.sql : une install
+--    neuve et une install migrée portent donc le MÊME texte, sinon deux
+--    boutiques répondraient différemment à la même question.
+-- --------------------------------------------------------------------------
+-- statuts de commande (8 lignes) — texte IDENTIQUE au seed install/Db/, par construction
+UPDATE clic_orders_status SET orders_status_definition =
+  'Order recorded but not yet handled. Counts as a sale in revenue; not yet shipped or delivered.'
+  WHERE orders_status_id = 1 AND language_id = 1;  -- Pending
+UPDATE clic_orders_status SET orders_status_definition =
+  'Commande enregistrée mais pas encore traitée. Compte comme une vente dans le chiffre d''affaires ; ni expédiée ni livrée.'
+  WHERE orders_status_id = 1 AND language_id = 2;  -- En instance
+UPDATE clic_orders_status SET orders_status_definition =
+  'Order being prepared: payment accepted, goods not yet handed to the carrier. Counts as a sale.'
+  WHERE orders_status_id = 2 AND language_id = 1;  -- processing
+UPDATE clic_orders_status SET orders_status_definition =
+  'Commande en cours de préparation : paiement accepté, marchandise pas encore remise au transporteur. Compte comme une vente.'
+  WHERE orders_status_id = 2 AND language_id = 2;  -- Traitement en cours
+UPDATE clic_orders_status SET orders_status_definition =
+  'Order delivered to the customer. This is the state to count for delivered orders and for shipping-delay measures.'
+  WHERE orders_status_id = 3 AND language_id = 1;  -- Delivered
+UPDATE clic_orders_status SET orders_status_definition =
+  'Commande livrée au client. C''est l''état à compter pour les commandes livrées et pour les délais d''expédition.'
+  WHERE orders_status_id = 3 AND language_id = 2;  -- Livré
+UPDATE clic_orders_status SET orders_status_definition =
+  'Order cancelled: exclude it from revenue, margin and average cart. This is NOT a refund - no refunded state exists by default.'
+  WHERE orders_status_id = 4 AND language_id = 1;  -- Cancelled
+UPDATE clic_orders_status SET orders_status_definition =
+  'Commande annulée : à exclure du chiffre d''affaires, de la marge et du panier moyen. Ce n''est PAS un remboursement — aucun état « remboursée » n''existe par défaut.'
+  WHERE orders_status_id = 4 AND language_id = 2;  -- Annulé
+
+-- statuts de facture (8 lignes) — texte IDENTIQUE au seed install/Db/, par construction
+UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
+  'Order not invoiced yet. No accounting document has been issued.'
+  WHERE orders_status_invoice_id = 1 AND language_id = 1;  -- Order
+UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
+  'Commande pas encore facturée. Aucun document comptable n''a été émis.'
+  WHERE orders_status_invoice_id = 1 AND language_id = 2;  -- Commande
+UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
+  'Invoice issued for this order. This is the state that means invoiced.'
+  WHERE orders_status_invoice_id = 2 AND language_id = 1;  -- Invoice
+UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
+  'Facture émise pour cette commande. C''est l''état qui signifie « facturée ».'
+  WHERE orders_status_invoice_id = 2 AND language_id = 2;  -- Facture
+UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
+  'Invoicing cancelled for this order.'
+  WHERE orders_status_invoice_id = 3 AND language_id = 1;  -- Cancelled
+UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
+  'Facturation annulée pour cette commande.'
+  WHERE orders_status_invoice_id = 3 AND language_id = 2;  -- Annuler
+UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
+  'Credit note issued (avoir): money owed back to the customer, not a sale.'
+  WHERE orders_status_invoice_id = 4 AND language_id = 1;  -- Have a bill
+UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
+  'Avoir émis : somme due au client, ce n''est pas une vente.'
+  WHERE orders_status_invoice_id = 4 AND language_id = 2;  -- Avoir
+
+-- --------------------------------------------------------------------------
+-- 4. Contrôle — doit rendre 0 ligne. Toute ligne rendue est un statut sans
+--    définition, donc un statut que le modèle devra de nouveau deviner.
+-- --------------------------------------------------------------------------
+SELECT orders_status_id, language_id, orders_status_name
+  FROM clic_orders_status
+ WHERE orders_status_definition = '';

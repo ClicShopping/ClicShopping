@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Configuration\OrdersStatus\Sites\ClicShoppingAdmin\Pages\Home\Actions\OrdersStatus;
 
+use ClicShopping\Apps\Configuration\OrdersStatus\Classes\ClicShoppingAdmin\OrderStatusAdmin;
 use ClicShopping\OM\Cache;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
@@ -32,12 +33,21 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $languages = $CLICSHOPPING_Language->getLanguages();
 
+      $orders_status_definition_array = HTML::sanitize($_POST['orders_status_definition'] ?? []);
+
+      // The column is NOT NULL DEFAULT '': only this guard makes the definition mandatory.
+      if (OrderStatusAdmin::hasMissingDefinition($orders_status_definition_array)) {
+        Registry::get('MessageStack')->add($this->app->getDef('error_orders_status_definition_required'), 'error');
+        $this->app->redirect('OrdersStatus&page=' . $page . '&oID=' . $orders_status_id);
+      }
+
       for ($i = 0, $n = \count($languages); $i < $n; $i++) {
         $orders_status_name_array = HTML::sanitize($_POST['orders_status_name']);
         $language_id = $languages[$i]['id'];
 
         $sql_data_array = [
           'orders_status_name' => HTML::sanitize($orders_status_name_array[$language_id]),
+          'orders_status_definition' => HTML::sanitize($orders_status_definition_array[$language_id]),
           'public_flag' => (isset($_POST['public_flag']) && ($_POST['public_flag'] == '1') ? '1' : '0'),
           'downloads_flag' => (isset($_POST['downloads_flag']) && ($_POST['downloads_flag'] == '1') ? '1' : '0'),
           'support_orders_flag' => (isset($_POST['support_orders_flag']) && ($_POST['support_orders_flag'] == '1') ? '1' : '0'),

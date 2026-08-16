@@ -34,6 +34,47 @@ class OrderStatusAdmin
   }
 
   /**
+   * Retrieves the merchant-written business definition of an order status.
+   * This text is what the analytics layer reads to interpret orders.orders_status,
+   * so an empty definition means the meaning has to be guessed.
+   *
+   * @param int $orders_status_id The unique identifier of the order status.
+   * @param int $language_id The unique identifier of the language. If not provided, the default language ID will be used.
+   * @return string The definition of the order status corresponding to the given IDs.
+   */
+  public static function getOrdersStatusDefinition(int $orders_status_id, int $language_id): string
+  {
+    $CLICSHOPPING_Language = Registry::get('Language');
+    $CLICSHOPPING_Db = Registry::get('Db');
+
+    if (!$language_id) $language_id = $CLICSHOPPING_Language->getId();
+
+    $Qstatus = $CLICSHOPPING_Db->get('orders_status', 'orders_status_definition', ['orders_status_id' => (int)$orders_status_id, 'language_id' => $language_id]);
+
+    return $Qstatus->value('orders_status_definition');
+  }
+
+  /**
+   * Checks that every language carries a non-empty definition.
+   * The column is NOT NULL DEFAULT '', so only this guard makes it truly mandatory.
+   *
+   * @param array $definitions Posted definitions, keyed by language id.
+   * @return bool True when at least one language is missing its definition.
+   */
+  public static function hasMissingDefinition(array $definitions): bool
+  {
+    $CLICSHOPPING_Language = Registry::get('Language');
+
+    foreach ($CLICSHOPPING_Language->getLanguages() as $language) {
+      if (trim((string)($definitions[$language['id']] ?? '')) === '') {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Generates a dropdown menu for order statuses.
    *
    * @param string $name The name attribute of the dropdown element. Default is 'dropdown_status'.

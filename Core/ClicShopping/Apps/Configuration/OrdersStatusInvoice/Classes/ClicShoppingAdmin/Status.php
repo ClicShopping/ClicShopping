@@ -71,4 +71,44 @@ class Status
 
     return $orders_status_invoice_array;
   }
+
+  /**
+   * Retrieves the merchant-written business definition of a invoice status.
+   * This text is what the analytics layer reads instead of guessing what the id means.
+   *
+   * @param int $orders_status_invoice_id The unique identifier.
+   * @param int $language_id The language id. If not provided, the default language id is used.
+   * @return string The definition corresponding to the given ids.
+   */
+  public static function getOrdersStatusInvoiceDefinition(int $orders_status_invoice_id, int $language_id): string
+  {
+    $CLICSHOPPING_Language = Registry::get('Language');
+    $CLICSHOPPING_Db = Registry::get('Db');
+
+    if (!$language_id) $language_id = $CLICSHOPPING_Language->getId();
+
+    $Qstatus = $CLICSHOPPING_Db->get('orders_status_invoice', 'orders_status_invoice_definition', ['orders_status_invoice_id' => (int)$orders_status_invoice_id, 'language_id' => $language_id]);
+
+    return $Qstatus->value('orders_status_invoice_definition');
+  }
+
+  /**
+   * Checks that every language carries a non-empty definition.
+   * The column is NOT NULL DEFAULT '', so only this guard makes it truly mandatory.
+   *
+   * @param array $definitions Posted definitions, keyed by language id.
+   * @return bool True when at least one language is missing its definition.
+   */
+  public static function hasMissingDefinition(array $definitions): bool
+  {
+    $CLICSHOPPING_Language = Registry::get('Language');
+
+    foreach ($CLICSHOPPING_Language->getLanguages() as $language) {
+      if (trim((string)($definitions[$language['id']] ?? '')) === '') {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

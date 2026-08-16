@@ -78,6 +78,7 @@ COLUMN LOCATIONS (verified against the live schema — use the real column of th
 - {{table_prefix}}orders stores the buyer name in the single column customers_name (full name). The firstname/lastname split exists on {{table_prefix}}customers.
 - {{table_prefix}}specials expiry column is expires_date. It also has scheduled_date (future activation date, NULL = active immediately).
 - SCHEDULING WINDOW ({{table_prefix}}specials, {{table_prefix}}products_featured, {{table_prefix}}products_favorites): scheduled_date and expires_date are nullable datetimes and every comparison MUST carry an explicit operator — `scheduled_date <= NOW()` for "already started", `expires_date >= NOW()` for "not yet over". Writing a column next to NOW() with NO operator (e.g. `s.scheduled_date NOW()`) is a syntax error. status = 1 alone already answers "current"; add the window only when the question is explicitly about scheduling, and always guard the NULL: (s.scheduled_date IS NULL OR s.scheduled_date <= NOW()).
+- TOP N PER GROUP (best-selling / least-selling products per category, per supplier, per month): a window function is allowed ONLY in the SELECT list and in ORDER BY. Writing ROW_NUMBER() OVER (...) inside HAVING or WHERE is error 4015 and the whole query is lost. Rank in an inner query, filter in the outer one: SELECT * FROM (SELECT cd.categories_name, pd.products_name, SUM(op.products_quantity) AS sold, ROW_NUMBER() OVER (PARTITION BY cd.categories_id ORDER BY SUM(op.products_quantity) DESC) AS rank_best, ROW_NUMBER() OVER (PARTITION BY cd.categories_id ORDER BY SUM(op.products_quantity) ASC) AS rank_worst FROM ... GROUP BY cd.categories_id, cd.categories_name, p.products_id, pd.products_name) ranked WHERE ranked.rank_best <= 3 OR ranked.rank_worst <= 3. An aggregate alias (sold) is not readable from the same query's HAVING either — repeat the aggregate or rank it in the inner query.
 - The manufacturer name is {{table_prefix}}manufacturers.manufacturers_name; the supplier name is {{table_prefix}}suppliers.suppliers_name.
 - {{table_prefix}}orders_products carries no supplier or manufacturer id: JOIN {{table_prefix}}products via products_id, then read {{table_prefix}}products.suppliers_id / {{table_prefix}}products.manufacturers_id.
 - {{table_prefix}}return_orders references the product via product_id (singular) and also stores product_name denormalised; its customer columns use the singular prefix (customer_firstname, customer_lastname).
@@ -783,12 +784,7 @@ text_order_calculation = CRITICAL BUSINESS RULES - ORDER STATUS FILTERING:
 
 🚨 MANDATORY RULE: ALWAYS specify and explain order status filtering in your analysis 🚨
 
-ORDER STATUS MEANINGS (Complete List):
-- 1 = "Pending" (Order placed, awaiting processing)
-- 2 = "Processing" (Order being prepared)
-- 3 = "Delivered" (Order completed and delivered)
-- 4 = "Cancelled" (Order cancelled - EXCLUDED from revenue)
-- 5+ = Other statuses (Refunded, On Hold, etc.)
+{{order_status_map}}
 
 REVENUE CALCULATION RULES:
 1. DEFAULT RULE: Use WHERE o.orders_status != 4 (exclude cancelled orders only)

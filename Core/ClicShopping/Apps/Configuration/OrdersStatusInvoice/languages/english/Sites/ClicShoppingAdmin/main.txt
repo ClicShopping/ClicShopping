@@ -25,8 +25,6 @@ button_reset = Reset
 button_update = Update
 
 
-dialog_uninstall_title = Uninstall
-dialog_uninstall_body = Do you want to install this App ?
 dialog_uninstall_title = Uninstall Module?
 dialog_uninstall_body = Are you sure you want to uninstall this module?
 
@@ -56,6 +54,9 @@ text_info_heading_new_orders_status = New Orders Status
 text_info_heading_edit_orders_status = Edit Orders Status
 text_info_heading_delete_orders_status = Delete Orders Status
 
+text_info_orders_status_invoice_definition = Business definition:
+text_info_orders_status_invoice_definition_help = Describe what this invoice status applies to, in business terms. This text is the authoritative source used to interpret orders: the analytics layer reads it instead of guessing what the status id means. Required in every language, 512 characters maximum.
+error_orders_status_invoice_definition_required = Error: the business definition is required in every language. Without it, the meaning of this status has to be guessed and reports can be wrong.
 error_remove_default_order_status = Error: The default order status can not be removed. Please set another order status as default, and try again.
 error_status_used_in_orders = Error: This order status is currently used in orders.
 error_status_used_in_history = Error: This order status is currently used in the order status history.

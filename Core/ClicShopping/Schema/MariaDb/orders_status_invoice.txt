@@ -1,6 +1,7 @@
 orders_status_invoice_id int default(0) not_null comment(Primary key - unique identifier for each invoice status)
 language_id int default(1) not_null comment(FK to languages table - language for status name)
 orders_status_invoice_name varchar(32) not_null comment(Invoice status name - e.g. Not Invoiced, Invoiced, Paid, Overdue)
+orders_status_invoice_definition varchar(512) default('') not_null comment(Business meaning of this invoice status written by the merchant - what it applies to. Authoritative source for interpreting orders.orders_status_invoice; never infer a meaning from the id)
 --
 primary orders_status_invoice_id language_id
 idx_orders_status_invoice_name orders_status_invoice_name

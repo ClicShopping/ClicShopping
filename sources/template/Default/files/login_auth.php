@@ -21,8 +21,8 @@ require_once($CLICSHOPPING_Template->getTemplateFiles('breadcrumb'));
     <div class="py-4"></div>
     <div class="col-md-12">
       <div class="row">
-        <div class="col-md-2"></div>
-        <div class="col-md-6 center-block">
+        <div class="col-md-1"></div>
+        <div class="col-md-10 center-block">
           <?php echo HTML::form('login_auth', CLICSHOPPING::link(null, 'Account&LogInAuth&Process'), 'post', 'id="login_auth"', ['tokenize' => true]); ?>
           <div class="input-group">
             <?php
@@ -54,8 +54,8 @@ require_once($CLICSHOPPING_Template->getTemplateFiles('breadcrumb'));
       <div class="row">
         <div class="col-md-12">
           <div class="row">
-            <div class="col-md-2"></div>
-            <div class="col-md-8 center-block">
+            <div class="col-md-1"></div>
+            <div class="col-md-10 center-block">
               <div class="row">
                 <div class="alert alert-info" role="alert">
                   <?php echo CLICSHOPPING::getDef('text_Login_auth_introduction'); ?>

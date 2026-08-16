@@ -9,7 +9,6 @@ text_intro = Cette app vous permet d'inclure un statut du support client pour le
 - Activer ce module qui est situé dans le menu Configuration
 
 module_oi_introduction = Le processus d'installation installe la base de données et le menu
-module_oi_short_title = Products quantities units
 
 button_install_title = Installer
 button_configure = Configurer
@@ -25,8 +24,6 @@ button_back = Retour
 button_reset = Réinitialiser
 button_update = Mettre à jour
 
-dialog_uninstall_title = Désinstaller
-dialog_uninstall_body = Souhaitez-vous installer cette App ?
 dialog_uninstall_title = Désinstaller le module?
 dialog_uninstall_body = Etes vous sur de désinstaller ce module?
 
@@ -56,6 +53,9 @@ text_info_heading_new_orders_status = Nouveau statut
 text_info_heading_edit_orders_status = Editer statut
 text_info_heading_delete_orders_status = Supprimer ce statut
 
+text_info_orders_status_invoice_definition = Définition métier :
+text_info_orders_status_invoice_definition_help = Décrivez ce à quoi ce statut de facture s'applique, en termes métier. Ce texte fait autorité pour interpréter les commandes : l'analyse le lit au lieu de deviner ce que signifie l'identifiant du statut. Obligatoire dans chaque langue, 512 caractères maximum.
+error_orders_status_invoice_definition_required = Erreur : la définition métier est obligatoire dans chaque langue. Sans elle, le sens de ce statut doit être deviné et les rapports peuvent être faux.
 error_remove_default_order_status = Erreur : Le statut par défaut ne peut pas être supprimé. Merci de choisir un autre statut par défaut et de réessayer
 error_status_used_in_orders = Erreur : Ce statut est actuellement utilisé.
 error_status_used_in_history = Erreur : Ce statut est déjà utilisé dans l'historique de commande.
