@@ -14,7 +14,7 @@ namespace ClicShopping\Apps\Configuration\Antispam\Sites\ClicShoppingAdmin\Pages
  */
 class Uninstall extends \ClicShopping\OM\Domains\ConfigureActionsAbstract
 {
-    /**
+  /**
    * Execute the uninstallation process for Sites module
    */
   public function execute()

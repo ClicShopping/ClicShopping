@@ -28,8 +28,6 @@ use ClicShopping\AI\Security\SecurityLogger;
  * - Instruction Override: Attempts to change system behavior
  * - Information Exfiltration: Requests for internal information
  * - Hallucination Injection: Forcing false information generation
- * 
- * Requirements: 5.1, 5.2, 5.3, 5.4, 5.5
  */
 class SemanticSecurityAnalyzer
 {
@@ -127,8 +125,6 @@ class SemanticSecurityAnalyzer
    * @param string $query User input query to analyze
    * @param string|null $language Language code for prompt (en, fr, zh, it, etc.) or null to use system language
    * @return array Analysis result with threat detection details
-   * 
-   * Requirements: 5.1, 5.2, 5.3, 5.4
    */
   public static function analyze(string $query, string|null $language = null): array
   {
@@ -317,8 +313,6 @@ class SemanticSecurityAnalyzer
    * 
    * @param array $analysis LLM analysis result
    * @return float Threat score (0.0-1.0)
-   * 
-   * Requirements: 5.3, 5.5
    */
   public static function calculateThreatScore(array $analysis): float
   {
@@ -555,8 +549,6 @@ class SemanticSecurityAnalyzer
    * 
    * @param string $llmResponse Raw LLM response
    * @return array Parsed analysis result or error result
-   * 
-   * Requirements: 5.1
    */
   private static function parseLlmResponse(string $llmResponse): array
   {

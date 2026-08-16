@@ -22,10 +22,10 @@ $CLICSHOPPING_Language = Registry::get('Language');
 $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
-  if (AdministratorAdmin::getAccess() === true) {
-    $CLICSHOPPING_MessageStack->add($CLICSHOPPING_AdministratorMenu->getDef('error_no_access'), 'error');
-    CLICSHOPPING::redirect();
-  }
+if (AdministratorAdmin::getAccess() === 1) {
+  $CLICSHOPPING_MessageStack->add($CLICSHOPPING_AdministratorMenu->getDef('error_no_access'), 'error');
+  exit;
+}
 
 if (isset($_POST['cPath'])) {
   $current_category_id = HTML::sanitize($_POST['cPath']);
@@ -250,3 +250,4 @@ if (!isset($_GET['search'])) {
   </form>
   <div><?php echo $CLICSHOPPING_AdministratorMenu->getDef('text_categories') . '&nbsp;' . $categories_count; ?></div>
 </div>
+<div class="py-4"></div>

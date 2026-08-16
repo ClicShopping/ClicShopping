@@ -244,7 +244,7 @@ Entity (Product, Category, etc.)
 | `entity_id`     | INT            | FK to source table                        |
 | `content`       | TEXT           | Original indexed text                     |
 | `metadata`      | JSON           | Contextual enrichment (v4.11+)            |
-| `chunknumber`   | INT            | Sequential chunk index (128 tokens/chunk) |
+| `chunknumber`   | INT            | Cap the row was produced under; `0` = stored whole. **Not an index** — chunk order lives in `metadata.chunk_index` |
 | `date_modified` | DATETIME       | Last updated timestamp                    |
 
 Pipeline rules:

@@ -82,6 +82,24 @@ final class LlmsTxt
         return \file_put_contents($path, $this->toString()) !== false;
     }
 
+    /**
+     * Expand linked documents into an XML LLM context file.
+     *
+     * @param callable(string): string|null $fetcher
+     */
+    public function toLlmContext(bool $includeOptional = false, ?callable $fetcher = null): string
+    {
+        return (new LlmContext())->expand($this, $includeOptional, $fetcher);
+    }
+
+    /**
+     * @param callable(string): string|null $fetcher
+     */
+    public function toLlmContextFile(string $path, bool $includeOptional = false, ?callable $fetcher = null): bool
+    {
+        return \file_put_contents($path, $this->toLlmContext($includeOptional, $fetcher)) !== false;
+    }
+
     public function toEmbeddedInScriptTag(): string
     {
         return $this->asScriptTag();

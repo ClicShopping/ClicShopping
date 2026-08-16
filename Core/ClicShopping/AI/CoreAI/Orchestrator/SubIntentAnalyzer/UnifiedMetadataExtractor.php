@@ -63,18 +63,20 @@ class UnifiedMetadataExtractor
 
     // Single GPT call for everything
     // Use Gpt::getGptResponse() instead of non-existent complete() method
-    
+
+    $maxTokens = $this->metadataResponseMaxTokens($query);
+
     // 🔍 DEBUG: Log before GPT call
     if ($this->debug) {
       error_log("[INFO : ANALYSE] [UnifiedQueryAnalyzer] Calling Gpt::getGptResponse():");
-      error_log("  Max tokens: 300");
+      error_log("  Max tokens: {$maxTokens}");
       error_log("  Temperature: 0.0");
       error_log("  Timestamp: " . date('Y-m-d H:i:s'));
     }
-    
+
     $response = Gpt::getGptResponse(
       $prompt,
-      300, // max_tokens
+      $maxTokens,
       0.0  // temperature (deterministic for consistency)
     );
 
@@ -102,7 +104,8 @@ class UnifiedMetadataExtractor
 
     // Parse JSON response
     $analysis = json_decode($cleanedResponse, true);
-    
+    $jsonError = json_last_error_msg();
+
     // 🔍 DEBUG: Log JSON parsing
     if ($this->debug) {
       error_log("[INFO : ANALYSE] [UnifiedQueryAnalyzer] JSON Parsing:");
@@ -135,6 +138,17 @@ class UnifiedMetadataExtractor
     // ClassificationEngine provides: type, confidence, reasoning, sub_types
     // Unified analyzer provides: language, translated_query, entity_type, time_constraint, status_keywords, sub_queries
     if ($analysis === null) {
+      $this->logger->logSecurityEvent(
+        sprintf(
+          'UnifiedMetadataExtractor: metadata analysis LOST, falling back to a minimal one '
+          . '(json: %s, response %d c., budget %d tokens) — plan degrades to a single catch-all step',
+          $jsonError,
+          strlen($response),
+          $maxTokens
+        ),
+        'warning'
+      );
+
       // If unified analyzer failed, create minimal analysis with classification result
       // Use the pre-translated query as the translated_query
       $analysis = [
@@ -164,6 +178,26 @@ class UnifiedMetadataExtractor
     }
 
     return $analysis;
+  }
+
+  /**
+   * Size the output-token budget for the metadata JSON to the question being analysed.
+   *
+   * A fixed 300 was reached exactly on a long question: the model had produced three correct
+   * sub_queries and the JSON was cut mid-value, so the whole rich analysis was thrown away and the
+   * plan fell back to one catch-all step. The response scales with the question — it echoes it in
+   * `translated_query` and again, split, across `sub_queries` — so the budget must scale too.
+   * Budget generously, as LLMWeightingEngine::weightingResponseMaxTokens() already does: surplus
+   * tokens cost nothing (generation stops at the closing brace), a short cap costs the analysis.
+   *
+   * @param string $query Query being analysed
+   * @return int Output-token budget
+   */
+  private function metadataResponseMaxTokens(string $query): int
+  {
+    $queryTokens = (int)ceil(mb_strlen($query) / 4);
+
+    return min(4000, max(600, 300 + 4 * $queryTokens));
   }
 
   /**

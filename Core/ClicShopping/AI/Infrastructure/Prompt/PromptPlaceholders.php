@@ -8,10 +8,15 @@
 
 namespace ClicShopping\AI\Infrastructure\Prompt;
 
+use ClicShopping\AI\RegistryAI\PromptPlaceholderRegistry;
+
 /**
  * PromptPlaceholders Class
  * Resolves the placeholders a prompt definition may carry before it reaches the LLM.
  * Prompts are install-agnostic: they never spell the DB table prefix, they declare it.
+ *
+ * Two families, one chokepoint: the STATIC tokens below, known to Core, and the
+ * DYNAMIC ones registered by a domain App (see {@see PromptPlaceholderRegistry}).
  */
 class PromptPlaceholders
 {
@@ -28,11 +33,13 @@ class PromptPlaceholders
    */
   public static function resolve(string $message, string $tablePrefix, int $languageId): string
   {
-    return str_replace(
+    $message = str_replace(
       [self::TABLE_PREFIX, self::LANGUAGE_ID],
       [$tablePrefix, (string)$languageId],
       $message
     );
+
+    return PromptPlaceholderRegistry::getInstance()->resolve($message, $languageId);
   }
 
   /**
@@ -46,6 +53,16 @@ class PromptPlaceholders
    */
   public static function hasUnresolved(string $message): bool
   {
-    return str_contains($message, self::TABLE_PREFIX) || str_contains($message, self::LANGUAGE_ID);
+    if (str_contains($message, self::TABLE_PREFIX) || str_contains($message, self::LANGUAGE_ID)) {
+      return true;
+    }
+
+    foreach (PromptPlaceholderRegistry::getInstance()->getTokens() as $token) {
+      if (str_contains($message, $token)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

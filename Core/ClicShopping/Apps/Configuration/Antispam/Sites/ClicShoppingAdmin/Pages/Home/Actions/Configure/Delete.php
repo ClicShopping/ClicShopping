@@ -29,7 +29,7 @@ class Delete extends \ClicShopping\OM\Domains\ConfigureActionsAbstract
     
     // Remove menu if method exists
     if (method_exists($this, 'removeMenu')) {
-      $this->removeMenu();
+      self::removeMenu();
     }
     
     $this->clearMenuCache();
@@ -62,5 +62,5 @@ class Delete extends \ClicShopping\OM\Domains\ConfigureActionsAbstract
 
       $CLICSHOPPING_Db->delete('administrator_menu', ['app_code' => 'app_configuration_antispam']);
     }
-}
+  }
 }

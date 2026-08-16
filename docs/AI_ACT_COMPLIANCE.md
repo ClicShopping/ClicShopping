@@ -181,15 +181,16 @@ Each AI provider remains subject to its own terms of service, privacy policy and
 
 # Legal Matrice (matrice de conformité)
 
-  | AI                                        | Act	ClicShopping AI |
-  |-------------------------------------------|--------------------|
- | IA à haut risque	                          | Non                |
- | Interaction IA clairement identifiable    | 	Oui                |
- | Validation humaine                        | 	Oui                |
- | Journalisation                            | 	Oui                |
- | Documentation	                             | Oui                |
- | Fournisseur IA configurable	               | Oui                |
- | Contenu modifiable avant publication 	     | Oui                |
+
+  | AI                                         | Act	ClicShopping AI |
+  |--------------------------------------------|--------------------|
+  | IA à haut risque	                           | Non                |
+ | Interaction IA clairement identifiable     | 	Oui                |
+ | Validation humaine                         | 	Oui                |
+ | Journalisation                             | 	Oui                |
+ | Documentation	                              | Oui                |
+ | Fournisseur IA configurable	                | Oui                |
+ | Contenu modifiable avant publication 	      | Oui                |
 
 ---
 

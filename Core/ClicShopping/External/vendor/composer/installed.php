@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '8167a423c2ecc83fe9bfa9df1872f1a56ca368c7',
+        'reference' => 'a02e4c868536d9d1b3c904e909ec93fa20be9f57',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '8167a423c2ecc83fe9bfa9df1872f1a56ca368c7',
+            'reference' => 'a02e4c868536d9d1b3c904e909ec93fa20be9f57',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '69f887cf655171e69ec7880ace9c35faf42b73e3',
+            'reference' => '52fa31ed9e3b6f830bec2e0443041750d2bd73e1',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -385,9 +385,9 @@
             'dev_requirement' => false,
         ),
         'stolt/llms-txt-php' => array(
-            'pretty_version' => 'v3.4.0',
-            'version' => '3.4.0.0',
-            'reference' => '48ffa6e902a536696468d8197ec0115f69dbdd2e',
+            'pretty_version' => 'v3.5.0',
+            'version' => '3.5.0.0',
+            'reference' => '4059449564eca163e1b37356db112e49407b11c1',
             'type' => 'library',
             'install_path' => __DIR__ . '/../stolt/llms-txt-php',
             'aliases' => array(),

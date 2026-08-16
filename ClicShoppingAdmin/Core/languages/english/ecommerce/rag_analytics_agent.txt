@@ -728,6 +728,21 @@ SIMPLE RULE:
 - When user says "en stock" or "in stock" = ALWAYS add "AND products_quantity > 0"
 
 
+text_order_grain_rules = ORDER GRAIN - ORDER-LEVEL METRICS OVER A PRODUCT JOIN
+
+A JOIN to {{table_prefix}}orders_products or {{table_prefix}}products_to_categories turns one order into ONE ROW PER PRODUCT LINE. Every order-level value on those rows - a {{table_prefix}}orders_total amount, a date of {{table_prefix}}orders - is REPEATED once per line.
+
+The trap is not a missing GROUP BY, it is SUM over a repeated value. Inside a GROUP BY o.orders_id that also joins {{table_prefix}}orders_products, SUM(ot.value) multiplies the order total by the number of lines. Take a repeated order-level value with MAX - one value per order - or keep the product join out of the aggregate and restrict the population with EXISTS.
+
+FORBIDDEN: SELECT AVG(t.order_total) FROM (SELECT o.orders_id, SUM(ot.value) AS order_total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id AND ot.class = 'TO' GROUP BY o.orders_id) t
+MANDATORY: SELECT AVG(t.order_total) FROM (SELECT o.orders_id, MAX(ot.value) AS order_total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id AND ot.class = 'TO' GROUP BY o.orders_id) t
+ALSO CORRECT: SELECT SUM(ot.value) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id AND ot.class = 'TO' WHERE EXISTS (SELECT 1 FROM {{table_prefix}}orders_products op WHERE op.orders_id = o.orders_id)
+
+This applies to ORDER-level values only. A product-level metric - quantity sold, number of order lines, revenue of a product line - is aggregated over {{table_prefix}}orders_products as usual and must NOT be pre-aggregated to order grain.
+
+WHICH orders_total CLASS NAMES WHICH QUANTITY: 'ST' is the products sub-total, 'SH' the shipping, 'TO' the grand total actually paid by the customer. The AVERAGE CART is the average of 'TO', never of 'ST'. The revenue of the products is built on 'ST'. Never sum two different classes together, and never assume a class exists on every order.
+
+
 text_security_guidelines = SECURITY GUIDELINES:
 1. Never generate queries that modify database structure (CREATE, ALTER, DROP)
 2. Never generate queries that delete data without explicit WHERE clauses
@@ -788,7 +803,7 @@ text_order_calculation = CRITICAL BUSINESS RULES - ORDER STATUS FILTERING:
 
 REVENUE CALCULATION RULES:
 1. DEFAULT RULE: Use WHERE o.orders_status != 4 (exclude cancelled orders only)
-   - This includes all valid orders: Pending (1), Processing (2), Delivered (3), and other statuses (5+)
+   - This includes every status listed in the ORDER STATUS SEMANTICS block above except the cancelled one. That block is the complete list: there is no unlisted status to include, and none to invent
    - Rationale: All non-cancelled orders represent valid business transactions
 
 2. ALTERNATIVE (if user specifies): WHERE o.orders_status = 3 (only delivered/completed orders)

@@ -25,6 +25,7 @@ use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
+use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFreshnessValidator;
 use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
 use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\Security\InputValidator;
@@ -781,14 +782,50 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
+   * Apply the freshness rule of the result cache to the SQL cache, which had none.
+   *
+   * Both caches are keyed on the QUESTION, which does not move when the data behind the answer
+   * does — nor when the merchant rewrites the meaning of a status, which changes what the cached
+   * SQL means without changing a single table it references. The result cache has refused such
+   * an entry since CacheFreshnessValidator; this one survived its full hour.
+   *
+   * Fails OPEN: an unreadable mtime or a validator error keeps the entry, as before.
+   *
+   * @param OMCache $sqlCache Cache entry already known to exist
+   * @return bool True when the cached SQL may still be used
+   */
+  private function cachedSqlIsFresh(OMCache $sqlCache): bool
+  {
+    $builtAt = $sqlCache->getTime();
+
+    if ($builtAt === false) {
+      return true;
+    }
+
+    $sql = $sqlCache->get();
+
+    if (!is_string($sql) || trim($sql) === '') {
+      return true;
+    }
+
+    $fresh = (new CacheFreshnessValidator($this->debug))->isFreshSinceAge($sql, max(0, time() - (int)$builtAt));
+
+    if (!$fresh) {
+      $this->debugLog("SQL CACHE STALE - a source table moved since it was built", "CACHE");
+    }
+
+    return $fresh;
+  }
+
+  /**
    * Replace the cached SQL of the query in flight with the one that actually worked.
    *
    * generateSqlQueries() caches the FIRST DRAFT, before execution. When that draft turns out to
    * be wrong and gets corrected, the correction used to be lost: the result cache kept the fixed
-   * SQL, the SQL cache kept the broken one. That is reachable — the result cache is dropped as
-   * soon as a source table moves (CacheFreshnessValidator) while the SQL cache, which has no
-   * freshness rule, survives for its full hour — so the same question replayed the faulty draft
-   * and paid for the correction all over again (BACKLOG lot A).
+   * SQL, the SQL cache kept the broken one, and the same question replayed the faulty draft while
+   * paying for the correction all over again (BACKLOG lot A). Both caches now share one freshness
+   * rule (see cachedSqlIsFresh), so they can no longer disagree on what is stale — but they can
+   * still disagree on CONTENT, which is what this method fixes.
    *
    * @param string $correctedSql The query that executed successfully
    * @return void
@@ -1034,7 +1071,7 @@ class AnalyticsAgent implements AgentInterface
     $this->sqlCacheKey = $cacheKey;
     $sqlCache = new OMCache($cacheKey, 'Rag/SQL');
 
-    if ($sqlCache->exists(60)) { // 60 minutes = 1 hour
+    if ($sqlCache->exists(60) && $this->cachedSqlIsFresh($sqlCache)) { // 60 minutes = 1 hour
       $cachedSQL = $sqlCache->get();
       if ($cachedSQL !== null && !empty($cachedSQL)) {
         $this->debugLog("✅ SQL CACHE HIT - Duration: < 10ms", "CACHE");

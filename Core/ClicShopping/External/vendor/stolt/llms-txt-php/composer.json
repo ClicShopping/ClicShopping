@@ -36,7 +36,7 @@
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^11.4.4",
         "shipmonk/composer-dependency-analyser": "^1.8",
-        "stolt/lean-package-validator": "^4.4"
+        "stolt/lean-package-validator": "^4.4||^5.0||^6.0"
     },
     "suggest": {
         "stolt/llms-txt-php-cli": "Allows interaction with a llms.txt file from the console."

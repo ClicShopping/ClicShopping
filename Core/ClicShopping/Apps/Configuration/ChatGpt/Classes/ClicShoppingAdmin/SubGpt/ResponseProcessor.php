@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt;
 
+use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
 use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
@@ -17,9 +18,6 @@ use ClicShopping\AI\Infrastructure\Response\ResponseNormalizer;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\LLMProviderFactory;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-
-use function defined;
-use function is_null;
 
 /**
  * ResponseProcessor
@@ -241,7 +239,11 @@ class ResponseProcessor
 
     if (preg_match('/<script[\s>]/i', $prompt) || preg_match('/<iframe[\s>]/i', $prompt)) {
       error_log("SECURITY: Blocked dangerous HTML tags in prompt: " . substr($prompt, 0, 100));
-      throw new \Exception("Requête bloquée pour des raisons de sécurité");
+      
+      $language = Registry::get('Language');
+      $language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+
+      throw new \Exception($language->getDef('text_error_prompt_blocked_security'));
     }
 
     if (strlen($prompt) > $maxPromptLength) {
@@ -249,17 +251,20 @@ class ResponseProcessor
       error_log("WARNING: Prompt truncated to {$maxPromptLength} characters (security limit)");
     }
     
-    $prompt = htmlspecialchars($prompt, ENT_QUOTES, 'UTF-8');
-    
+    // No HTML escaping here: escaping is a RENDERING concern (see RequestValidator, which
+    // escapes a display copy). Escaping the prompt shipped `-&gt;`, `&quot;` and `&#039;` to the model.
     if (empty($prompt)) {
       error_log("WARNING Ajax ChatGpt: Prompt is empty after validation for: " . substr($question, 0, 100));
-      $prompt = htmlspecialchars(trim($question), ENT_QUOTES, 'UTF-8');
+      $prompt = trim($question);
     }
 
     $prompt = HTMLOverrideCommon::removeInvisibleCharacters($prompt);
 
     if (empty($prompt)) {
-      throw new \Exception("Prompt is empty after validation and sanitization");
+      $language = Registry::get('Language');
+      $language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+
+      throw new \Exception($language->getDef('text_error_prompt_empty_after_sanitization'));
     }
 
     try {

@@ -304,23 +304,30 @@ class AdministratorAdmin
    *
    * return bool
    */
-  public static function getAccess():bool
+  public static function getAccess(): bool
   {
-    $CLICSHOPPING_Db = Registry::get('Db');
-
-    $Qaccess = $CLICSHOPPING_Db->prepare('select access,
-                                              id
-                                        from :table_administrators
-                                        where id = :id
-                                        and access = 1
-                                        ');
-    $Qaccess->bindInt(':id', $_SESSION['admin']['id']);
-    $Qaccess->execute();
-
-    if (\is_null($Qaccess->valueInt('access'))) {
+    if (
+      !isset($_SESSION['admin']) || !isset($_SESSION['admin']['id']) || !is_numeric($_SESSION['admin']['id'])) {
       return false;
     }
 
-    return true;
+    $adminId = (int)$_SESSION['admin']['id'];
+
+    if ($adminId <= 0) {
+      return false;
+    }
+
+    $CLICSHOPPING_Db = Registry::get('Db');
+
+    $Qaccess = $CLICSHOPPING_Db->prepare('SELECT access
+                                           FROM :table_administrators
+                                           WHERE id = :id
+                                           LIMIT 1
+                                        ');
+
+    $Qaccess->bindInt(':id', $adminId);
+    $Qaccess->execute();
+
+    return $Qaccess->valueInt('access') === 1;
   }
 }
