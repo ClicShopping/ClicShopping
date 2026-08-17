@@ -12,7 +12,7 @@ class sort_order extends \ClicShopping\Apps\Payment\Stripe\Module\ClicShoppingAd
 {
 
   public int|null $sort_order = 1000;
-  public $default = '300';
+  public $default = '330';
   public bool $app_configured = false;
 
   protected function init()

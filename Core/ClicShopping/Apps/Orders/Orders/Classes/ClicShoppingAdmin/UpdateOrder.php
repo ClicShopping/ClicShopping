@@ -250,6 +250,7 @@ class UpdateOrder
     }
 
     $has_sign  = self::ordersTotalHasSignColumn($db);
+    $has_rank  = self::ordersTotalHasRankColumn($db);
     $base      = ['ST', 'ot_subtotal', 'TX', 'ot_tax', 'SH', 'ot_shipping', 'TO', 'ot_total'];
     $tax_delta = 0.0;
 
@@ -297,6 +298,11 @@ class UpdateOrder
         ];
         if ($has_sign) {
           $data['total_sign'] = (int)($row['sign'] ?? 1);
+        }
+        // Carry the order's own rank forward: rewriting the row must not re-place it at whatever
+        // position the configuration holds today.
+        if ($has_rank && isset($meta[$code]['total_rank'])) {
+          $data['total_rank'] = (int)$meta[$code]['total_rank'];
         }
         $db->save('orders_total', $data);
       }
@@ -354,6 +360,26 @@ class UpdateOrder
     return $exists;
   }
 
+  /**
+   * Whether orders_total carries the total_rank column (SQL-21 migration). Cached per request so
+   * the schema is probed at most once.
+   *
+   * @param mixed $db
+   * @return bool
+   */
+  private static function ordersTotalHasRankColumn(mixed $db): bool
+  {
+    static $exists = null;
+
+    if ($exists === null) {
+      $Q = $db->prepare("SHOW COLUMNS FROM :table_orders_total LIKE 'total_rank'");
+      $Q->execute();
+      $exists = (bool)$Q->fetch();
+    }
+
+    return $exists;
+  }
+
  
   /**
    * Resolves the display title for a TX (tax) line of a given rate.
@@ -367,6 +393,26 @@ class UpdateOrder
    * @param array  $existingTitles  Titles of the order's current TX rows.
    * @return string
    */
+  /**
+   * Whether orders carries the orders_prices_include_tax column yet (SQL-14 migration).
+   * Cached for the request so we probe the schema at most once.
+   *
+   * @param mixed $db
+   * @return bool
+   */
+  private static function ordersHasTaxConventionColumn(mixed $db): bool
+  {
+    static $exists = null;
+
+    if ($exists === null) {
+      $Q = $db->prepare("SHOW COLUMNS FROM :table_orders LIKE 'orders_prices_include_tax'");
+      $Q->execute();
+      $exists = (bool)$Q->fetch();
+    }
+
+    return $exists;
+  }
+
   private static function resolveTaxTitle(mixed $db, float $rate, array $existingTitles): string
   {
     $Qdesc = $db->prepare('select tax_description
@@ -483,11 +529,15 @@ class UpdateOrder
     $db         = Registry::get('Db');
     $currencies = Registry::get('Currencies');
 
-    //1. Read the order's currency + customer 
+    //1. Read the order's currency + customer + its own tax convention
+    $has_convention = self::ordersHasTaxConventionColumn($db);
+
     $Qorder = $db->prepare('select currency,
                                    currency_value,
                                    customers_id,
-                                   customers_group_id
+                                   customers_group_id'
+      . ($has_convention ? ',
+                                   orders_prices_include_tax' : '') . '
                               from :table_orders
                              where orders_id = :orders_id
                           ');
@@ -498,6 +548,8 @@ class UpdateOrder
     $currency       = $Qorder->value('currency') ?: 'EUR';
     $currency_value = $Qorder->valueDecimal('currency_value') ?: 1.0;
     $customers_id   = $Qorder->valueInt('customers_id');
+
+    $stored_convention = $has_convention ? $Qorder->value('orders_prices_include_tax') : null;
 
     //2. Read the existing shipping row (preserved as-is)
     $Qship = $db->prepare("select value, 
@@ -526,21 +578,34 @@ class UpdateOrder
 
     // ── 3. Read the existing rows to inherit title labels and sort_order ──────
     //      (we keep the human-readable labels the shop originally wrote)
-    $Qexisting = $db->prepare('select class, 
-                                       title, 
-                                       sort_order
+    //      and, when the column exists, the fiscal rank the order was computed with, so re-editing
+    //      reproduces ITS sequence instead of the configuration of the day.
+    $has_rank = self::ordersTotalHasRankColumn($db);
+
+    $Qexisting = $db->prepare('select class,
+                                       title,
+                                       sort_order' . ($has_rank ? ',
+                                       total_rank' : '') . '
                                  from :table_orders_total
                                  where orders_id = :orders_id
                               ');
     $Qexisting->bindInt(':orders_id', $order_id);
     $Qexisting->execute();
 
-    $meta = [];   // class → ['title' => ..., 'sort_order' => ...]
+    $meta = [];         // class → ['title' => ..., 'sort_order' => ..., 'total_rank' => ...]
+    $stored_ranks = []; // class → fiscal rank stored on this order
     while ($Qexisting->fetch()) {
-      $meta[$Qexisting->value('class')] = [
+      $class = $Qexisting->value('class');
+
+      $meta[$class] = [
         'title'      => $Qexisting->value('title'),
         'sort_order' => $Qexisting->valueInt('sort_order'),
       ];
+
+      if ($has_rank && $Qexisting->valueInt('total_rank') > 0) {
+        $meta[$class]['total_rank'] = $Qexisting->valueInt('total_rank');
+        $stored_ranks[$class] = $Qexisting->valueInt('total_rank');
+      }
     }
 
     // ── 4. Customer group of the order — drives the same tax/total branching as cart() ──
@@ -574,10 +639,15 @@ class UpdateOrder
     $total_tax   = 0.0;
     $tax_by_rate = [];   // (string)rate => ['rate' => float, 'tax' => float] — one entry per distinct non-zero rate
 
-    // Decide HT vs TTC from the ORDER's own customer group — NOT from  Registry::get('Customer')
+    // The convention is a property of the ORDER, so the stored value wins: re-deriving it from
+    // today's DISPLAY_PRICE_WITH_TAX silently converts a past order (and leaves its tax-line title
+    // contradicting the new amounts). Falls back to the derivation only for orders placed before
+    // the column existed — never from Registry::get('Customer'), empty in back-office.
     $decimals     = (int)($currencies->currencies[DEFAULT_CURRENCY]['decimal_places'] ?? 2);
-    $order_is_ttc = ((defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && $customers_group_id == 0)
-      || ($customers_group_id != 0 && ($group_tax['group_tax'] ?? '') == 'true');
+    $order_is_ttc = ($stored_convention !== null && $stored_convention !== '')
+      ? (bool)(int)$stored_convention
+      : (((defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && $customers_group_id == 0)
+        || ($customers_group_id != 0 && ($group_tax['group_tax'] ?? '') == 'true'));
 
     while ($Qlines->fetch()) {
       $unit_price = $Qlines->valueDecimal('final_price'); // stored HT
@@ -655,7 +725,8 @@ class UpdateOrder
       deliveryZoneId:    $dt_zone_id,
       decimals:          $decimals,
       orderId:           $order_id,
-      pricesIncludeTax:  $order_is_ttc
+      pricesIncludeTax:  $order_is_ttc,
+      storedRanks:       $stored_ranks
     ));
 
     // A commercial discount is levied on the NET (post-discount) base, so it removes tax (taxDelta<0).

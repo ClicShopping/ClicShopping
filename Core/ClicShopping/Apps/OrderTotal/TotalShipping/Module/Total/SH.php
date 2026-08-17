@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\OrderTotal\TotalShipping\Module\Total;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\OrderTotalSequence;
 
 use ClicShopping\Apps\OrderTotal\TotalShipping\TotalShipping as TotalShippingApp;
 use ClicShopping\OM\Interfaces\OrderTotalInterface;
@@ -23,6 +24,15 @@ class SH implements OrderTotalInterface
   public $group;
   public $output;
   public int|null $sort_order = 0;
+
+  // Accessory charge that ENTERS the taxable base: this module computes its own tax, so it has to
+  // run before the tax module.
+  public string $moduletype = OrderTotalSequence::ROLE_CHARGE;
+  public string $moduletype_position = OrderTotalSequence::POSITION_BEFORE_TAX;
+
+  // The administrator's choice overrides the default above. Named here because only the module
+  // knows its own constant; OM\OrderTotalSequence reads it without instantiating the class.
+  public string $moduletype_position_key = 'CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_TAX_POSITION';
   public mixed $app;
   public $surcharge;
   public $maximum;
@@ -81,8 +91,10 @@ class SH implements OrderTotalInterface
     $CLICSHOPPING_Order = Registry::get('Order');
     $CLICSHOPPING_Tax = Registry::get('Tax');
 
-    if (\defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_OVER') && \defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_DESTINATION') && \defined('STORE_COUNTRY')) {
-      if (CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_OVER == 'True') {
+    // Two distinct settings, and they used to be read through one non-existent constant
+    // (_SH_OVER): _SH_FREE_SHIPPING is the switch, _SH_FREE_SHIPPING_OVER is the threshold.
+    if (\defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_FREE_SHIPPING') && \defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_FREE_SHIPPING_OVER') && \defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_DESTINATION') && \defined('STORE_COUNTRY')) {
+      if (CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_FREE_SHIPPING == 'True') {
         $pass = false;
         switch (CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_DESTINATION) {
           case 'national':
@@ -99,7 +111,7 @@ class SH implements OrderTotalInterface
             break;
         }
 
-        if (($pass === true) && (($CLICSHOPPING_Order->info['total'] - $CLICSHOPPING_Order->info['shipping_cost']) >= CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_OVER)) {
+        if (($pass === true) && (($CLICSHOPPING_Order->info['total'] - $CLICSHOPPING_Order->info['shipping_cost']) >= CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_FREE_SHIPPING_OVER)) {
           $CLICSHOPPING_Order->info['shipping_method'] = CLICSHOPPING::getDef('free_shipping_title');
           $CLICSHOPPING_Order->info['total'] -= $CLICSHOPPING_Order->info['shipping_cost'];
           $CLICSHOPPING_Order->info['shipping_cost'] = 0;

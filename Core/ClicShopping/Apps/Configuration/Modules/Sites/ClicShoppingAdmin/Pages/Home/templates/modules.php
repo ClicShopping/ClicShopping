@@ -10,6 +10,7 @@ use ClicShopping\OM\Apps;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Configuration\Modules\Classes\ClicShoppingAdmin\ModulesAdmin;
 
 $CLICSHOPPING_Modules = Registry::get('Modules');
 $CLICSHOPPING_Language = Registry::get('Language');
@@ -96,6 +97,27 @@ switch ($module_type) {
   </div>
   <div class="mt-1"></div>
   <?php
+  // Order total modules compute in sequence and that sequence is fiscal, not cosmetic:
+  // the merchant owns it, so state the rule where modules are installed.
+  if ($module_type === 'order_total') {
+    ?>
+    <div class="alert alert-info" role="alert">
+      <?php echo $CLICSHOPPING_Modules->getDef('text_info_order_total_sequence'); ?>
+    </div>
+    <?php
+    // A chain inherited from an earlier version is never reordered on its own, so say what is out
+    // of place instead of leaving it silently wrong.
+    $misplaced_order_total = ModulesAdmin::misplacedOrderTotalModules();
+
+    if ($misplaced_order_total !== []) {
+      ?>
+      <div class="alert alert-warning" role="alert">
+        <?php echo $CLICSHOPPING_Modules->getDef('text_warning_order_total_misplaced', ['modules' => implode(', ', $misplaced_order_total)]); ?>
+      </div>
+      <?php
+    }
+  }
+
   $modules_installed = (\defined($module_key) ? explode(';', \constant($module_key)) : array());
 
   $new_modules_counter = 0;
@@ -295,62 +317,12 @@ switch ($module_type) {
     }
 
     if (!isset($_GET['list'])) {
-      ksort($installed_modules);
-
-      $Qcheck = $CLICSHOPPING_Db->get('configuration', 'configuration_value', ['configuration_key' => $module_key]);
-
-      if ($Qcheck->fetch() !== false) {
-        if ($Qcheck->value('configuration_value') != implode(';', $installed_modules)) {
-          Registry::get('Db')->save('configuration', [
-            'configuration_value' => implode(';', $installed_modules),
-            'last_modified' => 'now()'
-          ],
-            ['configuration_key' => $module_key]
-          );
-        }
-      } else {
-        $CLICSHOPPING_Db->save('configuration', [
-            'configuration_title' => 'Installed Modules',
-            'configuration_key' => $module_key,
-            'configuration_value' => implode(';', $installed_modules),
-            'configuration_description' => 'This is automatically updated. No need to edit.',
-            'configuration_group_id' => 6,
-            'sort_order' => 0,
-            'date_added' => 'now()'
-          ]
-        );
-      }
+      // The order total chain is NOT reorderable from here: its order is the order of calculation,
+      // set at install time from each module's declared fiscal role (OM\OrderTotalSequence).
+      ModulesAdmin::syncInstalledModules($module_key, $installed_modules, $module_type !== 'order_total');
 
       if ($template_integration === true) {
-        $Qcheck = $CLICSHOPPING_Db->get('configuration', 'configuration_value', ['configuration_key' => 'TEMPLATE_BLOCK_GROUPS']);
-
-        if ($Qcheck->fetch() !== false) {
-          $tbgroups_array = explode(';', $Qcheck->value('configuration_value'));
-
-          if (!\in_array($module_type, $tbgroups_array)) {
-            $tbgroups_array[] = $module_type;
-            sort($tbgroups_array);
-
-            $CLICSHOPPING_Db->save('configuration', [
-              'configuration_value' => implode(';', $tbgroups_array),
-              'last_modified' => 'now()'
-            ],
-              ['configuration_key' => 'TEMPLATE_BLOCK_GROUPS']
-            );
-          }
-        } else {
-          $CLICSHOPPING_Db->save('configuration', [
-              'configuration_title' => 'Installed Template Block Groups',
-              'configuration_key' => 'TEMPLATE_BLOCK_GROUPS',
-              'configuration_value' => $module_type,
-              'configuration_description' => 'This is automatically updated. No need to edit.',
-              'configuration_group_id' => 6,
-              'sort_order' => 0,
-              'date_added' => 'now()'
-            ]
-          );
-
-        }
+        ModulesAdmin::syncTemplateBlockGroups($module_type);
       }
     }
     ?>

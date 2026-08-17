@@ -20,8 +20,8 @@ ORDERS:
 - orders: Order info (orders_id, customers_id, date_purchased, orders_status)
 - orders_products: Products in orders (orders_id, products_id, products_quantity, products_price AS TRANSACTION_PRICE)
 - orders_total: One row PER order-total line (orders_id, title, value, class). `class` is the module code, `value` is the amount, `title` is the human label shown on the invoice (e.g. "Remise client : 10%").
-  Classes: 'ST' = Subtotal (use for revenue/turnover), 'SH' = Shipping, 'TX' = Tax, 'TO' = Total (final order total), 'CD' = Customer Discount (remise client), 'DC' = Discount Coupon (bon de réduction), 'LO' = Low Order Fee, 'SU' = Surcharge.
-  **IMPORTANT**: For revenue/turnover queries, use class='ST' (Subtotal), NOT 'TO' or 'OT'
+  Classes: 'ST' = Subtotal IN THE TAX CONVENTION OF THAT ORDER (tax-inclusive on some orders, tax-exclusive on others - NEVER sum it for revenue), 'SH' = Shipping, 'TX' = Tax, 'TO' = Total (final order total), 'CD' = Customer Discount (remise client), 'DC' = Discount Coupon (bon de réduction), 'LO' = Low Order Fee, 'SU' = Surcharge.
+  **IMPORTANT**: NEVER use class='ST' for revenue/turnover. The subtotal is written in the tax convention applied to EACH order - tax-inclusive on some, tax-exclusive on others - and both coexist in one shop, because the convention depends on the customer group, not on a date. Summing 'ST' adds tax-inclusive amounts to tax-exclusive ones. Revenue EXCLUDING tax (the default) = SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) with ot.class IN ('TO','TX'). Revenue INCLUDING tax = SUM(ot.value) with ot.class = 'TO'. Both hold under either convention; 'ST' holds under neither.
   **DISCOUNTS/COUPONS granted on orders live HERE**, as orders_total lines: customer discount = class='CD', coupon = class='DC'. The amount is `ot.value`, the label is `ot.title`. This is DIFFERENT from `{{table_prefix}}specials` (product promotional prices). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price) — that is NOT the customer discount.
 - discount_coupons: Coupon DEFINITIONS only (coupons_id, coupons_description, coupons_discount_amount, coupons_discount_type). Link table discount_coupons_to_orders (coupons_id, orders_id). Use these ONLY to fetch a coupon's code/description; the amount actually applied to an order is the orders_total class='DC' line. For "coupons granted/used ON orders", go through orders_total WHERE class='DC' (it already carries orders_id + value + title) — do NOT answer from discount_coupons alone, it has no per-order amount.
 
@@ -128,10 +128,10 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    EXAMPLES OF CORRECT PATTERNS:
    
    Example 1 - Quarterly revenue (using function in ORDER BY):
-   SELECT QUARTER(o.date_purchased) AS quarter, SUM(ot.value) AS revenue
+   SELECT QUARTER(o.date_purchased) AS quarter, SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS revenue
    FROM {{table_prefix}}orders o
    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id
-   WHERE YEAR(o.date_purchased) = 2025 AND ot.class = 'ST'
+   WHERE YEAR(o.date_purchased) = 2025 AND ot.class IN ('TO','TX')
    GROUP BY QUARTER(o.date_purchased)
    ORDER BY QUARTER(o.date_purchased)
    
@@ -143,10 +143,10 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    ORDER BY 1
    
    Example 3 - Yearly trends (using alias):
-   SELECT YEAR(o.date_purchased) AS year_value, SUM(ot.value) AS total_revenue
+   SELECT YEAR(o.date_purchased) AS year_value, SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS total_revenue
    FROM {{table_prefix}}orders o
    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id
-   WHERE ot.class = 'ST'
+   WHERE ot.class IN ('TO','TX')
    GROUP BY year_value
    ORDER BY year_value
    
@@ -179,12 +179,12 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    ORDERS TABLE:
    - "quantity ordered" / "quantity sold" → products_quantity (in orders_products table)
    - "transaction price" / "sale price" → products_price (in orders_products table)
-   - "order total" / "revenue" / "turnover" → value (in orders_total WHERE class='ST')
+   - "order total" / "revenue" / "turnover" / "chiffre d'affaires" → EXCLUDING tax (the default): SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) with ot.class IN ('TO','TX'); INCLUDING tax: SUM(ot.value) with ot.class = 'TO'. NEVER class='ST'.
    - "customer discount" / "remise client" (with the 'customer'/'client' qualifier) → orders_total WHERE class='CD' (value = amount, title = label)
    - "coupon" / "bon de réduction" / "code promo" / "coupons granted"/"coupons octroyés"/"coupons used" → orders_total WHERE class='DC' (value = amount, title = label)
    - bare "discount(s)" / "remise(s)" / "discounts granted" / "remises accordées" / "remises effectuées" / "discounts and coupons" / "toutes les remises" (NO 'customer'/'client' qualifier) → orders_total WHERE class IN ('CD','DC'). This is the DEFAULT for any unqualified discount question: coupons ARE discounts, so include them unless the user explicitly restricts to customer discounts.
    - ALWAYS expose the discount TYPE: include `ot.class` (CD = customer discount, DC = coupon) and `ot.title` in the SELECT so each row states which kind of discount it is.
-   **CRITICAL**: For revenue/turnover, ALWAYS use class='ST' (Subtotal), NOT 'TO' or 'OT'
+   **CRITICAL**: For revenue/turnover, NEVER use class='ST' - it mixes tax conventions across orders and overstates the figure. Use 'TO' alone for a tax-inclusive amount, or 'TO' minus 'TX' for a tax-exclusive one.
    **CRITICAL**: Discounts/coupons granted on orders are orders_total lines (class 'CD'/'DC', amount = ot.value, label = ot.title). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price); that is NOT the discount. {{table_prefix}}specials is unrelated (product promo prices).
    **CRITICAL**: the customer discount is ORDER-LEVEL (one orders_total CD line per order, applied to the whole order), NOT per product. To list the PRODUCTS of discounted orders ("products that received a discount" / "produits qui ont reçu une remise"), JOIN {{table_prefix}}orders_products (and {{table_prefix}}products_description) to the SAME order that has the class='CD' line.
 
@@ -486,7 +486,7 @@ STATUS QUERIES (Most Common):
 AGGREGATION QUERIES:
 - 'number of products per category' → SELECT cd.categories_name, COUNT(p.products_id) AS product_count FROM {{table_prefix}}products p JOIN {{table_prefix}}products_to_categories ptc ON p.products_id = ptc.products_id JOIN {{table_prefix}}categories_description cd ON ptc.categories_id = cd.categories_id WHERE cd.language_id = {{language_id}} GROUP BY cd.categories_name ORDER BY product_count DESC
 - 'top sold products' → SELECT pd.products_name, SUM(op.products_quantity) AS total_sold FROM {{table_prefix}}orders_products op JOIN {{table_prefix}}products_description pd ON op.products_id = pd.products_id WHERE pd.language_id = {{language_id}} GROUP BY op.products_id, pd.products_name ORDER BY total_sold DESC LIMIT 10
-- 'revenue this month' → SELECT SUM(ot.value) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND MONTH(o.date_purchased) = MONTH(CURDATE()) AND YEAR(o.date_purchased) = YEAR(CURDATE())
+- 'revenue this month' → SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class IN ('TO','TX') AND MONTH(o.date_purchased) = MONTH(CURDATE()) AND YEAR(o.date_purchased) = YEAR(CURDATE())
 - 'discounts granted to customers' / 'remises accordées aux clients' → SELECT o.customers_id, MAX(o.customers_name) AS customers_name, ot.orders_id, ot.title, ot.value AS discount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' WHERE o.orders_status != 4 GROUP BY o.customers_id, ot.orders_id, ot.title, ot.value ORDER BY o.customers_id
 - 'total customer discounts granted' / 'montant total des remises clients' → SELECT SUM(ot.value) AS total_discount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'CD'
 - 'products ordered that received a discount' / 'produits commandés qui ont reçu une remise' → SELECT o.orders_id, pd.products_name, op.products_quantity, ot.value AS discount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' JOIN {{table_prefix}}orders_products op ON o.orders_id = op.orders_id JOIN {{table_prefix}}products_description pd ON op.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE o.orders_status != 4 ORDER BY o.orders_id
@@ -508,7 +508,7 @@ PRODUCT QUERIES:
 - 'model and price of product [ProductName]' → SELECT p.products_model, p.products_price AS catalog_price, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
 
 COMPARISON QUERIES:
-- 'compare revenue may vs february' → SELECT SUM(CASE WHEN MONTH(o.date_purchased) = 5 THEN ot.value ELSE 0 END) AS may_revenue, SUM(CASE WHEN MONTH(o.date_purchased) = 2 THEN ot.value ELSE 0 END) AS february_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = YEAR(CURDATE())
+- 'compare revenue may vs february' → SELECT SUM(CASE WHEN MONTH(o.date_purchased) = 5 THEN ot.value ELSE 0 END) AS may_revenue, SUM(CASE WHEN MONTH(o.date_purchased) = 2 THEN ot.value ELSE 0 END) AS february_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class IN ('TO','TX') AND YEAR(o.date_purchased) = YEAR(CURDATE())
 
 
 
@@ -525,14 +525,14 @@ Pick the GROUP BY expression by granularity (keep it in SELECT aliased, and ORDE
 - by day: GROUP BY DATE(date)
 Use the aggregate that matches the wording: AVG for "average", SUM for "total"/"turnover"/"revenue", COUNT for "how many".
 
-- 'average turnover in 2025 and 2026' → SELECT YEAR(o.date_purchased) AS period, AVG(ot.value) AS average_turnover FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) IN (2025, 2026) GROUP BY YEAR(o.date_purchased) ORDER BY period
-- 'total revenue per quarter in 2025' → SELECT QUARTER(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = 2025 GROUP BY QUARTER(o.date_purchased) ORDER BY period
-- 'revenue by month this year' → SELECT MONTH(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) = YEAR(CURDATE()) GROUP BY MONTH(o.date_purchased) ORDER BY period
+- 'average turnover in 2025 and 2026' → SELECT YEAR(o.date_purchased) AS period, SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) / COUNT(DISTINCT o.orders_id) AS average_turnover FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class IN ('TO','TX') AND YEAR(o.date_purchased) IN (2025, 2026) GROUP BY YEAR(o.date_purchased) ORDER BY period
+- 'total revenue per quarter in 2025' → SELECT QUARTER(o.date_purchased) AS period, SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class IN ('TO','TX') AND YEAR(o.date_purchased) = 2025 GROUP BY QUARTER(o.date_purchased) ORDER BY period
+- 'revenue by month this year' → SELECT MONTH(o.date_purchased) AS period, SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class IN ('TO','TX') AND YEAR(o.date_purchased) = YEAR(CURDATE()) GROUP BY MONTH(o.date_purchased) ORDER BY period
 - 'orders per day last week' → SELECT DATE(o.date_purchased) AS period, COUNT(*) AS total_orders FROM {{table_prefix}}orders o WHERE o.date_purchased >= CURDATE() - INTERVAL 7 DAY GROUP BY DATE(o.date_purchased) ORDER BY period
 
 YEAR-OVER-YEAR COMPARISON (relative years like "this year" vs "last year"):
 For "compare X this year and last year" use a SINGLE query that groups by YEAR with YEAR(CURDATE()) for the current year and YEAR(CURDATE()) - 1 for the previous year. NEVER use correlated subqueries or two separate revenue columns — always GROUP BY YEAR so both years come back as rows.
-- 'compare revenue this year and last year' / 'chiffre d'affaires de cette année et de l'an dernier' / 'revenue this year vs last year' → SELECT YEAR(o.date_purchased) AS period, SUM(ot.value) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class = 'ST' AND YEAR(o.date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(o.date_purchased) ORDER BY period
+- 'compare revenue this year and last year' / 'chiffre d'affaires de cette année et de l'an dernier' / 'revenue this year vs last year' → SELECT YEAR(o.date_purchased) AS period, SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS total_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class IN ('TO','TX') AND YEAR(o.date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(o.date_purchased) ORDER BY period
 - 'compare the number of orders this year and last year' → SELECT YEAR(date_purchased) AS period, COUNT(*) AS total_orders FROM {{table_prefix}}orders WHERE orders_status != 4 AND YEAR(date_purchased) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1) GROUP BY YEAR(date_purchased) ORDER BY period
 
 text_sql_format_instructions = SQL FORMAT RULES:
@@ -716,7 +716,7 @@ This returns ALL products at the minimum price, not just one!
 CORRECT Examples:
 "How many active products" → SELECT COUNT(DISTINCT p.products_id) AS total FROM {{table_prefix}}products p WHERE p.products_status = 1
 "Average price of active products in stock" → SELECT AVG(p.products_price) AS prix_moyen FROM {{table_prefix}}products p WHERE p.products_status = 1 AND p.products_quantity > 0
-"Total revenue" → SELECT SUM(ot.value) AS total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE ot.class = 'ST'
+"Total revenue" → SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE ot.class IN ('TO','TX')
 
 EXCEPTION - Aggregations with GROUP BY:
 If you use GROUP BY, you CAN include the grouped columns:
@@ -740,7 +740,12 @@ ALSO CORRECT: SELECT SUM(ot.value) FROM {{table_prefix}}orders o JOIN {{table_pr
 
 This applies to ORDER-level values only. A product-level metric - quantity sold, number of order lines, revenue of a product line - is aggregated over {{table_prefix}}orders_products as usual and must NOT be pre-aggregated to order grain.
 
-WHICH orders_total CLASS NAMES WHICH QUANTITY: 'ST' is the products sub-total, 'SH' the shipping, 'TO' the grand total actually paid by the customer. The AVERAGE CART is the average of 'TO', never of 'ST'. The revenue of the products is built on 'ST'. Never sum two different classes together, and never assume a class exists on every order.
+WHICH orders_total CLASS NAMES WHICH QUANTITY: 'ST' is the products sub-total, 'SH' the shipping, 'TO' the grand total actually paid by the customer. The AVERAGE CART is the average of 'TO', never of 'ST'. Product revenue is NOT built on 'ST' either: 'ST' is written in the tax convention of EACH order, so summing it adds tax-inclusive amounts to tax-exclusive ones. Order revenue comes from 'TO' as stated in the class map above; the revenue of a PRODUCT line comes from {{table_prefix}}orders_products, never from orders_total. Never sum two different classes together, and never assume a class exists on every order.
+SHARE OF ONE CLASS IN THE TOTAL - shipping weight, discount weight, fee weight: NAME the denominator, because the two revenues differ by the whole tax and the same ratio moves by a fifth on a 20 percent shop. Revenue INCLUDING tax = SUM(ot.value) with ot.class = 'TO'. Revenue EXCLUDING tax = SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) with ot.class IN ('TO','TX'). Say in the answer which one the ratio uses.
+NEVER inner-join the class you are measuring: an order carrying no 'SH' row then vanishes from the DENOMINATOR as well, and the ratio comes out overstated. Aggregate both sides in one pass, with conditional sums over a single join on orders_total.
+FORBIDDEN: SELECT SUM(sh.value) / SUM(tot.value) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total sh ON sh.orders_id = o.orders_id AND sh.class = 'SH' JOIN {{table_prefix}}orders_total tot ON tot.orders_id = o.orders_id AND tot.class = 'TO'
+MANDATORY: SELECT ROUND(SUM(CASE WHEN ot.class = 'SH' THEN ot.value ELSE 0 END) / NULLIF(SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE 0 END), 0) * 100, 2) AS shipping_share_pct FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id
+SHIPPING IS THE FIRM PRICE CHARGED: 'SH' is the shipping amount actually billed, and it is the ONLY shipping reference. It ALREADY contains packaging and handling - the box weight and the padding inflate the weight sent to the carrier rate table, and the result collapses into this single value. NEVER split 'SH' into transport versus packaging, and never rebuild it from product weights or from shipping configuration constants: that decomposition is stored nowhere, and a shipping module may compute it its own way.
 
 
 text_security_guidelines = SECURITY GUIDELINES:
@@ -821,15 +826,15 @@ REVENUE CALCULATION RULES:
 
 EXAMPLES:
 ✅ CORRECT (Default): 
-SELECT SUM(ot.value) FROM {{table_prefix}}orders o 
+SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders o 
 JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id 
-WHERE o.orders_status != 4 AND ot.class = 'ST'
+WHERE o.orders_status != 4 AND ot.class IN ('TO','TX')
 Analysis note: "Includes all orders except cancelled ones"
 
 ✅ CORRECT (Completed only): 
-SELECT SUM(ot.value) FROM {{table_prefix}}orders o 
+SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders o 
 JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id 
-WHERE o.orders_status = 3 AND ot.class = 'ST'
+WHERE o.orders_status = 3 AND ot.class IN ('TO','TX')
 Analysis note: "Includes only delivered orders (status = 3)"
 
 ❌ WRONG: SELECT SUM(ot.value) FROM {{table_prefix}}orders_total ot (missing orders_status filter!)
@@ -908,9 +913,9 @@ FROM (
     SELECT 
         YEAR(o.date_purchased) AS year,
         QUARTER(o.date_purchased) AS quarter,
-        SUM(ot.value) AS revenue
+        SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS revenue
     FROM {{table_prefix}}orders o
-    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class IN ('TO','TX')
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
@@ -974,9 +979,9 @@ FROM (
     SELECT 
         YEAR(o.date_purchased) AS year,
         MONTH(o.date_purchased) AS month,
-        SUM(ot.value) AS revenue
+        SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS revenue
     FROM {{table_prefix}}orders o
-    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class IN ('TO','TX')
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
     GROUP BY YEAR(o.date_purchased), MONTH(o.date_purchased)
@@ -1021,9 +1026,9 @@ FROM (
     SELECT 
         YEAR(o.date_purchased) AS year,
         QUARTER(o.date_purchased) AS quarter,
-        SUM(ot.value) AS revenue
+        SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS revenue
     FROM {{table_prefix}}orders o
-    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class IN ('TO','TX')
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
@@ -1068,9 +1073,9 @@ FROM (
     SELECT 
         YEAR(o.date_purchased) AS year,
         QUARTER(o.date_purchased) AS quarter,
-        SUM(ot.value) AS revenue
+        SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS revenue
     FROM {{table_prefix}}orders o
-    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class IN ('TO','TX')
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)
@@ -1112,9 +1117,9 @@ FROM (
     SELECT 
         YEAR(o.date_purchased) AS year,
         QUARTER(o.date_purchased) AS quarter,
-        SUM(ot.value) AS revenue
+        SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS revenue
     FROM {{table_prefix}}orders o
-    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'ST'
+    JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class IN ('TO','TX')
     WHERE o.orders_status != 4
     AND o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 8 QUARTER)
     GROUP BY YEAR(o.date_purchased), QUARTER(o.date_purchased)

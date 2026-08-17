@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\OrderTotal\Total\Module\Total;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\OrderTotalSequence;
 use ClicShopping\OM\Interfaces\OrderTotalInterface;
 use ClicShopping\Apps\OrderTotal\Total\Total as TotalApp;
 
@@ -21,6 +22,10 @@ class TO implements OrderTotalInterface
   public $group;
   public $output;
   public int|null $sort_order = 0;
+
+  // Terminal. Nothing may be computed after the grand total, or its line prints without being
+  // counted in it.
+  public string $moduletype = OrderTotalSequence::ROLE_TOTAL;
   public mixed $app;
   public $signature;
   public $public_title;

@@ -29,7 +29,12 @@ class Install extends \ClicShopping\OM\Domains\ConfigureActionsAbstract
     $this->app->loadDefinitions('Sites/ClicShoppingAdmin/install');
     
     $m = $this->getConfigModule($current_module);
-    $m->install();
+    // Fail-closed: an order total module that declares no fiscal role is NOT installed, and the
+    // refusal says why instead of leaving a silently wrong sequence behind.
+    if ($m->install() === false) {
+      $this->addWarningMessage($this->app->getDef('alert_module_install_refused_role'));
+      $this->redirectToConfigure($current_module);
+    }
     
     // Install database menu - add condition to select MariaDb or PostgreSQL
     Registry::set('MariaDb', new MariaDb());

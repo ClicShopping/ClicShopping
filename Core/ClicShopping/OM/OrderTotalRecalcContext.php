@@ -37,5 +37,10 @@ final class OrderTotalRecalcContext
     // Whether the order's prices are tax-included (DISPLAY_PRICE_WITH_TAX / group tax): drives the
     // HT base a discount is legally computed on.
     public readonly bool   $pricesIncludeTax = false,
+    // class => fiscal rank stored on THIS order's rows (orders_total.total_rank, see
+    // OM\OrderTotalSequence). The order keeps the sequence it was placed in, so a module whose
+    // taxability depends on its position honours the order instead of today's configuration.
+    // Empty before the migration, or for an order written before it.
+    public readonly array  $storedRanks = [],
   ) {}
 }

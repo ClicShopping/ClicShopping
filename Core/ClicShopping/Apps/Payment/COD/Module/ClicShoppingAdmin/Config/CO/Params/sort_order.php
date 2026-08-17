@@ -12,7 +12,7 @@ class sort_order extends \ClicShopping\Apps\Payment\COD\Module\ClicShoppingAdmin
 {
 
   public int|null $sort_order = 1000;
-  public $default = '300';
+  public $default = '310';
   public bool $app_configured = false;
 
   protected function init()

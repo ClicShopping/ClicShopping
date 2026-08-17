@@ -32,6 +32,10 @@ class Process extends \ClicShopping\OM\Domains\ConfigureActionsAbstract
       }
     }
     
+    // The fiscal position is a CALCULATION position: saving it must MOVE the module in the
+    // chain, otherwise the screen offers a choice it never honours.
+    $this->repositionOrderTotalModule($m);
+
     $this->addSuccessMessage($this->app->getDef('alert_cfg_saved_success'));
     $this->redirectToConfigure($current_module);
   }

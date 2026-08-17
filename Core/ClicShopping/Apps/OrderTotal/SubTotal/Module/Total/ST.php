@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\OrderTotal\SubTotal\Module\Total;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\OrderTotalSequence;
 use ClicShopping\Apps\OrderTotal\SubTotal\SubTotal as SubTotalApp;
 use ClicShopping\OM\Interfaces\OrderTotalInterface;
 
@@ -21,6 +22,10 @@ class ST implements OrderTotalInterface
   public $group;
   public $output;
   public int|null $sort_order = 0;
+
+  // Fiscal family: the base the rest of the sequence builds on. Read at install time by
+  // OM\OrderTotalSequence to place the module — sort_order only moves the printed line.
+  public string $moduletype = OrderTotalSequence::ROLE_BASE;
   public mixed $app;
   public $surcharge;
   public $maximum;

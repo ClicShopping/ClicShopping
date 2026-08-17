@@ -66,21 +66,27 @@ class SH extends \ClicShopping\Apps\OrderTotal\TotalShipping\Module\ClicShopping
   }
 
   /**
-   * Installs the module by adding its entry to the list of installed modules.
+   * Installs the module at the rank its declared role commands.
    *
-   * @return void
+   * @return bool false when the module declares no usable role — nothing is written then.
    */
   public function install()
   {
-    parent::install();
+    $installed = \defined('MODULE_ORDER_TOTAL_INSTALLED') ? explode(';', MODULE_ORDER_TOTAL_INSTALLED) : [];
 
-    if (\defined('MODULE_ORDER_TOTAL_INSTALLED')) {
-      $installed = explode(';', MODULE_ORDER_TOTAL_INSTALLED);
+    // Fail-closed: the module goes in at the rank its declared role commands, or it is NOT
+    // installed. Appending blindly is what lets a line print without being counted in the total.
+    $chain = \ClicShopping\OM\OrderTotalSequence::place($installed, $this->app->vendor . '\\' . $this->app->code . '\\' . $this->code);
+
+    if ($chain === null) {
+      return false;
     }
 
-    $installed[] = $this->app->vendor . '\\' . $this->app->code . '\\' . $this->code;
+    parent::install();
 
-    $this->app->saveCfgParam('MODULE_ORDER_TOTAL_INSTALLED', implode(';', $installed));
+    $this->app->saveCfgParam('MODULE_ORDER_TOTAL_INSTALLED', implode(';', $chain));
+
+    return true;
   }
 
   /**

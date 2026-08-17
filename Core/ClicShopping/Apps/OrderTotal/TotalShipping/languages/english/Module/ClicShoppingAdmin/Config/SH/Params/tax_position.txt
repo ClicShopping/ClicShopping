@@ -1,0 +1,4 @@
+cfg_order_total_shipping_tax_position_title = Where is this line computed in the order total sequence ?
+cfg_order_total_shipping_tax_position_description = Before the tax means the amount enters the taxable base, so the tax is computed on it. After the tax means it is outside the taxable base. The line is always computed before the grand total. Changing this moves the module in the calculation sequence, and it can change the free shipping threshold reached by an order.
+cfg_order_total_shipping_tax_position_before = Before the tax (inside the taxable base)
+cfg_order_total_shipping_tax_position_after = After the tax (outside the taxable base)

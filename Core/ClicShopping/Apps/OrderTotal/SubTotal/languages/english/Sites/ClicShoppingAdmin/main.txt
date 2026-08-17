@@ -25,3 +25,4 @@ dialog_uninstall_body = Are you sure you want to uninstall this module?
 alert_module_install_success = Module has been successfully installed.
 alert_module_uninstall_success = Module has been successfully uninstalled.
 alert_cfg_saved_success = Configuration parameters have been successfully saved.
+alert_module_install_refused_role = This module was not installed: it does not declare where it must be computed in the order total sequence. A module that is not placed runs after the grand total, so its line shows while the total does not contain it. Ask the module author to declare its fiscal role.

@@ -9,6 +9,7 @@
 namespace ClicShopping\OM\Domains;
 
 use ClicShopping\OM\Cache;
+use ClicShopping\OM\OrderTotalSequence;
 use ClicShopping\OM\Registry;
 
 /**
@@ -80,7 +81,51 @@ abstract class ConfigureActionsAbstract extends PagesActionsAbstract
   {
     $this->messageStack->add($message, 'success', $this->appKey);
   }
+
+  /**
+   * Add warning message — a refused action must SHOW why, never fail in silence.
+   * @param string $message
+   * @return void
+   */
+  protected function addWarningMessage(string $message): void
+  {
+    $this->messageStack->add($message, 'warning', $this->appKey);
+  }
   
+  /**
+   * Move an installed order total module to the rank a newly saved fiscal position commands.
+   *
+   * Saving a position that does not move the module in MODULE_ORDER_TOTAL_INSTALLED would be a
+   * screen offering a choice it never honours: the stored chain IS the order of calculation. The
+   * value is taken from the POST because the configuration row was written in this same request,
+   * so the constant still holds the previous choice.
+   *
+   * @param mixed $configModule the Config module whose parameters have just been saved
+   * @return void
+   */
+  protected function repositionOrderTotalModule(mixed $configModule): void
+  {
+    if (!\defined('MODULE_ORDER_TOTAL_INSTALLED') || !isset($configModule->code)) {
+      return;
+    }
+
+    $module = $this->app->vendor . '\\' . $this->app->code . '\\' . $configModule->code;
+
+    $key = OrderTotalSequence::positionKeyOf($module);
+
+    if ($key === null) {
+      return;
+    }
+
+    $chosen = $_POST[mb_strtolower($key)] ?? null;
+
+    $chain = OrderTotalSequence::reposition(explode(';', MODULE_ORDER_TOTAL_INSTALLED), $module, \is_string($chosen) ? $chosen : null);
+
+    if ($chain !== null) {
+      $this->app->saveCfgParam('MODULE_ORDER_TOTAL_INSTALLED', implode(';', $chain));
+    }
+  }
+
   /**
    * Clear administrator menu cache
    * @return void

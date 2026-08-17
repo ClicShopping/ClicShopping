@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\OrderTotal\TotalTax\Module\Total;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\OrderTotalSequence;
 use ClicShopping\Sites\Common\B2BCommon;
 use ClicShopping\Sites\Shop\Tax;
 use ClicShopping\Apps\OrderTotal\TotalTax\TotalTax as TotalTaxApp;
@@ -25,6 +26,11 @@ class TX implements OrderTotalInterface
   public $group;
   public $output;
   public int|null $sort_order = 0;
+
+  // The pivot of the sequence, and it does not move: charges entering the taxable base run before
+  // it, the grand total after it.
+  public string $moduletype = OrderTotalSequence::ROLE_TAX;
+
   public mixed $app;
   public $surcharge;
   public $maximum;
@@ -117,9 +123,12 @@ class TX implements OrderTotalInterface
         $this->output[] = $row;
       }
 
-//We calculate $CLICSHOPPING_Order->info with updated tax values. For this to work ot_tax has to be last ot module called, just before ot_total
+//The tax is recomputed here, so ACCUMULATE the change instead of rebuilding the total from the
+//subtotal: the old assignment discarded whatever an upstream reduction or charge had added.
+      $previous_tax = (float)($CLICSHOPPING_Order->info['tax'] ?? 0);
+
       $CLICSHOPPING_Order->info['tax'] = $double_tax['tax_total'];
-      $CLICSHOPPING_Order->info['total'] = $CLICSHOPPING_Order->info['subtotal'] + $CLICSHOPPING_Order->info['tax'] + $CLICSHOPPING_Order->info['shipping_cost'];
+      $CLICSHOPPING_Order->info['total'] += $double_tax['tax_total'] - $previous_tax;
 
     } else {
 // **********************************

@@ -11,7 +11,7 @@ namespace ClicShopping\Apps\Shipping\Item\Module\ClicShoppingAdmin\Config\IT\Par
 class sort_order extends \ClicShopping\Apps\Shipping\Item\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
 
-  public $default = '300';
+  public $default = '370';
   public bool $app_configured = false;
   public int|null $sort_order = 600;
 

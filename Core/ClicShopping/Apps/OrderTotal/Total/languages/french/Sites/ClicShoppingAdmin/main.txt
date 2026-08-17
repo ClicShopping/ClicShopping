@@ -25,3 +25,4 @@ dialog_uninstall_body = Etes vous sur de désinstaller ce module?
 alert_module_install_success = Le module a été installé avec succès
 alert_module_uninstall_success = Le module a été désinstallé avec succès
 alert_cfg_saved_success = Les paramètres de configuration ont été sauvés
+alert_module_install_refused_role = Le module n'a pas été installé : il ne déclare pas où il doit être calculé dans la séquence des totaux. Un module non placé s'exécute après le grand total, sa ligne s'affiche donc et le total ne la contient pas. Demandez à l'auteur du module de déclarer son rôle fiscal.

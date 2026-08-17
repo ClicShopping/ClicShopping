@@ -104,10 +104,12 @@ class Shipping extends \ClicShopping\OM\Domains\PagesActionsAbstract
     Registry::set('Shipping', new Delivery());
     $CLICSHOPPING_Shipping = Registry::get('Shipping');
 
-    if (defined('MODULE_ORDER_TOTAL_SHIPPING_FREE_SHIPPING') && (MODULE_ORDER_TOTAL_SHIPPING_FREE_SHIPPING == 'true')) {
+    // Settings owned by the TotalShipping order total module (SH). The legacy
+    // free_shipping was always false. The stored value is 'True', not 'true'.
+    if (defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_FREE_SHIPPING') && (CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_FREE_SHIPPING == 'True')) {
       $pass = false;
 
-      switch (MODULE_ORDER_TOTAL_SHIPPING_DESTINATION) {
+      switch (CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_DESTINATION) {
         case 'national':
           if ($CLICSHOPPING_Order->delivery['country_id'] == STORE_COUNTRY) {
             $pass = true;
@@ -125,7 +127,7 @@ class Shipping extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $_SESSION['free_shipping'] = false;
 
-      if (($pass === true) && ($CLICSHOPPING_Order->info['total'] >= MODULE_ORDER_TOTAL_SHIPPING_FREE_SHIPPING_OVER)) {
+      if (($pass === true) && \defined('CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_FREE_SHIPPING_OVER') && ($CLICSHOPPING_Order->info['total'] >= CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_FREE_SHIPPING_OVER)) {
         $_SESSION['free_shipping'] = true;
 
         $CLICSHOPPING_Language->loadDefinitions('Shop/modules/order_total/ot_shipping');

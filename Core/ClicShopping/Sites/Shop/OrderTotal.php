@@ -9,6 +9,7 @@
 namespace ClicShopping\Sites\Shop;
 
 use ClicShopping\OM\Apps;
+use ClicShopping\OM\OrderTotalSequence;
 use ClicShopping\OM\Registry;
 use function count;
 use function defined;
@@ -111,7 +112,10 @@ class OrderTotal
                   'sort_order' => $CLICSHOPPING_OTM->sort_order,
                   // +1 charge, -1 credit/discount — modules that deduct (DC, CD) set total_sign = -1;
                   // everything else defaults to +1. Used by the admin recalc to recompute the total.
-                  'total_sign' => $CLICSHOPPING_OTM->total_sign ?? 1
+                  'total_sign' => $CLICSHOPPING_OTM->total_sign ?? 1,
+                  // Fiscal rank this module was computed at, persisted so re-editing the order later
+                  // reproduces ITS sequence rather than the configuration of the day.
+                  'total_rank' => OrderTotalSequence::rank($value)
                 ];
               }
             }

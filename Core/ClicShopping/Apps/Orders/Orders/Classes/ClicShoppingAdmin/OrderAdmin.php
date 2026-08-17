@@ -233,59 +233,85 @@ class OrderAdmin
     $CLICSHOPPING_Db = Registry::get('Db');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    if ($restock) {
-      $Qproducts = $CLICSHOPPING_Db->get('orders_products', [
-        'products_id',
-        'products_quantity'
-      ], [
-          'orders_id' => (int)$order_id
-        ]
-      );
+    // Restock and removal are all-or-nothing: a failure between them either inflated the stock
+    // without deleting, or left child rows behind the deleted header (an orphan orders_products
+    // line still counts in every per-product metric). Guarded — a caller may already own one.
+    $owns_transaction = !$CLICSHOPPING_Db->inTransaction();
 
-      $products_ids = [];
-
-      while ($Qproducts->fetch()) {
-        $product_id = $Qproducts->valueInt('products_id');
-        $products_ids[] = $product_id;
-
-        $Qupdate = $CLICSHOPPING_Db->prepare('update :table_products
-                                                set products_quantity = products_quantity + :qty,
-                                                    products_ordered = products_ordered - :qty
-                                                where products_id = :products_id
-                                               ');
-        $Qupdate->bindInt(':qty', $Qproducts->valueInt('products_quantity'));
-        $Qupdate->bindInt(':products_id', $product_id);
-        $Qupdate->execute();
-      }
-
-      // Delete products_groups for ALL products in the order (not just the last one)
-      if (!empty($products_ids)) {
-        // Build parameterized delete with named placeholders
-        $conditions = [];
-        $params = [];
-        foreach ($products_ids as $idx => $pid) {
-          $placeholder = ':pid_' . $idx;
-          $conditions[] = 'products_id = ' . $placeholder;
-          $params[$placeholder] = (int)$pid;
-        }
-        $where_clause = implode(' OR ', $conditions);
-        $delete_sql = 'delete from :table_products_groups where ' . $where_clause;
-        $Qdelete = $CLICSHOPPING_Db->prepare($delete_sql);
-        foreach ($params as $name => $value) {
-          $Qdelete->bindInt($name, $value);
-        }
-        $Qdelete->execute();
-      }
+    if ($owns_transaction) {
+      $CLICSHOPPING_Db->beginTransaction();
     }
 
-    $CLICSHOPPING_Db->delete('orders', ['orders_id' => (int)$order_id]);
-    $CLICSHOPPING_Db->delete('orders_products', ['orders_id' => (int)$order_id]);
-    $CLICSHOPPING_Db->delete('orders_products_attributes', ['orders_id' => (int)$order_id]);
-    $CLICSHOPPING_Db->delete('orders_status_history', ['orders_id' => (int)$order_id]);
-    $CLICSHOPPING_Db->delete('orders_total', ['orders_id' => (int)$order_id]);
-    $CLICSHOPPING_Db->delete('orders_pages_manager', ['orders_id' => (int)$order_id]);
-    $CLICSHOPPING_Db->delete('orders_embedding', ['entity_id' => (int)$order_id]);
+    try {
+      // Read before any delete: the restock quantities come from orders_products.
+      if ($restock) {
+        $Qproducts = $CLICSHOPPING_Db->get('orders_products', [
+          'products_id',
+          'products_quantity'
+        ], [
+            'orders_id' => (int)$order_id
+          ]
+        );
 
+        $products_ids = [];
+
+        while ($Qproducts->fetch()) {
+          $product_id = $Qproducts->valueInt('products_id');
+          $products_ids[] = $product_id;
+
+          $Qupdate = $CLICSHOPPING_Db->prepare('update :table_products
+                                                  set products_quantity = products_quantity + :qty,
+                                                      products_ordered = products_ordered - :qty
+                                                  where products_id = :products_id
+                                                 ');
+          $Qupdate->bindInt(':qty', $Qproducts->valueInt('products_quantity'));
+          $Qupdate->bindInt(':products_id', $product_id);
+          $Qupdate->execute();
+        }
+
+        // Delete products_groups for ALL products in the order (not just the last one)
+        if (!empty($products_ids)) {
+          // Build parameterized delete with named placeholders
+          $conditions = [];
+          $params = [];
+          foreach ($products_ids as $idx => $pid) {
+            $placeholder = ':pid_' . $idx;
+            $conditions[] = 'products_id = ' . $placeholder;
+            $params[$placeholder] = (int)$pid;
+          }
+          $where_clause = implode(' OR ', $conditions);
+          $delete_sql = 'delete from :table_products_groups where ' . $where_clause;
+          $Qdelete = $CLICSHOPPING_Db->prepare($delete_sql);
+          foreach ($params as $name => $value) {
+            $Qdelete->bindInt($name, $value);
+          }
+          $Qdelete->execute();
+        }
+      }
+
+      // Children FIRST, header LAST: the reverse order left orphans whenever a later delete
+      // failed, and there is no FK to catch them.
+      $CLICSHOPPING_Db->delete('orders_products_download', ['orders_id' => (int)$order_id]);
+      $CLICSHOPPING_Db->delete('orders_products_attributes', ['orders_id' => (int)$order_id]);
+      $CLICSHOPPING_Db->delete('orders_products', ['orders_id' => (int)$order_id]);
+      $CLICSHOPPING_Db->delete('orders_status_history', ['orders_id' => (int)$order_id]);
+      $CLICSHOPPING_Db->delete('orders_total', ['orders_id' => (int)$order_id]);
+      $CLICSHOPPING_Db->delete('orders_pages_manager', ['orders_id' => (int)$order_id]);
+      $CLICSHOPPING_Db->delete('orders_embedding', ['entity_id' => (int)$order_id]);
+      $CLICSHOPPING_Db->delete('orders', ['orders_id' => (int)$order_id]);
+
+      if ($owns_transaction) {
+        $CLICSHOPPING_Db->commit();
+      }
+    } catch (\Throwable $e) {
+      if ($owns_transaction) {
+        $CLICSHOPPING_Db->rollBack();
+      }
+
+      throw $e;
+    }
+
+    // After commit: an observer must never react to a removal that could still roll back.
     $CLICSHOPPING_Hooks->call('OrderAdmin', 'removeOrder');
   }
 

@@ -42,6 +42,12 @@ class OrderWriter
    */
   public function insertOrder(array $sqlDataArray): int
   {
+    // Tax convention: dropped when the column is not there yet, so a deploy landing before the
+    // migration never breaks checkout — same defensive rollout as total_sign below.
+    if (isset($sqlDataArray['orders_prices_include_tax']) && !$this->ordersHasTaxConventionColumn()) {
+      unset($sqlDataArray['orders_prices_include_tax']);
+    }
+
     $this->db->save('orders', $sqlDataArray);
 
     $order_id = (int)$this->db->lastInsertId();
@@ -62,6 +68,7 @@ class OrderWriter
   public function insertOrderTotals(int $order_id, array $orderTotals): void
   {
     $has_sign = $this->ordersTotalHasSignColumn();
+    $has_rank = $this->ordersTotalHasRankColumn();
 
     for ($i = 0, $n = count($orderTotals); $i < $n; $i++) {
       $sql_data_array = [
@@ -77,6 +84,12 @@ class OrderWriter
       // deploy that lands before the DB migration never breaks checkout (defensive rollout).
       if ($has_sign) {
         $sql_data_array['total_sign'] = (int)($orderTotals[$i]['total_sign'] ?? 1);
+      }
+
+      // total_rank: the fiscal rank the module computed at, so re-editing this order reproduces ITS
+      // sequence and not the configuration of the day. Same defensive column probe as total_sign.
+      if ($has_rank && isset($orderTotals[$i]['total_rank'])) {
+        $sql_data_array['total_rank'] = (int)$orderTotals[$i]['total_rank'];
       }
 
       $this->db->save('orders_total', $sql_data_array);
@@ -95,6 +108,44 @@ class OrderWriter
 
     if ($exists === null) {
       $Q = $this->db->prepare("SHOW COLUMNS FROM :table_orders_total LIKE 'total_sign'");
+      $Q->execute();
+      $exists = (bool)$Q->fetch();
+    }
+
+    return $exists;
+  }
+
+  /**
+   * Whether orders_total carries the total_rank column yet (SQL-21 migration).
+   * Cached for the request so we probe the schema at most once.
+   *
+   * @return bool
+   */
+  private function ordersTotalHasRankColumn(): bool
+  {
+    static $exists = null;
+
+    if ($exists === null) {
+      $Q = $this->db->prepare("SHOW COLUMNS FROM :table_orders_total LIKE 'total_rank'");
+      $Q->execute();
+      $exists = (bool)$Q->fetch();
+    }
+
+    return $exists;
+  }
+
+  /**
+   * Whether orders carries the orders_prices_include_tax column yet (SQL-14 migration).
+   * Cached for the request so we probe the schema at most once.
+   *
+   * @return bool
+   */
+  private function ordersHasTaxConventionColumn(): bool
+  {
+    static $exists = null;
+
+    if ($exists === null) {
+      $Q = $this->db->prepare("SHOW COLUMNS FROM :table_orders LIKE 'orders_prices_include_tax'");
       $Q->execute();
       $exists = (bool)$Q->fetch();
     }

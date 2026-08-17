@@ -497,6 +497,9 @@ class Order
 
     $products = $CLICSHOPPING_ShoppingCart->get_products();
 
+    $prices_include_tax = false;
+    $group_tax = false;
+
     if (is_array($products)) {
       if ($CLICSHOPPING_Customer->getCustomersGroupID() != 0) {
         $QgroupTax = $this->db->prepare('select group_order_taxe,
@@ -511,6 +514,14 @@ class Order
       } else {
         $group_tax = false;
       }
+
+// Tax convention APPLIED to this order: does the subtotal INCLUDE the tax? Decided from the shop
+// setting AND the customer group, so both conventions coexist. Persisted by Insert() - the stored
+// rows cannot express it, and the tax-line title follows the GLOBAL setting, not this branch.
+      $prices_include_tax = ((\defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && $CLICSHOPPING_Customer->getCustomersGroupID() == 0)
+        || ($CLICSHOPPING_Customer->getCustomersGroupID() != 0 && ($group_tax['group_tax'] ?? '') == 'true');
+
+      $this->info['prices_include_tax'] = $prices_include_tax;
 
       for ($i = 0, $n = count($products); $i < $n; $i++) {
         // Display an indicator to identify if the product belongs at a customer group or not.
@@ -613,7 +624,7 @@ class Order
         $products_tax = $this->products[$index]['tax'];
         $products_tax_description = $this->products[$index]['tax_description'];
 
-        if (((\defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && ($CLICSHOPPING_Customer->getCustomersGroupID() == 0)) || (($CLICSHOPPING_Customer->getCustomersGroupID() != 0) && ($group_tax['group_tax'] == 'true'))) {
+        if ($prices_include_tax) {
           $this->info['tax'] += $shown_price - ($shown_price / (($products_tax < 10) ? "1.0" . str_replace('.', '', $products_tax) : "1." . str_replace('.', '', $products_tax)));
 
           if (isset($this->info['tax_groups']["$products_tax_description"])) {
@@ -636,9 +647,10 @@ class Order
       }
     }
 
-    if (((\defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') && $CLICSHOPPING_Customer->getCustomersGroupID() == 0) ||
-      ($CLICSHOPPING_Customer->getCustomersGroupID() != 0 && $group_tax['group_tax'] == 'true') ||
-      ($CLICSHOPPING_Customer->getCustomersGroupID() != 0 && $group_tax['group_order_taxe'] == 1)) {
+// group_order_taxe is a THIRD case, deliberately not folded into $prices_include_tax: the subtotal
+// stays HT but the tax is displayed without being charged, so the grand total omits it.
+    if ($prices_include_tax
+      || ($CLICSHOPPING_Customer->getCustomersGroupID() != 0 && ($group_tax['group_order_taxe'] ?? 0) == 1)) {
       $this->info['total'] = $this->info['subtotal'] + $this->info['shipping_cost'];
     } else {
       $this->info['total'] = $this->info['subtotal'] + $this->info['tax'] + $this->info['shipping_cost'];
@@ -738,7 +750,10 @@ class Order
       'orders_status_invoice' => $this->info['order_status_invoice'],
       'currency' => $this->info['currency'],
       'currency_value' => $this->info['currency_value'],
-      'customers_cellular_phone' => $this->customer['cellular_phone']
+      'customers_cellular_phone' => $this->customer['cellular_phone'],
+      // Tax convention applied to THIS order — the stored total rows cannot express it and the
+      // tax-line title follows the global setting, not this branch. Set by cart().
+      'orders_prices_include_tax' => (int)($this->info['prices_include_tax'] ?? false)
     ];
 
 // recuperation des informations societes pour les clients B2B (voir fichier la classe OrderAdmin)
@@ -750,15 +765,84 @@ class Order
 
     $writer = $this->orderWriter();
 
-    $this->insertID = $writer->insertOrder($sql_data_array);
+    // Header, totals and product lines are ONE order: an interruption between them used to leave
+    // a header with no orders_total row, invisible to every revenue metric (they all JOIN it).
+    // Guarded: a caller (or a net measuring on a rolled-back transaction) may already own one.
+    $owns_transaction = !$this->db->inTransaction();
 
-    $writer->insertOrderTotals($this->insertID, $orderTotals ?? $CLICSHOPPING_OrderTotal->process());
+    if ($owns_transaction) {
+      $this->db->beginTransaction();
+    }
 
-    $writer->insertOrderProducts($this->insertID, $this->products, (int)$CLICSHOPPING_Customer->getCustomersGroupID(), $this->lang->getId());
+    try {
+      $totals = $orderTotals ?? $CLICSHOPPING_OrderTotal->process();
 
+      $this->insertID = $writer->insertOrder($sql_data_array);
+
+      $writer->insertOrderTotals($this->insertID, $totals);
+
+      $writer->insertOrderProducts($this->insertID, $this->products, (int)$CLICSHOPPING_Customer->getCustomersGroupID(), $this->lang->getId());
+
+      $this->assertOrderWritten($this->insertID, \count($totals), \count($this->products));
+
+      if ($owns_transaction) {
+        $this->db->commit();
+      }
+    } catch (\Throwable $e) {
+      if ($owns_transaction) {
+        $this->db->rollBack();
+      }
+
+      // Nothing was committed: getLastOrderId() must not hand back an id that no longer exists.
+      $this->insertID = 0;
+
+      throw $e;
+    }
+
+    // Outside the transaction on purpose: saveGdpr() resolves the provider by reverse DNS
+    // (HTTP::getProviderNameCustomer), which would hold the order lock for the whole lookup.
     $this->saveGdpr($this->insertID, $CLICSHOPPING_Customer->getID());
 
     return $this->insertID;
+  }
+
+  /**
+   * Post-condition of the order write, run inside the transaction and before the commit.
+   *
+   * Db::save() reports a failed INSERT by RETURNING FALSE, never by throwing: DbStatement::execute()
+   * catches the PDOException, logs it and returns false. A dropped row would therefore commit
+   * silently — a header without its totals, invisible to every revenue metric that JOINs them.
+   * Counting is the only thing that proves the rows are really there.
+   *
+   * @param int $order_id The freshly inserted orders_id.
+   * @param int $expected_totals Number of orders_total rows the pipeline produced.
+   * @param int $expected_lines Number of orders_products rows the cart holds.
+   * @return void
+   * @throws \RuntimeException When the order id is missing, or a row was dropped.
+   */
+  private function assertOrderWritten(int $order_id, int $expected_totals, int $expected_lines): void
+  {
+    if ($order_id < 1) {
+      throw new \RuntimeException('Order insert failed: no orders_id was returned.');
+    }
+
+    // An order with no total row at all is the exact shape this guard exists to refuse.
+    if ($expected_totals < 1) {
+      throw new \RuntimeException(sprintf('Order %d: the order total pipeline produced no row.', $order_id));
+    }
+
+    foreach (['orders_total' => $expected_totals, 'orders_products' => $expected_lines] as $table => $expected) {
+      $Q = $this->db->prepare('select count(*) as n from :table_' . $table . ' where orders_id = :orders_id');
+      $Q->bindInt(':orders_id', $order_id);
+      $Q->execute();
+      $Q->fetch();
+
+      $written = $Q->valueInt('n');
+
+      if ($written !== $expected) {
+        throw new \RuntimeException(sprintf('Order %d: %d %s row(s) written, %d expected.', $order_id, $written, $table, $expected));
+      }
+    }
   }
 
   /**

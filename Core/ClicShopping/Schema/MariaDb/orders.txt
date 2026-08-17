@@ -47,6 +47,7 @@ orders_date_finished datetime comment(Timestamp when order was completed or deli
 currency char(3) comment(Currency code used for order - ISO 4217 format USD, EUR, GBP)
 currency_value decimal(14,6) comment(Exchange rate at time of order for currency conversion)
 customers_group_id int default(0) not_null comment(FK to customers_groups table - customer group at time of order)
+orders_prices_include_tax tinyint(1) comment(Tax convention APPLIED to this order - 1: the orders_total ST subtotal INCLUDES the tax so grand total = ST + SH; 0: ST EXCLUDES it so grand total = ST + SH + TX; NULL: placed before this column existed and not derivable. Decided per order from the shop setting AND the customer group, so both conventions coexist - never assume one from the order date)
 client_computer_ip varchar(45) comment(IP address of customer when order was placed - IPv4 or IPv6)
 provider_name_client varchar(255) comment(Internet service provider of customer)
 customers_cellular_phone varchar(255) comment(Customer mobile phone number)
