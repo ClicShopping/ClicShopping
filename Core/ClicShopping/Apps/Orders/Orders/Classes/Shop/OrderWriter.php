@@ -88,8 +88,10 @@ class OrderWriter
 
       // total_rank: the fiscal rank the module computed at, so re-editing this order reproduces ITS
       // sequence and not the configuration of the day. Same defensive column probe as total_sign.
-      if ($has_rank && isset($orderTotals[$i]['total_rank'])) {
-        $sql_data_array['total_rank'] = (int)$orderTotals[$i]['total_rank'];
+      // ALWAYS valued (0 = unknown) rather than omitted: under STRICT_ALL_TABLES an install whose
+      // column carries no DEFAULT rejects the INSERT, and the total line is lost without a word.
+      if ($has_rank) {
+        $sql_data_array['total_rank'] = (int)($orderTotals[$i]['total_rank'] ?? 0);
       }
 
       $this->db->save('orders_total', $sql_data_array);

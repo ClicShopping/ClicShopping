@@ -84,66 +84,96 @@ class TX implements OrderTotalInterface
   public function process()
   {
     $CLICSHOPPING_Order = Registry::get('Order');
-    $CLICSHOPPING_Currencies = Registry::get('Currencies');
-    $CLICSHOPPING_Db = Registry::get('Db');
 
 // Txe Canada - Quebec
     if (DISPLAY_DOUBLE_TAXE == 'true') {
       //WARNING: This module does not consider tax_class!!! We assume everything is taxable.
-      //The GST/PST/HST split (compound or not) lives in Tax::computeDoubleTaxRows so
-      //the checkout and the admin order recalc render exactly the same lines.
-      //Here we only resolve the delivery zone from the live Order and delegate.
-
-      if ($CLICSHOPPING_Order->delivery['zone_id'] == 0) {
-        $QzoneCheck = $CLICSHOPPING_Db->prepare('select zone_id
-                                                    from :table_zones
-                                                    where zone_name = :zone_name
-                                                    and zone_country_id = :zone_country_id
-                                                    ');
-        $QzoneCheck->bindInt(':zone_country_id', $CLICSHOPPING_Order->delivery['country']['id']);
-        $QzoneCheck->bindvalue(':zone_name', $CLICSHOPPING_Order->delivery['state']);
-        $QzoneCheck->execute();
-
-        $zone_id = $QzoneCheck->valueInt('zone_id');
-      } else {
-        $zone_id = $CLICSHOPPING_Order->delivery['zone_id'];
-      }
-
+      //The GST/PST/HST split lives in Tax::computeDoubleTaxRows so the checkout and the admin
+      //order recalc render exactly the same lines. Here we resolve the zone and the base.
       $double_tax = Tax::computeDoubleTaxRows(
         (int)$CLICSHOPPING_Order->delivery['country']['id'],
-        (int)$zone_id,
-        (float)$CLICSHOPPING_Order->info['subtotal'],
-        (float)$CLICSHOPPING_Order->info['shipping_cost'],
+        $this->deliveryZoneId($CLICSHOPPING_Order),
+        $this->taxableBase($CLICSHOPPING_Order),
         $CLICSHOPPING_Order->info['tax_groups'],
         $CLICSHOPPING_Order->info['currency'] ?? ($_SESSION['currency'] ?? DEFAULT_CURRENCY),
         $CLICSHOPPING_Order->info['currency_value'] ?? null
       );
 
-      foreach ($double_tax['rows'] as $row) {
-        $this->output[] = $row;
-      }
+      //A delivery zone that declares no rate is NOT a split-tax jurisdiction. The setting is
+      //shop-wide, the jurisdiction is not: without this the whole VAT of a French order would be
+      //replaced by an empty split, silently, line and amount alike.
+      if ($double_tax['jurisdiction']) {
+        foreach ($double_tax['rows'] as $row) {
+          $this->output[] = $row;
+        }
 
 //The tax is recomputed here, so ACCUMULATE the change instead of rebuilding the total from the
 //subtotal: the old assignment discarded whatever an upstream reduction or charge had added.
-      $previous_tax = (float)($CLICSHOPPING_Order->info['tax'] ?? 0);
+//On a tax-inclusive order nothing is added: the tax is already inside the price the customer sees.
+        $previous_tax = (float)($CLICSHOPPING_Order->info['tax'] ?? 0);
 
-      $CLICSHOPPING_Order->info['tax'] = $double_tax['tax_total'];
-      $CLICSHOPPING_Order->info['total'] += $double_tax['tax_total'] - $previous_tax;
+        $CLICSHOPPING_Order->info['tax'] = $double_tax['tax_total'];
 
-    } else {
+        if ($CLICSHOPPING_Order->info['tax_charged'] ?? empty($CLICSHOPPING_Order->info['prices_include_tax'])) {
+          $CLICSHOPPING_Order->info['total'] += $double_tax['tax_total'] - $previous_tax;
+        }
+
+        return;
+      }
+    }
+
 // **********************************
 // normal tax
 // ************************************
+    $this->renderTaxGroups($CLICSHOPPING_Order);
+  }
 
-//Taxes must appear same if the value is 0
-      foreach ($CLICSHOPPING_Order->info['tax_groups'] as $key => $value) {
-        if ($value >= 0) {
-          $this->output[] = [
-            'title' => $key,
-            'text' => $CLICSHOPPING_Currencies->format($value, true, $CLICSHOPPING_Order->info['currency'] ?? ($_SESSION['currency'] ?? DEFAULT_CURRENCY), $CLICSHOPPING_Order->info['currency_value'] ?? null),
-            'value' => $value
-          ];
-        }
+  /**
+   * Delivery zone of the live order, resolved by name when the address carries no zone id.
+   */
+  private function deliveryZoneId(mixed $order): int
+  {
+    if ((int)($order->delivery['zone_id'] ?? 0) !== 0) {
+      return (int)$order->delivery['zone_id'];
+    }
+
+    $QzoneCheck = Registry::get('Db')->prepare('select zone_id
+                                                  from :table_zones
+                                                  where zone_name = :zone_name
+                                                  and zone_country_id = :zone_country_id
+                                                ');
+    $QzoneCheck->bindInt(':zone_country_id', (int)$order->delivery['country']['id']);
+    $QzoneCheck->bindValue(':zone_name', $order->delivery['state'] ?? '');
+    $QzoneCheck->execute();
+
+    return $QzoneCheck->valueInt('zone_id');
+  }
+
+  /**
+   * Base the rates apply to: the HT goods base recorded by Order::cart(), moved by every module
+   * ranked before the tax (shipping, fees, discounts) — see OM\OrderTotalSequence.
+   */
+  private function taxableBase(mixed $order): float
+  {
+    $base = (float)($order->info['taxable_base'] ?? $order->info['subtotal']);
+
+    return $base + (float)($order->info['taxable_base_delta'] ?? 0);
+  }
+
+  /**
+   * One line per tax group, zero-rated ones included: an exempt line must show, not vanish.
+   */
+  private function renderTaxGroups(mixed $order): void
+  {
+    $CLICSHOPPING_Currencies = Registry::get('Currencies');
+
+    foreach ($order->info['tax_groups'] as $key => $value) {
+      if ($value >= 0) {
+        $this->output[] = [
+          'title' => $key,
+          'text' => $CLICSHOPPING_Currencies->format($value, true, $order->info['currency'] ?? ($_SESSION['currency'] ?? DEFAULT_CURRENCY), $order->info['currency_value'] ?? null),
+          'value' => $value
+        ];
       }
     }
   }

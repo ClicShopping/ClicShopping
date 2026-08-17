@@ -105,7 +105,7 @@ class OrderAdmin
     ];
 
     foreach ($this->totals as $t) {
-      if ($t['class'] == 'ot_total' || $t['class'] == 'TO') {
+      if ($t['class'] == 'TO') {
         $this->info['total'] = $t['text'];
         break;
       }

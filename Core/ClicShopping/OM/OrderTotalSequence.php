@@ -57,6 +57,35 @@ final class OrderTotalSequence
   }
 
   /**
+   * Is this rank an OPTIONAL line — a reduction or a charge — as opposed to the three structural
+   * components the sequence is built around? The base opens it, the tax is the pivot, the grand
+   * total closes it: those three are computed by the platform itself, never by a module contract.
+   */
+  public static function isOptionalLine(?int $rank): bool
+  {
+    return $rank !== null && !\in_array($rank, [
+      self::RANKS[self::ROLE_BASE],
+      self::RANKS[self::ROLE_TAX],
+      self::RANKS[self::ROLE_TOTAL],
+    ], true);
+  }
+
+  /**
+   * Does a module computed at this rank move the TAXABLE BASE?
+   *
+   * True for the reductions and charges ranked before the tax — shipping included, it is a charge
+   * like any other. The base itself is excluded (it IS the base) and so is everything from the tax
+   * onwards. This is what lets the tax bear on the reduced base without any module knowing about
+   * the tax, and it replaces comparing two sort_order constants, which described the printed line.
+   */
+  public static function entersTaxableBase(?int $rank): bool
+  {
+    return $rank !== null
+      && $rank > self::RANKS[self::ROLE_BASE]
+      && $rank < self::RANKS[self::ROLE_TAX];
+  }
+
+  /**
    * Resolve the rank key a module class declares, or null when the declaration is absent, not a
    * string, names an unknown family, or resolves to a position the platform does not know.
    *

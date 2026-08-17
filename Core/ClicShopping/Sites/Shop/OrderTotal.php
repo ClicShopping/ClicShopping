@@ -75,6 +75,15 @@ class OrderTotal
   {
     $order_total_array = [];
 
+    // Taxable base moved by the modules ranked BEFORE the tax (reductions, shipping and other
+    // charges). Reset at every run: process() is called more than once in a checkout, and an
+    // accumulator that survives compounds. Read by the tax module, written by nobody else.
+    $CLICSHOPPING_Order = Registry::exists('Order') ? Registry::get('Order') : null;
+
+    if ($CLICSHOPPING_Order !== null) {
+      $CLICSHOPPING_Order->info['taxable_base_delta'] = 0.0;
+    }
+
     if (Registry::exists('Hooks')) {
       Registry::get('Hooks')->call('OrderTotal', 'PreProcess');
     }
@@ -102,8 +111,21 @@ class OrderTotal
             $CLICSHOPPING_OTM->output = [];
             $CLICSHOPPING_OTM->process();
 
+            $rank = OrderTotalSequence::rank($value);
+            $sign = ($CLICSHOPPING_OTM->total_sign ?? 1) < 0 ? -1 : 1;
+
+            // Accumulated as the chain runs, so the tax module reads the base the modules before it
+            // have actually left — a reduction lowers it, a charge raises it. Nothing to declare in
+            // the modules: their family already says where they compute. Counted on the same rows
+            // that are printed and totalled, never on a row the loop below drops.
+            $moves_base = $CLICSHOPPING_Order !== null && OrderTotalSequence::entersTaxableBase($rank);
+
             for ($i = 0, $n = count($CLICSHOPPING_OTM->output); $i < $n; $i++) {
               if (!is_null($CLICSHOPPING_OTM->output[$i]['title']) && !is_null($CLICSHOPPING_OTM->output[$i]['text'])) {
+                if ($moves_base) {
+                  $CLICSHOPPING_Order->info['taxable_base_delta'] += $sign * (float)$CLICSHOPPING_OTM->output[$i]['value'];
+                }
+
                 $order_total_array[] = [
                   'code' => $CLICSHOPPING_OTM->code,
                   'title' => $CLICSHOPPING_OTM->output[$i]['title'],
@@ -115,7 +137,7 @@ class OrderTotal
                   'total_sign' => $CLICSHOPPING_OTM->total_sign ?? 1,
                   // Fiscal rank this module was computed at, persisted so re-editing the order later
                   // reproduces ITS sequence rather than the configuration of the day.
-                  'total_rank' => OrderTotalSequence::rank($value)
+                  'total_rank' => $rank
                 ];
               }
             }

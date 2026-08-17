@@ -347,12 +347,12 @@ class EInvoiceService
     foreach ($totals as $t) {
       $val = (float)str_replace(',', '.', preg_replace('/[^0-9.,\-]/', '', strip_tags($t['text'] ?? '0')));
       $c   = $t['class'] ?? '';
-      if (in_array($c, ['ot_subtotal', 'ST'])) $ht  = $val;
-      if (in_array($c, ['ot_tax',      'TX'])) $tva = $val;
-      if (in_array($c, ['ot_total',    'TO'])) $ttc = $val;
+      if ($c === 'ST') $ht  = $val;
+      if ($c === 'TX') $tva = $val;
+      if ($c === 'TO') $ttc = $val;
     }
 
-    // Fallback: compute HT from product lines if ot_subtotal not found
+    // Fallback: compute HT from product lines if the subtotal line is not found
     if ($ht == 0.0) {
       foreach ($products as $p) {
         $ht += (float)$p['final_price'] * (float)$p['qty'];

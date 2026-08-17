@@ -61,15 +61,14 @@ class Orders extends AdminDashboardAbstract
                                                :table_orders_total ot,
                                                :table_orders_status s
                                           where o.orders_id = ot.orders_id
-                                          and (ot.class = :class or ot.class = :class1)
+                                          and ot.class = :class
                                           and o.orders_status = s.orders_status_id
                                           and (o.orders_status <> 3 and o.orders_status <> 4)
                                           and  s.language_id = :language_id
                                           order by date_last_modified desc
                                           limit :limit
                                          ');
-    $Qorder->bindValue(':class', 'ot_total');
-    $Qorder->bindValue(':class1', 'TO');
+    $Qorder->bindValue(':class', 'TO');
     $Qorder->bindInt(':language_id', (int)$this->lang->getId());
     $Qorder->bindInt(':limit', MODULE_ADMIN_DASHBOARD_ORDERS_APP_LIMIT);
     $Qorder->execute();

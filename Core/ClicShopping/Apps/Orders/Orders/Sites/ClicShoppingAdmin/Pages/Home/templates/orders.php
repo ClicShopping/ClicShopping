@@ -225,7 +225,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
                                                        and o.orders_status = s.orders_status_id
                                                        and s.language_id = :language_id
                                                        and o.orders_archive = :orders_archive
-                                                       and (ot.class = :class or ot.class = :class1)
+                                                       and ot.class = :class
                                                        order by o.orders_id DESC
                                                        limit :page_set_offset,
                                                              :page_set_max_results
@@ -234,8 +234,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
       $Qorders->bindInt(':customers_id', $cID);
       $Qorders->bindInt(':language_id', $CLICSHOPPING_Language->getId());
       $Qorders->bindInt(':orders_archive', $archive_id);
-      $Qorders->bindValue(':class', 'ot_total');
-      $Qorders->bindValue(':class1', 'TO'); //total order
+      $Qorders->bindValue(':class', 'TO'); //total order
 
     } elseif (isset($_POST['customers_group_id'])) {
       $customers_group_id = HTML::sanitize($_POST['customers_group_id']);
@@ -258,7 +257,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
                                                      and s.language_id = :language_id
                                                      and o.customers_group_id = :customers_group_id
                                                      and o.orders_archive = :orders_archive
-                                                     and (ot.class = :class or ot.class = :class1)
+                                                     and ot.class = :class
                                                      order by o.orders_id DESC
                                                      limit :page_set_offset,
                                                            :page_set_max_results
@@ -267,8 +266,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
       $Qorders->bindInt(':customers_group_id', $customers_group_id);
       $Qorders->bindInt(':language_id', $CLICSHOPPING_Language->getId());
       $Qorders->bindInt(':orders_archive', $archive_id);
-      $Qorders->bindValue(':class', 'ot_total');
-      $Qorders->bindValue(':class1', 'TO');
+      $Qorders->bindValue(':class', 'TO'); //total order
 
     } elseif (isset($_POST['status'])) {
       $status = HTML::sanitize($_POST['status']);
@@ -292,7 +290,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
                                                        where o.orders_status = s.orders_status_id
                                                        and s.language_id = :language_id
                                                        and o.orders_archive = :orders_archive
-                                                       and (ot.class = :class or ot.class = :class1)
+                                                       and ot.class = :class
                                                        order by o.orders_id DESC
                                                        limit :page_set_offset,
                                                              :page_set_max_results
@@ -300,8 +298,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
 
         $Qorders->bindInt(':language_id', $CLICSHOPPING_Language->getId());
         $Qorders->bindInt(':orders_archive', $archive_id);
-        $Qorders->bindValue(':class', 'ot_total');
-        $Qorders->bindValue(':class1', 'TO');
+        $Qorders->bindValue(':class', 'TO'); //total order
       } else {
         $Qorders = $CLICSHOPPING_Orders->db->prepare('select SQL_CALC_FOUND_ROWS o.orders_id,
                                                                                     o.customers_id,
@@ -322,7 +319,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
                                                            and s.language_id = :language_id
                                                            and s.orders_status_id = :orders_status_id
                                                            and o.orders_archive = :orders_archive
-                                                           and (ot.class = :class or ot.class = :class1)
+                                                           and ot.class = :class
                                                            order by o.orders_id DESC
                                                            limit :page_set_offset,
                                                                  :page_set_max_results
@@ -331,8 +328,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
         $Qorders->bindInt(':orders_status_id', $status);
         $Qorders->bindInt(':language_id', $CLICSHOPPING_Language->getId());
         $Qorders->bindInt(':orders_archive', $archive_id);
-        $Qorders->bindValue(':class', 'ot_total');
-        $Qorders->bindValue(':class1', 'TO');
+        $Qorders->bindValue(':class', 'TO'); //total order
       }
     } elseif (isset($_POST['orders_id'])) {
       $orders_id = HTML::sanitize($_POST['orders_id']);
@@ -356,7 +352,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
                                                        and s.language_id = :language_id
                                                        and o.orders_id = :orders_id
                                                        and o.orders_archive = :orders_archive
-                                                       and (ot.class = :class or ot.class = :class1)
+                                                       and ot.class = :class
                                                        order by o.orders_id DESC
                                                        limit :page_set_offset,
                                                              :page_set_max_results
@@ -365,8 +361,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
       $Qorders->bindInt(':language_id', $CLICSHOPPING_Language->getId());
       $Qorders->bindInt(':orders_archive', $archive_id);
       $Qorders->bindInt(':orders_id', $orders_id);
-      $Qorders->bindValue(':class', 'ot_total');
-      $Qorders->bindValue(':class1', 'TO');
+      $Qorders->bindValue(':class', 'TO'); //total order
     } else {
       $Qorders = $CLICSHOPPING_Orders->db->prepare('select SQL_CALC_FOUND_ROWS  o.orders_id,
                                                                                   o.customers_id,
@@ -387,7 +382,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
                                                        where o.orders_status = s.orders_status_id
                                                        and s.language_id = :language_id
                                                        and o.orders_archive = :orders_archive
-                                                       and (ot.class = :class or ot.class = :class1)
+                                                       and ot.class = :class
                                                        order by o.orders_id DESC
                                                        limit :page_set_offset,
                                                              :page_set_max_results
@@ -395,8 +390,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
 
       $Qorders->bindInt(':language_id', $CLICSHOPPING_Language->getId());
       $Qorders->bindInt(':orders_archive', $archive_id);
-      $Qorders->bindValue(':class', 'ot_total');
-      $Qorders->bindValue(':class1', 'TO');
+      $Qorders->bindValue(':class', 'TO'); //total order
     }
 
     $Qorders->setPageSet((int)MAX_DISPLAY_SEARCH_RESULTS_ADMIN);

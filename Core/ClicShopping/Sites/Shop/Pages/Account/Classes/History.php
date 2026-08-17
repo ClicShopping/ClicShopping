@@ -42,7 +42,7 @@ class History
                                                     :table_orders_status s
                                                where o.customers_id = :customers_id
                                                and s.language_id = :language_id
-                                               and (ot.class = :class or ot.class = :class1)
+                                               and ot.class = :class
                                                and s.public_flag = 1
                                                and o.orders_id = ot.orders_id
                                                and o.orders_status = s.orders_status_id
@@ -53,8 +53,7 @@ class History
 
     $Qorders->bindInt(':customers_id', $CLICSHOPPING_Customer->getID());
     $Qorders->bindInt(':language_id', $CLICSHOPPING_Language->getId());
-    $Qorders->bindValue(':class', 'ot_total');
-    $Qorders->bindValue(':class1', 'TO');
+    $Qorders->bindValue(':class', 'TO');
     $Qorders->setPageSet(MAX_DISPLAY_ORDER_HISTORY);
     $Qorders->execute();
 

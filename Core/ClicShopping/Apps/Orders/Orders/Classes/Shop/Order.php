@@ -90,8 +90,11 @@ class Order
     $Qorder->execute();
 
 // orders total
+// class is read below to pick the grand total and the shipping line — without it in the SELECT,
+// both tests below compare against an empty string and the two fields stay empty.
     $Qtotals = $this->db->prepare('select title,
-                                             text
+                                             text,
+                                             class
                                      from :table_orders_total
                                      where orders_id = :orders_id
                                      order by sort_order
@@ -105,9 +108,9 @@ class Order
         'text' => $Qtotals->value('text')
       ];
 
-      if ($Qtotals->value('class') == 'ot_total' || $Qtotals->value('class') == 'TO') {
+      if ($Qtotals->value('class') == 'TO') {
         $order_total = strip_tags($Qtotals->value('text'));
-      } elseif ($Qtotals->value('class') == 'ot_shipping' || $Qtotals->value('class') == 'SH') {
+      } elseif ($Qtotals->value('class') == 'SH') {
         $shipping_title = strip_tags($Qtotals->value('title'));
 
         if (substr($shipping_title, -1) == ':') {
@@ -649,11 +652,19 @@ class Order
 
 // group_order_taxe is a THIRD case, deliberately not folded into $prices_include_tax: the subtotal
 // stays HT but the tax is displayed without being charged, so the grand total omits it.
-    if ($prices_include_tax
-      || ($CLICSHOPPING_Customer->getCustomersGroupID() != 0 && ($group_tax['group_order_taxe'] ?? 0) == 1)) {
-      $this->info['total'] = $this->info['subtotal'] + $this->info['shipping_cost'];
-    } else {
+    $this->info['tax_charged'] = !($prices_include_tax
+      || ($CLICSHOPPING_Customer->getCustomersGroupID() != 0 && ($group_tax['group_order_taxe'] ?? 0) == 1));
+
+// HT base the tax bears on, recorded BEFORE any order-total module runs: they mutate info['tax'],
+// so deriving it later would drift by whatever a reduction already took off.
+    $this->info['taxable_base'] = $prices_include_tax
+      ? $this->info['subtotal'] - $this->info['tax']
+      : $this->info['subtotal'];
+
+    if ($this->info['tax_charged']) {
       $this->info['total'] = $this->info['subtotal'] + $this->info['tax'] + $this->info['shipping_cost'];
+    } else {
+      $this->info['total'] = $this->info['subtotal'] + $this->info['shipping_cost'];
     }
   }
 
