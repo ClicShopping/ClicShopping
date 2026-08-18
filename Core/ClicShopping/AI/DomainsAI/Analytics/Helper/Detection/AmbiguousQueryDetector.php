@@ -633,9 +633,58 @@ class AmbiguousQueryDetector
   }
   
   /**
+   * Apply the `use_default` recommendation: elect a reading and carry it into the question.
+   *
+   * The prompt states that scope/metric ambiguity is answered with the most reasonable default
+   * and never stops to ask — so the elected reading must reach generation. It is appended as a
+   * DIRECTIVE, not sent through the LLM rewrite used by generate_both: a second generation would
+   * put back the very non-determinism this branch exists to remove.
+   *
+   * @param string $query Original user question, kept verbatim inside the directive
+   * @param array $ambiguityAnalysis Detector verdict carrying interpretations/default_interpretation
+   * @return array{type: string|null, query: string} Elected reading, and the question to generate from
+   */
+  public function resolveDefaultInterpretation(string $query, array $ambiguityAnalysis): array
+  {
+    $interpretations = $ambiguityAnalysis['interpretations'] ?? [];
+
+    // Nothing was proposed: there is no reading to apply, and inventing one would answer a
+    // question the detector never asked. The question goes on untouched.
+    if (!is_array($interpretations) || $interpretations === []) {
+      return ['type' => null, 'query' => $query];
+    }
+
+    $default = $ambiguityAnalysis['default_interpretation'] ?? null;
+    $chosen = reset($interpretations);
+
+    foreach ($interpretations as $candidate) {
+      if (is_array($candidate) && ($candidate['type'] ?? null) === $default) {
+        $chosen = $candidate;
+        break;
+      }
+    }
+
+    if (!is_array($chosen)) {
+      return ['type' => null, 'query' => $query];
+    }
+
+    $resolved = $this->language->getDef('text_rag_apply_default_interpretation', [
+      'original_query' => $query,
+      'interpretation' => (string)($chosen['description'] ?? $chosen['label'] ?? ''),
+      'sql_hint' => (string)($chosen['sql_hint'] ?? ''),
+    ]);
+
+    if ($this->debug) {
+      error_log("AmbiguousQueryDetector: default interpretation '" . (string)($chosen['type'] ?? '?') . "' applied");
+    }
+
+    return ['type' => $chosen['type'] ?? null, 'query' => $resolved];
+  }
+
+  /**
    * Clarify query for a specific interpretation
    * Uses LLM to rewrite query with explicit intent
-   * 
+   *
    * @param string $originalQuery Original ambiguous query
    * @param array $interpretation Interpretation details
    * @return string Clarified query

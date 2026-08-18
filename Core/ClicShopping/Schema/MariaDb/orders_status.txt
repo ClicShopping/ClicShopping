@@ -13,4 +13,4 @@ idx_orders_status_name orders_status_name
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment Per-language catalogue of order lifecycle states. Join orders.orders_status to it to read a state; the set is install-specific and the merchant can add states such as Refunded at any time. Lookup table: never count its rows as orders.
+comment Per-language catalogue of order lifecycle states. Join orders.orders_status to it to read a state; the set is install-specific and the merchant can add or rename a state at any time. Lookup table: never count its rows as orders.

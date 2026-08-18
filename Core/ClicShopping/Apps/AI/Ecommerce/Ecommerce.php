@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\AI\Ecommerce;
 
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\EntityConfig;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\MetricCatalog;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\HybridPreFilter;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ProductHelper;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\AnalyticsPatterns;
@@ -186,6 +187,17 @@ class Ecommerce extends AbstractDomainApp
   public function getEntityConfig(): array
   {
     return EntityConfig::getConfig();
+  }
+
+  /**
+   * Metric catalogue of this domain: name → grain, type, definition key.
+   * Passed as an array to the analysis-plan stage's constructor, not read by reflection.
+   *
+   * @return array<string, array{grain: string, type: string, definition: string}>
+   */
+  public function getMetricCatalog(): array
+  {
+    return MetricCatalog::all();
   }
 
   /**

@@ -93,9 +93,9 @@ class ht_google_analytics_ga4
           $totals[$row['class']] = (float)$row['value'];
         }
 
-        $revenue  = $totals['ot_total']    ?? $totals['TO']  ?? 0.0;
-        $shipping = $totals['ot_shipping'] ?? $totals['SH']  ?? 0.0;
-        $tax      = $totals['ot_tax']      ?? $totals['TX']  ?? 0.0;
+        $revenue  = $totals['TO'] ?? 0.0;
+        $shipping = $totals['SH'] ?? 0.0;
+        $tax      = $totals['TX'] ?? 0.0;
 
         // Order products
         $QorderProducts = $CLICSHOPPING_Db->prepare('SELECT op.products_id,

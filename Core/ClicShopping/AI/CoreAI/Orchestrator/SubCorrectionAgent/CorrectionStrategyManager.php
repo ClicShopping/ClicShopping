@@ -276,6 +276,34 @@ class CorrectionStrategyManager
   }
 
   /**
+   * Take the SQL out of whatever markdown the model wrapped it in.
+   *
+   * A fence is never SQL: sent as-is it dies on a 1064 that has nothing to do with the error being
+   * repaired, and while it is there every guard anchored on the first keyword — the validator's
+   * `stripos($query, 'SELECT') === 0`, refusal detection — is silently bypassed.
+   *
+   * Deliberately shape-independent: a fenced block ANYWHERE in the capture wins, because the label
+   * that precedes it varies with the model (`CORRECTED_QUERY:`, `**CORRECTED_QUERY:**`, a stray
+   * blank line) and pinning the parse to one spelling is what let this through in the first place.
+   *
+   * @param string $sql Captured correction, possibly wrapped in markdown
+   * @return string SQL without its fence
+   */
+  private function stripMarkdownFence(string $sql): string
+  {
+    $sql = trim($sql);
+
+    if (preg_match('/`{3,}[a-z]*\s*(.+?)\s*`{3,}/is', $sql, $fenced)) {
+      return trim($fenced[1]);
+    }
+
+    $sql = preg_replace('/^\s*`{3,}[a-z]*\s*/i', '', $sql);
+    $sql = preg_replace('/\s*`{3,}\s*$/', '', (string)$sql);
+
+    return trim((string)$sql);
+  }
+
+  /**
    * Parse LLM reasoning response
    * 
    * @param string $response LLM response
@@ -289,10 +317,10 @@ class CorrectionStrategyManager
       $parsed['reasoning'] = trim($matches[1]);
     }
 
-    if (preg_match('/CORRECTED_QUERY:\s*```?sql?\s*(.+?)\s*```?/is', $response, $matches)) {
-      $parsed['corrected_query'] = trim($matches[1]);
+    if (preg_match('/CORRECTED_QUERY:\s*`{3,}[a-z]*\s*(.+?)\s*`{3,}/is', $response, $matches)) {
+      $parsed['corrected_query'] = $this->stripMarkdownFence($matches[1]);
     } elseif (preg_match('/CORRECTED_QUERY:\s*(.+?)(?=CONFIDENCE:|SUGGESTIONS:|$)/is', $response, $matches)) {
-      $parsed['corrected_query'] = trim($matches[1]);
+      $parsed['corrected_query'] = $this->stripMarkdownFence($matches[1]);
     }
 
     if (preg_match('/CONFIDENCE:\s*([\d\.]+)/i', $response, $matches)) {

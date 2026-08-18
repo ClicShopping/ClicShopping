@@ -582,19 +582,30 @@ class SemanticSecurityAnalyzer
     // Issue 2: Trailing commas before closing braces/brackets
     $jsonStr = preg_replace('/,\s*([}\]])/', '$1', $jsonStr);
     
-    // Issue 3: Single quotes instead of double quotes
-    $jsonStr = str_replace("'", '"', $jsonStr);
-    
     if (self::$debug) {
       self::$logger->logSecurityEvent(
         "JSON string after fixes: " . substr($jsonStr, 0, 500),
         'info'
       );
     }
-    
+
     // Step 5: Parse JSON
     $analysis = json_decode($jsonStr, true);
-    
+
+
+    // into a syntax error by its own repair.
+    if (json_last_error() !== JSON_ERROR_NONE && str_contains($jsonStr, "'")) {
+      $requoted = str_replace("'", '"', $jsonStr);
+      $retry = json_decode($requoted, true);
+
+      if (json_last_error() === JSON_ERROR_NONE) {
+        $jsonStr = $requoted;
+        $analysis = $retry;
+      } else {
+        json_decode($jsonStr, true); // restore the original failure for the reporting below
+      }
+    }
+
     if (json_last_error() !== JSON_ERROR_NONE) {
       $jsonError = json_last_error_msg();
       self::$logger->logSecurityEvent(

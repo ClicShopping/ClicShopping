@@ -1,0 +1,24 @@
+text_analysis_plan_prompt = TASK: produce an ANALYSIS PLAN for the question below. Return ONLY valid JSON, no text before or after, no markdown fence.
+{{metric_catalog}}
+PLAN FORMAT
+{"periods": {"current": {"from": "YYYY-MM-DD", "to": "YYYY-MM-DD"}, "compare": "none|previous_year|previous_period"}, "metrics": [{"name": "<a name from the list above>"}], "dimensions": ["<what the result is broken down by>"], "rankings": [{"metric": "<a metric you listed>", "direction": "top|bottom", "n": 3, "partition_by": "<dimension or null>"}], "filters": {}, "complexity": 1}
+RULES
+1. metrics: use ONLY names from the list above. If the question asks for something the list does not carry, OMIT it - never invent a name, never approximate with a neighbour.
+2. periods.current: the window the question actually asks about. Never widen it, never narrow it.
+3. compare: say WHETHER to compare, never WHAT to compare with. The second window is computed for you. Writing it yourself is how an empty interval gets produced.
+4. Do NOT write the grain or the type of a metric: both are already known and will be filled in.
+5. rankings: one entry per ranking. A top 3 and a bottom 3 are TWO entries. partition_by names the dimension inside which the ranking applies.
+6. complexity: 1 to 5, for the audit trail only. It routes nothing.
+{{examples}}
+QUESTION
+{{question}}
+RETURN THE JSON NOW.
+text_analysis_plan_header = ANALYSIS PLAN - this plan is BINDING. Do not add a metric it does not list, do not change a grain, do not change a window.
+text_analysis_plan_metric_line = - {{name}} | grain: {{grain}} | type: {{type}} | {{variation}}
+text_analysis_plan_variation_percent = variation is (current - previous) / previous * 100
+text_analysis_plan_variation_points = variation is current - previous, in PERCENTAGE POINTS, never a ratio of two rates
+text_analysis_plan_window_current = current window: {{from}} to {{to}}
+text_analysis_plan_window_previous = previous window: {{from}} to {{to}} - same length as the current one, use it as given
+text_analysis_plan_ranking_line = - {{direction}} {{n}} by {{metric}}, partitioned by {{partition}}
+text_analysis_plan_ranking_no_partition = no partition
+text_analysis_plan_dimensions_line = dimensions: {{dimensions}}

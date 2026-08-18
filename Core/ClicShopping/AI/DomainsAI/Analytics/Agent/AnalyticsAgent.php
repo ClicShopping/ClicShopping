@@ -672,13 +672,17 @@ class AnalyticsAgent implements AgentInterface
    * @param bool $skipClassification When true, the orchestrator already classified this as analytics
    * @param bool $isSubQuery When true (decomposed fragment from PlanExecutor), the ambiguity-detection
    *                         stage is skipped — see STEP 0/0.5 below
-   * @throws \Exception When query execution fails after recovery attempts
+   *
+   * A failure is RETURNED as a 'error' response carrying the ambiguity metadata, never thrown:
+   * that metadata exists only in this scope.
    */
   private function processAnalyticsQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
   {
     $this->debugLog(str_repeat(".", 100));
     $this->debugLog("AnalyticsAgent.processAnalyticsQuery() - START", "QUERY");
     $this->debugLog("Feedback context items: " . count($feedbackContext), "QUERY");
+    $questionForGeneration = $question;
+    $ambiguityAnalysis = ['is_ambiguous' => false];
 
     try {
 
@@ -720,7 +724,7 @@ class AnalyticsAgent implements AgentInterface
         $this->debugLog("AMBIGUOUS QUERY DETECTED!", "AMBIGUITY");
         $this->debugLog("Type: " . $ambiguityAnalysis['ambiguity_type'], "AMBIGUITY");
         $this->debugLog("Recommendation: " . $ambiguityAnalysis['recommendation'], "AMBIGUITY");
-        $this->debugLog("Interpretations: " . json_encode(array_keys($ambiguityAnalysis['interpretations'])), "AMBIGUITY");
+        $this->debugLog("Interpretations: " . json_encode(array_column($ambiguityAnalysis['interpretations'], 'type')), "AMBIGUITY");
 
         // Handle based on recommendation
         if ($ambiguityAnalysis['recommendation'] === 'generate_both') {
@@ -749,8 +753,11 @@ class AnalyticsAgent implements AgentInterface
           $this->debugLog("→ Requesting clarification from user", "AMBIGUITY");
           return $this->ambiguityHandler->requestClarification($question, $ambiguityAnalysis);
         } else {
-          $this->debugLog("→ Using default interpretation: " . $ambiguityAnalysis['default_interpretation'], "AMBIGUITY");
-          // Continue with default interpretation
+          $resolution = $this->ambiguityDetector->resolveDefaultInterpretation($questionForGeneration, $ambiguityAnalysis);
+          $questionForGeneration = $resolution['query'];
+          $ambiguityAnalysis['applied_interpretation'] = $resolution['type'];
+
+          $this->debugLog("→ Applying default interpretation: " . var_export($resolution['type'], true), "AMBIGUITY");
         }
       } else {
         if (isset($ambiguityAnalysis['skipped']) && $ambiguityAnalysis['skipped']) {
@@ -769,7 +776,7 @@ class AnalyticsAgent implements AgentInterface
 
       $this->debugLog("--- STEP 2: Generate SQL from question ---", "SQL");
 
-      $sqlQueries = $this->generateSqlQueries($question, $feedbackContext);
+      $sqlQueries = $this->generateSqlQueries($questionForGeneration, $feedbackContext);
 
       $this->debugLog("--- STEP 3: Execute SQL queries ---", "EXECUTION");
       return $this->executeSqlQueries($sqlQueries, $question, $ambiguityAnalysis);
@@ -777,7 +784,12 @@ class AnalyticsAgent implements AgentInterface
     } catch (\Exception $e) {
       $this->debugLog("\nFINAL EXCEPTION: " . $e->getMessage());
       $this->debugLog("." . str_repeat(".", 99) . "\n");
-      throw $e;
+      return [
+        'type' => 'error',
+        'message' => $e->getMessage(),
+        'query' => $question,
+        ...$this->ambiguityMetadata($ambiguityAnalysis),
+      ];
     }
   }
 
@@ -939,9 +951,7 @@ class AnalyticsAgent implements AgentInterface
           'count' => count($queryResults),
           'entity_id' => $entityId,
           'entity_type' => $entityType,
-          'ambiguous' => $ambiguityAnalysis['is_ambiguous'] ?? false,  //Add ambiguity metadata
-          'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
-          'interpretations' => $ambiguityAnalysis['is_ambiguous'] ? array_keys($ambiguityAnalysis['interpretations']) : [],
+          ...$this->ambiguityMetadata($ambiguityAnalysis),
         ];
 
         // 🆕 CACHE THE SUCCESSFUL RESULT
@@ -981,9 +991,7 @@ class AnalyticsAgent implements AgentInterface
             'count' => count($correctedData['results']),
             'entity_id' => $entityInfo['entity_id'],
             'entity_type' => $entityInfo['entity_type'],
-            'ambiguous' => $ambiguityAnalysis['is_ambiguous'] ?? false,  // Add ambiguity metadata
-            'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
-            'interpretations' => $ambiguityAnalysis['is_ambiguous'] ? array_keys($ambiguityAnalysis['interpretations']) : [],
+            ...$this->ambiguityMetadata($ambiguityAnalysis),
           ];
 
           // 🆕 CACHE THE CORRECTED RESULT
@@ -1016,9 +1024,7 @@ class AnalyticsAgent implements AgentInterface
             'count' => 0,
             'entity_id' => null,
             'entity_type' => null,
-            'ambiguous' => $ambiguityAnalysis['is_ambiguous'] ?? false,
-            'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
-            'interpretations' => $ambiguityAnalysis['is_ambiguous'] ? array_keys($ambiguityAnalysis['interpretations']) : [],
+            ...$this->ambiguityMetadata($ambiguityAnalysis),
           ];
         } else {
           $this->debugLog("  Correction failed");
@@ -1173,7 +1179,7 @@ class AnalyticsAgent implements AgentInterface
       $this->debugLog("CACHE HIT! Returning cached results", "CACHE");
       $this->debugLog("Cache entry age: " . ($cacheResult['cache_age'] ?? 'unknown') . " seconds", "CACHE");
 
-      return [
+      $response = [
         'type' => 'analytics_results',
         'query' => $question,
         'sql_query' => $cacheResult['sql_query'],
@@ -1189,10 +1195,45 @@ class AnalyticsAgent implements AgentInterface
         'cached' => true,
         'cache_age' => $cacheResult['cache_age'] ?? null
       ];
+
+      // A replayed answer settled the same ambiguity as the first one: it must say so too.
+      if (isset($ambiguityAnalysis['applied_interpretation'])) {
+        $response['applied_interpretation'] = $ambiguityAnalysis['applied_interpretation'];
+      }
+
+      return $response;
     }
     $this->debugLog("CACHE MISS - Generating new query", "CACHE");
 
     return null;
+  }
+
+  /**
+   * Ambiguity metadata echoed into every response built for this request.
+   *
+   * `applied_interpretation` is present ONLY when a reading was chosen on the user's behalf
+   * (`use_default`): its presence is the signal that the answer settles an ambiguity the user
+   * never settled. How that is shown to the user is not decided here.
+   *
+   * @param array $ambiguityAnalysis Detector verdict for this request
+   * @return array<string, mixed> Metadata keys to merge into the response
+   */
+  private function ambiguityMetadata(array $ambiguityAnalysis): array
+  {
+    $isAmbiguous = $ambiguityAnalysis['is_ambiguous'] ?? false;
+
+    $metadata = [
+      'ambiguous' => $isAmbiguous,
+      'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
+      // Readings are a LIST of descriptors: their `type` names them, their offsets name nothing.
+      'interpretations' => $isAmbiguous ? array_column($ambiguityAnalysis['interpretations'] ?? [], 'type') : [],
+    ];
+
+    if (isset($ambiguityAnalysis['applied_interpretation'])) {
+      $metadata['applied_interpretation'] = $ambiguityAnalysis['applied_interpretation'];
+    }
+
+    return $metadata;
   }
 
   /**

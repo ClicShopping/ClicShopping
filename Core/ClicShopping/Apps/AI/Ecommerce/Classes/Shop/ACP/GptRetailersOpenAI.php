@@ -928,13 +928,12 @@ class GptRetailersOpenAI extends GptRetailers
      */
     private function isEligibleForFreeShipping(): bool
     {
-        if (defined('MODULE_ORDER_TOTAL_SHIPPING_FREE_SHIPPING') &&  MODULE_ORDER_TOTAL_SHIPPING_FREE_SHIPPING === 'true' &&
-            defined('MODULE_ORDER_TOTAL_SHIPPING_FREE_SHIPPING_OVER')) {
-            
-            // TODO: Calculate order total and check against free shipping threshold
-            return false;
-        }
-        
+        // Deliberately conservative: the feed must never advertise free shipping it cannot honour.
+        // Both mechanisms are threshold-based — CLICSHOPPING_APP_FREE_SHIPPING_AMOUNT_FS_AMOUNT for
+        // the FreeShippingAmount shipping module, CLICSHOPPING_APP_ORDER_TOTAL_SHIPPING_SH_FREE_SHIPPING_OVER
+        // for the SH order total module — and this method has no cart to compare against, so it
+        // cannot answer per product. It used to test MODULE_ORDER_TOTAL_SHIPPING_FREE_SHIPPING,
+        // which nothing writes.
         return false;
     }
     

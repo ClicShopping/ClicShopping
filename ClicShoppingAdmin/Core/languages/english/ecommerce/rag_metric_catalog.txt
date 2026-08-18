@@ -1,0 +1,16 @@
+text_metric_catalog_intro = KNOWN METRICS. Use ONLY these names in the plan. Each line gives the metric name, the GRAIN it lives at, its TYPE and what it means. A metric absent from this list does not exist: do not invent one.
+
+text_metric_catalog_row = - {{name}} | grain: {{grain}} | type: {{type}} | {{definition}}
+
+text_metric_revenue_ttc = Order revenue, tax included: the 'TO' class of orders_total, the grand total actually paid.
+text_metric_revenue_ht = Order revenue, tax excluded: the 'TO' class minus the 'TX' class.
+text_metric_line_revenue = Revenue of one product line, taken from orders_products, never from orders_total.
+text_metric_average_cart = Average of the 'TO' class over orders, never of the 'ST' class.
+text_metric_quantity_sold = Number of units sold, aggregated over orders_products.
+text_metric_orders_count = Number of distinct orders.
+text_metric_delivered_orders = Number of orders whose status means delivered, per the status map.
+text_metric_cancelled_orders = Number of orders whose status means cancelled, per the status map. A cancellation is not a refund: never count the two together.
+text_metric_refunded_orders = Number of orders whose status means refunded, per the status map. If no status of this shop carries that meaning, the question cannot be answered: say so, never fall back on cancellations.
+text_metric_gross_margin_amount = Gross margin in currency: selling price minus the cost basis.
+text_metric_gross_margin_percent = Gross margin as a RATE. Its variation is expressed in PERCENTAGE POINTS, never in percent.
+text_metric_avg_shipping_delay = Average delay between the order date and its shipping date.

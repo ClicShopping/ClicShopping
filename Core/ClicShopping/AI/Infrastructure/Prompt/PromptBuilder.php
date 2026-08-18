@@ -243,6 +243,7 @@ class PromptBuilder
     $queryExamples = $this->language->getDef('text_query_examples');
     $sqlGenerationRules = $this->language->getDef('text_sql_generation_rules');
     $aggregationRules = $this->language->getDef('text_aggregation_rules');  // 🚨 CRITICAL: Load aggregation rules
+    $orderGrainRules = $this->language->getDef('text_order_grain_rules');
     $sqlFormatInstructions = $this->language->getDef('text_sql_format_instructions');
     $text_multi_query_warning = $this->language->getDef('text_multi_query_warning');
     $securityGuidelines = $this->language->getDef('text_security_guidelines');
@@ -289,6 +290,8 @@ class PromptBuilder
       $tableStructureInstructions . "\n\n" .                         // 5. Database schema (the playground)
       $entityMetadataGuidelines . "\n\n" .                           // 6. Schema metadata
       $aggregationRules . "\n\n" .                                   // 7. 🚨 CRITICAL: Aggregation rules (MUST be before SQL generation)
+      $orderGrainRules . "\n\n" .                                    // 7bis. Join grain: an order-level value over a product join is repeated per line
+
       $sqlGenerationRules . "\n\n" .                                 // 8. SQL construction rules (JOINs, etc.)
       $orderCalculation . "\n\n" .                                   // 9. Specific calculation rules
       $queryExamples . "\n\n" .                                      // 10. Examples (Few-shot learning)

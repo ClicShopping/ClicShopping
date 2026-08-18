@@ -633,28 +633,28 @@ class GptOrderManager
         'title' => 'Sub-Total:',
         'text' => number_format($totalsData['subtotal'], 2) . ' ' . $currency,
         'value' => $totalsData['subtotal'],
-        'class' => 'ot_subtotal',
+        'class' => 'ST',
         'sort_order' => 1
       ],
       [
         'title' => 'Tax:',
         'text' => number_format($totalsData['tax'], 2) . ' ' . $currency,
         'value' => $totalsData['tax'],
-        'class' => 'ot_tax',
+        'class' => 'TX',
         'sort_order' => 2
       ],
       [
         'title' => 'Shipping:',
         'text' => number_format($totalsData['shipping'], 2) . ' ' . $currency,
         'value' => $totalsData['shipping'],
-        'class' => 'ot_shipping',
+        'class' => 'SH',
         'sort_order' => 3
       ],
       [
         'title' => 'Total:',
         'text' => number_format($totalsData['total'], 2) . ' ' . $currency,
         'value' => $totalsData['total'],
-        'class' => 'ot_total',
+        'class' => 'TO',
         'sort_order' => 4
       ]
     ];

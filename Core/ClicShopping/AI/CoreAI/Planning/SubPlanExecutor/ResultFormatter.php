@@ -8,6 +8,7 @@
 
 namespace ClicShopping\AI\CoreAI\Planning\SubPlanExecutor;
 
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\WebSearchFormatter;
 
@@ -34,6 +35,77 @@ class ResultFormatter
   {
     $this->logger = $logger;
     $this->debug = $debug;
+  }
+
+  /**
+   * Join the panes that actually answered.
+   *
+   * A pane that measured nothing parked its "no results" wording in `empty_notices`
+   * (ResultSynthesizer): rendering it above another pane's results made the answer open with an
+   * apology for results it was about to show. The notice is restored only when no pane answered,
+   * so a run that genuinely found nothing still says so.
+   *
+   * @param array $aggregated Aggregated step results
+   * @return string Combined text response
+   */
+  private function joinTextResponses(array $aggregated): string
+  {
+    $answers = array_filter($aggregated['text_responses'] ?? []);
+    $failed = $aggregated['failed_panes'] ?? [];
+
+    if (!empty($answers)) {
+      $notice = $this->missingPartsNotice($failed);
+
+      return $notice === '' ? implode("\n\n", $answers) : $notice . "\n\n" . implode("\n\n", $answers);
+    }
+
+    // Nothing answered: the failure messages ARE the answer — never render 0 character (4novodecies).
+    $messages = array_filter(array_map(static fn(array $pane): string => $pane['message'] ?? '', $failed));
+
+    if (!empty($messages)) {
+      return implode("\n\n", array_unique($messages));
+    }
+
+    return implode("\n\n", array_filter($aggregated['empty_notices'] ?? []));
+  }
+
+  /**
+   * Announce, ONCE and at the top, which parts of the question were not measured.
+   *
+   * A partial report is more useful than no report — the panes that answered were measured and
+   * verified — but only if the gap is stated where it cannot be missed. Buried between two tables
+   * the failure message read as an apology under its own results, and nothing said which half was
+   * missing. The run stays in `rag_interactions` for the audit either way.
+   *
+   * @param array $failed Panes that did not answer
+   * @return string Localised notice, or '' when every pane answered
+   */
+  private function missingPartsNotice(array $failed): string
+  {
+    if (empty($failed)) {
+      return '';
+    }
+
+    $notice = CLICSHOPPING::getDef('text_partial_report_notice');
+
+    if ($notice === '' || $notice === 'text_partial_report_notice') {
+      return '';
+    }
+
+    $subjects = array_filter(array_map(static function (array $pane): string {
+      return trim((string)($pane['question'] ?? ''));
+    }, $failed));
+
+    // No sub-question text to quote: say how many parts are missing rather than nothing at all.
+    $missing = empty($subjects)
+      ? (string)count($failed)
+      : implode(' · ', array_unique($subjects));
+
+    return str_replace(
+      ['{{missing_count}}', '{{missing}}'],
+      [(string)count($failed), $missing],
+      $notice
+    );
   }
 
   /**
@@ -183,7 +255,7 @@ class ResultFormatter
    */
   private function formatAnalyticsOnlyResult(array $aggregated): array
   {
-    $textResponse = implode("\n\n", array_filter($aggregated['text_responses']));
+    $textResponse = $this->joinTextResponses($aggregated);
 
     $subQueries = array_map(function ($result) {
       if (!is_array($result)) {
@@ -253,7 +325,7 @@ class ResultFormatter
   private function formatStandardAggregation(array $aggregated, array $entityMetadata): array
   {
     // Combine text responses
-    $textResponse = implode("\n\n", array_filter($aggregated['text_responses']));
+    $textResponse = $this->joinTextResponses($aggregated);
 
     // This is critical for hybrid query validation - ensures every result has a text response
     // even when sub-queries don't provide interpretations or text_response fields.

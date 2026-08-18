@@ -99,7 +99,7 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
             <?php
             echo HTML::link($CLICSHOPPING_OrdersStatusInvoice->link('Edit&page=' . $page . '&oID=' . $QordersStatusInvoice->valueInt('orders_status_invoice_id')), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_OrdersStatusInvoice->getDef('icon_edit') . '"></i></h4>');
             echo '&nbsp;';
-            if ($QordersStatusInvoice->valueInt('orders_status_invoice_id') > 4) {
+            if ($QordersStatusInvoice->valueInt('orders_status_invoice_id') > 5) {
               echo HTML::link($CLICSHOPPING_OrdersStatusInvoice->link('Delete&page=' . $page . '&oID=' . $QordersStatusInvoice->valueInt('orders_status_invoice_id')), '<h4><i class="bi bi-trash2" title="' . $CLICSHOPPING_OrdersStatusInvoice->getDef('icon_delete') . '"></i></h4>');
             }
             ?>

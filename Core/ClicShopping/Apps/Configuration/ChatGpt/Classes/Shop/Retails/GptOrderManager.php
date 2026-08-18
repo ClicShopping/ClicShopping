@@ -542,28 +542,28 @@ class GptOrderManager
         'title' => 'Sub-Total:',
         'text' => number_format($sessionData['subtotal'] ?? 0, 2) . ' EUR',
         'value' => $sessionData['subtotal'] ?? 0,
-        'class' => 'ot_subtotal',
+        'class' => 'ST',
         'sort_order' => 1
       ],
       [
         'title' => 'Tax:',
         'text' => number_format($sessionData['tax'] ?? 0, 2) . ' EUR',
         'value' => $sessionData['tax'] ?? 0,
-        'class' => 'ot_tax',
+        'class' => 'TX',
         'sort_order' => 2
       ],
       [
         'title' => 'Shipping:',
         'text' => number_format($sessionData['shipping_cost'] ?? 0, 2) . ' EUR',
         'value' => $sessionData['shipping_cost'] ?? 0,
-        'class' => 'ot_shipping',
+        'class' => 'SH',
         'sort_order' => 3
       ],
       [
         'title' => 'Total:',
         'text' => number_format($sessionData['total'] ?? 0, 2) . ' EUR',
         'value' => $sessionData['total'] ?? 0,
-        'class' => 'ot_total',
+        'class' => 'TO',
         'sort_order' => 4
       ]
     ];

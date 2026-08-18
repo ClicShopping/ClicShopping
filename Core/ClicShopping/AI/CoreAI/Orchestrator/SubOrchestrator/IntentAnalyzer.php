@@ -248,6 +248,7 @@ class IntentAnalyzer
       'reasoning' => $intentResult['reasoning'] ?? [],
       'is_hybrid' => $intentResult['is_hybrid'] ?? false, // Add is_hybrid flag
       'sub_types' => $unifiedResult['sub_types'] ?? [], // Include sub_types for hybrid queries
+      'sub_queries' => $unifiedResult['sub_queries'] ?? [],
       'from_cache' => false,
       'performance_timings' => $timings,
       // TEMPORAL METADATA (from UnifiedQueryAnalyzer via MultiTemporalPostFilter)

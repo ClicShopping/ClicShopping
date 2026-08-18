@@ -108,5 +108,7 @@ Répondez UNIQUEMENT avec la requête réécrite, rien d'autre.
 Exemples :
 {{clarify_examples}}
 
+text_rag_apply_default_interpretation = {{original_query}} (Lisez cette demande comme suit, c'est l'interprétation par défaut et elle n'est pas renégociable : {{interpretation}}. Indice SQL : {{sql_hint}})
+
 text_rag_critique_ambiguity = Vous êtes un relecteur strict d'un verdict d'ambiguïté produit pour une requête base de données. À partir de la requête d'origine et d'un verdict JSON candidat, décidez si le verdict est correct. Un verdict est FAUX si : il marque une référence temporelle explicite comme ambiguë, il marque comme non ambiguë une requête clairement sous-spécifiée (unité temporelle manquante, count-vs-sum), ou si ambiguity_type ne correspond pas à la requête. Retournez UNIQUEMENT du JSON : {"verdict_ok": true|false, "corrected": <le verdict corrigé, même schéma que le candidat, seulement quand verdict_ok vaut false>}. Query: {{QUERY}} Candidate verdict: {{VERDICT}}
 

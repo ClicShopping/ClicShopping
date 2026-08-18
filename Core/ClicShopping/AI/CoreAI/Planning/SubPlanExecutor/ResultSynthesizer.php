@@ -279,6 +279,36 @@ class ResultSynthesizer
   }
 
   /**
+   * Is this text the generic "nothing was found" wording rather than an answer?
+   *
+   * Compared against the very definition both producers read (AnalyticsExecutor's two
+   * empty-results paths), plus their hardcoded fallbacks — never a loose keyword match, so a
+   * specific failure explanation (a declined generation, a refused query) still reaches the user.
+   *
+   * @param string $text Trimmed candidate text
+   * @return bool True when the text only says that nothing was found
+   */
+  private function isEmptyResultsNotice(string $text): bool
+  {
+    $notices = ['No results found.', 'No analytics data available.'];
+
+    $label = CLICSHOPPING::getDef('text_empty_results_base');
+    if ($label !== '' && $label !== 'text_empty_results_base') {
+      $notices[] = $label;
+    }
+
+    $candidate = trim(strip_tags($text));
+
+    foreach ($notices as $notice) {
+      if ($candidate !== '' && strcasecmp($candidate, trim(strip_tags($notice))) === 0) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Aggregate step results
    *
    * - Filters out failed steps
@@ -311,6 +341,8 @@ class ResultSynthesizer
       'semantic_results' => [],
       'source_attributions' => [],
       'optional_failures' => [],
+      'empty_notices' => [],
+      'failed_panes' => [],
     ];
     
     $textResponseHashes = [];
@@ -367,10 +399,29 @@ class ResultSynthesizer
         continue;
       }
 
+      $type = $result['type'] ?? 'unknown';
+
+      // A step typed `error` (or carrying success === false) did NOT answer. It used to travel as
+      // a normal step, so its failure message was concatenated between two real results. Record
+      // what it was asked instead, so the answer can name the gap in ONE place, at the top.
+      if ($type === 'error' || ($result['success'] ?? null) === false) {
+        $aggregated['failed_panes'][] = [
+          'step_id' => $stepId,
+          'question' => trim((string)($result['question'] ?? '')),
+          'message' => trim((string)($result['text_response'] ?? $result['message'] ?? '')),
+          'error' => (string)($result['error'] ?? 'unknown'),
+        ];
+
+        $this->logger->logSecurityEvent(
+          "Step {$stepId} did not answer ({$type}): " . ($result['error'] ?? 'unknown'),
+          'warning'
+        );
+
+        continue;
+      }
+
       // Track successful step
       $successfulSteps[] = $stepId;
-
-      $type = $result['type'] ?? 'unknown';
 
       if ($this->debug) {
         $this->logger->logSecurityEvent(
@@ -417,6 +468,11 @@ class ResultSynthesizer
           return;
         }
         $textResponseHashes[$hash] = true;
+        if ($this->isEmptyResultsNotice($normalized)) {
+          $aggregated['empty_notices'][] = $text;
+          return;
+        }
+
         $aggregated['text_responses'][] = $text;
       };
 

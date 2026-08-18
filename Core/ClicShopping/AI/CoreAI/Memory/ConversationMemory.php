@@ -1056,23 +1056,23 @@ class ConversationMemory
       $prefix = CLICSHOPPING::getConfig('db_table_prefix');
       
       $sql = "
-        SELECT system_response
+        SELECT response
         FROM {$prefix}rag_interactions
         WHERE user_id = :user_id
         AND language_id = :language_id
-        AND system_response LIKE '%SELECT%'
-        AND system_response LIKE '%```sql%'
+        AND response LIKE '%SELECT%'
+        AND response LIKE '%```sql%'
         ORDER BY date_added DESC
         LIMIT 1
       ";
-      
+
       $result = DoctrineOrm::selectOne($sql, [
         'user_id' => (int)$this->userId,
         'language_id' => (int)$this->languageId
       ]);
-      
+
       if ($result) {
-        $response = $result['system_response'];
+        $response = $result['response'];
         
         // Extraire la requête SQL de la réponse (format markdown)
         if (preg_match('/```sql\s*(.*?)\s*```/s', $response, $matches)) {

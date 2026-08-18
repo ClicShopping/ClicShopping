@@ -66,6 +66,12 @@ class CorrectionValidator
       return $validation;
     }
 
+    if (preg_match('/`{3,}/', $query)) {
+      $validation['is_valid'] = false;
+      $validation['issues'][] = "Corrected query still carries a markdown fence";
+      return $validation;
+    }
+
     // Validation 3: Use InputValidator for SQL syntax validation
     $syntaxCheck = \ClicShopping\AI\Security\InputValidator::validateSqlQuery($query);
     if (!$syntaxCheck['valid']) {
