@@ -8,6 +8,7 @@
 
 namespace ClicShopping\AI\DomainsAI;
 
+use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\OM\Apps;
 use ClicShopping\OM\Interfaces\DomainAppInterface;
 use ClicShopping\OM\Cache;
@@ -23,6 +24,9 @@ class DomainRegistry
   private static ?DomainRegistry $instance = null;
   private array $domains = [];
   private ?string $activeDomainId = null;
+  private bool $discoveryAttempted = false;
+  private bool $absenceLogged = false;
+  private array $absentReaders = [];
   private const SESSION_KEY = 'active_domain_id';
   private const CACHE_KEY_PREFIX = 'domain_';
 
@@ -112,10 +116,83 @@ class DomainRegistry
    */
   public function getActiveApp(): ?DomainAppInterface
   {
-    if ($this->activeDomainId === null) {
-      return null;
+    $this->discoverOnce();
+
+    $app = $this->activeDomainId === null ? null : ($this->domains[$this->activeDomainId] ?? null);
+
+    if ($app === null) {
+      $this->logAbsence();
     }
-    return $this->domains[$this->activeDomainId] ?? null;
+
+    return $app;
+  }
+
+  /**
+   * Log the absence of an active App — ONCE per request, naming the caller.
+   *
+   * Every reader of getActiveApp() falls back silently, and the fallback looks exactly like a
+   * normal run: that is why a dead namespace guard survived until 2026-08-18 with no App ever
+   * registered. Logging the absence is what makes the next mute fallback visible.
+   */
+  private function logAbsence(): void
+  {
+    // [0] logAbsence, [1] getActiveApp, [2] the reader we want to name.
+    $frame = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2] ?? [];
+    $caller = ($frame['class'] ?? 'top-level') . '::' . ($frame['function'] ?? 'unknown');
+
+    $this->absentReaders[$caller] = ($this->absentReaders[$caller] ?? 0) + 1;
+
+    if ($this->absenceLogged) {
+      return;
+    }
+
+    $this->absenceLogged = true;
+
+    try {
+      (new SecurityLogger())->logStructured(
+        'warning',
+        'DomainRegistry',
+        'no_active_domain',
+        [
+          'first_caller' => $caller,
+          'registered_domains' => count($this->domains),
+          'discovery_attempted' => $this->discoveryAttempted,
+          'note' => 'every reader is silently on its fallback path for this request'
+        ]
+      );
+    } catch (\Throwable) {
+      // Never let observability break a request.
+    }
+  }
+
+  /**
+   * Readers served a null App during this request, with their hit count.
+   *
+   * @return array<string, int>
+   */
+  public function getAbsentReaders(): array
+  {
+    return $this->absentReaders;
+  }
+
+  /**
+   * Discover on FIRST READ, once per request.
+   *
+   * No App instantiates itself on a chat request - only its hooks do - and
+   * discoverDomainApps() had no caller anywhere: the registry stayed empty for every reader,
+   * each of which silently fell back. The flag is raised BEFORE discovery so an App whose
+   * constructor reads the registry gets null instead of recursing.
+   *
+   * @return void
+   */
+  private function discoverOnce(): void
+  {
+    if ($this->discoveryAttempted || $this->domains !== []) {
+      return;
+    }
+
+    $this->discoveryAttempted = true;
+    $this->discoverDomainApps();
   }
 
   /**

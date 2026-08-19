@@ -34,6 +34,9 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns;
  */
 class HallucinationPatterns
 {
+  /** How many years past the current one still count as a suspicious future reference. */
+  private const FUTURE_YEAR_HORIZON = 9;
+
   /**
    * Returns all suspicious patterns for hallucination detection
    *
@@ -56,10 +59,8 @@ class HallucinationPatterns
       '/turnover\s+of\s+[1-9]\d{8,}/i',
       '/sales\s+of\s+[1-9]\d{7,}\s*(?:\$|€|dollars?|euros?)/i',
 
-      // Future dates
-      '/in\s+202[5-9]/i', // Future years
-      '/for\s+(?:the\s+)?year\s+202[5-9]/i',
-      '/by\s+202[5-9]/i',
+      // Future dates - window computed from the current year, never frozen
+      ...self::getFutureDatePatterns(),
 
       // Impossible percentages
       '/[1-9]\d{3,}\s*%/', // >1000%
@@ -128,16 +129,19 @@ class HallucinationPatterns
   /**
    * Returns patterns for detecting future dates
    *
-   * References to future years (2025+) are considered suspicious.
+   * A year is future RELATIVE TO TODAY. The window used to be the literal `202[5-9]`, which
+   * flagged the current year as a hallucination in a tool whose job is to report it.
    *
    * @return array Array of regex patterns for future date detection
    */
   public static function getFutureDatePatterns(): array
   {
+    $years = implode('|', range((int)date('Y') + 1, (int)date('Y') + self::FUTURE_YEAR_HORIZON));
+
     return [
-      '/in\s+202[5-9]/i', // Future years
-      '/for\s+(?:the\s+)?year\s+202[5-9]/i',
-      '/by\s+202[5-9]/i',
+      '/in\s+(?:' . $years . ')\b/i',
+      '/for\s+(?:the\s+)?year\s+(?:' . $years . ')\b/i',
+      '/by\s+(?:' . $years . ')\b/i',
     ];
   }
 

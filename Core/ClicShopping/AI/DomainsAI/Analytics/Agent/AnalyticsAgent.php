@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 use ClicShopping\AI\InterfacesAI\AgentInterface;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Config\AutonomousConfig;
@@ -22,6 +23,8 @@ use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
+use ClicShopping\AI\DomainsAI\Analytics\Planning\AnalysisPlanner;
+use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
@@ -90,6 +93,8 @@ class AnalyticsAgent implements AgentInterface
   private QueryCache $queryCache;
   private AmbiguousQueryDetector $ambiguityDetector;
   private PromptBuilder $promptBuilder;
+  private ?AnalysisPlanner $analysisPlanner = null;
+  private ?array $analysisPlan = null;
   private AmbiguityHandler $ambiguityHandler;
   private CompoundQueryHandler $compoundQueryHandler;
   private AnalyticsErrorHandler $errorHandler;
@@ -152,6 +157,9 @@ class AnalyticsAgent implements AgentInterface
     // Initialize PromptBuilder and set system message
     $this->promptBuilder = new PromptBuilder($this->language, $this->languageId, $this->debug);
     $this->chat->setSystemMessage($this->promptBuilder->getSystemMessage());
+
+    // Bucket 3: user-facing labels, rendered verbatim in the interface language.
+    $this->language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
 
     $this->maxRowsForInterpretation = defined('CLICSHOPPING_APP_CHATGPT_RA_MAX_ROWS_FOR_LLM_INTERPRETATION') ? (int) CLICSHOPPING_APP_CHATGPT_RA_MAX_ROWS_FOR_LLM_INTERPRETATION : 150;
 
@@ -683,6 +691,7 @@ class AnalyticsAgent implements AgentInterface
     $this->debugLog("Feedback context items: " . count($feedbackContext), "QUERY");
     $questionForGeneration = $question;
     $ambiguityAnalysis = ['is_ambiguous' => false];
+    $this->analysisPlan = null;
 
     try {
 
@@ -767,6 +776,33 @@ class AnalyticsAgent implements AgentInterface
         }
       }
 
+      $planner = $this->analysisPlanner();
+
+      if ($planner !== null) {
+        $this->debugLog("--- STEP 0.75: Build the analysis plan ---", "PLAN");
+
+        $planResult = $planner->plan($this->translateForGeneration($questionForGeneration));
+        $this->analysisPlan = $planResult['plan'];
+
+        if ($this->analysisPlan === null) {
+          if ($planResult['no_metric_proposed'] ?? false) {
+            // Not every analytics question aggregates a metric: a stock level, a list of active
+            // promotions or one product's price carry none. Same honest degradation as an empty
+            // catalogue — run without a plan, exactly as the path did before the stage existed.
+            $this->debugLog("PLAN SKIPPED: the question carries no catalogue metric", "PLAN");
+          } else {
+            // Refusing is not failing silently: the answer must name what could not be honoured.
+            $this->debugLog("PLAN REFUSED: " . json_encode($planResult['errors']), "PLAN");
+
+            return $this->analysisPlanRefusal($question, $planResult, $ambiguityAnalysis);
+          }
+        }
+
+        if ($planResult['unsatisfiable'] !== []) {
+          $this->debugLog("PLAN PARTIAL: " . json_encode($planResult['unsatisfiable']), "PLAN");
+        }
+      }
+
       $this->debugLog("--- STEP 1: Check QueryCache ---", "CACHE");
 
       $cachedResponse = $this->checkQueryCache($question, $ambiguityAnalysis);
@@ -791,6 +827,77 @@ class AnalyticsAgent implements AgentInterface
         ...$this->ambiguityMetadata($ambiguityAnalysis),
       ];
     }
+  }
+
+  /**
+   * The analysis planner, built on FIRST USE and not in the constructor: the domain registry
+   * is populated by whoever instantiates the domain App, which may happen after this agent.
+   *
+   * Returns null when the active domain declares no metric catalogue. Without one, every
+   * metric comes back unsatisfiable and the stage would refuse EVERY question; the path then
+   * runs exactly as it did before the stage existed, which is the honest degradation.
+   *
+   * @return AnalysisPlanner|null Planner, or null when the plan stage cannot apply
+   */
+  private function analysisPlanner(): ?AnalysisPlanner
+  {
+    if ($this->analysisPlanner !== null) {
+      return $this->analysisPlanner;
+    }
+
+    $domainApp = DomainRegistry::getInstance()->getActiveApp();
+    $catalog = ($domainApp !== null && method_exists($domainApp, 'getMetricCatalog'))
+      ? $domainApp->getMetricCatalog()
+      : [];
+
+    if ($catalog === []) {
+      $this->debugLog("PLAN STAGE OFF: the active domain declares no metric catalogue", "PLAN");
+
+      return null;
+    }
+
+    $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId);
+
+    return $this->analysisPlanner;
+  }
+
+  /**
+   * Build the response of a refused plan — a TERMINAL answer, not a technical incident.
+   *
+   * Rendered as `type => 'error'` with a `text_response`: that is the only shape the three
+   * restitution gates (ResultValidator, ResultSynthesizer, ResultFormatter::determinePrimaryType)
+   * let through unconditionally. Any other type is replaced downstream by a generic
+   * "no results found", which is exactly the lie this stage exists to avoid.
+   *
+   * `analysis_plan_refused` stays as the discriminating marker, so the refusal remains
+   * distinguishable from a failed query.
+   *
+   * @param string $question Question as the user asked it
+   * @param array $planResult Planner verdict: plan, unsatisfiable, errors
+   * @param array $ambiguityAnalysis Detector verdict for this request
+   * @return array Terminal response
+   */
+  private function analysisPlanRefusal(string $question, array $planResult, array $ambiguityAnalysis): array
+  {
+    $elements = array_column($planResult['unsatisfiable'], 'element');
+
+    $message = $elements === []
+      ? CLICSHOPPING::getDef('text_analysis_plan_refused')
+      : CLICSHOPPING::getDef('text_analysis_plan_refused_details', ['elements' => implode(', ', $elements)]);
+
+    return [
+      'type' => 'error',
+      'error' => 'analysis_plan_refused',
+      'analysis_plan_refused' => true,
+      'message' => $message,
+      'text_response' => $message,
+      'response' => $message,
+      'question' => $question,
+      'query' => $question,
+      'unsatisfiable' => $planResult['unsatisfiable'],
+      'errors' => $planResult['errors'],
+      ...$this->ambiguityMetadata($ambiguityAnalysis),
+    ];
   }
 
   /**
@@ -1052,13 +1159,16 @@ class AnalyticsAgent implements AgentInterface
    * must share the entry instead of paying for the same generation twice. Costs no LLM call —
    * EnglishQueryNormalizer memoised the translation earlier in the request (abstention, STEP 1).
    *
+   * The PLAN is part of the key too: the same question planned differently must not replay the
+   * SQL of the previous plan — without it, a one-hour-old entry short-circuits the whole stage.
+   *
    * @param string $englishQuestion Question already normalised by translateForGeneration()
    * @param array $feedbackContext Feedback context, part of the key: it changes the prompt
    * @return string Cache key
    */
   private function buildSqlCacheKey(string $englishQuestion, array $feedbackContext): string
   {
-    return md5($englishQuestion . json_encode($feedbackContext));
+    return md5($englishQuestion . json_encode($feedbackContext) . json_encode($this->analysisPlan));
   }
 
   /**
@@ -1107,6 +1217,11 @@ class AnalyticsAgent implements AgentInterface
 
       // Enrich question with feedback context for learning
       $enrichedQuestion = $this->queryEnricher->enrichWithFeedback($englishQuestion, $feedbackContext, $this->conversationMemory);
+      $planBlock = $this->analysisPlanner?->describeForPrompt($this->analysisPlan) ?? '';
+
+      if ($planBlock !== '') {
+        $enrichedQuestion = $planBlock . "\n\n" . $enrichedQuestion;
+      }
 
       $this->debugLog("Calling chat.generateText()...", "SQL");
       $startTime = microtime(true);

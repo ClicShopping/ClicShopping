@@ -11,6 +11,7 @@ namespace ClicShopping\OM\Domains;
 use ClicShopping\OM\Domains\ConfigurableAppAbstract;
 use ClicShopping\OM\Interfaces\DomainAppInterface;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\BusinessDomainPermissionManager;
+use ClicShopping\AI\DomainsAI\DomainRegistry;
 
 /**
  * Abstract base class for Domain-specific ClicShopping AI applications
@@ -57,7 +58,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\BusinessDomainPermissionMa
  * 
  * @see ConfigurableAppAbstract
  * @see DomainAppInterface
- * @see \ClicShopping\AI\DomainRegistry
+ * @see \ClicShopping\AI\DomainsAI\DomainRegistry
  */
 abstract class AbstractDomainApp extends ConfigurableAppAbstract implements DomainAppInterface
 {
@@ -96,12 +97,8 @@ abstract class AbstractDomainApp extends ConfigurableAppAbstract implements Doma
    */
   protected function init(): void
   {
-    // Register this domain app with the DomainRegistry
-    // Note: DomainRegistry will be created in task 2.3
-    // This registration allows the domain to be discovered and activated
-    if (class_exists('ClicShopping\AI\DomainRegistry')) {
-      $registry = \ClicShopping\AI\DomainRegistry::getInstance();
-      $registry->registerApp($this);
+    if (class_exists(DomainRegistry::class)) {
+      DomainRegistry::getInstance()->registerApp($this);
     }
   }
 

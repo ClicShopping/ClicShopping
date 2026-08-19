@@ -468,6 +468,7 @@ class ResultSynthesizer
           return;
         }
         $textResponseHashes[$hash] = true;
+
         if ($this->isEmptyResultsNotice($normalized)) {
           $aggregated['empty_notices'][] = $text;
           return;

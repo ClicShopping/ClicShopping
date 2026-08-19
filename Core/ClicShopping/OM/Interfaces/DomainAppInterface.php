@@ -31,7 +31,7 @@ namespace ClicShopping\OM\Interfaces;
  * 
  * @see ConfigurableAppInterface
  * @see \ClicShopping\OM\Apps
- * @see \ClicShopping\AI\DomainRegistry
+ * @see \ClicShopping\AI\DomainsAI\DomainRegistry
  */
 interface DomainAppInterface extends ConfigurableAppInterface
 {

@@ -1,6 +1,8 @@
 text_analysis_plan_examples = EXAMPLES
 Question: "revenue for 2026 so far compared with last year, by category"
-{"periods": {"current": {"from": "2026-01-01", "to": "2026-08-12"}, "compare": "previous_year"}, "metrics": [{"name": "revenue_ttc"}], "dimensions": ["category"], "rankings": [], "filters": {}, "complexity": 3}
+{"periods": {"current": {"from": "2026-01-01", "to": "2026-08-12"}, "compare": "previous_year"}, "metrics": [{"name": "revenue_ht"}], "dimensions": ["category"], "rankings": [], "filters": {}, "complexity": 3}
+Question: "revenue including tax for 2026"
+{"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "revenue_ttc"}], "dimensions": [], "rankings": [], "filters": {}, "complexity": 1}
 Question: "top 3 and bottom 3 best selling products in each category this year"
 {"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "quantity_sold"}], "dimensions": ["category", "product"], "rankings": [{"metric": "quantity_sold", "direction": "top", "n": 3, "partition_by": "category"}, {"metric": "quantity_sold", "direction": "bottom", "n": 3, "partition_by": "category"}], "filters": {}, "complexity": 4}
 Question: "how many orders were cancelled in May"

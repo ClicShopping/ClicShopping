@@ -74,7 +74,7 @@ use ClicShopping\OM\Domains\AbstractDomainApp;
  * Usage:
  * ```php
  * // Domain is automatically discovered and registered
- * $registry = \ClicShopping\AI\DomainRegistry::getInstance();
+ * $registry = \ClicShopping\AI\DomainsAI\DomainRegistry::getInstance();
  * $ecommerce = $registry->getApp('ecommerce');
  * 
  * // Get domain configuration

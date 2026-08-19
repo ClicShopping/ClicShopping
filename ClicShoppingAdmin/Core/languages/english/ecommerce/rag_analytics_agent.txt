@@ -180,6 +180,7 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    - "quantity ordered" / "quantity sold" → products_quantity (in orders_products table)
    - "transaction price" / "sale price" → products_price (in orders_products table)
    - "order total" / "revenue" / "turnover" / "chiffre d'affaires" → EXCLUDING tax (the default): SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) with ot.class IN ('TO','TX'); INCLUDING tax: SUM(ot.value) with ot.class = 'TO'. NEVER class='ST'.
+   - the ANALYSIS PLAN names the basis when it carries a revenue metric: revenue_ht = EXCLUDING tax (the 'TO' minus 'TX' form), revenue_ttc = INCLUDING tax (the 'TO' form). Use the form of the metric the plan named, alias the column with that exact name, and never substitute the other basis.
    - "customer discount" / "remise client" (with the 'customer'/'client' qualifier) → orders_total WHERE class='CD' (value = amount, title = label)
    - "coupon" / "bon de réduction" / "code promo" / "coupons granted"/"coupons octroyés"/"coupons used" → orders_total WHERE class='DC' (value = amount, title = label)
    - bare "discount(s)" / "remise(s)" / "discounts granted" / "remises accordées" / "remises effectuées" / "discounts and coupons" / "toutes les remises" (NO 'customer'/'client' qualifier) → orders_total WHERE class IN ('CD','DC'). This is the DEFAULT for any unqualified discount question: coupons ARE discounts, so include them unless the user explicitly restricts to customer discounts.
