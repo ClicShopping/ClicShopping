@@ -173,7 +173,10 @@ ALTER TABLE clic_orders_status_tracking
 --    génération SQL raisonne avec la définition de ligne.
 -- --------------------------------------------------------------------------
 ALTER TABLE clic_orders_status
-  COMMENT = 'Per-language catalogue of order lifecycle states. Join orders.orders_status to it to read a state; the set is install-specific and the merchant can add states such as Refunded at any time. Lookup table: never count its rows as orders.';
+  COMMENT = 'Per-language catalogue of order lifecycle states. Join orders.orders_status to it to read a state; the set is install-specific and the merchant can add or rename a state at any time. Lookup table: never count its rows as orders.';
+
+ALTER TABLE clic_orders_status_invoice
+  COMMENT = 'Per-language catalogue of INVOICING states. This is a different axis from orders.orders_status and never a substitute for it: never count one order on both. A refund returns the FULL invoice total, so its amount equals the order total; a credit note (avoir) is a negotiated amount that may differ from the invoice and is NOT stored anywhere in the database. Lookup table: never count its rows as orders.';
 
 -- --------------------------------------------------------------------------
 -- 3. Définitions par défaut des statuts existants (language_id 1 = EN, 2 = FR)
@@ -184,7 +187,7 @@ ALTER TABLE clic_orders_status
 --    neuve et une install migrée portent donc le MÊME texte, sinon deux
 --    boutiques répondraient différemment à la même question.
 -- --------------------------------------------------------------------------
--- statuts de commande (8 lignes) — texte IDENTIQUE au seed install/Db/, par construction
+-- statuts de commande (10 lignes) — texte IDENTIQUE au seed install/Db/, par construction
 UPDATE clic_orders_status SET orders_status_definition =
   'Order recorded but not yet handled. Counts as a sale in revenue; not yet shipped or delivered.'
   WHERE orders_status_id = 1 AND language_id = 1;  -- Pending
@@ -204,13 +207,13 @@ UPDATE clic_orders_status SET orders_status_definition =
   'Commande livrée au client. C''est l''état à compter pour les commandes livrées et pour les délais d''expédition.'
   WHERE orders_status_id = 3 AND language_id = 2;  -- Livré
 UPDATE clic_orders_status SET orders_status_definition =
-  'Order cancelled: exclude it from revenue, margin and average cart. This is NOT a refund - no refunded state exists by default.'
+  'Order cancelled: exclude it from revenue, margin and average cart. A cancellation is NOT a refund - the order never became a sale. The refunded state is a separate status; never count the two together.'
   WHERE orders_status_id = 4 AND language_id = 1;  -- Cancelled
 UPDATE clic_orders_status SET orders_status_definition =
-  'Commande annulée : à exclure du chiffre d''affaires, de la marge et du panier moyen. Ce n''est PAS un remboursement — aucun état « remboursée » n''existe par défaut.'
+  'Commande annulée : à exclure du chiffre d''affaires, de la marge et du panier moyen. Une annulation n''est PAS un remboursement — la commande n''est jamais devenue une vente. L''état remboursé est un statut distinct ; ne jamais compter les deux ensemble.'
   WHERE orders_status_id = 4 AND language_id = 2;  -- Annulé
 
--- statuts de facture (8 lignes) — texte IDENTIQUE au seed install/Db/, par construction
+-- statuts de facture (10 lignes) — texte IDENTIQUE au seed install/Db/, par construction
 UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
   'Order not invoiced yet. No accounting document has been issued.'
   WHERE orders_status_invoice_id = 1 AND language_id = 1;  -- Order
