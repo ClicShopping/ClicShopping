@@ -72,6 +72,7 @@ class CustomerGroupTab3 implements HooksInterface
   public function display(): string
   {
     $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     if (!\defined('CLICSHOPPING_APP_CUSTOMERS_GROUPS_GR_STATUS') || CLICSHOPPING_APP_CUSTOMERS_GROUPS_GR_STATUS == 'False') {
       return false;
@@ -200,7 +201,7 @@ class CustomerGroupTab3 implements HooksInterface
           $content .= $content_attibutes;
           $content .= '<div class="mt-1"></div>';
 
-          if (DISPLAY_DOUBLE_TAXE == 'false') {
+          if ($CLICSHOPPING_CompliancePolicyRules->displayDoubleTaxes() === false) {
             $content .= HTML::inputField('price_gross' . $QcustomersGroup->valueInt('customers_group_id'), $customers_group_price, 'onkeyUp="updateNet()" size="7"  placeholder="' . $this->app->getDef('tax_excluded') . '"') . '<strong>' . $this->app->getDef('tax_excluded') . '</strong>';
           }
 

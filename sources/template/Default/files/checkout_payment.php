@@ -15,6 +15,7 @@ $CLICSHOPPING_Currencies = Registry::get('Currencies');
 $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 $CLICSHOPPING_Payment = Registry::get('Payment');
 $CLICSHOPPING_Template = Registry::get('Template');
+$CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
 echo $CLICSHOPPING_Payment->javascript_validation();
 
@@ -47,7 +48,7 @@ echo HTML::form('checkout_payment', CLICSHOPPING::link(null, 'Checkout&Confirmat
           </div>
           <div>
             <?php
-            if (DISPLAY_CONDITIONS_ON_CHECKOUT == 'true') {
+            if ($CLICSHOPPING_CompliancePolicyRules->displayCheckoutConditions() === true) {
               echo CLICSHOPPING::getDef('text_conditions_description') . '<br />';
             }
             ?>

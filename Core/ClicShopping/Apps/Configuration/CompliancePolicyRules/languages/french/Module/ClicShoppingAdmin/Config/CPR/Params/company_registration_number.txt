@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_eu_vat_number_title = Numéro d'immatriculation de l'entreprise
+cfg_configuration_compliance_policy_rules_eu_vat_number_description = Veuillez indiquer le numéro d'immatriculation de votre entreprise (ex. RCS: 1234567). Laissez ce champ vide si cela ne vous concerne pas.

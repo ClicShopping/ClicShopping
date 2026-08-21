@@ -22,9 +22,10 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_NavigationHistory = Registry::get('NavigationHistory');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     $CLICSHOPPING_Template = Registry::get('Template');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     if (isset($_POST['action']) && ($_POST['action'] == 'process') && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
-// if the customer is not logged on, redirect them to the login page
+      // if the customer is not logged on, redirect them to the login page
       if (!$CLICSHOPPING_Customer->isLoggedOn()) {
         $CLICSHOPPING_NavigationHistory->setSnapshot();
         CLICSHOPPING::redirect(null, 'Account&LogIn');
@@ -34,8 +35,8 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $_SESSION['comments'] = HTML::sanitize($_POST['comments']);
       }
 
-// Confirmation des conditions des vente
-      if (DISPLAY_CONDITIONS_ON_CHECKOUT == 'true') {
+      // Sales confirmation and acceptation
+      if ($CLICSHOPPING_CompliancePolicyRules->displayCheckoutConditions() === true) {
         if (!isset($_POST['conditions']) || HTML::sanitize($_POST['conditions']) != 1) {
           $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_conditions_not_accepted'), 'error');
           CLICSHOPPING::redirect(null, 'Checkout&Billing');

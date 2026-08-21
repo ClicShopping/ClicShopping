@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_display_shipping_delay_title = Please enter your delivery time by defaults to indicate at your customers
+cfg_configuration_compliance_policy_rules_display_shipping_delay_description = Please indicate your delivery time products to your customer by default  For France this information is mandatory (laws Chatel)

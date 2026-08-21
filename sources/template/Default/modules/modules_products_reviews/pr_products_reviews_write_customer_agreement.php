@@ -90,6 +90,7 @@ class pr_products_reviews_write_customer_agreement
   {
     $CLICSHOPPING_Template = Registry::get('Template');
     $CLICSHOPPING_TemplateCache = Registry::get('TemplateCache');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     if (isset($_GET['Products'], $_GET['ReviewsWrite']) && !isset($_GET['Success'])) {
       if ($CLICSHOPPING_TemplateCache->isCacheEnabled()) {
@@ -109,7 +110,7 @@ class pr_products_reviews_write_customer_agreement
       if (isset($_GET['Products'], $_GET['ReviewsWrite']) && !isset($_GET['Success'])) {
       $customer_agree = '<!-- Start customer_agree -->' . "\n";
 
-      if (DISPLAY_PRIVACY_CONDITIONS == 'true') {
+        if ($CLICSHOPPING_CompliancePolicyRules->displayPrivacyConditions() === true) {
         ob_start();
         require_once($CLICSHOPPING_Template->getTemplateModules($this->group . '/content/products_reviews_write_customer_agreement'));
         $customer_agree .= ob_get_clean();

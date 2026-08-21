@@ -1,0 +1,12 @@
+heading_title = Compliance Policy Rules
+module_ca_short_title = Compliance Policy Rules
+text_cache = Compliance Policy Rules
+text_intro = Installation of the Cache module allows you to set up a Compliance Policy Rules system for your ClicShopping store.
+button_configure = Configure Compliance Policy Rules
+button_save = Save
+button_dialog_uninstall = Uninstall
+dialog_uninstall_title = Uninstall Cache
+dialog_uninstall_body = Are you sure you want to uninstall the Cache module? This action cannot be undone and may affect the performance of your store.
+button_uninstall = Uninstall
+button_delete = Remove definitely
+

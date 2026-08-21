@@ -1,0 +1,6 @@
+cfg_configuration_compliance_policy_rules_status_title = Statut
+cfg_configuration_compliance_policy_rules_status_description = Définir sur Vrai pour activer ou désactiver le module
+
+cfg_configuration_compliance_policy_rules_status_true = True
+cfg_configuration_compliance_policy_rules_status_false = False
+

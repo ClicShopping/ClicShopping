@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_federal_taxes_number_title = Numéro de taxe fédérale
+cfg_configuration_compliance_policy_rules_federal_taxes_number_description = Veuillez indiquer le numéro de taxe fédérale administrative (ex. TVQ/TVQ : 1006197104). - Laissez ce champ vide si cela ne vous concerne pas.

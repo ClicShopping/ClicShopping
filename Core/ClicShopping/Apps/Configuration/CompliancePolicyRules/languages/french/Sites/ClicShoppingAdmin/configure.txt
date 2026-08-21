@@ -1,0 +1,11 @@
+heading_title = Régles juridiques
+module_cpr_short_title = Régles juridiques
+text_compliance_policy_rules = Régles juridiques
+text_intro = L'installation du module Cache vous permet de configurer les Régles juridiques pour votre boutique ClicShopping.
+button_configure = Configurer le cache
+button_save = Enregistrer
+button_dialog_uninstall = Désinstaller
+dialog_uninstall_title = Désinstaller le cache
+dialog_uninstall_body = Êtes-vous sûr de vouloir désinstaller le module Régles juridiques ?
+button_uninstall = Désinstaller
+button_delete = Supprimer définitivement

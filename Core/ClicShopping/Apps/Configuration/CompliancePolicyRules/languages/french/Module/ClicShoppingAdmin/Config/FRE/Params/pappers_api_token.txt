@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_pappers_api_token_title = Jeton API Pappers
+cfg_configuration_compliance_policy_rules_pappers_api_token_description = Jeton API utilisé pour vérifier les informations de l'entreprise via le site web Pappers (pappers.fr). Saisissez votre jeton API obtenu depuis votre compte Pappers.

@@ -78,7 +78,7 @@ class Gdpr extends HeaderTagsAbstract
     $text_banner_heading = $this->app->getDef('module_header_tags_text_info_title', ['store_name' => STORE_NAME]);
     $text_reject = $this->app->getDef('module_header_tags_text_info_reject');
     $text_accept = $this->app->getDef('module_header_tags_text_info_accept');
-    $text_privacy = CLICSHOPPING::link(null, SHOP_CODE_URL_CONFIDENTIALITY, false, true);
+    $text_privacy = CLICSHOPPING::link(null, CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_URL_PRIVACY, false, true);
 
     $footer_tag = '<!-- gdpr policies -->' . "\n";
     $footer_tag .= '<script src="https://cdn.jsdelivr.net/gh/manucaralmo/GlowCookies@3.1.7/src/glowCookies.min.js"></script>';

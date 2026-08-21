@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_sort_order_title = Ordre de tri
+cfg_configuration_compliance_policy_rules_sort_order_description = Position du module dans la liste des méthodes disponibles (le plus bas est affiché en premier).

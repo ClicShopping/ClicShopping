@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_regional_taxes_number_title = Numéro de taxe provinciale
+cfg_configuration_compliance_policy_rules_regional_taxes_number_description = Veuillez indiquer le numéro administratif de la taxe provinciale (ex. : TPS/TPS : R127066546). – Laissez vide si cela ne vous concerne pas.

@@ -27,6 +27,7 @@ $CLICSHOPPING_Language = Registry::get('Language');
 $CLICSHOPPING_CategoriesAdmin = Registry::get('CategoriesAdmin');
 $CLICSHOPPING_Language = Registry::get('Language');
 $CLICSHOPPING_Wysiwyg = Registry::get('Wysiwyg');
+$CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 
@@ -387,13 +388,12 @@ echo HTML::button($CLICSHOPPING_Products->getDef('button_cancel'), null, $CLICSH
           <div class="col-md-12 mainTitle"><span</span></div>
           <div class="adminformTitle">
             <div class="mt-1"></div>
-            <div class="col-md-12" style="padding-top:10px; padding-bottom:10px;" id="tabShippingDelay">
-              <div class="btn-group d-flex justify-content-end" role="group" aria-label="buttonGroup">
-                <span
-                  class="col-sm-12"><?php echo $CLICSHOPPING_Products->getDef('text_products_shipping_delay'); ?></span>
+            <div class="col-md-12" id="tabShippingDelay">
+              <div class="btn-group" role="group" aria-label="buttonGroup">
+                <span><?php echo $CLICSHOPPING_Products->getDef('text_products_shipping_delay'); ?></span>
                 <span>
                 <a
-                  href="<?php echo $CLICSHOPPING_Products->link('ConfigurationPopUpFields&cKey=DISPLAY_SHIPPING_DELAY'); ?>"
+                  href="<?php echo $CLICSHOPPING_Products->link('ConfigurationPopUpFields&cKey=CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_DISPLAY_SHIPPING_DELAY'); ?>"
                   data-bs-toggle="modal" data-refresh="true"
                   data-bs-target="#myModal1"><?php echo '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_Products->getDef('icon_edit') . '"></i></h4>'; ?></a>
                 <div class="modal fade" id="myModal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
@@ -420,10 +420,9 @@ echo HTML::button($CLICSHOPPING_Products->getDef('button_cancel'), null, $CLICSH
             }
             ?>
             <div class="mt-1"></div>
-            <div class="col-md-12" style="padding-top:10px; padding-bottom:10px;" id="tabShippingDelayOutOfStock">
-              <div class="btn-group d-flex justify-content-end" role="group" aria-label="buttonGroup">
-                <span
-                  class="col-sm-12"><?php echo $CLICSHOPPING_Products->getDef('text_products_shipping_delay_out_of_stock'); ?></span>
+            <div class="col-md-12" id="tabShippingDelayOutOfStock">
+              <div class="btn-group" role="group" aria-label="buttonGroup">
+                <span><?php echo $CLICSHOPPING_Products->getDef('text_products_shipping_delay_out_of_stock'); ?></span>
                 <span>
                   <a
                     href="<?php echo $CLICSHOPPING_Products->link('ConfigurationPopUpFields&cKey=DISPLAY_SHIPPING_DELAY_OUT_OF_STOCK'); ?>"
@@ -804,7 +803,7 @@ echo HTML::button($CLICSHOPPING_Products->getDef('button_cancel'), null, $CLICSH
                   <div class="form-group row">
                     <div class="col-md-5">
                       <?php
-                      if (DISPLAY_DOUBLE_TAXE == 'false') {
+                      if ($CLICSHOPPING_CompliancePolicyRules->displayDoubleTaxes() === false) {
                         echo HTML::inputField('products_price_gross', $pInfo->products_price, 'id="products_price_gross" onkeyup="updateNet()"') . '<strong>' . $CLICSHOPPING_Products->getDef('text_products_price_gross') . '</strong>';
                       }
                       ?>

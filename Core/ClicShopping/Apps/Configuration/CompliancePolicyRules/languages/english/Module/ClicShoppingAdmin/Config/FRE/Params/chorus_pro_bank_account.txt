@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_chorus_pro_banck_account_title = Chorus Pro bank account details code
+cfg_configuration_compliance_policy_rules_chorus_pro_banck_account_description = Numeric code of the bank account details recorded in Chorus Pro (Supplier Bank Account details code).

@@ -1,0 +1,46 @@
+heading_title = Compliance Policy Rules
+module_cpr_title = Compliance Policy Rules
+module_cpr_short_title = Compliance Policy Rules
+
+module_french_title = France
+module_cpr_short_title = France
+
+module_cad_title = Federal States
+module_cad_short_title = Federal States
+
+text_compliance_policy_rules = Compliance Policy Rules
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a Compliance Policy Rules page. <br /><br />- Activate this module located in the Configuration menu
+
+module_ca_introduction = The install process create the database settings for this module and the access menu
+
+module_french_introduction = The installation process installs the legal constants for France.
+module_cad_introduction = The installation process installs the Federal States.
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_compliance-policy_rules = Compliance Policy Rules
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+image_reset = Remove Compliance Policy Rules
+button_compliance_policy_rules = Compliance Policy Rules
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+table_heading_action = Action

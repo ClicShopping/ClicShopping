@@ -609,7 +609,7 @@ class UpdateOrder
    * global DISPLAY_PRICE_WITH_TAX — NOT from Registry::get('Customer') (empty in
    * back-office). In TTC mode the tax is back-calculated (tax = shown − shown/(1+rate)).
    *
-   * Double-tax jurisdictions (Canada, DISPLAY_DOUBLE_TAXE == 'true') delegate the
+   * Double-tax jurisdictions (Canada, CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_DISPLAY_DOUBLE_TAXES == 'True') delegate the
    * GST/PST/HST split to the shared Tax::computeDoubleTaxRows(), the same helper the
    * checkout TX module uses, so both render identical tax lines.
    *
@@ -631,6 +631,7 @@ class UpdateOrder
   {
     $db         = Registry::get('Db');
     $currencies = Registry::get('Currencies');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     //1. Read the order's currency + customer + its own tax convention
     $has_convention = self::ordersHasTaxConventionColumn($db);
@@ -789,7 +790,11 @@ class UpdateOrder
     //        tax sits inside the subtotal, and applying the rates to it charges the tax twice.
     $taxable_base_ht = $order_is_ttc ? $subtotal - $total_tax : $subtotal;
 
-    $double_taxe = defined('DISPLAY_DOUBLE_TAXE') && DISPLAY_DOUBLE_TAXE == 'true';
+    $double_taxe = false;
+    if ($CLICSHOPPING_CompliancePolicyRules->displayDoubleTaxes() === true) {
+      $double_taxe = true;
+    }
+
     $dt_rows     = null;
 
     // Resolve the order's delivery zone once — used by the double-tax split AND passed in the

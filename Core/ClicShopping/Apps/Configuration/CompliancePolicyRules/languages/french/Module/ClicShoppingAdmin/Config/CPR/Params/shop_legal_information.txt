@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_shop_legal_information_title = Informations légales sur les factures
+cfg_configuration_compliance_policy_rules_shop_legal_information_description = Autres informations légales à inclure sur les factures. - Laissez vide si cela ne vous concerne pas.

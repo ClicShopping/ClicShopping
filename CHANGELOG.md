@@ -8,6 +8,7 @@ version4.33
 - URL canonical improvement (front office) for SEO
 - Catalog speed optimization queries optimization
 - Order total improvement and updated in function the regulation
+- Regularion information refacted for a better country integration
 - Improvement :Page resolution now requires the exact case of the page code, so a category slug can no longer serve another page on a case-insensitive filesystem (macOS, Windows)
 - AI
   - Add distinction between Agents and Actors

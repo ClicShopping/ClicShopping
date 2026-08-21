@@ -32,6 +32,7 @@ class Confirmation extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Language = Registry::get('Language');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     $source_folder = CLICSHOPPING::getConfig('dir_root', 'Shop') . 'Core/Module/Hooks/Shop/Checkout/';
 
@@ -82,7 +83,7 @@ class Confirmation extends \ClicShopping\OM\Domains\PagesActionsAbstract
     }
 
 // Confirmation des conditions des vente
-    if (DISPLAY_CONDITIONS_ON_CHECKOUT == 'true') {
+    if ($CLICSHOPPING_CompliancePolicyRules->displayCheckoutConditions() === true) {
       if (!isset($_POST['conditions']) || HTML::sanitize($_POST['conditions']) != 1) {
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_conditions_not_accepted'), 'error');
 

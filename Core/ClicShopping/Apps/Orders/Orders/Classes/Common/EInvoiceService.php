@@ -98,7 +98,7 @@ class EInvoiceService
    *   STATUS_CREDIT_NOTE (4) -> submits an AVR (credit note) document
    *
    * Guards in order:
-   *   1. Module must be enabled (CHORUSPRO_ENABLED = True)
+   *   1. Module must be enabled (CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_ENABLED = True)
    *   2. Invoice status must be actionable (2, 3 or 4)
    *   3. Order must not have been already transmitted (erp_invoice = 0)
    *   4. Customer must have a valid SIRET (B2G check)
@@ -222,8 +222,8 @@ class EInvoiceService
 
     $sandbox       = $this->isSandbox();
     $oauth_url     = $sandbox ? self::OAUTH_SANDBOX : self::OAUTH_PROD;
-    $client_id     = defined('CHORUSPRO_PISTE_CLIENT_ID')     ? CHORUSPRO_PISTE_CLIENT_ID     : '';
-    $client_secret = defined('CHORUSPRO_PISTE_CLIENT_SECRET') ? CHORUSPRO_PISTE_CLIENT_SECRET : '';
+    $client_id     = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_ID')     ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_ID     : '';
+    $client_secret = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET') ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET : '';
 
     if (empty($client_id) || empty($client_secret)) {
       $this->log('ERROR', '[ERROR EInvoiceService] CHORUSPRO_PISTE_CLIENT_ID or CHORUSPRO_PISTE_CLIENT_SECRET not configured.');
@@ -307,11 +307,12 @@ class EInvoiceService
     string $doc_type = self::TYPE_INVOICE
   ): ?array
   {
-    $siret_supplier    = preg_replace('/\D/', '', defined('CHORUSPRO_SIRET_FOURNISSEUR') ? CHORUSPRO_SIRET_FOURNISSEUR : '');
+    $siret_supplier    = preg_replace('/\D/', '', defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_SIRET_FOURNISSEUR') ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_SIRET_FOURNISSEUR : '');
     $siret_recipient   = preg_replace('/\D/', '', $customer['siret'] ?? '');
-    $login             = defined('CHORUSPRO_TECHNICAL_LOGIN')    ? CHORUSPRO_TECHNICAL_LOGIN    : '';
-    $id_fournisseur    = defined('CHORUSPRO_FOURNISSEUR_ID')     ? (int)CHORUSPRO_FOURNISSEUR_ID : 0;
-    $bank_account_code = defined('CHORUSPRO_BANK_ACCOUNT_CODE')  ? (int)CHORUSPRO_BANK_ACCOUNT_CODE : 0;
+    $login             = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN')    ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN    : '';
+    $id_fournisseur    = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_FOURNISSEUR_ID')     ? (int)CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_FOURNISSEUR_ID : 0;
+    $bank_account_code = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_BANK_ACCOUNT')  ? (int)CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_BANK_ACCOUNT : 0;
+    $prefix_model             = defined('CONFIGURATION_PREFIX_MODEL') ? CONFIGURATION_PREFIX_MODEL : '';
 
     if (strlen($siret_supplier) !== 14 || strlen($siret_recipient) !== 14) {
       $this->log('ERROR', '[ERROR EInvoiceService] Invalid SIRET — supplier: "' . $siret_supplier . '" / recipient: "' . $siret_recipient . '"');
@@ -374,7 +375,7 @@ class EInvoiceService
 
       $lignePoste[] = [
         'lignePosteNumero'          => $i + 1,
-        'lignePosteReference'       => substr($p['model'] ?? $p['name'] ?? 'REF-' . ($i + 1), 0, 50),
+        'lignePosteReference'       => substr($p['model'] ?? $p['name'] ?? $prefix_model . ($i + 1), 0, 50),
         'lignePosteDenomination'    => substr($p['name'] ?? 'Product', 0, 250),
         'lignePosteQuantite'        => $qty,
         'lignePosteUnite'           => 'U',
@@ -458,8 +459,8 @@ class EInvoiceService
   private function submitToChorusPro(string $token, array $payload): array
   {
     $api_url  = $this->isSandbox() ? self::API_SANDBOX : self::API_PROD;
-    $login    = defined('CHORUSPRO_TECHNICAL_LOGIN')    ? CHORUSPRO_TECHNICAL_LOGIN    : '';
-    $password = defined('CHORUSPRO_TECHNICAL_PASSWORD') ? CHORUSPRO_TECHNICAL_PASSWORD : '';
+    $login    = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN')    ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN    : '';
+    $password = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD') ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD : '';
 
     if (empty($login) || empty($password)) {
       return ['success' => false, 'response' => [], 'error' => 'Chorus Pro technical account not configured.'];
@@ -528,8 +529,8 @@ class EInvoiceService
       return ['success' => false, 'error' => $this->app->getDef('error_oauth2_failed')];
     }
 
-    $login    = defined('CHORUSPRO_TECHNICAL_LOGIN')    ? CHORUSPRO_TECHNICAL_LOGIN    : '';
-    $password = defined('CHORUSPRO_TECHNICAL_PASSWORD') ? CHORUSPRO_TECHNICAL_PASSWORD : '';
+    $login    = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN')    ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN    : '';
+    $password = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD') ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD : '';
 
     $raw = HTTP::getResponse([
       'url'        => $this->isSandbox() ? self::STATUS_SANDBOX : self::STATUS_PROD,
@@ -638,13 +639,13 @@ class EInvoiceService
   // ═══════════════════════════════════════════════════════════════════════════
 
   /**
-   * Returns true if the Chorus Pro module is enabled (CHORUSPRO_ENABLED = 'True').
+   * Returns true if the Chorus Pro module is enabled (CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_ENABLED = 'True').
    *
    * @return bool
    */
   public function isEnabled(): bool
   {
-    return defined('CHORUSPRO_ENABLED') && CHORUSPRO_ENABLED === 'True';
+    return defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_ENABLED') && CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_ENABLED === 'True';
   }
 
   /**
@@ -705,14 +706,14 @@ class EInvoiceService
   // ═══════════════════════════════════════════════════════════════════════════
 
   /**
-   * Returns true if the sandbox mode is active (CHORUSPRO_SANDBOX = 'True').
+   * Returns true if the sandbox mode is active (CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_SANDBOX = 'True').
    * In sandbox mode, requests are sent to the PISTE qualification environment.
    *
    * @return bool
    */
   private function isSandbox(): bool
   {
-    return defined('CHORUSPRO_SANDBOX') && CHORUSPRO_SANDBOX === 'True';
+    return defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_SANDBOX') && CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_SANDBOX === 'True';
   }
 
   /**

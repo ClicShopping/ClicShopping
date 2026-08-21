@@ -774,7 +774,7 @@ echo HTML::hiddenField('customers_modify_company');
               <?php
             }
 
-              if (defined('PAPPERS_API_TOKEN') && !empty(PAPPERS_API_TOKEN)) {
+              if (defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_PAPPERS_API_TOKEN') && !empty(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_PAPPERS_API_TOKEN)) {
             ?>
             <!-- Pappers company lookup -->
             <div class="adminformTitle">

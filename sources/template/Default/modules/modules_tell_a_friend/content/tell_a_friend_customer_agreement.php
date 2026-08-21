@@ -8,7 +8,9 @@
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
+  use ClicShopping\OM\Registry;
 
+  $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 ?>
 <div class="col-md-<?php echo $content_width; ?>">
   <div class="mt-1"></div>
@@ -16,11 +18,11 @@ use ClicShopping\OM\HTML;
     <div class="mt-1"></div>
     <div class="modulesTellAFriendCustomerAgreement">
       <?php
-      if (DISPLAY_PRIVACY_CONDITIONS == 'true') {
+        if ($CLICSHOPPING_CompliancePolicyRules->displayPrivacyConditions() === true) {
       ?>
       <ul class="list-group list-group-flush">
         <li class="list-group-item-slider">
-          <?php echo CLICSHOPPING::getDef('text_privacy_conditions_description', ['store_name' => STORE_NAME, 'privacy_url' => CLICSHOPPING::link(SHOP_CODE_URL_CONFIDENTIALITY)]); ?>
+          <?php echo CLICSHOPPING::getDef('text_privacy_conditions_description', ['store_name' => STORE_NAME, 'privacy_url' => CLICSHOPPING::link(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_URL_PRIVACY)]); ?>
           <div class="mt-1"></div>
           <?php echo CLICSHOPPING::getDef('text_privacy_conditions_agree'); ?>
           <label class="switch">

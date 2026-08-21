@@ -45,8 +45,8 @@ class Save extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $configuration_value = (int)$array['MAX_MIN_IN_CART'];
       }
 
-      if (isset($array['DISPLAY_SHIPPING_DELAY'])) {
-        $configuration_value = (int)$array['DISPLAY_SHIPPING_DELAY'];
+      if (isset($array['CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_DISPLAY_SHIPPING_DELAY'])) {
+        $configuration_value = (int)$array['CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_DISPLAY_SHIPPING_DELAY'];
       }
 
       $Qupdate = $this->app->db->prepare('update :table_configuration

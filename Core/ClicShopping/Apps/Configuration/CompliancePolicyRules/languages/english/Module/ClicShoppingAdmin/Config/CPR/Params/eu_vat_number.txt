@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_eu_vat_number_title = Intracommunity VAT of the Company (Europe only)
+cfg_configuration_compliance_policy_rules_eu_vat_number_description = Please indicate your company's VAT registration. Leave blank if it does not apply to you.

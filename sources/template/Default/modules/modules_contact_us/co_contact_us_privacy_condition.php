@@ -39,6 +39,7 @@ class co_contact_us_privacy_condition
   {
     $CLICSHOPPING_Template = Registry::get('Template');
     $CLICSHOPPING_TemplateCache = Registry::get('TemplateCache');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     if (isset($_GET['Info'], $_GET['Contact']) && !isset($_GET['Success'])) {
       if ($CLICSHOPPING_TemplateCache->isCacheEnabled()) {
@@ -54,7 +55,7 @@ class co_contact_us_privacy_condition
 
       $content_width = \defined('MODULES_CONTACT_US_PRIVACY_CONDITION_CONTENT_WIDTH') ? (int)MODULES_CONTACT_US_PRIVACY_CONDITION_CONTENT_WIDTH : 12;
 
-      if (\defined('DISPLAY_PRIVACY_CONDITIONS') && DISPLAY_PRIVACY_CONDITIONS == 'true') {
+      if ($CLICSHOPPING_CompliancePolicyRules->displayPrivacyConditions() === true) {
         $privacy_condition = '<!-- Start contact us privacy condition -->' . "\n";
 
         ob_start();

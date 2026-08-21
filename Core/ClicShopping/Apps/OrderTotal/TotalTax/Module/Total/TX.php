@@ -84,9 +84,9 @@ class TX implements OrderTotalInterface
   public function process()
   {
     $CLICSHOPPING_Order = Registry::get('Order');
-
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 // Txe Canada - Quebec
-    if (DISPLAY_DOUBLE_TAXE == 'true') {
+    if ($CLICSHOPPING_CompliancePolicyRules->displayDoubleTaxes() === true) {
       //WARNING: This module does not consider tax_class!!! We assume everything is taxable.
       //The GST/PST/HST split lives in Tax::computeDoubleTaxRows so the checkout and the admin
       //order recalc render exactly the same lines. Here we resolve the zone and the base.

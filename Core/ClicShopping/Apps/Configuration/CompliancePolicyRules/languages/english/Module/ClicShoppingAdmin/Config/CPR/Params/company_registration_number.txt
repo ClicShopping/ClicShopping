@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_eu_vat_number_title = Registration number of the company
+cfg_configuration_compliance_policy_rules_eu_vat_number_description = Please specify the registration number of your company (ex RCS : 1234567).  Leave blank if it does not apply to you.

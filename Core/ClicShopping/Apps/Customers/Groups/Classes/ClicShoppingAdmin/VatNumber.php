@@ -243,11 +243,11 @@ class VatNumber
   public function checkPapersCompanyInfo(?string $name, ?string $siren = null): array|bool|null
   {
     // Check that the Pappers API token is defined and not empty
-    if (!defined('PAPPERS_API_TOKEN') || empty(PAPPERS_API_TOKEN)) {
+    if (!defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_PAPPERS_API_TOKEN') || empty(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_PAPPERS_API_TOKEN)) {
       return false;
     }
 
-    $apiToken = PAPPERS_API_TOKEN;
+    $apiToken = CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_PAPPERS_API_TOKEN;
     $allowedHosts   = ['api.pappers.fr'];
 
     // Step 1 — SIREN provided: fetch company details directly (single API call)

@@ -21,7 +21,7 @@ use ClicShopping\OM\HTML;
       <div class="card-text moduleCheckoutPaymentAgreementText">
         <ul class="list-group list-group-flush">
           <li class="list-group-item-slider">
-            <?php echo CLICSHOPPING::getDef('module_checkout_payment_agreement_text_conditions_confirm', ['shop_code_url_conditions_vente' => CLICSHOPPING::link(SHOP_CODE_URL_CONDITIONS_VENTE)]); ?>
+            <?php echo CLICSHOPPING::getDef('module_checkout_payment_agreement_text_conditions_confirm', ['shop_code_url_conditions_vente' => CLICSHOPPING::link(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_URL_SALES_CONDITIONS)]); ?>
             <div class="mt-1"></div>
             <?php echo CLICSHOPPING::getDef('module_checkout_payment_agreement_text_conditions_description'); ?>
             <label class="switch">

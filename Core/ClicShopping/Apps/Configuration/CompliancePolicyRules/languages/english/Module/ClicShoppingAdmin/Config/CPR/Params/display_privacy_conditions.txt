@@ -1,0 +1,4 @@
+cfg_configuration_compliance_policy_rules_display_privacy_conditions_title = Do you want to display the terms of confidentiality to create an account
+cfg_configuration_compliance_policy_rules_display_privacy_conditions_description = Do you want to see the conditions of privacy during the process of account creation ?
+cfg_configuration_compliance_policy_rules_display_privacy_conditions_true = True
+cfg_configuration_compliance_policy_rules_display_privacy_conditions_false = False

@@ -37,11 +37,7 @@ ALTER TABLE clic_orders_total ADD COLUMN IF NOT EXISTS total_sign TINYINT NOT NU
 DELETE FROM clic_configuration WHERE configuration_key = 'USE_CATALOG_RESET_CACHE';
 
 ===========
-  update clic_configuration set configuration_value = replace(configuration_value, 'index.php?', '')
-  where configuration_key in ('SHOP_CODE_URL_CONFIDENTIALITY','SHOP_CODE_URL_CONDITIONS_VENTE');
-
-===========
-AALTER TABLE clic_products COMMENT = 'PRODUCT CATALOG - one row per sellable product. Authoritative source for the CURRENT SELLING PRICE (products_price), stock on hand (products_quantity), model/SKU/EAN and active status.
+ALTER TABLE clic_products COMMENT = 'PRODUCT CATALOG - one row per sellable product. Authoritative source for the CURRENT SELLING PRICE (products_price), stock on hand (products_quantity), model/SKU/EAN and active status.
    The product NAME is not here, it is in products_description; the price actually sold and the quantities sold are in orders_products. Use it for catalogue questions (price of a product, stock, active products), never for
    sales figures.';
    ALTER TABLE clic_products_description COMMENT = 'PRODUCT NAMES and marketing texts, one row per product and per language (language_id). The name a user types when naming a product is here (products_name), not in products
@@ -213,6 +209,18 @@ UPDATE clic_orders_status SET orders_status_definition =
   'Commande annulée : à exclure du chiffre d''affaires, de la marge et du panier moyen. Une annulation n''est PAS un remboursement — la commande n''est jamais devenue une vente. L''état remboursé est un statut distinct ; ne jamais compter les deux ensemble.'
   WHERE orders_status_id = 4 AND language_id = 2;  -- Annulé
 
+-- Statut 5 « Remboursement » : il n'existait pas avant ce lot, donc INSERT et non
+-- UPDATE. ON DUPLICATE KEY garde le script rejouable et écrase une définition
+-- vide posée entre-temps, sans toucher aux drapeaux d'une ligne déjà réglée.
+INSERT INTO clic_orders_status
+  (orders_status_id, language_id, orders_status_name, orders_status_definition, public_flag, downloads_flag, support_orders_flag, authorize_to_delete_order)
+  VALUES (5, 1, 'Refund', 'Order refunded in full: the whole invoice was paid back to the customer. Exclude it from revenue, margin and average cart - the sale is undone. The refunded amount is ALWAYS the order total, never a partial one. A refund is neither a cancellation nor a credit note; never count them together.', 1, 0, 0, 0)
+  ON DUPLICATE KEY UPDATE orders_status_definition = VALUES(orders_status_definition);
+INSERT INTO clic_orders_status
+  (orders_status_id, language_id, orders_status_name, orders_status_definition, public_flag, downloads_flag, support_orders_flag, authorize_to_delete_order)
+  VALUES (5, 2, 'Remboursement', 'Commande intégralement remboursée : la totalité de la facture a été rendue au client. À exclure du chiffre d''affaires, de la marge et du panier moyen — la vente est défaite. Le montant remboursé est TOUJOURS le total de la commande, jamais un montant partiel. Un remboursement n''est ni une annulation ni un avoir ; ne jamais les compter ensemble.', 1, 0, 0, 0)
+  ON DUPLICATE KEY UPDATE orders_status_definition = VALUES(orders_status_definition);
+
 -- statuts de facture (10 lignes) — texte IDENTIQUE au seed install/Db/, par construction
 UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
   'Order not invoiced yet. No accounting document has been issued.'
@@ -233,11 +241,21 @@ UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
   'Facturation annulée pour cette commande.'
   WHERE orders_status_invoice_id = 3 AND language_id = 2;  -- Annuler
 UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
-  'Credit note issued (avoir): money owed back to the customer, not a sale.'
+  'Credit note (avoir) issued: an amount negotiated between the merchant and the customer. It MAY DIFFER from the invoice total and is usually granted as a discount on a later order. That amount is NOT stored in the database - never derive it from the order total. Count credit notes, never sum an amount for them; if the amount is needed it can only come from the free-text comment of the order status history.'
   WHERE orders_status_invoice_id = 4 AND language_id = 1;  -- Have a bill
 UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
-  'Avoir émis : somme due au client, ce n''est pas une vente.'
+  'Avoir émis : montant négocié entre le marchand et le client. Il PEUT DIFFÉRER du total de la facture et est généralement accordé sous forme de remise sur une commande suivante. Ce montant n''est PAS stocké en base — ne jamais le déduire du total de la commande. Compter les avoirs, ne jamais en sommer un montant ; si le montant est nécessaire, il ne peut venir que du commentaire libre de l''historique de statut.'
   WHERE orders_status_invoice_id = 4 AND language_id = 2;  -- Avoir
+
+-- Statut de facture 5 « Remboursement » : nouveau, même raison qu'en commande.
+INSERT INTO clic_orders_status_invoice
+  (orders_status_invoice_id, language_id, orders_status_invoice_name, orders_status_invoice_definition)
+  VALUES (5, 1, 'Refund', 'Invoice fully refunded: the entire invoiced amount was returned to the customer, so the refunded amount equals the order total. Invoicing axis only - to count refunded ORDERS use orders.orders_status, and never count one order on both axes.')
+  ON DUPLICATE KEY UPDATE orders_status_invoice_definition = VALUES(orders_status_invoice_definition);
+INSERT INTO clic_orders_status_invoice
+  (orders_status_invoice_id, language_id, orders_status_invoice_name, orders_status_invoice_definition)
+  VALUES (5, 2, 'Remboursement', 'Facture intégralement remboursée : la totalité du montant facturé a été rendue au client, le montant remboursé est donc égal au total de la commande. Axe facturation uniquement — pour compter les COMMANDES remboursées, utiliser orders.orders_status, et ne jamais compter une commande sur les deux axes.')
+  ON DUPLICATE KEY UPDATE orders_status_invoice_definition = VALUES(orders_status_invoice_definition);
 
 -- --------------------------------------------------------------------------
 -- 4. Contrôle — doit rendre 0 ligne. Toute ligne rendue est un statut sans
@@ -329,3 +347,18 @@ ALTER TABLE `clic_orders_total` ADD `total_rank` SMALLINT NOT NULL DEFAULT 0 COM
 -- omits total_rank is REJECTED and the total line is lost. On an install that already applied the
 -- version without a default:
 -- ALTER TABLE `clic_orders_total` MODIFY `total_rank` SMALLINT NOT NULL DEFAULT 0 COMMENT 'Fiscal rank this line was COMPUTED at - base 100 reduction 200 or 500 charge 300 or 510 tax 400 total 900 - 0 when unknown. Never the display order that is sort_order';
+
+=========================
+DELETE FROM `clic_configuration` WHERE `clic_configuration`.`configuration_group_id` = 25;
+
+INSERT FROM `clic_administrator_menu` WHERE `clic_administrator_menu_description`.`id` 23;
+DELETE FROM `clic_administrator_menu_description` WHERE `clic_administrator_menu_description`.`id` = 23 AND `clic_administrator_menu_description`.`language_id` = 1;
+DELETE FROM `clic_administrator_menu_description` WHERE `clic_administrator_menu_description`.`id` = 23 AND `clic_administrator_menu_description`.`language_id` = 2;
+
+
+========================
+-- English
+INSERT INTO clic_configuration VALUES(null, 'Specific delivery out of stock (other than by default)', 'DISPLAY_SHIPPING_DELAY_OUT_OF_STOCK', '10', 'Specific delivery out of stock (other than by default)', 9, 10, '2008-06-23 23:42:37', '2008-06-23 00:00:00',  NULL, NULL);
+--french
+INSERT INTO clic_configuration VALUES(null, 'Délais de livraison spécifique hors stock (autre que par défaut)', 'DISPLAY_SHIPPING_DELAY_OUT_OF_STOCK', '10', 'Veuillez séléctionner le délais de livraison spécifique hors stock (autre que par défaut) ', 9, 10, '2008-06-23 23:42:37', '2008-06-23 00:00:00',  NULL, NULL);
+

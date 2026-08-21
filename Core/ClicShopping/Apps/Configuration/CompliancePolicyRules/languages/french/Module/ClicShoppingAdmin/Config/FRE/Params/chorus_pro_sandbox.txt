@@ -1,0 +1,5 @@
+cfg_configuration_compliance_policy_rules_chorus_pro_sandbox_title = Mode bac à sable Chorus Pro
+cfg_configuration_compliance_policy_rules_chorus_pro_sandbox_description = Utilise l'environnement de test Chorus Pro (True | False).
+
+cfg_configuration_compliance_policy_rules_chorus_pro_sandbox_true = True
+cfg_configuration_compliance_policy_rules_chorus_pro_sandbox_false = False

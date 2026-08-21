@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_url_sales_conditions_title = URL terms of sales
+cfg_configuration_compliance_policy_rules_url_sales_conditions_description = Please indicate the URL terms of sale.

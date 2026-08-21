@@ -34,13 +34,12 @@ class cc_checkout_confirmation_law_hamon
 
   public function execute()
   {
-
     $CLICSHOPPING_Template = Registry::get('Template');
     $CLICSHOPPING_Customer = Registry::get('Customer');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     if (isset($_GET['Checkout'], $_GET['Confirmation']) && $CLICSHOPPING_Customer->isLoggedOn()) {
-
-      if (CONFIGURATION_LAW_HAMON == 'true') {
+      if ($CLICSHOPPING_CompliancePolicyRules->displayOrderAcceptance() === true) {
         $content_width = (int)MODULE_CHECKOUT_CONFIRMATION_LAW_HAMON_CONTENT_WIDTH;
 
         $footer = '<script>' . "\n";

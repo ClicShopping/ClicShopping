@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_shop_legal_information_title = Legal information on invoices
+cfg_configuration_compliance_policy_rules_shop_legal_information_description = Other legal information to be included on invoices. - Leave blank if it does not apply to you.

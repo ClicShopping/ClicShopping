@@ -35,11 +35,12 @@ class ca_create_account_privacy_condition
   public function execute()
   {
     $CLICSHOPPING_Template = Registry::get('Template');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     if (isset($_GET['Account'], $_GET['Create']) && !isset($_GET['Success'])) {
       $content_width = \defined('MODULE_CREATE_ACCOUNT_PRIVACY_CONDITION_CONTENT_WIDTH') ? (int)MODULE_CREATE_ACCOUNT_PRIVACY_CONDITION_CONTENT_WIDTH : 12;
 
-      if (\defined('DISPLAY_PRIVACY_CONDITIONS') && DISPLAY_PRIVACY_CONDITIONS == 'true') {
+      if ($CLICSHOPPING_CompliancePolicyRules->displayPrivacyConditions() === true) {
         $create_account = '<!-- Start create_account_privacy_condition start -->' . "\n";
 
         ob_start();

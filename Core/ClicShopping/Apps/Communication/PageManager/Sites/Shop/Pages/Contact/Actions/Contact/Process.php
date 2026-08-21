@@ -26,6 +26,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Mail = Registry::get('Mail');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     $CLICSHOPPING_PageManager = Registry::get('PageManager');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     $CLICSHOPPING_PageManager->loadDefinitions('Sites/Shop/Contact/contact');
 
@@ -87,7 +88,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $customer_agree_privacy = null;
       }
 
-      if (\defined('DISPLAY_PRIVACY_CONDITIONS') && DISPLAY_PRIVACY_CONDITIONS == 'true') {
+      if ($CLICSHOPPING_CompliancePolicyRules->displayPrivacyConditions() === true) {
         if ($customer_agree_privacy != 'on') {
           $error = true;
           $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_agreement_check_error'), 'error');

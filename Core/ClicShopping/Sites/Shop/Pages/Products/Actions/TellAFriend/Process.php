@@ -26,6 +26,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_Mail = Registry::get('Mail');
     $CLICSHOPPING_ProductsCommon = Registry::get('ProductsCommon');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules ');
 
     if (isset($_POST['action']) && ($_POST['action'] == 'process') && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
       $error = false;
@@ -40,7 +41,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $customer_agree_privacy = HTML::sanitize($_POST['customer_agree_privacy']);
 
-      if (DISPLAY_PRIVACY_CONDITIONS == 'true') {
+      if ($CLICSHOPPING_CompliancePolicyRules->displayPrivacyConditions() === true) {
         if ($customer_agree_privacy != 'on') {
           $error = true;
 

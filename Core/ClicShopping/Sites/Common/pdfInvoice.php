@@ -137,12 +137,13 @@ class pdfInvoice extends FPDF
    *
    * Formats and positions various elements in the footer, including customer appreciation text,
    * legal property information, company details, and additional information.
-   * Displays differing information based on configuration settings (e.g., DISPLAY_DOUBLE_TAXE).
+   * Displays differing information based on configuration settings (e.g., CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_DISPLAY_DOUBLE_TAXES).
    *
    * @return void
    */
   public function Footer():void
   {
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 // Remerciement
     $this->SetY(-55);
     $this->SetFont('Arial', 'B', 8);
@@ -162,28 +163,28 @@ class pdfInvoice extends FPDF
     $this->SetY(-35);
     $this->SetFont('Arial', '', 7);
     $this->SetTextColor(...explode(',', INVOICE_RGB));
-    $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('reserve_propriete_next1', ['sell_conditions_url' => HTTP::getShopUrlDomain() . ' ' . SHOP_CODE_URL_CONDITIONS_VENTE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('reserve_propriete_next1', ['sell_conditions_url' => HTTP::getShopUrlDomain() . ' ' . CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_URL_SALES_CONDITIONS]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 // Informations de la compagnie
-    if (DISPLAY_DOUBLE_TAXE == 'false') {
+    if ($CLICSHOPPING_CompliancePolicyRules->displayDoubleTaxes() === false) {
       $this->SetY(-25);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...explode(',', INVOICE_RGB));
-      $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe', ['shop_code_capital' => SHOP_CODE_CAPITAL, 'shop_code_rcs' => SHOP_CODE_RCS, 'shop_code_ape' => SHOP_CODE_APE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe', ['shop_code_capital' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_SHOP_CAPITAL, 'shop_code_rcs' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_COMPANY_REGISTRATION_NUMBER, 'shop_code_ape' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_APE_CODE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
       $this->SetY(-20);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...explode(',', INVOICE_RGB));
-      $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe_next', ['tva_shop_intracom' => TVA_SHOP_INTRACOM]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe_next', ['tva_shop_intracom' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_EU_VAT_NUMBER]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
     } else {
       $this->SetY(-25);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...explode(',', INVOICE_RGB));
-      $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe1', ['shop_code_capital' => SHOP_CODE_CAPITAL, 'shop_code_rcs' => SHOP_CODE_RCS, 'shop_code_ape' => SHOP_CODE_APE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe1', ['shop_code_capital' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_SHOP_CAPITAL, 'shop_code_rcs' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_COMPANY_REGISTRATION_NUMBER, 'shop_code_ape' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_APE_CODE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
       $this->SetY(-20);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...explode(',', INVOICE_RGB));
-      $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe_next1', ['tva_shop_provincial' => TVA_SHOP_PROVINCIAL, 'tva_shop_federal' => TVA_SHOP_FEDERAL]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING::getDef('entry_info_societe_next1', ['tva_shop_provincial' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_REGIONAL_TAXES_NUMBER, 'tva_shop_federal' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_FEDERAL_TAXES_NUMBER]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
     }
 
 
@@ -191,6 +192,6 @@ class pdfInvoice extends FPDF
     $this->SetY(-15);
     $this->SetFont('Arial', '', 8);
     $this->SetTextColor(...explode(',', INVOICE_RGB));
-    $this->Cell(0, 10, mb_convert_encoding(SHOP_DIVERS, 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_SHOP_LEGAL_INFORMATION, 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
   }
 }

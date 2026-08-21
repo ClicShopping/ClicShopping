@@ -34,12 +34,11 @@ class cp_checkout_payment_agreement
 
   public function execute()
   {
-
     $CLICSHOPPING_Template = Registry::get('Template');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     if (isset($_GET['Checkout'], $_GET['Billing'])) {
-
-      if (defined('CONFIGURATION_LAW_HAMON') && CONFIGURATION_LAW_HAMON == 'true') {
+      if ($CLICSHOPPING_CompliancePolicyRules->displayOrderAcceptance() === true) {
         $content_width = (\defined('MODULE_CHECKOUT_PAYMENT_AGREEMENT_CONTENT_WIDTH') ? (int)MODULE_CHECKOUT_PAYMENT_AGREEMENT_CONTENT_WIDTH : 12);
 
         $payment_process = '<!-- start cp_checkout_payment_aggreement -->' . "\n";

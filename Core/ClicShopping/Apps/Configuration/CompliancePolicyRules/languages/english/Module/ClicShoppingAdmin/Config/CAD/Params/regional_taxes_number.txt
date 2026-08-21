@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_regional_taxes_number_title = Provincial tax number
+cfg_configuration_compliance_policy_rules_regional_taxes_number_description = Please indicate the administrative number of the provincial tax (ex : TPS/GST : R127066546).- Leave blank if it does not apply to you.

@@ -1036,27 +1036,34 @@ class ProductsCommon extends Prod
    */
   public function getProductsShippingDelay(): string
   {
-    $language_id = $this->language->getId();
+    $language_id = (int)$this->language->getId();
+    $products_id = (int)$this->getID();
 
-    $products_shipping_delay = $this->memo('shipping_delay:' . $this->getID() . ':' . $language_id, function () use ($language_id): string {
-      $Qproducts = $this->db->prepare('select pd.products_shipping_delay
-                                          from :table_products p,
-                                               :table_products_description pd
-                                          where p.products_status = 1
-                                          and p.products_id = :products_id
-                                          and pd.products_id = p.products_id
-                                          and pd.language_id = :language_id
-                                         ');
+    $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
-      $Qproducts->bindInt(':products_id', $this->getID());
-      $Qproducts->bindInt(':language_id', (int)$language_id);
-      $Qproducts->execute();
+    $products_shipping_delay = $this->memo(
+      'shipping_delay:' . $products_id . ':' . $language_id,
+      function () use ($language_id, $products_id): string {
+        $Qproducts = $this->db->prepare('
+                select pd.products_shipping_delay
+                from :table_products p,
+                     :table_products_description pd
+                where p.products_status = 1
+                  and p.products_id = :products_id
+                  and pd.products_id = p.products_id
+                  and pd.language_id = :language_id
+            ');
 
-      return $Qproducts->value('products_shipping_delay');
-    });
+        $Qproducts->bindInt(':products_id', $products_id);
+        $Qproducts->bindInt(':language_id', $language_id);
+        $Qproducts->execute();
 
-    if (empty($products['products_shipping_delay'])) {
-      $products_shipping_delay = HTML::outputProtected(\defined('DISPLAY_SHIPPING_DELAY') ? DISPLAY_SHIPPING_DELAY : '');
+        return (string)$Qproducts->value('products_shipping_delay');
+      }
+    );
+
+    if ($products_shipping_delay === null || $products_shipping_delay === '') {
+      $products_shipping_delay = $CLICSHOPPING_CompliancePolicyRules->displayShippingDelayCondition();
     }
 
     return $products_shipping_delay;

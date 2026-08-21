@@ -1,0 +1,4 @@
+cfg_configuration_compliance_policy_rules_display_double_taxes_title = Are you in a country managing a double tax sale ?
+cfg_configuration_compliance_policy_rules_display_double_taxes_description = Do you want to display the "Accept the general conditions"
+cfg_configuration_compliance_policy_rules_display_double_taxes_true = True
+cfg_configuration_compliance_policy_rules_display_double_taxes_false = False

@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_pappers_api_token_title = Pappers API Token
+cfg_configuration_compliance_policy_rules_pappers_api_token_description = API token used to verify company information via the Pappers website (pappers.fr). Enter your API token obtained from your Pappers account.
