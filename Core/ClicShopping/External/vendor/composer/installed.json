@@ -2432,12 +2432,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "fbc6c8ad3beaf46aa02ea4236a16fb00a33fbec3"
+                "reference": "bffbcefd4888dc8e04690bfb04bcdf4a62ab26da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/fbc6c8ad3beaf46aa02ea4236a16fb00a33fbec3",
-                "reference": "fbc6c8ad3beaf46aa02ea4236a16fb00a33fbec3",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/bffbcefd4888dc8e04690bfb04bcdf4a62ab26da",
+                "reference": "bffbcefd4888dc8e04690bfb04bcdf4a62ab26da",
                 "shasum": ""
             },
             "conflict": {
@@ -2504,7 +2504,7 @@
                 "azuracast/azuracast": "<=0.23.5",
                 "b13/seo_basics": "<0.8.2",
                 "backdrop/backdrop": "<=1.32",
-                "backpack/crud": "<4.0.63|>=4.1,<4.1.69|>=5,<5.0.13",
+                "backpack/crud": "<6.8.15|>=7,<7.0.47",
                 "backpack/filemanager": "<2.0.2|>=3,<3.0.9",
                 "bacula-web/bacula-web": "<9.7.1",
                 "badaso/core": "<=2.9.11",
@@ -2769,7 +2769,7 @@
                 "georgringer/news": "<10.0.4|>=11,<11.4.4|>=12,<12.3.2|>=13,<13.0.2|>=14,<14.0.3",
                 "geshi/geshi": "<=1.0.9.1",
                 "getformwork/formwork": "<=2.3.3",
-                "getgrav/grav": "<=2.0.0.0-RC8",
+                "getgrav/grav": "<2.0.4",
                 "getgrav/grav-plugin-api": "<1.0.0.0-beta15",
                 "getgrav/grav-plugin-form": "<9.1",
                 "getkirby/cms": "<=4.9.3|>=5,<=5.4.3",
@@ -3229,7 +3229,7 @@
                 "slim/slim": "<2.6|>=4.4,<=4.15.1",
                 "slub/slub-events": "<3.0.3",
                 "smarty/smarty": "<4.5.7|>=5,<5.8.4",
-                "snipe/snipe-it": "<=8.6.1",
+                "snipe/snipe-it": "<8.6.3",
                 "socalnick/scn-social-auth": "<1.15.2",
                 "socialiteproviders/steam": "<1.1",
                 "solidinvoice/solidinvoice": "<=2.3.15",
@@ -3437,10 +3437,10 @@
                 "wikibase/wikibase": "<=1.39.3",
                 "wikimedia/parsoid": "<0.12.2",
                 "willdurand/js-translation-bundle": "<2.1.1",
-                "winter/wn-backend-module": "<1.2.13",
+                "winter/wn-backend-module": "<1.2.14",
                 "winter/wn-cms-module": "<=1.2.12",
                 "winter/wn-dusk-plugin": "<2.1",
-                "winter/wn-system-module": "<1.2.4",
+                "winter/wn-system-module": "<1.2.13",
                 "wintercms/winter": "<=1.2.3",
                 "wireui/wireui": "<1.19.3|>=2,<2.1.3",
                 "wnx/laravel-backup-restore": "<=1.9.3",
@@ -3517,7 +3517,7 @@
                 "zoujingli/thinkadmin": "<=6.1.53",
                 "zumba/json-serializer": "<3.2.3"
             },
-            "time": "2026-08-18T21:23:23+00:00",
+            "time": "2026-08-20T19:30:24+00:00",
             "default-branch": true,
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",
@@ -3723,17 +3723,17 @@
         },
         {
             "name": "stripe/stripe-php",
-            "version": "v21.2.0",
-            "version_normalized": "21.2.0.0",
+            "version": "v21.2.1",
+            "version_normalized": "21.2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stripe/stripe-php.git",
-                "reference": "edf8118f0b96d69f06f372da9168d613d1aed072"
+                "reference": "da798f6224c5ff6f89d8d78025044f418ee27db8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/edf8118f0b96d69f06f372da9168d613d1aed072",
-                "reference": "edf8118f0b96d69f06f372da9168d613d1aed072",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/da798f6224c5ff6f89d8d78025044f418ee27db8",
+                "reference": "da798f6224c5ff6f89d8d78025044f418ee27db8",
                 "shasum": ""
             },
             "require": {
@@ -3747,7 +3747,7 @@
                 "phpstan/phpstan": "^1.2",
                 "phpunit/phpunit": "^8.0 || ^9.0"
             },
-            "time": "2026-08-10T22:11:35+00:00",
+            "time": "2026-08-20T21:06:13+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -3757,8 +3757,7 @@
             "installation-source": "dist",
             "autoload": {
                 "files": [
-                    "lib/version_check.php",
-                    "lib/agent_plugin_hint.php"
+                    "lib/version_check.php"
                 ],
                 "psr-4": {
                     "Stripe\\": "lib/"
@@ -3783,7 +3782,7 @@
             ],
             "support": {
                 "issues": "https://github.com/stripe/stripe-php/issues",
-                "source": "https://github.com/stripe/stripe-php/tree/v21.2.0"
+                "source": "https://github.com/stripe/stripe-php/tree/v21.2.1"
             },
             "install-path": "../stripe/stripe-php"
         },

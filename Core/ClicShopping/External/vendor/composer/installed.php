@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'fa77cad9b0b869cc12625cdd7b2d0d2e1cb79d79',
+        'reference' => 'f258903f97c16f92dad4b2ae6b9c1ed321121d98',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'fa77cad9b0b869cc12625cdd7b2d0d2e1cb79d79',
+            'reference' => 'f258903f97c16f92dad4b2ae6b9c1ed321121d98',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => 'fbc6c8ad3beaf46aa02ea4236a16fb00a33fbec3',
+            'reference' => 'bffbcefd4888dc8e04690bfb04bcdf4a62ab26da',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -394,9 +394,9 @@
             'dev_requirement' => false,
         ),
         'stripe/stripe-php' => array(
-            'pretty_version' => 'v21.2.0',
-            'version' => '21.2.0.0',
-            'reference' => 'edf8118f0b96d69f06f372da9168d613d1aed072',
+            'pretty_version' => 'v21.2.1',
+            'version' => '21.2.1.0',
+            'reference' => 'da798f6224c5ff6f89d8d78025044f418ee27db8',
             'type' => 'library',
             'install_path' => __DIR__ . '/../stripe/stripe-php',
             'aliases' => array(),
