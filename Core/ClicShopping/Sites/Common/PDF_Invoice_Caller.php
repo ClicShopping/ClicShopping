@@ -15,8 +15,7 @@
  *   $renderer->batchRender('packingslip', $pdf, $orders_array, $options);
  */
 
-use ClicShopping\OM\Registry;
-  use ClicShopping\Sites\Common\PDF_Invoice;
+use ClicShopping\Sites\Common\PDF_Invoice;
 
   class PDF_Invoice_Caller
 {
