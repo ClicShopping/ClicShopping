@@ -97,6 +97,8 @@ abstract class AbstractDomainApp extends ConfigurableAppAbstract implements Doma
    */
   protected function init(): void
   {
+    // Registration makes the domain discoverable and activatable. The guard names the class
+    // by its REAL namespace: guarded on a stale one it was always false, and no App ever registered.
     if (class_exists(DomainRegistry::class)) {
       DomainRegistry::getInstance()->registerApp($this);
     }

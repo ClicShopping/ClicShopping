@@ -23,7 +23,7 @@ thank_you_customer = Nous vous remercions d'avoir passé une commande chez nous.
 
 reserve_propriete = Réserve de propriété : Selon la loi en vigueur  {{store_name}} se réserve la propriété des marchandises livrées jusqu'au paiement intégral du prix.
 reserve_propriete_next = Il pourra en demander la restitution par lettre recommandée. Pour tout autre information, veuillez consulter nos conditions générales de vente
-  define('reserve_propriete_next1', 'disponible sur le site à l'adresse suivante : {{url_sell_conditions}}
+reserve_propriete_next1 = disponible sur le site à l'adresse suivante : {{url_sell_conditions}}
 
 entry_info_societe = {{info_societe}}
 entry_info_societe_next = {{tva_intracom}}

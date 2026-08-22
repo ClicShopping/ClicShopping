@@ -360,6 +360,13 @@ class AnalyticsAgent implements AgentInterface
         $response['cache_age'] = $results['cache_age'];
       }
 
+      if ($this->analysisPlan !== null) {
+        $response['analysis_plan'] = $this->analysisPlan;
+        if ($this->conversationMemory !== null && method_exists($this->conversationMemory, 'setLastAnalysisPlan')) {
+          $this->conversationMemory->setLastAnalysisPlan($this->analysisPlan);
+        }
+      }
+
       if ($includeSQL) {
         $response['sql_query'] = $results['sql_query'] ?? 'N/A';
         $response['original_sql_query'] = $results['original_sql_query'] ?? $results['sql_query'] ?? 'N/A';
