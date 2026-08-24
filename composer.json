@@ -26,7 +26,7 @@
         "stolt/llms-txt-php": "^3.4",
         "theodo-group/llphant": "^1.0",
         "guzzlehttp/guzzle": "^7.15",
-        "stripe/stripe-php": "^21.0"
+        "stripe/stripe-php": "^21.2"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
