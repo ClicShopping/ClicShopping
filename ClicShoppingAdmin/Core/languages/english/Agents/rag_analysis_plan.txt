@@ -1,9 +1,10 @@
 text_analysis_plan_prompt = TASK: produce an ANALYSIS PLAN for the question below. Return ONLY valid JSON, no text before or after, no markdown fence.
 {{metric_catalog}}
 PLAN FORMAT
-{"periods": {"current": {"from": "YYYY-MM-DD", "to": "YYYY-MM-DD"}, "compare": "none|previous_year|previous_period"}, "metrics": [{"name": "<a name from the list above>"}], "dimensions": ["<what the result is broken down by>"], "rankings": [{"metric": "<a metric you listed>", "direction": "top|bottom", "n": 3, "partition_by": "<dimension or null>"}], "filters": {}, "complexity": 1}
+{"periods": {"current": {"from": "YYYY-MM-DD", "to": "YYYY-MM-DD"}, "compare": "none|previous_year|previous_period"}, "metrics": [{"name": "<a name from the list above>"}], "unsupported": ["<a measure the question asks for that the list does not carry>"], "dimensions": ["<what the result is broken down by>"], "rankings": [{"metric": "<a metric you listed>", "direction": "top|bottom", "n": 3, "partition_by": "<dimension or null>"}], "filters": {}, "complexity": 1}
 RULES
-1. metrics: use ONLY names from the list above. If the question asks for something the list does not carry, OMIT it - never invent a name, never approximate with a neighbour.
+1. metrics: use ONLY names from the list above - never invent a name, never approximate with a neighbour.
+1bis. unsupported: when the question asks for a measure the list does not carry, keep it OUT of metrics and name it there, in the words of the question. It is how the answer tells the user what it could not serve; an omission it cannot name is an amputation. Leave it empty when the question asks for no measure at all - a stock level, a price, a list - that is not an unsupported measure.
 2. periods.current: the window the question actually asks about. Never widen it, never narrow it.
 3. compare: say WHETHER to compare, never WHAT to compare with. The second window is computed for you. Writing it yourself is how an empty interval gets produced.
 4. Do NOT write the grain or the type of a metric: both are already known and will be filled in.

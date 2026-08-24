@@ -1,9 +1,10 @@
 text_analysis_plan_prompt = TÂCHE : produire un PLAN D'ANALYSE pour la question ci-dessous. Ne renvoyer QUE du JSON valide, sans texte avant ni après, sans balise markdown.
 {{metric_catalog}}
 FORMAT DU PLAN
-{"periods": {"current": {"from": "AAAA-MM-JJ", "to": "AAAA-MM-JJ"}, "compare": "none|previous_year|previous_period"}, "metrics": [{"name": "<un nom de la liste ci-dessus>"}], "dimensions": ["<ce par quoi le résultat est ventilé>"], "rankings": [{"metric": "<une métrique que vous avez listée>", "direction": "top|bottom", "n": 3, "partition_by": "<dimension ou null>"}], "filters": {}, "complexity": 1}
+{"periods": {"current": {"from": "AAAA-MM-JJ", "to": "AAAA-MM-JJ"}, "compare": "none|previous_year|previous_period"}, "metrics": [{"name": "<un nom de la liste ci-dessus>"}], "unsupported": ["<une mesure demandée par la question que la liste ne porte pas>"], "dimensions": ["<ce par quoi le résultat est ventilé>"], "rankings": [{"metric": "<une métrique que vous avez listée>", "direction": "top|bottom", "n": 3, "partition_by": "<dimension ou null>"}], "filters": {}, "complexity": 1}
 RÈGLES
-1. metrics : n'utiliser QUE des noms de la liste ci-dessus. Si la question demande ce que la liste ne porte pas, l'OMETTRE — ne jamais inventer un nom, ne jamais approcher avec un voisin.
+1. metrics : n'utiliser QUE des noms de la liste ci-dessus — ne jamais inventer un nom, ne jamais approcher avec un voisin.
+1bis. unsupported : quand la question demande une mesure que la liste ne porte pas, la laisser HORS de metrics et la nommer là, dans les mots de la question. C'est ainsi que la réponse dit à l'utilisateur ce qu'elle n'a pas pu servir ; une omission qu'elle ne sait pas nommer est une amputation. Laisser vide quand la question ne demande aucune mesure — un niveau de stock, un prix, une liste — ce n'est pas une mesure non portée.
 2. periods.current : la fenêtre que la question demande réellement. Ne jamais l'élargir, ne jamais la rétrécir.
 3. compare : dire S'IL FAUT comparer, jamais AVEC QUOI. La seconde fenêtre est calculée pour vous. L'écrire soi-même est la façon dont un intervalle vide est produit.
 4. Ne PAS écrire le grain ni le type d'une métrique : les deux sont déjà connus et seront remplis.

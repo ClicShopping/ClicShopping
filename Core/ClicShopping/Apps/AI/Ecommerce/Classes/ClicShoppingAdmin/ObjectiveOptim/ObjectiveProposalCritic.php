@@ -28,12 +28,15 @@ class ObjectiveProposalCritic implements CriticInterface
 {
   public const OUTPUT_TYPE = 'objective_proposal';
 
+  public const CRITIC_ID_PREFIX = 'objective_proposal_critic_';
+
+  // Stable identity: the FACET discriminates the two registrations, nothing else may.
   private string $criticId;
   private bool $debug;
 
   public function __construct(string $facet = 'soundness', bool $debug = false, ?CriticRegistry $registry = null)
   {
-    $this->criticId = 'objective_proposal_critic_' . $facet . '_' . uniqid();
+    $this->criticId = self::CRITIC_ID_PREFIX . $facet;
     $this->debug = $debug;
     if ($registry !== null) {
       $registry->registerCritic($this);

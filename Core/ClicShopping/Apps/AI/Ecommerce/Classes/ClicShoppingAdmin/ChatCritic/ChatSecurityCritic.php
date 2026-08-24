@@ -27,12 +27,13 @@ class ChatSecurityCritic implements CriticInterface
 {
   public const OUTPUT_TYPE = 'chat_response';
 
-  private string $criticId;
+  // Stable identity: reputation and weighting key on it across requests.
+  public const CRITIC_ID = 'chat_security_critic';
+
   private bool $debug;
 
   public function __construct(bool $debug = false, ?CriticRegistry $registry = null)
   {
-    $this->criticId = 'chat_security_critic_' . uniqid();
     $this->debug = $debug;
 
     if ($registry !== null) {
@@ -59,14 +60,14 @@ class ChatSecurityCritic implements CriticInterface
     $strengths = $security >= 0.8 ? ['Answer is well-formed / safe per the security analysis.'] : [];
     $improvements = $security < 0.7 ? ['Security score below threshold — review for unsafe / malformed content.'] : [];
 
-    return new Evaluation($this->criticId, $result->getResultId(), $evalScores, $feedback, $strengths, $improvements);
+    return new Evaluation(self::CRITIC_ID, $result->getResultId(), $evalScores, $feedback, $strengths, $improvements);
   }
 
   public function predictOutcome(Action $action): Prediction
   {
     return new Prediction(
       $action->getActionId(),
-      $this->criticId,
+      self::CRITIC_ID,
       ['expected_quality' => 0.8],
       0.8,
       [],
@@ -104,6 +105,6 @@ class ChatSecurityCritic implements CriticInterface
 
   public function getCriticId(): string
   {
-    return $this->criticId;
+    return self::CRITIC_ID;
   }
 }

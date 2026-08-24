@@ -32,7 +32,9 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Agents\SeoCodeV
 class SeoValidationCritic implements CriticInterface
 {
   /** @var string Unique identifier for this critic instance. */
-  private string $criticId;
+  // Stable identity: reputation and weighting key on it across requests.
+  public const CRITIC_ID = 'seo_validation_critic';
+
 
   /** @var bool Flag to toggle verbose debugging features. */
   private bool $debug;
@@ -59,7 +61,6 @@ class SeoValidationCritic implements CriticInterface
     ?SeoCodeValidationAgent $validator = null
   )
   {
-    $this->criticId       = 'seo_validation_critic_' . uniqid();
     $this->debug          = $debug;
     $this->validator      = $validator ?? new SeoCodeValidationAgent();
     $this->securityLogger = new SecurityLogger();
@@ -99,7 +100,7 @@ class SeoValidationCritic implements CriticInterface
 
     return new Prediction(
       $action->getActionId(),
-      $this->criticId,
+      self::CRITIC_ID,
       ['expected_quality' => $confidence],
       $confidence,
       $risks,
@@ -185,7 +186,7 @@ class SeoValidationCritic implements CriticInterface
     $this->securityLogger->logSecurityEvent(
       'SeoValidationCritic evaluating output',
       'info',
-      ['critic_id' => $this->criticId, 'output_type' => $outputType]
+      ['critic_id' => self::CRITIC_ID, 'output_type' => $outputType]
     );
 
     try {
@@ -223,7 +224,7 @@ class SeoValidationCritic implements CriticInterface
       $this->securityLogger->logSecurityEvent(
         'SeoValidationCritic evaluation error (fault-tolerant low score)',
         'warning',
-        ['critic_id' => $this->criticId, 'error' => $e->getMessage()]
+        ['critic_id' => self::CRITIC_ID, 'error' => $e->getMessage()]
       );
       $scores = ['accuracy' => 0.2, 'completeness' => 0.2, 'efficiency' => 0.2, 'clarity' => 0.2];
       $feedback = 'SEO code validation could not complete on this proposal.';
@@ -232,7 +233,7 @@ class SeoValidationCritic implements CriticInterface
     }
 
     $evaluation = new Evaluation(
-      $this->criticId,
+      self::CRITIC_ID,
       $result->getResultId(),
       $scores,
       $feedback,
@@ -257,7 +258,7 @@ class SeoValidationCritic implements CriticInterface
    */
   public function getCriticId(): string
   {
-    return $this->criticId;
+    return self::CRITIC_ID;
   }
 
   /**

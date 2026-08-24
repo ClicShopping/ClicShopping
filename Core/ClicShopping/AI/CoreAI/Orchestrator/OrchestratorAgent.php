@@ -30,6 +30,7 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\PrepareExecutionScopeSta
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ResolveConversationContextStage;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ResolveQueryAgainstContextStage;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\AnalyzeIntentStage;
+use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ClarifyBeforeSplitStage;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\RouteHybridEarlyStage;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ReasoningFallbackStage;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\RouteHybridDuplicateStage;
@@ -335,6 +336,13 @@ class OrchestratorAgent implements AgentInterface
         $this->workingMemory,
         $this->intentTranslationValidator,
         $this->complexQueryHandler,
+        $this->securityLogger,
+        $this->debug
+      ))
+      // Before ANY cut: a half is later executed with the clarification gate switched off, and the
+      // whole question never reaches an agent on a decomposed run — so this is the only place it
+      // can still be clarified. Both cut routes start after intent analysis.
+      ->append(new ClarifyBeforeSplitStage(
         $this->securityLogger,
         $this->debug
       ))

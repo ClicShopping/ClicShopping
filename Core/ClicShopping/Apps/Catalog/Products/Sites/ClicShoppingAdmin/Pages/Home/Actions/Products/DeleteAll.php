@@ -17,7 +17,8 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
   public mixed $app;
   protected $selected;
   protected $cPath;
-
+  protected $hooks;
+  
   public function __construct()
   {
     $this->app = Registry::get('Products');

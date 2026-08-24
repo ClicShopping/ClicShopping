@@ -77,10 +77,8 @@ class AnalyticsQueryClassifier
       }
     }
 
-    // REVERTED: Only accept 'analytics' type, NOT 'hybrid'
-    // Hybrid queries should be handled by HybridQueryProcessor, not AnalyticsAgent
-    // The CompoundQueryHandler in AnalyticsAgent produces incorrect output format
-    // HybridQueryProcessor has proper handling for multi-intent queries
+    // Only accept 'analytics' type, NOT 'hybrid': multi-intent queries belong to
+    // HybridQueryProcessor, which has the proper handling and output format.
     $isAnalytics = $classificationResult['type'] === 'analytics';
     if ($this->debug) {
       error_log("Is analytics? " . ($isAnalytics ? 'YES' : 'NO'));

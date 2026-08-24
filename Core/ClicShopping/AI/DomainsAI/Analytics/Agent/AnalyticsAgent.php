@@ -95,8 +95,8 @@ class AnalyticsAgent implements AgentInterface
   private PromptBuilder $promptBuilder;
   private ?AnalysisPlanner $analysisPlanner = null;
   private ?array $analysisPlan = null;
+  private array $analysisPlanReserve = [];
   private AmbiguityHandler $ambiguityHandler;
-  private CompoundQueryHandler $compoundQueryHandler;
   private AnalyticsErrorHandler $errorHandler;
   private AnalyticsObjectiveRunner $objectiveRunner;
   private mixed $app;
@@ -217,13 +217,6 @@ class AnalyticsAgent implements AgentInterface
       $this->queryProcessor,
       $this->queryExecutor,
       $this->errorHandler,
-      $this->debug
-    );
-
-    // Initialize CompoundQueryHandler for handling compound queries (multiple questions)
-    $this->compoundQueryHandler = new CompoundQueryHandler(
-      $this->chat,
-      $this->securityLogger,
       $this->debug
     );
 
@@ -366,6 +359,8 @@ class AnalyticsAgent implements AgentInterface
           $this->conversationMemory->setLastAnalysisPlan($this->analysisPlan);
         }
       }
+
+      $this->announceAnalysisPlanReserve($response);
 
       if ($includeSQL) {
         $response['sql_query'] = $results['sql_query'] ?? 'N/A';
@@ -699,6 +694,7 @@ class AnalyticsAgent implements AgentInterface
     $questionForGeneration = $question;
     $ambiguityAnalysis = ['is_ambiguous' => false];
     $this->analysisPlan = null;
+    $this->analysisPlanReserve = [];
 
     try {
 
@@ -723,13 +719,6 @@ class AnalyticsAgent implements AgentInterface
         $queryForAmbiguity = EnglishQueryNormalizer::normalize($question);
         $this->debugLog("Original query: {$question}", "TRANSLATION");
         $this->debugLog("Translated for ambiguity: {$queryForAmbiguity}", "TRANSLATION");
-
-        // STEP 0.25: DISABLED - Compound query detection
-        // Compound queries (e.g., "pending orders and revenue") are now classified as 'hybrid'and routed to HybridQueryProcessor which has proper handling and formatting.
-
-        // See: HybridQueryProcessor.splitHybridQuery() and HybridQueryProcessor.handleComplexQuery()
-        $this->debugLog("--- STEP 0.25: Compound query detection DISABLED ---", "COMPOUND");
-        $this->debugLog("Hybrid queries are handled by HybridQueryProcessor", "COMPOUND");
 
         $this->debugLog("--- STEP 0.5: Check for ambiguous query ---", "AMBIGUITY");
 
@@ -807,6 +796,9 @@ class AnalyticsAgent implements AgentInterface
 
         if ($planResult['unsatisfiable'] !== []) {
           $this->debugLog("PLAN PARTIAL: " . json_encode($planResult['unsatisfiable']), "PLAN");
+          if ($this->analysisPlan !== null) {
+            $this->analysisPlanReserve = $planResult['unsatisfiable'];
+          }
         }
       }
 
@@ -827,6 +819,9 @@ class AnalyticsAgent implements AgentInterface
     } catch (\Exception $e) {
       $this->debugLog("\nFINAL EXCEPTION: " . $e->getMessage());
       $this->debugLog("." . str_repeat(".", 99) . "\n");
+
+      // Returned, not rethrown: the ambiguity metadata only exists in this scope, and a failure
+      // rebuilt one frame higher answers an ambiguous question without ever saying it was one.
       return [
         'type' => 'error',
         'message' => $e->getMessage(),
@@ -869,6 +864,49 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
+   * Announce, AT THE HEAD of the answer, what the plan could not honour.
+   *
+   * The reserve rides the `interpretation` string itself rather than a metadata key: that
+   * string is what the restitution gates carry through to the user verbatim, and a key beside
+   * it would be dropped by the first gate that rebuilds the response.
+   *
+   * It is added AFTER the result cache was written, so the cached entry keeps the plain
+   * interpretation and the reserve is rebuilt from the plan on every turn, hit or miss.
+   *
+   * @param array $response Response being assembled, mutated in place
+   * @return void
+   */
+  private function announceAnalysisPlanReserve(array &$response): void
+  {
+    if ($this->analysisPlanReserve === []) {
+      return;
+    }
+
+    // Name the measure as the question named it; an entry with no label has nothing sayable.
+    $labels = array_values(array_unique(array_filter(
+      array_column($this->analysisPlanReserve, 'label'),
+      static fn($label): bool => is_string($label) && $label !== ''
+    )));
+
+    $response['analysis_plan_unsatisfiable'] = $this->analysisPlanReserve;
+
+    if ($labels === []) {
+      return;
+    }
+
+    $reserve = CLICSHOPPING::getDef('text_analysis_plan_reserve', ['elements' => implode(', ', $labels)]);
+
+    if ($reserve === '' || $reserve === 'text_analysis_plan_reserve') {
+      return;
+    }
+
+    $response['analysis_plan_reserve'] = $reserve;
+    $response['interpretation'] = trim($reserve . "\n\n" . (string)($response['interpretation'] ?? ''));
+
+    $this->debugLog("PLAN RESERVE announced: " . $reserve, "PLAN");
+  }
+
+  /**
    * Build the response of a refused plan — a TERMINAL answer, not a technical incident.
    *
    * Rendered as `type => 'error'` with a `text_response`: that is the only shape the three
@@ -886,7 +924,12 @@ class AnalyticsAgent implements AgentInterface
    */
   private function analysisPlanRefusal(string $question, array $planResult, array $ambiguityAnalysis): array
   {
-    $elements = array_column($planResult['unsatisfiable'], 'element');
+    $elements = array_values(array_filter(array_map(
+      static fn(array $entry): string => (string)($entry['label'] ?? '') !== ''
+        ? (string)$entry['label']
+        : (string)($entry['element'] ?? ''),
+      $planResult['unsatisfiable']
+    )));
 
     $message = $elements === []
       ? CLICSHOPPING::getDef('text_analysis_plan_refused')

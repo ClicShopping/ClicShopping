@@ -43,7 +43,9 @@ use ClicShopping\AI\Security\SecurityLogger;
 class SeoContentReadinessCritic implements CriticInterface
 {
   /** @var string Unique identifier for this critic instance. */
-  private string $criticId;
+  // Stable identity: reputation and weighting key on it across requests.
+  public const CRITIC_ID = 'seo_content_readiness_critic';
+
 
   /** @var bool Flag to toggle verbose debugging features. */
   private bool $debug;
@@ -77,7 +79,6 @@ class SeoContentReadinessCritic implements CriticInterface
     ?CriticRegistry $registry = null
   )
   {
-    $this->criticId       = 'seo_content_readiness_critic_' . uniqid();
     $this->debug          = $debug;
     $this->securityLogger = new SecurityLogger();
 
@@ -114,7 +115,7 @@ class SeoContentReadinessCritic implements CriticInterface
 
     return new Prediction(
       $action->getActionId(),
-      $this->criticId,
+      self::CRITIC_ID,
       ['expected_readiness' => $confidence],
       $confidence,
       $risks,
@@ -196,7 +197,7 @@ class SeoContentReadinessCritic implements CriticInterface
     $this->securityLogger->logSecurityEvent(
       'SeoContentReadinessCritic evaluating output',
       'info',
-      ['critic_id' => $this->criticId, 'output_type' => $outputType]
+      ['critic_id' => self::CRITIC_ID, 'output_type' => $outputType]
     );
 
     try {
@@ -209,7 +210,7 @@ class SeoContentReadinessCritic implements CriticInterface
       $this->securityLogger->logSecurityEvent(
         'SeoContentReadinessCritic evaluation error (fault-tolerant low score)',
         'warning',
-        ['critic_id' => $this->criticId, 'error' => $e->getMessage()]
+        ['critic_id' => self::CRITIC_ID, 'error' => $e->getMessage()]
       );
       $scores = ['accuracy' => 0.2, 'completeness' => 0.2, 'efficiency' => 0.2, 'clarity' => 0.2];
       $feedback = 'Content-readiness evaluation could not complete on this proposal.';
@@ -218,7 +219,7 @@ class SeoContentReadinessCritic implements CriticInterface
     }
 
     $evaluation = new Evaluation(
-      $this->criticId,
+      self::CRITIC_ID,
       $result->getResultId(),
       $scores,
       $feedback,
@@ -243,7 +244,7 @@ class SeoContentReadinessCritic implements CriticInterface
    */
   public function getCriticId(): string
   {
-    return $this->criticId;
+    return self::CRITIC_ID;
   }
 
   // Internal Structural Helpers

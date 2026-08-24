@@ -35,7 +35,7 @@ use ClicShopping\OM\Registry;
  */
 class SqlQualityCriticWrapper implements CriticInterface
 {
-    private string $criticId;
+    public const CRITIC_ID = 'sql_quality_critic';
     private SqlQualityValidator $validator;
     private SecurityLogger $securityLogger;
     private bool $debug;
@@ -48,7 +48,6 @@ class SqlQualityCriticWrapper implements CriticInterface
      */
     public function __construct(?SqlQualityValidator $validator = null, bool $debug = false)
     {
-        $this->criticId = 'sql_quality_critic_wrapper_' . uniqid();
         $this->validator = $validator ?? new SqlQualityValidator();
         $this->debug = $debug;
         $this->securityLogger = new SecurityLogger();
@@ -78,13 +77,16 @@ class SqlQualityCriticWrapper implements CriticInterface
     }
 
     /**
-     * Get unique critic identifier
-     * 
+     * Get the critic identifier
+     *
+     * Stable across instances: an id that varies per construction makes reputation,
+     * decay and reputation-weighted consensus structurally inoperative.
+     *
      * @return string Critic ID
      */
     public function getCriticId(): string
     {
-        return $this->criticId;
+        return self::CRITIC_ID;
     }
 
     /**
@@ -197,7 +199,7 @@ class SqlQualityCriticWrapper implements CriticInterface
         }
 
         return new Evaluation(
-            $this->criticId,
+            self::CRITIC_ID,
             $result->getResultId(),
             $scores,
             $feedback,
@@ -230,7 +232,7 @@ class SqlQualityCriticWrapper implements CriticInterface
         $improvements = ['Consider using sql_query output type for SQL quality evaluation'];
 
         return new Evaluation(
-            $this->criticId,
+            self::CRITIC_ID,
             $result->getResultId(),
             $scores,
             $feedback,
@@ -259,7 +261,7 @@ class SqlQualityCriticWrapper implements CriticInterface
         $improvements = ['Provide a valid SQL query for evaluation'];
 
         return new Evaluation(
-            $this->criticId,
+            self::CRITIC_ID,
             $result->getResultId(),
             $scores,
             $feedback,
@@ -337,7 +339,7 @@ class SqlQualityCriticWrapper implements CriticInterface
         
         return new Prediction(
             $action->getActionId(),
-            $this->criticId,
+            self::CRITIC_ID,
             ['predicted_quality_score' => $confidence],
             $confidence,
             $risks,

@@ -36,7 +36,8 @@ use ClicShopping\OM\Registry;
  */
 class AnalyticsCriticWrapper implements CriticInterface
 {
-    private string $criticId;
+
+    public const CRITIC_ID = 'analytics_critic';
     private AnalyticsQualityEvaluator $evaluator;
     private SecurityLogger $securityLogger;
     private bool $debug;
@@ -50,7 +51,6 @@ class AnalyticsCriticWrapper implements CriticInterface
      */
     public function __construct(?AnalyticsQualityEvaluator $evaluator = null, bool $debug = false)
     {
-        $this->criticId = 'analytics_critic_wrapper_' . uniqid();
         $this->debug = $debug;
         $this->securityLogger = new SecurityLogger();
         
@@ -91,13 +91,16 @@ class AnalyticsCriticWrapper implements CriticInterface
     }
 
     /**
-     * Get unique critic identifier
-     * 
+     * Get the critic identifier
+     *
+     * Stable across instances: an id that varies per construction makes reputation,
+     * decay and reputation-weighted consensus structurally inoperative.
+     *
      * @return string Critic ID
      */
     public function getCriticId(): string
     {
-        return $this->criticId;
+        return self::CRITIC_ID;
     }
 
     /**
@@ -156,7 +159,7 @@ class AnalyticsCriticWrapper implements CriticInterface
                 $this->securityLogger->logSecurityEvent(
                     "AnalyticsCriticWrapper evaluating action result: {$outputType}",
                     'info',
-                    ['critic_id' => $this->criticId, 'result_id' => $result->getResultId()]
+                    ['critic_id' => self::CRITIC_ID, 'result_id' => $result->getResultId()]
                 );
             }
             
@@ -192,7 +195,7 @@ class AnalyticsCriticWrapper implements CriticInterface
                     "AnalyticsCriticWrapper completed evaluation",
                     'info',
                     [
-                        'critic_id' => $this->criticId,
+                        'critic_id' => self::CRITIC_ID,
                         'overall_score' => $evaluation->getOverallScore(),
                         'evaluation_time' => $evaluationTime
                     ]
@@ -205,7 +208,7 @@ class AnalyticsCriticWrapper implements CriticInterface
             $this->securityLogger->logSecurityEvent(
                 "AnalyticsCriticWrapper evaluation failed: " . $e->getMessage(),
                 'error',
-                ['critic_id' => $this->criticId, 'result_id' => $result->getResultId()]
+                ['critic_id' => self::CRITIC_ID, 'result_id' => $result->getResultId()]
             );
             
             // Return a default evaluation on error
@@ -377,7 +380,7 @@ class AnalyticsCriticWrapper implements CriticInterface
         $improvements = $evaluationResult['improvements'] ?? [];
 
         return new Evaluation(
-            $this->criticId,
+            self::CRITIC_ID,
             $result->getResultId(),
             $scores,
             $feedback,
@@ -407,7 +410,7 @@ class AnalyticsCriticWrapper implements CriticInterface
         $improvements = ['Fix evaluation error'];
 
         return new Evaluation(
-            $this->criticId,
+            self::CRITIC_ID,
             $result->getResultId(),
             $scores,
             $feedback,
@@ -502,7 +505,7 @@ class AnalyticsCriticWrapper implements CriticInterface
         
         return new Prediction(
             $action->getActionId(),
-            $this->criticId,
+            self::CRITIC_ID,
             ['predicted_quality_score' => $confidence],
             $confidence,
             $risks,

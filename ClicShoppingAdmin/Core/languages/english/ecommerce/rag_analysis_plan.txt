@@ -7,3 +7,5 @@ Question: "top 3 and bottom 3 best selling products in each category this year"
 {"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "quantity_sold"}], "dimensions": ["category", "product"], "rankings": [{"metric": "quantity_sold", "direction": "top", "n": 3, "partition_by": "category"}, {"metric": "quantity_sold", "direction": "bottom", "n": 3, "partition_by": "category"}], "filters": {}, "complexity": 4}
 Question: "how many orders were cancelled in May"
 {"periods": {"current": {"from": "2026-05-01", "to": "2026-05-31"}, "compare": "none"}, "metrics": [{"name": "cancelled_orders"}], "dimensions": [], "rankings": [], "filters": {}, "complexity": 2}
+Question: "revenue including tax and the net promoter score this year"
+{"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "revenue_ttc"}], "unsupported": ["net promoter score"], "dimensions": [], "rankings": [], "filters": {}, "complexity": 1}
