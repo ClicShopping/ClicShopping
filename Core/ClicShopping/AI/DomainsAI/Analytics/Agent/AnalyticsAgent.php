@@ -355,6 +355,7 @@ class AnalyticsAgent implements AgentInterface
 
       if ($this->analysisPlan !== null) {
         $response['analysis_plan'] = $this->analysisPlan;
+	
         if ($this->conversationMemory !== null && method_exists($this->conversationMemory, 'setLastAnalysisPlan')) {
           $this->conversationMemory->setLastAnalysisPlan($this->analysisPlan);
         }
@@ -691,8 +692,14 @@ class AnalyticsAgent implements AgentInterface
     $this->debugLog(str_repeat(".", 100));
     $this->debugLog("AnalyticsAgent.processAnalyticsQuery() - START", "QUERY");
     $this->debugLog("Feedback context items: " . count($feedbackContext), "QUERY");
+
+    // The user's question is answered as asked; only the string SENT TO GENERATION may be resolved
+    // by the ambiguity branch. Keeping them apart is what lets the response quote the real question.
     $questionForGeneration = $question;
     $ambiguityAnalysis = ['is_ambiguous' => false];
+
+    // The agent outlives one question (sub-queries reuse it): a plan left over from the
+    // previous one would silently key the SQL cache of this one.
     $this->analysisPlan = null;
     $this->analysisPlanReserve = [];
 
@@ -796,6 +803,7 @@ class AnalyticsAgent implements AgentInterface
 
         if ($planResult['unsatisfiable'] !== []) {
           $this->debugLog("PLAN PARTIAL: " . json_encode($planResult['unsatisfiable']), "PLAN");
+
           if ($this->analysisPlan !== null) {
             $this->analysisPlanReserve = $planResult['unsatisfiable'];
           }
@@ -1267,6 +1275,7 @@ class AnalyticsAgent implements AgentInterface
 
       // Enrich question with feedback context for learning
       $enrichedQuestion = $this->queryEnricher->enrichWithFeedback($englishQuestion, $feedbackContext, $this->conversationMemory);
+
       $planBlock = $this->analysisPlanner?->describeForPrompt($this->analysisPlan) ?? '';
 
       if ($planBlock !== '') {

@@ -296,6 +296,24 @@ class TaskPlanner
         $intentType = $intent['type'] ?? 'analytics';
         $confidence = $intent['confidence'] ?? 0.5;
 
+        $analyticsPlanner = $this->subTaskPlanners['analytics'] ?? null;
+        $analysisCut = is_array($intent['sub_queries'] ?? null) ? $intent['sub_queries'] : [];
+
+        if ($analyticsPlanner !== null && $analyticsPlanner->canPlanCut($analysisCut)) {
+            $this->securityLogger->logSecurityEvent(
+                "ANALYTICS CUT REUSED - the analysis cut is all-analytics, decomposition skipped",
+                'info',
+                [
+                    'query' => substr($query, 0, 100),
+                    'intent_type' => $intentType,
+                    'is_hybrid' => $intent['is_hybrid'] ?? false,
+                    'sub_query_count' => count($analysisCut),
+                ]
+            );
+
+            return $analyticsPlanner;
+        }
+
         // Handle hybrid queries with decomposition
         if ($intentType === 'hybrid' || ($intent['is_hybrid'] ?? false)) {
             $subTypes = $intent['sub_types'] ?? [];

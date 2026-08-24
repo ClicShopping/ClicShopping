@@ -56,7 +56,6 @@ use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
 use ClicShopping\AI\Infrastructure\Monitoring\MonitoringAgent;
 use ClicShopping\AI\Infrastructure\Monitoring\PerformanceTracker;
 use ClicShopping\AI\InterfacesAI\AgentInterface;
-use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\Validation\HallucinationDetector;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveManager;
@@ -100,7 +99,6 @@ class OrchestratorAgent implements AgentInterface
   public PlanExecutor $planExecutor;
   private MetricsCollector $collector;
   private SecurityLogger $securityLogger;
-  private RateLimit $rateLimit;
   private string $userId;
   private bool $debug;
 
@@ -188,14 +186,13 @@ class OrchestratorAgent implements AgentInterface
   }
 
   /**
-   * Initialize core components (security, rate limiting, monitoring, memory)
+   * Initialize core components (security, monitoring, memory)
    *
    */
   private function initializeCoreComponents(): void
   {
-    // Security and rate limiting
+    // Security
     $this->securityLogger = new SecurityLogger();
-    $this->rateLimit = new RateLimit('orchestrator', 100, 60);
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
     $this->perfTrace = defined('STORE_AI_PERF_TRACE') && STORE_AI_PERF_TRACE === 'true';
 

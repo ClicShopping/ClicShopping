@@ -124,6 +124,8 @@ class SQLTableParser
       $tables[] = $matches[1];
     }
 
+    // FROM a, b, c — comma-separated tables, ONE identifier each.
+    // This used to capture everything up to the next SQL keyword and split it on commas
     preg_match_all('/\bFROM\s+((?:' . self::FROM_ITEM . ')(?:\s*,\s*(?:' . self::FROM_ITEM . '))*)/i', $query, $lists);
 
     foreach ($lists[1] ?? [] as $tableList) {

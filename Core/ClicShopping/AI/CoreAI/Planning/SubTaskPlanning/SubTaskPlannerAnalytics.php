@@ -81,6 +81,20 @@ class SubTaskPlannerAnalytics
     }
 
     /**
+     * Whether this planner can build a multi-step plan out of an analysis cut — ceiling included.
+     *
+     * TaskPlanner asks BEFORE routing, so the predicate lives here and nowhere else: a caller that
+     * re-implemented it would drift from what createPlan() actually accepts.
+     *
+     * @param array $subQueries Sub-queries produced by the analysis, in either shape
+     * @return bool True when the cut yields steps, false to leave the routing to the hybrid branch
+     */
+    public function canPlanCut(array $subQueries): bool
+    {
+        return $this->readableSubQueries(['sub_queries' => $subQueries]) !== [];
+    }
+
+    /**
      * Read the sub-queries the metadata analysis produced, if they are usable.
      *
      * The analysis emits `{query, intent_type}` — NOT the `{text, type}` shape SubTaskPlannerStandard

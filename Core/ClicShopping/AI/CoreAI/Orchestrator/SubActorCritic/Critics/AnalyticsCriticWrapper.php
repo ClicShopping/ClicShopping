@@ -36,7 +36,6 @@ use ClicShopping\OM\Registry;
  */
 class AnalyticsCriticWrapper implements CriticInterface
 {
-
     public const CRITIC_ID = 'analytics_critic';
     private AnalyticsQualityEvaluator $evaluator;
     private SecurityLogger $securityLogger;
