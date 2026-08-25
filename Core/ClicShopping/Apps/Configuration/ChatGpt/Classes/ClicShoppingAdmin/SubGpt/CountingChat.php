@@ -60,9 +60,7 @@ final class CountingChat implements ChatInterface
   public function generateText(string $prompt): string
   {
     LlmCallCounter::increment();
-    $answer = $this->inner->generateText($prompt);
-    self::transcribe($prompt, $answer);
-    return $answer;
+    return $this->inner->generateText($prompt);
   }
 
   public function generateTextOrReturnFunctionToCall(string $prompt): string|array
@@ -80,9 +78,7 @@ final class CountingChat implements ChatInterface
   public function generateChat(array $messages): string
   {
     LlmCallCounter::increment();
-    $answer = $this->inner->generateChat($messages);
-    self::transcribe(json_encode($messages), $answer);
-    return $answer;
+    return $this->inner->generateChat($messages);
   }
 
   public function generateChatOrReturnFunctionToCall(array $messages): string|array

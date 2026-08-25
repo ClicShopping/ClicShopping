@@ -140,7 +140,8 @@ class ResultInterpreter
       'question' => $question,
       'results' => json_encode($cleanResults, JSON_PRETTY_PRINT),
       'currentDate' => date('Y-m-d'),
-      'sqlQuery' => $sqlQuery
+      'sqlQuery' => $sqlQuery,
+      'baseCurrency' => \defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : ''
     ];
 
     $prompt = $this->language->getDef('text_interpret_results', $array);

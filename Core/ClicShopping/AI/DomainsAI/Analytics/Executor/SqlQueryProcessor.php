@@ -81,6 +81,10 @@ class SqlQueryProcessor
 
     $sqlPatterns = $allowAllPatterns === false ? ['/\\b(SELECT\\s+.*?)(;|\\Z)/is'] : $allPatterns;
 
+    if (preg_match('/\\bWITH\\s+(?:RECURSIVE\\s+)?[`"\\w]+\\s+AS\\s*\\(/i', $response)) {
+      $sqlPatterns = ['/\\b(WITH\\s+(?:RECURSIVE\\s+)?[`"\\w]+\\s+AS\\s*\\(.*?)(;|\\Z)/is'];
+    }
+
     foreach ($sqlPatterns as $pattern) {
       if (preg_match_all($pattern, $response, $matches, PREG_SET_ORDER)) {
         foreach ($matches as $match) {

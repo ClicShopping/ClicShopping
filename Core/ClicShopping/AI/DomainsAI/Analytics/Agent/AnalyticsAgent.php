@@ -355,7 +355,7 @@ class AnalyticsAgent implements AgentInterface
 
       if ($this->analysisPlan !== null) {
         $response['analysis_plan'] = $this->analysisPlan;
-	
+
         if ($this->conversationMemory !== null && method_exists($this->conversationMemory, 'setLastAnalysisPlan')) {
           $this->conversationMemory->setLastAnalysisPlan($this->analysisPlan);
         }

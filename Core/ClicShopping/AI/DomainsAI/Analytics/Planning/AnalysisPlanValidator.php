@@ -109,12 +109,14 @@ class AnalysisPlanValidator
     }
 
     $unsatisfiable = array_merge($unsatisfiable, $declared);
+    $dimensions = is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : [];
+    $periods['time_grain'] = self::timeGrain($periods, $dimensions, $rankings);
 
     // Build the returned plan as an explicit allow-list: only these keys are trusted.
     $returnedPlan = [
       'periods' => $periods,
       'metrics' => $metrics,
-      'dimensions' => is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : [],
+      'dimensions' => $dimensions,
       'rankings' => $rankings,
       'filters' => is_array($plan['filters'] ?? null) ? $plan['filters'] : [],
       'complexity' => is_numeric($plan['complexity'] ?? null) ? (int)$plan['complexity'] : 1,
@@ -123,6 +125,27 @@ class AnalysisPlanValidator
 
     return ['plan' => $returnedPlan, 'unsatisfiable' => $unsatisfiable, 'errors' => $errors,
             'no_metric_proposed' => false];
+  }
+
+  /**
+   * The TEMPORAL grain the comparison is computed at - a different axis from a metric's
+   * entity grain, and never the model's to choose.
+   *
+   * A comparison aggregated once per window destroys the cumulative curve, the month-to-date
+   * and the daily drill-down, and none of them can be rebuilt from two totals afterwards. A
+   * breakdown already carries its own grain: crossing it with the day would multiply the rows
+   * without answering anything the question asked.
+   *
+   * @param array $periods Resolved periods
+   * @param array $dimensions Dimensions the result is broken down by
+   * @param array $rankings Validated rankings
+   * @return string `day` when the comparison must be computed daily, `window` otherwise
+   */
+  private static function timeGrain(array $periods, array $dimensions, array $rankings): string
+  {
+    $compared = ($periods['compare'] ?? PeriodResolver::COMPARE_NONE) !== PeriodResolver::COMPARE_NONE;
+
+    return $compared && $dimensions === [] && $rankings === [] ? 'day' : 'window';
   }
 
   /**

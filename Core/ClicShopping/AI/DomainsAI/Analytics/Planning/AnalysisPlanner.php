@@ -28,6 +28,8 @@ use ClicShopping\Sites\Common\HTMLOverrideCommon;
  */
 class AnalysisPlanner
 {
+  private const DAILY_SHAPE_MAX_DAYS = 31;
+
   private AnalysisPlanValidator $validator;
   private int $languageId;
   private bool $definitionsLoaded = false;
@@ -166,6 +168,14 @@ class AnalysisPlanner
       ]);
     }
 
+    if (($plan['periods']['time_grain'] ?? 'window') === 'day') {
+      $days = self::elapsedDays($plan['periods']['current']);
+      $shape = $days <= self::DAILY_SHAPE_MAX_DAYS ? 'daily' : 'monthly';
+
+      $windows .= "\n" . $this->getDef('text_analysis_plan_time_grain', ['days' => (string)$days])
+        . "\n" . $this->getDef('text_analysis_plan_time_grain_shape_' . $shape, ['days' => (string)$days]);
+    }
+
     $block = $this->getDef('text_analysis_plan_header') . "\n"
       . implode("\n", $metrics) . "\n"
       . $windows;
@@ -192,6 +202,24 @@ class AnalysisPlanner
     }
 
     return $block;
+  }
+
+  /**
+   * Days the window spans, both bounds included - day 1 is its own first day.
+   *
+   * @param array $current Current window `{from, to}`, both Y-m-d
+   * @return int Elapsed days, at least 1
+   */
+  private static function elapsedDays(array $current): int
+  {
+    try {
+      $from = new \DateTimeImmutable((string)($current['from'] ?? ''));
+      $to = new \DateTimeImmutable((string)($current['to'] ?? ''));
+    } catch (\Throwable) {
+      return 1;
+    }
+
+    return max(1, (int)$from->diff($to)->days + 1);
   }
 
   /**
