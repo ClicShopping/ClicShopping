@@ -10,7 +10,7 @@ displayed_at datetime not_null comment(Timestamp when the product was rendered/d
 session_hash binary(32) not_null comment(SHA-256 hash of session ID (32 bytes) for deduplication and session-level analysis)
 customer_id int(11) default null comment(FK to customers table - null if visitor is not authenticated)
 customer_group_id int(11) default null comment(FK to customer groups - pricing/segmentation context)
-metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null comment(Optional JSON payload (A/B test, device, source context, campaign, rendering details)' CHECK (json_valid(metadata))
+metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(metadata)) comment(Optional JSON payload (A/B test, device, source context, campaign, rendering details))
 
 --
 primary id

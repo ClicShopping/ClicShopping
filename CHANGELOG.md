@@ -20,6 +20,7 @@ version4.33
   - Some AI refactorisation and improvement to solidify the code, response
   - best solidity chat response
   - Add AI ACT European Law, ClicShopping conformity (almost not perfect)
+  - graph & granularité implemented
   
 ---------------
 version4.32

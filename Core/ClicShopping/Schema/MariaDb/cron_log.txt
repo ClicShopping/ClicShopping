@@ -14,7 +14,7 @@ skipped_count int(11) default 0 comment(Targets bypassed by RateLimiter cooldown
 execution_time_seconds int(11) default 0 comment(Wall clock duration in seconds)
 memory_peak_mb decimal(10,2) default 0.00 comment(Peak memory usage in megabytes during the run)
 error_messages longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci default null comment(Concatenated error messages or JSON list of per-target failures - truncate long inputs upstream)
-metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null comment(Origin-specific JSON details - phase counts, LLM token usage, benchmark deltas, etc.) CHECK (json_valid(metadata))
+metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(metadata)) comment(Origin-specific JSON details - phase counts, LLM token usage, benchmark deltas, etc.)
 date_modified datetime default current_timestamp() on update current_timestamp() comment(Auto-updated timestamp - useful for tracking long-running runs)
 --
 primary id

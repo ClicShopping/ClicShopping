@@ -22,6 +22,7 @@ class PromptPlaceholders
 {
   public const TABLE_PREFIX = '{{table_prefix}}';
   public const LANGUAGE_ID = '{{language_id}}';
+  public const BASE_CURRENCY = '{{base_currency}}';
 
   /**
    * Resolve every placeholder of an assembled prompt
@@ -33,9 +34,11 @@ class PromptPlaceholders
    */
   public static function resolve(string $message, string $tablePrefix, int $languageId): string
   {
+     $baseCurrency = \defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '';
+
     $message = str_replace(
-      [self::TABLE_PREFIX, self::LANGUAGE_ID],
-      [$tablePrefix, (string)$languageId],
+      [self::TABLE_PREFIX, self::LANGUAGE_ID, self::BASE_CURRENCY],
+      [$tablePrefix, (string)$languageId, $baseCurrency],
       $message
     );
 
