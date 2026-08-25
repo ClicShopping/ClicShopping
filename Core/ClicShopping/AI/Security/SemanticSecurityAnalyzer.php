@@ -592,7 +592,6 @@ class SemanticSecurityAnalyzer
     // Step 5: Parse JSON
     $analysis = json_decode($jsonStr, true);
 
-
     // into a syntax error by its own repair.
     if (json_last_error() !== JSON_ERROR_NONE && str_contains($jsonStr, "'")) {
       $requoted = str_replace("'", '"', $jsonStr);

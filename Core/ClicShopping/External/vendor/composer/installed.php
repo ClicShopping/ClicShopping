@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'bd5539373d1457d947b09f90f270d7324c1112cb',
+        'reference' => '11567e2972ef15c0cb4ea95bb59f4d39bdb852be',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'bd5539373d1457d947b09f90f270d7324c1112cb',
+            'reference' => '11567e2972ef15c0cb4ea95bb59f4d39bdb852be',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '6c0be3a74b4e70c18693ae5dc183132b4d17603a',
+            'reference' => '184210cfefe1023c2e4f7d41b5b7d77030cd88f7',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -487,9 +487,9 @@
             'dev_requirement' => false,
         ),
         'symfony/polyfill-deepclone' => array(
-            'pretty_version' => 'v1.40.0',
-            'version' => '1.40.0.0',
-            'reference' => 'dca4ccba5f360070b574414dce4c1e7a559844fa',
+            'pretty_version' => 'v1.42.0',
+            'version' => '1.42.0.0',
+            'reference' => '70ba0627efc68e97ea392843458a2dd9d6dbd156',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/polyfill-deepclone',
             'aliases' => array(),
@@ -505,9 +505,9 @@
             'dev_requirement' => false,
         ),
         'symfony/polyfill-intl-normalizer' => array(
-            'pretty_version' => 'v1.38.0',
-            'version' => '1.38.0.0',
-            'reference' => '2d446c214bdbe5b71bde5011b060a05fece3ae6b',
+            'pretty_version' => 'v1.42.0',
+            'version' => '1.42.0.0',
+            'reference' => 'aa20edea75bd9c48cfecc8360922e5a6e5c44502',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/polyfill-intl-normalizer',
             'aliases' => array(),

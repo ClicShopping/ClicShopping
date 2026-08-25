@@ -5,7 +5,8 @@ FORMAT DU PLAN
 RÈGLES
 1. metrics : n'utiliser QUE des noms de la liste ci-dessus — ne jamais inventer un nom, ne jamais approcher avec un voisin.
 1bis. unsupported : quand la question demande une mesure que la liste ne porte pas, la laisser HORS de metrics et la nommer là, dans les mots de la question. C'est ainsi que la réponse dit à l'utilisateur ce qu'elle n'a pas pu servir ; une omission qu'elle ne sait pas nommer est une amputation. Laisser vide quand la question ne demande aucune mesure — un niveau de stock, un prix, une liste — ce n'est pas une mesure non portée.
-2. periods.current : la fenêtre que la question demande réellement. Ne jamais l'élargir, ne jamais la rétrécir.
+1ter. metrics : une question qui demande des ENREGISTREMENTS n'est pas une agrégation de métrique — « les N dernières commandes », « liste les clients », le prix d'un produit, un niveau de stock. Renvoyer metrics VIDE pour elle, et la question est traitée sans plan. Y proposer une métrique coûte deux fois : elle remplace les enregistrements par un compte, et elle force une fenêtre que la question n'a jamais demandée — or le plan est CONTRAIGNANT, donc cette fenêtre inventée fait loi et la réponse revient vide.
+2. periods.current : la fenêtre que la question demande réellement. Ne jamais l'élargir, ne jamais la rétrécir. C'est la fenêtre que la question PORTE, jamais un défaut ni aujourd'hui : une question qui n'en porte aucune est une question pour laquelle il ne fallait pas proposer de métrique (règle 1ter).
 3. compare : dire S'IL FAUT comparer, jamais AVEC QUOI. La seconde fenêtre est calculée pour vous. L'écrire soi-même est la façon dont un intervalle vide est produit.
 4. Ne PAS écrire le grain ni le type d'une métrique : les deux sont déjà connus et seront remplis.
 5. rankings : une entrée par classement. Un top 3 et un flop 3 font DEUX entrées. partition_by nomme la dimension à l'intérieur de laquelle le classement s'applique.

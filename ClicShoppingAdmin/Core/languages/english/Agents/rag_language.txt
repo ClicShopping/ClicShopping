@@ -1,5 +1,5 @@
 text_rag_language_instruction = IMPORTANT: You MUST respond in English only. Do not use any other language in your response.
-CRITICAL INSTRUCTIONS:
+text_rag_grounding_contract = CRITICAL INSTRUCTIONS:
     1. Provide a clear, concise answer based ONLY on the information provided above.
     2. DO NOT invent, assume, or add any information that is not explicitly stated in the provided information.
     3. If the information doesn't fully answer the question, clearly state what information is missing.

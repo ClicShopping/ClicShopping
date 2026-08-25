@@ -627,7 +627,7 @@ INSERT INTO ai_models_api VALUES(5, 5, '', NULL, '2026-07-05 00:00:00', '2026-07
 INSERT INTO ai_models_api VALUES(6, 6, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 INSERT INTO ai_models_api VALUES(7, 7, '', NULL, '2026-07-05 00:00:00', '2026-07-05 00:00:00');
 
-INSERT INTO ai_models_name VALUES(1, 1, 'gpt-5.6-luna', 'OpenAI GPT-5.6-luna', 'Luna 1M context', 1, 1, 0, 0.2000, 1.2000, 1050000, 1, 0, '2026-07-31 11:15:02', '2026-08-03 09:31:46', 1);
+INSERT INTO ai_models_name VALUES(1, 1, 'gpt-5.6-luna', 'OpenAI GPT-5.6-luna', 'Luna 1M context', 1, 1, 0, 0.2000, 0.4000, 1050000, 1, 0, '2026-07-31 11:15:02', '2026-08-03 09:31:46', 1);
 INSERT INTO ai_models_name VALUES(2, 1, 'gpt-5.4-mini', 'OpenAI GPT-5.4 mini', '400K context, embeddings, reasoning', 1, 0, 1, 0.7500, 4.5000, 400000, 1, 30, '2026-07-04 23:39:35', '2026-08-02 12:41:30', 0);
 INSERT INTO ai_models_name VALUES(3, 2, 'claude-opus-4-8', 'Anthropic Claude Opus 4.8', '200K context, embeddings, reasoning', 0, 0, 0, 15.0000, 75.0000, 200000, 1, 50, '2026-07-04 23:39:35', '2026-07-05 08:34:01', 0);
 INSERT INTO ai_models_name VALUES(4, 2, 'claude-sonnet-4-6', 'Anthropic Claude Sonnet 4.6', '200K context, embeddings, reasoning', 0, 0, 0, 3.0000, 15.0000, 200000, 1, 60, '2026-07-04 23:39:35', '2026-07-05 08:34:01', 0);

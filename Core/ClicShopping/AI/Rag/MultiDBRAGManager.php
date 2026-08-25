@@ -1126,11 +1126,9 @@ class MultiDBRAGManager
       $synthesisPrompt .= "Answer:";
 
       // The internal RAG process runs ENTIRELY in English (retrieval, context, synthesis).
-      // Force the synthesis to answer in English regardless of the ambient Registry language;
-      // the user-facing answer is translated to the interface language afterwards (see below).
       DomainConfig::loadAgnosticLanguageFile('rag_language', 'en');
       $languageInstruction = CLICSHOPPING::getDef('text_rag_language_instruction');
-      $synthesisPrompt .= "\n\n" . $languageInstruction;
+      $synthesisPrompt .= "\n\n" . $languageInstruction . "\n" . CLICSHOPPING::getDef('text_rag_grounding_contract');
 
       if ($this->debug) {
         error_log("[INFO] Prompt with language instruction: " . strlen($synthesisPrompt) . " chars");
