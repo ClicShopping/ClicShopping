@@ -39,6 +39,15 @@ class EnglishQueryNormalizer
   private static array $memo = [];
 
   /**
+   * Request-scoped reverse map: [english form => the user's own wording], recorded only when
+   * normalisation actually changed the text. A name the user typed is DATA: the English form
+   * drives the reasoning, this map keeps the spelling a lookup has to match.
+   *
+   * @var array<string, string>
+   */
+  private static array $origins = [];
+
+  /**
    * Normalise a user query to its canonical English form.
    *
    * @param string $query User query, in any interface language
@@ -72,11 +81,26 @@ class EnglishQueryNormalizer
 
     self::$memo[$memoKey] = $normalized;
 
+    if ($normalized !== trim($query)) {
+      self::$origins[$normalized] = trim($query);
+    }
+
     // Idempotence: normalising the English form again must return it, not pay a second
     // translation that paraphrases it (measured: "sales" became "revenue" in 6 draws out of 8).
     self::$memo[self::memoKey($normalized)] = $normalized;
 
     return $normalized;
+  }
+
+  /**
+   * The wording the user actually typed behind an English form.
+   *
+   * @param string $normalized English form produced by normalize()
+   * @return string|null The original wording, or null when normalisation changed nothing
+   */
+  public static function originalOf(string $normalized): ?string
+  {
+    return self::$origins[trim($normalized)] ?? null;
   }
 
   /**

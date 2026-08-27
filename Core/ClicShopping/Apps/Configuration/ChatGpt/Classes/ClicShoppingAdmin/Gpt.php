@@ -395,6 +395,40 @@ class Gpt
   }
 
   /**
+   * Round-trips of the current request per role of their call site — reasoning, generation,
+   * validation, correction, translation, normalization, retrieval, plumbing (BENCH-2 D5b/D5c).
+   * An unmapped call site appears as `unknown:Class::method` rather than being absorbed.
+   *
+   * @return array<string, int>
+   */
+  public static function getLlmCallBreakdown(): array
+  {
+    return LlmCallCounter::breakdown();
+  }
+
+  /**
+   * Round-trips of the current request per CALL SITE (`Class::method`). Answers "did this
+   * branch run at all?", which a role cannot once several sites share the same role.
+   *
+   * @return array<string, int>
+   */
+  public static function getLlmCallSites(): array
+  {
+    return LlmCallCounter::sites();
+  }
+
+  /**
+   * Count one LLM round-trip made without an LLphant chat object (raw HTTP), so it is not
+   * missing from the per-request count. The role is derived from the caller when null.
+   *
+   * @param string|null $role Explicit role, or null to derive it from the call stack.
+   */
+  public static function countRawLlmCall(?string $role = null): void
+  {
+    LlmCallCounter::increment($role);
+  }
+
+  /**
    * Build API request body for a specific provider
    *
    * @param string $prompt The prompt text

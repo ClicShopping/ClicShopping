@@ -160,9 +160,9 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    It CANNOT reference a column name that doesn't exist in the table or as an alias!
 
 7. TEXT FIELD SEARCHES: Use LIKE with wildcards (%)
-   - Single name: WHERE pd.products_name LIKE '%ProductName%'
-   - Multiple words: Use AND: WHERE pd.products_name LIKE '%Word1%' AND pd.products_name LIKE '%Word2%'
-   - Alternative spelling: Use OR: WHERE pd.products_name LIKE '%Josef%' OR pd.products_name LIKE '%Joseph%'
+   - A name search and the language of the ANSWER are two different things. Search the name in a subquery over ALL languages, and keep the language filter on the JOIN that renders the name: JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%ProductName%')
+   - Multiple words: Use AND inside that subquery: WHERE products_name LIKE '%Word1%' AND products_name LIKE '%Word2%'
+   - Alternative spelling: Use OR inside that subquery: WHERE products_name LIKE '%Josef%' OR products_name LIKE '%Joseph%'
 
 8. FIELD MAPPING (CRITICAL - Common Query Terms to Database Columns):
    When user asks for these terms, map to correct database columns:
@@ -501,17 +501,17 @@ AGGREGATION QUERIES:
 - 'detail of order 990189' / 'détail de la commande 990189' / 'show me order 990189' → SELECT o.orders_id, ot.title, ot.value AS amount_base_currency, '{{base_currency}}' AS base_currency, ROUND(ot.value * o.currency_value, 2) AS amount_charged, o.currency AS charged_currency FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_id = 990189 ORDER BY ot.sort_order (one order = both figures, each with ITS OWN currency column; an aggregate over several orders keeps ot.value alone and never converts)
 
 PRODUCT QUERIES:
-- 'stock of product [ProductName]' → SELECT p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'stock of product [ProductName]' → SELECT p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_status = 1 AND p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%[ProductName]%')
 
-- 'price of product [ProductName]' → SELECT p.products_price AS catalog_price, 'excluding tax' AS price_basis, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}} (the stored catalog price is ALWAYS tax-exclusive: the basis travels as DATA in its own price_basis column, next to catalog_price whose name NEVER changes)
+- 'price of product [ProductName]' → SELECT p.products_price AS catalog_price, 'excluding tax' AS price_basis, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_status = 1 AND p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%[ProductName]%') (the stored catalog price is ALWAYS tax-exclusive: the basis travels as DATA in its own price_basis column, next to catalog_price whose name NEVER changes)
 
-- 'what is the price of [ProductName]' → SELECT p.products_price AS catalog_price, 'excluding tax' AS price_basis, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'what is the price of [ProductName]' → SELECT p.products_price AS catalog_price, 'excluding tax' AS price_basis, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_status = 1 AND p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%[ProductName]%')
 
-- 'model/reference of product [ProductName]' → SELECT p.products_model, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'model/reference of product [ProductName]' → SELECT p.products_model, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_status = 1 AND p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%[ProductName]%')
 
-- 'price and SKU of product [ProductName]' → SELECT p.products_price AS catalog_price, 'excluding tax' AS price_basis, p.products_sku, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'price and SKU of product [ProductName]' → SELECT p.products_price AS catalog_price, 'excluding tax' AS price_basis, p.products_sku, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_status = 1 AND p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%[ProductName]%')
 
-- 'model and price of product [ProductName]' → SELECT p.products_model, p.products_price AS catalog_price, 'excluding tax' AS price_basis, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.products_name LIKE '%[ProductName]%' AND pd.language_id = {{language_id}}
+- 'model and price of product [ProductName]' → SELECT p.products_model, p.products_price AS catalog_price, 'excluding tax' AS price_basis, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_status = 1 AND p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%[ProductName]%')
 
 COMPARISON QUERIES:
 - 'compare revenue may vs february' → SELECT SUM(CASE WHEN MONTH(o.date_purchased) = 5 THEN ot.value ELSE 0 END) AS may_revenue, SUM(CASE WHEN MONTH(o.date_purchased) = 2 THEN ot.value ELSE 0 END) AS february_revenue FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE o.orders_status != 4 AND ot.class IN ('TO','TX') AND YEAR(o.date_purchased) = YEAR(CURDATE())
@@ -807,6 +807,17 @@ Requested modification: {{question}}
 
 IMPORTANT: Do NOT create a new query from scratch.
 Modify the existing query above by adding/modifying/removing the requested elements.
+
+text_enrich_with_original_question = {{question}}
+
+NAME LITERALS — READ THIS BEFORE WRITING ANY LIKE:
+The question above was normalised to English. The user actually typed:
+{{original}}
+
+Any name in a LIKE literal MUST be copied from the line the user typed, character for character,
+accents included — never from the English form. A stored name is data: it is spelled the way the
+user knows it, not the way it translates. Everything else — the metric, the period, the aggregation,
+the tables — comes from the English question above.
 
 text_order_calculation = CRITICAL BUSINESS RULES - ORDER STATUS FILTERING:
 

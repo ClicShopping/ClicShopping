@@ -2432,12 +2432,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "184210cfefe1023c2e4f7d41b5b7d77030cd88f7"
+                "reference": "d7dcb4d45ec2a3ee1a5b24a0b071868c280807e1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/184210cfefe1023c2e4f7d41b5b7d77030cd88f7",
-                "reference": "184210cfefe1023c2e4f7d41b5b7d77030cd88f7",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/d7dcb4d45ec2a3ee1a5b24a0b071868c280807e1",
+                "reference": "d7dcb4d45ec2a3ee1a5b24a0b071868c280807e1",
                 "shasum": ""
             },
             "conflict": {
@@ -2545,6 +2545,7 @@
                 "cakephp/authentication": "<2.11.1|>=3,<3.3.6|>=4,<4.1.1",
                 "cakephp/cakephp": "<4.5.11|>=4.6,<4.6.4|>=5,<5.1.7|>=5.2,<5.2.13|>=5.3,<5.3.6",
                 "cakephp/database": ">=4.2,<4.2.12|>=4.3,<4.3.11|>=4.4,<4.4.10",
+                "cakephp/debug_kit": "<4.10.3|>=5,<5.2.4",
                 "cardgate/magento2": "<2.0.33",
                 "cardgate/woocommerce": "<=3.1.15",
                 "cart2quote/module-quotation": ">=4.1.6,<4.4.6|>=5,<5.4.4",
@@ -2871,7 +2872,7 @@
                 "jweiland/clubdirectory": "<8.1.3",
                 "jweiland/events2": "<10.2.12",
                 "jweiland/kk-downloader": "<1.2.2",
-                "jweiland/pforum": "<6.2.4",
+                "jweiland/pforum": "<4.0.4|>=5,<5.0.1|>=6,<6.2.4",
                 "jweiland/telephonedirectory": "<6.2",
                 "jweiland/yellowpages2": "<8.1.2",
                 "kantorge/yaffa": "<=2",
@@ -2972,7 +2973,7 @@
                 "microsoft/microsoft-graph": ">=1.16,<1.109.1|>=2,<2.0.1",
                 "microsoft/microsoft-graph-beta": "<2.0.1",
                 "microsoft/microsoft-graph-core": "<2.0.2",
-                "microweber/microweber": "<2.0.20",
+                "microweber/microweber": "<=2.0.20",
                 "mikehaertl/php-shellcommand": "<1.6.1",
                 "mineadmin/mineadmin": "<3.2.0.0-alpha2",
                 "miniorange/miniorange-saml": "<1.4.3",
@@ -3092,7 +3093,7 @@
                 "phpmailer/phpmailer": "<6.5",
                 "phpmussel/phpmussel": ">=1,<1.6",
                 "phpmyadmin/phpmyadmin": "<5.2.2",
-                "phpmyfaq/phpmyfaq": "<4.1.4",
+                "phpmyfaq/phpmyfaq": "<=4.1.4",
                 "phpoffice/common": "<0.2.9",
                 "phpoffice/math": "<=0.2",
                 "phpoffice/phpexcel": "<=1.8.2",
@@ -3527,7 +3528,7 @@
                 "zoujingli/thinkadmin": "<=6.1.53",
                 "zumba/json-serializer": "<3.2.3"
             },
-            "time": "2026-08-25T09:34:25+00:00",
+            "time": "2026-08-26T16:17:54+00:00",
             "default-branch": true,
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",
@@ -3733,17 +3734,17 @@
         },
         {
             "name": "stripe/stripe-php",
-            "version": "v21.2.1",
-            "version_normalized": "21.2.1.0",
+            "version": "v21.3.0",
+            "version_normalized": "21.3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stripe/stripe-php.git",
-                "reference": "da798f6224c5ff6f89d8d78025044f418ee27db8"
+                "reference": "fe99159b9ee0a74be3c12c0305e5338e0b9905c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/da798f6224c5ff6f89d8d78025044f418ee27db8",
-                "reference": "da798f6224c5ff6f89d8d78025044f418ee27db8",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/fe99159b9ee0a74be3c12c0305e5338e0b9905c3",
+                "reference": "fe99159b9ee0a74be3c12c0305e5338e0b9905c3",
                 "shasum": ""
             },
             "require": {
@@ -3757,7 +3758,7 @@
                 "phpstan/phpstan": "^1.2",
                 "phpunit/phpunit": "^8.0 || ^9.0"
             },
-            "time": "2026-08-20T21:06:13+00:00",
+            "time": "2026-08-27T04:12:06+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -3792,7 +3793,7 @@
             ],
             "support": {
                 "issues": "https://github.com/stripe/stripe-php/issues",
-                "source": "https://github.com/stripe/stripe-php/tree/v21.2.1"
+                "source": "https://github.com/stripe/stripe-php/tree/v21.3.0"
             },
             "install-path": "../stripe/stripe-php"
         },

@@ -14,6 +14,7 @@ use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\AI\Infrastructure\Schema\SchemaRetriever;
 use ClicShopping\AI\Infrastructure\Schema\SchemaEmbedder;
 use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\OM\CLICSHOPPING;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
@@ -603,5 +604,38 @@ class PromptBuilder
     }
 
     return $enrichedQuestion;
+  }
+
+  /**
+   * Enrich question with the wording the user actually typed
+   *
+   * The pipeline reasons in English, but a name is DATA: a lookup has to match the spelling
+   * stored in the catalogue, not a translation of it. No-op when normalisation changed nothing.
+   *
+   * @param string $question The question as it will be sent, possibly already enriched
+   * @param string|null $lookupKey The bare English form to look the original up by; defaults
+   *                               to $question, which only holds while nothing enriched it
+   * @return string The question, followed by the original wording when the two differ
+   */
+  public function enrichWithOriginalQuestion(string $question, ?string $lookupKey = null): string
+  {
+    $original = EnglishQueryNormalizer::originalOf($lookupKey ?? $question);
+
+    if ($original === null) {
+      return $question;
+    }
+
+    DomainConfig::loadLanguageFile('rag_analytics_agent');
+
+    $enriched = $this->language->getDef('text_enrich_with_original_question', [
+      'original' => $original,
+      'question' => $question
+    ]);
+
+    if ($this->debug) {
+      error_log('[INFO SQL QUERY] Question enriched with the original wording: ' . substr($original, 0, 100));
+    }
+
+    return trim($enriched) !== '' ? $enriched : $question;
   }
 }

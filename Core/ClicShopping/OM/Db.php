@@ -1511,8 +1511,10 @@ class Db extends PDO
       // Add DEFAULT if applicable
       // Note: INFORMATION_SCHEMA returns string 'NULL' for DEFAULT NULL columns
       if ($column_info['COLUMN_DEFAULT'] !== null && $column_info['COLUMN_DEFAULT'] !== 'NULL') {
-        if ($column_info['COLUMN_DEFAULT'] === 'CURRENT_TIMESTAMP') {
-          $column_def .= ' DEFAULT CURRENT_TIMESTAMP';
+        if (preg_match('/^[a-z_]+\(\d*\)$/i', $column_info['COLUMN_DEFAULT'])
+          || str_starts_with($column_info['COLUMN_DEFAULT'], "'")
+          || strtoupper($column_info['COLUMN_DEFAULT']) === 'CURRENT_TIMESTAMP') {
+          $column_def .= ' DEFAULT ' . $column_info['COLUMN_DEFAULT'];
         } else {
           $column_def .= ' DEFAULT ' . $this->quote($column_info['COLUMN_DEFAULT']);
         }

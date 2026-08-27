@@ -34,7 +34,7 @@ class PromptPlaceholders
    */
   public static function resolve(string $message, string $tablePrefix, int $languageId): string
   {
-     $baseCurrency = \defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '';
+    $baseCurrency = \defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '';
 
     $message = str_replace(
       [self::TABLE_PREFIX, self::LANGUAGE_ID, self::BASE_CURRENCY],
@@ -56,7 +56,8 @@ class PromptPlaceholders
    */
   public static function hasUnresolved(string $message): bool
   {
-    if (str_contains($message, self::TABLE_PREFIX) || str_contains($message, self::LANGUAGE_ID)) {
+    if (str_contains($message, self::TABLE_PREFIX) || str_contains($message, self::LANGUAGE_ID)
+      || str_contains($message, self::BASE_CURRENCY)) {
       return true;
     }
 

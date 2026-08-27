@@ -94,6 +94,12 @@ require __DIR__ . '/lib/StripeStreamingClientInterface.php';
 require __DIR__ . '/lib/BaseStripeClient.php';
 require __DIR__ . '/lib/StripeClient.php';
 
+// EventRouter
+require __DIR__ . '/lib/UnhandledNotificationDetails.php';
+require __DIR__ . '/lib/AbstractEventNotificationHandler.php';
+require __DIR__ . '/lib/StripeEventNotificationHandler.php';
+require __DIR__ . '/lib/StripeEventNotificationHandlerWithoutVerification.php';
+
 // The beginning of the section generated from our OpenAPI spec
 require __DIR__ . '/lib/Account.php';
 require __DIR__ . '/lib/AccountLink.php';
@@ -112,6 +118,7 @@ require __DIR__ . '/lib/Billing/AlertTriggered.php';
 require __DIR__ . '/lib/Billing/CreditBalanceSummary.php';
 require __DIR__ . '/lib/Billing/CreditBalanceTransaction.php';
 require __DIR__ . '/lib/Billing/CreditGrant.php';
+require __DIR__ . '/lib/Billing/FeedbackOption.php';
 require __DIR__ . '/lib/Billing/Meter.php';
 require __DIR__ . '/lib/Billing/MeterEvent.php';
 require __DIR__ . '/lib/Billing/MeterEventAdjustment.php';
@@ -274,6 +281,7 @@ require __DIR__ . '/lib/Service/Billing/BillingServiceFactory.php';
 require __DIR__ . '/lib/Service/Billing/CreditBalanceSummaryService.php';
 require __DIR__ . '/lib/Service/Billing/CreditBalanceTransactionService.php';
 require __DIR__ . '/lib/Service/Billing/CreditGrantService.php';
+require __DIR__ . '/lib/Service/Billing/FeedbackOptionService.php';
 require __DIR__ . '/lib/Service/Billing/MeterEventAdjustmentService.php';
 require __DIR__ . '/lib/Service/Billing/MeterEventService.php';
 require __DIR__ . '/lib/Service/Billing/MeterService.php';

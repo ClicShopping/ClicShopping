@@ -1241,7 +1241,8 @@ class AnalyticsAgent implements AgentInterface
   private function generateSqlQueries(string $question, array $feedbackContext): array
   {
     $englishQuestion = $this->translateForGeneration($question);
-    $cacheKey = $this->buildSqlCacheKey($englishQuestion, $feedbackContext);
+    $originalWording = EnglishQueryNormalizer::originalOf($englishQuestion) ?? '';
+    $cacheKey = $this->buildSqlCacheKey($englishQuestion . $originalWording, $feedbackContext);
     $this->sqlCacheKey = $cacheKey;
     $sqlCache = new OMCache($cacheKey, 'Rag/SQL');
 
@@ -1275,6 +1276,7 @@ class AnalyticsAgent implements AgentInterface
 
       // Enrich question with feedback context for learning
       $enrichedQuestion = $this->queryEnricher->enrichWithFeedback($englishQuestion, $feedbackContext, $this->conversationMemory);
+      $enrichedQuestion = $this->promptBuilder->enrichWithOriginalQuestion($enrichedQuestion, $englishQuestion);
 
       $planBlock = $this->analysisPlanner?->describeForPrompt($this->analysisPlan) ?? '';
 

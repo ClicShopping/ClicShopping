@@ -195,6 +195,9 @@ class ParallelLLMExecutor
         );
       }
 
+      // Raw HTTP: no LLphant chat object, so CountingChat never sees these round-trips.
+      Gpt::countRawLlmCall();
+
       $promises[$key] = $client->requestAsync(
         'POST',
         $this->provider->getApiUrl(),
