@@ -429,6 +429,49 @@ class Gpt
   }
 
   /**
+   * File the token usage of a round-trip made without an LLphant chat object (raw HTTP), read
+   * from its own JSON body. Unreadable usage is filed as an unmeasured call, never as a zero.
+   *
+   * @param mixed $usage Decoded response body, or null when the call brought none back.
+   */
+  public static function recordLlmTokens(mixed $usage): void
+  {
+    LlmCallCounter::recordTokens($usage);
+  }
+
+  /**
+   * Tokens of the current request per role (BENCH-3 (2a)): `completion` is the unit that says
+   * whether a call carries more work than another, which the call COUNT cannot.
+   *
+   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
+   */
+  public static function getLlmTokensByRole(): array
+  {
+    return LlmCallCounter::tokensByRole();
+  }
+
+  /**
+   * Tokens of the current request per CALL SITE, same shape as the per-role reading.
+   *
+   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
+   */
+  public static function getLlmTokensBySite(): array
+  {
+    return LlmCallCounter::tokensBySite();
+  }
+
+  /**
+   * Round-trips whose provider reported no usage, per call site. Non-empty means the token
+   * figures under-count — read it BEFORE reading the totals.
+   *
+   * @return array<string, int>
+   */
+  public static function getLlmUnmeasuredCalls(): array
+  {
+    return LlmCallCounter::unmeasuredCalls();
+  }
+
+  /**
    * Build API request body for a specific provider
    *
    * @param string $prompt The prompt text

@@ -32,6 +32,8 @@ use Psr\Http\Message\StreamInterface;
  */
 final class CountingChat implements ChatInterface
 {
+  private mixed $chargedResponse = null;
+
   public function __construct(private readonly ChatInterface $inner)
   {
   }
@@ -60,37 +62,55 @@ final class CountingChat implements ChatInterface
   public function generateText(string $prompt): string
   {
     LlmCallCounter::increment();
-    return $this->inner->generateText($prompt);
+    $result = $this->inner->generateText($prompt);
+    $this->recordTokens();
+
+    return $result;
   }
 
   public function generateTextOrReturnFunctionToCall(string $prompt): string|array
   {
     LlmCallCounter::increment();
-    return $this->inner->generateTextOrReturnFunctionToCall($prompt);
+    $result = $this->inner->generateTextOrReturnFunctionToCall($prompt);
+    $this->recordTokens();
+
+    return $result;
   }
 
   public function generateStreamOfText(string $prompt): StreamInterface
   {
     LlmCallCounter::increment();
-    return $this->inner->generateStreamOfText($prompt);
+    $result = $this->inner->generateStreamOfText($prompt);
+    $this->recordTokens();
+
+    return $result;
   }
 
   public function generateChat(array $messages): string
   {
     LlmCallCounter::increment();
-    return $this->inner->generateChat($messages);
+    $result = $this->inner->generateChat($messages);
+    $this->recordTokens();
+
+    return $result;
   }
 
   public function generateChatOrReturnFunctionToCall(array $messages): string|array
   {
     LlmCallCounter::increment();
-    return $this->inner->generateChatOrReturnFunctionToCall($messages);
+    $result = $this->inner->generateChatOrReturnFunctionToCall($messages);
+    $this->recordTokens();
+
+    return $result;
   }
 
   public function generateChatStream(array $messages): StreamInterface
   {
     LlmCallCounter::increment();
-    return $this->inner->generateChatStream($messages);
+    $result = $this->inner->generateChatStream($messages);
+    $this->recordTokens();
+
+    return $result;
   }
 
   public function setSystemMessage(string $message): void
@@ -121,6 +141,21 @@ final class CountingChat implements ChatInterface
   public function setModelOption(string $option, mixed $value): void
   {
     $this->inner->setModelOption($option, $value);
+  }
+
+  /**
+   * File the token usage of the round-trip just made. ⛔ Never {@see getTotalTokens()}: it is
+   * cumulative per instance, so a total read as a per-call figure over-counts every call. A
+   * response object already charged (a provider that does not refresh it) is treated as
+   * missing, which files the call as a NAMED unmeasured one rather than billing it twice.
+   */
+  private function recordTokens(): void
+  {
+    $response = $this->getLastResponse();
+    $fresh = $response !== null && $response !== $this->chargedResponse;
+    $this->chargedResponse = $response;
+
+    LlmCallCounter::recordTokens($fresh ? $response : null);
   }
 
   /**

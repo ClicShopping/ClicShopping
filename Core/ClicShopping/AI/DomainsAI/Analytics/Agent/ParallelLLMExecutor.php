@@ -254,6 +254,8 @@ class ParallelLLMExecutor
       // Parse the response using provider
       $parsedResponse = $this->provider->parseResponse($body);
 
+      Gpt::recordLlmTokens(\json_decode($body, true));
+
       if ($this->debug) {
         $this->logger->logSecurityEvent(
           "ParallelLLMExecutor: Request '{$key}' completed successfully in " . number_format($duration, 3) . "s (HTTP {$httpCode})",
@@ -270,6 +272,7 @@ class ParallelLLMExecutor
     }
 
     // Handle rejection (timeout, network error, etc.)
+    Gpt::recordLlmTokens(null);
     $reason = $result['reason'];
     
     // Use dedicated error detection methods

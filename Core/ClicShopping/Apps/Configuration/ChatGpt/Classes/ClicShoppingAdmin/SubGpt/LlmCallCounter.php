@@ -119,6 +119,21 @@ final class LlmCallCounter
   private static array $bySite = [];
 
   /**
+   * @var array<string, array{prompt:int,completion:int,reasoning:int}> tokens per role, same
+   * scope as $count. BENCH-3 (2a): an appel is not a unit of work, a completion token is.
+   */
+  private static array $tokensByRole = [];
+
+  /** @var array<string, array{prompt:int,completion:int,reasoning:int}> tokens per CALL SITE */
+  private static array $tokensBySite = [];
+
+  /**
+   * @var array<string, int> round-trips whose provider reported NO usage, per call site. A
+   * silent provider must be a NAMED zero: a plain 0 would read as a free call.
+   */
+  private static array $unmeasured = [];
+
+  /**
    * Increment the counter by one LLM round-trip. Called by {@see CountingChat} on its six
    * generation methods, and by call sites that reach a provider without a chat object.
    *
@@ -129,9 +144,67 @@ final class LlmCallCounter
     self::$count++;
     $site = self::deriveSite();
     self::$bySite[$site] = (self::$bySite[$site] ?? 0) + 1;
-    $class = explode('::', $site)[0];
-    $role ??= self::ROLE_BY_SOURCE[$site] ?? self::ROLE_BY_SOURCE[$class] ?? 'unknown:' . $site;
+    $role ??= self::roleOf($site);
     self::$byRole[$role] = (self::$byRole[$role] ?? 0) + 1;
+  }
+
+  /**
+   * File the token usage of the round-trip just made under the SAME site and role as its
+   * increment() — the site is re-derived from the stack, so ordering never matters (the raw
+   * HTTP path records its usage only once the batch has settled).
+   *
+   * @param mixed $usage Provider response, its `usage` member, or a decoded JSON body.
+   *                     Anything unreadable counts as a NAMED unmeasured call, never a zero.
+   */
+  public static function recordTokens(mixed $usage): void
+  {
+    $site = self::deriveSite();
+    $tokens = self::normalizeUsage($usage);
+
+    if ($tokens === null) {
+      self::$unmeasured[$site] = (self::$unmeasured[$site] ?? 0) + 1;
+      return;
+    }
+
+    $role = self::roleOf($site);
+
+    foreach ($tokens as $kind => $n) {
+      self::$tokensByRole[$role][$kind] = (self::$tokensByRole[$role][$kind] ?? 0) + $n;
+      self::$tokensBySite[$site][$kind] = (self::$tokensBySite[$site][$kind] ?? 0) + $n;
+    }
+  }
+
+  /**
+   * Tokens per role since the last reset. `completion` is the unit that answers "does this
+   * call carry more work?"; `prompt` measures the input, `reasoning` the hidden thinking when
+   * the provider exposes it.
+   *
+   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
+   */
+  public static function tokensByRole(): array
+  {
+    return self::$tokensByRole;
+  }
+
+  /**
+   * Tokens per call site since the last reset, same shape as {@see self::tokensByRole()}.
+   *
+   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
+   */
+  public static function tokensBySite(): array
+  {
+    return self::$tokensBySite;
+  }
+
+  /**
+   * Round-trips per call site whose provider reported no usage. Non-empty means the token
+   * figures under-count by that many calls — read it before reading the totals.
+   *
+   * @return array<string, int>
+   */
+  public static function unmeasuredCalls(): array
+  {
+    return self::$unmeasured;
   }
 
   /**
@@ -171,6 +244,65 @@ final class LlmCallCounter
     self::$count = 0;
     self::$byRole = [];
     self::$bySite = [];
+    self::$tokensByRole = [];
+    self::$tokensBySite = [];
+    self::$unmeasured = [];
+  }
+
+  /**
+   * Role of a call site: exact `Class::method` first, then the class, then a named unknown.
+   */
+  private static function roleOf(string $site): string
+  {
+    $class = explode('::', $site)[0];
+
+    return self::ROLE_BY_SOURCE[$site] ?? self::ROLE_BY_SOURCE[$class] ?? 'unknown:' . $site;
+  }
+
+  /**
+   * Read a provider usage payload into prompt/completion/reasoning counts. Accepts the
+   * LLphant response object, its `usage` member, or a decoded raw-HTTP JSON body.
+   * ⛔ Never falls back to an estimate: characters/4 would measure the estimator, not the
+   * model. Unreadable input returns null so the call is filed as unmeasured.
+   *
+   * @return array{prompt:int,completion:int,reasoning:int}|null
+   */
+  private static function normalizeUsage(mixed $usage): ?array
+  {
+    if (\is_object($usage) && isset($usage->usage)) {
+      $usage = $usage->usage;
+    }
+
+    if (\is_array($usage) && isset($usage['usage'])) {
+      $usage = $usage['usage'];
+    }
+
+    if (\is_object($usage)) {
+      $usage = [
+        'prompt_tokens' => $usage->promptTokens ?? null,
+        'completion_tokens' => $usage->completionTokens ?? null,
+        'reasoning_tokens' => $usage->completionTokensDetails->reasoningTokens ?? null,
+      ];
+    }
+
+    if (!\is_array($usage)) {
+      return null;
+    }
+
+    // Ollama names the same two figures prompt_eval_count / eval_count on the raw HTTP path.
+    $prompt = $usage['prompt_tokens'] ?? $usage['promptTokens'] ?? $usage['prompt_eval_count'] ?? null;
+    $completion = $usage['completion_tokens'] ?? $usage['completionTokens'] ?? $usage['eval_count'] ?? null;
+
+    if ($prompt === null && $completion === null) {
+      return null;
+    }
+
+    return [
+      'prompt' => (int)$prompt,
+      'completion' => (int)$completion,
+      'reasoning' => (int)($usage['reasoning_tokens']
+        ?? $usage['completion_tokens_details']['reasoning_tokens'] ?? 0),
+    ];
   }
 
   /**
