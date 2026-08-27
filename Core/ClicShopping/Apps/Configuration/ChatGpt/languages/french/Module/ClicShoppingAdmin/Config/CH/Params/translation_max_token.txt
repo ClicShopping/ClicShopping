@@ -1,0 +1,7 @@
+cfg_chatgpt_translation_max_token_title = Max Token normalisation de la question
+cfg_chatgpt_translation_max_token_description = Veuillez insérer un nombre<br />
+Plafond de sortie pour la normalisation en anglais de la question de l'utilisateur, avant son analyse.<br />
+C'est un PLAFOND, pas une cible : il ne coûte rien tant qu'il n'est pas consommé, une valeur généreuse est donc sans risque.<br />
+Si une question est trop longue pour être normalisée dans ce budget, elle serait TRONQUÉE : l'analyse est alors refusée et l'utilisateur invité à raccourcir sa question, plutôt que de recevoir une réponse partielle.<br />
+À augmenter pour les domaines dont l'entrée est longue (un document collé, un CV).<br />
+Défaut : 500

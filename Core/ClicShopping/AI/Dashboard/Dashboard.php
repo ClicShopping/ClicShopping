@@ -23,6 +23,12 @@ use ClicShopping\AI\Infrastructure\Metrics\ColdCacheMetricsCollector;
 
 class Dashboard
 {
+  /** Window compared against the one immediately before it, in days, for the trend table. */
+  private const TREND_PERIOD_DAYS = 7;
+
+  /** Beyond this much relative movement a metric is called increasing or decreasing, not stable. */
+  private const TREND_STABLE_BAND_PERCENT = 10.0;
+
   private $statsCollector;
   private ?MonitoringAgent $monitoringAgent = null;
   private string $prefix;
@@ -179,7 +185,8 @@ class Dashboard
         'component_health' => $componentHealth,
         'recommendations' => [],
         'active_alerts' => [],
-        'trends' => []
+        'trends' => $this->getTrends(),
+        'trend_period_days' => self::TREND_PERIOD_DAYS
       ];
 
       if ($monitoringReport !== null) {
@@ -189,7 +196,6 @@ class Dashboard
 
         $report['recommendations'] = $monitoringReport['recommendations'] ?? $report['recommendations'];
         $report['active_alerts'] = $monitoringReport['active_alerts'] ?? $report['active_alerts'];
-        $report['trends'] = $monitoringReport['trends'] ?? $report['trends'];
 
         if (!empty($monitoringReport['system_metrics'])) {
           $dbMetricKeys = ['total_requests', 'error_rate', 'total_errors', 'avg_response_time', 'total_api_calls', 'total_api_cost', 'total_tokens', 'memory_usage'];
@@ -210,7 +216,6 @@ class Dashboard
         $fallback['component_health'] = $monitoringReport['component_health'] ?? $fallback['component_health'];
         $fallback['recommendations'] = $monitoringReport['recommendations'] ?? $fallback['recommendations'];
         $fallback['active_alerts'] = $monitoringReport['active_alerts'] ?? $fallback['active_alerts'];
-        $fallback['trends'] = $monitoringReport['trends'] ?? $fallback['trends'];
       }
 
       return $fallback;
@@ -511,6 +516,8 @@ class Dashboard
         'cost_estimate' => $totalCost,
         'total_requests' => $totalRequests,
         'avg_tokens_per_request' => $avgTokensPerRequest,
+        'daily_usage' => $this->getDailyTokenUsage($periodDays),
+        'top_request_types' => $this->getTopRequestTypes($periodDays),
         'period' => $periodDays . ' derniers jours'
       ];
     } catch (\Exception $e) {
@@ -526,6 +533,176 @@ class Dashboard
         'period' => $periodDays . ' derniers jours'
       ];
     }
+  }
+
+  /**
+   * Tokens consumed per day over the period, oldest first. Feeds the daily usage chart of the
+   * token tab; a day with no interaction is simply absent rather than reported as zero.
+   *
+   * @param int $periodDays Number of days to look back
+   * @return array<int,array{date:string,tokens:int,requests:int}>
+   */
+  private function getDailyTokenUsage(int $periodDays): array
+  {
+    try {
+      $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+
+      $rows = DoctrineOrm::select("
+        SELECT DATE(date_added) as day,
+               SUM(tokens_total) as tokens,
+               COUNT(*) as requests
+        FROM {$prefix}rag_statistics
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
+          AND tokens_total IS NOT NULL
+        GROUP BY day
+        ORDER BY day ASC
+      ", [$periodDays]);
+    } catch (\Exception $e) {
+      error_log('Warning: Could not collect daily token usage: ' . $e->getMessage());
+
+      return [];
+    }
+
+    return array_map(static fn(array $row): array => [
+      'date' => (string)$row['day'],
+      'tokens' => (int)$row['tokens'],
+      'requests' => (int)$row['requests'],
+    ], $rows);
+  }
+
+  /**
+   * Token consumption grouped by classification type (analytics, hybrid, semantic...), heaviest
+   * first. `classification_type` is the column that names what the request WAS, agent_type names
+   * who served it.
+   *
+   * @param int $periodDays Number of days to look back
+   * @return array<int,array{request_type:string,count:int,tokens:int,avg_tokens:float}>
+   */
+  private function getTopRequestTypes(int $periodDays): array
+  {
+    try {
+      $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+
+      $rows = DoctrineOrm::select("
+        SELECT COALESCE(classification_type, 'unknown') as request_type,
+               COUNT(*) as request_count,
+               SUM(tokens_total) as tokens,
+               AVG(tokens_total) as avg_tokens
+        FROM {$prefix}rag_statistics
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
+          AND tokens_total IS NOT NULL
+        GROUP BY request_type
+        ORDER BY tokens DESC
+      ", [$periodDays]);
+    } catch (\Exception $e) {
+      error_log('Warning: Could not collect top request types: ' . $e->getMessage());
+
+      return [];
+    }
+
+    return array_map(static fn(array $row): array => [
+      'request_type' => (string)$row['request_type'],
+      'count' => (int)$row['request_count'],
+      'tokens' => (int)$row['tokens'],
+      'avg_tokens' => round((float)$row['avg_tokens'], 1),
+    ], $rows);
+  }
+
+  /**
+   * Trend of each metric over the last TREND_PERIOD_DAYS compared with the window immediately
+   * before it, read from rag_statistics.
+   *
+   * Only metrics that HAVE a history are returned: memory usage is a live gauge with no stored
+   * series, so it belongs to the system metrics, never to a trend.
+   *
+   * @return array<string,array{trend:string,percent_change:float,current_value:float}>|array{insufficient_data:bool}
+   */
+  private function getTrends(): array
+  {
+    $days = self::TREND_PERIOD_DAYS;
+
+    try {
+      $rows = DoctrineOrm::select("
+        SELECT
+          SUM(CASE WHEN date_added >= DATE_SUB(NOW(), INTERVAL ? DAY) THEN 1 ELSE 0 END) as current_rows,
+          SUM(CASE WHEN date_added >= DATE_SUB(NOW(), INTERVAL ? DAY) AND error_occurred = 1 THEN 1 ELSE 0 END) as current_errors,
+          -- *_time_ms, not *_time: CURRENT_TIME is a reserved word in MariaDB.
+          AVG(CASE WHEN date_added >= DATE_SUB(NOW(), INTERVAL ? DAY) THEN response_time_ms END) as current_time_ms,
+          SUM(CASE WHEN date_added >= DATE_SUB(NOW(), INTERVAL ? DAY) THEN api_cost_usd ELSE 0 END) as current_cost,
+          SUM(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) THEN 1 ELSE 0 END) as previous_rows,
+          SUM(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) AND error_occurred = 1 THEN 1 ELSE 0 END) as previous_errors,
+          AVG(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) THEN response_time_ms END) as previous_time_ms,
+          SUM(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) THEN api_cost_usd ELSE 0 END) as previous_cost
+        FROM {$this->prefix}rag_statistics
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      ", [$days, $days, $days, $days, $days, $days, $days, $days, $days * 2]);
+    } catch (\Exception $e) {
+      error_log('Warning: Could not calculate trends: ' . $e->getMessage());
+
+      return ['insufficient_data' => true];
+    }
+
+    $row = $rows[0] ?? [];
+    $currentRows = (int)($row['current_rows'] ?? 0);
+    $previousRows = (int)($row['previous_rows'] ?? 0);
+
+    // One window alone cannot make a trend: say so rather than compare against an absent past.
+    if ($currentRows === 0 || $previousRows === 0) {
+      return ['insufficient_data' => true];
+    }
+
+    return [
+      'error_rate' => $this->buildTrend(
+        ((int)$row['previous_errors'] / $previousRows) * 100,
+        ((int)$row['current_errors'] / $currentRows) * 100,
+        '%'
+      ),
+      'response_time' => $this->buildTrend(
+        (float)($row['previous_time_ms'] ?? 0) / 1000,
+        (float)($row['current_time_ms'] ?? 0) / 1000,
+        's'
+      ),
+      'api_cost' => $this->buildTrend(
+        (float)($row['previous_cost'] ?? 0),
+        (float)($row['current_cost'] ?? 0),
+        '$',
+        4
+      ),
+    ];
+  }
+
+  /**
+   * Shapes one metric's movement between two windows.
+   *
+   * @param float $previous Value over the earlier window
+   * @param float $current Value over the latest window
+   * @param string $unit Unit shown next to the value, so the reader knows what the number is
+   * @param int $precision Decimals kept — a cost of 0.0023 rounds to a misleading 0 at 2
+   * @return array{trend:string,percent_change:float,current_value:float,unit:string}
+   */
+  private function buildTrend(float $previous, float $current, string $unit, int $precision = 2): array
+  {
+    // Coming from zero is a rise, not a "stable 0%" — that reading is what made the old table lie.
+    if ($previous == 0.0) {
+      $percentChange = $current > 0.0 ? 100.0 : 0.0;
+    } else {
+      $percentChange = (($current - $previous) / $previous) * 100;
+    }
+
+    $trend = 'stable';
+
+    if ($percentChange > self::TREND_STABLE_BAND_PERCENT) {
+      $trend = 'increasing';
+    } elseif ($percentChange < -self::TREND_STABLE_BAND_PERCENT) {
+      $trend = 'decreasing';
+    }
+
+    return [
+      'trend' => $trend,
+      'percent_change' => round($percentChange, 1),
+      'current_value' => round($current, $precision),
+      'unit' => $unit,
+    ];
   }
 
   /**

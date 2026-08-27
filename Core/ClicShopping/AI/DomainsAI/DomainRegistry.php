@@ -266,13 +266,20 @@ class DomainRegistry
   }
 
   /**
-   * Clear all registered domains
-   * Used for testing purposes only
+   * Clear all registered domains, and keep them cleared.
+   *
+   * The discovery flag is RAISED, not reset: emptying $domains alone puts the registry back in
+   * its start-of-request state, and the very next read would call discoverOnce(), which
+   * re-registers every installed domain App. "No domain active" is a real configuration — an
+   * install carrying no Apps/AI domain — and it is what the callers of this method ask for.
+   *
+   * Used for testing purposes only: no production code clears the registry.
    */
   public function clearAll(): void
   {
     $this->domains = [];
     $this->activeDomainId = null;
+    $this->discoveryAttempted = true;
     unset($_SESSION[self::SESSION_KEY]);
   }
 }

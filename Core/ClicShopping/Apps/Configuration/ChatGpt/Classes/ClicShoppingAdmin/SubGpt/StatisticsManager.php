@@ -27,27 +27,45 @@ use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 class StatisticsManager
 {
   /**
-   * Record token usage from GPT response
+   * Record the token usage of the WHOLE request onto the tracker.
+   *
+   * Reads the per-request counter (facade AND raw HTTP paths) rather than the last facade call:
+   * a question makes 8 to 34 round-trips, so the last one under-counted the cost ~35x (COST-1).
    *
    * @param StatisticsTracker $statsTracker Statistics tracker instance
    * @return void
    */
   public static function recordTokenUsage(StatisticsTracker $statsTracker): void
   {
-    $tokenUsage = Gpt::getLastTokenUsage();
-    
-    if ($tokenUsage !== null) {
-      $statsTracker->setTokens($tokenUsage['prompt_tokens'], $tokenUsage['completion_tokens']);
-      
-      error_log(sprintf(
-        '📊 Tokens recorded: prompt=%d, completion=%d, total=%d',
-        $tokenUsage['prompt_tokens'],
-        $tokenUsage['completion_tokens'],
-        $tokenUsage['total_tokens']
-      ));
-    } else {
-      error_log('⚠️ No token usage data available from Gpt::getLastTokenUsage()');
+    $prompt = 0;
+    $completion = 0;
+
+    // `reasoning` is a SUBSET of `completion` in the provider payload, never a third addend.
+    foreach (Gpt::getLlmTokensByRole() as $tokens) {
+      $prompt += $tokens['prompt'];
+      $completion += $tokens['completion'];
     }
+
+    $unmeasured = Gpt::getLlmUnmeasuredCalls();
+
+    if (!empty($unmeasured)) {
+      error_log('[INFO : ALERT] Token usage under-counts, provider reported no usage for: ' . json_encode($unmeasured));
+    }
+
+    if ($prompt === 0 && $completion === 0) {
+      error_log('[INFO : ALERT] No token usage recorded for this request - the LLM call counter is empty.');
+
+      return;
+    }
+
+    $statsTracker->setTokens($prompt, $completion);
+
+    error_log(sprintf(
+      '📊 Tokens recorded: prompt=%d, completion=%d, total=%d',
+      $prompt,
+      $completion,
+      $prompt + $completion
+    ));
   }
   
   /**

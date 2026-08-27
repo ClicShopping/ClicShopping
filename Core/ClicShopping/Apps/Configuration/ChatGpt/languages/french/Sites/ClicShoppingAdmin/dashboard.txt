@@ -353,6 +353,7 @@ trend_increasing = ↗ Croissante
 trend_decreasing = ↘ Décroissante
 trend_stable = → Stable
 trend_insufficient_data = Données insuffisantes pour les tendances. Collecte en cours...
+trend_window_explanation = Évolution sur les {days} derniers jours comparés aux {days} jours précédents. L'onglet Général compte toutes les requêtes depuis le démarrage : ses chiffres sont cumulés et ne correspondent donc pas à ceux-ci.
 
 # Recommandations
 recommendation_title = Recommandations

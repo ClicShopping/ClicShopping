@@ -353,6 +353,7 @@ trend_increasing = ↗ Increasing
 trend_decreasing = ↘ Decreasing
 trend_stable = → Stable
 trend_insufficient_data = Insufficient data for trends. Collection in progress...
+trend_window_explanation = Movement over the last {days} days compared with the {days} days before them. The General tab counts every request since the start, so its figures are cumulative and do not match these.
 
 # Recommendations
 recommendation_title = Recommendations

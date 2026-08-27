@@ -396,12 +396,30 @@ class Cache
       $cacheDir = dirname($cacheFile);
       self::ensureDirectoryExists($cacheDir);
 
+      // Another Cache instance of this process may have written since our own load: merge our
+      // entries ON TOP of the file instead of overwriting it, otherwise the last writer wins.
+      $merged = $this->promptCache;
+      $onDisk = @file_get_contents($cacheFile);
+
+      if ($onDisk !== false) {
+        $decoded = json_decode($onDisk, true);
+
+        if (is_array($decoded)) {
+          $merged = array_merge($decoded, $this->promptCache);
+        }
+      }
+
+      if (count($merged) > 1000) {
+        uasort($merged, fn($a, $b) => $b['last_used'] - $a['last_used']);
+        $merged = array_slice($merged, 0, 1000, true);
+      }
+
       $tmpFile = $cacheFile . '.tmp';
-      file_put_contents($tmpFile, json_encode($this->promptCache));
+      file_put_contents($tmpFile, json_encode($merged));
       rename($tmpFile, $cacheFile);
 
       if ($this->debug) {
-        $this->securityLogger->logSecurityEvent("Prompt cache saved with " . count($this->promptCache) . " entries", 'info');
+        $this->securityLogger->logSecurityEvent("Prompt cache saved with " . count($merged) . " entries", 'info');
       }
     } catch (\Exception $e) {
       if ($this->debug) {

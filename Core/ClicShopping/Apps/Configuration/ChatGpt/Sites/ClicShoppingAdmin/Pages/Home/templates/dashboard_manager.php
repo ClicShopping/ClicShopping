@@ -255,7 +255,7 @@ include __DIR__ . '/dashboard/_data.php';
                   <div class="card metric-card" style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);">
                     <div class="metric-label">💰 <?php echo $CLICSHOPPING_ChatGpt->getDef('metric_estimated_cost'); ?></div>
                     <div class="metric-value" style="color: var(--secondary);">
-                      $<?php echo !empty($tokenDashboardStats['cost_estimate']) ? number_format($tokenDashboardStats['cost_estimate'], 2) : '0.00' ?>
+                      $<?php echo number_format($tokenDashboardStats['cost_estimate'] ?? 0, 4) ?>
                     </div>
                     <div class="metric-label" style="font-size: 0.8rem;">
                       <?php echo !empty($tokenDashboardStats['total_requests']) ? $tokenDashboardStats['total_requests'] . ' ' . $CLICSHOPPING_ChatGpt->getDef('metric_requests_count') : '0 ' . $CLICSHOPPING_ChatGpt->getDef('metric_requests_count') ?>
@@ -445,6 +445,10 @@ include __DIR__ . '/dashboard/_data.php';
           <div class="tab-pane" id="tab4">
             <div style="padding: 20px;">
               <h5><?php echo $CLICSHOPPING_ChatGpt->getDef('trend_analysis'); ?></h5>
+              <p class="text-muted small mb-3">
+                <i class="bi bi-info-circle"></i>
+                <?php echo str_replace('{days}', (int)($healthReport['trend_period_days'] ?? 7), $CLICSHOPPING_ChatGpt->getDef('trend_window_explanation')); ?>
+              </p>
               <?php if (isset($healthReport['trends']) && !isset($healthReport['trends']['insufficient_data'])): ?>
                 <table class="table table-sm">
                   <thead>
@@ -464,7 +468,7 @@ include __DIR__ . '/dashboard/_data.php';
                         <?php echo ucfirst($trend['trend']); ?>
                       </td>
                       <td><?php echo $trend['percent_change'] ?>%</td>
-                      <td><?php echo $trend['current_value'] ?></td>
+                      <td><?php echo $trend['current_value'] . ' ' . ($trend['unit'] ?? ''); ?></td>
                     </tr>
                   <?php endforeach; ?>
                   </tbody>
@@ -487,7 +491,34 @@ include __DIR__ . '/dashboard/_data.php';
                         <h6><i class="bi bi-pie-chart"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('token_distribution'); ?></h6>
                       </div>
                       <div class="card-body" style="height: 210px; text-align: center;">
-                        <canvas id="tokenDistributionChart" height="150"></canvas>
+                        <?php
+                        $tokenDistributionConfig = htmlspecialchars(json_encode([
+                          'type' => 'doughnut',
+                          'data' => [
+                            'labels' => [
+                              $CLICSHOPPING_ChatGpt->getDef('metric_tokens_input'),
+                              $CLICSHOPPING_ChatGpt->getDef('metric_tokens_output')
+                            ],
+                            'datasets' => [[
+                              'data' => [
+                                (int)($tokenDashboardStats['input_tokens'] ?? 0),
+                                (int)($tokenDashboardStats['output_tokens'] ?? 0)
+                              ],
+                              'backgroundColor' => ['rgba(14, 116, 144, 0.55)', 'rgba(219, 39, 119, 0.55)'],
+                              'borderWidth' => 1,
+                            ]],
+                          ],
+                          'options' => [
+                            'maintainAspectRatio' => false,
+                            'responsive' => true,
+                            'plugins' => ['legend' => ['position' => 'bottom']],
+                          ],
+                        ], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
+                        ?>
+                        <canvas id="tokenDistributionChart"
+                                class="chatgpt-token-chart"
+                                data-chart-config="<?php echo $tokenDistributionConfig; ?>"
+                                height="150"></canvas>
                       </div>
                     </div>
                   </div>
@@ -532,7 +563,7 @@ include __DIR__ . '/dashboard/_data.php';
                             <td><strong><?php echo $CLICSHOPPING_ChatGpt->getDef('token_efficiency'); ?>:</strong></td>
                             <td class="text-end">
                                 <span
-                                  class="badge badge-<?php echo ($tokenDashboardStats['avg_tokens_per_request'] ?? 0) < 1000 ? 'success' :
+                                  class="badge bg-<?php echo ($tokenDashboardStats['avg_tokens_per_request'] ?? 0) < 1000 ? 'success' :
                                     (($tokenDashboardStats['avg_tokens_per_request'] ?? 0) < 2000 ? 'warning' : 'danger');?>">
                                   <?php echo number_format($tokenDashboardStats['avg_tokens_per_request'] ?? 0, 0); ?> <?php echo $CLICSHOPPING_ChatGpt->getDef('token_tokens_per_req'); ?>
                                 </span>
@@ -551,7 +582,31 @@ include __DIR__ . '/dashboard/_data.php';
                       <h6><i class="bi bi-calendar3"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('token_daily_usage'); ?></h6>
                     </div>
                     <div class="card-body" style="height: 280px; text-align: center;">
-                      <canvas id="dailyTokenUsageChart" height="80"></canvas>
+                      <?php
+                      $dailyUsageConfig = htmlspecialchars(json_encode([
+                        'type' => 'bar',
+                        'data' => [
+                          'labels' => array_column($tokenDashboardStats['daily_usage'], 'date'),
+                          'datasets' => [[
+                            'label' => $CLICSHOPPING_ChatGpt->getDef('token_tokens'),
+                            'data' => array_column($tokenDashboardStats['daily_usage'], 'tokens'),
+                            'backgroundColor' => 'rgba(14, 116, 144, 0.18)',
+                            'borderColor' => 'rgba(14, 116, 144, 1)',
+                            'borderWidth' => 1,
+                          ]],
+                        ],
+                        'options' => [
+                          'maintainAspectRatio' => false,
+                          'responsive' => true,
+                          'plugins' => ['legend' => ['display' => false]],
+                          'scales' => ['y' => ['beginAtZero' => true]],
+                        ],
+                      ], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
+                      ?>
+                      <canvas id="dailyTokenUsageChart"
+                              class="chatgpt-token-chart"
+                              data-chart-config="<?php echo $dailyUsageConfig; ?>"
+                              height="80"></canvas>
                     </div>
                   </div>
                 <?php endif; ?>
@@ -588,7 +643,7 @@ include __DIR__ . '/dashboard/_data.php';
                                 $percentage = ($tokenDashboardStats['total_tokens'] ?? 0) > 0 ?
                                   ($type['tokens'] / $tokenDashboardStats['total_tokens']) * 100 : 0;
                                 ?>
-                                <span class="badge badge-primary"><?php echo number_format($percentage, 1); ?>%</span>
+                                <span class="badge bg-primary"><?php echo number_format($percentage, 1); ?>%</span>
                               </td>
                             </tr>
                           <?php endforeach; ?>

@@ -1,0 +1,7 @@
+cfg_chatgpt_translation_max_token_title = Question Normalisation Max Token
+cfg_chatgpt_translation_max_token_description = Please, a number<br />
+Output ceiling for the English normalisation of the user question, before it is analysed.<br />
+This is a CEILING, not a target: it costs nothing unless it is consumed, so a generous value is safe.<br />
+If a question is too long to be normalised within this budget it would be TRUNCATED, so the analysis is refused and the user is asked to shorten the question rather than being given a partial answer.<br />
+Raise it for domains whose input is long (a pasted document, a CV).<br />
+Default : 500
