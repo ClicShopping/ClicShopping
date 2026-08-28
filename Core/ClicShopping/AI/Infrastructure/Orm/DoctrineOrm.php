@@ -1223,98 +1223,64 @@ class DoctrineOrm
   // ============================================================================
   
   /**
-   * Get fallback database fields (static list)
-   * 
-   * Used when dynamic discovery fails.
-   * Get fallback database fields (domain-agnostic)
-   * 
-   * MIGRATION: Removed hardcoded e-commerce field list.
-   * Now uses AnalyticsConfig when Ecommerce domain is active,
-   * or returns empty array for domain-agnostic mode.
-   * 
+   * Call a static AnalyticsConfig accessor of the active domain module.
+   *
+   * The class is domain-supplied: a module may not implement the accessor,
+   * so a missing method and a failure both degrade to an empty array.
+   *
+   * @param string $method Accessor name
+   * @return array Domain values, or empty array in domain-agnostic mode
+   */
+  private static function analyticsConfigList(string $method): array
+  {
+    $analyticsConfigClass = DomainFields::resolveAppClass(DomainConfig::getActivities(), 'AnalyticsConfig');
+
+    if ($analyticsConfigClass === null || !method_exists($analyticsConfigClass, $method)) {
+      if (self::$debug) {
+        error_log("DoctrineOrm::$method(): no domain AnalyticsConfig, returning empty array");
+      }
+
+      return [];
+    }
+
+    try {
+      return $analyticsConfigClass::$method();
+    } catch (\Throwable $e) {
+      if (self::$debug) {
+        error_log("DoctrineOrm::$method(): AnalyticsConfig failed: " . $e->getMessage());
+      }
+
+      return [];
+    }
+  }
+
+  /**
+   * Get fallback database fields (domain-agnostic), used when dynamic discovery fails.
+   *
    * @return array List of database fields from domain configuration or empty array
    */
   private static function getFallbackDatabaseFields(): array
   {
-    $activeDomain = \ClicShopping\AI\Config\DomainConfig::getActivities();
-    $analyticsConfigClass = \ClicShopping\AI\Config\DomainFields::resolveAppClass($activeDomain, 'AnalyticsConfig');
-    if ($analyticsConfigClass !== null) {
-      try {
-        return $analyticsConfigClass::getFallbackDatabaseFields();
-      } catch (\Exception $e) {
-        if (self::$debug) {
-          error_log("getFallbackDatabaseFields: AnalyticsConfig failed: " . $e->getMessage());
-        }
-      }
-    }
-    
-    // Domain-agnostic mode: return empty array
-    if (self::$debug) {
-      error_log("getFallbackDatabaseFields: No domain configured, returning empty array");
-    }
-    
-    return [];
+    return self::analyticsConfigList('getFallbackDatabaseFields');
   }
-  
+
   /**
-   * Get non-database words (domain-agnostic)
-   * 
-   * MIGRATION: Removed hardcoded e-commerce word list.
-   * Now uses AnalyticsConfig when Ecommerce domain is active,
-   * or returns empty array for domain-agnostic mode.
-   * 
+   * Get non-database words (domain-agnostic).
+   *
    * @return array List of non-database words from domain configuration or empty array
    */
   private static function getNonDatabaseWords(): array
   {
-    $activeDomain = DomainConfig::getActivities();
-    $analyticsConfigClass = DomainFields::resolveAppClass($activeDomain, 'AnalyticsConfig');
-    if ($analyticsConfigClass !== null) {
-      try {
-        return $analyticsConfigClass::getNonDatabaseWords();
-      } catch (\Exception $e) {
-        if (self::$debug) {
-          error_log("getNonDatabaseWords: AnalyticsConfig failed: " . $e->getMessage());
-        }
-      }
-    }
-    
-    // Domain-agnostic mode: return empty array
-    if (self::$debug) {
-      error_log("getNonDatabaseWords: No domain configured, returning empty array");
-    }
-    
-    return [];
+    return self::analyticsConfigList('getNonDatabaseWords');
   }
-  
+
   /**
-   * Get field abbreviations mapping (domain-agnostic)
-   * 
-   * MIGRATION: Removed hardcoded e-commerce abbreviations.
-   * Now uses AnalyticsConfig when Ecommerce domain is active,
-   * or returns empty array for domain-agnostic mode.
-   * 
-   * @return array Mapping of full name => abbreviation from domain configuration or empty array
+   * Get field abbreviations mapping (domain-agnostic).
+   *
+   * @return array Mapping of full name => abbreviation, or empty array
    */
   private static function getFieldAbbreviations(): array
   {
-    $activeDomain = DomainConfig::getActivities();
-    $analyticsConfigClass = DomainFields::resolveAppClass($activeDomain, 'AnalyticsConfig');
-    if ($analyticsConfigClass !== null) {
-      try {
-        return $analyticsConfigClass::getFieldAbbreviations();
-      } catch (\Exception $e) {
-        if (self::$debug) {
-          error_log("getFieldAbbreviations: AnalyticsConfig failed: " . $e->getMessage());
-        }
-      }
-    }
-    
-    // Domain-agnostic mode: return empty array
-    if (self::$debug) {
-      error_log("getFieldAbbreviations: No domain configured, returning empty array");
-    }
-    
-    return [];
+    return self::analyticsConfigList('getFieldAbbreviations');
   }
 }

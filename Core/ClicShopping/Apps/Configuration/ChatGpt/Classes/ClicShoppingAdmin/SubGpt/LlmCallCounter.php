@@ -134,6 +134,42 @@ final class LlmCallCounter
   private static array $unmeasured = [];
 
   /**
+   * @var resource|null|false Capture sink of PROMPT-1: `false` = not looked up yet, `null` = off.
+   * Opened only when CLICSHOPPING_LLM_CAPTURE names a file — a diagnostic, never a production log.
+   */
+  private static mixed $capture = false;
+
+  /**
+   * Append one captured round-trip line to the sink, filed under the same site as its
+   * increment(). No-op unless CLICSHOPPING_LLM_CAPTURE names a writable file.
+   */
+  private static function captureLine(string $kind, mixed $payload): void
+  {
+    if (self::$capture === false) {
+      $path = (string)getenv('CLICSHOPPING_LLM_CAPTURE');
+      self::$capture = $path === '' ? null : (fopen($path, 'ab') ?: null);
+    }
+
+    if (self::$capture === null) {
+      return;
+    }
+
+    fwrite(self::$capture, json_encode(
+      ['kind' => $kind, 'site' => self::deriveSite(), 'payload' => $payload],
+      JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR
+    ) . "\n");
+  }
+
+  /**
+   * File the exact payload emitted to the model, when capture is on. This is what answers
+   * "what is in the prompt, and how much of it is the same from one call to the next".
+   */
+  public static function capturePrompt(mixed $payload): void
+  {
+    self::captureLine('prompt', $payload);
+  }
+
+  /**
    * Increment the counter by one LLM round-trip. Called by {@see CountingChat} on its six
    * generation methods, and by call sites that reach a provider without a chat object.
    *
@@ -159,6 +195,7 @@ final class LlmCallCounter
   public static function recordTokens(mixed $usage): void
   {
     $site = self::deriveSite();
+    self::captureLine('usage', self::unwrapUsage($usage));
     $tokens = self::normalizeUsage($usage);
 
     if ($tokens === null) {
@@ -260,6 +297,22 @@ final class LlmCallCounter
   }
 
   /**
+   * Peel a provider response down to its `usage` member, whichever shape it arrived in.
+   */
+  private static function unwrapUsage(mixed $usage): mixed
+  {
+    if (\is_object($usage) && isset($usage->usage)) {
+      return $usage->usage;
+    }
+
+    if (\is_array($usage) && isset($usage['usage'])) {
+      return $usage['usage'];
+    }
+
+    return $usage;
+  }
+
+  /**
    * Read a provider usage payload into prompt/completion/reasoning counts. Accepts the
    * LLphant response object, its `usage` member, or a decoded raw-HTTP JSON body.
    * ⛔ Never falls back to an estimate: characters/4 would measure the estimator, not the
@@ -269,13 +322,7 @@ final class LlmCallCounter
    */
   private static function normalizeUsage(mixed $usage): ?array
   {
-    if (\is_object($usage) && isset($usage->usage)) {
-      $usage = $usage->usage;
-    }
-
-    if (\is_array($usage) && isset($usage['usage'])) {
-      $usage = $usage['usage'];
-    }
+    $usage = self::unwrapUsage($usage);
 
     if (\is_object($usage)) {
       $usage = [

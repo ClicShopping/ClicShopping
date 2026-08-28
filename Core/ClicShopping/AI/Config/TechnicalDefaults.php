@@ -41,8 +41,13 @@ class TechnicalDefaults
     'CLICSHOPPING_APP_CHATGPT_RA_MAX_RESULTS_PER_STORE' => 5,
     'CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT' => 5,
 
+    // Output ceiling for the English normalisation of the user input. A CEILING, not a target:
+    // it costs nothing unless consumed. Raise it for domains whose input is long (an HR CV, a pasted document) — a hit ceiling truncates the input SILENTLY, so it is detected and
     'CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN' => 500,
+
+    // How many analytics steps one question may be split into — one schema window per step
     'CLICSHOPPING_APP_CHATGPT_RA_MAX_ANALYTICS_STEPS' => 3,
+
     // Cache TTL, in seconds
     'CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL' => 3600,
 

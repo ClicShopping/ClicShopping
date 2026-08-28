@@ -13,6 +13,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Language;
+use ClicShopping\AI\Helper\FuturePeriodMask;
 
 /**
  * AbstractFormatter - Base class for all result formatters
@@ -35,6 +36,7 @@ abstract class AbstractFormatter
     }
 
     $this->language = Registry::get('Language');
+    $this->language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
 
   /**
@@ -231,9 +233,12 @@ abstract class AbstractFormatter
   {
     $rows = "<tbody>";
 
+    $marker = CLICSHOPPING::getDef('text_future_period_out_of_scope');
+
     foreach ($data as $row) {
       $rows .= "<tr>";
-      $filteredRow = $this->filterSystemMetadata($row);
+      // A period still to come is out of scope, never a zero (SQL-42).
+      $filteredRow = FuturePeriodMask::apply($this->filterSystemMetadata($row), $marker);
 
       foreach ($filteredRow as $key => $value) {
         $formattedValue = $this->formatCellValue($key, $value);

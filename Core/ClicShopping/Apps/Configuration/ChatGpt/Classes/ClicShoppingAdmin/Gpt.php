@@ -386,6 +386,8 @@ class Gpt
    * Number of real LLM round-trips made since the last reset, across BOTH the façade path
    * and the raw $chat->generateText() path (every chat object is wrapped at construction).
    * Unlike rag_statistics (one row per interaction), this is the exact per-request call count.
+   * Read BEFORE shutdown it excludes calls deferred past the response (PostResponseDeferrer):
+   * drain them with PostResponseDeferrer::runNow() first when the total must be complete.
    *
    * @return int
    */
@@ -426,6 +428,17 @@ class Gpt
   public static function countRawLlmCall(?string $role = null): void
   {
     LlmCallCounter::increment($role);
+  }
+
+  /**
+   * Hand the capture sink the body emitted by a raw-HTTP round-trip (no LLphant chat object,
+   * so {@see CountingChat} never sees it). No-op unless the capture sink is armed.
+   *
+   * @param mixed $payload The request body about to be sent.
+   */
+  public static function captureLlmPrompt(mixed $payload): void
+  {
+    LlmCallCounter::capturePrompt($payload);
   }
 
   /**

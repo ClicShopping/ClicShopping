@@ -206,6 +206,8 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    
    CORRECT: "iPhone 17 Pro" → WHERE pd.products_name LIKE '%iPhone%' AND pd.products_name LIKE '%17%' AND pd.products_name LIKE '%Pro%'
    WRONG: "iPhone 17 Pro" → WHERE pd.products_name LIKE '%iPhone 17 Pro%'  // Too restrictive
+   WRONG: "What is the price of Wine Cooler Blink?" → WHERE pd.products_name LIKE '%What%' AND pd.products_name LIKE '%price%' AND pd.products_name LIKE '%Wine%' AND pd.products_name LIKE '%Cooler%'  // The words of the QUESTION are not tokens
+   Tokenise the NAME ONLY, never the sentence that asks for it: in ANY language, interrogative and metric words are never LIKE conditions. One parasite token empties the result, because they are chained with AND.
 
 10. AVOID AMBIGUITY: Always prefix columns with table alias
    - Use p.products_id instead of products_id
@@ -818,6 +820,12 @@ Any name in a LIKE literal MUST be copied from the line the user typed, characte
 accents included — never from the English form. A stored name is data: it is spelled the way the
 user knows it, not the way it translates. Everything else — the metric, the period, the aggregation,
 the tables — comes from the English question above.
+
+The typed line is a SENTENCE, not a name. Copy from it ONLY the words that name the item; the words
+that ask the question are not part of the name, in any language. Rule 9 tokenises the NAME, never the sentence.
+WRONG: typed "What is the price of Wine Cooler Blink?" → LIKE '%What%' AND '%is%' AND '%the%' AND '%price%' AND '%of%' AND '%Wine%' AND '%Cooler%' AND '%Blink%'
+RIGHT: LIKE '%Wine%' AND '%Cooler%' AND '%Blink%'
+The typed line is rarely English: the same applies to its own interrogative and metric words, whatever the language.
 
 text_order_calculation = CRITICAL BUSINESS RULES - ORDER STATUS FILTERING:
 

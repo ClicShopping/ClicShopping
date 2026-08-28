@@ -66,6 +66,7 @@ class CorrectionValidator
       return $validation;
     }
 
+    // Validation 2bis: a markdown fence is never SQL. 
     if (preg_match('/`{3,}/', $query)) {
       $validation['is_valid'] = false;
       $validation['issues'][] = "Corrected query still carries a markdown fence";

@@ -205,6 +205,33 @@ class PromptBuilder
   }
   
   /**
+   * Get the system message of the RESULT INTERPRETER
+   *
+   * The interpreter reads rows, it does not write SQL: it only needs the business semantics
+   * (order status map, revenue rules), never the SQL rule book and its examples.
+   *
+   * @return string Interpreter system message, placeholders resolved
+   */
+  public function getInterpreterSystemMessage(): string
+  {
+    $staticKey = "interpreter_{$this->languageId}";
+
+    if (isset(self::$systemMessageCache[$staticKey])) {
+      return self::$systemMessageCache[$staticKey];
+    }
+
+    DomainConfig::loadLanguageFile('rag_analytics_agent');
+
+    $message = $this->language->getDef('text_system_message') . "\n\n" .
+      $this->language->getDef('text_order_calculation');
+
+    $message = PromptPlaceholders::resolve($message, $this->tablePrefix, $this->languageId);
+    self::$systemMessageCache[$staticKey] = $message;
+
+    return $message;
+  }
+
+  /**
    * Build complete system message
    *
    * Routes to the analytics builder; any other type is a programming error

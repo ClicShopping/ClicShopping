@@ -34,6 +34,8 @@ final class CountingChat implements ChatInterface
 {
   private mixed $chargedResponse = null;
 
+  private ?string $systemMessage = null;
+
   public function __construct(private readonly ChatInterface $inner)
   {
   }
@@ -61,7 +63,7 @@ final class CountingChat implements ChatInterface
 
   public function generateText(string $prompt): string
   {
-    LlmCallCounter::increment();
+    $this->countCall($prompt);
     $result = $this->inner->generateText($prompt);
     $this->recordTokens();
 
@@ -70,7 +72,7 @@ final class CountingChat implements ChatInterface
 
   public function generateTextOrReturnFunctionToCall(string $prompt): string|array
   {
-    LlmCallCounter::increment();
+    $this->countCall($prompt);
     $result = $this->inner->generateTextOrReturnFunctionToCall($prompt);
     $this->recordTokens();
 
@@ -79,7 +81,7 @@ final class CountingChat implements ChatInterface
 
   public function generateStreamOfText(string $prompt): StreamInterface
   {
-    LlmCallCounter::increment();
+    $this->countCall($prompt);
     $result = $this->inner->generateStreamOfText($prompt);
     $this->recordTokens();
 
@@ -88,7 +90,7 @@ final class CountingChat implements ChatInterface
 
   public function generateChat(array $messages): string
   {
-    LlmCallCounter::increment();
+    $this->countCall($messages);
     $result = $this->inner->generateChat($messages);
     $this->recordTokens();
 
@@ -97,7 +99,7 @@ final class CountingChat implements ChatInterface
 
   public function generateChatOrReturnFunctionToCall(array $messages): string|array
   {
-    LlmCallCounter::increment();
+    $this->countCall($messages);
     $result = $this->inner->generateChatOrReturnFunctionToCall($messages);
     $this->recordTokens();
 
@@ -106,7 +108,7 @@ final class CountingChat implements ChatInterface
 
   public function generateChatStream(array $messages): StreamInterface
   {
-    LlmCallCounter::increment();
+    $this->countCall($messages);
     $result = $this->inner->generateChatStream($messages);
     $this->recordTokens();
 
@@ -115,6 +117,7 @@ final class CountingChat implements ChatInterface
 
   public function setSystemMessage(string $message): void
   {
+    $this->systemMessage = $message;
     $this->inner->setSystemMessage($message);
   }
 
@@ -141,6 +144,16 @@ final class CountingChat implements ChatInterface
   public function setModelOption(string $option, mixed $value): void
   {
     $this->inner->setModelOption($option, $value);
+  }
+
+  /**
+   * Count the round-trip about to be made, and hand the capture sink what is actually emitted:
+   * the system message travels with EVERY call, so a body read alone under-reports the input.
+   */
+  private function countCall(mixed $body): void
+  {
+    LlmCallCounter::increment();
+    LlmCallCounter::capturePrompt(['system' => $this->systemMessage, 'body' => $body]);
   }
 
   /**

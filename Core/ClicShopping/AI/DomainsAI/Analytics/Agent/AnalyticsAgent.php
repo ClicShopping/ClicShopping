@@ -184,7 +184,7 @@ class AnalyticsAgent implements AgentInterface
     );
 
     $this->resultInterpreter = new ResultInterpreter(
-      $this->chat,
+      $this->getInterpreterChat(),
       new Cache($enablePromptCache),  // ResultInterpreter has its own cache instance
       $this->securityLogger,
       $this->app,
@@ -1488,6 +1488,29 @@ class AnalyticsAgent implements AgentInterface
   private function translateForGeneration(string $query): string
   {
     return EnglishQueryNormalizer::normalize($query);
+  }
+
+
+  /**
+   * Build the chat dedicated to result interpretation
+   *
+   * Falls back to the shared chat if the provider cannot give a second instance: a degraded
+   * (verbose) prompt is preferable to losing the interpretation entirely.
+   *
+   * @return mixed Chat instance carrying the interpreter system message
+   */
+  private function getInterpreterChat(): mixed
+  {
+    try {
+      $chat = Gpt::getChatForModel(Gpt::defaultModel());
+      $chat->setSystemMessage($this->promptBuilder->getInterpreterSystemMessage());
+
+      return $chat;
+    } catch (\Exception $e) {
+      $this->debugLog('AnalyticsAgent: interpreter chat failed, falling back to shared chat: ' . $e->getMessage());
+
+      return $this->chat;
+    }
   }
 
   /**

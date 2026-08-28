@@ -11,6 +11,7 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\Language;
+use ClicShopping\AI\Helper\FuturePeriodMask;
 use ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters\FormatterRouter;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Formatter\AnalyticsFormatter;
 use ClicShopping\AI\DomainsAI\Semantic\Helper\Formatter\SemanticFormatter;
@@ -500,9 +501,12 @@ class ResultFormatter
       
       // Generate rows with temporal labels
       $output .= '<tbody>';
+      $marker = $this->language->getDef('text_future_period_out_of_scope');
+
       foreach ($rows as $row) {
         $output .= '<tr>';
-        foreach ($row as $column => $value) {
+        // A period still to come is out of scope, never a zero (SQL-42).
+        foreach (FuturePeriodMask::apply($row, $marker) as $column => $value) {
           $formattedValue = $this->formatTemporalCellValue($column, $value, $temporalPeriod, $languageCode);
           $output .= '<td>' . $formattedValue . '</td>';
         }

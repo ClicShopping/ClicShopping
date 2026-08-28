@@ -299,41 +299,21 @@ class ValidationAgent implements AgentInterface
   }
 
   /**
-   * Detect if input is SQL query or natural language
+   * Detect if input is SQL query or natural language.
+   *
+   * ⛔ Never on the FIRST WORD alone: "Show me this year's revenue" opens on SHOW, "Describe the
+   * cooler" on DESCRIBE, "Update the price" on UPDATE — English imperatives that are also SQL
+   * verbs. A step question judged SQL is validated as SQL, fails, and CorrectionAgent REPLACES
+   * the user's question with an invented statement (SQL-37).
+   * The pipeline only ever generates READ statements, so the same test as
+   * SqlQueryProcessor::looksLikeSqlStatement() decides here: it opens on SELECT or WITH.
    *
    * @param string $input Text to analyze
    * @return bool True if SQL, false if natural language
    */
   private function isSqlQuery(string $input): bool
   {
-    $input = trim($input);
-    
-    if (empty($input)) {
-      return false;
-    }
-    
-    $sqlKeywords = [
-      'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP', 
-      'ALTER', 'TRUNCATE', 'REPLACE', 'SHOW', 'DESCRIBE', 'EXPLAIN'
-    ];
-    
-    $firstWord = strtoupper(explode(' ', $input)[0]);
-    
-    if (in_array($firstWord, $sqlKeywords, true)) {
-      return true;
-    }
-    
-    if (preg_match('/^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|TRUNCATE)\s+/i', $input)) {
-      return true;
-    }
-    
-    if (preg_match('/\b(FROM|WHERE|JOIN|GROUP BY|ORDER BY|HAVING|LIMIT)\b/i', $input)) {
-      if (preg_match('/\b(SELECT|INSERT|UPDATE|DELETE)\b/i', $input)) {
-        return true;
-      }
-    }
-    
-    return false;
+    return preg_match('/^(SELECT|WITH)\b/i', ltrim($input, " \t\n\r\0\x0B(;")) === 1;
   }
 
   /**

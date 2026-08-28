@@ -890,7 +890,7 @@ class OrchestratorAgent implements AgentInterface
           error_log("[INFO END] processWithValidation - Status: {$status}");
           error_log("[INFO TIME] End time: " . date('Y-m-d H:i:s.u'));
           error_log("⏱️ [INFO DURATION] Total time: " . round($latencyMs, 2) . "ms");
-          error_log("🔢 [INFO LLM CALLS] LLM round-trips this request: " . Gpt::getLlmCallCount());
+          error_log("🔢 [INFO LLM CALLS] LLM round-trips this request (excludes post-response deferred calls): " . Gpt::getLlmCallCount());
           error_log("-----------------------------------");
 	}
       }
