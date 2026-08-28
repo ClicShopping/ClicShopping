@@ -64,7 +64,7 @@ class TO extends \ClicShopping\Apps\OrderTotal\Total\Module\ClicShoppingAdmin\Co
     parent::uninstall();
 
     $installed = explode(';', MODULE_ORDER_TOTAL_INSTALLED);
-    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed);
+    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
 
     if ($installed_pos !== false) {
       unset($installed[$installed_pos]);

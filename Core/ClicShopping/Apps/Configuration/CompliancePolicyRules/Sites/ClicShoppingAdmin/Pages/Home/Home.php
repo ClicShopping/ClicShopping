@@ -10,17 +10,22 @@ namespace ClicShopping\Apps\Configuration\CompliancePolicyRules\Sites\ClicShoppi
 
 use ClicShopping\Apps\Configuration\CompliancePolicyRules\CompliancePolicyRules;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\Domains\PagesAbstract;
 
-class Home extends \ClicShopping\OM\Domains\PagesAbstract
+class Home extends PagesAbstract
 {
   public mixed $app;
 
   protected function init()
   {
-   $CLICSHOPPING_CompliancePolicyRules = new CompliancePolicyRules();
-   Registry::set('CompliancePolicyRules', $CLICSHOPPING_CompliancePolicyRules);
-   
-   $this->app = $CLICSHOPPING_CompliancePolicyRules;
+    Registry::remove('CompliancePolicyRules');
+
+    if (!Registry::exists('CompliancePolicyRules')) {
+      $CLICSHOPPING_CompliancePolicyRules = new CompliancePolicyRules();
+      Registry::set('CompliancePolicyRules', $CLICSHOPPING_CompliancePolicyRules);
+     }
+
+    $this->app = $CLICSHOPPING_CompliancePolicyRules;
 
     $this->app->loadDefinitions('Sites/ClicShoppingAdmin/main');
   }

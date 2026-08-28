@@ -72,7 +72,7 @@ class EC extends \ClicShopping\Apps\AI\Ecommerce\Module\ClicShoppingAdmin\Config
     parent::uninstall();
 
     $installed = explode(';', MODULE_MODULES_ECOMMERCE_INSTALLED);
-    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed);
+    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
 
     if ($installed_pos !== false) {
       unset($installed[$installed_pos]);

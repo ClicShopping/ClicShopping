@@ -8,16 +8,17 @@
 
 namespace ClicShopping\Apps\Configuration\ChatGpt\Sites\ClicShoppingAdmin\Pages\Home\Actions\ChatGpt;
 
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\Rag\ConversationMemory;
+use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use \ClicShopping\OM\Domains\PagesActionsAbstract;
 
 /**
  * RecordFeedback Action
  * 
  * Endpoint pour enregistrer le feedback utilisateur sur les réponses du chat
  */
-class RecordFeedback extends \ClicShopping\OM\Domains\PagesActionsAbstract
+class RecordFeedback extends PagesActionsAbstract
 {
   public function execute()
   {
@@ -48,7 +49,7 @@ class RecordFeedback extends \ClicShopping\OM\Domains\PagesActionsAbstract
       
       // Validate feedback_type
       $validTypes = ['positive', 'negative', 'correction'];
-      if (!in_array($input['feedback_type'], $validTypes)) {
+      if (!in_array($input['feedback_type'], $validTypes, true)) {
         echo json_encode([
           'success' => false,
           'error' => 'feedback_type must be one of: ' . implode(', ', $validTypes)
@@ -88,12 +89,12 @@ class RecordFeedback extends \ClicShopping\OM\Domains\PagesActionsAbstract
       if ($result) {
         echo json_encode([
           'success' => true,
-          'message' => 'Feedback enregistré avec succès'
+          'message' => 'Feedback saved with success'
         ]);
       } else {
         echo json_encode([
           'success' => false,
-          'error' => 'Échec de l\'enregistrement du feedback'
+          'error' => 'Error, failled to save the feedback'
         ]);
       }
       

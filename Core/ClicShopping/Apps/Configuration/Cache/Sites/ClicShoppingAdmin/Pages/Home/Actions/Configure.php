@@ -36,6 +36,6 @@ class Configure extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
     }
 
-    $this->page->data['current_module'] = (isset($_GET['module']) && \in_array($_GET['module'], $modules)) ? $_GET['module'] : $default_module;
+    $this->page->data['current_module'] = (isset($_GET['module']) && \in_array($_GET['module'], $modules, true)) ? $_GET['module'] : $default_module;
   }
 }

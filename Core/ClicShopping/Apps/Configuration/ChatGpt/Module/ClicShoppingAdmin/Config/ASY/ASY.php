@@ -71,7 +71,7 @@ class ASY extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAd
     parent::uninstall();
 
     $installed = explode(';', MODULE_MODULES_CHATGPT_INSTALLED);
-    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed);
+    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
 
     if ($installed_pos !== false) {
       unset($installed[$installed_pos]);

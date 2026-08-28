@@ -61,7 +61,7 @@ class DT extends \ClicShopping\Apps\Tools\DataBaseTables\Module\ClicShoppingAdmi
     parent::uninstall();
 
     $installed = explode(';', MODULE_MODULES_DATA_BASE_TABLES_INSTALLED);
-    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed);
+    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
 
     if ($installed_pos !== false) {
       unset($installed[$installed_pos]);

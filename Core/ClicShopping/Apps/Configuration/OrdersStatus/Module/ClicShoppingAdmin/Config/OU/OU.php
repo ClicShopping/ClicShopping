@@ -58,7 +58,7 @@ class OU extends \ClicShopping\Apps\Configuration\OrdersStatus\Module\ClicShoppi
     parent::uninstall();
 
     $installed = explode(';', MODULE_MODULES_ORDERS_STATUS_INSTALLED);
-    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed);
+    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
 
     if ($installed_pos !== false) {
       unset($installed[$installed_pos]);

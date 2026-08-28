@@ -42,7 +42,7 @@ class AM extends \ClicShopping\Apps\Tools\AdministratorMenu\Module\ClicShoppingA
     parent::uninstall();
 
     $installed = explode(';', MODULE_MODULES_ADMINISTRATOR_MENU_INSTALLED);
-    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed);
+    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
 
     if ($installed_pos !== false) {
       unset($installed[$installed_pos]);

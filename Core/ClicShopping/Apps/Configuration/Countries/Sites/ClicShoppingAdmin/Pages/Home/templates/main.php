@@ -12,6 +12,7 @@ use ClicShopping\OM\Registry;
 
 $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 $CLICSHOPPING_Countries = Registry::get('Countries');
+$CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
 if ($CLICSHOPPING_MessageStack->exists('main')) {
   echo $CLICSHOPPING_MessageStack->get('main');
@@ -31,8 +32,7 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
     </div>
   </div>
   <div class="mt-1"></div>
-  <div class="col-md-12 mainTitle"><strong><?php echo $CLICSHOPPING_Countries->getDef('text_countries'); ?></strong>
-  </div>
+  <div class="col-md-12 mainTitle"><strong><?php echo $CLICSHOPPING_Countries->getDef('text_countries'); ?></strong></div>
   <div class="adminformTitle">
     <div class="row">
       <div class="mt-1"></div>
@@ -60,3 +60,4 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
     </div>
   </div>
 </div>
+<div class="py-4"></div>
