@@ -38,9 +38,11 @@ final class PeriodResolver
   public const COMPARE_NONE = 'none';
   public const COMPARE_PREVIOUS_YEAR = 'previous_year';
   public const COMPARE_PREVIOUS_PERIOD = 'previous_period';
+  public const COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS = 'previous_year_comparable_days';
 
+  private const COMPARABLE_DAYS_SHIFT = '-364 days';
   /**
-   * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_period}`
+   * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_year_comparable_days|previous_period}`
    * @param \DateTimeImmutable|null $observedAt Observation date; defaults to now. Injected by tests only.
    * @return array Allow-listed `{current: {from, to}, compare, previous?: {from, to}}`, every bound Y-m-d
    * @throws \InvalidArgumentException When the current window is missing, reversed, or contains unreadable dates
@@ -66,6 +68,12 @@ final class PeriodResolver
     }
 
     $compare = (string)($periods['compare'] ?? self::COMPARE_NONE);
+
+    if (!in_array($compare, [self::COMPARE_NONE, self::COMPARE_PREVIOUS_YEAR,
+                             self::COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS, self::COMPARE_PREVIOUS_PERIOD], true)) {
+      $compare = self::COMPARE_NONE;
+    }
+
     $today = ($observedAt ?? new \DateTimeImmutable())->setTime(0, 0);
 
     // Comparing bounds the current window at the observation date: the months it has no data
@@ -92,6 +100,9 @@ final class PeriodResolver
     if ($compare === self::COMPARE_PREVIOUS_YEAR) {
       $previousStart = self::sameDayLastYear($start);
       $previousEnd = self::sameDayLastYear($end);
+    } elseif ($compare === self::COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS) {
+      $previousStart = $start->modify(self::COMPARABLE_DAYS_SHIFT);
+      $previousEnd = $end->modify(self::COMPARABLE_DAYS_SHIFT);
     } else {
       // Duration convention: the same span, ending the day before the current window opens.
       $lengthInDays = (int)$start->diff($end)->days;

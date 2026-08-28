@@ -29,6 +29,10 @@ use ClicShopping\Sites\Common\HTMLOverrideCommon;
 class AnalysisPlanner
 {
   private const DAILY_SHAPE_MAX_DAYS = 31;
+  private const COMPARE_CONVENTIONS = [
+    PeriodResolver::COMPARE_PREVIOUS_YEAR => 'text_analysis_plan_compare_calendar_year',
+    PeriodResolver::COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS => 'text_analysis_plan_compare_comparable_days',
+  ];
 
   private AnalysisPlanValidator $validator;
   private int $languageId;
@@ -166,6 +170,13 @@ class AnalysisPlanner
         'from' => $plan['periods']['previous']['from'],
         'to' => $plan['periods']['previous']['to'],
       ]);
+
+      // Calendar YoY and comparable-days YoY are two metrics, never one: the block says which.
+      $convention = self::COMPARE_CONVENTIONS[$plan['periods']['compare'] ?? ''] ?? null;
+
+      if ($convention !== null) {
+        $windows .= "\n" . $this->getDef($convention);
+      }
     }
 
     if (($plan['periods']['time_grain'] ?? 'window') === 'day') {
