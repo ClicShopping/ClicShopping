@@ -373,10 +373,93 @@ class DashboardData
   }
 
   /**
+   * Deterministic actions carried by the most recent analysis of each product.
+   *
+   * READ ONLY, and deliberately so: the analysis itself is written by
+   * {@see CockpitAIOrchestrator::executeAnalysis()}, which triggers the ActionExecutor and can
+   * change a price. A reader never calls it — it reads what the last run left behind.
+   *
+   * The latest analysis THAT CARRIES actions, per product — not the latest analysis: a fresher
+   * run without an action plan would otherwise hide the last one that had something to propose.
+   * Each row states its own date, so nothing is presented as fresher than it is.
+   *
+   * @param int $languageId Language of the analysis to read; labels are stored per language
+   * @param int $limit Products to return, most recently analysed first
+   * @return array[] Each row: ['product_id', 'product_name', 'analysis_date', 'actions']
+   */
+  public function getRecommendedActions(int $languageId, int $limit = 10): array
+  {
+    $cacheKey = "dashboard_actions_{$languageId}_{$limit}";
+    if ($cached = $this->fromCache($cacheKey)) {
+      return $cached;
+    }
+
+    try {
+      $Qactions = $this->db->prepare('
+        SELECT
+          e.entity_id                                                        AS product_id,
+          COALESCE(pd.products_name, CONCAT(\'Product #\', e.entity_id))     AS product_name,
+          e.date_modified                                                    AS analysis_date,
+          JSON_EXTRACT(e.metadata, \'$.actions\')                            AS actions
+        FROM :table_' . self::TABLE . ' e
+        INNER JOIN (
+          SELECT entity_id, MAX(date_modified) AS latest
+          FROM :table_' . self::TABLE . '
+          WHERE language_id = :language_id
+            AND JSON_LENGTH(JSON_EXTRACT(metadata, \'$.actions\')) > 0
+          GROUP BY entity_id
+        ) latest ON e.entity_id = latest.entity_id
+                 AND e.date_modified = latest.latest
+        LEFT JOIN :table_products_description pd
+               ON pd.products_id = e.entity_id
+              AND pd.language_id = :language_id2
+        WHERE e.language_id = :language_id3
+        GROUP BY e.entity_id
+        ORDER BY e.date_modified DESC
+        LIMIT :limit
+      ');
+
+      $Qactions->bindInt(':language_id',  $languageId);
+      $Qactions->bindInt(':language_id2', $languageId);
+      $Qactions->bindInt(':language_id3', $languageId);
+      $Qactions->bindInt(':limit', $limit);
+      $Qactions->execute();
+
+      $result = [];
+
+      while ($row = $Qactions->fetch()) {
+        $actions = json_decode((string)($row['actions'] ?? ''), true);
+
+        if (!\is_array($actions) || $actions === []) {
+          continue;
+        }
+
+        $result[] = [
+          'product_id'    => (int)    $row['product_id'],
+          'product_name'  => (string) $row['product_name'],
+          'analysis_date' => (string) $row['analysis_date'],
+          'actions'       => array_map(static fn(array $action): array => [
+            'code'        => (string) ($action['code'] ?? ''),
+            'label'       => (string) ($action['label'] ?? ''),
+            'priority'    => (string) ($action['priority'] ?? ''),
+            'description' => (string) ($action['description'] ?? ''),
+          ], array_filter($actions, '\is_array')),
+        ];
+      }
+
+      $this->toCache($cacheKey, $result);
+      return $result;
+
+    } catch (\Throwable) {
+      return [];
+    }
+  }
+
+  /**
    * Global KPIs: total products analyzed, average scores, last analysis date.
    *
    * @param int $languageId
-   * @return array  ['total_products', 'avg_score_x', 'avg_score_y', 'last_analysis', 'total_analyses']
+   * @return array  ['total_products', 'avg_score_x', 'avg_score_y', 'last_analysis', 'total_analyses', 'catalogue_total']
    */
   public function getKpis(int $languageId): array
   {
@@ -391,6 +474,7 @@ class DashboardData
       'avg_score_x'     => 0.0,
       'avg_score_y'     => 0.0,
       'last_analysis'   => null,
+      'catalogue_total' => 0,
     ];
 
     try {
@@ -419,6 +503,8 @@ class DashboardData
         'avg_score_x'    => (float) ($row['avg_score_x']    ?? 0),
         'avg_score_y'    => (float) ($row['avg_score_y']    ?? 0),
         'last_analysis'  => $row['last_analysis'] ?? null,
+        // The denominator of the coverage clause: an analysed count alone cannot say what it misses.
+        'catalogue_total' => $this->countCatalogue(),
       ];
 
       $this->toCache($cacheKey, $result);
@@ -431,49 +517,37 @@ class DashboardData
 
   /**
    * Invalidate all dashboard caches (call after cron run or manual analysis).
+   *
+   * Namespace-wide: the previous per-key loop called Cache::clear() as an instance method
+   * (it is static, and takes the key) so it cleared nothing, and it could not know the keys
+   * added since.
+   *
+   * @return void
    */
   public function clearCache(): void
   {
-    // ClicShopping Cache class does not support namespace-wide clear,
-    // so we clear known keys for every enabled language.  Previously the
-    // language list was hardcoded to [1, 2, 3] and the stockout key prefix
-    // was missing entirely, leaving stale stockout counts on the widget
-    // after every fresh analysis.
-    $languageIds = [];
-    try {
-      foreach (Registry::get('Language')->getAll() as $row) {
-        if ((int)($row['status'] ?? 1) !== 0 && !empty($row['id'])) {
-          $languageIds[] = (int)$row['id'];
-        }
-      }
-    } catch (\Throwable) {
-      $languageIds = [1, 2]; // safe fallback for EN + FR installs
-    }
-    if (empty($languageIds)) {
-      $languageIds = [1, 2];
-    }
-
-    $simpleKeys = ['quadrant', 'top_y', 'velocity', 'kpis'];
-
-    foreach ($languageIds as $lid) {
-      foreach ($simpleKeys as $key) {
-        try {
-          (new Cache("dashboard_{$key}_{$lid}", self::CACHE_NS))->clear();
-        } catch (\Throwable) {
-        }
-      }
-      // stockout has variable threshold/limit suffixes — clear the common
-      // combinations used by the dashboard widget (70 % / 5, 70 % / 15).
-      foreach ([[70, 5], [70, 15], [50, 5], [50, 15]] as [$th, $lim]) {
-        try {
-          (new Cache("dashboard_stockout_{$lid}_{$th}_{$lim}", self::CACHE_NS))->clear();
-        } catch (\Throwable) {
-        }
-      }
-    }
+    Cache::clearNamespace(self::CACHE_NS);
   }
 
   // ── Private cache helpers ──────────────────────────────────────────────────
+
+  /**
+   * Active products of the catalogue — the denominator of the analysis coverage.
+   *
+   * @return int Active product count, 0 when unreadable
+   */
+  private function countCatalogue(): int
+  {
+    try {
+      $Qcount = $this->db->prepare('select count(*) as total from :table_products where products_status = 1');
+      $Qcount->execute();
+      $row = $Qcount->fetch();
+
+      return (int)($row['total'] ?? 0);
+    } catch (\Throwable) {
+      return 0;
+    }
+  }
 
   private function fromCache(string $key): mixed
   {

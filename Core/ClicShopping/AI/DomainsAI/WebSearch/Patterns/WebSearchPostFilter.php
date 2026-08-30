@@ -217,6 +217,12 @@ class WebSearchPostFilter
       }
     }
     
+    // Same deference as STEP 1/2/4, for everything below: STEP 5 reads the word after "on"/"at"
+    // as a site name and STEP 6 fires on any availability phrasing (ROUTE-1).
+    if ($llmSaysAnalytics) {
+      return $analysis;
+    }
+
     // ========================================================================
     // STEP 5: Check for "on [site]" or "at [site]" pattern (ENGLISH ONLY)
     // ========================================================================

@@ -316,9 +316,7 @@
 
         // Invalidate the dashboard widget cache so the new analysis is
         // visible immediately on the admin home / product page widget
-        // rather than waiting for the TTL to elapse.  The cache class
-        // does not support namespace-wide clear, hence the targeted
-        // key-by-key wipe inside DashboardData::clearCache().
+        // rather than waiting for the TTL to elapse.
         try {
           (new \ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\DashboardData())->clearCache();
         } catch (\Throwable $e) {
@@ -443,17 +441,18 @@
       $startTime = microtime(true);
 
       // --- LOGIQUE DE VERSIONING : Détection du rafraîchissement ---
-      $QlastEmbedding = $this->db->get('products_cockpit_ai_embedding ', 'date_added', ['product_id' => $productId], ['date_added' => 'desc'], 1);
+      // Db::get() implode les VALEURS de $order : la clé seule y perd son nom, d'où order by desc » et une erreur de syntaxe à chaque produit du cron.
+      $QlastEmbedding = $this->db->get('products_cockpit_ai_embedding', 'date_modified', ['entity_id' => $productId], 'date_modified desc', 1);
 
       $QlastLogFlag = $this->db->get('products_cockpit_ai_action_log', 'date_created', [
         'product_id' => $productId,
         'action_type' => 'system_update_flag'
-      ], ['date_created' => 'desc'], 1);
+      ], 'date_created desc', 1);
 
       $forceRefresh = false;
       if ($QlastEmbedding->check() && $QlastLogFlag->check()) {
         // Si le flag de modification est plus récent que la dernière analyse, on force l'IA
-        if (strtotime($QlastLogFlag->value('date_created')) > strtotime($QlastEmbedding->value('date_added'))) {
+        if (strtotime($QlastLogFlag->value('date_created')) > strtotime($QlastEmbedding->value('date_modified'))) {
           $forceRefresh = true;
         }
       }
@@ -617,12 +616,17 @@
     /**
      * Méthode de nettoyage logique (Flag) appelée par les Hooks
      * Ne supprime rien (Versioning), mais demande un refresh au prochain passage.
+     *
+     * @param int $productId Produit dont la fiche vient de changer
+     * @param string $subtype Opération à l'origine du drapeau : insert | update | delete
      */
-    public function clearCockpitCache(int $productId): void
+    public function clearCockpitCache(int $productId, string $subtype = 'update'): void
     {
+      // language_id reste NULL : le drapeau porte une modification de fiche, pas une langue.
       $this->db->save('products_cockpit_ai_action_log', [
         'product_id' => (int)$productId,
         'action_type' => 'system_update_flag',
+        'action_subtype' => \in_array($subtype, ['insert', 'update', 'delete'], true) ? $subtype : 'update',
         'status' => 'executed',
         'validation_reason' => 'Data change detected. Requesting fresh AI analysis.',
         'date_created' => 'now()'

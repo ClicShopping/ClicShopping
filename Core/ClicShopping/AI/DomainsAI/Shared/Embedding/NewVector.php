@@ -151,7 +151,7 @@ class NewVector
    * @return array|null The generated embeddings or null on error
    * @throws ClientExceptionInterface
    */
-  public static function createEmbedding(string|null $path_file_upload, string|null $text_description, ?int $token_length = null)
+  public static function createEmbedding(string|null $path_file_upload, string|null $text_description, ?int $token_length = null, string $carryHeader = '')
   {
     $embeddingGenerator = self::gptEmbeddingsModel();
 
@@ -206,7 +206,7 @@ class NewVector
 
         // Generate cache key (content + model + token_length)
         $model = CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
-        $cacheKey = md5($totalContent . $model . $token_length);
+        $cacheKey = md5($totalContent . $model . $token_length . $carryHeader);
 
         // Check cache (namespace: Rag/Embeddings)
         $cache = new Cache($cacheKey, 'Rag/Embeddings');
@@ -232,7 +232,7 @@ class NewVector
         // File branch keeps the '.' separator it inherited from splitDocuments().
         $splitDocuments = [];
         foreach ($documents as $fileDocument) {
-          foreach (DocumentChunker::split($fileDocument, ChunkPolicy::ofChars($token_length, ['.'])) as $piece) {
+          foreach (DocumentChunker::split($fileDocument, ChunkPolicy::ofChars($token_length, ['.']), $carryHeader) as $piece) {
             $splitDocuments[] = $piece;
           }
         }
@@ -268,7 +268,7 @@ class NewVector
         if ($estimatedTokens > $token_length) {
           // Multi-chunk text - cache the entire result
           $model = CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
-          $cacheKey = md5($text_description . $model . $token_length);
+          $cacheKey = md5($text_description . $model . $token_length . $carryHeader);
 
           // Check cache (namespace: Rag/Embeddings)
           $cache = new Cache($cacheKey, 'Rag/Embeddings');
@@ -289,7 +289,7 @@ class NewVector
           $tempDocument->sourceName = 'manual';
           $tempDocument->sourceType = 'manual';
 
-          $splitDocuments = DocumentChunker::split($tempDocument, ChunkPolicy::ofChars($token_length));
+          $splitDocuments = DocumentChunker::split($tempDocument, ChunkPolicy::ofChars($token_length), $carryHeader);
           $formattedDocuments = EmbeddingFormatter::formatEmbeddings($splitDocuments);
 
           // Generate embeddings (API call 200-500ms)
@@ -358,7 +358,7 @@ class NewVector
 
       if (str_contains($e->getMessage(), 'maximum context length') && $token_length > 200) {
         error_log("Retrying with smaller chunk size...");
-        return self::createEmbedding($path_file_upload, $text_description, (int)($token_length / 2));
+        return self::createEmbedding($path_file_upload, $text_description, (int)($token_length / 2), $carryHeader);
       }
 
       return null;

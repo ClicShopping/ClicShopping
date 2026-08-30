@@ -160,10 +160,12 @@ class AnalysisPlanner
       ]);
     }
 
-    $windows = $this->getDef('text_analysis_plan_window_current', [
-      'from' => $plan['periods']['current']['from'],
-      'to' => $plan['periods']['current']['to'],
-    ]);
+    $windows = isset($plan['periods']['current']['from'], $plan['periods']['current']['to'])
+      ? $this->getDef('text_analysis_plan_window_current', [
+          'from' => $plan['periods']['current']['from'],
+          'to' => $plan['periods']['current']['to'],
+        ])
+      : '';
 
     if (isset($plan['periods']['previous'])) {
       $windows .= "\n" . $this->getDef('text_analysis_plan_window_previous', [
@@ -187,9 +189,11 @@ class AnalysisPlanner
         . "\n" . $this->getDef('text_analysis_plan_time_grain_shape_' . $shape, ['days' => (string)$days]);
     }
 
+    $windows = ltrim($windows, "\n");
+
     $block = $this->getDef('text_analysis_plan_header') . "\n"
-      . implode("\n", $metrics) . "\n"
-      . $windows;
+      . implode("\n", $metrics)
+      . ($windows === '' ? '' : "\n" . $windows);
 
     $rankingLines = [];
 

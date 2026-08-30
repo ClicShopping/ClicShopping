@@ -1,0 +1,7 @@
+text_domain_actions_intro = RECOMMENDED ACTIONS ALREADY DECIDED. The list below was produced by a deterministic engine of this shop, outside this analysis. Propose ONLY actions taken from it, quoted with the product they belong to. Never invent an action, never restate one for a product that is absent from the list.
+
+text_domain_actions_row = - {{product}} (#{{id}}) | priority {{priority}} | {{label}} : {{description}}
+
+text_domain_actions_coverage = COVERAGE OF THAT LIST: {{analysed}} of {{catalogue}} active products carry an analysis, the most recent one dated {{last}}. State that date and that coverage in the answer whenever you use an action, so the reader knows how old the recommendation is.
+
+text_domain_actions_empty = NO ACTION LIST IS AVAILABLE for this shop. Say plainly that no recommended action can be served, and propose none of your own.

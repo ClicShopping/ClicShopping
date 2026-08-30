@@ -9,11 +9,13 @@
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Language;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\Hash;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
+use ClicShopping\AI\Infrastructure\Prompt\PromptPlaceholders;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\EmptyResultFormatter;
 
@@ -144,7 +146,9 @@ class ResultInterpreter
       'baseCurrency' => \defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : ''
     ];
 
-    $prompt = $this->language->getDef('text_interpret_results', $array);
+    $skeleton = $this->language->getDef('text_interpret_results');
+    $skeleton = PromptPlaceholders::resolve($skeleton, (string)CLICSHOPPING::getConfig('db_table_prefix'), (int)$this->language->getId());
+    $prompt = Language::parseDefinition($skeleton, $array);
 
     // The interpretation prompt above is English (internal), but the restitution must be
     // returned in the APPLICATION language (null). Loaded from the agnostic Agents/ layer

@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Registration;
 
 use ClicShopping\AI\RegistryAI\PromptPlaceholderRegistry;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Providers\DomainActionsProvider;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Providers\MetricCatalogProvider;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Providers\OrderStatusMapProvider;
 
@@ -34,5 +35,6 @@ final class PromptPlaceholderRegistration
   {
     $registry->register(new OrderStatusMapProvider());
     $registry->register(new MetricCatalogProvider());
+    $registry->register(new DomainActionsProvider());
   }
 }

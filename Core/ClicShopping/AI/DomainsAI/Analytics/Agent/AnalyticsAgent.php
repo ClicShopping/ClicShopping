@@ -25,6 +25,7 @@ use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
 use ClicShopping\AI\DomainsAI\Analytics\Planning\AnalysisPlanner;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
+use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
@@ -799,6 +800,16 @@ class AnalyticsAgent implements AgentInterface
 
             return $this->analysisPlanRefusal($question, $planResult, $ambiguityAnalysis);
           }
+        }
+
+        if (($this->analysisPlan['periods']['period_missing'] ?? false) === true) {
+          $this->debugLog("PLAN WITHOUT WINDOW: asking the user for the period", "PLAN");
+
+          $clarification = AgentResponseHelper::buildClarificationRequest($question, 'time');
+          // Distinguishable from the ambiguity stage, which asks the same question earlier.
+          $clarification['clarification_source'] = 'analysis_plan';
+
+          return $clarification;
         }
 
         if ($planResult['unsatisfiable'] !== []) {

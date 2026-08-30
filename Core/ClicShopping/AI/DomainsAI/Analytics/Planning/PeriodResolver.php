@@ -30,6 +30,12 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
  *    equal length made the previous window overlap the current one by a day on leap years.
  * 3. `previous_period` is unchanged and remains a DURATION convention: the same span, immediately
  *    before. No calendar homologue is involved.
+ * 4. `previous_year_comparable_days` is the WEEKDAY homologue: the same window shifted back 52 weeks,
+ *    so both windows hold the same count of Mondays, Saturdays and business days. 19 August 2026 is a
+ *    Wednesday, 19 August 2025 a Tuesday - on a weekday-sensitive activity that composition gap weighs
+ *    more than 29 February. It is a SECOND metric next to the calendar one, never a replacement: the
+ *    two answer different questions and are never summed or substituted for one another.
+ * An unknown convention degrades to `none`: no comparison is better than a window nobody asked for.
  *
  * @package ClicShopping\AI\DomainsAI\Analytics\Planning
  */
@@ -40,12 +46,15 @@ final class PeriodResolver
   public const COMPARE_PREVIOUS_PERIOD = 'previous_period';
   public const COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS = 'previous_year_comparable_days';
 
+  /** 52 weeks: the shift that keeps the day of week, hence the count of business days. */
   private const COMPARABLE_DAYS_SHIFT = '-364 days';
+
   /**
    * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_year_comparable_days|previous_period}`
    * @param \DateTimeImmutable|null $observedAt Observation date; defaults to now. Injected by tests only.
-   * @return array Allow-listed `{current: {from, to}, compare, previous?: {from, to}}`, every bound Y-m-d
-   * @throws \InvalidArgumentException When the current window is missing, reversed, or contains unreadable dates
+   * @return array Allow-listed `{current: {from, to}, compare, previous?: {from, to}}`, every bound Y-m-d,
+   *               or `{current: {from: null, to: null}, compare: none, period_missing: true}`
+   * @throws \InvalidArgumentException When the current window is reversed or contains unreadable dates
    */
   public static function resolve(array $periods, ?\DateTimeImmutable $observedAt = null): array
   {
@@ -53,7 +62,7 @@ final class PeriodResolver
     $to = (string)($periods['current']['to'] ?? '');
 
     if ($from === '' || $to === '') {
-      throw new \InvalidArgumentException('The plan carries no current period');
+      return ['current' => ['from' => null, 'to' => null], 'compare' => self::COMPARE_NONE, 'period_missing' => true];
     }
 
     try {

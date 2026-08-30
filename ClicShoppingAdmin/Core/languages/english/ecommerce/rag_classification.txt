@@ -60,6 +60,11 @@ text_classification_rule_field_values_examples = "price of the iPhone" → analy
 "inventory forecast" → analytics
 "reorder probability" → analytics
 
+text_classification_rule_prescriptive_objective_examples = "propose a sales strategy to increase the gross margin on lower-value products" → analytics (objective: gross margin)
+"what can I do to raise the average cart value?" → analytics (objective: average cart value)
+"how do I reduce the number of pending orders?" → analytics (objective: order count)
+"how should I word a product description?" → semantic (no measurable objective)
+
 text_classification_rule_statuses_example = "pending orders" → analytics
 
 text_classification_semantic_definition_bullets = * Explanations (what is, how, why)

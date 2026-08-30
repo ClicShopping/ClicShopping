@@ -155,7 +155,6 @@ class EntityRegistry
       );
     }
 
-    // Final fallback: Static list of known embedding tables
     return $this->getStaticEmbeddingTables();
   }
 
@@ -274,7 +273,6 @@ class EntityRegistry
     }
 
     // Standard pattern: {entity_type}_id
-    // Most tables use the plural form directly (products_id, categories_id, etc.)
     return $entityType . '_id';
   }
 
