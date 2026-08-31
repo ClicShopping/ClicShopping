@@ -1,2 +1,2 @@
-cfg_ecommerce_cockpit_ai_pipeline_timeout_title = Pipeline Timeout (seconds)
-cfg_ecommerce_cockpit_ai_pipeline_timeout_description = Maximum execution time for complete analysis pipeline
+cfg_ecommerce_cockpit_ai_pipeline_timeout_title = Délai maximum du pipeline (secondes)
+cfg_ecommerce_cockpit_ai_pipeline_timeout_description = Temps d'exécution maximum pour un pipeline d'analyse complet

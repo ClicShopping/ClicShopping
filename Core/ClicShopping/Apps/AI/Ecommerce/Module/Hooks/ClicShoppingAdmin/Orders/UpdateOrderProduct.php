@@ -69,7 +69,9 @@ class UpdateOrderProduct implements HooksInterface
       'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
     ];
 
-    CLICSHOPPING::checkAppsIsActivated($requiredConstants);
+    if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
+      return false;
+    }
 
     if (!Gpt::checkGptStatus()) {
       return false;

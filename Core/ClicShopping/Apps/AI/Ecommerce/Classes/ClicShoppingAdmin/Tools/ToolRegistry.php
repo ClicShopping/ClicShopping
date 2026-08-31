@@ -104,9 +104,9 @@ class ToolRegistry
   {
     $entityId = (int)($params['entity_id'] ?? $params['product_id'] ?? 0);
     $horizonDays = (int)($params['horizon_days'] ?? 30);
-    $leadTimeDays = (int)($params['lead_time_days'] ?? 7);
-    $daysBack = (int)($params['history_days'] ?? 90);
-    $serviceLevel = (float)($params['service_level'] ?? 0.95);
+    $leadTimeDays = isset($params['lead_time_days']) ? (int)$params['lead_time_days'] : null;
+    $daysBack = isset($params['history_days']) ? (int)$params['history_days'] : null;
+    $serviceLevel = isset($params['service_level']) ? (float)$params['service_level'] : null;
 
     if ($entityId <= 0) {
       return [

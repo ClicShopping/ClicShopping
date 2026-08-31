@@ -37,7 +37,9 @@
         'CLICSHOPPING_APP_ECOMMERCE_EC_STATUS',
       ];
 
-      CLICSHOPPING::checkAppsIsActivated($requiredConstants);
+      if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
+        return false;
+      }
 
       if (!Gpt::checkGptStatus()) {
         return false;

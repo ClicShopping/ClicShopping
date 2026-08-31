@@ -198,5 +198,5 @@ text_error_prompt_empty_after_sanitization = Your request is empty after validat
 text_error_query_truncated_too_long = Your question was too long to be processed in full, so only its beginning was analysed. Please shorten it or split it into several questions.
 text_analysis_plan_refused = I couldn't build a reliable analysis plan for this question, so I would rather say so than return a figure I cannot vouch for. Please rephrase it, naming the measure and the period you want.
 text_analysis_plan_refused_details = I couldn't build a reliable analysis plan for this question. What I could not honour: {{elements}}. Please rephrase it, naming the measure and the period you want.
-text_analysis_plan_reserve = Please note: I could not serve one part of your question - {{elements}}. No measure of it is available here, so it is left out rather than approximated. What follows answers the rest of your question.
+text_analysis_plan_reserve = Please note: I could not serve one part of your question - {{elements}}. It is neither measured nor selectable here, so it is left out rather than approximated. What follows answers the rest of your question.
 text_future_period_out_of_scope = not yet measured

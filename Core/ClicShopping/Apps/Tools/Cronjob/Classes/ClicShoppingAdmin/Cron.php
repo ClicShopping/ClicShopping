@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin;
 
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use function is_null;
@@ -79,6 +80,29 @@ class Cron
     $cron_array = $Qcron->fetchAll();
 
     return $cron_array;
+  }
+
+  /**
+   * Resolves the token required to trigger the crons, from the App parameter when
+   * the administrator set one, otherwise derived from the install secret so every
+   * installation owns a token without any migration.
+   *
+   * @return string The effective token, empty when the install has no secret at all.
+   */
+  public static function secret(): string
+  {
+    if (\defined('CLICSHOPPING_APP_CRONJOB_CJ_SECRET')) {
+      $param = trim((string)CLICSHOPPING_APP_CRONJOB_CJ_SECRET);
+
+      if ($param !== '') {
+        return $param;
+      }
+    }
+
+    // Derived, never the AES key itself: it would end up in access logs and Referer.
+    $key = (string)(CLICSHOPPING::getConfig('data_encryption') ?? CLICSHOPPING::getConfig('encryption_key') ?? '');
+
+    return $key === '' ? '' : substr(hash_hmac('sha256', 'cronjob', $key), 0, 32);
   }
 
   /**

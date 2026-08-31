@@ -1,0 +1,4 @@
+cfg_ecommerce_cockpit_ai_cron_status_title = CockpitAI daily cron
+cfg_ecommerce_cockpit_ai_cron_status_description = Enable the daily CockpitAI cron. It analyses the products ordered today, those modified since their last analysis, and those never analysed yet with stock above zero.
+cfg_ecommerce_cockpit_ai_cron_status_true = Enabled
+cfg_ecommerce_cockpit_ai_cron_status_false = Disabled

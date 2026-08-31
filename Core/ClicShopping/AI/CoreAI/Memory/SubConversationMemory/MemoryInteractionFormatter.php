@@ -8,6 +8,8 @@
 
 namespace ClicShopping\AI\CoreAI\Memory\SubConversationMemory;
 
+use ClicShopping\AI\Config\TechnicalDefaults;
+
 /**
  * MemoryInteractionFormatter Class
  *
@@ -68,9 +70,7 @@ class MemoryInteractionFormatter
    * model needs. Strips HTML, decodes entities, collapses whitespace and
    * caps the result so a runaway answer never poisons the embedding cost.
    *
-   * The default cap (32 000 chars) is well above the typical text content of
-   * a Hybrid response (≈ 5 KB) yet keeps even large pages inside one chunk.
-   * Override via CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS.
+   * Cap: CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS (32 000 chars by default).
    */
   private static function cleanResponseForEmbedding(string $response): string
   {
@@ -89,12 +89,10 @@ class MemoryInteractionFormatter
     $response = \preg_replace('/\s+/u', ' ', $response);
     $response = \trim($response);
 
-    $maxChars = 32000;
-    if (\defined('CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS')) {
-      $override = (int) \constant('CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS');
-      if ($override > 0) {
-        $maxChars = $override;
-      }
+    $maxChars = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS');
+
+    if ($maxChars <= 0) {
+      $maxChars = 32000;
     }
 
     if (\mb_strlen($response) > $maxChars) {

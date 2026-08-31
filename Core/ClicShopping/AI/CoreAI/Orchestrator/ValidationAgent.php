@@ -301,12 +301,9 @@ class ValidationAgent implements AgentInterface
   /**
    * Detect if input is SQL query or natural language.
    *
-   * ⛔ Never on the FIRST WORD alone: "Show me this year's revenue" opens on SHOW, "Describe the
-   * cooler" on DESCRIBE, "Update the price" on UPDATE — English imperatives that are also SQL
-   * verbs. A step question judged SQL is validated as SQL, fails, and CorrectionAgent REPLACES
-   * the user's question with an invented statement (SQL-37).
-   * The pipeline only ever generates READ statements, so the same test as
-   * SqlQueryProcessor::looksLikeSqlStatement() decides here: it opens on SELECT or WITH.
+   * ⛔ Never on the first word alone: SHOW, DESCRIBE and UPDATE open English sentences too.
+   * The pipeline only generates reads, so the same bound as
+   * SqlQueryProcessor::looksLikeSqlStatement() decides: it opens on SELECT or WITH.
    *
    * @param string $input Text to analyze
    * @return bool True if SQL, false if natural language

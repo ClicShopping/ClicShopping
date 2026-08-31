@@ -10,6 +10,7 @@
 
   use ClicShopping\OM\Registry;
   use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\ProductStock;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\StockForecastService;
 
   /**
    * DataCollector
@@ -87,6 +88,7 @@
                                                  p.products_status,
                                                  p.products_weight,
                                                  p.products_quantity,
+                                                 p.products_quantity_alert,
                                                  p.products_price,
                                                  p.products_cost,
                                                  p.products_handling,
@@ -428,6 +430,9 @@
         $Qfeatured->execute();
         $featured = $Qfeatured->valueInt('featured_count') > 0;
 
+        // Threshold in force: the product's own, else STOCK_REORDER_LEVEL.
+        $alertStock = ProductStock::effectiveAlertStock((float)($product['products_quantity_alert'] ?? 0));
+
         $result_array = [
           // Identity
           'product_id'  => $productId,
@@ -445,6 +450,8 @@
           'manufacturers_id'             => $product['manufacturers_id'] ?? null,
           'products_weight'              => $product['products_weight'] ?? null,
           'products_quantity'            => $product['products_quantity'] ?? null,
+          'alert_stock'                  => $alertStock,
+          'below_alert'                  => $alertStock > 0 && (float)($product['products_quantity'] ?? 0) <= $alertStock,
           'products_description'         => $product['products_description'] ?? '',
           'products_description_summary' => $product['products_description_summary'] ?? '',
           'products_head_title_tag'      => $product['products_head_title_tag'] ?? '',
@@ -574,8 +581,8 @@
       ];
 
       try {
-        // Retrieve 90-day daily demand series
-        $dailyDemandSeries = ProductStock::getDailyDemandSeriesByProducts($productId, 90);
+        // History window comes from the CockpitAI configuration.
+        $dailyDemandSeries = ProductStock::getDailyDemandSeriesByProducts($productId, StockForecastService::configuredHistoryDays());
         $result['daily_demand_series'] = $dailyDemandSeries;
 
         // Calculate stock velocity (total_sold_90d / current_stock)
@@ -618,11 +625,11 @@
             $result['stockout_probability'] = round($stockoutProb, 4);
           }
 
-          // Calculate safety stock (7-day lead time, 95% service level)
+          // Lead time from the stock configuration, service level from the CockpitAI one.
           $safetyStock = ProductStock::calculateSafetyStockFromDailyDemand(
             $dailyDemandSeries,
-            7,
-            0.95
+            ProductStock::configuredLeadTimeDays(),
+            StockForecastService::configuredServiceLevel()
           );
           $result['safety_stock'] = round($safetyStock, 2);
         } else {

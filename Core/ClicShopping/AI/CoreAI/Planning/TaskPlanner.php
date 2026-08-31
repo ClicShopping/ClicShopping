@@ -296,8 +296,8 @@ class TaskPlanner
         $intentType = $intent['type'] ?? 'analytics';
         $confidence = $intent['confidence'] ?? 0.5;
 
-        // The CUT decides which splitter serves, not the classification.  `intent_type` and  `sub_queries` come from two independent LLM calls 
-	// (UnifiedQueryAnalyzer:176 and :180)  nothing reconciles.
+        // The CUT decides which splitter serves, not the classification: `intent_type` and
+        // `sub_queries` come from two independent LLM calls that nothing reconciles.
         $analyticsPlanner = $this->subTaskPlanners['analytics'] ?? null;
         $analysisCut = is_array($intent['sub_queries'] ?? null) ? $intent['sub_queries'] : [];
 

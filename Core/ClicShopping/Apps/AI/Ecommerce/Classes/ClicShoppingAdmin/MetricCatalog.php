@@ -92,6 +92,16 @@ class MetricCatalog
         'type' => MetricType::DURATION,
         'definition' => 'text_metric_avg_shipping_delay',
       ],
+      'discount_amount' => [
+        'grain' => 'order',
+        'type' => MetricType::AMOUNT,
+        'definition' => 'text_metric_discount_amount',
+      ],
+      'shipping_billed' => [
+        'grain' => 'order',
+        'type' => MetricType::AMOUNT,
+        'definition' => 'text_metric_shipping_billed',
+      ],
     ];
   }
 }

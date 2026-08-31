@@ -15,6 +15,7 @@ use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * Class DbSecurity
@@ -131,9 +132,7 @@ class DbSecurity
         // ============================================================================
         if (stripos($query, 'SELECT') === 0 && stripos($query, 'LIMIT') === false) {
             // Define safety limit from TechnicalConfig
-            $safetyLimit = defined('CLICSHOPPING_APP_CHATGPT_RA_SQL_SAFETY_LIMIT') 
-                ? (int) CLICSHOPPING_APP_CHATGPT_RA_SQL_SAFETY_LIMIT 
-                : 10000;
+            $safetyLimit = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_SQL_SAFETY_LIMIT');
             
             // Add LIMIT clause
             $originalQuery = $query;

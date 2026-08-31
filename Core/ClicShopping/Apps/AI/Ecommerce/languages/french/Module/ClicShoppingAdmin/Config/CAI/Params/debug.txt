@@ -1,5 +1,4 @@
-cfg_ecommerce_cockpit_ai_debug_title = Debug
-cfg_ecommerce_cockpit_ai_debug_description = Souhaitez vous activer le debug ?
-
-cfg_ecommerce_cockpit_ai_debug_true = True
-cfg_ecommerce_cockpit_ai_debug_false = False
+cfg_ecommerce_cockpit_ai_debug_title = Débogage
+cfg_ecommerce_cockpit_ai_debug_description = Souhaitez-vous activer la journalisation de débogage ?
+cfg_ecommerce_cockpit_ai_debug_true = Vrai
+cfg_ecommerce_cockpit_ai_debug_false = Faux

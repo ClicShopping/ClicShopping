@@ -45,6 +45,7 @@ use ClicShopping\Apps\Tools\MCP\MCP;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
 {
@@ -291,9 +292,7 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
       Gpt::getEnvironment();
 
       $enableTimeout = true;
-      $maxExecutionTime = defined('CLICSHOPPING_APP_CHATGPT_RA_MAX_EXECUTION_TIME')
-        ? CLICSHOPPING_APP_CHATGPT_RA_MAX_EXECUTION_TIME
-        : 120;
+      $maxExecutionTime = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_MAX_EXECUTION_TIME');
       RequestValidator::configureTimeout($maxExecutionTime, $enableTimeout);
       $queryStartTime = microtime(true);
 

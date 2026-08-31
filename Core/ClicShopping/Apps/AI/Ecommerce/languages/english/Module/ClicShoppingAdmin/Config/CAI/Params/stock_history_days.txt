@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_stock_history_days_title = Stock history window (days)
+cfg_ecommerce_cockpit_ai_stock_history_days_description = Length of the sales history the daily demand series is built from (default: 90 days). A short window follows a trend faster, a long one is steadier on seasonal products.

@@ -14,6 +14,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\DomainsAI\Hybrid\Patterns\QuerySplitterPatterns;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * QuerySplitter - Splits complex queries into sub-queries
@@ -632,7 +633,7 @@ class QuerySplitter extends BaseQueryProcessor
 
       // Modern LLMs support up to 128K tokens (~400K+ characters)
       // Use TechnicalConfig for max prompt length
-      $maxLength = CLICSHOPPING_APP_CHATGPT_RA_MAX_PROMPT_LENGTH;
+      $maxLength = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_MAX_PROMPT_LENGTH');
       
       if (strlen($prompt) > $maxLength) {
         if ($this->debug) {

@@ -974,7 +974,7 @@ class CLICSHOPPING
     $requiredConstants = $constant;
 
     foreach ($requiredConstants as $const) {
-      if (!\defined($const) || \constant($const) !== 'True') {
+      if (!\defined($const) || \constant($const) != 'True') {
         return false;
       }
     }

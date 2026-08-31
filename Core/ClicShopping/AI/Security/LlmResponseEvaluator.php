@@ -12,6 +12,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\AI\Config\DomainFields;
 
 /**
@@ -27,8 +28,6 @@ use ClicShopping\AI\Config\DomainFields;
  */
 class LlmResponseEvaluator
 {
-  private const DEFAULT_CRITIC_RESULT_MAX_CHARS = 8000;
-
   protected static ?SecurityLogger $securityLogger = null;
   private static bool $debug = false;
 
@@ -280,21 +279,17 @@ class LlmResponseEvaluator
    *   2. Decode HTML entities so the critic reads "your price: 899€" instead
    *      of "your price: 899&#x20AC;".
    *   3. Collapse runs of whitespace.
-   *   4. Cap the result length at DEFAULT_CRITIC_RESULT_MAX_CHARS (8000), or
-   *      whatever CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS sets.
+   *   4. Cap the result length at CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS.
    *
    * The original payload is logged when truncation happens, so we can audit
    * what was dropped before evaluation.
    */
   private static function trimResultForCritic(string $result): string
   {
-    if (\defined('CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS')) {
-      $maxChars = (int) \constant('CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS');
-      if ($maxChars <= 0) {
-        $maxChars = self::DEFAULT_CRITIC_RESULT_MAX_CHARS;
-      }
-    } else {
-      $maxChars = self::DEFAULT_CRITIC_RESULT_MAX_CHARS;
+    $maxChars = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS');
+
+    if ($maxChars <= 0) {
+      $maxChars = 8000;
     }
 
     $originalLength = mb_strlen($result);

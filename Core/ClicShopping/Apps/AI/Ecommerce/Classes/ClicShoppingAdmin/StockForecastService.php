@@ -20,9 +20,13 @@ class StockForecastService
   /**
    * Forecast stock renewal risk for a single product.
    */
-  public static function forecastForProduct(int $productId, int $horizonDays = 30, int $leadTimeDays = 7, int $daysBack = 90, float $serviceLevel = 0.95): array
+  public static function forecastForProduct(int $productId, int $horizonDays = 30, ?int $leadTimeDays = null, ?int $daysBack = null, ?float $serviceLevel = null): array
   {
     $CLICSHOPPING_Db = Registry::get('Db');
+
+    $leadTimeDays = $leadTimeDays ?? ProductStock::configuredLeadTimeDays();
+    $daysBack = $daysBack ?? self::configuredHistoryDays();
+    $serviceLevel = $serviceLevel ?? self::configuredServiceLevel();
 
     $Qproduct = $CLICSHOPPING_Db->prepare('select p.products_id,
                                                  p.products_quantity,
@@ -51,6 +55,7 @@ class StockForecastService
     $safetyStock = ProductStock::calculateSafetyStockFromDailyDemand($dailyDemand, $leadTimeDays, $serviceLevel);
 
     $currentStock = (float)$Qproduct->value('products_quantity');
+    $alertStock = ProductStock::effectiveAlertStock((float)$Qproduct->value('products_quantity_alert'));
     $expectedDemand = (float)$forecast['mean_total'];
     $stdDevDemand = (float)$forecast['stddev_total'];
 
@@ -63,7 +68,8 @@ class StockForecastService
       'products_name' => $Qproduct->value('products_name'),
       'products_model' => $Qproduct->value('products_model'),
       'current_stock' => $currentStock,
-      'alert_stock' => (float)$Qproduct->value('products_quantity_alert'),
+      'alert_stock' => $alertStock,
+      'below_alert' => $alertStock > 0 && $currentStock <= $alertStock,
       'horizon_days' => $horizonDays,
       'lead_time_days' => $leadTimeDays,
       'history_days' => $daysBack,
@@ -78,7 +84,7 @@ class StockForecastService
   /**
    * Forecast stock renewal risk for a list of products (top risk).
    */
-  public static function forecastTopRiskProducts(int $limit = 10, int $horizonDays = 30, int $leadTimeDays = 7, int $daysBack = 90, float $serviceLevel = 0.95): array
+  public static function forecastTopRiskProducts(int $limit = 10, int $horizonDays = 30, ?int $leadTimeDays = null, ?int $daysBack = null, ?float $serviceLevel = null): array
   {
     $CLICSHOPPING_Db = Registry::get('Db');
 
@@ -116,6 +122,37 @@ class StockForecastService
   }
 
   /**
+   * Service level of the safety-stock computation, from the CockpitAI configuration.
+   * Guarded by defined(): the row does not exist until the CAI configuration is saved.
+   * ONE literal for this default, here and nowhere else.
+   *
+   * @return float Probability in [0.50 .. 0.999]
+   */
+  public static function configuredServiceLevel(): float
+  {
+    $level = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_STOCK_SERVICE_LEVEL')
+      ? (float)CLICSHOPPING_APP_ECOMMERCE_CAI_STOCK_SERVICE_LEVEL
+      : 0.95;
+
+    return min(0.999, max(0.50, $level));
+  }
+
+  /**
+   * Length of the sales history the demand series is built from, from the CockpitAI
+   * configuration. ONE literal for this default, here and nowhere else.
+   *
+   * @return int Number of days, at least 1
+   */
+  public static function configuredHistoryDays(): int
+  {
+    $days = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_STOCK_HISTORY_DAYS')
+      ? (int)CLICSHOPPING_APP_ECOMMERCE_CAI_STOCK_HISTORY_DAYS
+      : 90;
+
+    return max(1, $days);
+  }
+
+  /**
    * Build a concise human-readable summary for chat output.
    */
   public static function buildSummary(array $forecast): string
@@ -130,7 +167,7 @@ class StockForecastService
     $safety = round($forecast['safety_stock'] ?? 0, 2);
     $horizon = (int)($forecast['horizon_days'] ?? 30);
 
-    return sprintf(
+    $summary = sprintf(
       '%s: %s%% risk of stock-out in %d days. Suggested reorder: %s (safety stock %s).',
       $name,
       $prob,
@@ -138,5 +175,15 @@ class StockForecastService
       $reorderQty,
       $safety
     );
+
+    if ($forecast['below_alert'] ?? false) {
+      $summary .= sprintf(
+        ' Stock is at or below the alert threshold: %s in stock for a threshold of %s.',
+        round($forecast['current_stock'] ?? 0, 2),
+        round($forecast['alert_stock'] ?? 0, 2)
+      );
+    }
+
+    return $summary;
   }
 }

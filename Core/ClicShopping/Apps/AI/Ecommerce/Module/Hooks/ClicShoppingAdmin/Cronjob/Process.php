@@ -151,7 +151,9 @@ class Process implements HooksInterface
       'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
     ];
 
-    CLICSHOPPING::checkAppsIsActivated($requiredConstants);
+    if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
+      return;
+    }
 
     if (!Gpt::checkGptStatus()) {
       return;
@@ -256,9 +258,11 @@ class Process implements HooksInterface
         $languageId = $target['languages_id'];
 
         try {
-          // CRITICAL CALL: executeAnalysis triggers the ActionExecutor
+          // CRITICAL CALL: executeAnalysisCron triggers the ActionExecutor
           // Si CLICSHOPPING_APP_ECOMMERCE_CAI_AUTO_MODE est True, le prix change ici.
-          $result = $orchestrator->executeAnalysis($productId, $languageId, self::CRON_USER_ID);
+          // Variante cron OBLIGATOIRE : executeAnalysis() exige $_SESSION['admin'] et meurt
+          // sur « Access denied » depuis un ordonnanceur externe (CAI-1 b, mesuré).
+          $result = $orchestrator->executeAnalysisCron($productId, $languageId, self::CRON_USER_ID);
 
           $summary['analyses_succeeded']++;
 

@@ -14,6 +14,7 @@ namespace ClicShopping\AI\Security;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Mail;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * Class SecurityAlerter
@@ -49,8 +50,8 @@ class SecurityAlerter
         
         // Load configuration from constants
         // Handle both boolean and string 'True'/'False' formats (DB compatibility)
-        $alertsEnabledConfig = defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERTS_ENABLED') 
-            ? CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERTS_ENABLED 
+        $alertsEnabledConfig = defined('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_ENABLED')
+            ? CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_ENABLED
             : false;
         $this->alertsEnabled = ($alertsEnabledConfig === true || $alertsEnabledConfig == 'True' || $alertsEnabledConfig == 'true' || $alertsEnabledConfig === '1');
             
@@ -58,15 +59,15 @@ class SecurityAlerter
             ? CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_EMAIL 
             : '';
             
-        $this->alertThreshold = CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_THRESHOLD;
+        $this->alertThreshold = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_THRESHOLD');
             
-        $this->highThreatThreshold = CLICSHOPPING_APP_CHATGPT_RA_SECURITY_HIGH_THREAT_THRESHOLD;
+        $this->highThreatThreshold = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_HIGH_THREAT_THRESHOLD');
             
-        $this->failureAlertsEnabled = CLICSHOPPING_APP_CHATGPT_RA_SECURITY_FAILURE_ALERTS;
+        $this->failureAlertsEnabled = (bool)TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_FAILURE_ALERTS');
             
-        $this->alertCooldown = CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_COOLDOWN;
+        $this->alertCooldown = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_COOLDOWN');
             
-        $this->digestMode = CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_DIGEST_MODE;
+        $this->digestMode = (bool)TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_DIGEST_MODE');
         
         // Cache directory for tracking last alert times
         $this->cacheDir = CLICSHOPPING::BASE_DIR . 'Work/Cache/Security/';

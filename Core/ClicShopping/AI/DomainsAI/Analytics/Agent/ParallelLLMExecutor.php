@@ -21,6 +21,7 @@ use GuzzleHttp\RequestOptions;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * ParallelLLMExecutor Class
@@ -73,15 +74,11 @@ class ParallelLLMExecutor
     $this->debug = $debug ?? false;
     
     $this->timeout = $timeout ?? (
-      defined('CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_TIMEOUT') 
-        ? (int)CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_TIMEOUT 
-        : 30
+      TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_TIMEOUT')
     );
     
     $this->maxConcurrent = $maxConcurrent ?? (
-      defined('CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_MAX_CONCURRENT') 
-        ? (int)CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_MAX_CONCURRENT 
-        : 5
+      TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_MAX_CONCURRENT')
     );
     
     // Use configuration constant for parallel enabled

@@ -9,7 +9,10 @@
 namespace ClicShopping\Apps\Tools\Cronjob\Sites\Shop\Pages\CJ;
 
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron;
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\SimpleLogger;
 
 class CJ extends \ClicShopping\OM\Domains\PagesAbstract
 {
@@ -25,6 +28,11 @@ class CJ extends \ClicShopping\OM\Domains\PagesAbstract
    */
   protected function init()
   {
+    if (!self::authorized()) {
+      (new SimpleLogger())->warning('Cronjob: refused HTTP trigger without a valid token from ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+      HTTP::redirect(CLICSHOPPING::getConfig('http_server', 'Shop') . CLICSHOPPING::getConfig('http_path', 'Shop') . 'error_documents/404.php');
+    }
+
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     $time = time();
 
@@ -55,5 +63,22 @@ class CJ extends \ClicShopping\OM\Domains\PagesAbstract
         }
       }
     }
+  }
+
+  /**
+   * Checks the token carried by the request against the one resolved by the App.
+   *
+   * @return bool True when the caller may trigger the crons. An install with no
+   *              secret at all keeps the historical open behaviour.
+   */
+  private static function authorized(): bool
+  {
+    $secret = Cron::secret();
+
+    if ($secret === '') {
+      return true;
+    }
+
+    return hash_equals($secret, (string)($_GET['token'] ?? ''));
   }
 }

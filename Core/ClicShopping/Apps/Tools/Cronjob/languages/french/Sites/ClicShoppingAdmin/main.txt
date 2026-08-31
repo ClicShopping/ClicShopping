@@ -60,4 +60,7 @@ success_expired_entries = Succès
 success_cronjob_status_updated = Succès : Mise à jour effectuée
 
 text_cronjob_instruction = CRON Instructions
-text_info_cronjob = Les CRON sont des tâches programmées qui sont exécutées périodiquement. Vous devez configurer votre serveur pour utiliser les CRON. Vous devez aussi définir votre tâche CRON pour l'exécuter toutes les heures.
+text_info_cronjob = Les CRON sont des tâches programmées qui sont exécutées périodiquement. Vous devez configurer votre serveur pour utiliser les CRON. Vous devez aussi définir votre tâche CRON pour l'exécuter toutes les heures.<br /><br />Copiez la ligne ci-dessous dans le panneau de votre hébergeur (ISPConfig : Sites &rarr; Cronjobs / cPanel : Cron Jobs) ou dans une crontab, et programmez-la toutes les heures. Elle contient le jeton des CRON : sans lui l'appel est refusé, gardez-le confidentiel. Les CRON IA longs (SEO, CockpitAI) sont à programmer de préférence en ligne de commande, qui n'a pas de limite de temps.
+text_cron_url = URL du CRON
+text_cron_cli = Ligne de commande
+alert_cronjob_no_secret = Cette installation n'a pas de secret dans Conf/global.php : l'URL des CRON s'exécute sans jeton et peut être déclenchée par n'importe qui. Définissez un jeton dans Configure.

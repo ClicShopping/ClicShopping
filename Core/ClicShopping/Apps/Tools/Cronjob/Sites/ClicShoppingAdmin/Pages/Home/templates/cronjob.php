@@ -6,6 +6,7 @@
  * See LICENSE file.
  */
 
+use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
@@ -13,6 +14,9 @@ use ClicShopping\OM\Registry;
 $CLICSHOPPING_Cronjob = Registry::get('Cronjob');
 $CLICSHOPPING_Language = Registry::get('Language');
 $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
+
+$cron_secret = Cron::secret();
+$cron_url = HTTP::getShopUrlDomain() . 'index.php?cronjob&runall' . ($cron_secret !== '' ? '&token=' . $cron_secret : '');
 ?>
 <!-- body //-->
 <div class="contentBody">
@@ -40,12 +44,26 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
     <div class="card-body">
       <div class="card-text"><?php echo $CLICSHOPPING_Cronjob->getDef('text_info_cronjob'); ?></div>
       <div class="mt-1"></div>
+<?php if ($cron_secret === '') { ?>
+        <div class="alert alert-danger"><?php echo $CLICSHOPPING_Cronjob->getDef('alert_cronjob_no_secret'); ?></div>
+<?php } ?>
       <div class="row">
         <div class="input-group">
-          <span class="input-group-text">Cron URL</span>
+          <span class="input-group-text"><?php echo $CLICSHOPPING_Cronjob->getDef('text_cron_url'); ?></span>
           <input id="cron-code" class="form-control"
-                 value="wget <?php echo HTTP::getShopUrlDomain() . 'index.php?cronjob&runall'; ?> --read-timeout=5400">
+                 value="wget &quot;<?php echo HTML::outputProtected($cron_url); ?>&quot; --read-timeout=5400">
           <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#cron-code">
+            <i class="bi bi-clipboard"></i>
+          </button>
+        </div>
+      </div>
+      <div class="mt-1"></div>
+      <div class="row">
+        <div class="input-group">
+          <span class="input-group-text"><?php echo $CLICSHOPPING_Cronjob->getDef('text_cron_cli'); ?></span>
+          <input id="cron-code-cli" class="form-control"
+                 value="<?php echo ($cron_secret !== '' ? 'CLICSHOPPING_CRON_TOKEN=' . HTML::outputProtected($cron_secret) . ' ' : ''); ?>php <?php echo dirname(CLICSHOPPING_BASE_DIR, 2); ?>/cron-cli.php --all">
+          <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#cron-code-cli">
             <i class="bi bi-clipboard"></i>
           </button>
         </div>

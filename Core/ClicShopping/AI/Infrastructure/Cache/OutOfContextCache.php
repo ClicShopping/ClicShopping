@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\Infrastructure\Cache;
 
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * OutOfContextCache Class
@@ -57,9 +58,7 @@ class OutOfContextCache
     $this->cacheEnabled = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER')
       && CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER === 'True';
     $this->cacheDir = CLICSHOPPING::BASE_DIR . 'Work/Cache/Rag/OutOfContext/';
-    $this->lifetime = $lifetime ?? (defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL')
-      ? (int)CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL
-      : 3600);
+    $this->lifetime = $lifetime ?? TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL');
     $this->debug = $debug || (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER')
       && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True');
 

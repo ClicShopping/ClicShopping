@@ -101,6 +101,29 @@ class ProductStock
   }
 
   /**
+   * Lead time in days. SAFETY_STOCK_TIME is the only source: repeating its value in a fallback
+   * literal is how a consumer drifts out of sync with the back-office.
+   *
+   * @return int The configured lead time, in days
+   */
+  public static function configuredLeadTimeDays(): int
+  {
+    return (int)SAFETY_STOCK_TIME;
+  }
+
+  /**
+   * Alert threshold in force for a product: its own when set, else the shop-wide
+   * STOCK_REORDER_LEVEL. A zero on the product means UNSET, never a threshold of zero.
+   *
+   * @param float $productAlert The products_quantity_alert column of the product
+   * @return float The threshold that actually applies
+   */
+  public static function effectiveAlertStock(float $productAlert): float
+  {
+    return $productAlert > 0 ? $productAlert : (float)STOCK_REORDER_LEVEL;
+  }
+
+  /**
    * Retrieves the historical customer demand for a specified product and calculates the safety stock based on the lead time.
    *
    * @param int|string|null $products_id The ID of the product for which historical demand is to be calculated. Can be null.
@@ -113,7 +136,7 @@ class ProductStock
     $CLICSHOPPING_Db = Registry::get('Db');
 
     if (is_null($leadTime)) {
-      $leadTime = (int)SAFETY_STOCK_TIME;
+      $leadTime = self::configuredLeadTimeDays();
     }
 
     if (isset($products_id) && !is_null($products_id)) {

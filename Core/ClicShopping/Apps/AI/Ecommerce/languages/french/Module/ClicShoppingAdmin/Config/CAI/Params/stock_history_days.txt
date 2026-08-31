@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_stock_history_days_title = Fenêtre d'historique du stock (jours)
+cfg_ecommerce_cockpit_ai_stock_history_days_description = Longueur de l'historique de ventes utilisé pour construire la série de demande quotidienne (par défaut : 90 jours). Une fenêtre courte suit plus vite une tendance, une fenêtre longue est plus stable sur les produits saisonniers.

@@ -1,2 +1,2 @@
-cfg_ecommerce_cockpit_ai_max_concurrent_analyses_title = Max Concurrent Analyses
-cfg_ecommerce_cockpit_ai_max_concurrent_analyses_description = Maximum number of concurrent analyses per merchant
+cfg_ecommerce_cockpit_ai_max_concurrent_analyses_title = Analyses simultanées maximum
+cfg_ecommerce_cockpit_ai_max_concurrent_analyses_description = Nombre maximum d'analyses menées en parallèle pour un même marchand

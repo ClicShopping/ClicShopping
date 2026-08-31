@@ -27,6 +27,7 @@ use ClicShopping\AI\Rag\Reranking\DocumentReranker;
 
 use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * MultiDBRAGManager Class
@@ -142,7 +143,7 @@ class MultiDBRAGManager
         $chat = Gpt::getChatForModel();
 
         // Number of documents to return after reranking
-        $nrOfOutputDocuments = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;
+        $nrOfOutputDocuments = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT');
 
         $this->reranker = new DocumentReranker($chat, $nrOfOutputDocuments, $this->debug);
 
@@ -847,7 +848,7 @@ class MultiDBRAGManager
 
         // Get the configured number of output documents for reranking
         // We send 2-3x more documents than we want back to give the LLM options
-        $rerankingOutputCount = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;
+        $rerankingOutputCount = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT');
 
         // Send 2x the output count to the reranker (but not more than available)
         $initialLimit = min(count($allResults), $rerankingOutputCount * 2);

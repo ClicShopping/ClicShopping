@@ -21,6 +21,7 @@ use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheCleanup;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheStatistics;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFreshnessValidator;
 use ClicShopping\AI\Infrastructure\Cache\RagCache;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * Query Cache System
@@ -49,7 +50,7 @@ class QueryCache
     $this->enabled = !defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER') || CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER === 'True';
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
-    $this->defaultTTL = CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL;
+    $this->defaultTTL = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL');
 
     try {
       $this->db = Registry::get("Db");

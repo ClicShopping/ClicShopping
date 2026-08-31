@@ -1,2 +1,2 @@
-cfg_ecommerce_cockpit_ai_t_low_title = Low Threshold (T_low score)
-cfg_ecommerce_cockpit_ai_t_low_description = Threshold for low scores in quadrant classification (0-100)
+cfg_ecommerce_cockpit_ai_t_low_title = Seuil bas (score T_low)
+cfg_ecommerce_cockpit_ai_t_low_description = Seuil en dessous duquel un score est considéré comme bas dans le classement par quadrant (0-100)

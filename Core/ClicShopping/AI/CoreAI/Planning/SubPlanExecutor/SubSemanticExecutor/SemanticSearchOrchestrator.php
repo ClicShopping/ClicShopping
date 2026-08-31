@@ -366,7 +366,7 @@ class SemanticSearchOrchestrator
       // Conversation memory should only match VERY similar queries (0.85+), not loosely related ones
       // This prevents "où est Paris" from matching "refund policy" (similarity 0.63)
       // Conversation memory is a FALLBACK, not primary source - it should only match near-exact repeats
-      $configuredMinScore = CLICSHOPPING_APP_CHATGPT_RA_MEMORY_MIN_SCORE;
+      $configuredMinScore = TechnicalDefaults::float('CLICSHOPPING_APP_CHATGPT_RA_MEMORY_MIN_SCORE');
       $minScore = isset($options['minScore']) ? (float)$options['minScore'] : $configuredMinScore;
 
       if ($this->debug) {
@@ -429,7 +429,7 @@ class SemanticSearchOrchestrator
 
       $limit = $options['limit'] ?? 5;
 
-      $configuredMinScore = CLICSHOPPING_APP_CHATGPT_RA_MIN_SIMILARITY_SCORE;
+      $configuredMinScore = TechnicalDefaults::float('CLICSHOPPING_APP_CHATGPT_RA_MIN_SIMILARITY_SCORE');
       $minScore = $options['minScore'] ?? $configuredMinScore;
 
       // Get document store names (all except conversation_memory)
@@ -619,7 +619,8 @@ class SemanticSearchOrchestrator
    */
   private function isLLMFallbackEnabled(): bool
   {
-    return CLICSHOPPING_APP_CHATGPT_RA_ENABLE_LLM_FALLBACK;
+    // The constant is the string 'True'/'False': compare it, never return it raw.
+    return TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_ENABLE_LLM_FALLBACK') == 'True';
   }
 
 

@@ -42,14 +42,15 @@ class TechnicalDefaults
     'CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT' => 5,
 
     // Output ceiling for the English normalisation of the user input. A CEILING, not a target:
-    // it costs nothing unless consumed. Raise it for domains whose input is long (an HR CV, a pasted document) — a hit ceiling truncates the input SILENTLY, so it is detected and
+    // it costs nothing unless consumed. A hit ceiling truncates silently; TranslationHandler reports it.
     'CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN' => 500,
 
     // How many analytics steps one question may be split into — one schema window per step
     'CLICSHOPPING_APP_CHATGPT_RA_MAX_ANALYTICS_STEPS' => 3,
 
-    // Cache TTL, in seconds
+    // Cache TTL, in seconds. A null WARMUP_TTL means "follow CACHE_TTL".
     'CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL' => 3600,
+    'CLICSHOPPING_APP_CHATGPT_RA_CACHE_WARMUP_TTL' => null,
 
     // Fallback
     'CLICSHOPPING_APP_CHATGPT_RA_ENABLE_WEB_FALLBACK' => 'True',
@@ -72,6 +73,12 @@ class TechnicalDefaults
     'CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_ALL_QUERIES' => false,
     'CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_BLOCKED_ONLY' => true,
     'CLICSHOPPING_APP_CHATGPT_RA_SECURITY_RESPONSE_VALIDATION' => true,
+
+    // Char ceiling of the result handed to the critic; the original is logged on truncation.
+    'CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS' => 8000,
+
+    // Char ceiling of the answer sent to the embedding model, so a runaway answer is not paid in full.
+    'CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS' => 32000,
 
     // Security, alerting
     'CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_THRESHOLD' => 10,

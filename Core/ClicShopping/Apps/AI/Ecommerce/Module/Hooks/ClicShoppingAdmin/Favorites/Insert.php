@@ -67,7 +67,9 @@ class Insert implements HooksInterface
       'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
     ];
 
-    CLICSHOPPING::checkAppsIsActivated($requiredConstants);
+    if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
+      return false;
+    }
 
     if (!Gpt::checkGptStatus()) {
       return false;
@@ -88,20 +90,10 @@ class Insert implements HooksInterface
    */
   private function clearCockpitCache(int $productId): void
   {
-    if ($this->CockpitAIOrchestrator !== null) {
-      $this->CockpitAIOrchestrator->clearCockpitCache($productId);
-    } else {
-      $this->app->db->save('products_cockpit_ai_action_log', [
-        'product_id' => (int)$productId,
-        'action_type' => 'system_update_flag',
-        'status' => 'executed',
-        'validation_reason' => 'Promotion update via Specials Hook (Insert)',
-        'date_created' => 'now()'
-      ]);
-    }
+    $this->CockpitAIOrchestrator->clearCockpitCache($productId, 'insert');
 
     if (defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG') && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True') {
-      error_log("[CockpitAI] Specials update: Refresh flag set for product $productId");
+      error_log("[CockpitAI] Favorites Insert: refresh flag set for product $productId");
     }
   }
 }

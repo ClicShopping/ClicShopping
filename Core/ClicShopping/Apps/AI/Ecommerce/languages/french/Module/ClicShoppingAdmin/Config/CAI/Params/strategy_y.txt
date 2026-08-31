@@ -1,5 +1,5 @@
-cfg_ecommerce_cockpit_ai_strategy_y_title = Strategy Y (Commercial Performance)
-cfg_ecommerce_cockpit_ai_strategy_y_description = Strategy preference for Score_Y axis (conversion, revenue, engagement)
+cfg_ecommerce_cockpit_ai_strategy_y_title = Stratégie Y (performance commerciale)
+cfg_ecommerce_cockpit_ai_strategy_y_description = Préférence de stratégie pour l'axe Score_Y (conversion, chiffre d'affaires, engagement)
 cfg_ecommerce_cockpit_ai_strategy_y_conversion = Conversion
-cfg_ecommerce_cockpit_ai_strategy_y_revenue = Revenue
+cfg_ecommerce_cockpit_ai_strategy_y_revenue = Chiffre d'affaires
 cfg_ecommerce_cockpit_ai_strategy_y_engagement = Engagement

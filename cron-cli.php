@@ -20,6 +20,20 @@
  *   php cron-cli.php --all               run every enabled + due cron
  *   php cron-cli.php --list              print the cron table, run nothing (safe)
  *
+ * Every mode requires the cron token (Cronjob App → Configure, or the one derived
+ * from the install secret; the back-office Cronjob page shows the effective value).
+ * Pass it in the environment so it stays out of `ps`, --token= is the fallback:
+ *
+ *   CLICSHOPPING_CRON_TOKEN=xxxx php cron-cli.php --all
+ *   php cron-cli.php --all --token=xxxx
+ *
+ * Scheduling it (hourly), the token given by the panel's environment field when it
+ * has one, otherwise inline:
+ *
+ *   crontab      0 * * * * CLICSHOPPING_CRON_TOKEN=xxxx /usr/bin/php /path/to/cron-cli.php --all
+ *   ISPConfig    Sites → Cronjobs → command: /usr/bin/php /path/to/cron-cli.php --all --token=xxxx
+ *   cPanel       Cron Jobs → same command line
+ *
  * A disabled cron (clic_cron.status = 0 — e.g. the AI app is not installed or the
  * merchant turned the cron off in the admin) is skipped in EVERY mode, whether
  * targeted by id or swept by --all. Only --force overrides a disabled row.
@@ -41,12 +55,13 @@ define('CLICSHOPPING_BASE_DIR', __DIR__ . '/Core/ClicShopping/');
 require_once(CLICSHOPPING_BASE_DIR . 'OM/CLICSHOPPING.php');
 spl_autoload_register('ClicShopping\OM\CLICSHOPPING::autoload');
 
-CLICSHOPPING::initialize();
-CLICSHOPPING::loadSite('Shop');
-
+// Before the bootstrap: an HTTP handler must not pay for it just to be refused.
 if (PHP_SAPI !== 'cli') {
   die("This script can only be run from the command line.\n");
 }
+
+CLICSHOPPING::initialize();
+CLICSHOPPING::loadSite('Shop');
 
 // The whole point of the CLI entry: lift the time cap the HTTP entry point
 // cannot, so a full catch-up batch of long AI crons completes in one run.
@@ -56,6 +71,23 @@ $args       = array_slice($argv, 1);
 $force      = in_array('--force', $args, true);
 $runAll     = in_array('--all', $args, true);
 $positional = array_values(array_filter($args, static fn($a) => !str_starts_with($a, '--')));
+
+$secret = Cron::secret();
+
+if ($secret !== '') {
+  $token = (string)(getenv('CLICSHOPPING_CRON_TOKEN') ?: '');
+
+  foreach ($args as $arg) {
+    if ($token === '' && str_starts_with($arg, '--token=')) {
+      $token = substr($arg, 8);
+    }
+  }
+
+  if (!hash_equals($secret, $token)) {
+    fwrite(STDERR, "[cron-cli] refused: missing or invalid token (CLICSHOPPING_CRON_TOKEN or --token=).\n");
+    exit(1);
+  }
+}
 
 $hooks = Registry::get('Hooks');
 $time  = time();

@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_stock_service_level_title = Stock service level
+cfg_ecommerce_cockpit_ai_stock_service_level_description = Share of demand the safety stock is meant to absorb, as a probability between 0.50 and 0.999 (default: 0.95). The higher the value, the larger the buffer and the fewer the stock-outs.

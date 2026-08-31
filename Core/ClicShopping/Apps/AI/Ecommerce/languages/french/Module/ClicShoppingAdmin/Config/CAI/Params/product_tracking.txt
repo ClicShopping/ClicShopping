@@ -1,5 +1,4 @@
-cfg_ecommerce_cockpit_ai_product_tracking_title = Product tracking
-cfg_ecommerce_cockpit_ai_product_tracking_description = Il traque les visites sur le site et aide l'IA dans ses décisions et recommandation
-
-cfg_ecommerce_cockpit_ai_product_tracking_true = True
-cfg_ecommerce_cockpit_ai_product_tracking_false = False
+cfg_ecommerce_cockpit_ai_product_tracking_title = Suivi des produits
+cfg_ecommerce_cockpit_ai_product_tracking_description = Suit les visites sur le site et aide l'IA dans ses décisions et ses recommandations
+cfg_ecommerce_cockpit_ai_product_tracking_true = Vrai
+cfg_ecommerce_cockpit_ai_product_tracking_false = Faux

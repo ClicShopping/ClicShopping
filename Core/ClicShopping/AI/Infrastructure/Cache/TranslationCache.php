@@ -10,6 +10,7 @@ namespace ClicShopping\AI\Infrastructure\Cache;
 
 
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * Manages caching of translations to minimize redundant calls to the translation API.
@@ -41,9 +42,7 @@ class TranslationCache
   {
     $this->cache = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER === 'True';
     $this->cacheDir = CLICSHOPPING::BASE_DIR . 'Work/Cache/Rag/Translation/';
-    $this->lifetime = $lifetime ?? (defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL')
-      ? (int)CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL
-      : 3600);
+    $this->lifetime = $lifetime ?? TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL');
     $this->checkTranslationCache();
 
     if (!is_dir($this->cacheDir)) {

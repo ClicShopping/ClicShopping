@@ -1753,7 +1753,6 @@ INSERT INTO configuration VALUES(null, 'Durée d’expiration de la session', 'C
 INSERT INTO configuration VALUES(null, 'Durée de verrouillage du compte', 'CLICSHOPPING_APP_MCP_MC_ACCOUNT_LOCK_DURATION', '1800', 'Durée pendant laquelle un compte reste verrouillé après dépassement des limites autorisées.', 6, 0, NULL, '2025-10-30 15:21:25', NULL, NULL);
 INSERT INTO configuration VALUES(null, 'Nombre maximal de tentatives de connexion', 'CLICSHOPPING_APP_MCP_MC_MAX_LOGIN_ATTEMPTS', '5', 'Spécifie le nombre maximal de tentatives de connexion autorisées avant restriction.', 6, 0, NULL, '2025-10-30 15:21:25', NULL, NULL);
 INSERT INTO configuration VALUES(null, 'Nombre maximal de requêtes par fenêtre', 'CLICSHOPPING_APP_MCP_MC_MAX_REQUEST_PER_WINDOW', '20', 'Limite le nombre de requêtes à 20 sur une période de 15 minutes.', 6, 0, NULL, '2025-10-30 15:21:25', NULL, NULL);
-
 INSERT INTO configuration VALUES(null, 'IP Verification Mode', 'CLICSHOPPING_APP_MCP_MC_IP_CHECK_MODE', 'subnet', 'Controls how the client IP is verified on each session request. <strong>strict</strong> = exact match (maximum security, may break mobile clients / NAT / CDN setups). <strong>subnet</strong> = same /24 (IPv4) or /64 (IPv6) — recommended default value. <strong>off</strong> = no IP verification (only the token is checked, OAuth-style behavior).', 6, 0, NULL, '2026-05-26 17:03:52', NULL, NULL);
 
 INSERT INTO configuration VALUES(null, 'Do you want to display the details button ?', 'MODULE_PRODUCTS_SEARCH_DISPLAY_DETAILS_BUTTON', 'True', 'Display or remove the details button', 6, 11, NULL, '2026-05-29 12:35:00', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
@@ -1809,6 +1808,14 @@ INSERT INTO configuration VALUES(null, 'Provincial tax number', 'CLICSHOPPING_AP
 INSERT INTO configuration VALUES(null, 'Sort order', 'CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_SORT_ORDER', '300', 'Position of the module in the list of available methods (the lowest number is displayed first).', 6, 0, NULL, '2026-08-16 15:23:08', NULL, NULL);
 INSERT INTO configuration VALUES(null, 'Federal tax number', 'CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_FEDERAL_TAXES_NUMBER', 'GST/HST: R127066546', 'Please enter the federal administrative tax number (e.g. QST: 1006197104). Leave this field blank if not applicable.', 6, 0, NULL, '2026-08-16 15:23:08', NULL, NULL);
 INSERT INTO configuration VALUES(null, 'Pappers API token', 'CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_PAPPERS_API_TOKEN', '', 'API token used to verify company information via the Pappers website (pappers.fr). Enter the API token obtained from your Pappers account.', 6, 0, NULL, '2026-08-16 15:19:37', 'clic_cfg_use_function_password', 'clic_cfg_set_input_password');
+
+INSERT INTO configuration VALUES(null, 'Status', 'CLICSHOPPING_APP_CRONJOB_CJ_STATUS', 'True', 'Do you want to activate this module for your store?', 6, 0, NULL, '2026-08-31 07:18:43', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'Display sort order', 'CLICSHOPPING_APP_CRONJOB_CJ_SORT_ORDER', '30', 'Sort order for display (Lowest number is shown first)', 6, 0, NULL, '2026-08-31 07:18:43', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'Parameter [Cronjob App]', 'MODULE_MODULES_CRONJOB_INSTALLED', 'Tools\\Cronjob\\CJ', 'Parameter [Cronjob App]', 6, 0, NULL, '2026-08-31 07:18:43', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'CRON token', 'CLICSHOPPING_APP_CRONJOB_CJ_SECRET', '', 'Token required to trigger CRON jobs, via URL or command line. Leave blank to use the token derived from the secret generated during installation: the Cronjob page always displays the actual token. Enter a value here to change it.', 6, 0, NULL, '2026-08-31 07:33:15', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'Stock Service Level', 'CLICSHOPPING_APP_ECOMMERCE_CAI_STOCK_SERVICE_LEVEL', '0.95', 'Proportion of demand that safety stock must absorb, expressed as a probability between 0.50 and 0.999 (default: 0.95). The higher the value, the larger the buffer and the less frequent stockouts.', 6, 0, NULL, '2026-08-31 12:25:24', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'Stock History Window (days)', 'CLICSHOPPING_APP_ECOMMERCE_CAI_STOCK_HISTORY_DAYS', '90', 'Sales history length used to build the daily demand series (default: 90 days). A short window follows a trend faster, a long window is more stable on seasonal products.', 6, 0, NULL, '2026-08-31 12:25:24', NULL, NULL);
+
 
 
 INSERT INTO configuration_group VALUES(1, 'Store Setup', 'General Information on the Store.', 1, 1);

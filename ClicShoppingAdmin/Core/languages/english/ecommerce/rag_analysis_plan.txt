@@ -1,4 +1,6 @@
-text_analysis_plan_examples = EXAMPLES
+text_analysis_plan_examples = DIAGNOSTIC BASKET
+An objective to raise a margin is diagnosed with quantity_sold elected beside the margin: a margin is moved by the volume that carries it, and the margin alone says nothing about which product to act on.
+EXAMPLES
 Question: "revenue for 2026 so far compared with last year, by category"
 {"periods": {"current": {"from": "2026-01-01", "to": "2026-08-12"}, "compare": "previous_year"}, "metrics": [{"name": "revenue_ht"}], "dimensions": ["category"], "rankings": [], "filters": {}, "complexity": 3}
 Question: "revenue for 2026 so far against last year on comparable days"
@@ -11,5 +13,9 @@ Question: "how many orders were cancelled in May"
 {"periods": {"current": {"from": "2026-05-01", "to": "2026-05-31"}, "compare": "none"}, "metrics": [{"name": "cancelled_orders"}], "dimensions": [], "rankings": [], "filters": {}, "complexity": 2}
 Question: "revenue including tax and the net promoter score this year"
 {"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "revenue_ttc"}], "unsupported": ["net promoter score"], "dimensions": [], "rankings": [], "filters": {}, "complexity": 1}
+Question: "revenue including tax for orders delivered to France in 2026"
+{"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "revenue_ttc"}], "unsupported": [], "dimensions": [], "rankings": [], "filters": {"country": "France"}, "complexity": 2}
+Question: "how to improve the gross margin on my weakest products this year"
+{"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "gross_margin_amount"}, {"name": "gross_margin_percent"}, {"name": "quantity_sold"}], "unsupported": ["weakest products"], "dimensions": ["product"], "rankings": [], "filters": {}, "complexity": 3}
 Question: "the last 5 customers who registered"
 {"periods": {"current": null, "compare": "none"}, "metrics": [], "unsupported": [], "dimensions": [], "rankings": [], "filters": {}, "complexity": 1}

@@ -1812,6 +1812,16 @@ INSERT INTO configuration VALUES(null, 'Ordre de tri', 'CLICSHOPPING_APP_COMPLIA
 INSERT INTO configuration VALUES(null, 'Numéro de taxe fédérale', 'CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_FEDERAL_TAXES_NUMBER', 'TPS/GST : R127066546', 'Veuillez indiquer le numéro de taxe fédérale administrative (ex. TVQ/TVQ: 1006197104). - Laissez ce champ vide si cela ne vous concerne pas.', 6, 0, NULL, '2026-08-16 15:23:08', NULL, NULL);
 INSERT INTO configuration VALUES(null, 'Jeton API Pappers', 'CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_PAPPERS_API_TOKEN', '', 'Jeton API utilisé pour vérifier les informations de l\'entreprise via le site web Pappers (pappers.fr). Saisissez votre jeton API obtenu depuis votre compte Pappers.', 6, 0, NULL, '2026-08-16 15:19:37', 'clic_cfg_use_function_password', 'clic_cfg_set_input_password');
 
+INSERT INTO configuration VALUES(null, 'Statut', 'CLICSHOPPING_APP_CRONJOB_CJ_STATUS', 'True', 'Souhaitez vous activer ce module à votre boutique', 6, 0, NULL, '2026-08-31 07:18:43', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'Ordre de tri d\'affichage', 'CLICSHOPPING_APP_CRONJOB_CJ_SORT_ORDER', '30', 'Ordre de tri pour l\'affichage (Le plus petit nombre est montré en premier)', 6, 0, NULL, '2026-08-31 07:18:43', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'Parameter [Cronjob App]', 'MODULE_MODULES_CRONJOB_INSTALLED', 'Tools\\Cronjob\\CJ', 'Parameter [Cronjob App]', 6, 0, NULL, '2026-08-31 07:18:43', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'Jeton des CRON', 'CLICSHOPPING_APP_CRONJOB_CJ_SECRET', '', 'Jeton exigé pour déclencher les CRON, par URL ou en ligne de commande. Laissez vide pour utiliser le jeton dérivé du secret généré à l\'installation : la page Cronjob affiche toujours le jeton effectif. Saisissez une valeur ici pour le changer.', 6, 0, NULL, '2026-08-31 07:33:15', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'Niveau de service du stock', 'CLICSHOPPING_APP_ECOMMERCE_CAI_STOCK_SERVICE_LEVEL', '0.95', 'Part de la demande que le stock de sécurité doit absorber, exprimée en probabilité entre 0,50 et 0,999 (par défaut : 0,95). Plus la valeur est haute, plus le tampon est grand et plus les ruptures sont rares.', 6, 0, NULL, '2026-08-31 12:25:24', NULL, NULL);
+INSERT INTO configuration VALUES(null, 'Fenêtre d\'historique du stock (jours)', 'CLICSHOPPING_APP_ECOMMERCE_CAI_STOCK_HISTORY_DAYS', '90', 'Longueur de l\'historique de ventes utilisé pour construire la série de demande quotidienne (par défaut : 90 jours). Une fenêtre courte suit plus vite une tendance, une fenêtre longue est plus stable sur les produits saisonniers.', 6, 0, NULL, '2026-08-31 12:25:24', NULL, NULL);
+
+
+
+
 
 INSERT INTO configuration_group VALUES(1, 'Gestion de ma boutique', 'Informations générales sur la boutique.', 1, 1);
 INSERT INTO configuration_group VALUES(2, 'Gestion de la carte de crédit', 'Valeur minimum pour : fonctions / données', 2, 1);

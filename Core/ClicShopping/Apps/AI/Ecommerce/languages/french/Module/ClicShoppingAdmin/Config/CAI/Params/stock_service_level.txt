@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_stock_service_level_title = Niveau de service du stock
+cfg_ecommerce_cockpit_ai_stock_service_level_description = Part de la demande que le stock de sécurité doit absorber, exprimée en probabilité entre 0,50 et 0,999 (par défaut : 0,95). Plus la valeur est haute, plus le tampon est grand et plus les ruptures sont rares.

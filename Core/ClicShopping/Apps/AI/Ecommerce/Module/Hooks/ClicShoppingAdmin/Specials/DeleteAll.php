@@ -65,22 +65,10 @@ class DeleteAll implements HooksInterface
 
   private function clearCockpitCache(int $productId): void
   {
-    // On tente d'utiliser l'Orchestrateur si disponible
-    if ($this->CockpitAIOrchestrator !== null) {
-      $this->CockpitAIOrchestrator->clearCockpitCache($productId);
-    } else {
-      // Fallback : écriture directe du flag dans la table de log
-      $this->app->db->save('products_cockpit_ai_action_log', [
-        'product_id' => $productId,
-        'action_type' => 'system_update_flag',
-        'status' => 'executed',
-        'validation_reason' => 'Mass update via DeleteAll hook (Favorites)',
-        'date_created' => 'now()'
-      ]);
-    }
+    $this->CockpitAIOrchestrator->clearCockpitCache($productId, 'delete');
 
     if (defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG') && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True') {
-      error_log("[CockpitAI] Refresh flag set for product $productId via DeleteAll Hook.");
+      error_log("[CockpitAI] Specials DeleteAll: refresh flag set for product $productId");
     }
   }
 }
