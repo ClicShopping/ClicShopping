@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9fdb0a19be9047eb2789cbb3cb1c5395",
+    "content-hash": "a1f0b618e3492c5f706a5c726d0052d4",
     "packages": [
         {
             "name": "amnuts/opcache-gui",
@@ -2437,16 +2437,16 @@
         },
         {
             "name": "stolt/llms-txt-php",
-            "version": "v3.5.0",
+            "version": "v4.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/raphaelstolt/llms-txt-php.git",
-                "reference": "4059449564eca163e1b37356db112e49407b11c1"
+                "reference": "a12d5d28e3fa861f0b8c7130de1a65d3c919aafa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/raphaelstolt/llms-txt-php/zipball/4059449564eca163e1b37356db112e49407b11c1",
-                "reference": "4059449564eca163e1b37356db112e49407b11c1",
+                "url": "https://api.github.com/repos/raphaelstolt/llms-txt-php/zipball/a12d5d28e3fa861f0b8c7130de1a65d3c919aafa",
+                "reference": "a12d5d28e3fa861f0b8c7130de1a65d3c919aafa",
                 "shasum": ""
             },
             "require": {
@@ -2490,9 +2490,9 @@
             ],
             "support": {
                 "issues": "https://github.com/raphaelstolt/llms-txt-php/issues",
-                "source": "https://github.com/raphaelstolt/llms-txt-php/tree/v3.5.0"
+                "source": "https://github.com/raphaelstolt/llms-txt-php/tree/v4.2.1"
             },
-            "time": "2026-08-15T16:14:01+00:00"
+            "time": "2026-08-27T17:49:59+00:00"
         },
         {
             "name": "stripe/stripe-php",
