@@ -75,6 +75,15 @@ class McpMonitor
    */
   public function __construct(array $config)
   {
+    // Thresholds and connection settings live in `clic_mcp`; a caller passing no config gets them here.
+    if ($config === []) {
+      try {
+        $config = MCPConnector::getConfigDb();
+      } catch (\Exception $e) {
+        error_log('[McpMonitor] ' . $e->getMessage());
+      }
+    }
+
     $this->config = $config;
 
     $this->health = McpHealth::getInstance();
@@ -85,9 +94,9 @@ class McpMonitor
     $this->client->connect();
 
     $this->alertThresholds = [
-      'error_rate' =>  (int)CLICSHOPPING_APP_MCP_MC_ALERT_THRESHOLDS ?? 20,
-      'latency' => (int)CLICSHOPPING_APP_MCP_MC_LATENCY_THRESHOLDS ?? 1000,
-      'downtime' => (int)CLICSHOPPING_APP_MCP_MC_DOWNTIME_THRESHOLDS ?? 300
+      'error_rate' => (int)($this->config['alert_threshold'] ?? 20),
+      'latency' => (int)($this->config['latency_threshold'] ?? 1000),
+      'downtime' => (int)($this->config['downtime_threshold'] ?? 300)
     ];
   }
 

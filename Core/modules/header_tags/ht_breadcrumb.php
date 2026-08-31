@@ -39,7 +39,7 @@ class ht_breadcrumb
     $this->description = CLICSHOPPING::getDef('module_header_tags_breadcrump_description');
 
     if (\defined('MODULE_HEADER_TAGS_BREADCRUMB_STATUS')) {
-      $this->sort_order = (int)MODULE_HEADER_TAGS_BREADCRUMB_SORT_ORDER ?? 0;
+      $this->sort_order = defined('MODULE_HEADER_TAGS_BREADCRUMB_SORT_ORDER') ? (int)MODULE_HEADER_TAGS_BREADCRUMB_SORT_ORDER : 0;
       $this->enabled = (MODULE_HEADER_TAGS_BREADCRUMB_STATUS == 'True');
     }
   }

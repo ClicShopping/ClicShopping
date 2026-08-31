@@ -273,7 +273,7 @@
       $this->description = 'AI product intelligence dashboard';
 
       if (\defined('MODULE_ADMIN_DASHBOARD_PRODUCT_COCKPIT_AI_STATUS')) {
-        $this->sort_order = (int)MODULE_ADMIN_DASHBOARD_PRODUCT_COCKPIT_AI_SORT_ORDER;
+        $this->sort_order = defined('MODULE_ADMIN_DASHBOARD_PRODUCT_COCKPIT_AI_SORT_ORDER') ? (int)MODULE_ADMIN_DASHBOARD_PRODUCT_COCKPIT_AI_SORT_ORDER : 0;
         $this->enabled = (MODULE_ADMIN_DASHBOARD_PRODUCT_COCKPIT_AI_STATUS == 'True');
       }
     }

@@ -44,7 +44,7 @@ class Index extends HeaderTagsAbstract
     $this->description = $this->app->getDef('module_header_tags_index_description');
 
     if (\defined('MODULE_HEADER_TAGS_INDEX_STATUS')) {
-      $this->sort_order = (int)MODULE_HEADER_TAGS_INDEX_SORT_ORDER ?? 0;
+      $this->sort_order = defined('MODULE_HEADER_TAGS_INDEX_SORT_ORDER') ? (int)MODULE_HEADER_TAGS_INDEX_SORT_ORDER : 0;
       $this->enabled = (MODULE_HEADER_TAGS_INDEX_STATUS == 'True');
     }
   }

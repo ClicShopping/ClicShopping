@@ -28,7 +28,7 @@ class as_advanced_search_manufacturers
     $this->description = CLICSHOPPING::getDef('module_advanced_search_manufacturers_description');
 
     if (\defined('MODULE_ADVANCED_SEARCH_MANUFACTURERS_STATUS')) {
-      $this->sort_order = (int)MODULE_ADVANCED_SEARCH_MANUFACTURERS_SORT_ORDER ?? 0;
+      $this->sort_order = defined('MODULE_ADVANCED_SEARCH_MANUFACTURERS_SORT_ORDER') ? (int)MODULE_ADVANCED_SEARCH_MANUFACTURERS_SORT_ORDER : 0;
       $this->enabled = (MODULE_ADVANCED_SEARCH_MANUFACTURERS_STATUS == 'True');
     }
   }

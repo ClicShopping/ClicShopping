@@ -39,7 +39,7 @@ class CostEstimation extends AdminDashboardAbstract
     $this->description = $this->app->getDef('module_admin_dashboard_total_cost_estimation_app_description');
 
     if (\defined('MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_STATUS')) {
-      $this->sort_order = (int)MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_SORT_ORDER ?? 0;
+      $this->sort_order = defined('MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_SORT_ORDER') ? (int)MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_SORT_ORDER : 0;
       $this->enabled = (MODULE_ADMIN_DASHBOARD_TOTAL_COST_ESTIMATION_APP_STATUS == 'True');
     }
   }

@@ -26,7 +26,7 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
 
 $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-$review_number = (int)CLICSHOPPING_APP_REVIEWS_RV_REVIEW_NUMBER ?? 1;
+$review_number = \defined('CLICSHOPPING_APP_REVIEWS_RV_REVIEW_NUMBER') ? (int)CLICSHOPPING_APP_REVIEWS_RV_REVIEW_NUMBER : 1;
 ?>
 
 <!-- body //-->

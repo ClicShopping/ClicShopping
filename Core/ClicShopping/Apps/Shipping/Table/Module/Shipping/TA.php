@@ -51,7 +51,7 @@ class TA implements ShippingInterface
     $this->code = 'TA';
     $this->title = $this->app->getDef('module_table_title');
     $this->public_title = $this->app->getDef('module_table_public_title');
-    $this->sort_order = \defined('CLICSHOPPING_APP_TABLE_TA_SORT_ORDER') ? CLICSHOPPING_APP_TABLE_TA_SORT_ORDER : 0;
+    $this->sort_order = \defined('CLICSHOPPING_APP_TABLE_TA_SORT_ORDER') ? (int)CLICSHOPPING_APP_TABLE_TA_SORT_ORDER : 0;
 
 // Activation module du paiement selon les groupes B2B
     if ($CLICSHOPPING_Customer->getCustomersGroupID() != 0) {

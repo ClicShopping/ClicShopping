@@ -27,7 +27,7 @@ class ht_google_analytics_ga4
     $this->description = CLICSHOPPING::getDef('module_header_tags_google_analytics_ga4_description');
 
     if (defined('MODULE_HEADER_TAGS_GOOGLE_ANALYTICS_GA4_STATUS')) {
-      $this->sort_order = MODULE_HEADER_TAGS_GOOGLE_ANALYTICS_GA4_SORT_ORDER;
+      $this->sort_order = defined('MODULE_HEADER_TAGS_GOOGLE_ANALYTICS_GA4_SORT_ORDER') ? (int)MODULE_HEADER_TAGS_GOOGLE_ANALYTICS_GA4_SORT_ORDER : 0;
       $this->enabled = (MODULE_HEADER_TAGS_GOOGLE_ANALYTICS_GA4_STATUS == 'True');
     }
   }

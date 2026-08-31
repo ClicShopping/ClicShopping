@@ -37,7 +37,7 @@ class Categories extends HeaderTagsAbstract
     $this->description = $this->app->getDef('module_header_tags_products_categories_description');
 
     if (\defined('MODULE_HEADER_TAGS_PRODUCT_CATEGORIES_STATUS')) {
-      $this->sort_order = (int)MODULE_HEADER_TAGS_PRODUCT_CATEGORIES_SORT_ORDER;
+      $this->sort_order = defined('MODULE_HEADER_TAGS_PRODUCT_CATEGORIES_SORT_ORDER') ? (int)MODULE_HEADER_TAGS_PRODUCT_CATEGORIES_SORT_ORDER : 0;
       $this->enabled = (MODULE_HEADER_TAGS_PRODUCT_CATEGORIES_STATUS == 'True');
     }
   }

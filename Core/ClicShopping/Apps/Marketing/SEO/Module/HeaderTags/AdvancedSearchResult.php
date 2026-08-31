@@ -43,7 +43,7 @@ class AdvancedSearchResult extends HeaderTagsAbstract
     $this->description = $this->app->getDef('module_header_tags_advanced_search_result_description');
 
     if (\defined('MODULE_HEADER_TAGS_ADVANCED_SEARCH_RESULT_STATUS')) {
-      $this->sort_order = MODULE_HEADER_TAGS_ADVANCED_SEARCH_RESULT_SORT_ORDER ?? 0;
+      $this->sort_order = defined('MODULE_HEADER_TAGS_ADVANCED_SEARCH_RESULT_SORT_ORDER') ? (int)MODULE_HEADER_TAGS_ADVANCED_SEARCH_RESULT_SORT_ORDER : 0;
       $this->enabled = (MODULE_HEADER_TAGS_ADVANCED_SEARCH_RESULT_STATUS == 'True');
     }
   }

@@ -28,7 +28,7 @@ class cs_checkout_shipping_button_process
     $this->description = CLICSHOPPING::getDef('module_checkout_shipping_button_process_description');
 
     if (\defined('MODULE_CHECKOUT_SHIPPING_BUTTON_PROCESS_STATUS')) {
-      $this->sort_order = (int)MODULE_CHECKOUT_SHIPPING_BUTTON_PROCESS_SORT_ORDER;
+      $this->sort_order = defined('MODULE_CHECKOUT_SHIPPING_BUTTON_PROCESS_SORT_ORDER') ? (int)MODULE_CHECKOUT_SHIPPING_BUTTON_PROCESS_SORT_ORDER : 0;
       $this->enabled = (MODULE_CHECKOUT_SHIPPING_BUTTON_PROCESS_STATUS == 'True');
     }
   }

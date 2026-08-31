@@ -29,7 +29,7 @@ class cc_checkout_confirmation_payment_information
     $this->description = CLICSHOPPING::getDef('module_checkout_confirmation_payment_information_description');
 
     if (\defined('MODULE_CHECKOUT_CONFIRMATION_PAYMENT_INFORMATION_STATUS')) {
-      $this->sort_order = (int)MODULE_CHECKOUT_CONFIRMATION_PAYMENT_INFORMATION_SORT_ORDER;
+      $this->sort_order = defined('MODULE_CHECKOUT_CONFIRMATION_PAYMENT_INFORMATION_SORT_ORDER') ? (int)MODULE_CHECKOUT_CONFIRMATION_PAYMENT_INFORMATION_SORT_ORDER : 0;
       $this->enabled = (MODULE_CHECKOUT_CONFIRMATION_PAYMENT_INFORMATION_STATUS == 'True');
     }
   }

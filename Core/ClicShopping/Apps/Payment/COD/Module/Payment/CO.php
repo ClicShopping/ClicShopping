@@ -100,7 +100,7 @@ class CO implements PaymentInterface
         }
       }
 
-      $this->sort_order = \defined('CLICSHOPPING_APP_COD_CO_SORT_ORDER') ? CLICSHOPPING_APP_COD_CO_SORT_ORDER : 0;
+      $this->sort_order = \defined('CLICSHOPPING_APP_COD_CO_SORT_ORDER') ? (int)CLICSHOPPING_APP_COD_CO_SORT_ORDER : 0;
     }
   }
 

@@ -97,7 +97,7 @@ class MO implements PaymentInterface
         }
       }
 
-      $this->sort_order = \defined('CLICSHOPPING_APP_MONEYORDER_MO_SORT_ORDER') ? CLICSHOPPING_APP_MONEYORDER_MO_SORT_ORDER : 0;
+      $this->sort_order = \defined('CLICSHOPPING_APP_MONEYORDER_MO_SORT_ORDER') ? (int)CLICSHOPPING_APP_MONEYORDER_MO_SORT_ORDER : 0;
     }
   }
 
