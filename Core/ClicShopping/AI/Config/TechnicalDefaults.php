@@ -97,6 +97,11 @@ class TechnicalDefaults
     // Query execution timeout: must stay >= the HybridQueryProcessor cold-cache timeout
     'CLICSHOPPING_APP_CHATGPT_RA_MAX_EXECUTION_TIME' => 120,
 
+    // Chatbot rate limit, per channel and account. The cap must stay ABOVE what one sequential
+    // browser tab can reach in the window (window / median latency), or it cuts real work.
+    'CLICSHOPPING_APP_CHATGPT_RA_RATE_LIMIT_WINDOW' => 900,
+    'CLICSHOPPING_APP_CHATGPT_RA_MAX_REQUEST_PER_WINDOW' => 30,
+
     // Hybrid query decomposition — null means "use the default provider / the default debug flag"
     'CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS' => 'True',
     'CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_LLM_PROVIDER' => null,

@@ -3,7 +3,7 @@ orders_id int not_null comment(FK to orders table - order this total line belong
 title text not_null comment(Display title for this total line - e.g. Subtotal, Tax, Shipping, Total)
 text varchar(255) not_null comment(Pre-formatted display string in the ORDER OWN currency and containing HTML entities - display only. NEVER aggregate it, never compare it across orders, never parse an amount out of it - use value instead)
 value decimal(15,4) not_null comment(Numeric amount ALWAYS stored in the shop BASE currency - comparable across orders and the only column to aggregate. Amount actually charged to the customer = value multiplied by orders.currency_value, expressed in orders.currency)
-class varchar(255) not_null comment(Total module class name - identifies the type of total)
+class varchar(255) not_null comment(Total module code identifying the line - ST subtotal of products, SH shipping, TX tax, CD customer discount, DC coupon, TO grand total. TO is what the customer pays and equals the signed sum of the other lines - aggregate revenue on TO only)
 sort_order int(3) not_null comment(Display order for total lines - subtotal first, grand total last)
 total_sign tinyint default(1) not_null comment(Sign for grand-total recompute - +1 charge, -1 credit/discount)
 total_rank smallint default(0) not_null comment(Fiscal rank this line was COMPUTED at - base 100 reduction 200 or 500 charge 300 or 510 tax 400 total 900 - 0 when unknown. Never the display order that is sort_order)

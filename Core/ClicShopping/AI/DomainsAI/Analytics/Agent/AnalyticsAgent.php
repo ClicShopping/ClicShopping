@@ -33,7 +33,6 @@ use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFreshnessValidator;
 use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
 use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\Security\InputValidator;
-use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\AI\Helper\TypeSafetyGuard;
@@ -77,7 +76,6 @@ class AnalyticsAgent implements AgentInterface
   private bool $enablePromptCache;
   private bool $debug = false;
   private SecurityLogger $securityLogger;
-  private RateLimit $rateLimit;
   private string $userId;
   private DbSecurity $dbSecurity;
 
@@ -145,7 +143,6 @@ class AnalyticsAgent implements AgentInterface
 
     // Initialize security components
     $this->securityLogger = new SecurityLogger();
-    $this->rateLimit = new RateLimit('analytics_agent', 50, 60); // 50 requests per minute
     $this->dbSecurity = new DbSecurity();
 
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
@@ -627,15 +624,6 @@ class AnalyticsAgent implements AgentInterface
     $this->debugLog("-" . str_repeat("-", 99));
     $this->debugLog("Question: '{$question}'");
     $this->debugLog("Feedback context items: " . count($feedbackContext));
-
-    if (!$this->rateLimit->checkLimit($this->userId)) {
-      $this->debugLog("RATE LIMIT EXCEEDED");
-      return [
-        'type' => 'error',
-        'message' => 'Rate limit exceeded',
-        'query' => $question,
-      ];
-    }
 
     $safeQuestion = InputValidator::validateParameter($question, 'string');
     if ($safeQuestion !== $question) {

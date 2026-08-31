@@ -1,0 +1,14 @@
+id int(11) not_null auto_increment comment(Primary key - one row per accepted question)
+identifier varchar(255) not_null comment(Caller key, stored in clear so an excess stays attributable: admin:<id>, mcp:<id>, system:<job>)
+timestamp int(11) not_null comment(Unix timestamp of the accepted question - drives the sliding window)
+ip varchar(45) default null comment(IP address of the caller - IPv4 or IPv6 format)
+
+--
+primary id
+idx_identifier_timestamp identifier timestamp
+idx_timestamp timestamp
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

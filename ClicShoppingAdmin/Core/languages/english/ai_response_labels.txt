@@ -200,3 +200,4 @@ text_analysis_plan_refused = I couldn't build a reliable analysis plan for this 
 text_analysis_plan_refused_details = I couldn't build a reliable analysis plan for this question. What I could not honour: {{elements}}. Please rephrase it, naming the measure and the period you want.
 text_analysis_plan_reserve = Please note: I could not serve one part of your question - {{elements}}. It is neither measured nor selectable here, so it is left out rather than approximated. What follows answers the rest of your question.
 text_future_period_out_of_scope = not yet measured
+text_rate_limit_exceeded = You have reached the maximum number of questions allowed over the current period. Please wait a few minutes before asking another one - this cap protects the service and its cost, it is not a problem with your question.

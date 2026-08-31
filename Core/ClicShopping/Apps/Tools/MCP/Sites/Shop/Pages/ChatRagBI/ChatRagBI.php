@@ -333,7 +333,19 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
         $memoryService = ContextManager::initializeMemoryService($mcpUserId, $languageId);
         $context = ContextManager::retrieveContext($memoryService, $prompt, 5);
 
-        $aiResponse = QueryProcessor::process($prompt, $mcpUserId, $languageId, $statsTracker);
+        $aiResponse = QueryProcessor::process($prompt, $mcpUserId, $languageId, $statsTracker, 'mcp');
+
+        if (($aiResponse['type'] ?? null) === 'rate_limited') {
+          if (ob_get_length()) {
+            ob_clean();
+          }
+          echo json_encode([
+            'status' => 'error',
+            'message' => $aiResponse['text_response'],
+            'code' => 'RATE_LIMITED'
+          ], JSON_UNESCAPED_UNICODE);
+          exit;
+        }
 
         if ($enableTimeout && RequestValidator::checkTimeout($queryStartTime, $maxExecutionTime)) {
           if (ob_get_length()) {

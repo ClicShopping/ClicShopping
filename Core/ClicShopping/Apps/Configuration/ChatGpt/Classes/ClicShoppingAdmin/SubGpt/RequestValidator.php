@@ -11,6 +11,10 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubG
 use ClicShopping\AI\Helper\ClarificationHelper;
 use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\Security\SecurityOrchestrator;
+use ClicShopping\AI\Config\TechnicalDefaults;
+use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\OM\HTTP;
+use ClicShopping\OM\Registry;
 
 /**
  * RequestValidator
@@ -21,6 +25,7 @@ use ClicShopping\AI\Security\SecurityOrchestrator;
  * Responsibilities:
  * - Input validation (empty, length, ambiguity)
  * - Security checks (prompt injection detection)
+ * - Rate limiting at the single production entry point
  * - Timeout configuration
  * - Request sanitization
  */
@@ -235,5 +240,73 @@ class RequestValidator
     }
     
     return false;
+  }
+
+  /**
+   * Sliding window rate limit of the chatbot, counted in the database.
+   *
+   * @param string $channel Caller channel: admin, mcp or system
+   * @param int $userId Caller id inside that channel
+   * @return bool True if the request is within the limit
+   */
+  public static function checkRateLimit(string $channel, int $userId): bool
+  {
+    $window = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_RATE_LIMIT_WINDOW');
+    $maxRequests = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_MAX_REQUEST_PER_WINDOW');
+
+    // Stored in clear, never hashed: an excess must stay attributable to a channel and an account.
+    $identifier = $channel . ':' . $userId;
+    $securityLogger = new SecurityLogger();
+
+    try {
+      $db = Registry::get('Db');
+      $windowStart = time() - $window;
+
+      // Prepared DELETE, never Db::delete(): that helper only builds equality conditions.
+      $QpurgeExpired = $db->prepare('delete
+                                     from :table_rag_rate_limit
+                                     where timestamp < :timestamp
+                                    ');
+      $QpurgeExpired->bindValue(':timestamp', $windowStart);
+      $QpurgeExpired->execute();
+
+      $Qcount = $db->prepare('select count(id) as count
+                              from :table_rag_rate_limit
+                              where identifier = :identifier
+                              and timestamp >= :timestamp
+                             ');
+      $Qcount->bindValue(':identifier', $identifier);
+      $Qcount->bindValue(':timestamp', $windowStart);
+      $Qcount->execute();
+
+      $attempts = $Qcount->valueInt('count') ?? 0;
+
+      if ($attempts >= $maxRequests) {
+        $securityLogger->logSecurityEvent('Chatbot rate limit exceeded', 'warning', [
+          'identifier' => $identifier,
+          'attempts' => $attempts,
+          'max_requests' => $maxRequests,
+          'window_seconds' => $window
+        ]);
+
+        return false;
+      }
+
+      $db->save('rag_rate_limit', [
+        'identifier' => $identifier,
+        'timestamp' => time(),
+        'ip' => HTTP::getIpAddress()
+      ]);
+
+      return true;
+    } catch (\Exception $e) {
+      // Fail-open so a database incident never closes the chat - but never in silence.
+      $securityLogger->logSecurityEvent('Chatbot rate limit check failed (DB error)', 'error', [
+        'identifier' => $identifier,
+        'error' => $e->getMessage()
+      ]);
+
+      return true;
+    }
   }
 }
