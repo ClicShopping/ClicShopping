@@ -21,7 +21,7 @@ Core/ClicShopping/AI/
 │   └── WebSearch/
 │       └── Providers/   ✅ Built-in agnostic providers Mode A/B/C/E (added May 2026)
 ├── Gouvernance/         ✅ Evidence for audit — figures with their population, never prose
-│   └── Security/        ✅ `SecurityJournal`: reads and maintains `rag_security_events`
+│   └── Security/        ✅ `SecurityJournal`: exposure scale, coverage, journal maintenance
 ├── Audit/               ⬜ Empty — reserved
 ├── Handler/             ✅ Error, fallback, query handling
 ├── Helper/              ✅ Utilities

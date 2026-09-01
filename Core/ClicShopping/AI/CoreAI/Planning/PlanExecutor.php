@@ -9,17 +9,13 @@
 namespace ClicShopping\AI\CoreAI\Planning;
 
 use ClicShopping\OM\Registry;
-use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\AnalyticsExecutor;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\ResultSynthesizer;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\SemanticExecutor;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\StepExecutor;
-use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\ToolExecutor;
 use ClicShopping\AI\Infrastructure\Metrics\CalculatorTool;
-use ClicShopping\AI\DomainsAI\WebSearch\Cache\SearchCacheManager;
 use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\WebSearchFormatter;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
@@ -33,28 +29,22 @@ class PlanExecutor
 {
   private SecurityLogger $securityLogger;
   private TaskPlanner $planner;
-  private ?AnalyticsAgent $analyticsAgent = null;
-  private ?MultiDBRAGManager $ragManager = null;
   private bool $debug;
   private string $userId;
   private int $languageId;
-  private mixed $language;
   private mixed $conversationMemory = null;
 
   // Configuration
   private int $maxRetries = 2;
-  private bool $enableParallelExecution = false; // For future implementation
 
   private ?CalculatorTool $calculatorTool = null;
   private mixed $webSearchFacade;
-  private mixed $cacheManager;
   private mixed $collector;
 
   // 🆕 Refactored components
   private StepExecutor $stepExecutor;
   private AnalyticsExecutor $analyticsExecutor;
   private SemanticExecutor $semanticExecutor;
-  private ToolExecutor $toolExecutor;
   private ResultSynthesizer $resultSynthesizer;
 
   /**
@@ -66,7 +56,6 @@ class PlanExecutor
    */
   public function __construct(TaskPlanner $planner, string $userId = 'system', int $languageId = 1)
   {
-    $this->language = Registry::get('Language');
     $this->languageId = $languageId;
     $this->planner = $planner;
     $this->userId = $userId;
@@ -164,13 +153,11 @@ class PlanExecutor
     }
 
     $this->collector = new MetricsCollector();
-    $this->cacheManager = new SearchCacheManager();
 
     // 🆕 Initialize refactored components
     $this->stepExecutor = new StepExecutor($this->debug);
     $this->analyticsExecutor = new AnalyticsExecutor($this->userId, $this->languageId, $this->debug);
     $this->semanticExecutor = new SemanticExecutor($this->userId, $this->languageId, $this->debug);
-    $this->toolExecutor = new ToolExecutor($this->debug);
     $this->resultSynthesizer = new ResultSynthesizer($this->debug);
 
     if ($this->debug) {
@@ -1166,16 +1153,5 @@ class PlanExecutor
     }
 
     return $failedStep;
-  }
-
-  /**
-   * Enable/disable parallel execution
-   * 
-   * @param bool $enable Enable parallel execution
-   * @return void
-   */
-  public function setEnableParallelExecution(bool $enable): void
-  {
-    $this->enableParallelExecution = $enable;
   }
 }

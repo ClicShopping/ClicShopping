@@ -31,7 +31,6 @@ class StepExecutor
 {
   private SecurityLogger $logger;
   private bool $debug;
-  private int $maxIterations;
 
   /**
    * Constructor
@@ -42,7 +41,6 @@ class StepExecutor
   {
     $this->logger = new SecurityLogger();
     $this->debug = $debug;
-    $this->maxIterations = 100; // Safety limit
 
     if ($this->debug) {
       $this->logger->logSecurityEvent("StepExecutor initialized", 'info');

@@ -31,7 +31,7 @@
 |---|---|---|
 | `output()` | `htmlspecialchars` with `ENT_QUOTES \| ENT_HTML5`, optional translation table | any value rendered into HTML |
 | `outputProtected()` | same, no translation table | the same, when no substitution is wanted |
-| `sanitize()` | replaces `<`, `>`, `&lt;`, `&gt;`, `%3c`, `%2f` and runs of spaces with `_` | a value used as an identifier, never as displayed text |
+| `sanitize()` | replaces `<`, `>`, `&lt;`, `&gt;`, `%3c`, `%2f` and runs of spaces with `_`; takes `mixed`, returns `''` for an array or an object | a value used as an identifier, never as displayed text |
 | `sanitizeUrl()` | rejects the `javascript:` protocol | every url reaching `HTML::link()` — applied automatically |
 | `sanitizeHtmlAttributes()` | strips inline `on*` event handlers | applied automatically by the attribute-taking helpers |
 

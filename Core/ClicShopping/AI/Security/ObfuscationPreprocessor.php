@@ -25,6 +25,7 @@ use ClicShopping\AI\DomainsAI\Shared\Patterns\Security\ObfuscationPatterns;
 
 class ObfuscationPreprocessor
 {
+  private const HORIZONTAL_RUN = '/(?<!\s)[^\S\r\n]{3,}(?!\s)/';
   /**
    * Preprocess query to detect and normalize obfuscation
    * 
@@ -238,11 +239,12 @@ class ObfuscationPreprocessor
    * 
    * CRITICAL: Preserve >, <, >=, <=, =, != for SQL queries
    * Only flag as obfuscation if excessive spacing detected (3+ consecutive spaces)
+   * Line breaks and the indentation that follows them are formatting, never obfuscation.
    */
   private static function normalizeSpacing(string $query): string
   {
     // Check if there's excessive spacing (3+ consecutive spaces or single-char spacing)
-    $hasExcessiveSpacing = preg_match('/\s{3,}/', $query) === 1 || 
+    $hasExcessiveSpacing = preg_match(self::HORIZONTAL_RUN, $query) === 1 ||
                           preg_match('/(\w\s){5,}/', $query) === 1;
     
     if (!$hasExcessiveSpacing) {
@@ -254,7 +256,7 @@ class ObfuscationPreprocessor
     $protected = preg_replace('/([><=!]+)/', '§§§$1§§§', $query);
     
     // Normalize excessive spacing (3+ spaces to 1 space)
-    $normalized = preg_replace('/\s{3,}/', ' ', $protected);
+    $normalized = preg_replace(self::HORIZONTAL_RUN, ' ', $protected);
     
     // Detect single-character spacing pattern (obfuscation)
     // Pattern: "a b c d e" (5+ consecutive single chars with spaces)
