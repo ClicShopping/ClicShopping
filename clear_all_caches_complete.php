@@ -36,6 +36,7 @@ echo str_repeat("=", 80) . "\n\n";
 
 $totalCleared = 0;
 $errors = [];
+$warnings = [];
 
 /**
  * Recursively delete files under a directory.
@@ -812,16 +813,31 @@ if (is_dir($symfonyCache)) {
 // 10. CLEAR OPCACHE (PHP BYTECODE)
 // ========================================
 echo "\n10. Clearing OpCache...\n";
-if (function_exists('opcache_reset')) {
-  if (opcache_reset()) {
-    echo "   ✅ OpCache cleared\n";
-    $totalCleared++;
-  } else {
-    echo "   ⚠️  OpCache reset failed\n";
-    $errors[] = "OpCache reset failed";
-  }
-} else {
+if (!function_exists('opcache_reset')) {
   echo "   ℹ️  OpCache not enabled\n";
+} elseif (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
+  // A CLI process holds its own OpCache: whatever opcache_reset() returns here, it has NOT
+  // touched the bytecode PHP-FPM or Apache are serving. Say it, and name the gesture.
+  $cli_reset = opcache_reset();
+  $php_v = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+
+  echo "   ⚠️  NOT purged: the WEB OpCache is out of reach from CLI\n";
+  echo "      opcache_reset() returned " . var_export($cli_reset, true) . " and covers this CLI process only";
+  echo (filter_var(ini_get('opcache.enable_cli'), FILTER_VALIDATE_BOOLEAN) ? '' : ' (opcache.enable_cli is Off, so there was nothing to purge)') . ".\n";
+  echo "      To purge the web SAPI, do ONE of:\n";
+  echo "        sudo systemctl reload php{$php_v}-fpm     # or: sudo systemctl reload apache2\n";
+  echo "        or request a small HTTP script calling opcache_reset() on the web server\n";
+  echo "      " . (filter_var(ini_get('opcache.validate_timestamps'), FILTER_VALIDATE_BOOLEAN)
+        ? 'Otherwise validate_timestamps=On / revalidate_freq=' . (int)ini_get('opcache.revalidate_freq') . 's refreshes it by itself after that delay -- which is what makes a stale read intermittent. Never trust a measurement taken right after an edit.'
+        : 'validate_timestamps=Off: the web SAPI will NEVER pick up an edit until it is reloaded.') . "\n";
+
+  $warnings[] = "Web OpCache not purged (CLI cannot reach it) - reload php{$php_v}-fpm / apache2 before measuring";
+} elseif (opcache_reset()) {
+  echo "   ✅ OpCache cleared (SAPI " . PHP_SAPI . ")\n";
+  $totalCleared++;
+} else {
+  echo "   ⚠️  OpCache reset failed (SAPI " . PHP_SAPI . ")\n";
+  $errors[] = "OpCache reset failed";
 }
 
 // ========================================
@@ -924,8 +940,18 @@ if (!empty($errors)) {
   echo "\n";
 }
 
+if (!empty($warnings)) {
+  echo "\n⚠️  NOT CLEARED - needs a gesture you must make yourself:\n";
+  foreach ($warnings as $warning) {
+    echo "  → {$warning}\n";
+  }
+  echo "\n";
+}
+
 if (count($errors) === 0) {
-  echo "\n✅ ALL CACHES CLEARED SUCCESSFULLY!\n";
+  echo empty($warnings)
+    ? "\n✅ ALL CACHES CLEARED SUCCESSFULLY!\n"
+    : "\n✅ Every cache this script CAN clear is cleared - mind the warning above before measuring.\n";
   echo "\n";
   echo "📝 NEXT STEPS:\n";
   echo "   1. Test \"Revenue of the month\" in chat interface\n";

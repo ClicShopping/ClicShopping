@@ -11,6 +11,7 @@
 
 namespace ClicShopping\AI\Security;
 
+use ClicShopping\Apps\Configuration\Cache\Classes\ClicShoppingAdmin\CacheAdmin;
 use ClicShopping\OM\CLICSHOPPING;
 
 /**
@@ -25,6 +26,7 @@ class RateLimit
   private $timeWindow;
   private $storage;
   private $storageFile;
+  private bool $useApcu;
 
   /**
    * RateLimit constructor.
@@ -56,7 +58,9 @@ class RateLimit
 
     $this->storageFile = $cacheDir . $safeNs . '.cache';
 
-    if (!function_exists('apcu_fetch')) {
+    $this->useApcu = CacheAdmin::isApcuAvailable();
+
+    if ($this->useApcu === false) {
       $this->loadStorage();
     }
   }
@@ -72,7 +76,7 @@ class RateLimit
   {
     $key = $this->namespace . ':' . $identifier;
 
-    if (function_exists('apcu_fetch')) {
+    if ($this->useApcu) {
       return $this->checkLimitWithApcu($key);
     }
 
@@ -88,9 +92,11 @@ class RateLimit
    */
   private function checkLimitWithApcu(string $key): bool
   {
+    $key = CacheAdmin::apcuKey($key);
     $currentCount = apcu_fetch($key) ?: 0;
 
     if ($currentCount >= $this->maxRequests) {
+      $this->logRateLimitExceeded($key, $currentCount);
       return false;
     }
 

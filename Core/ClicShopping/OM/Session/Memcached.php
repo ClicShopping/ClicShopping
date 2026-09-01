@@ -82,14 +82,6 @@ class Memcached extends \ClicShopping\OM\Domains\SessionAbstract implements \Ses
         \Memcached::OPT_DISTRIBUTION => \Memcached::DISTRIBUTION_CONSISTENT
       ]);
 
-      if (defined('USE_MEMCACHED') && USE_MEMCACHED == 'False') {
-        $memcached->flush();
-        $memcached->resetServerList();
-        $memcached->quit();
-
-        return false;
-      }
-
       if (count($memcached->getServerList()) === 0) {
         $memcached->addServer('localhost', 11211);
       }

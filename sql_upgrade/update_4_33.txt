@@ -510,3 +510,52 @@ SELECT 'CLICSHOPPING_APP_ECOMMERCE_UCP_SESSION_TIMEOUT', '86400', 6,
 -- 4. CONTRÔLE — doit rendre 0 ligne pour les cinq supprimées, 2 pour les créées.
 -- SELECT configuration_key, configuration_value FROM clic_configuration
 --   WHERE configuration_key LIKE 'CLICSHOPPING_APP_ECOMMERCE%' ORDER BY configuration_key;
+
+=================
+-- APCU
+
+INSERT INTO clic_configuration
+  (configuration_title, configuration_key, configuration_value, configuration_description,
+   configuration_group_id, sort_order, date_added, set_function)
+SELECT 'Utiliser APCu', 'USE_APCU', 'False',
+       'Activer la mise en cache locale APCu. APCu est local au processus PHP, il n''est pas partagé entre serveurs.',
+       11, 5, NOW(), 'clic_cfg_set_boolean_value(array(''True'', ''False''))'
+  WHERE NOT EXISTS (SELECT 1 FROM clic_configuration WHERE configuration_key = 'USE_APCU');
+
+-- 2. L'écran APCu de l'App Cache, sous le menu app_configuration_cache (parent 21).
+
+INSERT INTO clic_administrator_menu (link, parent_id, sort_order, b2b_menu, image, access, app_code)
+SELECT 'index.php?A&Configuration\\Cache&Apcu', 21, 9, 0, '', 1, 'app_configuration_cache'
+  WHERE NOT EXISTS (SELECT 1 FROM clic_administrator_menu
+                     WHERE link = 'index.php?A&Configuration\\Cache&Apcu');
+
+INSERT INTO clic_administrator_menu_description (id, label, language_id)
+SELECT m.id, 'APCu information', 1 FROM clic_administrator_menu m
+  WHERE m.link = 'index.php?A&Configuration\\Cache&Apcu'
+    AND NOT EXISTS (SELECT 1 FROM clic_administrator_menu_description d
+                     WHERE d.id = m.id AND d.language_id = 1);
+
+INSERT INTO clic_administrator_menu_description (id, label, language_id)
+SELECT m.id, 'Informations APCu', 2 FROM clic_administrator_menu m
+  WHERE m.link = 'index.php?A&Configuration\\Cache&Apcu'
+    AND NOT EXISTS (SELECT 1 FROM clic_administrator_menu_description d
+                     WHERE d.id = m.id AND d.language_id = 2);
+=========================
+-- Redis
+
+INSERT INTO clic_administrator_menu (link, parent_id, sort_order, b2b_menu, image, access, app_code)
+SELECT 'index.php?A&Configuration\\Cache&Redis', 21, 10, 0, '', 1, 'app_configuration_cache'
+  WHERE NOT EXISTS (SELECT 1 FROM clic_administrator_menu
+                     WHERE link = 'index.php?A&Configuration\\Cache&Redis');
+
+INSERT INTO clic_administrator_menu_description (id, label, language_id)
+SELECT m.id, 'Redis information', 1 FROM clic_administrator_menu m
+  WHERE m.link = 'index.php?A&Configuration\\Cache&Redis'
+    AND NOT EXISTS (SELECT 1 FROM clic_administrator_menu_description d
+                     WHERE d.id = m.id AND d.language_id = 1);
+
+INSERT INTO clic_administrator_menu_description (id, label, language_id)
+SELECT m.id, 'Informations Redis', 2 FROM clic_administrator_menu m
+  WHERE m.link = 'index.php?A&Configuration\\Cache&Redis'
+    AND NOT EXISTS (SELECT 1 FROM clic_administrator_menu_description d
+                     WHERE d.id = m.id AND d.language_id = 2);

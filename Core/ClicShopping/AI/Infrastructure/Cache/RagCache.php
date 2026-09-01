@@ -14,8 +14,6 @@
 namespace ClicShopping\AI\Infrastructure\Cache;
 
 
-use ClicShopping\OM\Session\Redis as RedisSession;
-use ClicShopping\OM\Session\Memcached as MemcachedSession;
 
 /**
  * RagCache Class
@@ -43,8 +41,6 @@ class RagCache
   private const CACHE_PREFIX = 'rag:';
   private const DEFAULT_TTL = 3600; // 1 hour
   
-  private ?RedisSession $redisHandler = null;
-  private ?MemcachedSession $memcachedHandler = null;
   private ?\Redis $redisConn = null;
   private ?\Memcached $memcachedConn = null;
   

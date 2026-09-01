@@ -1,17 +1,14 @@
 let securityChartInstance = null;
 function createSecurityChart() {
-  console.log('🔍 createSecurityChart called');
   const ctx = document.getElementById('securityChart');
 
+  // Absent canvas is the NORMAL case: this bundle is shared by the three metier dashboards, and
+  // the canvas only exists in the legacy security branch. Not an error, so it must not shout.
   if (!ctx) {
-    console.error('❌ securityChart canvas not found!');
     return;
   }
 
-  console.log('✅ securityChart canvas found');
 
-
-  console.log('📊 Security data:', { score: securityScore });
 
   // Détruire l'ancien chart s'il existe
   if (securityChartInstance) {
@@ -45,7 +42,6 @@ function createSecurityChart() {
         }
       }
     });
-    console.log('✅ Security chart created successfully');
   } catch (error) {
     console.error('❌ Error creating security chart:', error);
   }

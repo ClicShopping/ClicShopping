@@ -26,6 +26,7 @@ class MySQL extends \ClicShopping\OM\Db
   protected bool $use_memcached = false;
   protected $memcached = null;
   protected string $memcached_prefix = 'db_';
+  protected bool $use_apcu = false;
 
   /**
    * Constructor method for initializing database connection parameters.
@@ -54,6 +55,9 @@ class MySQL extends \ClicShopping\OM\Db
     if (defined('USE_MEMCACHED') && USE_MEMCACHED == 'True') {
       $this->initMemcached();
     }
+
+    // APCu is process-local: it only serves the query cache when no distributed tier is on
+    $this->use_apcu = CacheAdmin::isApcuAvailable();
 
     if (!isset($this->driver_options[\Pdo\Mysql::ATTR_INIT_COMMAND])) {
       // time_zone aligns NOW() on the PHP clock (Conf/global.php time_zone), so both write the same instant
@@ -126,6 +130,12 @@ class MySQL extends \ClicShopping\OM\Db
   protected function getCache(string $query, string $cache_name): array|false
   {
     if (!$this->use_memcached || !$this->memcached) {
+      if ($this->use_apcu) {
+        $result = apcu_fetch($this->apcuCacheKey($query, $cache_name), $hit);
+
+        return $hit && is_array($result) ? $result : false;
+      }
+
       return false;
     }
 
@@ -151,6 +161,10 @@ class MySQL extends \ClicShopping\OM\Db
   protected function saveCache(string $query, string $cache_name, array $data, int $ttl = 3600): bool
   {
     if (!$this->use_memcached || !$this->memcached) {
+      if ($this->use_apcu) {
+        return apcu_store($this->apcuCacheKey($query, $cache_name), $data, $ttl);
+      }
+
       return false;
     }
 
@@ -167,11 +181,34 @@ class MySQL extends \ClicShopping\OM\Db
   public function deleteCache(string $cache_name): bool
   {
     if (!$this->use_memcached || !$this->memcached) {
+      if ($this->use_apcu) {
+        $prefix = CacheAdmin::apcuKey($this->memcached_prefix . $cache_name . '_');
+
+        foreach (new \APCUIterator('/^' . preg_quote($prefix, '/') . '/') as $entry) {
+          apcu_delete($entry['key']);
+        }
+
+        return true;
+      }
+
       return false;
     }
 
     // On peut utiliser un wildcard pour supprimer tous les caches liés à ce nom
     $cache_key = $this->memcached_prefix . '*' . $cache_name . '*';
     return $this->memcached->delete($cache_key);
+  }
+
+  /**
+   * Builds an APCu query-cache key. The cache name stays readable in the key so
+   * deleteCache() can drop a whole family by prefix.
+   *
+   * @param string $query SQL query
+   * @param string $cache_name Cache identifier
+   * @return string Prefixed APCu key
+   */
+  private function apcuCacheKey(string $query, string $cache_name): string
+  {
+    return CacheAdmin::apcuKey($this->memcached_prefix . $cache_name . '_' . md5($query));
   }
 }

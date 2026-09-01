@@ -18,13 +18,15 @@ function renderSecurityReport(data, labels) {
       </div>
     </div>`).join('');
 
+  // Every column comes from the database: escape the text, coerce the numbers. A detection row
+  // carries a user query, so treating any of it as markup is how the journal becomes the payload.
   const rows = (data.detections || []).map(d => `
     <tr>
-      <td><code>${d.event_type}</code></td>
-      <td>${d.reason}</td>
-      <td class="text-end">${d.count}</td>
-      <td class="text-end">${d.blocked}</td>
-      <td class="small text-muted">${d.first_seen} &rarr; ${d.last_seen}</td>
+      <td><code>${escapeHtml(d.event_type)}</code></td>
+      <td>${escapeHtml(d.reason)}</td>
+      <td class="text-end">${Number(d.count) || 0}</td>
+      <td class="text-end">${Number(d.blocked) || 0}</td>
+      <td class="small text-muted">${escapeHtml(d.first_seen)} &rarr; ${escapeHtml(d.last_seen)}</td>
       <td class="small text-muted">${escapeHtml(d.sample)}</td>
     </tr>`).join('');
 
@@ -37,8 +39,27 @@ function renderSecurityReport(data, labels) {
        </div>`
     : `<div class="alert alert-success small">${data.no_detection || ''}</div>`;
 
+  const exposure = data.exposure || {};
+  const coverage = exposure.coverage || {};
+  const statusClass = { safe: 'success', low: 'info', watch: 'warning', danger: 'danger' };
+
+  // One direction only: the bar fills as danger rises, so it can never be read backwards.
+  const gauge = `
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <span class="badge bg-${statusClass[exposure.status] || 'secondary'}">${escapeHtml(exposure.status)}</span>
+      <span class="small text-muted">${Number(exposure.level) || 0}/100</span>
+    </div>
+    <div class="progress mb-2" style="height: 10px;">
+      <div class="progress-bar bg-${statusClass[exposure.status] || 'secondary'}"
+           style="width: ${Number(exposure.level) || 0}%"></div>
+    </div>
+    <p class="small text-muted">${data.coverage_label || ''} — ${Number(coverage.events) || 0}
+       (${(coverage.layers || []).map(escapeHtml).join(', ') || '—'})
+       ${coverage.last_event ? escapeHtml(coverage.last_event) : ''}</p>`;
+
   return `
     <p class="text-muted small">${labels.generated}</p>
+    ${gauge}
     <p class="small">${labels.population}</p>
     ${findings}
     ${detections}

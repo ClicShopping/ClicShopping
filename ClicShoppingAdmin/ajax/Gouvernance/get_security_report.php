@@ -1,4 +1,4 @@
-  <?php
+<?php
 /**
  * Copyright (c) 2008–2026 Loic Richard
  *
@@ -46,6 +46,7 @@ try {
   }
 
   $report['detections_label'] = $app->getDef('security_report_detections_label');
+  $report['coverage_label'] = $app->getDef('security_report_coverage_label');
   $report['no_detection'] = $app->getDef('security_report_no_detection');
 
   $report['limits'] = $app->getDef('security_report_limits', [

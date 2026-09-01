@@ -87,17 +87,40 @@ class SecurityJournal
       ];
     }
 
-    // Always reported: it is the reason the screen reads "poor" while nothing is wrong.
+    $exposure = $this->exposure($days);
+
+    // The scale the screen should read: one direction, safe to danger.
     $findings[] = [
-      'code' => 'inverted_score',
-      'severity' => 'critical',
+      'code' => 'exposure',
+      'severity' => $exposure['status'] === 'safe' ? 'medium' : 'high',
       'figures' => [
-        'score' => $healthScore,
-        'detection' => $detectionRate,
-        'block' => $blockRate,
-        'floor' => round($criticalScore * 0.4, 1)
+        'level' => $exposure['level'],
+        'status' => $exposure['status'],
+        'real_threats' => $counts['real_threats'],
+        'blocked' => $counts['blocked'],
+        'critical' => $counts['critical']
       ]
     ];
+
+    // Exposure at zero proves nothing on its own: a silent detector reports the same zero.
+    if ($exposure['coverage']['silent']) {
+      $findings[] = [
+        'code' => 'silent_journal',
+        'severity' => 'critical',
+        'figures' => ['days' => $days]
+      ];
+    }
+
+    if ($exposure['false_positives'] !== []) {
+      $findings[] = [
+        'code' => 'false_positives',
+        'severity' => 'high',
+        'figures' => [
+          'queries' => count($exposure['false_positives']),
+          'detections' => array_sum(array_column($exposure['false_positives'], 'detections'))
+        ]
+      ];
+    }
 
     if ($counts['with_score'] < $total) {
       $findings[] = [
@@ -136,8 +159,124 @@ class SecurityJournal
         'blocked' => $counts['blocked']
       ],
       'health_score' => $healthScore,
+      'exposure' => $exposure,
       'findings' => $findings
     ];
+  }
+
+  /**
+   * EXPOSURE, not health: 0 means nothing was detected, 100 means the journal is full of blocked
+   * criticals. The scale reads in one direction only - safe to danger - because a scale where
+   * "nothing happened" scores badly is read backwards by everyone who looks at it once.
+   *
+   * Exposure alone is not reassurance: an idle detector also reports 0. `coverage` says whether
+   * the journal is alive, and the two are never summed into one figure.
+   *
+   * @param int $days Window in days
+   * @return array{level:float, status:string, coverage:array, false_positives:array}
+   */
+  public function exposure(int $days = 7): array
+  {
+    $days = max(1, $days);
+    $counts = $this->countEvents($days);
+
+    $security = max(0, $counts['total'] - $counts['noise']);
+    $realRate = $security > 0 ? $counts['real_threats'] / $security : 0.0;
+    $criticalRate = $security > 0 ? $counts['critical'] / $security : 0.0;
+    $blockedRate = $security > 0 ? $counts['blocked'] / $security : 0.0;
+
+    // A critical weighs more than a plain detection, and a block proves something was attempted.
+    $level = round(min(100, ($realRate * 40 + $criticalRate * 40 + $blockedRate * 20) * 100), 2);
+
+    return [
+      'level' => $level,
+      'status' => $this->exposureStatus($level),
+      'coverage' => $this->coverage($days),
+      'false_positives' => $this->falsePositives()
+    ];
+  }
+
+  /**
+   * Is the journal ALIVE? Answers the question exposure cannot: a silent detector and a calm
+   * platform produce the same zero.
+   *
+   * @param int $days Window in days
+   * @return array{layers:array<int,string>, events:int, last_event:?string, silent:bool}
+   */
+  private function coverage(int $days): array
+  {
+    $placeholders = implode(',', array_fill(0, count(self::NON_SECURITY_EVENT_TYPES), '?'));
+
+    $rows = DoctrineOrm::select("
+      SELECT detection_method, COUNT(*) as count, MAX(created_at) as last_event
+      FROM {$this->prefix}rag_security_events
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+        AND event_type NOT IN ({$placeholders})
+      GROUP BY detection_method
+    ", [$days, ...self::NON_SECURITY_EVENT_TYPES]);
+
+    $events = 0;
+    $lastEvent = null;
+    $layers = [];
+
+    foreach ($rows as $row) {
+      $events += (int)$row['count'];
+      $layers[] = (string)$row['detection_method'];
+
+      if ($lastEvent === null || $row['last_event'] > $lastEvent) {
+        $lastEvent = (string)$row['last_event'];
+      }
+    }
+
+    return [
+      'layers' => $layers,
+      'events' => $events,
+      'last_event' => $lastEvent,
+      'silent' => $events === 0
+    ];
+  }
+
+  /**
+   * Pattern-layer detections that the LLM layer cleared, on the same query.
+   *
+   * Both verdicts are ALREADY in the journal, joinable on `query_hash`: the pattern layer fired,
+   * the semantic layer answered "none". Crossing them costs no LLM call and gives the same answer
+   * twice in a row - which is what makes it usable as evidence.
+   *
+   * @return array<int, array{query_hash:string, detections:int, sample:string, llm_verdict:string}>
+   */
+  private function falsePositives(): array
+  {
+    $rows = DoctrineOrm::select("
+      SELECT flagged.query_hash,
+             COUNT(DISTINCT flagged.event_id) as detections,
+             SUBSTRING(MIN(flagged.user_query), 1, 120) as sample,
+             MAX(cleared.threat_type) as llm_verdict
+      FROM {$this->prefix}rag_security_events flagged
+      INNER JOIN {$this->prefix}rag_security_events cleared
+        ON cleared.query_hash = flagged.query_hash
+       AND cleared.detection_method = 'llm_semantic'
+       AND cleared.threat_type = 'none'
+      WHERE flagged.detection_method = 'pattern_based'
+      GROUP BY flagged.query_hash
+      ORDER BY detections DESC
+    ");
+
+    return array_map(static fn(array $row): array => [
+      'query_hash' => (string)$row['query_hash'],
+      'detections' => (int)$row['detections'],
+      'sample' => (string)($row['sample'] ?? ''),
+      'llm_verdict' => (string)($row['llm_verdict'] ?? '')
+    ], $rows);
+  }
+
+  private function exposureStatus(float $level): string
+  {
+    if ($level >= 50) return 'danger';
+    if ($level >= 20) return 'watch';
+    if ($level > 0) return 'low';
+
+    return 'safe';
   }
 
   /**

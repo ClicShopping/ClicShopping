@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\Dashboard;
 
 
+use ClicShopping\AI\Gouvernance\Security\SecurityJournal;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
@@ -295,13 +296,9 @@ class DashboardStatsCollector
             $detectionRate = $totalEvents > 0 ? round(($detectedThreats / $totalEvents) * 100, 2) : 0;
             $blockRate = $detectedThreats > 0 ? round(($blockedCount / $detectedThreats) * 100, 2) : 0;
             
-            // Calculate health score (0-100)
-            $healthScore = $this->calculateSecurityHealthScore(
-                $detectionRate,
-                $blockRate,
-                (int)($overallResults[0]['critical_count'] ?? 0),
-                $totalEvents
-            );
+            // Exposure, not health: 0 = nothing detected, 100 = journal full of blocked criticals.
+            // Single source in the governance layer - a second formula here is a second truth.
+            $exposure = (new SecurityJournal())->exposure($days);
             
             return [
                 'period_days' => $days,
@@ -315,8 +312,9 @@ class DashboardStatsCollector
                 'avg_detection_time_ms' => round($overallResults[0]['avg_detection_time'] ?? 0, 2),
                 'detection_rate' => $detectionRate,
                 'block_rate' => $blockRate,
-                'health_score' => $healthScore,
-                'health_status' => $this->getHealthStatus($healthScore),
+                'exposure_level' => $exposure['level'],
+                'exposure_status' => $exposure['status'],
+                'coverage' => $exposure['coverage'],
                 'threat_types' => $threatTypes,
                 'detection_methods' => $detectionMethods,
                 'languages' => $languages,
@@ -345,8 +343,9 @@ class DashboardStatsCollector
             'avg_detection_time_ms' => 0,
             'detection_rate' => 0,
             'block_rate' => 0,
-            'health_score' => 0,
-            'health_status' => 'unknown',
+            'exposure_level' => 0,
+            'exposure_status' => 'unknown',
+            'coverage' => ['layers' => [], 'events' => 0, 'last_event' => null, 'silent' => true],
             'threat_types' => [],
             'detection_methods' => [],
             'languages' => [],
@@ -354,35 +353,7 @@ class DashboardStatsCollector
         ];
     }
     
-    private function calculateSecurityHealthScore(
-        float $detectionRate,
-        float $blockRate,
-        int $criticalCount,
-        int $totalEvents
-    ): float {
-        // Detection score (40% weight)
-        $detectionScore = min(100, $detectionRate);
-
-        // Block rate score (40% weight) - inverted for false positives
-        $blockScore = min(100, $blockRate);
-
-        // Critical threat penalty (20% weight)
-        $criticalPenalty = $totalEvents > 0 ? ($criticalCount / $totalEvents) * 100 : 0;
-        $criticalScore = max(0, 100 - ($criticalPenalty * 10));
-
-        // Weighted average
-        $healthScore = ($detectionScore * 0.4) + ($blockScore * 0.2) + ($criticalScore * 0.4);
-
-        return round($healthScore, 2);
-    }
     
-    private function getHealthStatus(float $score): string
-    {
-        if ($score >= 90) return 'excellent';
-        if ($score >= 75) return 'good';
-        if ($score >= 60) return 'fair';
-        return 'poor';
-    }
     
     /**
      * Statistiques des CoreAI

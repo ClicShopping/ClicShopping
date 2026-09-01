@@ -94,6 +94,16 @@ class Shop extends SitesAbstract
       $redis = null;
       $memcached = false;
 
+      // APCu needs no connection, so the switch is read from the cached array itself:
+      // USE_APCU is a row of the very table this block loads.
+      if (extension_loaded('apcu') && apcu_enabled()) {
+        $apcu_config = apcu_fetch(CacheAdmin::apcuKey($cache_key));
+
+        if (is_array($apcu_config) && ($apcu_config['USE_APCU'] ?? 'False') == 'True') {
+          $cached_config = $apcu_config;
+        }
+      }
+
       if (defined('USE_REDIS') && USE_REDIS == 'True') {
         try {
           $redis_client = new \Redis();
@@ -145,6 +155,10 @@ class Shop extends SitesAbstract
 
         if ($cache_ttl <= 0) {
           $cache_ttl = 3600; // Valeur par défaut si la valeur de la DB est 0 ou invalide
+        }
+
+        if (CacheAdmin::isApcuAvailable($config_data['USE_APCU'] ?? 'False')) {
+          apcu_store(CacheAdmin::apcuKey($cache_key), $config_data, $cache_ttl);
         }
 
         // Stocker dans le cache (Redis exige une sérialisation explicite)

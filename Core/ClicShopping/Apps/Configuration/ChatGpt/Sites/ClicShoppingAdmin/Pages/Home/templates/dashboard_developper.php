@@ -680,38 +680,41 @@ include __DIR__ . '/dashboard/_data.php';
                   <div class="col-md-12">
                     <div class="card">
                       <div class="card-header">
-                        <h6><i class="bi bi-shield-check"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('security_health_score'); ?></h6>
+                        <h6><i class="bi bi-shield-check"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('security_exposure'); ?></h6>
                       </div>
                       <div class="card-body">
+                        <?php
+                        // One direction only: 0 = nothing detected, 100 = journal full of blocked
+                        // criticals. A scale where "nothing happened" scores badly reads backwards.
+                        $exposureClass = match($secMonitoring['exposure_status']) {
+                          'safe' => 'bg-success',
+                          'low' => 'bg-info',
+                          'watch' => 'bg-warning',
+                          'danger' => 'bg-danger',
+                          default => 'bg-secondary'
+                        };
+                        ?>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                          <span><?php echo $CLICSHOPPING_ChatGpt->getDef('overall_health'); ?></span>
-                          <span class="badge <?php 
-                            echo match($secMonitoring['health_status']) {
-                              'excellent' => 'bg-success',
-                              'good' => 'bg-info',
-                              'fair' => 'bg-warning',
-                              default => 'bg-danger'
-                            };
-                          ?> fs-5"><?php echo round($secMonitoring['health_score'], 1); ?>/100</span>
+                          <span><?php echo $CLICSHOPPING_ChatGpt->getDef('security_exposure_' . $secMonitoring['exposure_status']); ?></span>
+                          <span class="badge <?php echo $exposureClass; ?> fs-5"><?php echo round($secMonitoring['exposure_level'], 1); ?>/100</span>
                         </div>
                         <div class="progress" style="height: 25px;">
-                          <div class="progress-bar <?php 
-                            echo match($secMonitoring['health_status']) {
-                              'excellent' => 'bg-success',
-                              'good' => 'bg-info',
-                              'fair' => 'bg-warning',
-                              default => 'bg-danger'
-                            };
-                          ?>" 
-                          role="progressbar" 
-                          style="width: <?php echo $secMonitoring['health_score']; ?>%;" 
-                          aria-valuenow="<?php echo $secMonitoring['health_score']; ?>" 
-                          aria-valuemin="0" 
-                          aria-valuemax="100">
-                            <?php echo round($secMonitoring['health_score'], 1); ?>%
+                          <div class="progress-bar <?php echo $exposureClass; ?>"
+                               role="progressbar"
+                               style="width: <?php echo $secMonitoring['exposure_level']; ?>%;"
+                               aria-valuenow="<?php echo $secMonitoring['exposure_level']; ?>"
+                               aria-valuemin="0"
+                               aria-valuemax="100">
+                            <?php echo round($secMonitoring['exposure_level'], 1); ?>%
                           </div>
                         </div>
-                        <small class="text-muted"><?php echo ucfirst($secMonitoring['health_status']); ?> - <?php echo $CLICSHOPPING_ChatGpt->getDef('last'); ?> <?php echo $secMonitoring['period_days']; ?> <?php echo $CLICSHOPPING_ChatGpt->getDef('time_days'); ?></small>
+                        <small class="text-muted">
+                          <?php echo $CLICSHOPPING_ChatGpt->getDef('security_coverage_line', [
+                            'events' => $secMonitoring['coverage']['events'],
+                            'layers' => implode(', ', $secMonitoring['coverage']['layers']) ?: '—',
+                            'days' => $secMonitoring['period_days']
+                          ]); ?>
+                        </small>
                       </div>
                     </div>
                   </div>

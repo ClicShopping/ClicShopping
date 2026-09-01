@@ -72,14 +72,8 @@ class Redis extends \ClicShopping\OM\Domains\SessionAbstract implements \Session
       $redis = new \Redis();
       $redis->connect('localhost', 6379, 1);
 
-      if (defined('USE_REDIS') && USE_REDIS == 'False') {
-        $redis->flushdb();
-        $redis->close();
-
-        return false;
-      }
-
       $ping = $redis->ping();
+      $redis->close();
 
       return $ping === true || strtoupper((string)$ping) === '+PONG' || strtoupper((string)$ping) === 'PONG';
     } catch (\Exception $e) {

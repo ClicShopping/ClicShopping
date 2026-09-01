@@ -36,12 +36,9 @@ class Session
    */
   public static function load(?string $name = null)
   {
+    // The driver comes from store_sessions alone: a cache switch never moves sessions.
     if (!isset(static::$driver)) {
-      if (defined('USE_MEMCACHED') && USE_MEMCACHED === 'True') {
-        static::$driver = 'Memcached';
-      } else {
-        static::$driver = CLICSHOPPING::configExists('store_sessions') ? CLICSHOPPING::getConfig('store_sessions') : static::$default_driver;
-      }
+      static::$driver = CLICSHOPPING::configExists('store_sessions') ? CLICSHOPPING::getConfig('store_sessions') : static::$default_driver;
     }
 
     if (!class_exists(__NAMESPACE__ . '\\Session\\' . static::$driver)) {

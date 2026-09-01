@@ -33,7 +33,7 @@ class HTML
 
   public static function output(?string $string, ?array $translate = null): string
   {
-    if (is_null($string) || empty($string)) {
+    if ($string === null || $string === '') {
       return '';
     }
 
@@ -54,7 +54,7 @@ class HTML
    */
   public static function outputProtected(?string $string): string
   {
-    if (is_null($string) || empty($string)) {
+    if ($string === null || $string === '') {
       return '';
     }
 
@@ -62,16 +62,25 @@ class HTML
   }
 
   /**
-   * Sanitizes the given string by replacing unwanted characters and patterns.
+   * Sanitizes the given value by replacing unwanted characters and patterns.
    *
-   * @param string|null $string The input string to sanitize. Can be null or empty.
-   * @return string The sanitized string. If the input is null or empty, an empty string is returned.
+   * @param mixed $string The value to sanitize. Request data reaches this method raw, so a scalar
+   *                      parameter can arrive as an array (`?id[]=1`); an array is not an
+   *                      identifier and yields an empty string rather than a fatal.
+   * @return string The sanitized string, empty for null, an empty string or a non-scalar.
    */
-  public static function sanitize($string)
+  public static function sanitize(mixed $string): string
   {
-    if (is_null($string) || empty($string)) {
+    if (is_array($string) || is_object($string) || $string === null) {
       return '';
     }
+
+    $string = (string)$string;
+
+    if ($string === '') {
+      return '';
+    }
+
     $patterns = [
       '/ +/',
       '/[<>]/',
