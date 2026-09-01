@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_session_timeout_title = Durée de vie d'une session (secondes)
+cfg_ecommerce_ucp_session_timeout_description = Durée de vie d'une session de commande UCP avant expiration (par défaut : 86400, soit un jour).

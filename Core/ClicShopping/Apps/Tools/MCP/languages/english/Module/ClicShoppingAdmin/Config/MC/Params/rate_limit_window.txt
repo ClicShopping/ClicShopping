@@ -1,2 +1,2 @@
-cfg_products_api_rate_limit_window_title = Time interval during which rate limits are enforced.
-cfg_products_api_rate_limit_window_description = A fixed duration defining the period over which requests are counted to enforce rate limiting and prevent excessive usage.
+cfg_products_api_rate_limit_window_title = Rate limit window
+cfg_products_api_rate_limit_window_description = Duration in seconds over which requests are counted. Recommended: 60 for a chatbot or a back-office tool, 900 for an ERP. Set it together with the maximum requests per window - the pair is the ceiling. An account may override it on its own form.

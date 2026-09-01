@@ -12,6 +12,8 @@ use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
+use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Infrastructure\Monitoring\SubMonitoring\MetricsExporter;
 use ClicShopping\AI\Infrastructure\Monitoring\SubMonitoring\AlertManager;
 
@@ -57,16 +59,8 @@ class MonitoringAgent implements AgentInterface
   // Monitored components
   private array $monitoredComponents = [];
 
-  // System metrics
-  private array $systemMetrics = [
-    'uptime_start' => 0,
-    'total_requests' => 0,
-    'total_errors' => 0,
-    'total_api_calls' => 0,
-    'total_api_cost' => 0.0,
-    'avg_response_time' => 0.0,
-    'memory_peak_usage' => 0,
-  ];
+  // Platform metrics, read from rag_interactions/rag_statistics once per request
+  private ?array $platformMetrics = null;
 
   // Metrics per component
   private array $componentMetrics = [];
@@ -88,9 +82,7 @@ class MonitoringAgent implements AgentInterface
     $this->metricsExporter = new MetricsExporter();
     $this->alertManager = new AlertManager($this->logger, $this->debug);
 
-    $this->systemMetrics['uptime_start'] = time();
-
-    // Load metrics from cache (restores persisted alerts into the AlertManager)
+    // Load alert state from cache (restores persisted alerts into the AlertManager)
     $this->loadMetricsFromCache();
 
     if ($this->debug) {
@@ -175,14 +167,15 @@ class MonitoringAgent implements AgentInterface
    */
   private function collectSystemMetrics(): array
   {
+    $platform = $this->platformMetrics();
+
     return [
-      'uptime_seconds' => time() - $this->systemMetrics['uptime_start'],
-      'total_requests' => $this->systemMetrics['total_requests'],
-      'total_errors' => $this->systemMetrics['total_errors'],
+      'total_requests' => $platform['total_requests'],
+      'total_errors' => $platform['total_errors'],
       'error_rate' => $this->calculateErrorRate(),
-      'total_api_calls' => $this->systemMetrics['total_api_calls'],
-      'total_api_cost' => $this->systemMetrics['total_api_cost'],
-      'avg_response_time' => $this->systemMetrics['avg_response_time'],
+      'total_api_calls' => $platform['total_api_calls'],
+      'total_api_cost' => $platform['total_api_cost'],
+      'avg_response_time' => $platform['avg_response_time'],
       'memory_usage' => [
         'current' => memory_get_usage(true),
         'peak' => memory_get_peak_usage(true),
@@ -244,90 +237,6 @@ class MonitoringAgent implements AgentInterface
     }
 
     return $metrics;
-  }
-
-  /**
-   * Records an event (request, error, etc.)
-   *
-   * @param string $eventType Event type
-   * @param array $eventData Event data
-   */
-  public function recordEvent(string $eventType, array $eventData): void
-  {
-    switch ($eventType) {
-      case 'request':
-        $this->systemMetrics['total_requests']++;
-
-        if (isset($eventData['execution_time'])) {
-          $this->updateAverageResponseTime($eventData['execution_time']);
-        }
-
-        if (isset($eventData['component'])) {
-          $this->recordComponentCall(
-            $eventData['component'],
-            $eventData['success'] ?? true,
-            $eventData['execution_time'] ?? 0
-          );
-        }
-        break;
-
-      case 'error':
-        $this->systemMetrics['total_errors']++;
-
-        $this->logger->logSecurityEvent(
-          "Error recorded: " . ($eventData['message'] ?? 'Unknown error'),
-          'error'
-        );
-        break;
-
-      case 'api_call':
-        $this->systemMetrics['total_api_calls']++;
-
-        if (isset($eventData['cost'])) {
-          $this->systemMetrics['total_api_cost'] += $eventData['cost'];
-        }
-        break;
-    }
-
-    // Save periodically
-    if ($this->systemMetrics['total_requests'] % 10 === 0) {
-      $this->saveMetricsToCache();
-    }
-  }
-
-  /**
-   * Records a component call
-   * 
-   * @param string $componentName Component name
-   * @param bool $success Success status
-   * @param float $executionTime Execution time
-   */
-  private function recordComponentCall( string $componentName,  bool $success,  float $executionTime ): void
-  {
-    if (!isset($this->componentMetrics[$componentName])) {
-      $this->componentMetrics[$componentName] = [
-        'total_calls' => 0,
-        'successful_calls' => 0,
-        'failed_calls' => 0,
-        'total_execution_time' => 0.0,
-        'avg_execution_time' => 0.0,
-        'last_execution' => null,
-      ];
-    }
-
-    $metrics = &$this->componentMetrics[$componentName];
-    $metrics['total_calls']++;
-    $metrics['last_execution'] = time();
-
-    if ($success) {
-      $metrics['successful_calls']++;
-    } else {
-      $metrics['failed_calls']++;
-    }
-
-    $metrics['total_execution_time'] += $executionTime;
-    $metrics['avg_execution_time'] =
-      $metrics['total_execution_time'] / $metrics['total_calls'];
   }
 
   /**
@@ -666,19 +575,69 @@ class MonitoringAgent implements AgentInterface
 
   private function calculateErrorRate(): float
   {
-    $total = $this->systemMetrics['total_requests'];
-    return $total > 0
-      ? $this->systemMetrics['total_errors'] / $total
+    $platform = $this->platformMetrics();
+
+    return $platform['total_requests'] > 0
+      ? $platform['total_errors'] / $platform['total_requests']
       : 0.0;
   }
 
-  private function updateAverageResponseTime(float $newTime): void
+  /**
+   * Reads the platform counters from the tables the dashboards read, so the thresholds judge the
+   * SAME population the screens show. Numerator and denominator are both interactions.
+   *
+   * @return array{total_requests:int,total_errors:int,total_api_calls:int,total_api_cost:float,avg_response_time:float,api_cost_last_hour:float}
+   */
+  private function platformMetrics(): array
   {
-    $total = $this->systemMetrics['total_requests'];
-    $current = $this->systemMetrics['avg_response_time'];
+    if ($this->platformMetrics !== null) {
+      return $this->platformMetrics;
+    }
 
-    $this->systemMetrics['avg_response_time'] =
-      (($current * ($total - 1)) + $newTime) / $total;
+    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+
+    $this->platformMetrics = [
+      'total_requests' => 0,
+      'total_errors' => 0,
+      'total_api_calls' => 0,
+      'total_api_cost' => 0.0,
+      'avg_response_time' => 0.0,
+      'api_cost_last_hour' => 0.0,
+    ];
+
+    try {
+      $rows = DoctrineOrm::select("SELECT COUNT(*) as total FROM {$prefix}rag_interactions");
+      $this->platformMetrics['total_requests'] = (int)($rows[0]['total'] ?? 0);
+
+      $rows = DoctrineOrm::select("
+        SELECT COUNT(DISTINCT interaction_id) as errors,
+               COUNT(*) as api_calls,
+               SUM(api_cost_usd) as cost,
+               AVG(response_time_ms) as avg_ms
+        FROM {$prefix}rag_statistics
+      ");
+      $this->platformMetrics['total_api_calls'] = (int)($rows[0]['api_calls'] ?? 0);
+      $this->platformMetrics['total_api_cost'] = (float)($rows[0]['cost'] ?? 0);
+      $this->platformMetrics['avg_response_time'] = (float)($rows[0]['avg_ms'] ?? 0) / 1000;
+
+      $rows = DoctrineOrm::select("
+        SELECT COUNT(DISTINCT interaction_id) as errors
+        FROM {$prefix}rag_statistics
+        WHERE error_occurred = 1 AND interaction_id IS NOT NULL
+      ");
+      $this->platformMetrics['total_errors'] = (int)($rows[0]['errors'] ?? 0);
+
+      $rows = DoctrineOrm::select("
+        SELECT SUM(api_cost_usd) as cost
+        FROM {$prefix}rag_statistics
+        WHERE date_added >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+      ");
+      $this->platformMetrics['api_cost_last_hour'] = (float)($rows[0]['cost'] ?? 0);
+    } catch (\Exception $e) {
+      error_log('MonitoringAgent: platform metrics unavailable - ' . $e->getMessage());
+    }
+
+    return $this->platformMetrics;
   }
 
   private function getMemoryLimit(): int
@@ -738,10 +697,7 @@ class MonitoringAgent implements AgentInterface
    */
   private function estimateApiCostPerHour(): float
   {
-    $uptime = time() - $this->systemMetrics['uptime_start'];
-    $uptimeHours = max(1, $uptime / 3600);
-
-    return $this->systemMetrics['total_api_cost'] / $uptimeHours;
+    return $this->platformMetrics()['api_cost_last_hour'];
   }
 
   /**
@@ -780,7 +736,6 @@ class MonitoringAgent implements AgentInterface
     if ($cached !== null) {
       $decoded = json_decode($cached, true);
       if (is_array($decoded)) {
-        $this->systemMetrics = $decoded['system'] ?? $this->systemMetrics;
         $this->componentMetrics = $decoded['components'] ?? $this->componentMetrics;
         $this->metricsHistory = $decoded['history'] ?? $this->metricsHistory;
         $this->alertManager->restoreAlerts($decoded['alerts'] ?? []);
@@ -795,7 +750,6 @@ class MonitoringAgent implements AgentInterface
   {
     $cacheKey = 'monitoring_agent_metrics';
     $data = [
-      'system' => $this->systemMetrics,
       'components' => $this->componentMetrics,
       'history' => $this->metricsHistory,
       'alerts' => $this->alertManager->getActiveAlerts(),
@@ -823,7 +777,7 @@ class MonitoringAgent implements AgentInterface
     $data = [
       'exported_at' => date('Y-m-d H:i:s'),
       'health_report' => $this->getHealthReport(),
-      'system_metrics' => $this->systemMetrics,
+      'system_metrics' => $this->collectSystemMetrics(),
       'component_metrics' => $this->componentMetrics,
       'metrics_history' => $this->metricsHistory,
       'active_alerts' => $this->alertManager->getActiveAlerts(),
@@ -871,30 +825,12 @@ class MonitoringAgent implements AgentInterface
     return [
       'status' => $health['status'],
       'health_score' => $health['score'],
-      'total_requests' => $this->systemMetrics['total_requests'],
+      'total_requests' => $this->platformMetrics()['total_requests'],
       'error_rate' => round($this->calculateErrorRate() * 100, 2) . '%',
-      'avg_response_time' => round($this->systemMetrics['avg_response_time'], 2) . 's',
+      'avg_response_time' => round($this->platformMetrics()['avg_response_time'], 2) . 's',
       'active_alerts' => count($this->alertManager->getActiveAlerts()),
       'memory_usage' => $this->getMemoryUsagePercentage() . '%',
-      'uptime' => $this->formatUptime(time() - $this->systemMetrics['uptime_start']),
     ];
-  }
-
-  /**
-   * Formate l'uptime en format lisible
-   */
-  private function formatUptime(int $seconds): string
-  {
-    $days = floor($seconds / 86400);
-    $hours = floor(($seconds % 86400) / 3600);
-    $minutes = floor(($seconds % 3600) / 60);
-
-    $parts = [];
-    if ($days > 0) $parts[] = "{$days}d";
-    if ($hours > 0) $parts[] = "{$hours}h";
-    if ($minutes > 0) $parts[] = "{$minutes}m";
-
-    return !empty($parts) ? implode(' ', $parts) : '0m';
   }
 
   /**
@@ -902,16 +838,7 @@ class MonitoringAgent implements AgentInterface
    */
   public function resetMetrics(): void
   {
-    $this->systemMetrics = [
-      'uptime_start' => time(),
-      'total_requests' => 0,
-      'total_errors' => 0,
-      'total_api_calls' => 0,
-      'total_api_cost' => 0.0,
-      'avg_response_time' => 0.0,
-      'memory_peak_usage' => 0,
-    ];
-
+    $this->platformMetrics = null;
     $this->componentMetrics = [];
     $this->metricsHistory = [];
     $this->alertManager->clearAllAlerts();
@@ -1007,10 +934,12 @@ class MonitoringAgent implements AgentInterface
    */
   public function getApiMetrics(): array
   {
+    $platform = $this->platformMetrics();
+
     return [
-      'total_calls' => $this->systemMetrics['total_api_calls'],
-      'total_cost' => round($this->systemMetrics['total_api_cost'], 4),
-      'cost_per_call' => $this->systemMetrics['total_api_calls'] > 0 ? round($this->systemMetrics['total_api_cost'] / $this->systemMetrics['total_api_calls'], 4) : 0,
+      'total_calls' => $platform['total_api_calls'],
+      'total_cost' => round($platform['total_api_cost'], 4),
+      'cost_per_call' => $platform['total_api_calls'] > 0 ? round($platform['total_api_cost'] / $platform['total_api_calls'], 4) : 0,
       'estimated_cost_per_hour' => round($this->estimateApiCostPerHour(), 4),
       'estimated_cost_per_day' => round($this->estimateApiCostPerDay(), 2),
       'estimated_cost_per_month' => round($this->estimateApiCostPerDay() * 30, 2),

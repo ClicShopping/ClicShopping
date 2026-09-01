@@ -167,7 +167,8 @@ wasted time** — treat documentation as part of every deliverable.
    current state. Prefer one authoritative location per fact.
 3. Document the CURRENT state only. Roadmap / future work goes in dedicated
    EVOLUTION/BACKLOG docs, not in the descriptive docs.
-4. If two docs disagree, AGENTS.md and SECURITY.md win; reconcile the others.
+4. If two docs disagree, AGENTS.md and the security file of the scope win
+   (SECURITY.md, or AI_SECURITY.md inside Core/ClicShopping/AI/); reconcile the others.
 5. An outdated .md is a bug — fix it in the same change, not "later".
 ```
 > Rationale: with this many files, a small undocumented move silently breaks the mental

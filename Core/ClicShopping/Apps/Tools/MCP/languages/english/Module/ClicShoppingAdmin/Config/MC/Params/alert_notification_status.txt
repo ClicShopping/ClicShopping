@@ -1,0 +1,5 @@
+cfg_mcp_alert_notification_status_title = Alert e-mail notifications
+cfg_mcp_alert_notification_status_description = Set True to e-mail the administrator when an MCP account is refused on its quota, or when the monitoring agent raises a warning. The account must also have its own Alert notification box ticked. Recommended: True in production, False on a test install.
+
+cfg_mcp_alert_notification_status_true = True
+cfg_mcp_alert_notification_status_false = False

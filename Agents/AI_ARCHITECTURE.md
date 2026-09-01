@@ -20,6 +20,9 @@ Core/ClicShopping/AI/
 │   │   └── Validator/   ✅ Business logic validators (added May 2026)
 │   └── WebSearch/
 │       └── Providers/   ✅ Built-in agnostic providers Mode A/B/C/E (added May 2026)
+├── Gouvernance/         ✅ Evidence for audit — figures with their population, never prose
+│   └── Security/        ✅ `SecurityJournal`: reads and maintains `rag_security_events`
+├── Audit/               ⬜ Empty — reserved
 ├── Handler/             ✅ Error, fallback, query handling
 ├── Helper/              ✅ Utilities
 ├── Infrastructure/      ✅ Technical infrastructure

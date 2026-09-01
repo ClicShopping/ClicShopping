@@ -24,23 +24,7 @@ if (isset($_GET['cID'])) {
 }
 
 // Optimized SQL query with proper formatting
-$Qmcp = $CLICSHOPPING_Mcp->db->prepare('SELECT mcp_id,
-                                                username,
-                                                mcp_key,
-                                                status,
-                                                select_data,
-                                                update_data,
-                                                create_data,
-                                                delete_data,
-                                                create_db,
-                                                server_host,
-                                                server_port,
-                                                ssl_enabled,
-                                                alert_threshold,
-                                                latency_threshold,
-                                                downtime_threshold,
-                                                data_retention,
-                                                alert_notification
+$Qmcp = $CLICSHOPPING_Mcp->db->prepare('SELECT *
                                           FROM :table_mcp
                                           WHERE mcp_id = :mcp_id
                                         ');
@@ -309,6 +293,36 @@ if (!empty($cId)) {
                         <?php echo $CLICSHOPPING_Mcp->getDef('text_alert_notification'); ?>
                       </label>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-3">
+            <div class="card-header">
+              <h6 class="mb-0"><?php echo $CLICSHOPPING_Mcp->getDef('text_account_rate_limit'); ?></h6>
+            </div>
+            <div class="card-body">
+              <span class="alert alert-info d-block"><?php echo $CLICSHOPPING_Mcp->getDef('text_account_rate_limit_note'); ?></span>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="rate_limit_window"
+                      class="form-label"><?php echo $CLICSHOPPING_Mcp->getDef('text_rate_limit_window'); ?></label>
+                    <div class="input-group">
+                      <?php echo HTML::inputField('rate_limit_window', $Qmcp->value('rate_limit_window'), 'class="form-control" type="number" min="1"'); ?>
+                      <span class="input-group-text">s</span>
+                    </div>
+                    <small class="form-text text-muted"><?php echo $CLICSHOPPING_Mcp->getDef('text_rate_limit_window_desc'); ?></small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="max_requests_per_window"
+                      class="form-label"><?php echo $CLICSHOPPING_Mcp->getDef('text_max_requests_per_window'); ?></label>
+                    <?php echo HTML::inputField('max_requests_per_window', $Qmcp->value('max_requests_per_window'), 'class="form-control" type="number" min="1"'); ?>
+                    <small class="form-text text-muted"><?php echo $CLICSHOPPING_Mcp->getDef('text_max_requests_per_window_desc'); ?></small>
                   </div>
                 </div>
               </div>

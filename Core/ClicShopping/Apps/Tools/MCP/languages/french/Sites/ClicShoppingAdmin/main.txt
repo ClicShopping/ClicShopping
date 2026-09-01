@@ -82,6 +82,12 @@ text_latency_threshold = Seuil de Latence
 text_downtime_threshold = Seuil de Temps d'Arrêt
 text_data_retention = Conservation des données (jours)
 text_alert_notification = Notification d'Alerte
+text_account_rate_limit = Surcharge du débit (ce compte)
+text_account_rate_limit_note = Laisser les deux champs vides pour hériter des réglages de l'App. Le plafond porte sur les requêtes authentifiées de CE compte : deux comptes derrière une même IP ne partagent plus le même seau.
+text_rate_limit_window = Fenêtre de débit
+text_rate_limit_window_desc = Durée de la fenêtre en secondes. Recommandé : 60 s pour un chatbot public en front-office, 900 s pour un ERP.
+text_max_requests_per_window = Requêtes maximum par fenêtre
+text_max_requests_per_window_desc = Recommandé : 5 à 10 par 60 s pour un chatbot public, 20 par 60 s pour un outil de back-office piloté par un humain, 300 à 600 par 900 s pour un ERP en lecture. Descendre le chiffre pour un compte autorisé à écrire.
 
 alert_module_install_success = Le module a été installé.
 alert_module_uninstall_success = Le module a été désinstallé.
@@ -101,5 +107,13 @@ Le système MCP a détecté un avertissement de priorité moyenne :\n
 {{recommendation}}. \n\n
 Une tentative de reconnexion automatique a été lancée.\n
 Veuillez vérifier les logs pour plus de détails.\n\n
+Cordialement,\n
+L'Agent de Surveillance MCP
+
+text_alert_mcp_rate_limit_subject = AVERTISSEMENT MCP - Quota de compte atteint
+text_alert_mcp_rate_limit = Bonjour Administrateur,\n\n
+Le compte MCP {{account}} a atteint son plafond de {{limit}} requêtes par {{window}} secondes.\n
+Ses requêtes sont refusées jusqu'à la fin de la fenêtre.\n\n
+Relever le plafond sur la fiche du compte si ce trafic est légitime, sinon vérifier qui détient la clé.\n\n
 Cordialement,\n
 L'Agent de Surveillance MCP

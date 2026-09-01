@@ -1,4 +1,5 @@
 id int(11) not_null auto_increment comment(Primary key - unique identifier for each alert entry)
+mcp_id int(11) not_null default 0 comment(MCP account the alert belongs to - 0 for an App level alert)
 alert_type varchar(32) not_null comment(Type of alert - error, warning, performance, security, or downtime)
 message text not_null comment(Alert message describing the issue or event)
 alert_timestamp datetime not_null comment(Timestamp when the alert was generated)
@@ -9,6 +10,7 @@ context text default null comment(Additional context data about the alert - JSON
 primary id
 idx_alert_timestamp alert_timestamp
 idx_severity severity_level
+idx_mcp_id mcp_id
 
 ##
 engine innodb

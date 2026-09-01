@@ -381,3 +381,132 @@ INSERT INTO configuration VALUES(null, 'Fenêtre d\'historique du stock (jours)'
 
 =================
 CREATE TABLE IF NOT EXISTS clic_rag_rate_limit ( id INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary key - one row per accepted question', identifier VARCHAR(255) NOT NULL COMMENT 'Caller key, stored in clear so an excess stays attributable: admin:<id>, mcp:<id>, system:<job>', timestamp INT(11) NOT NULL COMMENT 'Unix timestamp of the accepted question - drives the sliding window', ip VARCHAR(45) DEFAULT NULL COMMENT 'IP address of the caller - IPv4 or IPv6 format', PRIMARY KEY (id), KEY idx_identifier_timestamp (identifier, timestamp), KEY idx_timestamp (timestamp) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Sliding window rate limit of the AI chatbot, keyed by channel and user';
+
+=================
+ALTER TABLE clic_mcp_alerts
+  ADD COLUMN IF NOT EXISTS mcp_id int(11) NOT NULL DEFAULT 0
+  COMMENT 'MCP account the alert belongs to - 0 for an App level alert'
+  AFTER id;
+
+ALTER TABLE clic_mcp_alerts
+  ADD INDEX IF NOT EXISTS idx_mcp_id (mcp_id);
+
+=================
+INSERT INTO clic_configuration
+  (configuration_title, configuration_key, configuration_value, configuration_description,
+   configuration_group_id, sort_order, last_modified, date_added, use_function, set_function)
+SELECT 'Notifications d''alerte par e-mail',
+       'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_STATUS',
+       'False',
+       'Mettre True pour prévenir l''administrateur par e-mail lorsqu''un compte MCP est refusé sur son quota, ou lorsque l''agent de surveillance lève un avertissement. Le compte doit aussi porter sa propre case Notification d''alerte. Recommandé : True en production, False sur une installation de test.',
+       6, 0, NULL, NOW(), NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))'
+ WHERE NOT EXISTS (SELECT 1 FROM clic_configuration
+                    WHERE configuration_key = 'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_STATUS');
+
+INSERT INTO clic_configuration
+  (configuration_title, configuration_key, configuration_value, configuration_description,
+   configuration_group_id, sort_order, last_modified, date_added, use_function, set_function)
+SELECT 'Destinataire des alertes',
+       'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_EMAIL',
+       '',
+       'Adresse e-mail qui reçoit les alertes MCP. Laisser vide pour utiliser l''adresse du propriétaire de la boutique. Une seule adresse ; passer par une liste de diffusion si plusieurs personnes doivent être prévenues.',
+       6, 0, NULL, NOW(), NULL, NULL
+ WHERE NOT EXISTS (SELECT 1 FROM clic_configuration
+                    WHERE configuration_key = 'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_EMAIL');
+
+SELECT configuration_key, configuration_value
+  FROM clic_configuration
+ WHERE configuration_key LIKE 'CLICSHOPPING_APP_MCP_MC_%'
+ ORDER BY configuration_key;          -- attendu : 11 lignes (9 + les 2 nouvelles)
+
+
+-- =============================================================================
+-- CFG-2 — constantes de l'App de domaine Apps/AI/Ecommerce (2026-08-31)
+-- Documentation : ce fichier n'est PAS exécuté. Le script applicable est
+-- sql/2026_08_31_cfg2_ecommerce_config_keys.sql
+-- =============================================================================
+-- =============================================================================
+-- CFG-2 — constantes de l'App de domaine `Apps/AI/Ecommerce`
+-- NON EXÉCUTÉ : l'écriture live est une action du mainteneur.
+--
+-- Le préfixe de tables de cet install est `clic_`. Sur un autre install,
+-- remplacer `clic_` par la valeur de db_table_prefix (Conf/global.php).
+--
+-- Quatre gestes, dans cet ordre — le report AVANT toute suppression.
+-- Idempotent : rejouable sans effet supplémentaire.
+-- =============================================================================
+
+-- 1. REPORT du secret d'authentification, ACP et UCP.
+--    Le 2026-05-26 la clé a été renommée `*_SHARED_KEY_RETAIL` -> `*_API_KEY_*_RETAIL`
+--    sur les deux protocoles, sans migration : sur un install antérieur, la
+--    nouvelle clé naît vide et les deux points d'entrée répondent 401 sur tout
+--    (`$expectedHeader === ''`, ACP.php:117 / UCP.php:135).
+--    Ne recopie QUE si l'ancienne porte une valeur et la nouvelle est vide :
+--    une clé déjà ressaisie par le marchand n'est jamais écrasée.
+
+UPDATE clic_configuration AS n
+  JOIN clic_configuration AS o
+    ON o.configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_ACP_SHARED_KEY_RETAIL'
+  SET n.configuration_value = o.configuration_value,
+      n.last_modified = NOW()
+  WHERE n.configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_ACP_API_KEY_OPENAI_RETAIL'
+    AND TRIM(o.configuration_value) <> ''
+    AND TRIM(n.configuration_value) = '';
+
+UPDATE clic_configuration AS n
+  JOIN clic_configuration AS o
+    ON o.configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_UCP_SHARED_KEY_RETAIL'
+  SET n.configuration_value = o.configuration_value,
+      n.last_modified = NOW()
+  WHERE n.configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL'
+    AND TRIM(o.configuration_value) <> ''
+    AND TRIM(n.configuration_value) = '';
+
+-- 2. SUPPRESSION des lignes sans source ni lecteur.
+--    `*_SHARED_KEY_RETAIL` : reportées par le geste 1.
+--    `CAI_CACHE_TLL` : orthographe divergente ET sans lecteur — les classes du
+--      Cockpit portent cinq TTL distincts (5 min à 7 jours), un réglage unique
+--      ne peut pas les couvrir. Param et fichiers de langue retirés.
+--    `CAI_EMBEDDING_FORMAT_VERSION` : la version du format est un contrat de
+--      code (`EmbeddingService::EMBEDDING_FORMAT_VERSION`), pas un réglage.
+--    `EC_SEO_SERPAPI_STATUS` : Param retiré volontairement par b0bc5b86
+--      (« remove SerpAPI/SERP from SEO analysis entirely »), ligne oubliée.
+
+DELETE FROM clic_configuration
+  WHERE configuration_key IN (
+    'CLICSHOPPING_APP_ECOMMERCE_ACP_SHARED_KEY_RETAIL',
+    'CLICSHOPPING_APP_ECOMMERCE_UCP_SHARED_KEY_RETAIL',
+    'CLICSHOPPING_APP_ECOMMERCE_CAI_CACHE_TLL',
+    'CLICSHOPPING_APP_ECOMMERCE_CAI_EMBEDDING_FORMAT_VERSION',
+    'CLICSHOPPING_APP_ECOMMERCE_EC_SEO_SERPAPI_STATUS'
+  );
+
+-- 3. CRÉATION des deux constantes lues mais jamais installables.
+--    `UCP.php:151` et `GptSessionManager.php:21` les lisent sous `\defined()` :
+--    inertes, jamais réglables. Les valeurs reprennent exactement les replis
+--    du code, la bascule est donc sans effet de bord.
+
+-- `idx_configuration_key` n'est PAS unique (SHOW INDEX) : `ON DUPLICATE KEY
+--    UPDATE` serait inerte ici et un rejeu créerait des doublons. D'où NOT EXISTS.
+
+INSERT INTO clic_configuration
+  (configuration_key, configuration_value, configuration_group_id, configuration_title, configuration_description, date_added)
+SELECT 'CLICSHOPPING_APP_ECOMMERCE_UCP_RATE_LIMIT', '100', 6,
+       'Plafond de débit (requêtes par minute)',
+       'Nombre maximal de requêtes UCP autorisées par minute, compté par clé d''API, ou par adresse IP pour le catalogue public en lecture seule. Au-delà de ce plafond, le point d''entrée répond 429.',
+       NOW()
+  WHERE NOT EXISTS (SELECT 1 FROM clic_configuration
+                     WHERE configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_UCP_RATE_LIMIT');
+
+INSERT INTO clic_configuration
+  (configuration_key, configuration_value, configuration_group_id, configuration_title, configuration_description, date_added)
+SELECT 'CLICSHOPPING_APP_ECOMMERCE_UCP_SESSION_TIMEOUT', '86400', 6,
+       'Durée de vie d''une session (secondes)',
+       'Durée de vie d''une session de commande UCP avant expiration (par défaut : 86400, soit un jour).',
+       NOW()
+  WHERE NOT EXISTS (SELECT 1 FROM clic_configuration
+                     WHERE configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_UCP_SESSION_TIMEOUT');
+
+-- 4. CONTRÔLE — doit rendre 0 ligne pour les cinq supprimées, 2 pour les créées.
+-- SELECT configuration_key, configuration_value FROM clic_configuration
+--   WHERE configuration_key LIKE 'CLICSHOPPING_APP_ECOMMERCE%' ORDER BY configuration_key;

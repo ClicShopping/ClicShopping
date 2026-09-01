@@ -96,9 +96,11 @@ Five distinct slots with non-interchangeable roles:
 ### Decision rule
 
 ```
-New table for an App    → Core/ClicShopping/Apps/{Vendor}/{AppName}/Sql/MariaDb/
+New table for an App    → Core/ClicShopping/Apps/{Vendor}/{AppName}/Sql/MariaDb/  (the installer)
+                        + Core/ClicShopping/Schema/MariaDb/<table>.txt            (the canonical form)
 New table for overload  → Core/ClicShopping/Custom/Schema/
-Read existing schema    → Core/ClicShopping/Schema/MariaDb/ (never modify)
+Existing table          → Core/ClicShopping/Schema/MariaDb/ is the source of truth — never alter an
+                          existing definition there without agreement
 Version migration notes → sql_upgrade/ (documentation only — never write code here)
 ```
 

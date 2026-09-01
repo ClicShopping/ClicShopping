@@ -104,13 +104,6 @@ class WebSearchFacade
     // Debug mode
     $this->debug = \defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER')
       && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
-
-    // Log facade initialization
-    $this->logger->logEvent('websearch_facade_initialized', [
-      'component' => 'WebSearchFacade',
-      'api_key_configured' => !empty($this->apiKey),
-      'timestamp' => date('Y-m-d H:i:s')
-    ]);
   }
 
   /**

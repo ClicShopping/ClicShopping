@@ -40,6 +40,8 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Models\Validati
 
 class SeoCodeValidationAgent implements AgentInterface
 {
+  public const ACTOR_ID = 'seo_code_validator';
+
   /**
    * Unique runtime actor identifier.
    */
@@ -74,7 +76,7 @@ class SeoCodeValidationAgent implements AgentInterface
    */
   public function __construct()
   {
-    $this->actorId = 'seo_code_validator_' . uniqid();
+    $this->actorId = self::ACTOR_ID;
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
     $this->llm = new LLMServiceWrapper($this->debug);
     $this->translator = new TranslationServiceWrapper($this->debug);

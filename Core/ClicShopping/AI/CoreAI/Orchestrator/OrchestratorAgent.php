@@ -201,7 +201,7 @@ class OrchestratorAgent implements AgentInterface
 
     // Monitoring and metrics
     $this->monitoring = new MonitoringAgent();
-    $this->collector = new MetricsCollector($this->monitoring);
+    $this->collector = new MetricsCollector();
     $this->alertManager = new AlertManager();
 
     // Memory systems

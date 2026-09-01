@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_session_timeout_title = Session lifetime (seconds)
+cfg_ecommerce_ucp_session_timeout_description = Lifetime of a UCP checkout session before it expires (default: 86400, one day).

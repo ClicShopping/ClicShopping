@@ -194,7 +194,7 @@ function buildCachePerformanceCharts(data) {
         labels: cacheSize.labels,
         datasets: [
           {
-            label: 'Size (MB)',
+            label: 'Size (KB)',
             data: cacheSize.sizes || [],
             backgroundColor: 'rgba(96, 125, 139, 0.6)',
             borderColor: 'rgba(96, 125, 139, 1)',
@@ -209,7 +209,11 @@ function buildCachePerformanceCharts(data) {
           legend: { position: 'bottom' },
           tooltip: {
             callbacks: {
-              label: ctx => `${ctx.dataset.label}: ${Number(ctx.parsed.y || 0).toFixed(2)} MB`
+              // The file count says "1 file of 5 KB" where the size alone reads as nothing.
+              label: ctx => {
+                const files = (cacheSize.file_counts || [])[ctx.dataIndex] ?? 0;
+                return `${Number(ctx.parsed.y || 0).toFixed(1)} KB — ${files} file(s)`;
+              }
             }
           }
         },

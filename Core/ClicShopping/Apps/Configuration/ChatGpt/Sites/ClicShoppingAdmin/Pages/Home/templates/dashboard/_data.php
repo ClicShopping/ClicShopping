@@ -16,6 +16,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Dashboard\TokenChartDataProvider;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\AI\CoreAI\Orchestrator\OrchestratorAgent;
+use ClicShopping\AI\Infrastructure\Monitoring\MonitoringAgent;
 
 $CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
@@ -117,10 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $alertType = $_POST['alert_type'] ?? '';
 
   try {
-    // Get MonitoringAgent instance
-    $monitoringAgent = Registry::exists('MonitoringAgent') ? Registry::get('MonitoringAgent') : null;
-    
-    if ($monitoringAgent && !empty($alertType)) {
+    // Nothing ever registers the agent: build one. The alert state lives in its cache, so a fresh
+    // instance carries the same alerts as the one that raised them.
+    $monitoringAgent = Registry::exists('MonitoringAgent') ? Registry::get('MonitoringAgent') : new MonitoringAgent();
+
+    if (!empty($alertType)) {
       if ($action === 'acknowledge_alert') {
         $monitoringAgent->acknowledgeAlert($alertType);
         $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
@@ -143,6 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   } catch (\Exception $e) {
     error_log('Dashboard: Alert action failed - ' . $e->getMessage());
+    Registry::get('MessageStack')->add($CLICSHOPPING_ChatGpt->getDef('alert_action_failed'), 'error', 'header');
   }
 }
 

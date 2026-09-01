@@ -158,6 +158,51 @@ class StatisticsManager
   }
 
   /**
+   * Persist a FAILED request, so the error reaches rag_interactions AND rag_statistics.
+   *
+   * A failed request is an interaction like any other: it must own a row, otherwise the error
+   * flag has no interaction_id to hang on and saveStatistics() refuses to write.
+   *
+   * @param StatisticsTracker $statsTracker Tracker of the failed request
+   * @param string $userQuery Question the user asked
+   * @param string $errorMessage Message shown to the user
+   * @param int $userId User ID
+   * @param string $sessionId Session ID
+   * @param int $languageId Language ID
+   * @return bool True when both rows were written
+   */
+  public static function persistFailure(
+    StatisticsTracker $statsTracker,
+    string $userQuery,
+    string $errorMessage,
+    int $userId,
+    string $sessionId,
+    int $languageId
+  ): bool {
+    if (!$statsTracker->getMetric('error_occurred')) {
+      $statsTracker->setError('processing_error', $errorMessage);
+    }
+
+    $responseTime = (microtime(true) - ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true))) * 1000;
+
+    $interactionData = self::buildInteractionData(
+      $userQuery,
+      $errorMessage,
+      ['intent' => ['type' => 'error'], 'agent_used' => 'error'],
+      ['entity_id' => 0, 'entity_type' => 'unknown'],
+      $userId,
+      $sessionId,
+      $languageId,
+      $responseTime,
+      ['response_quality' => 0],
+      $statsTracker,
+      'interaction_' . $userId . '_' . time() . '_' . substr(md5(uniqid('', true)), 0, 8)
+    );
+
+    return self::saveStatistics($statsTracker, self::persistInteraction($interactionData, $statsTracker));
+  }
+
+  /**
    * Cap the text columns that are at risk of exceeding the rag_interactions
    * schema. Adds a "...[truncated, original: N bytes]" marker when truncation
    * happens so an audit reader knows the row was clipped.

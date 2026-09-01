@@ -117,7 +117,9 @@ CREATE TABLE :table_mcp (
   `latency_threshold` int(6) DEFAULT 1000,
   `downtime_threshold` int(6) DEFAULT 300,
   `data_retention` int(3) DEFAULT 7,
-  `alert_notification` tinyint(1) NOT NULL DEFAULT 0
+  `alert_notification` tinyint(1) NOT NULL DEFAULT 0,
+  `rate_limit_window` int(6) DEFAULT NULL,
+  `max_requests_per_window` int(6) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -218,7 +220,7 @@ EOD;
       $sql = <<<EOD
 CREATE TABLE :table_mcp_alerts (
   `id` int(11) NOT NULL,
-  `mcp_id` int(11) NOT NULL,
+  `mcp_id` int(11) NOT NULL DEFAULT 0,
   `alert_type` varchar(32) NOT NULL,
   `message` text NOT NULL,
   `alert_timestamp` datetime NOT NULL,

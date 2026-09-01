@@ -1,2 +1,2 @@
 cfg_products_api_max_request_per_window_title = Nombre maximal de requêtes par fenêtre
-cfg_products_api_max_request_per_window_description = Limite le nombre de requêtes à 20 sur une période de 15 minutes.
+cfg_products_api_max_request_per_window_description = Plafond par défaut de requêtes authentifiées par compte et par fenêtre. Recommandé : 5-10 pour un chatbot front-office public, 20 pour un outil back-office piloté par un humain, 300-600 pour un ERP en lecture. Un compte peut le surcharger sur sa propre fiche.

@@ -90,11 +90,12 @@ class Dashboard
       $totalResult = DoctrineOrm::select("SELECT COUNT(*) as count FROM {$prefix}rag_interactions");
       $totalRequests = $totalResult[0]['count'] ?? 0;
 
-      // Error rate
+      // Error rate: count INTERACTIONS in error, never statistics rows - one interaction produces
+      // several of them, and the decomposition rows carry no interaction_id at all.
       $errorResult = DoctrineOrm::select("
-        SELECT COUNT(*) as count 
-        FROM {$prefix}rag_statistics 
-        WHERE error_occurred = 1
+        SELECT COUNT(DISTINCT interaction_id) as count
+        FROM {$prefix}rag_statistics
+        WHERE error_occurred = 1 AND interaction_id IS NOT NULL
       ");
       $totalErrors = $errorResult[0]['count'] ?? 0;
       $errorRate = $totalRequests > 0 ? $totalErrors / $totalRequests : 0;
@@ -179,8 +180,7 @@ class Dashboard
           ],
           'total_api_calls' => $totalRequests,
           'total_api_cost' => $totalCost,
-          'total_tokens' => $totalTokens,
-          'uptime_seconds' => 0
+          'total_tokens' => $totalTokens
         ],
         'component_health' => $componentHealth,
         'recommendations' => [],
@@ -842,8 +842,7 @@ class Dashboard
         'memory_usage' => ['percentage' => 0, 'limit' => 0, 'peak' => 0],
         'total_api_calls' => 0,
         'total_api_cost' => 0,
-        'total_tokens' => 0,
-        'uptime_seconds' => 0
+        'total_tokens' => 0
       ],
       'component_health' => [],
       'recommendations' => [],

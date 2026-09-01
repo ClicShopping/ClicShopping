@@ -1,2 +1,2 @@
 cfg_products_api_max_request_per_window_title = Maximum Requests Per Window
-cfg_products_api_max_request_per_window_description = Limits the number of requests to 20 within a 15-minute interval.
+cfg_products_api_max_request_per_window_description = Default ceiling of authenticated requests per account and per window. Recommended: 5-10 for a public front-office chatbot, 20 for a back-office tool driven by a human, 300-600 for an ERP reading data. An account may override it on its own form.

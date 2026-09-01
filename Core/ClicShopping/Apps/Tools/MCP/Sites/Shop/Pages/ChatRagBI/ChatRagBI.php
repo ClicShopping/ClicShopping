@@ -336,6 +336,8 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
         $aiResponse = QueryProcessor::process($prompt, $mcpUserId, $languageId, $statsTracker, 'mcp');
 
         if (($aiResponse['type'] ?? null) === 'rate_limited') {
+          StatisticsManager::persistFailure($statsTracker, $prompt, $aiResponse['text_response'], $mcpUserId, $sessionId, $languageId);
+
           if (ob_get_length()) {
             ob_clean();
           }
@@ -348,6 +350,8 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
         }
 
         if ($enableTimeout && RequestValidator::checkTimeout($queryStartTime, $maxExecutionTime)) {
+          StatisticsManager::persistFailure($statsTracker, $prompt, 'Query timeout', $mcpUserId, $sessionId, $languageId);
+
           if (ob_get_length()) {
             ob_clean();
           }
@@ -517,6 +521,11 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
     } catch
     (\Exception $e) {
       error_log('Erreur dans le traitement AJAX : ' . $e->getMessage());
+
+      if (isset($statsTracker)) {
+        StatisticsManager::persistFailure($statsTracker, $prompt ?? '', $e->getMessage(), $mcpUserId ?? 0, $sessionId ?? '', $languageId ?? 1);
+      }
+
       echo json_encode([
         'status' => 'error',
         'data' => [

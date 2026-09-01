@@ -9,7 +9,6 @@
 namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Dashboard;
 
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
-use ClicShopping\AI\Infrastructure\Metrics\ApiCostCalculator;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ModelManager;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
@@ -109,27 +108,23 @@ class TokenChartDataProvider
       'local'   => 'rgba(34, 197, 94, 0.55)',
     ];
 
+    // Read the STORED cost, never recompute it: api_cost_usd was written at the price of its time,
+    // and a retired model has no catalog entry left to be repriced against.
     $rawCostData = [];
     $Qcost = $db->query(
       'select DATE_FORMAT(date_added, "%Y-%m") as month,
               model_used as model,
-              sum(tokens_prompt) as prompt_tokens,
-              sum(tokens_completion) as completion_tokens
+              sum(api_cost_usd) as cost
        from :table_rag_statistics
        where date_added >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-         and (tokens_prompt is not null or tokens_completion is not null)
+         and api_cost_usd is not null
        group by month, model
        order by month asc'
     );
 
     while ($Qcost->fetch()) {
-      // A statistics row with no model recorded is priced against the catalogued default.
       $model = $Qcost->value('model') ?: ModelManager::defaultModel();
-      $month = $Qcost->value('month');
-      $promptTokens = (int)$Qcost->value('prompt_tokens');
-      $completionTokens = (int)$Qcost->value('completion_tokens');
-      $cost = ApiCostCalculator::calculateCost($model, $promptTokens, $completionTokens);
-      $rawCostData[$model][$month] = $cost;
+      $rawCostData[$model][$Qcost->value('month')] = (float)$Qcost->value('cost');
     }
 
     $costDatasets = [];

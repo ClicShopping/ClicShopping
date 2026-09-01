@@ -1,2 +1,2 @@
-cfg_products_api_rate_limit_window_title = Intervalle de temps pendant lequel les limites de débit sont appliquées
-cfg_products_api_rate_limit_window_description = Durée fixe définissant la période sur laquelle les requêtes sont comptabilisées pour appliquer la limitation et éviter les usages excessifs.
+cfg_products_api_rate_limit_window_title = Fenêtre de limitation de débit
+cfg_products_api_rate_limit_window_description = Durée en secondes sur laquelle les requêtes sont comptabilisées. Recommandé : 60 pour un chatbot ou un outil back-office, 900 pour un ERP. À régler avec le nombre maximal de requêtes par fenêtre - c'est le couple qui fait le plafond. Un compte peut la surcharger sur sa propre fiche.

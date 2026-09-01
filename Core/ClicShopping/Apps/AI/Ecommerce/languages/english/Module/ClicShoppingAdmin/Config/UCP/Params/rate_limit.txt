@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_rate_limit_title = Rate limit (requests per minute)
+cfg_ecommerce_ucp_rate_limit_description = Maximum number of UCP requests allowed per minute, counted per API key, or per IP address for the public read-only catalog. Above this ceiling the endpoint answers 429.

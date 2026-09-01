@@ -1,0 +1,2 @@
+cfg_mcp_alert_notification_email_title = Destinataire des alertes
+cfg_mcp_alert_notification_email_description = Adresse e-mail qui reçoit les alertes MCP. Laisser vide pour utiliser l'adresse du propriétaire de la boutique. Une seule adresse ; passer par une liste de diffusion si plusieurs personnes doivent être prévenues.

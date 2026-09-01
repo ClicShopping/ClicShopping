@@ -22,6 +22,8 @@ use PDOException;
  */
 class McpSecurity
 {
+  // Préfixe des clés de débit portant un COMPTE ; les autres portent une IP ou un identifiant.
+  private const ACCOUNT_KEY_PREFIX = 'mcp:';
 
   // Indique si le jeton doit être renouvelé (étendu) en cas d'expiration lors de checkToken
   protected static bool $renewSession = true;
@@ -142,10 +144,6 @@ class McpSecurity
 
     $clientIp = HTTP::getIpAddress();
 
-    if (!self::checkRateLimit($clientIp, 'token_check')) {
-      throw new Exception("Rate limit exceeded for token validation");
-    }
-
     try {
       $CLICSHOPPING_Db = Registry::get('Db');
 
@@ -167,13 +165,30 @@ class McpSecurity
         // strict = exact match (legacy), subnet = /24 IPv4 or /64 IPv6 (default),
         // off = no check (token secret only). See ip_check_mode param.
         if (!self::isIpAllowed($Qcheck->value('ip'), $clientIp)) {
-          self::logSecurityEvent('Token hijacking attempt detected (IP mismatch)', [
-            'mcp_id'      => $Qcheck->valueInt('mcp_id'),
-            'expected_ip' => $Qcheck->value('ip'),
-            'current_ip'  => $clientIp,
-            'mode'        => self::ipCheckMode(),
-          ]);
+          if (self::checkRateLimit($clientIp, 'token_fail')) {
+            self::logSecurityEvent('Token hijacking attempt detected (IP mismatch)', [
+              'mcp_id'      => $Qcheck->valueInt('mcp_id'),
+              'expected_ip' => $Qcheck->value('ip'),
+              'current_ip'  => $clientIp,
+              'mode'        => self::ipCheckMode(),
+            ]);
+          }
+
           throw new Exception("Token IP mismatch detected. Session terminated.");
+        }
+
+        // Quota de l'outil : la cle est le COMPTE, connu depuis la session, jamais l'IP.
+        if (!self::checkRateLimit(self::accountKey($Qcheck->valueInt('mcp_id')), 'account')) {
+          $mcpId = $Qcheck->valueInt('mcp_id');
+
+          self::logSecurityEvent('Rate limit exceeded for account', ['mcp_id' => $mcpId]);
+          McpAlert::quotaExceeded(
+            $mcpId,
+            McpAccountConfig::int($mcpId, 'max_requests_per_window'),
+            McpAccountConfig::int($mcpId, 'rate_limit_window')
+          );
+
+          throw new Exception("Rate limit exceeded for this MCP account");
         }
 
 
@@ -230,9 +245,12 @@ class McpSecurity
         return $token;
       } else {
         // Token non trouvé ou expiré et déjà nettoyé
-        self::logSecurityEvent('Invalid or unknown token received', [
-          'token' => substr(hash('sha256', $token), 0, 12) . '...'
-        ]);
+        if (self::checkRateLimit($clientIp, 'token_fail')) {
+          self::logSecurityEvent('Invalid or unknown token received', [
+            'token' => substr(hash('sha256', $token), 0, 12) . '...'
+          ]);
+        }
+
         throw new Exception("Invalid or unknown token");
       }
     } catch (PDOException $e) {
@@ -332,10 +350,34 @@ class McpSecurity
   }
 
   /**
+   * Builds the rate limit identifier of one MCP account.
+   *
+   * @param int $mcpId The MCP account.
+   * @return string The identifier handed to checkRateLimit().
+   */
+  public static function accountKey(int $mcpId): string
+  {
+    return self::ACCOUNT_KEY_PREFIX . $mcpId;
+  }
+
+  /**
+   * Reads back the account carried by an identifier, 0 when it carries none.
+   *
+   * @param string $identifier The identifier handed to checkRateLimit().
+   * @return int The MCP account, 0 for an IP or a username.
+   */
+  private static function accountIdFromKey(string $identifier): int
+  {
+    return str_starts_with($identifier, self::ACCOUNT_KEY_PREFIX)
+      ? (int)substr($identifier, strlen(self::ACCOUNT_KEY_PREFIX))
+      : 0;
+  }
+
+  /**
    * Checks the rate limit for a given identifier (IP or username) and action
    *
    * @param string $identifier IP address or username
-   * @param string $action Action type (e.g., 'login', 'token_check')
+   * @param string $action Action type: 'login', 'account' (quota) or 'token_fail'
    * @return bool True if the request is within the limit, false otherwise.
    */
   public static function checkRateLimit(string $identifier, string $action): bool
@@ -344,10 +386,17 @@ class McpSecurity
       $CLICSHOPPING_Db = Registry::get('Db');
 
       $key = $action . '_' . hash('sha256', $identifier);
-      $window_start = time() - (int)CLICSHOPPING_APP_MCP_MC_RATE_LIMIT_WINDOW;
+      $mcpId = self::accountIdFromKey($identifier);
+      $window_start = time() - McpAccountConfig::int($mcpId, 'rate_limit_window');
 
-      // Nettoyer les anciennes tentatives
-      $CLICSHOPPING_Db->delete('mcp_rate_limit', ['timestamp < :timestamp'], [':timestamp' => $window_start]);
+      // Nettoyer les anciennes tentatives. `Db::delete()` ne sait construire qu'une EGALITE :
+      // une comparaison demande un prepare() explicite, sinon la table entiere est purgee.
+      $Qdelete = $CLICSHOPPING_Db->prepare('delete
+                                            from :table_mcp_rate_limit
+                                            where timestamp < :window_start
+                                          ');
+      $Qdelete->bindValue(':window_start', $window_start);
+      $Qdelete->execute();
 
       // Compter les tentatives dans la fenêtre
       $Qcount = $CLICSHOPPING_Db->prepare('SELECT count(id) AS count
@@ -360,7 +409,7 @@ class McpSecurity
 
       $attempts = $Qcount->valueInt('count') ?? 0;
 
-      if ($attempts >= (int)CLICSHOPPING_APP_MCP_MC_MAX_REQUEST_PER_WINDOW) {
+      if ($attempts >= McpAccountConfig::int($mcpId, 'max_requests_per_window')) {
         return false;
       }
 

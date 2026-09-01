@@ -26,6 +26,7 @@ class DatabaseSchemaManager
   private array $tableSchemaCache = [];
   private array $tableRelationships = [];
   private array $columnSynonyms = [];
+  private bool $relationshipsInitialized = false;
   private array $databaseSchema = [];
   private array $columnIndex = [];
 
@@ -209,6 +210,8 @@ class DatabaseSchemaManager
    */
   public function initializeTableRelationships(): void
   {
+    $this->relationshipsInitialized = true;
+
     try {
       // Retrieve all tables from the database
       $query = $this->db->prepare("SHOW TABLES");
@@ -264,7 +267,7 @@ class DatabaseSchemaManager
               $relatedTable = $safeRelatedTable;
             }
 
-            $prefix = CLICSHOPPING::getConfig('prefix_table');
+            $prefix = CLICSHOPPING::getConfig('db_table_prefix');
             // Check if the related table exists
             if (in_array($relatedTable, $tables, true) || in_array($prefix . $relatedTable, $tables, true)) {
               $actualTable = in_array($prefix . $relatedTable, $tables, true) ? $prefix . $relatedTable : $relatedTable;
@@ -373,6 +376,10 @@ class DatabaseSchemaManager
    */
   public function getTableRelationships(): array
   {
+    if (!$this->relationshipsInitialized) {
+      $this->initializeTableRelationships();
+    }
+
     return $this->tableRelationships;
   }
 
@@ -403,6 +410,10 @@ class DatabaseSchemaManager
    */
   public function getColumnSynonyms(): array
   {
+    if (!$this->relationshipsInitialized) {
+      $this->initializeTableRelationships();
+    }
+
     return $this->columnSynonyms;
   }
 

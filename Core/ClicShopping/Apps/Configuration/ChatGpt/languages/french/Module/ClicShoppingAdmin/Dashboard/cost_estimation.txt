@@ -1,3 +1,3 @@
- module_admin_dashboard_total_cost_estimation_app_title = Evaluation du coût des tokens générés par mois GPT
- module_admin_dashboard_total_cost_estimation_app_description = Evaluation du coût des tokens générés par mois GPT
- module_admin_dashboard_total_cost_estimation_app_chart_link = Evaluation du coût des tokens générés par mois GPT
+ module_admin_dashboard_total_cost_estimation_app_title = Coût maximum estimé des tokens par mois GPT
+ module_admin_dashboard_total_cost_estimation_app_description = Majorant : l'escompte fournisseur sur les préfixes rejoués n'est pas déduit
+ module_admin_dashboard_total_cost_estimation_app_chart_link = Coût maximum estimé des tokens par mois GPT

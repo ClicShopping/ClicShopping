@@ -36,6 +36,8 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
  *    more than 29 February. It is a SECOND metric next to the calendar one, never a replacement: the
  *    two answer different questions and are never summed or substituted for one another.
  * An unknown convention degrades to `none`: no comparison is better than a window nobody asked for.
+ * A MISSING current window is not resolved at all: the plan is flagged `period_missing` and the
+ * caller asks the user for the period.
  *
  * @package ClicShopping\AI\DomainsAI\Analytics\Planning
  */

@@ -11,6 +11,7 @@ namespace ClicShopping\Apps\Tools\MCP\Module\Hooks\Shop\Cronjob;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\McpAccountConfig;
 
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron;
 use ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin\McpMonitor;
@@ -146,18 +147,16 @@ class Process implements HooksInterface
   }
 
   /**
-   * Purge rate-limit rows older than the configured window — they cannot
-   * affect any future decision, McpSecurity::checkRateLimit() already
-   * deletes them on the hot path but a background purge prevents the
-   * table from inflating between two checks.
+   * Purge rate-limit rows older than the LONGEST window in force — an account
+   * may override it, and cutting shorter would reset its counter.
+   * McpSecurity::checkRateLimit() already deletes them on the hot path; this
+   * prevents the table from inflating between two checks.
    *
    * @return void
    */
   private function cleanupRateLimits(): void
   {
-    $windowSeconds = \defined('CLICSHOPPING_APP_MCP_MC_RATE_LIMIT_WINDOW')
-      ? max(1, (int)CLICSHOPPING_APP_MCP_MC_RATE_LIMIT_WINDOW)
-      : 60;
+    $windowSeconds = max(1, McpAccountConfig::longestWindow());
 
     $db = Registry::get('Db');
     $Qdelete = $db->prepare('delete from :table_mcp_rate_limit

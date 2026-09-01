@@ -76,6 +76,12 @@ text_latency_threshold = Latency Threshold
 text_downtime_threshold = Downtime Threshold
 text_data_retention = Data Retention (days)
 text_alert_notification = Alert Notification
+text_account_rate_limit = Rate Limit Override (this account)
+text_account_rate_limit_note = Leave both fields empty to inherit the App settings. The limit applies to authenticated requests of THIS account, so two accounts behind the same IP no longer share a bucket.
+text_rate_limit_window = Rate Limit Window
+text_rate_limit_window_desc = Length of the window in seconds. Recommended: 60 s for a public front-office chatbot, 900 s for an ERP.
+text_max_requests_per_window = Max Requests per Window
+text_max_requests_per_window_desc = Recommended: 5-10 per 60 s for a public chatbot, 20 per 60 s for a human-driven back-office tool, 300-600 per 900 s for a read-only ERP. Set a lower value for an account allowed to write.
 
 
 table_heading_mcp_id = Id
@@ -111,3 +117,12 @@ An automatic reconnection attempt has been initiated./n
 Please check the logs for more details./n/n
 Sincerely,/n
 The MCP Monitoring Agent/n
+
+
+text_alert_mcp_rate_limit_subject = MCP WARNING - Account quota reached
+text_alert_mcp_rate_limit = Hello Administrator,\n\n
+The MCP account {{account}} has reached its ceiling of {{limit}} requests per {{window}} seconds.\n
+Its requests are being refused until the window expires.\n\n
+Raise the ceiling on the account form if this traffic is legitimate, otherwise check who holds the key.\n\n
+Sincerely,\n
+The MCP Monitoring Agent

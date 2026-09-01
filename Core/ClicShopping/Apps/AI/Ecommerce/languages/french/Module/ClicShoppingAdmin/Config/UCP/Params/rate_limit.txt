@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_rate_limit_title = Plafond de débit (requêtes par minute)
+cfg_ecommerce_ucp_rate_limit_description = Nombre maximal de requêtes UCP autorisées par minute, compté par clé d'API, ou par adresse IP pour le catalogue public en lecture seule. Au-delà de ce plafond, le point d'entrée répond 429.

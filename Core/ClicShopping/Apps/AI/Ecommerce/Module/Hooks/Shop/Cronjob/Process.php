@@ -474,7 +474,7 @@ class Process implements HooksInterface
    */
   private function sendSummaryEmail(array $summary, float $duration): void
   {
-    $recipient = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL') && trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) !== '' ? trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) : (STORE_OWNER_EMAIL_ADDRESS ?? '');
+    $recipient = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL') && trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) !== '' ? trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) : (\defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '');
 
     if (empty($recipient)) {
       if ($this->debug) {

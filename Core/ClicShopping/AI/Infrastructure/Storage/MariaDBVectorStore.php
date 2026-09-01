@@ -411,13 +411,6 @@ class MariaDBVectorStore extends VectorStoreBase
     try {
       $embedding = is_array($query) ? $query : $this->embeddingGenerator->embedText($query);
 
-      if (!is_array($embedding)) {
-        $embeddingType = gettype($embedding);
-        $embeddingValue = is_string($embedding) ? substr($embedding, 0, 100) : var_export($embedding, true);
-        $generatorClass = get_class($this->embeddingGenerator);
-        throw new \RuntimeException("Embedding generator ({$generatorClass}) returned non-array value. Type: {$embeddingType}, Value: {$embeddingValue}");
-      }
-
       $embedding = array_map('floatval', $embedding);
       $embeddingText = '[' . implode(',', $embedding) . ']';
 

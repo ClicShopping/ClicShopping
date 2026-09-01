@@ -13,6 +13,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\OM\Mail;
 
 use ClicShopping\Apps\Tools\MCP\MCP;
+use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\McpAccountConfig;
 use ClicShopping\Apps\Tools\MCP\Classes\ClicShoppingAdmin\Exceptions\McpConnectionException;
 use ClicShopping\OM\SimpleLogger;
 
@@ -238,15 +239,20 @@ class McpDecisionAgent
    */
   private function sendEmailAlert(string $subject, string $body): void
   {
-    $to = TEXT_STORE_OWNER_EMAIL;
-    $from = TEXT_STORE_OWNER_EMAIL;
-    $fromName = 'Agent MCP';
+    if (!McpAccountConfig::notificationsEnabled(0)) {
+      return;
+    }
+
+    $to = McpAccountConfig::alertEmail();
+
+    if ($to === '') {
+      $this->logger->error('No MCP alert recipient configured.');
+      return;
+    }
 
     try {
-      if (\Defined('CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_STATUS') && CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_STATUS == 'True') {
-        $this->mailer->clicMail($to, 'Admin', $subject, $body, $fromName, $from);
-        $this->logger->info("Email alert sent successfully.");
-      }
+      $this->mailer->clicMail($to, 'Admin', $subject, $body, 'Agent MCP', $to);
+      $this->logger->info("Email alert sent successfully.");
     } catch (\Exception $e) {
       $this->logger->error("Failed to send email alert: " . $e->getMessage());
     }

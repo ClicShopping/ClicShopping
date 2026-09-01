@@ -47,6 +47,10 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $data_retention = HTML::sanitize($_POST['data_retention'] ?? '');
     $alert_notification = isset($_POST['alert_notification']) ? HTML::sanitize($_POST['alert_notification']) : 0;
 
+    // Surcharge de débit par compte : vide = hérite du réglage global de l'App.
+    $rate_limit_window = isset($_POST['rate_limit_window']) && $_POST['rate_limit_window'] !== '' ? (int)$_POST['rate_limit_window'] : null;
+    $max_requests_per_window = isset($_POST['max_requests_per_window']) && $_POST['max_requests_per_window'] !== '' ? (int)$_POST['max_requests_per_window'] : null;
+
     $sql_data_array = [
       'username' => $username,
       'mcp_key' => $mcp_key,
@@ -64,6 +68,8 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
       'downtime_threshold' => $downtime_threshold,
       'data_retention' => $data_retention,
       'alert_notification' => $alert_notification,
+      'rate_limit_window' => $rate_limit_window,
+      'max_requests_per_window' => $max_requests_per_window,
     ];
 
     $this->app->db->save('mcp', $sql_data_array, ['mcp_id' => (int)$cId]);

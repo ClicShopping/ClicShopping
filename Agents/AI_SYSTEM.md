@@ -59,7 +59,7 @@ Mode is automatically selected by `QueryClassifier` before execution.
 | `OrchestratorAgent` | Senior Agent | Task decomposition, inter-agent coordination, response synthesis |
 | `ReasoningAgent` | Specialized agent | Multi-step reasoning (CoT / ToT / self-consistency) |
 | `CorrectionAgent` | Specialized agent | Error detection/correction and response improvement |
-| `ValidationAgent` | Specialized agent | Output validation and consistency |
+| `ValidationAgent` | Specialized agent | Pre-execution SQL validation of a plan step (`validateBeforeExecution`) |
 | `AnalyticsAgent` | Domain Agent | SQL generation/execution from natural language |
 | `SemanticAgent` | Domain Agent | Semantic search on vector tables |
 | `WebSearchFacade` + `WebSearchExecutor` | Domain tools | External data retrieval |
@@ -264,7 +264,6 @@ User Input
 → Prompt Injection Detection (pattern scanning)
 → Obfuscation Detection (encoding, homoglyphs)
 → Threat Scoring (threshold validation)
-→ Rate Limiting (900s window, 20 requests max)
 → LLM Processing (via LLPhant)
 → Output Validation (ValidationAgent)
 → Audit Logging (clic_rag_security_events)
@@ -272,14 +271,27 @@ User Input
 
 **NEVER bypass guardrails**, even for testing. Use dedicated staging environments.
 
-Rate limiting constants:
+### 8.1 Rate limiting — an entry-point control, NOT a guardrail
 
-| Constant                                         | Value | Role                       |
-|--------------------------------------------------|-------|----------------------------|
-| `CLICSHOPPING_APP_API_AI_RATE_LIMIT_WINDOW`      | 900s  | Time window                |
-| `CLICSHOPPING_APP_API_AI_MAX_REQUEST_PER_WINDOW` | 20    | Max queries per identifier |
-| `CLICSHOPPING_APP_API_AI_MAX_LOGIN_ATTEMPTS`     | 5     | Attempts before lock       |
-| `CLICSHOPPING_APP_API_AI_ACCOUNT_LOCK_DURATION`  | 1800s | Lockdown duration          |
+No guardrail caps throughput. Rate limiting is applied at each entry point, before routing, and
+each entry owns its constants and its table. Never place it in the guardrail pipeline.
+
+| Entry point | Applied in | Constants | Table |
+|-------------|------------|-----------|-------|
+| Chatbot (admin + MCP `ChatRagBI`) | `SubGpt/RequestValidator::checkRateLimit()`, called from `SubGpt/QueryProcessor::process()` | `CLICSHOPPING_APP_CHATGPT_RA_RATE_LIMIT_WINDOW` (900s), `..._RA_MAX_REQUEST_PER_WINDOW` (30) — declared in `AI/Config/TechnicalDefaults`, **not** in `clic_configuration` | `clic_rag_rate_limit` |
+| App Api | `ApiSecurity::checkRateLimit()` | `CLICSHOPPING_APP_API_AI_RATE_LIMIT_WINDOW` (900s), `..._MAX_REQUEST_PER_WINDOW` (20) | `clic_api_rate_limit` |
+| App MCP | `McpSecurity::checkRateLimit()` | `CLICSHOPPING_APP_MCP_MC_RATE_LIMIT_WINDOW` (900s), `..._MAX_REQUEST_PER_WINDOW` (20) | `clic_mcp_rate_limit` |
+
+The chatbot key is composite and stored **in clear** — `admin:<id>`, `mcp:<id>`, `system:<job>` —
+because `$userId` alone collides: administrator 1 and MCP account 1 are both `1`. Never hash it: an
+excess must stay attributable.
+
+Read the chatbot pair through `TechnicalDefaults::int()`, never as a bare constant and never as a
+`defined() ? … : <literal>` ternary — the ternary re-creates the divergence that class exists to
+remove. The Api and MCP pairs are `Params` and stay in `clic_configuration`.
+
+Other App Api constants: `CLICSHOPPING_APP_API_AI_MAX_LOGIN_ATTEMPTS` (5 attempts before lock) and
+`CLICSHOPPING_APP_API_AI_ACCOUNT_LOCK_DURATION` (1800s lockdown).
 
 Related tables:
 - `clic_api_rate_limit` — tracking requests by identifier + timestamp

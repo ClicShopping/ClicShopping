@@ -122,7 +122,7 @@ class UCP extends \ClicShopping\OM\Domains\PagesAbstract
 
     $expectedSecret = '';
 
-    // Simple auth (shared key) — skipped for the public read-only catalog
+    // Bearer auth — skipped for the public read-only catalog
     if (!$skipAuth) {
       try {
         if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {

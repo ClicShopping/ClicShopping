@@ -17,6 +17,8 @@ latency_threshold int(6) default(1000) comment(Maximum acceptable latency in mil
 downtime_threshold int(6) default(300) comment(Maximum acceptable downtime in seconds)
 data_retention int(3) default(7) comment(Data retention period in days)
 alert_notification tinyint(1) not_null default(0) comment(Alert notifications - 0: disabled, 1: enabled)
+rate_limit_window int(6) default null comment(Rate limit window in seconds for THIS account - NULL inherits the App setting CLICSHOPPING_APP_MCP_MC_RATE_LIMIT_WINDOW)
+max_requests_per_window int(6) default null comment(Maximum authenticated requests per window for THIS account - NULL inherits the App setting CLICSHOPPING_APP_MCP_MC_MAX_REQUEST_PER_WINDOW)
 
 --
 primary mcp_id

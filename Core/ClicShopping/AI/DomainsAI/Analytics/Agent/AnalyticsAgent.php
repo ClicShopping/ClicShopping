@@ -226,7 +226,6 @@ class AnalyticsAgent implements AgentInterface
     $this->abstentionEvaluator = new AnalyticsAbstentionEvaluator($this->abstentionManager, $this->debug);
 
     try {
-      $this->schemaManager->initializeTableRelationships();
       $this->schemaManager->buildDatabaseSchema();
     } catch (\Exception $e) {
       $this->securityLogger->logApplicationError("Error during AnalyticsAgent initialization: " . $e->getMessage());

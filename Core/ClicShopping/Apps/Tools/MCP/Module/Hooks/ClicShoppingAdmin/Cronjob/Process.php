@@ -84,19 +84,12 @@ class Process implements HooksInterface
   {
     $cron_id_mcp = Cronjob::getCronCode('mcp_agent');
 
-    // Enhanced check to ensure the cron is running from a valid source
+    // The dispatcher always names its target: no cronId means no verified caller.
     if (isset($_GET['cronId']) && (int)HTML::sanitize($_GET['cronId']) === (int)$cron_id_mcp) {
       Cronjob::updateCron($cron_id_mcp);
       $this->runMcpAgent();
-    } elseif (!isset($_GET['cronId']) && isset($cron_id_mcp)) {
-      // This is a potential manual or unverified execution.
-      // For security, you might consider logging this or not executing.
-      // However, as per the original logic, we run it.
-      Cronjob::updateCron($cron_id_mcp);
-      $this->runMcpAgent();
     } else {
-      // Log invalid cronId attempt for security monitoring
-      error_log('Invalid or missing cronId parameter detected.');
+      error_log('MCP cron refused: invalid or missing cronId parameter.');
     }
   }
 }

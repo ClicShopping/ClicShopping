@@ -641,7 +641,30 @@ include __DIR__ . '/dashboard/_data.php';
           </div>
           <div class="tab-pane" id="tab7">
             <div style="padding: 20px;">
-              <h5><?php echo $CLICSHOPPING_ChatGpt->getDef('tab7_title'); ?></h5>
+              <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                <h5 class="mb-0"><?php echo $CLICSHOPPING_ChatGpt->getDef('tab7_title'); ?></h5>
+                <div class="btn-group" role="group">
+                  <button type="button" class="btn btn-outline-primary btn-sm" id="securityReportBtn">
+                    <i class="bi bi-file-earmark-text"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('security_report_button'); ?>
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm" id="securityClearBtn"
+                          data-confirm="<?php echo HTML::outputProtected($CLICSHOPPING_ChatGpt->getDef('security_clear_confirm')); ?>">
+                    <i class="bi bi-eraser"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('security_clear_button'); ?>
+                  </button>
+                </div>
+              </div>
+
+              <div class="modal fade" id="securityReportModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('security_report_title'); ?></h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="securityReportBody"></div>
+                  </div>
+                </div>
+              </div>
 
               <?php 
               // Check if we have security monitoring data
@@ -1232,11 +1255,6 @@ include __DIR__ . '/dashboard/_data.php';
                     <tr>
                       <td><strong><?php echo $CLICSHOPPING_ChatGpt->getDef('tab7_total_api_cost'); ?>:</strong></td>
                       <td class="text-end">$<?php echo  round($healthReport['system_metrics']['total_api_cost'], 2); ?></td>
-                    </tr>
-                    <tr>
-                      <td><strong><?php echo $CLICSHOPPING_ChatGpt->getDef('tab7_uptime'); ?>:</strong></td>
-                      <td class="text-end"><?php echo  formatUptime($healthReport['system_metrics']['uptime_seconds'] ?? 0); ?>
-                      </td>
                     </tr>
                     <tr>
                       <td><strong><?php echo $CLICSHOPPING_ChatGpt->getDef('tab7_php_version'); ?>:</strong></td>

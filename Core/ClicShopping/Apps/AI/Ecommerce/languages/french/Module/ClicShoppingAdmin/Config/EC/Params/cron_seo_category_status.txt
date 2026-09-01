@@ -1,0 +1,4 @@
+cfg_ecommerce_cron_seo_category_status_title = Statut par défaut du cron SEO des catégories
+cfg_ecommerce_cron_seo_category_status_description = Choisir le statut du cron SEO des catégories (phase 1 audit + phase 2 optimisation multilingue, sans FAQ)
+cfg_ecommerce_cron_seo_category_status_true = Vrai
+cfg_ecommerce_cron_seo_category_status_false = Faux

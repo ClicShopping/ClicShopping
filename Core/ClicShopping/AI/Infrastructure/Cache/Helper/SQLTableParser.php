@@ -104,7 +104,7 @@ class SQLTableParser
 
     return array_map(
       static fn(string $name): string => strtolower(self::cleanTableName($name)),
-      $matches[1] ?? []
+      $matches[1]
     );
   }
 
@@ -125,10 +125,9 @@ class SQLTableParser
     }
 
     // FROM a, b, c — comma-separated tables, ONE identifier each.
-    // This used to capture everything up to the next SQL keyword and split it on commas
     preg_match_all('/\bFROM\s+((?:' . self::FROM_ITEM . ')(?:\s*,\s*(?:' . self::FROM_ITEM . '))*)/i', $query, $lists);
 
-    foreach ($lists[1] ?? [] as $tableList) {
+    foreach ($lists[1] as $tableList) {
       foreach (explode(',', $tableList) as $part) {
         $tables[] = trim($part);
       }
