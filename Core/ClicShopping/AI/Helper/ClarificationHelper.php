@@ -10,6 +10,8 @@ namespace ClicShopping\AI\Helper;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 
 /**
  * ClarificationHelper Class
@@ -41,6 +43,8 @@ class ClarificationHelper
   {
     $this->logger = new SecurityLogger();
     $this->debug = $debug;
+
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
 
 
@@ -322,9 +326,9 @@ class ClarificationHelper
         'ambiguity_type' => 'too_short',
         'missing_info' => ['query_content'],
         'suggestions' => [
-          "Rechercher un produit",
-          "Voir les commandes",
-          "Obtenir de l'aide"
+          CLICSHOPPING::getDef('text_clarification_suggestion_product'),
+          CLICSHOPPING::getDef('text_clarification_suggestion_orders'),
+          CLICSHOPPING::getDef('text_clarification_suggestion_help')
         ],
         'confidence' => 0.0
       ];
@@ -337,23 +341,6 @@ class ClarificationHelper
       'missing_info' => [],
       'suggestions' => [],
       'confidence' => 1.0
-    ];
-  }
-
-  /**
-   * Generate helpful suggestions for vague queries
-   * 
-   * PURE LLM MODE: Returns default suggestions
-   * 
-   * @return array List of suggested questions
-   */
-  private function generateVagueSuggestions(): array
-  {
-    // PURE LLM MODE: Return default suggestions
-    return [
-      "Rechercher un produit",
-      "Voir les commandes",
-      "Obtenir de l'aide"
     ];
   }
 }

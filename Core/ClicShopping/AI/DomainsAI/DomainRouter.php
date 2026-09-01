@@ -47,7 +47,6 @@ class DomainRouter implements DomainRouterInterface
   private SecurityLogger $securityLogger;
   private bool $debug;
   private array $domainMap;
-  private array $domainInstances;
 
   /**
    * Constructor
@@ -60,7 +59,6 @@ class DomainRouter implements DomainRouterInterface
   {
     $this->debug = $debug;
     $this->securityLogger = new SecurityLogger();
-    $this->domainInstances = [];
 
     // Initialize domain mapping
     // Maps intent types to domain class names
@@ -164,8 +162,6 @@ class DomainRouter implements DomainRouterInterface
 
     // TODO: Implement QueryTypeDomainInterface for all domains
     // TODO: Return domain instance instead of class name
-    // Example future implementation:
-    // return $this->getDomainInstance($domainClass, $context);
 
     return $domainClass;
   }
@@ -499,31 +495,5 @@ class DomainRouter implements DomainRouterInterface
     }
 
     return $this->domainMap;
-  }
-
-  /**
-   * Get domain instance (future implementation)
-   *
-   * Creates or retrieves cached domain instance.
-   * Will be used when domains implement QueryTypeDomainInterface.
-   *
-   * @param string $domainClass Domain class name
-   * @param array $context Initialization context
-   * @return QueryTypeDomainInterface Domain instance
-   * @throws \Exception When domain instance creation is not yet implemented
-   */
-  private function getDomainInstance(string $domainClass, array $context = []): QueryTypeDomainInterface
-  {
-    // Log attempt to get domain instance
-    $this->securityLogger->logStructured('error', 'DomainRouter', 'domain_instance_not_implemented', [
-      'domain_class' => $domainClass,
-      'context_keys' => array_keys($context),
-      'message' => 'Domain instance creation not yet implemented - returning class name instead'
-    ]);
-
-    // TODO: Implement domain instance caching
-    // TODO: Implement domain initialization with context
-
-    throw new \Exception('Domain instance creation not yet implemented');
   }
 }

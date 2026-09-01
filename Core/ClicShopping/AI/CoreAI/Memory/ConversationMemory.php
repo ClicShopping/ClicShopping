@@ -19,7 +19,6 @@ use LLPhant\Chat\Message; // Use the specific LLPhant class for type hinting
 
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ShortTermMemoryManager;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\LongTermMemoryManager;
-use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ContextResolver;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\EntityTracker;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationTurnReader;
@@ -52,7 +51,6 @@ use ClicShopping\AI\Config\SystemConfig;
  * This class delegates specialized responsibilities to SubConversationMemory components:
  * - ShortTermMemoryManager: Manages conversation history and message retention
  * - LongTermMemoryManager: Manages vector store and semantic search
- * - ContextResolver: Resolves contextual references in queries
  * - EntityTracker: Tracks last mentioned entities for implicit context
  * - MemoryStatistics: Records operation statistics and performance metrics
  * - FeedbackManager: Manages user feedback and learning from corrections
@@ -87,7 +85,6 @@ use ClicShopping\AI\Config\SystemConfig;
  *
  * @see ShortTermMemoryManager For short-term memory configuration
  * @see LongTermMemoryManager For long-term memory and vector store configuration
- * @see ContextResolver For contextual reference resolution
  * @see EntityTracker For entity tracking and implicit context
  */
 
@@ -106,9 +103,6 @@ class ConversationMemory
   private bool $lastQueryReferencedEntity = false;
   private ?array $referencedEntity = null;
 
-  // Database prefix
-  private string $prefix;
-
   // Configuration
   private int $maxHistorySize = 10; // Max number of messages in short-term memory
   private int $maxContextWindow = 5; // Context window size for reference resolution
@@ -117,12 +111,9 @@ class ConversationMemory
   // Statistics
   private array $stats = [];
 
-  private mixed $db;
-
   // 🆕 Refactored components
   private ShortTermMemoryManager $shortTermManager;
   private LongTermMemoryManager $longTermManager;
-  private ContextResolver $contextResolver;
   private EntityTracker $entityTracker;
   private MemoryStatistics $memoryStats;
   private FeedbackManager $feedbackManager;
@@ -142,7 +133,6 @@ class ConversationMemory
    * @throws \RuntimeException If the database or embedding generator cannot be initialized.
    */
   public function __construct( string $userId = 'system', ?int $languageId = null, string $tableName = 'rag_conversation_memory_embedding', int $entityId = 0) {
-    $this->db = Registry::get('Db');
     $this->userId = $userId;
     $this->securityLogger = new SecurityLogger();
 
@@ -166,7 +156,6 @@ class ConversationMemory
     // Initialize the LLPhant-compatible embedding generator
     $this->embeddingGenerator = new NewVectorEmbeddingAdapter();
 
-    $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
 
     // Initialize the vector store for long-term memory
     $this->vectorStore = new MariaDBVectorStore($this->embeddingGenerator,  $tableName);
@@ -177,7 +166,6 @@ class ConversationMemory
     
     $this->entityTracker = new EntityTracker($this->debug, $this->userId, $this->languageId);
     
-    $this->contextResolver = new ContextResolver($this->languageId, $this->debug, $this->entityTracker);
     
     $this->memoryStats = new MemoryStatistics($this->debug);
     $this->feedbackManager = new FeedbackManager($this->debug);

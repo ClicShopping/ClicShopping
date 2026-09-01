@@ -1648,44 +1648,6 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
-   * Execute a sub-query from a compound query
-   *
-   * This method executes a single sub-query through the normal analytics flow
-   * but skips compound query detection to prevent infinite recursion.
-   *
-   * @param string $subQuery The sub-query to execute
-   * @param array $feedbackContext Feedback context for learning
-   * @return array Query results
-   */
-  private function executeSubQuery(string $subQuery, array $feedbackContext = []): array
-  {
-    $this->debugLog("Executing sub-query: " . substr($subQuery, 0, 80), "COMPOUND_SUB");
-
-    try {
-      // Use executeQuery which will go through the normal flow
-      // The sub-query will be processed individually
-      $result = $this->executeQuery($subQuery, $feedbackContext);
-
-      // If successful, try to get interpretation
-      if (($result['type'] ?? 'error') !== 'error' && !empty($result['results'])) {
-        $interpretation = $this->resultInterpreter->interpretResults($subQuery, $result['results'], $result['sql_query'] ?? '');
-        $result['interpretation'] = $interpretation;
-      }
-
-      return $result;
-
-    } catch (\Exception $e) {
-      $this->debugLog("Sub-query execution failed: " . $e->getMessage(), "COMPOUND_SUB");
-
-      return [
-        'type' => 'error',
-        'error' => $e->getMessage(),
-        'query' => $subQuery
-      ];
-    }
-  }
-
-  /**
    * Validate and fix SQL date logic, re-executing the corrected query when needed
    * (extracted verbatim from processBusinessQuery to cut NPath).
    */

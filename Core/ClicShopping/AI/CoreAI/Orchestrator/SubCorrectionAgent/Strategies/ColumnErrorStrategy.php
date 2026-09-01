@@ -163,51 +163,6 @@ class ColumnErrorStrategy implements CorrectionStrategyInterface
   }
 
   /**
-   * Build ORDER BY correction prompt
-   * Uses English for internal processing as per domain agnosticism requirement
-   *
-   * @param string $query Original SQL query
-   * @param string $unknownColumn Unknown column name
-   * @param string $errorMessage Error message
-   * @return string Correction prompt
-   */
-  private function buildOrderByCorrectionPrompt(string $query, string $unknownColumn, string $errorMessage): string
-  {
-    $parts = [];
-    
-    $parts[] = "You are an SQL expert. Fix the ORDER BY column reference error in this query.";
-    $parts[] = "";
-    $parts[] = "## Error Details";
-    $parts[] = "Error: {$errorMessage}";
-    $parts[] = "Unknown Column: {$unknownColumn}";
-    $parts[] = "";
-    $parts[] = "## Failed SQL Query";
-    $parts[] = "```sql";
-    $parts[] = $query;
-    $parts[] = "```";
-    $parts[] = "";
-    $parts[] = "## ORDER BY Rules";
-    $parts[] = "When using aggregate functions (YEAR, QUARTER, MONTH, etc.) in GROUP BY:";
-    $parts[] = "";
-    $parts[] = "1. Use the SAME function expression in ORDER BY:";
-    $parts[] = "   ✅ CORRECT: GROUP BY YEAR(date) ORDER BY YEAR(date)";
-    $parts[] = "   ❌ WRONG: GROUP BY YEAR(date) ORDER BY year";
-    $parts[] = "";
-    $parts[] = "2. OR use column position numbers:";
-    $parts[] = "   ✅ CORRECT: SELECT YEAR(date), SUM(value) ... ORDER BY 1";
-    $parts[] = "";
-    $parts[] = "3. OR use the alias if you created one:";
-    $parts[] = "   ✅ CORRECT: SELECT YEAR(date) AS year_value ... ORDER BY year_value";
-    $parts[] = "";
-    $parts[] = "## Your Task";
-    $parts[] = "Fix ONLY the ORDER BY clause. Preserve the SELECT and GROUP BY clauses exactly as they are.";
-    $parts[] = "";
-    $parts[] = "Return ONLY the corrected SQL query, nothing else.";
-    
-    return implode("\n", $parts);
-  }
-
-  /**
    * Parse ORDER BY correction response from LLM
    *
    * @param string $response LLM response

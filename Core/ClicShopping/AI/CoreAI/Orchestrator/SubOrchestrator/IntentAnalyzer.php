@@ -9,19 +9,15 @@
 namespace ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator;
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Registry;
 use ClicShopping\OM\Cache;
 
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\EntityExtractor;
 use ClicShopping\AI\CoreAI\Context\ContextRetriever;
-use ClicShopping\AI\Infrastructure\Async\AsyncOperationManager;
 use ClicShopping\AI\Infrastructure\Monitoring\PerformanceMonitor;
 
 // 🔧 PHASE 9: Import new SubIntentAnalyzer components
-use ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer\TranslationService;
-use ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer\IntentAnalyzerFactory;
 
 // 🔧 PHASE 14: Import UnifiedQueryAnalyzer for unified language + intent detection
 use ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer\UnifiedQueryAnalyzer;
@@ -34,8 +30,6 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer\UnifiedQueryAnalyzer;
  *
  * 🔧 PHASE 9 REFACTORING (2025-12-14):
  * - Reduced from 2034 lines to <500 lines (75% reduction)
- * - Extracted translation logic to TranslationService
- * - Extracted intent detection to IntentAnalyzerFactory + specialized analyzers
  * - Kept only orchestration and caching logic
  * - Maintained backward compatibility
  *
@@ -50,10 +44,8 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer\UnifiedQueryAnalyzer;
 class IntentAnalyzer
 {
   private SecurityLogger $logger;
-  private ?ConversationMemory $conversationMemory;
   private bool $debug;
 
-  private mixed $language;
   private EntityExtractor $entityExtractor;
   
   // Cache support
@@ -63,19 +55,11 @@ class IntentAnalyzer
   // Context retrieval
   private ?ContextRetriever $contextRetriever = null;
   
-  // Async operations
-  private ?AsyncOperationManager $asyncManager = null;
-  
   // Performance monitoring
   private ?PerformanceMonitor $performanceMonitor = null;
 
-  // 🔧 PHASE 9: New SubIntentAnalyzer components (deprecated - kept for backward compatibility)
-  private TranslationService $translationService;
-  private IntentAnalyzerFactory $intentFactory;
-
   // 🔧 PHASE 14: Unified analyzer for language + intent detection (ALWAYS used)
   private ?UnifiedQueryAnalyzer $unifiedAnalyzer = null;
-  private bool $useUnifiedAnalyzer = true; // Always true - required for analytics
   private bool $useHybridMode = false; // Deprecated - Pure LLM mode only
 
   /**
@@ -87,26 +71,18 @@ class IntentAnalyzer
   public function __construct(?ConversationMemory $conversationMemory, bool $debug = false)
   {
     $this->logger = new SecurityLogger();
-    $this->conversationMemory = $conversationMemory;
     $this->debug = $debug;
-    $this->language = Registry::get('Language');
 
     $this->entityExtractor = new EntityExtractor();
     $this->cacheEnabled = true;
     $this->contextRetriever = new ContextRetriever($conversationMemory, $debug);
-    $this->asyncManager = new AsyncOperationManager();
     $this->performanceMonitor = new PerformanceMonitor($debug, 100.0);
-
-    // 🔧 PHASE 9: Initialize new SubIntentAnalyzer components
-    $this->translationService = new TranslationService($debug);
-    $this->intentFactory = new IntentAnalyzerFactory($debug);
 
     // 🔧 PHASE 14: Initialize UnifiedQueryAnalyzer (ALWAYS used - required for analytics)
     // UnifiedQueryAnalyzer is hardcoded to always be used because:
     // 1. Analytics queries break without it
     // 2. Required for Pure LLM mode operation
     // 3. Provides comprehensive intent classification (analytics, semantic, web_search, hybrid)
-    $this->useUnifiedAnalyzer = true;
     $this->unifiedAnalyzer = new UnifiedQueryAnalyzer($debug);
     
     if ($this->debug) {

@@ -17,8 +17,6 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheKeyGenerator;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheStorage;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFileStorage;
-use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheCleanup;
-use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheStatistics;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFreshnessValidator;
 use ClicShopping\AI\Infrastructure\Cache\RagCache;
 use ClicShopping\AI\Config\TechnicalDefaults;
@@ -40,8 +38,6 @@ class QueryCache
   private ?CacheFileStorage $fileStorage = null;
   private ?RagCache $ragCache = null;
 
-  private CacheCleanup $cleanup;
-  private CacheStatistics $statistics;
   private CacheFreshnessValidator $freshness;
   private mixed $db = null;
   
@@ -62,8 +58,6 @@ class QueryCache
       $this->db = null;
     }
 
-    $this->cleanup = new CacheCleanup($this->maxCacheSize, $this->debug);
-    $this->statistics = new CacheStatistics();
     $this->freshness = new CacheFreshnessValidator($this->debug);
 
     if (!$this->enabled) {
@@ -643,24 +637,5 @@ class QueryCache
 // Not used
 //****************************
 
-
-  /**
-   * Increment hit counter
-   *
-   * @param string $cacheKey Cache key
-   * @return void
-   */
-  private function incrementHitCount(string $cacheKey): void
-  {
-    try {
-      $this->db->query("
-        UPDATE :table_rag_query_cache
-        SET hit_count = hit_count + 1
-        WHERE cache_key = '{$cacheKey}'
-      ");
-    } catch (\Exception $e) {
-      error_log("QueryCache: Error incrementing hit count: " . $e->getMessage());
-    }
-  }
 
 }

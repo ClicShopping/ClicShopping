@@ -466,67 +466,6 @@ class SearchCacheManager
   }
 
   /**
-   * Formats content for storage (legacy method - kept for backward compatibility)
-   *
-   * @param string $query Original query
-   * @param array $results Search results
-   * @return string Formatted content
-   */
-  private function formatContentForStorage(string $query, array $results): string
-  {
-    $parts = [];
-
-    $parts[] = "Query: {$query}";
-    $parts[] = "";
-
-    // AI Overview section (if present)
-    if (isset($results['ai_overview']) && !empty($results['ai_overview']['full_summary'])) {
-      $parts[] = "AI Overview:";
-      $parts[] = $results['ai_overview']['full_summary'];
-      $parts[] = "";
-
-      if (!empty($results['ai_overview']['sources'])) {
-        $parts[] = "AI Overview Sources:";
-        foreach ($results['ai_overview']['sources'] as $source) {
-          if (is_array($source)) {
-            $title = $source['title'] ?? 'Source';
-            $url = $source['url'] ?? '';
-            $parts[] = "- {$title}" . (!empty($url) ? " ({$url})" : "");
-          } else {
-            $parts[] = "- {$source}";
-          }
-        }
-        $parts[] = "";
-      }
-    }
-
-    if (isset($results['featured_snippet'])) {
-      $parts[] = "Featured Answer:";
-      $parts[] = $results['featured_snippet']['answer'];
-      $parts[] = "Source: " . $results['featured_snippet']['source'];
-      $parts[] = "";
-    }
-
-    $parts[] = "Top Results:";
-    $items = array_slice($results['items'] ?? [], 0, 5);
-
-    foreach ($items as $i => $item) {
-      $parts[] = ($i + 1) . ". " . $item['title'];
-      $parts[] = "   " . $item['snippet'];
-      
-      if (!empty($item['link'])) {
-        $parts[] = "   Source: " . $item['link'];
-      } else {
-        $parts[] = "   Source: " . $item['source'];
-      }
-      
-      $parts[] = "";
-    }
-
-    return implode("\n", $parts);
-  }
-
-  /**
    * Calculates quality score for results
    *
    * @param array $results Search results

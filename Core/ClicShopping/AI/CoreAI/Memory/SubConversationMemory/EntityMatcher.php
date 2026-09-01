@@ -8,7 +8,6 @@
 
 namespace ClicShopping\AI\CoreAI\Memory\SubConversationMemory;
 
-use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainConfig;
@@ -31,7 +30,6 @@ class EntityMatcher
   private SecurityLogger $logger;
   private bool $debug;
   private mixed $chat;
-  private $language;
 
   /**
    * Constructor
@@ -46,7 +44,6 @@ class EntityMatcher
     $this->chat = Gpt::getChatForModel();
     
     // Load language definitions
-    $this->language = Registry::get('Language');
     DomainConfig::loadLanguageFile('rag_entity_matcher');
 
     if ($this->debug) {

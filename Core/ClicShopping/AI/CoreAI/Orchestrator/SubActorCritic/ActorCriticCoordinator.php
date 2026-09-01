@@ -21,7 +21,6 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\CriticDat
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\LLMPromptBuilder;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightNormalizer;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightAuditLogger;
-use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\EvaluationRetryHandler;
 use ClicShopping\AI\Config\ActorCriticConfig;
 use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\Config\AgentTechnicalConfig;
@@ -49,7 +48,6 @@ class ActorCriticCoordinator
     private FeedbackManager $feedbackManager;
     private ?LLMWeightingEngine $weightingEngine;
     private ?WeightedConsensusBuilder $weightedConsensusBuilder;
-    private EvaluationRetryHandler $evaluationRetryHandler;
     private $db;
     private bool $debug;
     private array $config;
@@ -62,8 +60,6 @@ class ActorCriticCoordinator
     private const DEFAULT_MIN_CRITICS_REQUIRED = 2;
     private const DEFAULT_ACTOR_RETRY_ATTEMPTS = 3;
     private const DEFAULT_CRITIC_EVALUATION_TIMEOUT = 30; // seconds
-    private const DEFAULT_MAX_CONCURRENT_ACTIONS_PER_ACTOR = 5;
-    private const DEFAULT_MAX_CONCURRENT_EVALUATIONS_PER_CRITIC = 10;
     
     /**
      * Constructor
@@ -86,7 +82,6 @@ class ActorCriticCoordinator
         $this->consensusBuilder = $consensusBuilder ?? new ConsensusBuilder();
         $this->feedbackManager = $feedbackManager ?? new FeedbackManager();
         $this->db = Registry::get('Db');
-        $this->evaluationRetryHandler = new EvaluationRetryHandler();
         $this->debug = \defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') &&
                        CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
         $this->resultStore = new CoordinationResultStore($this->db, $this->debug);

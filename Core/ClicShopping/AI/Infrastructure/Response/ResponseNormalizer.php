@@ -59,22 +59,6 @@ class ResponseNormalizer
   ];
 
   /**
-   * Valid response types
-   */
-  private const VALID_RESPONSE_TYPES = [
-    'analytics_response',
-    'analytics_results',
-    'analytics',
-    'semantic_results',
-    'semantic',
-    'web_search_result',
-    'web_search_results',
-    'web_search',
-    'hybrid',
-    'mixed'
-  ];
-
-  /**
    * Constructor
    */
   public function __construct()

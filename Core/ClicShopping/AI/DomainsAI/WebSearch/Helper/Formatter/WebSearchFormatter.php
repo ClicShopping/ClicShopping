@@ -230,11 +230,7 @@ class WebSearchFormatter extends AbstractFormatter
         error_log("[WebSearchFormatter::format] Calling formatShoppingResults() with " . count($results['shopping_results']) . " items");
       }
 
-
       $output .= $this->formatShoppingResults($results['shopping_results']);
-
-
-
     } else {
       if ($this->debug) {
         error_log("[WebSearchFormatter::format] NO shopping_results to format");
@@ -285,76 +281,6 @@ class WebSearchFormatter extends AbstractFormatter
     }
 
     $output .= "</div>";
-    return $output;
-  }
-
-  /**
-   * Format price comparison data
-   * 
-   * @param array $priceComparison Price comparison data
-   * @return string Formatted HTML
-   */
-  private function formatPriceComparison(array $priceComparison): string
-  {
-    $output = "<div class='price-comparison alert alert-info'>";
-    $output .= "<h5>💰 " . $this->language->getDef('text_rag_web_search_price_comparison') . "</h5>";
-
-    // Internal price
-    if (isset($priceComparison['internal_price'])) {
-      $internalPrice = $priceComparison['internal_price'];
-      $currency = $priceComparison['currency'] ?? '€';
-      $output .= "<div class='internal-price'>";
-      $output .= "<strong>" . $this->language->getDef('text_rag_web_search_our_price') . "</strong> " . number_format((float)$internalPrice, 2, ',', ' ') . " {$currency}";
-      $output .= "</div>";
-    }
-
-    // External prices
-    if (isset($priceComparison['external_prices']) && is_array($priceComparison['external_prices'])) {
-      $output .= "<div class='external-prices' style='margin-top: 10px;'>";
-      $output .= "<strong>" . $this->language->getDef('text_rag_web_search_competitor_prices') . "</strong>";
-      $output .= "<ul>";
-      
-      foreach ($priceComparison['external_prices'] as $competitor) {
-        $name = $competitor['name'] ?? 'Unknown';
-        $price = $competitor['price'] ?? 0;
-        $url = $competitor['url'] ?? '';
-        $currency = $competitor['currency'] ?? '€';
-        
-        $output .= "<li>";
-        $output .= htmlspecialchars($name) . " : " . number_format((float)$price, 2, ',', ' ') . " {$currency}";
-        
-        if (!empty($url)) {
-          $output .= " <a href='" . htmlspecialchars($url) . "' target='_blank' rel='noopener noreferrer'>🔗 " . $this->language->getDef('text_rag_web_search_see') . "</a>";
-        }
-        
-        // Show percentage difference if internal price exists
-        if (isset($priceComparison['internal_price'])) {
-          $diff = (($price - $priceComparison['internal_price']) / $priceComparison['internal_price']) * 100;
-          $diffFormatted = number_format($diff, 1);
-          
-          if ($diff > 0) {
-            $output .= " <span class='text-success'>(+{$diffFormatted}%)</span>";
-          } elseif ($diff < 0) {
-            $output .= " <span class='text-danger'>({$diffFormatted}%)</span>";
-          }
-        }
-        
-        $output .= "</li>";
-      }
-      
-      $output .= "</ul>";
-      $output .= "</div>";
-    }
-
-    // Recommendation
-    if (isset($priceComparison['recommendation'])) {
-      $output .= "<div class='recommendation' style='margin-top: 10px; padding: 8px; background-color: #f8f9fa; border-radius: 4px;'>";
-      $output .= "<strong>💡 " . $this->language->getDef('text_rag_web_search_recommendation') . "</strong> " . htmlspecialchars($priceComparison['recommendation']);
-      $output .= "</div>";
-    }
-
-    $output .= "</div>";
-
     return $output;
   }
 

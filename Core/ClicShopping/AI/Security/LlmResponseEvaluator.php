@@ -761,24 +761,4 @@ class LlmResponseEvaluator
     }
   }
 
-  /**
-   * Validates the attribution quality in the AI-generated response.
-   *
-   * Checks for the presence of sources, citations, and references.
-   * Returns a float score between 0.0 and 1.0 based on the number of citations.
-   *
-   * @param string $result The AI-generated response to validate.
-   * @return float Attribution score (0.0 to 1.0).
-   */
-  private static function validateAttribution(string $result): float
-  {
-    $citations = substr_count($result, 'source:') + substr_count($result, '(voir') + preg_match_all('/\[.*?\]/', $result);
-
-    if ($citations === 0) {
-      return 0.0;
-    }
-
-    return min(1.0, $citations / 3);
-  }
-
 }

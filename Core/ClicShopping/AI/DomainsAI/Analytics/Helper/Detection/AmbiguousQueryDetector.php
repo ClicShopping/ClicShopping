@@ -682,25 +682,6 @@ class AmbiguousQueryDetector
   }
 
   /**
-   * Clarify query for a specific interpretation
-   * Uses LLM to rewrite query with explicit intent
-   *
-   * @param string $originalQuery Original ambiguous query
-   * @param array $interpretation Interpretation details
-   * @return string Clarified query
-   */
-  private function clarifyQueryForInterpretation(string $originalQuery, array $interpretation): string
-  {
-    $prompt = $this->buildClarificationPrompt($originalQuery, $interpretation);
-    $clarified = $this->chat->generateText($prompt);
-    
-    $clarified = trim($clarified);
-    $clarified = trim($clarified, '"\'');
-    
-    return $clarified;
-  }
-  
-  /**
    * Build clarification prompt for a specific interpretation
    * Extracted for use in parallel execution
    * 

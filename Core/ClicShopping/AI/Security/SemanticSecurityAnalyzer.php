@@ -36,9 +36,6 @@ class SemanticSecurityAnalyzer
   private static mixed $language = null;
   private static bool $debug = false;
   
-  // Threat score threshold for blocking (configurable)
-  private const DEFAULT_THREAT_THRESHOLD = 0.7;
-  
   // Cache namespace for security analysis
   // This creates cache files in: Work/Cache/Rag/Security/
   private const CACHE_NAMESPACE = 'Rag/Security';

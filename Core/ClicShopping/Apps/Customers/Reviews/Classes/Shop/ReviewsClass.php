@@ -169,10 +169,12 @@ class ReviewsClass
   /**
    * Retrieves review data for the specified review ID, filtered by customer group and language.
    *
-   * @param int|null $id The ID of the review to retrieve. Can be null.
+   * The id comes straight from the request, so it is untrusted: anything not numeric yields false.
+   *
+   * @param mixed $id The ID of the review to retrieve, as received from the request.
    * @return bool|array Returns the review data as an associative array if a valid review ID is provided; otherwise, returns false.
    */
-  public function getDataReviews( int|null $id): bool|array
+  public function getDataReviews(mixed $id): bool|array
   {
     $reviews_id = HTML::sanitize($id);
 

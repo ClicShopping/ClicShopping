@@ -221,8 +221,8 @@ class EntityTracker
   /**
    * Get the last tracked entity for contextual reference resolution.
    * 
-   * This method provides the last entity in a format suitable for ContextResolver,
-   * eliminating the need for ContextResolver to determine "last entity" itself.
+   * This method provides the last entity in a format suitable for ReferenceResolver,
+   * eliminating the need for the resolver to determine "last entity" itself.
    *
    * @return array Array with 'id', 'type', and 'reference' keys
    */

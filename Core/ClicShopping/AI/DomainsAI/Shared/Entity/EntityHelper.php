@@ -14,7 +14,7 @@ namespace ClicShopping\AI\DomainsAI\Shared\Entity;
  * EntityHelper Class
  *
  * Provides utility functions for entity type manipulation and conversion.
- * Used by ContextResolver and other components that work with entity types.
+ * Used by the components that work with entity types.
  */
 class EntityHelper
 {

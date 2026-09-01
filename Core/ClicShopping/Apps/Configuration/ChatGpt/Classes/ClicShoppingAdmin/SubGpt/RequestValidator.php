@@ -13,6 +13,7 @@ use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\Security\SecurityOrchestrator;
 use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
 
@@ -39,6 +40,8 @@ class RequestValidator
    */
   public static function validateRequest(array $input): array
   {
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+
     // Extract query from JSON or POST
     $rawInput = file_get_contents('php://input');
     $jsonInput = json_decode($rawInput, true);
@@ -60,7 +63,7 @@ class RequestValidator
         'valid' => false,
         'error' => [
           'success' => false,
-          'error' => 'Veuillez entrer une question',
+          'error' => CLICSHOPPING::getDef('text_error_query_empty'),
           'error_code' => 'EMPTY_QUERY',
           'interaction_id' => null,
           'validation_error' => true
@@ -77,7 +80,7 @@ class RequestValidator
         'valid' => false,
         'error' => [
           'success' => false,
-          'error' => "Votre question est trop longue (max {$maxLength} caractères)",
+          'error' => CLICSHOPPING::getDef('text_error_query_too_long', ['max' => $maxLength]),
           'error_code' => 'QUERY_TOO_LONG',
           'interaction_id' => null,
           'validation_error' => true,
@@ -151,7 +154,7 @@ class RequestValidator
         'valid' => false,
         'error' => [
           'success' => false,
-          'error' => 'Cette requête a été bloquée pour des raisons de sécurité. Veuillez reformuler votre question.',
+          'error' => CLICSHOPPING::getDef('text_error_prompt_blocked_security'),
           'error_code' => 'SECURITY_THREAT_DETECTED',
           'threat_type' => $securityCheck['threat_type'],
           'threat_score' => $securityCheck['threat_score'],
@@ -190,9 +193,13 @@ class RequestValidator
     }
     
     set_time_limit($seconds);
-    
+
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+    // Resolved here, not in the handler: it runs after a fatal, where the Registry may be gone.
+    $timeoutMessage = CLICSHOPPING::getDef('text_error_query_timeout');
+
     // Register shutdown function to handle timeout gracefully
-    register_shutdown_function(function() use ($seconds) {
+    register_shutdown_function(function() use ($seconds, $timeoutMessage) {
       $error = error_get_last();
       if ($error && ($error['type'] === E_ERROR || $error['type'] === E_USER_ERROR)) {
         if (str_contains($error['message'], 'Maximum execution time')) {
@@ -203,7 +210,7 @@ class RequestValidator
           header('Content-Type: application/json; charset=UTF-8');
           echo json_encode([
             'success' => false,
-            'error' => 'La requête prend trop de temps, veuillez réessayer',
+            'error' => $timeoutMessage,
             'error_code' => 'QUERY_TIMEOUT',
             'timeout_seconds' => $seconds,
             'interaction_id' => null,

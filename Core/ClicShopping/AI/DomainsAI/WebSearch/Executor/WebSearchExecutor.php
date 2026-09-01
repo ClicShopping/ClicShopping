@@ -33,8 +33,6 @@ use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
  */
 class WebSearchExecutor
 {
-  private const DEFAULT_TIMEOUT = 10; // seconds
-
   private WebSearchLogger $logger;
   private WebSearchEngineRegistry $registry;
   private bool $debug;

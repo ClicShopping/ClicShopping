@@ -181,4 +181,4 @@ if (isset($_GET['refresh']) && is_numeric($_GET['refresh'])) {
     </div>
   </div>
 </div>
-<div class="py-4"></div>
+<div class="py-8"></div>

@@ -371,7 +371,7 @@ class EntityTypeRegistry
 
 
   /**
-   * Get entity types as associative array for ContextResolver
+   * Get entity types as associative array
    *
    * Returns array with entity types as keys and empty arrays as values
    *
