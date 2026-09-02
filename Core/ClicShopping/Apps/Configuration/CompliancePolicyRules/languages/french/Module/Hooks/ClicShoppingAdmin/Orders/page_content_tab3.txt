@@ -1,4 +1,4 @@
-card_title = Chorus Pro — Facturation électronique B2G
+card_title = Chorus Pro — Facturation électronique B2C
 button_portal = Portail Chorus Pro
 button_retry = Retenter la transmission
 
@@ -12,7 +12,7 @@ badge_pending = En attente
 badge_transmitted = ✅ Transmis
 badge_ready = Prêt à transmettre
 
-text_b2c_notice = Ce client est un particulier (pas de SIRET). Chorus Pro s'applique uniquement aux entités publiques (B2G). Utilisez Invopop ou Billit pour la facturation électronique B2C/B2B privé.
+text_b2c_notice = Ce client est un particulier (pas de SIRET). Chorus Pro s'applique uniquement aux entités publiques (B2C). Utilisez Invopop ou Billit pour la facturation électronique B2C/B2B privé.
 text_pending_notice = SIRET détecté sur le compte client. La transmission sera déclenchée automatiquement lorsque vous passerez le statut de facturation à <strong>Facture (2)</strong>, <strong>Annulé (3)</strong> ou <strong>Avoir (4)</strong> en activant le curseur Efacture.
 text_transmitted_notice = Document transmis avec succès à Chorus Pro. Consultez le portail pour suivre le traitement.
 text_ready_notice = Cette commande est prête pour la transmission électronique. Activez le curseur <strong>Efacture</strong> dans le formulaire de statut et cliquez sur Mettre à jour pour envoyer à Chorus Pro.
@@ -23,7 +23,7 @@ entry_notify_einvoice = Efacture
 skip_module_disabled = Module Chorus Pro désactivé (CHORUSPRO_ENABLED != True).
 skip_status_not_actionable = Le statut de facturation ne déclenche pas de transmission Chorus Pro
 skip_already_sent = Commande déjà transmise à Chorus Pro
-skip_b2c_no_siret = Client particulier (SIRET absent ou invalide) — Chorus Pro ne concerne que les entités publiques (B2G).
+skip_b2c_no_siret = Client particulier (SIRET absent ou invalide) — Chorus Pro ne concerne que les entités publiques (B2C).
 
 error_oauth2_failed = Échec de récupération du token OAuth2 PISTE. Vérifiez CHORUSPRO_PISTE_CLIENT_ID et CLIENT_SECRET.
 error_payload_failed = Échec de construction du payload facture. Vérifiez la configuration CHORUSPRO_SIRET_FOURNISSEUR.

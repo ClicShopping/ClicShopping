@@ -1,4 +1,4 @@
-card_title = Chorus Pro — B2G Electronic Invoicing
+card_title = Chorus Pro — B2C Electronic Invoicing
 button_portal = Open Chorus Pro Portal
 button_retry = Retry transmission
 
@@ -12,7 +12,7 @@ badge_pending = Pending
 badge_transmitted = ✅ Transmitted
 badge_ready = Ready to transmit
 
-text_b2c_notice = This customer is a private individual (no SIRET). Chorus Pro applies to public entities (B2G) only. Use Invopop or Billit for B2C/private B2B electronic invoicing.
+text_b2c_notice = This customer is a private individual (no SIRET). Chorus Pro applies to public entities (B2C) only. Use Invopop or Billit for B2C/private B2B electronic invoicing.
 text_pending_notice = SIRET detected on customer account. Transmission will be triggered automatically when you set the invoice status to <strong>Invoice (2)</strong>, <strong>Cancel (3)</strong>, or <strong>Credit Note (4)</strong> and enable the E-Invoice slider.
 text_transmitted_notice = Document successfully transmitted to Chorus Pro. Check the portal to track processing status.
 text_ready_notice = This order is ready for electronic transmission. Enable the <strong>E-Invoice</strong> slider in the status form and click Update to send to Chorus Pro.
@@ -20,7 +20,7 @@ text_ready_notice = This order is ready for electronic transmission. Enable the 
 skip_module_disabled = Chorus Pro module disabled (CHORUSPRO_ENABLED != True).
 skip_status_not_actionable = Invoice status does not trigger a Chorus Pro submission
 skip_already_sent = Order already transmitted to Chorus Pro
-skip_b2c_no_siret = B2C customer (no valid 14-digit SIRET) — Chorus Pro applies to B2G only.
+skip_b2c_no_siret = B2C customer (no valid 14-digit SIRET) — Chorus Pro applies to B2C only.
 
 error_oauth2_failed = OAuth2 token retrieval failed (PISTE). Check CHORUSPRO_PISTE_CLIENT_ID and CLIENT_SECRET.
 error_payload_failed = Invoice payload build failed. Check CHORUSPRO_SIRET_FOURNISSEUR configuration.

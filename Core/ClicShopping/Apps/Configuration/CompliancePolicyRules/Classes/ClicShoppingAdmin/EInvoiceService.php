@@ -102,7 +102,7 @@ class EInvoiceService
    *   1. Module must be enabled (CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_ENABLED = True)
    *   2. Invoice status must be actionable (2, 3 or 4)
    *   3. Order must not have been already transmitted (erp_invoice = 0)
-   *   4. Customer must have a valid SIRET (B2G check)
+   *   4. Customer must have a valid SIRET (B2C check)
    *
    * @param int   $order_id       ClicShopping order ID
    * @param array $customer       $order->customer array from OrderAdmin
@@ -651,7 +651,7 @@ class EInvoiceService
 
   /**
    * Returns true if the customer has a valid 14-digit SIRET number,
-   * indicating a B2B or B2G customer eligible for Chorus Pro submission.
+   * indicating a B2B or B2C customer eligible for Chorus Pro submission.
    *
    * @param array $customer  Customer data array containing 'siret' key
    * @return bool
@@ -687,7 +687,7 @@ class EInvoiceService
    * Resolves the Chorus Pro payment mode code from the ClicShopping payment method string.
    *
    * Accepted Chorus Pro values: VIREMENT | PRELEVEMENT | CHEQUE | CARTE | AUTRE
-   * Defaults to VIREMENT if no match is found (most common in B2G).
+   * Defaults to VIREMENT if no match is found (most common in B2C).
    *
    * @param string $method  Payment method string from $order->info['payment_method']
    * @return string         Chorus Pro payment mode code
