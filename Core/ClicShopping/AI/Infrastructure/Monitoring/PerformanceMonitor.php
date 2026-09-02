@@ -52,7 +52,6 @@ class PerformanceMonitor
   private float $slowOperationThreshold = 100.0;
   
   // Metrics aggregation
-  private array $metrics = [];
   
   /**
    * Constructor

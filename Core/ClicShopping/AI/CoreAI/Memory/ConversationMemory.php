@@ -106,7 +106,6 @@ class ConversationMemory
   // Configuration
   private int $maxHistorySize = 10; // Max number of messages in short-term memory
   private int $maxContextWindow = 5; // Context window size for reference resolution
-  private float $similarityThreshold = 0.7; // Threshold for semantic search
 
   // Statistics
   private array $stats = [];
@@ -146,12 +145,10 @@ class ConversationMemory
     $memoryConfig = SystemConfig::getSection('ConversationMemory', [
       'max_history_size' => $this->maxHistorySize,
       'max_context_window' => $this->maxContextWindow,
-      'similarity_threshold' => $this->similarityThreshold,
     ]);
     
     $this->maxHistorySize = (int) $memoryConfig['max_history_size'];
     $this->maxContextWindow = (int) $memoryConfig['max_context_window'];
-    $this->similarityThreshold = (float) $memoryConfig['similarity_threshold'];
 
     // Initialize the LLPhant-compatible embedding generator
     $this->embeddingGenerator = new NewVectorEmbeddingAdapter();
@@ -162,7 +159,7 @@ class ConversationMemory
 
     // 🆕 Initialize refactored components FIRST
     $this->shortTermManager = new ShortTermMemoryManager($this->maxHistorySize, $this->debug);
-    $this->longTermManager = new LongTermMemoryManager($this->vectorStore, $this->embeddingGenerator, $this->similarityThreshold, $this->debug, $this->languageId);
+    $this->longTermManager = new LongTermMemoryManager($this->vectorStore, $this->embeddingGenerator, $this->debug);
     
     $this->entityTracker = new EntityTracker($this->debug, $this->userId, $this->languageId);
     

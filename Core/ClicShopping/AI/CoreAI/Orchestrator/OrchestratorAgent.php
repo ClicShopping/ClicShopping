@@ -10,7 +10,6 @@ namespace ClicShopping\AI\CoreAI\Orchestrator;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
-use ClicShopping\AI\Config\AutonomousConfig;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\CoreAI\Memory\WorkingMemory;
@@ -51,7 +50,6 @@ use ClicShopping\AI\DomainsAI\Semantic\Processor\TranslationHandler;
 use ClicShopping\AI\Handler\Error\ErrorHandler as ErrorHandlerComponent;
 use ClicShopping\AI\Handler\Query\ComplexQueryHandler;
 use ClicShopping\AI\Handler\Query\QueryProcessor;
-use ClicShopping\AI\Infrastructure\Monitoring\AlertManager;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
 use ClicShopping\AI\Infrastructure\Monitoring\MonitoringAgent;
 use ClicShopping\AI\Infrastructure\Monitoring\PerformanceTracker;
@@ -115,7 +113,6 @@ class OrchestratorAgent implements AgentInterface
   private ReasoningAgent $reasoningAgent;
 
   private MonitoringAgent $monitoring;
-  private AlertManager $alertManager;
   private LlmResponseProcessor $responseProcessor;
   private ResponseProcessorComponent $responseProcessorComponent;
 
@@ -131,7 +128,6 @@ class OrchestratorAgent implements AgentInterface
   private QueryAnalyzer $queryAnalyzer;
   private ErrorHandlerComponent $errorHandler;
   private MemoryManagerComponent $memoryManager;
-  private AutonomousConfig $autonomousConfig;
   private HallucinationDetector $hallucinationDetector;
   private OutOfContextGate $outOfContextGate;
   private PlanStepValidator $planStepValidator;
@@ -196,13 +192,9 @@ class OrchestratorAgent implements AgentInterface
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
     $this->perfTrace = defined('STORE_AI_PERF_TRACE') && STORE_AI_PERF_TRACE === 'true';
 
-    
-    $this->autonomousConfig = new AutonomousConfig($this->debug);
-
     // Monitoring and metrics
     $this->monitoring = new MonitoringAgent();
     $this->collector = new MetricsCollector();
-    $this->alertManager = new AlertManager();
 
     // Memory systems
     $this->conversationMemory = new ConversationMemory(
@@ -289,7 +281,6 @@ class OrchestratorAgent implements AgentInterface
     $this->hybridQueryHandler = new HybridQueryHandler(
       $this->taskPlanner,
       $this->planExecutor,
-      $this->conversationMemory,
       null, // DomainKeywordsLoader will be auto-created
       $this->debug
     );
@@ -393,7 +384,6 @@ class OrchestratorAgent implements AgentInterface
         $this->workingMemory,
         $this->collector,
         $this->performanceTracker,
-        $this->securityLogger,
         $this->debug,
         $this->perfTrace,
         $this->executionStats

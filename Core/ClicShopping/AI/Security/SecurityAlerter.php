@@ -26,7 +26,6 @@ use ClicShopping\AI\Config\TechnicalDefaults;
 class SecurityAlerter
 {
     private $db;
-    private string $prefix;
     private bool $alertsEnabled;
     private string $alertEmail;
     private int $alertThreshold;
@@ -46,7 +45,6 @@ class SecurityAlerter
             $this->db = Registry::get('Db');
         }
         
-        $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
         
         // Load configuration from constants
         // Handle both boolean and string 'True'/'False' formats (DB compatibility)

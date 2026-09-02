@@ -10,10 +10,8 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Executor;
 
 use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 use ClicShopping\AI\Infrastructure\Monitoring\QueryPerformanceMonitor;
-use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Infrastructure\Cache\Helper\SQLTableParser;
 
@@ -26,7 +24,6 @@ use ClicShopping\AI\Infrastructure\Cache\Helper\SQLTableParser;
 class QueryExecutor
 {
   private SecurityLogger $securityLogger;
-  private DbSecurity $dbSecurity;
   private bool $debug;
   private ?QueryPerformanceMonitor $performanceMonitor;
 
@@ -36,7 +33,6 @@ class QueryExecutor
    *
    * @param \PDO|null $db Database connection (deprecated, kept for backward compatibility)
    * @param SecurityLogger $securityLogger Security logger instance
-   * @param DbSecurity $dbSecurity Database security handler
    * @param bool $debug Enable debug mode
    * @param int $queryTimeout Query timeout in seconds (deprecated, not used)
    * @param bool $enablePerformanceMonitoring Enable query performance monitoring (default: true)
@@ -44,14 +40,12 @@ class QueryExecutor
   public function __construct(
     ?\PDO $db = null,
     ?SecurityLogger $securityLogger = null,
-    ?DbSecurity $dbSecurity = null,
     bool $debug = false,
     int $queryTimeout = 30,
     bool $enablePerformanceMonitoring = true
   ) {
     // PDO parameter is now optional and ignored (kept for backward compatibility)
     $this->securityLogger = $securityLogger ?? new SecurityLogger();
-    $this->dbSecurity = $dbSecurity ?? new DbSecurity();
     $this->debug = $debug;
     
     if ($enablePerformanceMonitoring) {

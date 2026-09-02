@@ -1,2 +1,0 @@
-cfg_ecommerce_cockpit_ai_embedding_format_version_title = Version du format d'embedding
-cfg_ecommerce_cockpit_ai_embedding_format_version_description = Version du gabarit de contenu utilisé pour les embeddings

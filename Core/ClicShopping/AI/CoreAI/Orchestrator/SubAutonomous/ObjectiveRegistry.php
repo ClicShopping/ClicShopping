@@ -18,7 +18,6 @@ use Exception;
 class ObjectiveRegistry
 {
   private $db;
-  private array $stateTransitionLog = [];
   private AuthorizationManager $authManager;
   private AuditLogger $auditLogger;
 
@@ -585,15 +584,6 @@ class ObjectiveRegistry
     string $reason
   ): void {
     try {
-      // Store in memory for backward compatibility
-      $this->stateTransitionLog[] = [
-        'objective_id' => $objectiveId,
-        'old_status' => $oldStatus,
-        'new_status' => $newStatus,
-        'reason' => $reason,
-        'timestamp' => (new DateTimeImmutable())->format('Y-m-d H:i:s')
-      ];
-
       // Persist to database
       $sql = "INSERT INTO :table_rag_agent_objective_state_transitions 
               (objective_id, old_status, new_status, transition_reason, transitioned_at)

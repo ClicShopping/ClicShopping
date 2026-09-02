@@ -10,7 +10,6 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubReputation;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\OM\Registry;
 
 /**
  * GamingDetector
@@ -44,11 +43,6 @@ class GamingDetector
   private bool $debug;
 
   /**
-   * @var \ClicShopping\OM\Db Database connection
-   */
-  private $db;
-
-  /**
    * Constructor
    *
    * @param ReputationStore|null $store Optional reputation store (for testing)
@@ -57,7 +51,6 @@ class GamingDetector
   {
     $this->store = $store ?? new ReputationStore();
     $this->logger = new SecurityLogger();
-    $this->db = Registry::get('Db');
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') &&
       CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
   }

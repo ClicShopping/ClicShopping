@@ -22,7 +22,6 @@ use ClicShopping\OM\Registry;
 class SqlQueryProcessor
 {
   private SecurityLogger $securityLogger;
-  private int $languageId;
   private bool $debug;
   private array $placeholderMap;
 
@@ -38,7 +37,6 @@ class SqlQueryProcessor
   public function __construct(SecurityLogger $securityLogger, int $languageId, bool $debug = false)
   {
     $this->securityLogger = $securityLogger;
-    $this->languageId = $languageId;
     $this->debug = $debug;
     $this->db = Registry::get('Db');
 

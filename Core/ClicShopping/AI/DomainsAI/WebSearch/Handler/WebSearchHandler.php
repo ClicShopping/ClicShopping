@@ -13,8 +13,6 @@
 
 namespace ClicShopping\AI\DomainsAI\WebSearch\Handler;
 
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
@@ -35,7 +33,6 @@ class WebSearchHandler
 {
   private SecurityLogger $logger;
   private ?WebSearchFacade $webSearchFacade;
-  private mixed $db;
   private bool $debug;
 
   /**
@@ -49,7 +46,6 @@ class WebSearchHandler
   {
     $this->logger = new SecurityLogger();
     $this->debug = $debug;
-    $this->db = Registry::get('Db');
 
     try {
       $this->webSearchFacade = new WebSearchFacade();

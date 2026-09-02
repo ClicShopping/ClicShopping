@@ -32,7 +32,6 @@ class AnalyticsErrorHandler
   private mixed $correctionAgent;
   private mixed $queryExecutor;
   private array $correctionLog = [];
-  private bool $debug;
   
   /**
    * Constructor
@@ -40,18 +39,15 @@ class AnalyticsErrorHandler
    * @param mixed $db Database connection
    * @param mixed $correctionAgent Correction agent for intelligent fixes
    * @param mixed $queryExecutor Query executor for deduplication
-   * @param bool $debug Debug mode flag
    */
   public function __construct(
     $db,
     $correctionAgent,
-    $queryExecutor,
-    bool $debug = false
+    $queryExecutor
   ) {
     $this->db = $db;
     $this->correctionAgent = $correctionAgent;
     $this->queryExecutor = $queryExecutor;
-    $this->debug = $debug;
 
     // Load shared user-facing labels once (interface language) for all methods
     Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');

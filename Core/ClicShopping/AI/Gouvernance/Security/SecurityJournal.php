@@ -295,14 +295,13 @@ class SecurityJournal
       self::NON_SECURITY_EVENT_TYPES
     );
 
-    // File channel: `event_type` is an ENUM with no member for a purge, and logEvent() would
-    // silently downgrade an unknown type to 'security_check_failed' - a purge reading as a
-    // failed security check. See sql/2026_09_01_security_event_purge_type.sql.
-    (new SecurityLogger())->logSecurityEvent(
-      'Security journal purged: ' . $deleted . ' lifecycle events removed (' . implode(', ', self::NON_SECURITY_EVENT_TYPES) . ')',
-      'warning',
-      ['deleted' => $deleted, 'event_types' => self::NON_SECURITY_EVENT_TYPES]
-    );
+    // The trace goes to the journal itself, never only to the file channel: `security_log_purged`
+    // must stay out of NON_SECURITY_EVENT_TYPES, or the next purge would erase its own history.
+    (new SecurityLogger())->logEvent('security_log_purged', [
+      'severity' => 'high',
+      'action_taken' => 'purge',
+      'metadata' => ['deleted' => $deleted, 'event_types' => self::NON_SECURITY_EVENT_TYPES]
+    ]);
 
     return $deleted;
   }
@@ -331,7 +330,7 @@ class SecurityJournal
              SUBSTRING(MIN(user_query), 1, 120) as sample
       FROM {$this->prefix}rag_security_events
       WHERE event_type NOT IN ({$placeholders})
-        AND event_type <> 'layer_performance'
+        AND event_type NOT IN ('layer_performance', 'security_log_purged')
         AND (threat_type IS NULL OR threat_type <> 'none')
       GROUP BY event_type, reason
       ORDER BY count DESC

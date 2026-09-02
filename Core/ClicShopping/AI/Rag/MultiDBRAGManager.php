@@ -20,11 +20,7 @@ use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsQueryHeuristics;
 use ClicShopping\AI\Config\DomainConfig;
-
-use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
-
 use ClicShopping\AI\Rag\Reranking\DocumentReranker;
-
 use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 use ClicShopping\AI\Config\TechnicalDefaults;
@@ -57,7 +53,6 @@ class MultiDBRAGManager
   private mixed $securityLogger;
   private bool $debug = false;
 
-  private int $userId;
 
   private ?DocumentReranker $reranker = null;
   private bool $useReranking = false;
@@ -83,7 +78,6 @@ class MultiDBRAGManager
     
     // $this->db = Registry::get('Db');
     $this->language = Registry::get('Language');
-    $this->userId = AdministratorAdmin::getUserAdminId() ?? 0; // Default to 0 if no admin logged in
 
     // Load language definitions for ChatGpt app
     // Language definitions are now loaded from main.txt via CLICSHOPPING::getDef()

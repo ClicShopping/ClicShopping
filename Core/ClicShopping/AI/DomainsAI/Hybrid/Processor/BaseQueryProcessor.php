@@ -16,7 +16,7 @@ use ClicShopping\AI\InterfacesAI\HybridQueryProcessorInterface;
  * BaseQueryProcessor - Abstract base class for HybridQueryProcessor components
  *
  * Provides common functionality: logging, error handling, normalization, validation.
- * Foundation for QueryClassifier, QuerySplitter, ResultSynthesizer, ResultAggregator, PromptValidator.
+ * Foundation for QueryClassifier.
  *
  * Requirements: REQ-1.3 (Single Responsibility), REQ-8.1 (Validation and security)
  *

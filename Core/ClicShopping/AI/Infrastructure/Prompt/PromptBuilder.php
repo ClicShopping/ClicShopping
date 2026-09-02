@@ -49,7 +49,6 @@ class PromptBuilder
   private string $tablePrefix;
   
   private string $modelName;
-  private string $agentType = 'analytics';
   
   /**
    * Constructor
@@ -132,7 +131,6 @@ class PromptBuilder
     }
 
     // Store parameters for buildSystemMessage()
-    $this->agentType = $agentType;
     $this->currentQuery = $query;
     
     if ($modelName !== null && $modelName !== '') {

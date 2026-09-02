@@ -21,7 +21,7 @@ namespace ClicShopping\AI\InterfacesAI;
  *   Location: Core/ClicShopping/AI/DomainsAI/Hybrid/Handler/
  *
  * - HybridQueryProcessorInterface: Component-level interface for hybrid query components
- *   Used by QueryClassifier, QuerySplitter, ResultSynthesizer, etc.
+ *   Used by QueryClassifier.
  *   Location: Core/ClicShopping/AI/InterfacesAI/
  *
  * Purpose:

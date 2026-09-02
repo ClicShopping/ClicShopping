@@ -29,7 +29,6 @@ class AnalyticsQualityEvaluator
     private SqlSecurityValidator $securityValidator;
     private SqlPerformanceValidator $performanceValidator;
     private SchemaValidator $schemaValidator;
-    private bool $debug;
 
     /**
      * Constructor with validator injection
@@ -38,20 +37,17 @@ class AnalyticsQualityEvaluator
      * @param SqlSecurityValidator $securityValidator SQL security validator
      * @param SqlPerformanceValidator $performanceValidator SQL performance validator
      * @param SchemaValidator $schemaValidator Schema validator
-     * @param bool $debug Enable debug mode
      */
     public function __construct(
         SqlQualityValidator $qualityValidator,
         SqlSecurityValidator $securityValidator,
         SqlPerformanceValidator $performanceValidator,
-        SchemaValidator $schemaValidator,
-        bool $debug = false
+        SchemaValidator $schemaValidator
     ) {
         $this->qualityValidator = $qualityValidator;
         $this->securityValidator = $securityValidator;
         $this->performanceValidator = $performanceValidator;
         $this->schemaValidator = $schemaValidator;
-        $this->debug = $debug;
     }
 
     /**

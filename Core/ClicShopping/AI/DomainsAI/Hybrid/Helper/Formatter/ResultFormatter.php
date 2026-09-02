@@ -42,7 +42,6 @@ class ResultFormatter
   private bool $debug;
   private bool $displaySql;
   private $language;
-  private string $languageCode;
 
   /**
    * Constructor
@@ -61,7 +60,6 @@ class ResultFormatter
     }
     
     $this->language = Registry::get('Language');
-    $this->languageCode = $this->language->get('code');
 
     // Load language definitions (null = use current user language)
     Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
@@ -255,7 +253,6 @@ class ResultFormatter
     // Initialize language if not provided
     if ($language === null) {
       $language = Registry::get('Language');
-      $languageCode = $language->get('code');
       
       // Load language definitions (null = use current user language)
       Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
@@ -301,7 +298,6 @@ class ResultFormatter
     // Initialize language if not provided
     if ($language === null) {
       $language = Registry::get('Language');
-      $languageCode = $language->get('code');
       
       // Load language definitions (null = use current user language)
       Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
@@ -913,7 +909,6 @@ class ResultFormatter
     // Initialize language if not provided
     if ($language === null) {
       $language = Registry::get('Language');
-      $languageCode = $language->get('code');
       
       // Load language definitions (null = use current user language)
       Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');

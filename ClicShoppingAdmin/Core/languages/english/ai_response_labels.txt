@@ -202,3 +202,4 @@ text_error_query_timeout = The request is taking too long, please try again.
 text_clarification_suggestion_product = Search for a product
 text_clarification_suggestion_orders = View orders
 text_clarification_suggestion_help = Get help
+text_hybrid_query_processing_error = An error occurred while processing your hybrid query.

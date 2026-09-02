@@ -31,7 +31,6 @@ use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFreshnessValidator;
 use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
-use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\LlmGuardrails;
@@ -77,7 +76,6 @@ class AnalyticsAgent implements AgentInterface
   private bool $debug = false;
   private SecurityLogger $securityLogger;
   private string $userId;
-  private DbSecurity $dbSecurity;
 
   private mixed $maxRowsForInterpretation;
 
@@ -98,7 +96,6 @@ class AnalyticsAgent implements AgentInterface
   private AmbiguityHandler $ambiguityHandler;
   private AnalyticsErrorHandler $errorHandler;
   private AnalyticsObjectiveRunner $objectiveRunner;
-  private mixed $app;
   
   private mixed $conversationMemory = null;
   private ?AutonomousConfig $autonomousConfig = null;
@@ -125,7 +122,6 @@ class AnalyticsAgent implements AgentInterface
       Registry::set('ChatGpt', new ChatGpt());
     }
 
-    $this->app = Registry::get('ChatGpt');
 
     // This replaces the duplicated model detection logic with a single, maintainable function
     $model = Gpt::defaultModel();
@@ -143,7 +139,6 @@ class AnalyticsAgent implements AgentInterface
 
     // Initialize security components
     $this->securityLogger = new SecurityLogger();
-    $this->dbSecurity = new DbSecurity();
 
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
@@ -177,7 +172,6 @@ class AnalyticsAgent implements AgentInterface
     $this->queryExecutor = new QueryExecutor(
       $this->db,
       $this->securityLogger,
-      $this->dbSecurity,
       $this->debug
     );
 
@@ -185,7 +179,6 @@ class AnalyticsAgent implements AgentInterface
       $this->getInterpreterChat(),
       new Cache($enablePromptCache),  // ResultInterpreter has its own cache instance
       $this->securityLogger,
-      $this->app,
       $this->maxRowsForInterpretation,
       $this->enablePromptCache,
       $this->debug
@@ -205,8 +198,7 @@ class AnalyticsAgent implements AgentInterface
     $this->errorHandler = new AnalyticsErrorHandler(
       $this->db,
       $this->correctionAgent,
-      $this->queryExecutor,
-      $this->debug
+      $this->queryExecutor
     );
 
     // Initialize AmbiguityHandler for handling ambiguous queries

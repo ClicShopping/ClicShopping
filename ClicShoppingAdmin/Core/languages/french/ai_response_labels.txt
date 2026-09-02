@@ -202,3 +202,4 @@ text_error_query_timeout = La requête prend trop de temps, veuillez réessayer.
 text_clarification_suggestion_product = Rechercher un produit
 text_clarification_suggestion_orders = Voir les commandes
 text_clarification_suggestion_help = Obtenir de l'aide
+text_hybrid_query_processing_error = Une erreur est survenue lors du traitement de votre requête hybride.

@@ -26,7 +26,6 @@ use ClicShopping\AI\Security\LlmGuardrails;
 class HybridFormatter extends AbstractFormatter
 {
   private $language;
-  private string $languageCode;
 
   public function __construct(bool $debug = false, bool $displaySql = false)
   {
@@ -34,7 +33,6 @@ class HybridFormatter extends AbstractFormatter
     
     // Initialize language support
     $this->language = Registry::get('Language');
-    $this->languageCode = $this->language->get('code');
     
     // Load language definitions (null = use current user language)
     Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');

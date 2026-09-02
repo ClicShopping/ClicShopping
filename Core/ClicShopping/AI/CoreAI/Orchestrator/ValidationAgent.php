@@ -11,7 +11,6 @@ namespace ClicShopping\AI\CoreAI\Orchestrator;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
 use ClicShopping\AI\InterfacesAI\AgentInterface;
-use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\OM\CLICSHOPPING;
@@ -39,7 +38,6 @@ class ValidationAgent implements AgentInterface
   }
 
   private SecurityLogger $securityLogger;
-  private DbSecurity $dbSecurity;
   private mixed $db;
   private bool $debug;
   private array $schemaCache = [];
@@ -64,7 +62,6 @@ class ValidationAgent implements AgentInterface
   public function __construct(string $userId = 'system')
   {
     $this->securityLogger = new SecurityLogger();
-    $this->dbSecurity = new DbSecurity();
     $this->db = Registry::get('Db');
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
     $this->abstentionManager = new AgentAbstentionManager();

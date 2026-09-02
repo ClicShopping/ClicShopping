@@ -9,7 +9,6 @@
 namespace ClicShopping\AI\DomainsAI\WebSearch\Tools;
 
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\SerpApiClient;
-use ClicShopping\AI\DomainsAI\WebSearch\Logger\WebSearchLogger;
 use ClicShopping\AI\InterfacesAI\WebSearchInterface;
 
 /**
@@ -28,7 +27,6 @@ class GoogleShoppingEngine implements WebSearchInterface
   private const DEFAULT_MAX_RESULTS = 20;
 
   private SerpApiClient $client;
-  private WebSearchLogger $logger;
   private bool $debug;
 
   /**
@@ -40,7 +38,6 @@ class GoogleShoppingEngine implements WebSearchInterface
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
     $this->client = new SerpApiClient($apiKey, $this->debug);
-    $this->logger = new WebSearchLogger();
   }
 
   /**

@@ -32,7 +32,6 @@ class ResultInterpreter
   private mixed $chat;
   private Cache $cache;
   private SecurityLogger $securityLogger;
-  private mixed $app;
   private mixed $language;
   private int $maxRowsForInterpretation;
   private bool $enablePromptCache;
@@ -46,16 +45,14 @@ class ResultInterpreter
    * @param mixed $chat Chat interface for AI generation
    * @param Cache $cache Cache instance
    * @param SecurityLogger $securityLogger Security logger instance
-   * @param mixed $app Application instance for definitions
    * @param int $maxRowsForInterpretation Maximum rows to send to AI
    * @param bool $enablePromptCache Enable prompt caching
    * @param bool $debug Enable debug mode
    */
-  public function __construct(mixed $chat, Cache $cache, SecurityLogger $securityLogger, mixed $app, int $maxRowsForInterpretation, bool $enablePromptCache = true, bool $debug = false) {
+  public function __construct(mixed $chat, Cache $cache, SecurityLogger $securityLogger, int $maxRowsForInterpretation, bool $enablePromptCache = true, bool $debug = false) {
     $this->chat = $chat;
     $this->cache = $cache;
     $this->securityLogger = $securityLogger;
-    $this->app = $app;
     $this->language = Registry::get('Language');
     $this->maxRowsForInterpretation = $maxRowsForInterpretation;
     $this->enablePromptCache = $enablePromptCache;

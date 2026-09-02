@@ -24,7 +24,6 @@ use ClicShopping\AI\CoreAI\Memory\WorkingMemory;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
 use ClicShopping\AI\Infrastructure\Monitoring\PerformanceTracker;
 use ClicShopping\AI\InterfacesAI\OrchestrationStageInterface;
-use ClicShopping\AI\Security\SecurityLogger;
 
 class FinalizeStage implements OrchestrationStageInterface
 {
@@ -35,7 +34,6 @@ class FinalizeStage implements OrchestrationStageInterface
     private WorkingMemory $workingMemory,
     private MetricsCollector $collector,
     private PerformanceTracker $performanceTracker,
-    private SecurityLogger $securityLogger,
     private bool $debug,
     private bool $perfTrace,
     array &$executionStats

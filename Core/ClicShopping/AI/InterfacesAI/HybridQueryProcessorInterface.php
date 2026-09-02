@@ -16,9 +16,7 @@ namespace ClicShopping\AI\InterfacesAI;
  * Base interface for all HybridQueryProcessor components.
  * Defines the common contract that all specialized processors must implement.
  *
- * This interface ensures consistency across all Hybrid query processor components
- * (QueryClassifier, QuerySplitter, ResultSynthesizer, ResultAggregator, PromptValidator)
- * and provides a unified API for query processing operations.
+ * Implemented through BaseQueryProcessor; QueryClassifier is its only concrete component.
  *
  * Note: This interface was renamed from QueryProcessorInterface to clarify its purpose
  * for hybrid query processing components, distinct from the orchestration-level QueryProcessor.
@@ -32,10 +30,6 @@ interface HybridQueryProcessorInterface
    * This is the main processing method that each component must implement.
    * The exact behavior depends on the specific component:
    * - QueryClassifier: Classifies query type and returns classification result
-   * - QuerySplitter: Splits complex queries into sub-queries
-   * - ResultSynthesizer: Synthesizes results from multiple sources
-   * - ResultAggregator: Aggregates results from different query types
-   * - PromptValidator: Validates and sanitizes prompts
    *
    * @param mixed $input The input data to process (type varies by component)
    * @param array $context Additional context for processing (optional)

@@ -9,7 +9,6 @@
 namespace ClicShopping\AI\DomainsAI\WebSearch\Tools;
 
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\SerpApiClient;
-use ClicShopping\AI\DomainsAI\WebSearch\Logger\WebSearchLogger;
 use ClicShopping\AI\InterfacesAI\WebSearchInterface;
 
 /**
@@ -32,7 +31,6 @@ class GoogleTrendsEngine implements WebSearchInterface
   private const DEFAULT_DATA_TYPE = 'TIMESERIES';
 
   private SerpApiClient $client;
-  private WebSearchLogger $logger;
   private bool $debug;
 
   public function __construct()
@@ -42,7 +40,6 @@ class GoogleTrendsEngine implements WebSearchInterface
       && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
     $this->client = new SerpApiClient($apiKey, $this->debug);
-    $this->logger = new WebSearchLogger();
   }
 
   private function loadApiKey(): string

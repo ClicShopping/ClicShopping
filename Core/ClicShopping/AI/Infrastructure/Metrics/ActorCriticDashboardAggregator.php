@@ -15,7 +15,6 @@ namespace ClicShopping\AI\Infrastructure\Metrics;
 
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Registry;
 
 /**
  * ActorCriticDashboardAggregator Class
@@ -31,14 +30,12 @@ class ActorCriticDashboardAggregator
 {
   private ActorMetricsCollector $actorMetrics;
   private CriticMetricsCollector $criticMetrics;
-  private $db;
   private string $prefix;
   
   public function __construct()
   {
     $this->actorMetrics = new ActorMetricsCollector();
     $this->criticMetrics = new CriticMetricsCollector();
-    $this->db = Registry::get('Db');
     $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
   }
   

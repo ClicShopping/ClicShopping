@@ -23,7 +23,6 @@ class FeedbackLearner
 {
   private MariaDBVectorStore $correctionStore;
   private SecurityLogger $logger;
-  private string $userId;
   private int $languageId;
   private bool $debug;
   private CorrectionMemory $memory;
@@ -46,7 +45,6 @@ class FeedbackLearner
   ) {
     $this->correctionStore = $correctionStore;
     $this->logger = $logger;
-    $this->userId = $userId;
     $this->languageId = $languageId;
     $this->debug = $debug;
     

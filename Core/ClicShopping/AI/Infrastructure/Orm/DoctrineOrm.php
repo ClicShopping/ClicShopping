@@ -48,7 +48,6 @@ class DoctrineOrm
 {
   private static $debug = false;
   private static $prefixDb;
-  private static ?SecurityLogger $logger = null;
   private static ?array $cachedFields = null;
   private static ?array $cachedFieldsByTable = null;
   private static ?EntityManager $entityManager = null;

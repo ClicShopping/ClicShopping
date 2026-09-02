@@ -62,7 +62,7 @@ class OrderAdmin
       'o.*',
       's.orders_status_name'
     ], [
-        'o.orders_id' => (int)$order_id,
+        'o.orders_id' => $order_id,
         'o.orders_status' => ['rel' => 's.orders_status_id'],
         's.language_id' => $CLICSHOPPING_Language->getId()
       ]
@@ -73,7 +73,7 @@ class OrderAdmin
       'text',
       'class'
     ], [
-      'orders_id' => (int)$order_id
+      'orders_id' => $order_id
     ],
       'sort_order'
     );
@@ -249,7 +249,7 @@ class OrderAdmin
           'products_id',
           'products_quantity'
         ], [
-            'orders_id' => (int)$order_id
+            'orders_id' => $order_id
           ]
         );
 
@@ -291,14 +291,14 @@ class OrderAdmin
 
       // Children FIRST, header LAST: the reverse order left orphans whenever a later delete
       // failed, and there is no FK to catch them.
-      $CLICSHOPPING_Db->delete('orders_products_download', ['orders_id' => (int)$order_id]);
-      $CLICSHOPPING_Db->delete('orders_products_attributes', ['orders_id' => (int)$order_id]);
-      $CLICSHOPPING_Db->delete('orders_products', ['orders_id' => (int)$order_id]);
-      $CLICSHOPPING_Db->delete('orders_status_history', ['orders_id' => (int)$order_id]);
-      $CLICSHOPPING_Db->delete('orders_total', ['orders_id' => (int)$order_id]);
-      $CLICSHOPPING_Db->delete('orders_pages_manager', ['orders_id' => (int)$order_id]);
-      $CLICSHOPPING_Db->delete('orders_embedding', ['entity_id' => (int)$order_id]);
-      $CLICSHOPPING_Db->delete('orders', ['orders_id' => (int)$order_id]);
+      $CLICSHOPPING_Db->delete('orders_products_download', ['orders_id' => $order_id]);
+      $CLICSHOPPING_Db->delete('orders_products_attributes', ['orders_id' => $order_id]);
+      $CLICSHOPPING_Db->delete('orders_products', ['orders_id' => $order_id]);
+      $CLICSHOPPING_Db->delete('orders_status_history', ['orders_id' => $order_id]);
+      $CLICSHOPPING_Db->delete('orders_total', ['orders_id' => $order_id]);
+      $CLICSHOPPING_Db->delete('orders_pages_manager', ['orders_id' => $order_id]);
+      $CLICSHOPPING_Db->delete('orders_embedding', ['entity_id' => $order_id]);
+      $CLICSHOPPING_Db->delete('orders', ['orders_id' => $order_id]);
 
       if ($owns_transaction) {
         $CLICSHOPPING_Db->commit();
@@ -340,7 +340,8 @@ class OrderAdmin
     );
 
     while ($Qstatus->fetch()) {
-      $orders_status_array[] = ['id' => $Qstatus->valueInt('orders_status_id'),
+      $orders_status_array[] = [
+        'id' => $Qstatus->valueInt('orders_status_id'),
         'text' => $Qstatus->value('orders_status_name')
       ];
     }

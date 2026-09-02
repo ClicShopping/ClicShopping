@@ -127,7 +127,7 @@ class AnalyticsEvaluationRecorder
       // Create AnalyticsCriticWrapper with proper dependencies
       $qualityValidator = new SqlQualityValidator();
       $securityValidator = new SqlSecurityValidator(null, null, $this->debug);
-      $performanceValidator = new SqlPerformanceValidator(null, $this->debug);
+      $performanceValidator = new SqlPerformanceValidator(null);
       
       // Get PDO for DatabaseSchemaManager
       $entityManager = \ClicShopping\AI\Infrastructure\Orm\DoctrineOrm::getEntityManager();
@@ -140,8 +140,7 @@ class AnalyticsEvaluationRecorder
         $qualityValidator,
         $securityValidator,
         $performanceValidator,
-        $schemaValidator,
-        $this->debug
+        $schemaValidator
       );
       
       $critic = new AnalyticsCriticWrapper($evaluator, $this->debug);

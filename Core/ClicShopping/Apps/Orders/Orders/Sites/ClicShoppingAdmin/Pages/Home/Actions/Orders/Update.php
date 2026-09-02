@@ -99,7 +99,25 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $template_email_intro_command = TemplateEmailAdmin::getTemplateEmailIntroCommand();
     $template_email_signature = TemplateEmailAdmin::getTemplateEmailSignature();
     $template_email_footer = TemplateEmailAdmin::getTemplateEmailTextFooter();
-    $status_order = $this->app->getDef('email_text_new_order_status', ['status' => $this->status]);
+
+    $status_name = (string)$this->status;
+
+    $CLICSHOPPING_Language = Registry::get('Language');
+
+    $Qstatus = $this->app->db->prepare('select orders_status_name
+                                         from :table_orders_status
+                                         where orders_status_id = :orders_status_id
+                                           and language_id = :language_id
+                                       ');
+    $Qstatus->bindInt(':orders_status_id', (int)$this->status);
+    $Qstatus->bindInt(':language_id', (int)$CLICSHOPPING_Language->getId());
+    $Qstatus->execute();
+
+    if ($Qstatus->fetch() !== false) {
+      $status_name = $Qstatus->value('orders_status_name');
+    }
+
+    $status_order = $this->app->getDef('email_text_new_order_status', ['status' => $status_name]);
 
     $email_subject = $this->app->getDef('email_text_subject', ['store_name' => STORE_NAME]);
 
@@ -114,7 +132,6 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
       . $template_email_signature . '<br /><br />'
       . $template_email_footer;
 
-// Envoie du mail avec gestion des images pour Fckeditor et Imanager.
     $message = html_entity_decode($email_text);
     $message = str_replace('src="/', 'src="' . CLICSHOPPING::getConfig('http_server', 'Shop') . '/', $message);
     $CLICSHOPPING_Mail->addHtmlCkeditor($message);
@@ -233,11 +250,11 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       if ($this->oID != 0) {
         $check = $this->getCheckStatus();
-// verify and update the status if changed
+
         if (($check['orders_status'] != $this->status) || ($check['orders_status_invoice'] != $this->statusInvoice) || ($this->comments !== '')) {
           $data_array = [
-            'orders_status' => (int)$this->status,
-            'orders_status_invoice' => (int)$this->statusInvoice,
+            'orders_status' => $this->status,
+            'orders_status_invoice' => $this->statusInvoice,
             'last_modified' => 'now()'
           ];
 
@@ -246,9 +263,9 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
           $customer_notified = isset($this->notify) ? 1 : 0;
 
           $data_array = [
-            'orders_id' => (int)$this->oID,
-            'orders_status_id' => (int)$this->status,
-            'orders_status_invoice_id' => (int)$this->statusInvoice,
+            'orders_id' => $this->oID,
+            'orders_status_id' => $this->status,
+            'orders_status_invoice_id' => $this->statusInvoice,
             'admin_user_name' => AdministratorAdmin::getUserAdmin(),
             'date_added' => 'now()',
             'customer_notified' => (int)$customer_notified,

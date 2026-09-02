@@ -1,2 +1,0 @@
-cfg_ecommerce_cockpit_ai_cache_tll_title = Durée de vie du cache (secondes)
-cfg_ecommerce_cockpit_ai_cache_tll_description = Durée de vie du cache de normalisation du catalogue (par défaut : 1 heure)

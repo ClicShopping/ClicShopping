@@ -11,10 +11,11 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Handler;
 use ClicShopping\AI\InterfacesAI\HybridQueryHandlerInterface;
 use ClicShopping\AI\CoreAI\Planning\TaskPlanner;
 use ClicShopping\AI\CoreAI\Planning\PlanExecutor;
-use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\DomainKeywordsLoader;
 use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 
 /**
  * HybridQueryHandler Class
@@ -28,7 +29,7 @@ use ClicShopping\AI\Config\DomainConfig;
  *   Location: Core/ClicShopping/AI/DomainsAI/Hybrid/Handler/
  *
  * - HybridQueryProcessor components: Component-level processors
- *   Used by QueryClassifier, QuerySplitter, ResultSynthesizer, etc.
+ *   Used by QueryClassifier.
  *   Location: Core/ClicShopping/AI/DomainsAI/Hybrid/Processor/
  *
  * Purpose:
@@ -69,7 +70,6 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
 {
   private TaskPlanner $taskPlanner;
   private PlanExecutor $planExecutor;
-  private ?ConversationMemory $conversationMemory;
   private SecurityLogger $securityLogger;
   private DomainKeywordsLoader $domainKeywordsLoader;
   private bool $debug;
@@ -95,7 +95,6 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
    *
    * @param TaskPlanner $taskPlanner Task planner for query decomposition
    * @param PlanExecutor $planExecutor Plan executor for plan execution
-   * @param ConversationMemory|null $conversationMemory Conversation memory for storage
    * @param DomainKeywordsLoader|null $domainKeywordsLoader Domain keywords loader for dynamic keyword loading
    * @param bool $debug Enable debug logging
    * @param string $domain Current business domain (default: 'Ecommerce')
@@ -103,18 +102,18 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
   public function __construct(
     TaskPlanner $taskPlanner,
     PlanExecutor $planExecutor,
-    ?ConversationMemory $conversationMemory = null,
     ?DomainKeywordsLoader $domainKeywordsLoader = null,
     bool $debug = false,
     ?string $domain = null
   ) {
     $this->taskPlanner = $taskPlanner;
     $this->planExecutor = $planExecutor;
-    $this->conversationMemory = $conversationMemory;
     $this->domainKeywordsLoader = $domainKeywordsLoader ?? new DomainKeywordsLoader($debug);
     $this->debug = $debug;
     $this->currentDomain = $domain ?? DomainConfig::getActivities();
     $this->securityLogger = new SecurityLogger();
+
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
 
   /**
@@ -264,7 +263,7 @@ class HybridQueryHandler implements HybridQueryHandlerInterface
       // Return error response
       return [
         'type' => 'error',
-        'response' => 'Une erreur est survenue lors du traitement de votre requête hybride.',
+        'response' => CLICSHOPPING::getDef('text_hybrid_query_processing_error'),
         'error' => $e->getMessage(),
         'query' => $queryToProcess,
         'intent_type' => 'hybrid',

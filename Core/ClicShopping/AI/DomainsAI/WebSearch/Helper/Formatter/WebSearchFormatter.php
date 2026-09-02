@@ -35,11 +35,6 @@ class WebSearchFormatter extends AbstractFormatter
   private $language;
   
   /**
-   * @var string Current language code
-   */
-  private string $languageCode;
-  
-  /**
    * Constructor
    * 
    * @param bool $debug Enable debug mode
@@ -51,7 +46,6 @@ class WebSearchFormatter extends AbstractFormatter
     
     // Initialize language
     $this->language = Registry::get('Language');
-    $this->languageCode = $this->language->get('code');
 
     // Load shared user-facing labels once (interface language)
     $this->language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');

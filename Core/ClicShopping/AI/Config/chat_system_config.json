@@ -8,7 +8,6 @@
   },
   "ConversationMemory": {
     "max_history_size": 10,
-    "max_context_window": 5,
-    "similarity_threshold": 0.7
+    "max_context_window": 5
   }
 }

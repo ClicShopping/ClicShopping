@@ -37,7 +37,6 @@ class LongTermMemoryManager
   private EmbeddingGeneratorInterface $embeddingGenerator;
   private SecurityLogger $logger;
   private bool $debug;
-  private float $similarityThreshold;
   private int $maxChunkSize = 2000; // Max characters per chunk (reduced chunking to avoid perceived duplicates)
   private EntityMatcher $entityMatcher;
   private MemoryDeduplicator $deduplicator;
@@ -49,18 +48,15 @@ class LongTermMemoryManager
    *
    * @param MariaDBVectorStore $vectorStore Vector store instance
    * @param EmbeddingGeneratorInterface $embeddingGenerator Embedding generator
-   * @param float $similarityThreshold Threshold for semantic search
    * @param bool $debug Enable debug logging
    */
   public function __construct(
     MariaDBVectorStore $vectorStore,
     EmbeddingGeneratorInterface $embeddingGenerator,
-    float $similarityThreshold = 0.7,
     bool $debug = false
   ) {
     $this->vectorStore = $vectorStore;
     $this->embeddingGenerator = $embeddingGenerator;
-    $this->similarityThreshold = $similarityThreshold;
     $this->debug = $debug;
     $this->logger = new SecurityLogger();
     $this->entityMatcher = new EntityMatcher($debug);
@@ -70,7 +66,7 @@ class LongTermMemoryManager
 
     if ($this->debug) {
       $this->logger->logSecurityEvent(
-        "LongTermMemoryManager initialized with similarityThreshold={$similarityThreshold}",
+        "LongTermMemoryManager initialized",
         'info'
       );
     }

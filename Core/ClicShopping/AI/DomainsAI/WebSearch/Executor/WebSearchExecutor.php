@@ -9,7 +9,6 @@
 namespace ClicShopping\AI\DomainsAI\WebSearch\Executor;
 
 use ClicShopping\AI\DomainsAI\WebSearch\Exception\ConfigurationException;
-use ClicShopping\AI\DomainsAI\WebSearch\Logger\WebSearchLogger;
 use ClicShopping\AI\DomainsAI\WebSearch\Processor\RoutingDecision;
 use ClicShopping\AI\InterfacesAI\WebSearchInterface;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
@@ -33,7 +32,6 @@ use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
  */
 class WebSearchExecutor
 {
-  private WebSearchLogger $logger;
   private WebSearchEngineRegistry $registry;
   private bool $debug;
 
@@ -47,7 +45,6 @@ class WebSearchExecutor
    */
   public function __construct()
   {
-    $this->logger = new WebSearchLogger();
     $this->registry = WebSearchEngineRegistry::getInstance();
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER')
       && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
@@ -604,7 +601,7 @@ class WebSearchExecutor
   }
 
   /**
-   * Log execution metrics via WebSearchLogger
+   * Log execution metrics — debug channel only
    *
    * Logs execution metrics including:
    * - engine_name: Name of engine(s) used

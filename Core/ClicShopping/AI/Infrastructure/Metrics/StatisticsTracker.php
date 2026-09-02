@@ -19,7 +19,6 @@ use ClicShopping\OM\Registry;
  */
 class StatisticsTracker
 {
-  private $db;
   private string $prefix;
   private $startTime;
   private $interactionId;
@@ -69,7 +68,6 @@ class StatisticsTracker
    */
   public function __construct(?int $userId = null, ?string $sessionId = null, ?int $languageId = null)
   {
-    $this->db = Registry::get('Db');
     $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
     $this->userId = $userId ?? 1;
     $this->sessionId = $sessionId ?? session_id();

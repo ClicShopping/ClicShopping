@@ -20,8 +20,6 @@ use ClicShopping\OM\Registry;
 class DomainConfig
 {
   private static ?DomainConfig $instance = null;
-  private array $entityConfigCache = [];
-
   /**
    * Get singleton instance
    *
@@ -205,15 +203,5 @@ class DomainConfig
       error_log('DomainConfig::loadAgnosticLanguageFile() error: ' . $e->getMessage());
       return false;
     }
-  }
-
-  /**
-   * Clear entity configuration cache (useful when switching domains)
-   *
-   * @return void
-   */
-  public function clearCache(): void
-  {
-    $this->entityConfigCache = [];
   }
 }

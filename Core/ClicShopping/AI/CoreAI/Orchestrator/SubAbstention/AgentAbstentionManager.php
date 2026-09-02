@@ -17,7 +17,6 @@
 namespace ClicShopping\AI\CoreAI\Orchestrator\SubAbstention;
 
 use ClicShopping\OM\Registry;
-use ClicShopping\OM\CLICSHOPPING;
 
 class AgentAbstentionManager
 {
@@ -40,17 +39,11 @@ class AgentAbstentionManager
     private $db;
 
     /**
-     * @var string Database table prefix
-     */
-    private string $tablePrefix;
-
-    /**
      * Constructor
      */
     public function __construct()
     {
         $this->db = Registry::get('Db');
-        $this->tablePrefix = CLICSHOPPING::getConfig('db_table_prefix');
         $this->loadAgentThresholds();
     }
 

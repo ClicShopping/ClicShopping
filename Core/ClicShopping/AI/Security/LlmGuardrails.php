@@ -10,7 +10,6 @@ namespace ClicShopping\AI\Security;
 
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Registry;
 use DateTime;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
@@ -42,7 +41,6 @@ class LlmGuardrails
     'sources' => 0.05
   ];
   protected static ?SecurityLogger $securityLogger = null;
-  private static mixed $language = null;
   private static bool $debug = false;
 
   // Configurable weights for overall score calculation
@@ -118,8 +116,6 @@ class LlmGuardrails
       self::$securityLogger = new SecurityLogger();
       self::$debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
     }
-
-    self::$language = Registry::get('Language');
 
     // Load hallucination patterns from domain app
     self::loadGuardrailsPatterns();
