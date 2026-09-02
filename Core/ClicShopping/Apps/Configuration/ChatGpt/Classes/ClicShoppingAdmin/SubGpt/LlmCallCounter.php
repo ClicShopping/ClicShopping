@@ -48,12 +48,10 @@ final class LlmCallCounter
     'AnalysisPlanner::plan' => 'reasoning',
     'HybridQueryPlanner::analyze' => 'reasoning',
     'HybridQueryDecomposer' => 'reasoning',
-    'QuerySplitter::splitHybridQuery' => 'reasoning',
     'ComplexQueryHandler::decomposeComplexQuery' => 'reasoning',
     'UnifiedMetadataExtractor::extract' => 'reasoning',
     'IntentRouter::detectIntentViaLLM' => 'reasoning',
     'AmbiguousQueryDetector::detectAmbiguity' => 'reasoning',
-    'AmbiguousQueryDetector::clarifyQueryForInterpretation' => 'reasoning',
     // Reached through the relay: it is the commissioner of the parallel clarification calls.
     'AmbiguousQueryDetector::generateMultipleInterpretations' => 'reasoning',
     'ReferenceResolver' => 'reasoning',

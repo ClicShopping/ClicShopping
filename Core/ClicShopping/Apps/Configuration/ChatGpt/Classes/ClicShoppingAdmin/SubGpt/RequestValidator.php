@@ -144,6 +144,9 @@ class RequestValidator
     $securityCheck = SecurityOrchestrator::validateQuery($query, null);
     
     if ($securityCheck['blocked']) {
+      // No verdict is not a threat: say which one it was.
+      $unavailable = in_array($securityCheck['detection_method'], ['llm_error', 'error'], true);
+
       error_log('🛡️ SECURITY: Blocked malicious query');
       error_log('   - Threat Type: ' . $securityCheck['threat_type']);
       error_log('   - Threat Score: ' . $securityCheck['threat_score']);
@@ -154,8 +157,8 @@ class RequestValidator
         'valid' => false,
         'error' => [
           'success' => false,
-          'error' => CLICSHOPPING::getDef('text_error_prompt_blocked_security'),
-          'error_code' => 'SECURITY_THREAT_DETECTED',
+          'error' => CLICSHOPPING::getDef($unavailable ? 'text_error_security_check_unavailable' : 'text_error_prompt_blocked_security'),
+          'error_code' => $unavailable ? 'SECURITY_CHECK_UNAVAILABLE' : 'SECURITY_THREAT_DETECTED',
           'threat_type' => $securityCheck['threat_type'],
           'threat_score' => $securityCheck['threat_score'],
           'detection_method' => $securityCheck['detection_method'],

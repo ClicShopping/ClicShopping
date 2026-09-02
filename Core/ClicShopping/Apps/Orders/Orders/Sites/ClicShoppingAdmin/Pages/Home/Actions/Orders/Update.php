@@ -15,13 +15,10 @@ use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\Apps\Configuration\TemplateEmail\Classes\ClicShoppingAdmin\TemplateEmailAdmin;
 use ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin\OrderAdmin;
-use ClicShopping\Apps\Orders\Orders\Classes\Common\EInvoiceService;
 
 class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public mixed $app;
-  private mixed $lang;
-  private mixed $db;
   protected int $oID;
   protected int $status;
   protected int $statusInvoice;
@@ -36,9 +33,6 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
   public function __construct()
   {
     $this->app = Registry::get('Orders');
-    $this->lang = Registry::get('Language');
-    $this->db = Registry::get('Db');
-
     // Typed properties must always be initialized: reading an uninitialized typed
     // property is a fatal Error in PHP 8 (not just a warning).
     $this->oID = isset($_GET['oID']) ? (int)HTML::sanitize($_GET['oID']) : 0;
@@ -53,32 +47,6 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
   }
 
   /**
-   * Fetches the current order status data needed for change detection and e-invoice processing.
-   * Retrieves order status, invoice status, customer contact details, and SIRET information.
-   *
-   * @return mixed  Fetched row array from the orders table, or false if not found
-   */
-  private function getCheckStatus()
-  {
-    $data_array = [
-      'customers_name',
-      'customers_email_address',
-      'orders_status',
-      'date_purchased',
-      'orders_status_invoice',
-      'erp_invoice',
-      'customers_siret',
-      'customers_company',
-    ];
-
-    $QcheckStatus = $this->app->db->get('orders', $data_array, ['orders_id' => (int)$this->oID]);
-
-    $check = $QcheckStatus->fetch();
-
-    return $check;
-  }
-
-  /**
    * Sends an update notification email to the customer when the order status changes.
    * Includes optional comments and uses the configured email template.
    * Only called when the 'notify' POST field is set.
@@ -87,7 +55,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $CLICSHOPPING_Mail = Registry::get('Mail');
 
-    $check = $this->getCheckStatus();
+    $check = OrderAdmin::checkStatusId($this->oID);
 
     $notify_comments = '';
 
@@ -100,6 +68,8 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $template_email_signature = TemplateEmailAdmin::getTemplateEmailSignature();
     $template_email_footer = TemplateEmailAdmin::getTemplateEmailTextFooter();
 
+    // The status must be displayed by its readable name (e.g. "En cours"), not the
+    // numeric ID submitted by the form, otherwise the customer receives "Nouveau statut : 3".
     $status_name = (string)$this->status;
 
     $CLICSHOPPING_Language = Registry::get('Language');
@@ -142,92 +112,6 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $this->hooks->call('Orders', 'OrderEmail');
   }
 
-  /**
-   * Triggers the Chorus Pro electronic invoice submission when conditions are met.
-   *
-   * Conditions required (all must be true):
-   *   1. CHORUSPRO_ENABLED = True
-   *   2. The admin has checked the "E-Invoice" slider (notify_einvoice POST field is set)
-   *   3. The invoice status has actually changed to a new value
-   *   4. The new invoice status is actionable: STATUS_INVOICE(2), STATUS_CANCEL(3), STATUS_CREDIT_NOTE(4)
-   *
-   * Instantiates a full OrderAdmin object to get all required order data,
-   * then delegates to EInvoiceService::process().
-   *
-   * @param array $check  Current order data from getCheckStatus()
-   */
-  private function processChorusPro(array $check): void
-  {
-    $eInvoice = new EInvoiceService();
-
-    if (!$eInvoice->isEnabled()) {
-      return;
-    }
-
-    // Only act if the admin explicitly enabled the e-invoice slider
-    if (!isset($_POST['notify_einvoice'])) {
-      return;
-    }
-
-    $new_invoice_status = (int)$this->statusInvoice;
-
-    // Do not re-process if the invoice status has not changed
-    if ((int)$check['orders_status_invoice'] === $new_invoice_status) {
-      return;
-    }
-
-    // Only process actionable statuses
-    if (!in_array($new_invoice_status, [
-      EInvoiceService::STATUS_INVOICE,
-      EInvoiceService::STATUS_CANCEL,
-      EInvoiceService::STATUS_CREDIT_NOTE,
-    ])) {
-      return;
-    }
-
-    // Instantiate OrderAdmin to get complete order data (customer, products, totals)
-    $order = new OrderAdmin((int)$this->oID);
-
-    $eInvoice->process(
-      (int)$this->oID,
-      $order->customer,
-      $order->info,
-      $order->products,
-      $order->totals,
-      $new_invoice_status
-    );
-  }
-
-  /**
-   * Displays a MessageStack warning when the order is in a paid/confirmed status
-   * but the invoice has not yet been issued (orders_status_invoice != STATUS_INVOICE).
-   *
-   * This reminds the administrator to:
-   *   1. Regenerate and send the PDF invoice to the customer
-   *   2. Transmit the electronic invoice to Chorus Pro via the status tab
-   *
-   * Note: $paid_order_status = 3 corresponds to the "paid/confirmed" order status
-   * in the default ClicShopping configuration. Adjust this value if your shop uses
-   * a different status ID for confirmed/paid orders.
-   *
-   * @param array $check  Current order data from getCheckStatus()
-   */
-  private function checkInvoiceAlert(array $check): void
-  {
-    $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
-
-    // Status 3 = paid/confirmed order — adjust to match your configuration
-    $paid_order_status = 3;
-
-    if ((int)$this->status === $paid_order_status
-      && (int)($check['orders_status_invoice'] ?? 0) !== EInvoiceService::STATUS_INVOICE
-    ) {
-      $CLICSHOPPING_MessageStack->add(
-        $this->app->getDef('warning_invoice_not_issued'),
-        'warning'
-      );
-    }
-  }
 
   /**
    * Main action — processes the order status update form submission.
@@ -249,7 +133,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $order_updated = false;
 
       if ($this->oID != 0) {
-        $check = $this->getCheckStatus();
+        $check = OrderAdmin::checkStatusId($this->oID);
 
         if (($check['orders_status'] != $this->status) || ($check['orders_status_invoice'] != $this->statusInvoice) || ($this->comments !== '')) {
           $data_array = [
@@ -275,12 +159,6 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
           $this->app->db->save('orders_status_history', $data_array);
 
           $order_updated = true;
-
-          // Trigger Chorus Pro if e-invoice slider was enabled by admin
-          $this->processChorusPro($check);
-
-          // Show warning if order is paid but invoice not yet issued
-          $this->checkInvoiceAlert($check);
         } else {
           $order_updated = true;
         }

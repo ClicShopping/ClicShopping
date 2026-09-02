@@ -13,7 +13,6 @@ use ClicShopping\OM\Registry;
 use ClicShopping\Sites\ClicShoppingAdmin\Tax;
 use ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin\OrderAdmin;
 use ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin\UpdateOrder as UpdateOrderService;
-use ClicShopping\Apps\Orders\Orders\Classes\Common\EInvoiceService;
 
 $CLICSHOPPING_Orders = Registry::get('Orders');
 $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
@@ -575,7 +574,7 @@ $Qcustomers->execute();
                             <ul class="list-group-slider list-group-flush">
                               <li class="list-group-item-slider">
                                 <label class="switch">
-                                  <?php echo HTML::checkboxField('notify_comments', '', true, 'class="success"'); ?>
+                                  <?php echo HTML::checkboxField('notify', '', true, 'class="success"'); ?>
                                   <span class="slider"></span>
                                 </label>
                               </li>
@@ -586,133 +585,33 @@ $Qcustomers->execute();
                     </span>
                   </div>
                   <div class="col-md-6">
-                  <span id="notifyComments">
-                    <div class="col-md-8">
-                      <div class="form-group row">
-                        <label for="<?php echo $CLICSHOPPING_Orders->getDef('entry_notify_comments'); ?>"
-                               class="col-5 col-form-label"><strong><?php echo $CLICSHOPPING_Orders->getDef('entry_notify_comments'); ?></strong></label>
-                        <div class="col-md-5">
-                          <ul class="list-group-slider list-group-flush">
-                            <li class="list-group-item-slider">
-                              <label class="switch">
-                                <?php echo HTML::checkboxField('notify_comments', '', true, 'class="success"'); ?>
-                                <span class="slider"></span>
-                              </label>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </span>
-                  </div>
-                </div>
-
-                <?php
-                //**********************************
-                // ── E-Invoice (Chorus Pro) slider — visible only when module is enabled ──
-                $eInvoiceService = new EInvoiceService();
-
-                if ($eInvoiceService->isEnabled()) {
-                  // Retrieve current numeric invoice status directly from the orders table
-                  $QinvoiceStatus = $CLICSHOPPING_Orders->db->prepare('select orders_status_invoice
-                                                                        from :table_orders
-                                                                        where orders_id = :orders_id
-                                                                        ');
-                  $QinvoiceStatus->bindInt(':orders_id', $oID);
-                  $QinvoiceStatus->execute();
-                  $current_invoice_status_id = $QinvoiceStatus->valueInt('orders_status_invoice');
-
-                  $is_b2b = isset($order) ? $eInvoiceService->isB2B($order->customer) : false;
-                  $already_sent = $eInvoiceService->isAlreadySent($oID);
-                ?>
-                <div class="row mt-2" id="notifyEInvoice">
-                  <div class="col-md-12">
-                    <div class="card border-secondary">
-
-                      <!-- Card header: title + portal button -->
-                      <div class="card-header d-flex align-items-center gap-2">
-                        <strong>&#127963; <?php echo $CLICSHOPPING_Orders->getDef('card_title'); ?></strong>
-                        <span class="ms-2 text-muted small">
-                          <?php echo $CLICSHOPPING_Orders->getDef('label_invoice_status'); ?> :
-                          <strong><?php echo htmlspecialchars($orders_status_invoice_array[$current_invoice_status_id] ?? '—'); ?></strong>
-                        </span>
-                        <a href="<?php echo EInvoiceService::CHORUS_PORTAL_URL; ?>"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="btn btn-sm btn-primary ms-auto"
-                           title="<?php echo $CLICSHOPPING_Orders->getDef('button_portal'); ?>">
-                          <i class="bi bi-box-arrow-up-right me-1"></i><?php echo $CLICSHOPPING_Orders->getDef('button_portal'); ?>
-                        </a>
-                      </div>
-
-                      <!-- Card body: contextual status message -->
-                      <div class="card-body py-2">
-                        <?php
-                        if (!$is_b2b) {
-                        ?>
-                          <span class="badge bg-secondary"><?php echo $CLICSHOPPING_Orders->getDef('badge_b2c'); ?></span>
-                          &nbsp;<span class="text-muted small"><?php echo $CLICSHOPPING_Orders->getDef('text_b2c_notice'); ?></span>
-
-                        <?php
-                        } elseif ($already_sent) {
-                          ?>
-                          <span class="badge bg-success"><?php echo $CLICSHOPPING_Orders->getDef('badge_transmitted'); ?></span>
-                          &nbsp;<span class="text-success small"><?php echo $CLICSHOPPING_Orders->getDef('text_transmitted_notice'); ?></span>
-
-                        <?php
-                        } elseif (!in_array($current_invoice_status_id, [EInvoiceService::STATUS_INVOICE, EInvoiceService::STATUS_CANCEL, EInvoiceService::STATUS_CREDIT_NOTE])) {
-                          ?>
-
-                          <span class="badge bg-warning text-dark"><?php echo $CLICSHOPPING_Orders->getDef('badge_pending'); ?></span>
-                          &nbsp;<span class="text-muted small"><?php echo $CLICSHOPPING_Orders->getDef('text_pending_notice'); ?></span>
-
-                        <?php
-                        } else {
-                          ?>
-                          <span class="badge bg-info"><?php echo $CLICSHOPPING_Orders->getDef('badge_ready'); ?></span>
-                          &nbsp;<span class="text-muted small"><?php echo $CLICSHOPPING_Orders->getDef('text_ready_notice'); ?></span>
-                        <?php
-                        }
-                        ?>
-
-                        <?php
-                        // Show the E-Invoice slider only if B2B and not yet transmitted
-                        if ($is_b2b && !$already_sent) {
-                        ?>
-                        <div class="mt-2">
-                          <div class="form-group row">
-                            <label class="col-5 col-form-label">
-                              <strong><?php echo $CLICSHOPPING_Orders->getDef('entry_notify_einvoice'); ?></strong>
-                            </label>
-                            <div class="col-md-5">
-                              <ul class="list-group-slider list-group-flush">
-                                <li class="list-group-item-slider">
-                                  <label class="switch">
-                                    <input type="checkbox" name="notify_einvoice" value="1" class="success">
-                                    <span class="slider"></span>
-                                  </label>
-                                </li>
-                              </ul>
-                            </div>
+                    <span id="notifyComments">
+                      <div class="col-md-8">
+                        <div class="form-group row">
+                          <label for="<?php echo $CLICSHOPPING_Orders->getDef('entry_notify_comments'); ?>"
+                                 class="col-5 col-form-label"><strong><?php echo $CLICSHOPPING_Orders->getDef('entry_notify_comments'); ?></strong></label>
+                          <div class="col-md-5">
+                            <ul class="list-group-slider list-group-flush">
+                              <li class="list-group-item-slider">
+                                <label class="switch">
+                                  <?php echo HTML::checkboxField('notify_comments', '', true, 'class="success"'); ?>
+                                  <span class="slider"></span>
+                                </label>
+                              </li>
+                            </ul>
                           </div>
                         </div>
-                        <?php
-                        }
-                        ?>
-                      </div><!-- /card-body -->
-                    </div><!-- /card -->
-                  </div><!-- /col -->
-                </div><!-- /row -->
-                <?php
-                }
-                ?>
-
+                      </div>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="mt-1"></div>
-            <div id="ErpOrder"></div>
-            </form>
           </div>
+          <div class="mt-1"></div>
+          <div id="ErpOrder"></div>
+          </form>
+
           <div class="mt-1"></div>
           <div class="mainTitle"><?php echo $CLICSHOPPING_Orders->getDef('title_orders_history'); ?></div>
           <div class="adminformTitle">

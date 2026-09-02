@@ -34,5 +34,3 @@ history_siret_recipient = SIRET recipient
 history_portal = Portal
 history_error = Error
 history_number = Invoice number
-
-warning_invoice_not_issued = Warning: this order is marked as paid but no electronic invoice has been issued yet. Please update the PDF invoice and transmit it to Chorus Pro via the status tab.

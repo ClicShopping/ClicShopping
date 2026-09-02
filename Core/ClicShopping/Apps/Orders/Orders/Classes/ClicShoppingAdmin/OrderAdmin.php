@@ -371,4 +371,31 @@ class OrderAdmin
 
     return $result;
   }
+
+  /**
+   * Fetches the current order status data needed for change detection and e-invoice processing.
+   * Retrieves order status, invoice status, customer contact details, and SIRET information.
+   * @param int $order_id
+   * @return mixed
+   */
+  public static function checkStatusId(int $order_id) :mixed
+  {
+    $CLICSHOPPING_Db = Registry::get('Db');
+    $data_array = [
+      'customers_name',
+      'customers_email_address',
+      'orders_status',
+      'date_purchased',
+      'orders_status_invoice',
+      'erp_invoice',
+      'customers_siret',
+      'customers_company',
+    ];
+
+    $QcheckStatus = $CLICSHOPPING_Db->get('orders', $data_array, ['orders_id' => $order_id]);
+
+    $check = $QcheckStatus->fetch();
+
+    return $check;
+  }
 }

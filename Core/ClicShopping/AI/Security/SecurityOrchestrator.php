@@ -99,12 +99,10 @@ class SecurityOrchestrator
           ]);
           
           // TODO: Implement pattern fallback (Phase 2)
-          // For now, allow query with warning
-          return self::buildResult(false, 0.0, 'none', 'LLM unavailable, pattern fallback not implemented', $startTime, 'llm_error');
+          return self::failClosed($query, 'LLM unavailable, pattern fallback not implemented', $startTime, 'llm_error');
         }
-        
-        // No fallback - allow query with warning
-        return self::buildResult(false, 0.0, 'none', 'Security check unavailable', $startTime, 'llm_error');
+
+        return self::failClosed($query, 'Security check unavailable', $startTime, 'llm_error');
       }
       
       // ============================================
@@ -186,15 +184,30 @@ class SecurityOrchestrator
       );
       
     } catch (\Exception $e) {
-      // Unexpected error - log and allow query
       self::$logger->logError('SecurityOrchestrator exception', [
         'query_preview' => substr($query, 0, 100),
         'exception' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
       ]);
       
-      return self::buildResult(false, 0.0, 'none', 'Security check error', $startTime, 'error');
+      return self::failClosed($query, 'Security check error', $startTime, 'error');
     }
+  }
+
+  /**
+   * No verdict from the analyzer: a security gate never fails open.
+   */
+  private static function failClosed(string $query, string $reason, float $startTime, string $method): array
+  {
+    // A logging failure must not decide the query.
+    try {
+      self::$logger->logSecurityDecision($query, true, 0.0, 'unavailable', $reason, [
+        'detection_method' => $method
+      ]);
+    } catch (\Throwable) {
+    }
+
+    return self::buildResult(true, 0.0, 'unavailable', $reason, $startTime, $method);
   }
   
   /**

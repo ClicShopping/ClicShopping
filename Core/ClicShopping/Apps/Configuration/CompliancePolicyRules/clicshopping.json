@@ -14,6 +14,12 @@
     }
   ],
   "modules": {
+    "Hooks": {
+      "ClicShoppingAdmin/Orders": {
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\Update",
+        "PageContentTab3": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\PageContentTab3"
+      }
+    }
   },
   "routes": {
     "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"

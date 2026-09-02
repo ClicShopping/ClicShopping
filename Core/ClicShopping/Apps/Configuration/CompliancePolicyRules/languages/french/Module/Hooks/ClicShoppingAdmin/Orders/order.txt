@@ -1,0 +1,2 @@
+comments_chorus_pro = Votre facture {{order_id}} a été envoyé à ChorusPro le {{send_date}}
+warning_invoice_not_issued = Attention : cette commande est marquée comme payée, mais aucune facture électronique n'a encore été émise. Veuillez mettre à jour la facture PDF et la transmettre à Chorus Pro via l'onglet « Statut ».
