@@ -3,9 +3,6 @@ Analysez cette requête et déterminez si elle est ambiguë (susceptible d'avoir
 Requête : {{QUERY}}
 **RÈGLE CRITIQUE - LES RÉFÉRENCES TEMPORELLES EXPLICITES NE SONT PAS AMBIGUËS** :
 Si la requête contient des références temporelles EXPLICITES, retournez IMMÉDIATEMENT is_ambiguous: false :
-* "ce mois", "ce mois-ci", "cette année", "cette semaine", "ce trimestre", "ce jour"
-* "le mois dernier", "l'année dernière", "la semaine dernière", "le dernier trimestre", "les 30 derniers jours"
-* "aujourd'hui", "hier", "demain"
 * "this month", "this year", "this week", "this quarter", "this day"
 * "last month", "last year", "last week", "last quarter", "last 30 days"
 * "today", "yesterday", "tomorrow"
@@ -19,9 +16,8 @@ EXCEPTION — une mesure d'ÉTAT COURANT n'est pas une mesure dans le temps et n
 Cette règle est PRIORITAIRE sur les règles de langage quantitatif, de chiffre d'affaires, de multi-champs et de GROUP BY ci-dessous. Ces règles tranchent QUELLE mesure calculer et SELON QUELLE dimension regrouper ; elles ne tranchent jamais QUELLE PÉRIODE couvrir. Une requête peut être parfaitement explicite sur sa mesure et manquer malgré tout de sa période — elle est alors ambiguë.
 **RÈGLE CRITIQUE - UNITÉ TEMPORELLE MANQUANTE (temporal_unit_missing)** :
 Un NOMBRE suivi de "derniers"/"dernières"/"last"/"past"/"previous" SANS UNITÉ de temps qui suit (jour/semaine/mois/an/année, day/week/month/year) est AMBIGU — l'unité est manquante et NE DOIT PAS être devinée :
-* "les 12 derniers", "sur les 6 dernières", "les 3 derniers" → AMBIGU (12/6/3 quoi ? jours ? semaines ? mois ? années ?)
 * "the last 12", "over the past 6", "for the previous 3" → AMBIGU (12/6/3 de QUOI ? jours ? semaines ? mois ? années ?)
-À l'inverse, quand l'unité EST présente la référence est EXPLICITE et NON ambiguë : "les 12 derniers mois", "les 30 derniers jours", "last 12 months", "last 30 days".
+À l'inverse, quand l'unité EST présente la référence est EXPLICITE et NON ambiguë : , "les 30 derniers jours", "last 12 months", "last 30 days".
 TOUT AUSSI NON ambigu — et JAMAIS temporal_unit_missing : quand le nombre est immédiatement suivi d'un nom d'ENREGISTREMENT/ENTITÉ DÉNOMBRABLE ({{countable_entity_nouns}}). {{recent_records_example}} désigne les 3 enregistrements les PLUS RÉCENTS de cette entité (tri par date ou id DESC, LIMIT N) — mettez is_ambiguous false et "recommendation": "proceed", ne PAS demander de clarification. L'unité n'est "manquante" que si AUCUN nom dénombrable ne suit le nombre.
 Pour temporal_unit_missing, mettez "recommendation": "clarify" et fournissez des interprétations nommant les unités plausibles (mois / jours / années). NE choisissez PAS l'unité par défaut silencieusement — l'utilisateur doit confirmer quelle unité de période il vise.
 **NOUVELLE RÈGLE CRITIQUE - AMBIGUÏTÉ DE PORTÉE TEMPORELLE (temporal_period_scope)** :

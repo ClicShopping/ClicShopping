@@ -3,14 +3,12 @@ text_classification_analytics_definition_bullets = * Numbers, calculations (reve
 * Field values (price, stock, reference, SKU)
 * Statuses (pending orders, out-of-stock products)
 
-text_classification_classification_context_examples = - Example 1: "article 6 des CGV" (semantic) → "article 4 des CGV" (must be semantic, NOT influenced by previous query type)
-- Example 2: "nombre de produits" (analytics) → "article 4 des CGV" (must be semantic, NOT analytics)
-- Example 3: "article 6 des CGV" (semantic) → "nombre de produits par catégorie" (must be analytics, NOT semantic)
+text_classification_classification_context_examples = - Example 1: "article 6 of the terms and conditions" (semantic) → "article 4 of the terms and conditions" (must be semantic, NOT influenced by previous query type)
+- Example 3: "article 6 of the terms and conditions" (semantic) → "number of products per category" (must be analytics, NOT semantic)
 
-text_classification_classification_independence_examples = - Query 1: "article 6 des CGV" → semantic (requests document content)
-- Query 2: "article 4 des CGV" → semantic (requests document content, NOT influenced by Query 1)
-- Query 3: "nombre de produits" → analytics (requests database count, NOT influenced by Query 1 or 2)
-- Query 4: "article 4 des CGV" → semantic (requests document content, NOT influenced by Query 3)
+text_classification_classification_independence_examples = - Query 1: "article 6 of the terms and conditions" → semantic (requests document content)
+- Query 2: "article 4 of the terms and conditions" → semantic (requests document content, NOT influenced by Query 1)
+- Query 4: "article 4 of the terms and conditions" → semantic (requests document content, NOT influenced by Query 3)
 
 text_classification_domain_action_selection = - If the user is asking for stock forecast / replenishment probability / stockout risk / safety stock forecast,
 set: "action":"inventory_forecast"
@@ -19,7 +17,7 @@ set: "action":"inventory_forecast"
 - If entity_id is not explicit, omit it and keep other defaults.
 - If horizon is described (e.g., "next month"), set horizon_days accordingly.
 
-text_classification_entity_context_example = - "SKU de l'iPhone 17 Pro" → "description du produit"
+text_classification_entity_context_example = - "SKU of the iPhone 17 Pro" → "product description"
 - Entity 'iPhone 17 Pro' is preserved, but classify 'description' as semantic independently
 
 text_classification_fallback_analytics_examples = trend, growth, total, average, ratio, sales, revenue, profit, stock, price range
@@ -85,7 +83,7 @@ If the query contains a price request WITH a target site indicator, classify as 
 * "samsung galaxy 26 price on amazon" → HYBRID (analytics + web_search)
 * "nokia phone price at walmart" → HYBRID (analytics + web_search)
 * "laptop price on ebay" → HYBRID (analytics + web_search)
-- Detection keywords: "on", "at", "from", "sur", "chez", "à"
+- Detection keywords: "on", "at", "from"
 - If detected → {"type":"hybrid","sub_types":["analytics","web_search"],"reasoning":"Price comparison with target site"}
 * YES → {"type":"hybrid","sub_types":["analytics","web_search"]}
 * NO → Step 3

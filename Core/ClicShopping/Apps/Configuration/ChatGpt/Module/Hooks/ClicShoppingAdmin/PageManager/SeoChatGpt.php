@@ -77,10 +77,6 @@ class SeoChatGpt implements HooksInterface
     $getPageManagerSeoDescription = ChatJsAdminSeo::getPageManagerSeoDescription($content, $urlMultilanguage, $translate_language, $question_summary_description, $page_manager_name, $url);
     $getPageManagerSeoKeywords = ChatJsAdminSeo::getPageManagerSeoKeywords($content, $urlMultilanguage, $translate_language, $question_keywords, $page_manager_name, $url);
 
-    $getPageManagerSeoTitle = HTML::injectJsHtml($getPageManagerSeoTitle);
-    $getPageManagerSeoDescription = HTML::injectJsHtml($getPageManagerSeoDescription);
-    $getPageManagerSeoKeywords = HTML::injectJsHtml($getPageManagerSeoKeywords);
-
     $output = <<<EOD
 <!------------------>
 <!-- ChatGpt start tag-->

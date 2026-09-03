@@ -4,7 +4,8 @@ CANDIDATE ENTITY: a {{entity_type}} named "{{entity_name}}".
 This entity is merely the last one the system happened to track. It is often harvested from a row of a previous ANSWER, so its existence is NOT evidence that the user is talking about it.
 NEW QUERY: {{query}}
 Decide whether the NEW QUERY continues to talk about the CANDIDATE ENTITY.
-REQUIREMENT 1 — user focus. In one of their OWN turns, the user must have named that entity or asked about it. If the entity only ever appeared inside an Assistant answer — a list, a ranking, a set of results — the user was asking about the list, not about that row: answer false and stop.
+{{focus_requirement}}
 REQUIREMENT 2 — the NEW QUERY must not carry its own subject. A query that states what it is about (a named collection, a category, a policy, a company-wide total) is self-contained: answer false, even right after the user discussed the entity. A query that leaves its subject unspecified — a bare metric, an attribute, a fragment, a pronoun — inherits the entity the user was focused on: answer true.
 Respond ONLY with JSON: {"references_entity": true|false, "resolved_query": "<the NEW QUERY, rewritten to name the entity only if references_entity is true>"}
 text_reference_resolution_no_history = (no earlier turn recorded)
+text_reference_resolution_user_focus = REQUIREMENT 1 — user focus. In one of their OWN turns, the user must have named that entity or asked about it. If the entity only ever appeared inside an Assistant answer — a list, a ranking, a set of results — the user was asking about the list, not about that row: answer false and stop.

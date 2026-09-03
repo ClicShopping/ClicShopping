@@ -161,7 +161,7 @@ class AnalyticsExecutor
    * Resolve a contextual reference carried by a decomposed sub-query
    *
    * @param string $query Sub-query text
-   * @param array $context Step context, carrying last_entity when available
+   * @param array $context Step context, carrying last_entity and the whole question
    * @return string Resolved query, or the original one when nothing references the entity
    */
   private function resolveSubQueryReferences(string $query, array $context): string
@@ -176,7 +176,10 @@ class AnalyticsExecutor
       $history = (new ConversationTurnReader($this->userId, $this->languageId, $this->debug))
         ->getRecentTurns(TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_REFERENCE_HISTORY_TURNS'));
 
-      $resolved = (new ReferenceResolver($this->debug))->resolve($query, $lastEntity, $history)['resolved_query'] ?? $query;
+      // Same question: the entity comes from the sibling half, so the user-focus requirement of
+      // the inter-turn guard does not apply here.
+      $resolved = (new ReferenceResolver($this->debug))
+        ->resolve($query, $lastEntity, $history, true)['resolved_query'] ?? $query;
     } catch (\Exception $e) {
       // Reference resolution is never fatal: fall back to the sub-query as cut.
       $this->logger->logSecurityEvent(

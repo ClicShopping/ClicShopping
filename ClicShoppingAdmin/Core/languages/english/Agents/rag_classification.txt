@@ -78,13 +78,12 @@ CRITICAL RULES:
 5. Explanations = ALWAYS semantic, EXCEPT when rule 7 applies
 {{rule_explanations_examples}}
 6. Underspecified TIME SCOPE = analytics BUT lower confidence (0.8)
-A number followed by "last"/"past"/"previous"/"derniers"/"dernières" WITHOUT a time unit
-(day/week/month/year, jour/semaine/mois/an/année) leaves the period unit unknown.
+A number followed by "last"/"past"/"previous" WITHOUT a time unit
+(day/week/month/year) leaves the period unit unknown.
 Still classify as analytics, but set "confidence":0.8 (NOT 0.9 or higher) so the downstream
 ambiguity check can ask the user which unit is meant. Do NOT guess the unit here.
 "orders over 70 in the last 12" → analytics, confidence 0.8 (12 of days/months/years?)
-"les 12 derniers" (no unit) → analytics, confidence 0.8
-"in the last 12 months" / "les 12 derniers mois" → analytics, confidence 0.95 (unit explicit)
+"in the last 12 months"  → analytics, confidence 0.95 (unit explicit)
 7. PRESCRIPTIVE questions whose OBJECTIVE names a measurable quantity = analytics
 A question asking what to DO - propose a strategy, an action plan, how to increase or reduce
 something - is not an explanation to retrieve: it can only be answered by MEASURING first. When

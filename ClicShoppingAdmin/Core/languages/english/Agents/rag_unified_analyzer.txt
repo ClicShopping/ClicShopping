@@ -82,36 +82,31 @@ ANALYTICS KEYWORDS (ALWAYS → analytics)
 
 Quantitative Keywords (COUNT operations)
 - English: "how many", "number of", "count", "total number"
-- French: "combien", "nombre de", "nombre", "total", "nbr de", "nbr"
 
 Sorting Keywords (ORDER BY operations)
 - English: "cheapest", "most expensive", "best", "worst", "top", "bottom", "ranking", "rank", "ranked"
-- French: "moins cher", "plus cher", "meilleur", "pire", "top", "classement", "rang", "classé"
 
 Aggregation Keywords (SUM/AVG/MAX/MIN operations)
 - English: "total", "sum", "average", "maximum", "minimum"
-- French: "total", "somme", "moyenne", "maximum", "minimum"
 
 Financial Keywords (Revenue/Sales operations)
 - English: "revenue", "sales", "profit", "cost", "price"
-- French: "revenu", "ventes", "chiffre d'affaires", "CA", "coût", "prix"
 
 RULE FOR BASIC ANALYTICS DETECTION
 
 🚨 **ABSOLUTE RULE**: If query contains ANY of these keywords → **analytics**
 
 Priority order:
-1. Quantitative: "how many", "number of", "combien", "nombre", "nbr de", "nbr" → analytics
-2. Sorting: "cheapest", "most expensive", "moins cher", "plus cher" → analytics
-3. Ranking: "best" + "ranking", "meilleurs" + "classement", "ranked", "classé" → analytics (NOT hybrid!)
+1. Quantitative: "how many", "number of" → analytics
+2. Sorting: "cheapest", "most expensive" → analytics
+3. Ranking: "best" + "ranking", "ranked" → analytics (NOT hybrid!)
 4. Aggregation: "total", "sum", "average", "maximum", "minimum" → analytics
-5. Financial: "revenue", "sales", "profit", "cost", "price", "chiffre d'affaires" → analytics
+5. Financial: "revenue", "sales", "profit", "cost", "price" → analytics
 6. Status: "pending", "active", "completed", "cancelled" → analytics
 
 **SPECIAL RULE FOR RANKING QUERIES**:
-- If query contains "best" OR "meilleurs" AND "ranking" OR "classement" → **ALWAYS analytics**
+- If query contains "best" AND "ranking" → **ALWAYS analytics**
 - Example: "best semesters and their ranking" → analytics (NOT hybrid!)
-- Example: "meilleurs semestres et leur classement" → analytics (NOT hybrid!)
 - Ranking is a single analytics operation (ORDER BY + RANK), not multiple operations
 
 {{examples}}

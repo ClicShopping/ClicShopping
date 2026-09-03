@@ -56,9 +56,13 @@ class ReferenceResolver
    * @param array $lastEntity Last entity context (keys: type, name, id)
    * @param array<int, array{user: string, assistant: string}> $history Recent turns in English,
    *                                                                    oldest first
+   * @param bool $sameQuestion True when the entity was produced by another half of the SAME
+   *                            question. The user-focus requirement then does not apply: that
+   *                            entity is the user's own subject, not a row harvested from a past
+   *                            answer, and applying it rejects every chained half.
    * @return array{resolved_query: string, references_entity: bool}
    */
-  public function resolve(string $query, array $lastEntity, array $history = []): array
+  public function resolve(string $query, array $lastEntity, array $history = [], bool $sameQuestion = false): array
   {
     $unchanged = ['resolved_query' => $query, 'references_entity' => false];
 
@@ -83,6 +87,7 @@ class ReferenceResolver
       'entity_type' => $entityType,
       'entity_name' => (string)$name,
       'history' => $turns,
+      'focus_requirement' => $sameQuestion ? '' : CLICSHOPPING::getDef('text_reference_resolution_user_focus'),
     ]);
 
     try {

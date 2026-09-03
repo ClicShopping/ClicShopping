@@ -66,13 +66,8 @@ unified_analyzer_examples_basic_analytics = BASIC ANALYTICS EXAMPLES (ALL ARE AN
 
 COUNT Operations
 ✅ "number of products" → **analytics** (COUNT products)
-✅ "nombre de produits" → **analytics** (COUNT products)
-✅ "nbr de produits" → **analytics** (COUNT products)
 ✅ "number of categories" → **analytics** (COUNT categories)
-✅ "nombre de catégories" → **analytics** (COUNT categories)
-✅ "nbr de catégories" → **analytics** (COUNT categories)
 ✅ "how many orders" → **analytics** (COUNT orders)
-✅ "combien de commandes" → **analytics** (COUNT orders)
 ✅ "how many products" → **analytics** (COUNT products)
 ✅ "how many categories" → **analytics** (COUNT categories)
 ✅ "how many orders today" → **analytics** (COUNT with date filter)
@@ -82,20 +77,14 @@ COUNT Operations
 
 SORTING Operations
 ✅ "cheapest products" → **analytics** (ORDER BY price ASC)
-✅ "produits le moins cher" → **analytics** (ORDER BY price ASC)
 ✅ "most expensive products" → **analytics** (ORDER BY price DESC)
-✅ "produits le plus cher" → **analytics** (ORDER BY price DESC)
 ✅ "top 5 best-selling products" → **analytics** (ORDER BY sales DESC LIMIT 5)
 ✅ "worst performing products" → **analytics** (ORDER BY performance ASC)
 ✅ "best semesters for revenue and their ranking" → **analytics** (ORDER BY revenue DESC with RANK)
-✅ "meilleurs semestres de vente et leur classement" → **analytics** (ORDER BY sales DESC with RANK)
 ✅ "products ranked by price" → **analytics** (ORDER BY price with RANK)
-✅ "produits classés par prix" → **analytics** (ORDER BY price with RANK)
 
 AGGREGATION Operations
 ✅ "total revenue this month" → **analytics** (SUM with date filter)
-✅ "revenue par categorie" → **analytics** (SUM GROUP BY category)
-✅ "chiffre d'affaires par categorie" → **analytics** (SUM GROUP BY category)
 ✅ "average order value" → **analytics** (AVG calculation)
 ✅ "maximum stock level" → **analytics** (MAX operation)
 ✅ "minimum price" → **analytics** (MIN operation)
@@ -111,17 +100,11 @@ COMMON MISTAKES TO AVOID
 ❌ WRONG: Classifying "number of products" as "semantic"
 ✅ CORRECT: Classifying "number of products" as "analytics"
 
-❌ WRONG: Classifying "nombre de produits" as "semantic"
-✅ CORRECT: Classifying "nombre de produits" as "analytics"
 
-❌ WRONG: Classifying "nbr de produits" as "semantic"
-✅ CORRECT: Classifying "nbr de produits" as "analytics"
 
 ❌ WRONG: Classifying "cheapest products" as "semantic"
 ✅ CORRECT: Classifying "cheapest products" as "analytics"
 
-❌ WRONG: Classifying "revenue par categorie" as "semantic"
-✅ CORRECT: Classifying "revenue par categorie" as "analytics"
 
 unified_analyzer_examples_final_instructions = ⚠️ **CORRECT OUTPUT EXAMPLE**:
 {"language":"en","translated_query":"number of categories","intent_type":"analytics","entity_type":["category"],"filters":{},"time_constraint":"none","status_keywords":[],"sub_queries":[],"confidence":0.9,"ambiguity_note":"","is_multi_temporal":false,"temporal_periods":[],"temporal_connectors":[],"base_metric":null,"time_range":null}

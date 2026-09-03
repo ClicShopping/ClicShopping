@@ -4,7 +4,7 @@ text_ambiguity_clarify_examples = - "How many products?" + COUNT -> "Count the n
 - "How many products?" + SUM -> "Sum the total quantity of all products"
 - "Show orders" + RECENT -> "Show orders from the last 30 days"
 
-text_ambiguity_countable_entity_nouns = orders, customers, products, invoices, categories, manufacturers, reviews ; commandes, clients, produits, factures, catégories
+text_ambiguity_countable_entity_nouns = orders, customers, products, invoices, categories, manufacturers, reviews
 
 text_ambiguity_detect_examples = - "How many products in stock?" -> AMBIGUOUS (count distinct models vs sum total quantity).
 - "Count distinct products" -> NOT ambiguous (explicit COUNT).
@@ -13,38 +13,25 @@ text_ambiguity_detect_examples = - "How many products in stock?" -> AMBIGUOUS (c
 - "How many customers" -> NOT ambiguous (quantitative language "how many", default: COUNT all customers).
 - "Number of customers" -> NOT ambiguous (quantitative language "number of", default: COUNT all customers).
 - "Total number of orders" -> NOT ambiguous (quantitative language "total number").
-- "Combien de commandes ce mois" -> NOT ambiguous (quantitative "combien de" + explicit temporal "ce mois").
-- "Combien de clients" -> NOT ambiguous (quantitative language "combien de", default: COUNT all clients).
 - "Revenue this month" -> NOT ambiguous (financial term "revenue" = SUM + explicit temporal "this month").
 - "Sales this year" -> NOT ambiguous (financial term "sales" = SUM + explicit temporal "this year").
 - "Orders today" -> NOT ambiguous (explicit temporal expression "today" provides clear time filter).
 - "Monthly revenue" -> AMBIGUOUS (temporal_period_scope: current month revenue OR revenue grouped by month).
-- "chiffre d'affaires mensuel" -> AMBIGUOUS (temporal_period_scope: CA du mois en cours OU CA par mois).
 - "Weekly sales" -> AMBIGUOUS (temporal_period_scope: this week's sales OR sales by week).
-- "ventes hebdomadaires" -> AMBIGUOUS (temporal_period_scope: ventes de cette semaine OU ventes par semaine).
 - "revenue by month" -> NOT ambiguous (explicit "by month" = GROUP BY MONTH).
-- "chiffre d'affaires par mois" -> NOT ambiguous (explicit "par mois" = GROUP BY MONTH).
 - "revenue this month" -> NOT ambiguous (explicit "this month" = current month only).
-- "chiffre d'affaires ce mois" -> NOT ambiguous (explicit "ce mois" = mois en cours seulement).
 - "Average price of products" -> NOT ambiguous (statistical language "average").
 - "Highest revenue this year" -> NOT ambiguous (extreme language "highest" + explicit temporal "this year").
 - "price and SKU" -> NOT ambiguous (multi-field query with 2 specific fields).
 - "model and price" -> NOT ambiguous (multi-field query with 2 specific fields).
-- "modèle et prix" -> NOT ambiguous (multi-field query with 2 specific fields).
-- "prix et quantité" -> NOT ambiguous (multi-field query with 2 specific fields).
 - "Show model and price" -> NOT ambiguous (display verb + multi-field query).
-- "Affiche le modèle et le prix" -> NOT ambiguous (display verb + multi-field query).
 - "sales by category" -> NOT ambiguous (GROUP BY query with clear aggregation: SUM sales grouped by category).
 - "revenue by month" -> NOT ambiguous (GROUP BY query with clear aggregation: SUM revenue grouped by month).
 - "orders by status" -> NOT ambiguous (GROUP BY query with clear aggregation: COUNT orders grouped by status).
-- "ventes par catégorie" -> NOT ambiguous (GROUP BY query: SUM ventes grouped by catégorie).
-- "commandes par statut" -> NOT ambiguous (GROUP BY query: COUNT commandes grouped by statut).
-- "chiffre d'affaires par trimestre" -> NOT ambiguous (GROUP BY query: SUM revenue grouped by quarter).
 - "Show orders" -> AMBIGUOUS (all vs recent vs active, NO time reference).
 - "Show all orders" -> NOT ambiguous (explicit scope "all").
 - "Show sales" -> AMBIGUOUS (no time reference, no quantification, no scope).
 - "customers who spent over 70 in the last 12" -> AMBIGUOUS (temporal_unit_missing: 12 days? months? years? -> clarify).
-- "clients ayant acheté pour plus de 70 sur les 12 derniers" -> AMBIGUOUS (temporal_unit_missing: 12 jours ? mois ? années ? -> clarify).
 - "customers who spent over 70 in the last 12 months" -> NOT ambiguous (explicit unit "months").
 
 text_ambiguity_entity_examples = orders, customers, products
@@ -54,38 +41,28 @@ text_ambiguity_financial_metric_examples = sales, revenue, turnover
 text_ambiguity_groupby_examples = * "sales by category" → NOT ambiguous (SUM sales grouped by category)
 * "revenue by month" → NOT ambiguous (SUM revenue grouped by month)
 * "orders by status" → NOT ambiguous (COUNT orders grouped by status)
-* "ventes par catégorie" → NOT ambiguous (SUM ventes grouped by catégorie)
-* "commandes par statut" → NOT ambiguous (COUNT commandes grouped by statut)
-* "chiffre d'affaires par trimestre" → NOT ambiguous (SUM revenue grouped by quarter)
 
 text_ambiguity_groupby_inline_examples = "sales by category", "revenue by month", "orders by status"
 
 text_ambiguity_multifield_examples = * "price and SKU" → NOT ambiguous (clear request for 2 fields)
 * "model and price" → NOT ambiguous (clear request for 2 fields)
-* "modèle et prix" → NOT ambiguous (clear request for 2 fields)
-* "prix et quantité" → NOT ambiguous (clear request for 2 fields)
 * "Show model and price" → NOT ambiguous (display verb + 2 fields)
-* "Affiche le modèle et le prix" → NOT ambiguous (display verb + 2 fields)
 
-text_ambiguity_multifield_inline_examples = "price and SKU", "model and price", "prix et quantité"
+text_ambiguity_multifield_inline_examples = "price and SKU", "model and price"
 
 text_ambiguity_multiword_entity_noun = product names
 
 text_ambiguity_multiword_name_example = "iPhone 17 Pro"
 
-text_ambiguity_recent_records_example = "the last 3 orders" / "les 3 dernières commandes"
+text_ambiguity_recent_records_example = "the last 3 orders"
 
 text_ambiguity_show_sales_example = "show sales"
 
 text_ambiguity_sql_field_reference_example = p.products_status = 1, a.products_quantity
 
 text_ambiguity_temporal_scope_ambiguous_examples = - "monthly revenue" → AMBIGUOUS (current month revenue OR revenue grouped by month)
-- "chiffre d'affaires mensuel" → AMBIGUOUS (CA du mois en cours OU CA par mois)
 - "weekly sales" → AMBIGUOUS (this week's sales OR sales by week)
-- "ventes hebdomadaires" → AMBIGUOUS (ventes de cette semaine OU ventes par semaine)
 
 text_ambiguity_temporal_scope_clear_examples = - "revenue this month" → NOT ambiguous (explicit "this month" = current month)
-- "chiffre d'affaires ce mois" → NOT ambiguous (explicit "ce mois" = mois en cours)
 - "revenue by month" → NOT ambiguous (explicit "by month" = GROUP BY)
-- "chiffre d'affaires par mois" → NOT ambiguous (explicit "par mois" = GROUP BY)
 
