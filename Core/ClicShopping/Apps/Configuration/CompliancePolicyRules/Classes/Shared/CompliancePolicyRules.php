@@ -220,4 +220,70 @@
 
       return $result;
     }
+
+    /**
+     * Return the French APE code. Empty when the FRE module is not installed.
+     *
+     * @return string
+     */
+    public function displayApeCode(): string
+    {
+      return $this->readConfig('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_APE_CODE');
+    }
+
+    /**
+     * Return the Canadian regional taxes number. Empty when the CAD module is not installed.
+     *
+     * @return string
+     */
+    public function displayRegionalTaxesNumber(): string
+    {
+      return $this->readConfig('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_REGIONAL_TAXES_NUMBER');
+    }
+
+    /**
+     * Return the Canadian federal taxes number. Empty when the CAD module is not installed.
+     *
+     * @return string
+     */
+    public function displayFederalTaxesNumber(): string
+    {
+      return $this->readConfig('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_FEDERAL_TAXES_NUMBER');
+    }
+
+    /**
+     * Date format of the invoice number, as a PHP date() format.
+     *
+     * @return string
+     */
+    public function displayInvoiceNumberFormat(): string
+    {
+      $format = $this->readConfig('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_INVOICE_NUMBER_FORMAT');
+
+      return $format === '' ? 'm/d/Y' : $format;
+    }
+
+    /**
+     * Characters between the date and the order id in the invoice number.
+     *
+     * @return string
+     */
+    public function displayInvoiceNumberReference(): string
+    {
+      return defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_INVOICE_NUMBER_REFERENCE')
+        ? (string)CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_INVOICE_NUMBER_REFERENCE
+        : 'S';
+    }
+
+    /**
+     * Read a country module constant. FRE and CAD are installed independently, so a bare read
+     * would fatal on a shop that never installed them.
+     *
+     * @param string $key Configuration constant name
+     * @return string
+     */
+    private function readConfig(string $key): string
+    {
+      return defined($key) ? (string)constant($key) : '';
+    }
   }

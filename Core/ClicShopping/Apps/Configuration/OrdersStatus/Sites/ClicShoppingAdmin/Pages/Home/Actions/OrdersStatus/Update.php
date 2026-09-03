@@ -48,6 +48,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $sql_data_array = [
           'orders_status_name' => HTML::sanitize($orders_status_name_array[$language_id]),
           'orders_status_definition' => HTML::sanitize($orders_status_definition_array[$language_id]),
+          'revenue_sign' => \in_array($_POST['revenue_sign'] ?? '1', ['-1', '0', '1'], true) ? (int)$_POST['revenue_sign'] : 1,
           'public_flag' => (isset($_POST['public_flag']) && ($_POST['public_flag'] == '1') ? '1' : '0'),
           'downloads_flag' => (isset($_POST['downloads_flag']) && ($_POST['downloads_flag'] == '1') ? '1' : '0'),
           'support_orders_flag' => (isset($_POST['support_orders_flag']) && ($_POST['support_orders_flag'] == '1') ? '1' : '0'),

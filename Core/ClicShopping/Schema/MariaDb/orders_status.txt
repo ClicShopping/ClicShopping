@@ -2,6 +2,7 @@ orders_status_id int default(0) not_null comment(Primary key - unique identifier
 language_id int default(1) not_null comment(FK to languages table - language for this status name)
 orders_status_name varchar(255) not_null comment(Status name - e.g. Pending, Processing, Shipped, Delivered, Cancelled)
 orders_status_definition varchar(512) default('') not_null comment(Business meaning of this status written by the merchant - what it applies to. Authoritative source for interpreting orders.orders_status; never infer a meaning from the id)
+revenue_sign tinyint default(1) not_null comment(Accounting weight of an order in this state, written by the merchant: 1 the order counts as a sale, 0 it never became a sale and is excluded, -1 the sale was undone later and must be DEDUCTED - it counts + on orders.date_purchased and - on the date the order entered this state, read from orders_status_history. Never infer this weight from the status id or from its name)
 public_flag tinyint(1) default(1) comment(Public visibility - 0: admin only, 1: visible to customers)
 downloads_flag tinyint(1) default(0) comment(Enable downloads - 0: no downloads, 1: allow digital product downloads)
 support_orders_flag tinyint(1) default(0) comment(Support ticket flag - 0: no support, 1: enable support tickets for this status)

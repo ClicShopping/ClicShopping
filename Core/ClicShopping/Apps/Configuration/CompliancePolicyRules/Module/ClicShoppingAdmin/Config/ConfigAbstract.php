@@ -50,6 +50,57 @@ abstract class ConfigAbstract
    */
   public function install()
   {
+    $this->installParameters();
+    $this->registerInstalled();
+  }
+
+  /**
+   * Adds this module to the list of installed modules, once.
+   *
+   * @return void
+   */
+  private function registerInstalled(): void
+  {
+    $installed = \defined('MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED')
+      ? explode(';', MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED)
+      : [];
+
+    $entry = $this->app->vendor . '\\' . $this->app->code . '\\' . $this->code;
+
+    // Appending without this check is what left three stale entries in the list.
+    if (!\in_array($entry, $installed, true)) {
+      $installed[] = $entry;
+      $this->app->saveCfgParam('MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED', implode(';', $installed));
+    }
+  }
+
+  /**
+   * Removes this module from the list of installed modules.
+   *
+   * @return void
+   */
+  private function unregisterInstalled(): void
+  {
+    if (!\defined('MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED')) {
+      return;
+    }
+
+    $installed = explode(';', MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED);
+    $position = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
+
+    if ($position !== false) {
+      unset($installed[$position]);
+      $this->app->saveCfgParam('MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED', implode(';', $installed));
+    }
+  }
+
+  /**
+   * Writes the module's configuration parameters with their declared defaults.
+   *
+   * @return void
+   */
+  private function installParameters(): void
+  {
     if ($this->code == 'CPR') {
       $cut = 'CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_';
     } else {
@@ -72,20 +123,34 @@ abstract class ConfigAbstract
   /**
    * Uninstalls the current module by removing related configuration entries from the database.
    *
-   * Deletes all configuration entries in the table that match the specific pattern based on the module's code.
+   * Deletes the configuration entries this module installed.
    *
-   * @return int The number of rows affected by the deletion query.
+   * @return int The number of rows deleted.
    */
   public function uninstall()
   {
-    $Qdelete = $this->app->db->prepare('delete from :table_configuration
-                                          where configuration_key
-                                          like :configuration_key
-                                          ');
-    $Qdelete->bindValue(':configuration_key', 'CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_' . $this->code . '_%');
-    $Qdelete->execute();
+    $keys = $this->getParameters();
 
-    return $Qdelete->rowCount();
+    if ($keys === []) {
+      return 0;
+    }
+
+    // Delete the keys install() actually wrote. A LIKE on the prefix missed every CPR key (they
+    // carry no module code) and a prefix without it would take FRE and CAD down with them.
+    $this->unregisterInstalled();
+
+    $removed = 0;
+
+    foreach ($keys as $key) {
+      $Qdelete = $this->app->db->prepare('delete from :table_configuration
+                                            where configuration_key = :configuration_key
+                                            ');
+      $Qdelete->bindValue(':configuration_key', $key);
+      $Qdelete->execute();
+      $removed += $Qdelete->rowCount();
+    }
+
+    return $removed;
   }
 
   /**

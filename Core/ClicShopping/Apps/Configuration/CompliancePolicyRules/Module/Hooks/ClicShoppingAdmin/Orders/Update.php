@@ -14,7 +14,8 @@ use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin\OrderAdmin;
-use ClicShopping\Apps\Configuration\CompliancePolicyRules\Classes\ClicShoppingAdmin;
+use ClicShopping\Apps\Orders\Orders\Classes\Common\OrdersStatus;
+use ClicShopping\Apps\Configuration\CompliancePolicyRules\Classes\ClicShoppingAdmin\EInvoiceService;
 use ClicShopping\Apps\Configuration\CompliancePolicyRules\CompliancePolicyRules as CompliancePolicyRulesApp;
 
 class Update implements HooksInterface
@@ -26,7 +27,7 @@ class Update implements HooksInterface
 
   public function __construct()
   {
-    $this->orderId = HTML::sanitize($_GET['oID']);
+    $this->orderId = isset($_GET['oID']) ? (int)HTML::sanitize($_GET['oID']) : 0;
     $this->app = new CompliancePolicyRulesApp();
     $this->status = isset($_POST['status']) ? (int)HTML::sanitize($_POST['status']) : 0;
     $this->statusInvoice = isset($_POST['status_invoice']) ? (int)HTML::sanitize($_POST['status_invoice']) : 0;
@@ -46,26 +47,28 @@ class Update implements HooksInterface
    * Instantiates a full OrderAdmin object to get all required order data,
    * then delegates to EInvoiceService::process().
    *
-   * @param array $check  Current order data from getCheckStatus()
+   * @return bool True when the invoice was handed to EInvoiceService
    */
-  private function processChorusPro(array $check): void
+  private function processChorusPro(): bool
   {
     $eInvoice = new EInvoiceService();
 
     if (!$eInvoice->isEnabled()) {
-      return;
+      return false;
     }
 
     // Only act if the admin explicitly enabled the e-invoice slider
     if (!isset($_POST['notify_einvoice'])) {
-      return;
+      return false;
     }
 
     $new_invoice_status = $this->statusInvoice;
 
-    // Do not re-process if the invoice status has not changed
-    if ((int)$check['orders_status_invoice'] === $new_invoice_status) {
-      return;
+    // The action saved the new status BEFORE calling this hook, so the orders row already carries
+    // it: comparing against it would always match and nothing would ever be sent. The previous
+    // state is the history row written before the one this update just added.
+    if ($this->previousInvoiceStatus() === $new_invoice_status) {
+      return false;
     }
 
     // Only process actionable statuses
@@ -74,7 +77,7 @@ class Update implements HooksInterface
       EInvoiceService::STATUS_CANCEL,
       EInvoiceService::STATUS_CREDIT_NOTE,
     ])) {
-      return;
+      return false;
     }
 
     $order = new OrderAdmin((int)$this->orderId);
@@ -87,6 +90,8 @@ class Update implements HooksInterface
       $order->totals,
       $new_invoice_status
     );
+
+    return true;
   }
 
   /**
@@ -97,9 +102,8 @@ class Update implements HooksInterface
    *   1. Regenerate and send the PDF invoice to the customer
    *   2. Transmit the electronic invoice to Chorus Pro via the status tab
    *
-   * Note: $paid_order_status = 3 corresponds to the "paid/confirmed" order status
-   * in the default ClicShopping configuration. Adjust this value if your shop uses
-   * a different status ID for confirmed/paid orders.
+   * The order status that owes an invoice is the delivered one; the id lives in
+   * {@see OrdersStatus}, never in a literal here.
    *
    * @param array $check  Current order data from getCheckStatus()
    */
@@ -107,10 +111,8 @@ class Update implements HooksInterface
   {
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 
-    // Status 3 = paid/confirmed order — adjust to match your configuration
-    $paid_order_status = 3;
-
-    if ($this->status === $paid_order_status && (int)($check['orders_status_invoice'] ?? 0) !== EInvoiceService::STATUS_INVOICE
+    if ($this->status === OrdersStatus::DELIVERED
+      && (int)($check['orders_status_invoice'] ?? 0) !== EInvoiceService::STATUS_INVOICE
     ) {
       $CLICSHOPPING_MessageStack->add(
         $this->app->getDef('warning_invoice_not_issued'),
@@ -148,11 +150,35 @@ class Update implements HooksInterface
   private function ChorusPro(array $check):void
   {
     // Trigger Chorus Pro if e-invoice slider was enabled by admin
-    $this->processChorusPro($check);
-    $this->statusComment();
+    if ($this->processChorusPro() === true) {
+      $this->statusComment();
+    }
 
     // Show warning if order is paid but invoice not yet issued
     $this->checkInvoiceAlert($check);
+  }
+
+  /**
+   * Invoice status carried by the history row preceding the one this update wrote.
+   *
+   * @return int Previous invoice status, or STATUS_ORDER when the order has no earlier history
+   */
+  private function previousInvoiceStatus(): int
+  {
+    $Qprevious = $this->app->db->prepare('select orders_status_invoice_id
+                                            from :table_orders_status_history
+                                            where orders_id = :orders_id
+                                            order by orders_status_history_id desc
+                                            limit 1 offset 1
+                                          ');
+    $Qprevious->bindInt(':orders_id', $this->orderId);
+    $Qprevious->execute();
+
+    if ($Qprevious->fetch() === false) {
+      return EInvoiceService::STATUS_ORDER;
+    }
+
+    return $Qprevious->valueInt('orders_status_invoice_id');
   }
 
   /**
@@ -162,7 +188,7 @@ class Update implements HooksInterface
    */
   public function execute()
   {
-    if (isset($_GET['Update']) && !is_null($this->orderId) && $this->orderId !== 0) {
+    if (isset($_GET['Update']) && $this->orderId !== 0) {
       $check = OrderAdmin::checkStatusId($this->orderId);
       $this->ChorusPro($check);
     }

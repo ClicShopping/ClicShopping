@@ -27,7 +27,13 @@ use ClicShopping\AI\DomainsAI\Analytics\Planning\MetricType;
 class MetricCatalog
 {
   /**
-   * @return array<string, array{grain: string, type: string, definition: string}>
+   * `basis` is optional and carries a USER-FACING label key: declare it on a metric whose
+   * figure means nothing without its convention, so the restitution can name it.
+   *
+   * `split` is optional and names the DIMENSION the answer is broken down by when the question
+   * asks for a bare total: two populations the merchant must see apart, never silently merged.
+   *
+   * @return array<string, array{grain: string, type: string, definition: string, basis?: string, split?: string}>
    */
   public static function all(): array
   {
@@ -36,11 +42,15 @@ class MetricCatalog
         'grain' => 'order',
         'type' => MetricType::AMOUNT,
         'definition' => 'text_metric_revenue_ttc',
+        'basis' => 'text_metric_basis_revenue_ttc',
+        'split' => 'tax_convention',
       ],
       'revenue_ht' => [
         'grain' => 'order',
         'type' => MetricType::AMOUNT,
         'definition' => 'text_metric_revenue_ht',
+        'basis' => 'text_metric_basis_revenue_ht',
+        'split' => 'tax_convention',
       ],
       'line_revenue' => [
         'grain' => 'order_line',

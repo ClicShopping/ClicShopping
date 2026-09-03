@@ -436,6 +436,14 @@ class PlanExecutor
         'previous_results' => $plan->getAllStepResults(),
         'query' => $plan->getQuery(),
       ];
+
+      // Anaphora in a sub-query ("the orders of this product") points at the entity the previous
+      // half just produced. Built here so every executor gets it, not only the semantic one.
+      $lastEntity = $this->readLastEntity();
+
+      if ($lastEntity !== null) {
+        $context['last_entity'] = $lastEntity;
+      }
       
       //  Log plan intent to understand what's being passed
       if ($this->debug) {
@@ -596,32 +604,6 @@ class PlanExecutor
   private function executeSemanticSearch(TaskStep $step, array $context): array
   {
     $query = $step->getMeta('sub_query', $step->getDescription());
-
-    // Add last_entity to context for semantic query enrichment
-    if ($this->conversationMemory !== null) {
-      try {
-        $lastEntity = $this->conversationMemory->getLastEntity();
-        if ($lastEntity !== null) {
-          $context['last_entity'] = $lastEntity;
-          
-          if ($this->debug) {
-            $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? 'unknown');
-            $this->securityLogger->logSecurityEvent(
-              "Added last_entity to semantic search context: {$entityName}",
-              'info'
-            );
-          }
-        }
-      } catch (\Exception $e) {
-        // Don't fail on context enrichment errors - just log and continue
-        if ($this->debug) {
-          $this->securityLogger->logSecurityEvent(
-            "Error adding last_entity to semantic search context: " . $e->getMessage(),
-            'warning'
-          );
-        }
-      }
-    }
 
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(
@@ -1136,8 +1118,36 @@ class PlanExecutor
   }
 
   /**
+   * Read the last entity stored in conversation memory
+   *
+   * @return array|null Entity metadata, or null when unavailable
+   */
+  private function readLastEntity(): ?array
+  {
+    if ($this->conversationMemory === null) {
+      return null;
+    }
+
+    try {
+      $lastEntity = $this->conversationMemory->getLastEntity();
+
+      return is_array($lastEntity) && !empty($lastEntity) ? $lastEntity : null;
+    } catch (\Exception $e) {
+      // Context enrichment is never fatal to a step.
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "Error reading last_entity: " . $e->getMessage(),
+          'warning'
+        );
+      }
+
+      return null;
+    }
+  }
+
+  /**
    * Get the last failed step
-   * 
+   *
    * @param ExecutionPlan $plan Execution plan
    * @return TaskStep|null Last failed step, or null
    */

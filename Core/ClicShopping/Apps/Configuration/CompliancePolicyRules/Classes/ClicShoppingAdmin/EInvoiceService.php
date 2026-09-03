@@ -16,6 +16,7 @@ use ClicShopping\OM\Registry;
 
 class EInvoiceService
 {
+  public const STATUS_ORDER       = 1;
   public const STATUS_INVOICE     = 2;
   public const STATUS_CANCEL      = 3;
   public const STATUS_CREDIT_NOTE = 4;
@@ -227,7 +228,7 @@ class EInvoiceService
     $client_secret = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET') ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET : '';
 
     if (empty($client_id) || empty($client_secret)) {
-      $this->log('ERROR', '[ERROR EInvoiceService] CHORUSPRO_PISTE_CLIENT_ID or CHORUSPRO_PISTE_CLIENT_SECRET not configured.');
+      $this->log('ERROR', '[ERROR EInvoiceService] CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_ID or CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET not configured.');
       return null;
     }
 
@@ -321,12 +322,12 @@ class EInvoiceService
     }
 
     if ($id_fournisseur === 0 || $bank_account_code === 0) {
-      $this->log('INFO', '[INFO EInvoiceService] CHORUSPRO_FOURNISSEUR_ID or CHORUSPRO_BANK_ACCOUNT_CODE not configured.');
+      $this->log('INFO', '[INFO EInvoiceService] CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_FOURNISSEUR_ID or CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_BANK_ACCOUNT not configured.');
       return null;
     }
 
     if (empty($login)) {
-      $this->log('INFO', '[INFO EInvoiceService] CHORUSPRO_TECHNICAL_LOGIN not configured — required as idUtilisateurCourant.');
+      $this->log('INFO', '[INFO EInvoiceService] CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN not configured — required as idUtilisateurCourant.');
       return null;
     }
 

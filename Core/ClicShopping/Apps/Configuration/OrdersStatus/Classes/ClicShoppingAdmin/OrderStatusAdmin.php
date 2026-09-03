@@ -75,6 +75,27 @@ class OrderStatusAdmin
   }
 
   /**
+   * Dropdown of the accounting weight stored in orders_status.revenue_sign.
+   * Three states: the order counts as a sale, it never became one, or the sale was undone later.
+   *
+   * @param string $name The name attribute of the dropdown element.
+   * @param int|null $selected The stored sign, 1 when the row does not carry one yet.
+   * @return string The generated HTML string for the dropdown menu.
+   */
+  public static function getRevenueSignMenu(string $name = 'revenue_sign', ?int $selected = 1): string
+  {
+    $CLICSHOPPING_OrdersStatus = Registry::get('OrdersStatus');
+
+    $values = [
+      ['id' => '1', 'text' => $CLICSHOPPING_OrdersStatus->getDef('text_revenue_sign_add')],
+      ['id' => '0', 'text' => $CLICSHOPPING_OrdersStatus->getDef('text_revenue_sign_exclude')],
+      ['id' => '-1', 'text' => $CLICSHOPPING_OrdersStatus->getDef('text_revenue_sign_deduct')]
+    ];
+
+    return HTML::selectMenu($name, $values, (string)($selected ?? 1));
+  }
+
+  /**
    * Generates a dropdown menu for order statuses.
    *
    * @param string $name The name attribute of the dropdown element. Default is 'dropdown_status'.

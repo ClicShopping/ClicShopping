@@ -14,6 +14,9 @@ use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\AnalyticsExecutorPatterns;
 use ClicShopping\AI\Infrastructure\Async\PostResponseDeferrer;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationTurnReader;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * AnalyticsExecutor Class
@@ -155,6 +158,46 @@ class AnalyticsExecutor
   }
 
   /**
+   * Resolve a contextual reference carried by a decomposed sub-query
+   *
+   * @param string $query Sub-query text
+   * @param array $context Step context, carrying last_entity when available
+   * @return string Resolved query, or the original one when nothing references the entity
+   */
+  private function resolveSubQueryReferences(string $query, array $context): string
+  {
+    $lastEntity = $context['last_entity'] ?? null;
+
+    if (!is_array($lastEntity) || empty($lastEntity)) {
+      return $query;
+    }
+
+    try {
+      $history = (new ConversationTurnReader($this->userId, $this->languageId, $this->debug))
+        ->getRecentTurns(TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_REFERENCE_HISTORY_TURNS'));
+
+      $resolved = (new ReferenceResolver($this->debug))->resolve($query, $lastEntity, $history)['resolved_query'] ?? $query;
+    } catch (\Exception $e) {
+      // Reference resolution is never fatal: fall back to the sub-query as cut.
+      $this->logger->logSecurityEvent(
+        "Sub-query reference resolution failed: " . $e->getMessage(),
+        'warning'
+      );
+
+      return $query;
+    }
+
+    if ($resolved !== $query && $this->debug) {
+      $this->logger->logSecurityEvent(
+        "Resolved contextual reference in sub-query: '{$query}' → '{$resolved}'",
+        'info'
+      );
+    }
+
+    return $resolved;
+  }
+
+  /**
    * Execute analytics query
    *
    * @param string $query Query to execute
@@ -229,6 +272,13 @@ class AnalyticsExecutor
 
       $planQuery = (string)($context['query'] ?? '');
       $isSubQuery = $planQuery !== '' && trim($query) !== trim($planQuery);
+
+      // A half referencing the other one ("the orders of this product") is resolved against the
+      // entity the previous half produced. Sub-queries only: the whole query is already resolved
+      // by the orchestrator, and the resolver rewrites nothing when the half is self-contained.
+      if ($isSubQuery) {
+        $query = $this->resolveSubQueryReferences($query, $context);
+      }
 
       // Classification is always skipped here: the orchestrator already routed this as analytics.
       $rawResult = $this->analyticsAgent->processBusinessQuery($query, true, [], true, $isSubQuery);

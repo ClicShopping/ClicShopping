@@ -275,13 +275,81 @@ class AnalyticsFormatter extends AbstractFormatter
 
     $output = "<div class='results-table'>";
     $output .= "<h5>" . $this->language->getDef('text_rag_analytics_data') . "</h5>";
-    
-    // Use inherited method from AbstractFormatter
-    $output .= $this->generateTable($data, 'table table-bordered table-striped');
-    
+
+    $column = $this->splitColumn($data);
+
+    if ($column === null) {
+      // Use inherited method from AbstractFormatter
+      $output .= $this->generateTable($data, 'table table-bordered table-striped');
+      $output .= "</div>";
+
+      return $output;
+    }
+
+    $output .= "<p class='split-reason'>" . htmlspecialchars($this->language->getDef('text_table_split_reason_' . $column)) . "</p>";
+
+    foreach ($this->groupRows($data, $column) as $value => $rows) {
+      $key = 'text_table_split_' . $column . '_' . $value;
+      $caption = $this->language->getDef($key);
+
+      $output .= "<h6>" . htmlspecialchars($caption === $key ? (string)$value : $caption) . "</h6>";
+      $output .= $this->generateTable($rows, 'table table-bordered table-striped');
+    }
+
     $output .= "</div>";
 
     return $output;
+  }
+
+  /**
+   * The column the rows are split on, or null when they are rendered as one table.
+   *
+   * A column is a split column when its REASON label is defined: declaring the label is what
+   * turns the split on, so no domain name is ever written here. One group renders as one table.
+   *
+   * @param array $data Result rows
+   * @return string|null Column name, or null
+   */
+  private function splitColumn(array $data): ?string
+  {
+    $first = reset($data);
+
+    if (!is_array($first) || count($data) < 2) {
+      return null;
+    }
+
+    foreach (array_keys($first) as $column) {
+      $key = 'text_table_split_reason_' . $column;
+
+      if (is_string($column) && $this->language->getDef($key) !== $key
+        && count($this->groupRows($data, $column)) > 1) {
+        return $column;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * @param array $data Result rows
+   * @param string $column Column to group on
+   * @return array<string, array> Rows per value, the column itself dropped from each row
+   */
+  private function groupRows(array $data, string $column): array
+  {
+    $groups = [];
+
+    foreach ($data as $row) {
+      if (!is_array($row) || !array_key_exists($column, $row)) {
+        continue;
+      }
+
+      $value = (string)$row[$column];
+      unset($row[$column]);
+      $groups[$value][] = $row;
+    }
+
+    return $groups;
   }
 
   private function formatGuardrailsMetrics(array $guardrails): string

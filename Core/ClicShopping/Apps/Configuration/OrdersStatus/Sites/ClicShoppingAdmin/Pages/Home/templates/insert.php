@@ -9,6 +9,8 @@
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
+use ClicShopping\Apps\Configuration\OrdersStatus\Classes\ClicShoppingAdmin\OrderStatusAdmin;
+
 $CLICSHOPPING_Language = Registry::get('Language');
 $CLICSHOPPING_OrdersStatus = Registry::get('OrdersStatus');
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
@@ -113,6 +115,31 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
     }
     ?>
     <div class="mt-1"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group row">
+          <label for="revenue_sign"
+                 class="col-5 col-form-label"><?php echo $CLICSHOPPING_OrdersStatus->getDef('text_info_revenue_sign'); ?></label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group row">
+          <span class="col-8 form-text"><?php echo $CLICSHOPPING_OrdersStatus->getDef('text_info_revenue_sign_help'); ?></span>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-5">
+        <div class="form-group row">
+          <div class="col-md-9">
+            <?php echo OrderStatusAdmin::getRevenueSignMenu(); ?>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-1"></div>
     <div class="col-md-12" id="public_flag">
       <span class="col-md-3"></span>
       <ul class="list-group-slider list-group-flush">
@@ -178,6 +205,6 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
       </ul>
     </div>
   </div>
-
   </form>
 </div>
+<div class="py-4"></div>

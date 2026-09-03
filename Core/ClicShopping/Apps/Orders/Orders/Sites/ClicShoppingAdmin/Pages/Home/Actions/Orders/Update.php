@@ -120,10 +120,9 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
    *   1. Validates the order ID and reads current status
    *   2. Updates orders table if status or invoice status changed
    *   3. Inserts a new row in orders_status_history
-   *   4. Triggers Chorus Pro transmission if e-invoice slider is set
-   *   5. Shows invoice alert if order is paid but invoice not issued
-   *   6. Sends customer notification email if 'notify' is set
-   *   7. Redirects back to the Orders list
+   *   4. Calls the Orders/Update hooks (e-invoice transmission lives there)
+   *   5. Sends customer notification email if 'notify' is set
+   *   6. Redirects back to the Orders list
    */
   public function execute(): void
   {
@@ -158,8 +157,6 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
           $this->app->db->save('orders_status_history', $data_array);
 
-          $order_updated = true;
-        } else {
           $order_updated = true;
         }
       }

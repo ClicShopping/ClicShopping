@@ -206,8 +206,8 @@ class InvoicePdf extends AbstractOrderPdf
   private function renderOrderNumberLine(int $oID, int $statusId, string $title, string $invoiceDate): void
   {
     if ($statusId === 2) {
-      $temp = str_replace('&nbsp;', ' ', 'No ' . $title . ' : ' . DateTime::toDateReferenceShort($invoiceDate) . 'S');
-      $this->Text(10, 113, $temp . $oID);
+      $temp = str_replace('&nbsp;', ' ', 'No ' . $title . ' : ' . $this->invoiceNumber($invoiceDate, $oID));
+      $this->Text(10, 113, $temp);
     } elseif ($statusId === 3) {
       $temp = str_replace('&nbsp;', ' ', $title . ': ');
       $this->Text(10, 113, $temp);

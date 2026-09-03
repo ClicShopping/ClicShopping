@@ -573,7 +573,9 @@ class TaskPlanner
             }
         }
 
-        return array_reverse($sorted);
+        // topologicalSort() pushes a step AFTER its dependencies: $sorted is already in
+        // execution order. Reversing it would run a dependent step before the one it needs.
+        return $sorted;
     }
 
     /**

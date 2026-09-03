@@ -97,6 +97,7 @@ CREATE TABLE :table_orders_status (
   language_id int default(1) NOT NULL,
   orders_status_name varchar(255) NOT NULL,
   orders_status_definition varchar(512) default('') NOT NULL COMMENT 'Business meaning of this status written by the merchant - what it applies to. Authoritative source for interpreting orders.orders_status; never infer a meaning from the id',
+  revenue_sign tinyint NOT NULL DEFAULT 1 COMMENT 'Accounting weight of an order in this state, written by the merchant: 1 the order counts as a sale, 0 it never became a sale and is excluded, -1 the sale was undone later and must be DEDUCTED - it counts + on orders.date_purchased and - on the date the order entered this state, read from orders_status_history. Never infer this weight from the status id or from its name',
   public_flag tinyint(1) default(1),
   downloads_flag tinyint(1) default(0),
   support_orders_flag int(1) default(0),

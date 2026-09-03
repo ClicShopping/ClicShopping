@@ -214,12 +214,40 @@ UPDATE clic_orders_status SET orders_status_definition =
 -- vide posée entre-temps, sans toucher aux drapeaux d'une ligne déjà réglée.
 INSERT INTO clic_orders_status
   (orders_status_id, language_id, orders_status_name, orders_status_definition, public_flag, downloads_flag, support_orders_flag, authorize_to_delete_order)
-  VALUES (5, 1, 'Refund', 'Order refunded in full: the whole invoice was paid back to the customer. Exclude it from revenue, margin and average cart - the sale is undone. The refunded amount is ALWAYS the order total, never a partial one. A refund is neither a cancellation nor a credit note; never count them together.', 1, 0, 0, 0)
+  VALUES (5, 1, 'Refund', 'Order refunded in full: the whole invoice was paid back to the customer. DEDUCT it from revenue, margin and average cart - never simply exclude it: the sale counted on its purchase date, and the refund counts against it, negatively, on the date the order entered this status. The refunded amount is ALWAYS the order total, never a partial one. A refund is neither a cancellation nor a credit note; never count them together.', 1, 0, 0, 0)
   ON DUPLICATE KEY UPDATE orders_status_definition = VALUES(orders_status_definition);
 INSERT INTO clic_orders_status
   (orders_status_id, language_id, orders_status_name, orders_status_definition, public_flag, downloads_flag, support_orders_flag, authorize_to_delete_order)
-  VALUES (5, 2, 'Remboursement', 'Commande intégralement remboursée : la totalité de la facture a été rendue au client. À exclure du chiffre d''affaires, de la marge et du panier moyen — la vente est défaite. Le montant remboursé est TOUJOURS le total de la commande, jamais un montant partiel. Un remboursement n''est ni une annulation ni un avoir ; ne jamais les compter ensemble.', 1, 0, 0, 0)
+  VALUES (5, 2, 'Remboursement', 'Commande intégralement remboursée : la totalité de la facture a été rendue au client. À DÉDUIRE du chiffre d''affaires, de la marge et du panier moyen — jamais simplement exclue : la vente a compté à sa date d''achat, et le remboursement se compte en négatif à la date à laquelle la commande est passée dans ce statut. Le montant remboursé est TOUJOURS le total de la commande, jamais un montant partiel. Un remboursement n''est ni une annulation ni un avoir ; ne jamais les compter ensemble.', 1, 0, 0, 0)
   ON DUPLICATE KEY UPDATE orders_status_definition = VALUES(orders_status_definition);
+
+-- --------------------------------------------------------------------------
+-- 3bis. Le signe comptable devient une DONNÉE de la ligne de statut.
+--    « Exclure » et « déduire » ne sont PAS la même opération : un statut à 0
+--    n'a jamais été une vente, un statut à -1 en a été une et elle est défaite
+--    à la date du passage dans ce statut (clic_orders_status_history). Un
+--    signe posé dans la définition — une phrase PAR LANGUE — changerait de
+--    sens d'une traduction à l'autre : il lui faut sa propre colonne.
+--    Le générateur SQL lit ce signe et ne nomme plus aucun id de statut.
+-- --------------------------------------------------------------------------
+ALTER TABLE clic_orders_status
+  ADD COLUMN IF NOT EXISTS revenue_sign tinyint NOT NULL DEFAULT 1
+  COMMENT 'Accounting weight of an order in this state, written by the merchant: 1 the order counts as a sale, 0 it never became a sale and is excluded, -1 the sale was undone later and must be DEDUCTED - it counts + on orders.date_purchased and - on the date the order entered this state, read from orders_status_history. Never infer this weight from the status id or from its name'
+  AFTER orders_status_definition;
+
+UPDATE clic_orders_status SET revenue_sign =  1 WHERE orders_status_id IN (1, 2, 3);  -- Pending / processing / Delivered
+UPDATE clic_orders_status SET revenue_sign =  0 WHERE orders_status_id = 4;           -- Cancelled : jamais devenue une vente
+UPDATE clic_orders_status SET revenue_sign = -1 WHERE orders_status_id = 5;           -- Refund : vente défaite, à déduire
+
+-- La définition du statut 5 disait « exclure », l'arbitrage dit « déduire » :
+-- sinon la prose contredit la colonne, et c'est la prose que le modèle lit.
+-- Texte IDENTIQUE au seed install/Db/, par construction.
+UPDATE clic_orders_status SET orders_status_definition =
+  'Order refunded in full: the whole invoice was paid back to the customer. DEDUCT it from revenue, margin and average cart - never simply exclude it: the sale counted on its purchase date, and the refund counts against it, negatively, on the date the order entered this status. The refunded amount is ALWAYS the order total, never a partial one. A refund is neither a cancellation nor a credit note; never count them together.'
+  WHERE orders_status_id = 5 AND language_id = 1;  -- Refund
+UPDATE clic_orders_status SET orders_status_definition =
+  'Commande intégralement remboursée : la totalité de la facture a été rendue au client. À DÉDUIRE du chiffre d''affaires, de la marge et du panier moyen — jamais simplement exclue : la vente a compté à sa date d''achat, et le remboursement se compte en négatif à la date à laquelle la commande est passée dans ce statut. Le montant remboursé est TOUJOURS le total de la commande, jamais un montant partiel. Un remboursement n''est ni une annulation ni un avoir ; ne jamais les compter ensemble.'
+  WHERE orders_status_id = 5 AND language_id = 2;  -- Remboursement
 
 -- statuts de facture (10 lignes) — texte IDENTIQUE au seed install/Db/, par construction
 UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =

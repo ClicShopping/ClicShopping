@@ -230,7 +230,7 @@ class HybridFormatter extends AbstractFormatter
           foreach ($analyticsComp['results'] as $row) {
             $output .= "<tr>";
           foreach ($row as $column => $value) {
-            $output .= "<td>" . $this->formatCellValue((string)$column, $value) . "</td>";
+            $output .= "<td>" . $this->formatCellValue((string)$column, $value, $row) . "</td>";
           }
             $output .= "</tr>";
           }
@@ -422,7 +422,7 @@ class HybridFormatter extends AbstractFormatter
         foreach ($subQuery['results'] as $row) {
           $output .= "<tr>";
           foreach ($row as $column => $value) {
-            $output .= "<td>" . $this->formatCellValue((string)$column, $value) . "</td>";
+            $output .= "<td>" . $this->formatCellValue((string)$column, $value, $row) . "</td>";
           }
           $output .= "</tr>";
         }
@@ -451,7 +451,7 @@ class HybridFormatter extends AbstractFormatter
               foreach ($result['rows'] as $row) {
                 $output .= "<tr>";
             foreach ($row as $column => $value) {
-              $output .= "<td>" . $this->formatCellValue((string)$column, $value) . "</td>";
+              $output .= "<td>" . $this->formatCellValue((string)$column, $value, $row) . "</td>";
             }
             $output .= "</tr>";
           }

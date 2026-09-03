@@ -487,44 +487,6 @@ $Qcustomers->execute();
             ?>
           </table>
 
-
-
-
-
-          <?php
-            /*
-            if (!$order_is_invoice_locked): ?>
-          <!-- ── Add new product line ── -->
-          <div class="mt-3 adminformTitle">
-            <div class="mainTitle"><?php echo $CLICSHOPPING_Orders->getDef('title_add_product'); ?></div>
-            <?php echo HTML::form('add_product', $CLICSHOPPING_Orders->link('Orders&UpdateOrder&AddProduct&oID=' . $oID), 'post', 'class="row g-2 align-items-end mt-1"'); ?>
-              <?php echo HTML::hiddenField('order_id', $oID); ?>
-              <div class="col-md-3">
-                <label class="form-label small"><?php echo $CLICSHOPPING_Orders->getDef('entry_add_product_id'); ?></label>
-                <input type="number" name="new_products_id" min="1" step="1" class="form-control form-control-sm" placeholder="<?php echo $CLICSHOPPING_Orders->getDef('placeholder_product_id'); ?>" required />
-              </div>
-              <div class="col-md-2">
-                <label class="form-label small"><?php echo $CLICSHOPPING_Orders->getDef('table_heading_qty_edit'); ?></label>
-                <input type="number" name="new_qty" value="1" min="1" step="1" class="form-control form-control-sm" required />
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small"><?php echo $CLICSHOPPING_Orders->getDef('table_heading_price_edit'); ?></label>
-                <input type="number" name="new_price" value="0.0000" min="0" step="0.0001" class="form-control form-control-sm" required />
-              </div>
-              <div class="col-md-2">
-                <?php echo HTML::button($CLICSHOPPING_Orders->getDef('button_add_product'), null, null, 'success btn-sm'); ?>
-              </div>
-            </form>
-          </div>
-          <?php endif;
-            */
-            ?>
-
-
-
-
-
-
           <div class="mt-1"></div>
           <table class="table">
             <?php

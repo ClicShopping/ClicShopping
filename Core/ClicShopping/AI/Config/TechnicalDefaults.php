@@ -48,6 +48,9 @@ class TechnicalDefaults
     // How many analytics steps one question may be split into — one schema window per step
     'CLICSHOPPING_APP_CHATGPT_RA_MAX_ANALYTICS_STEPS' => 3,
 
+    // How many past turns feed the contextual reference resolver ("its price", "this product")
+    'CLICSHOPPING_APP_CHATGPT_RA_REFERENCE_HISTORY_TURNS' => 5,
+
     // Cache TTL, in seconds. A null WARMUP_TTL means "follow CACHE_TTL".
     'CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL' => 3600,
     'CLICSHOPPING_APP_CHATGPT_RA_CACHE_WARMUP_TTL' => null,

@@ -241,7 +241,7 @@ abstract class AbstractFormatter
       $filteredRow = FuturePeriodMask::apply($this->filterSystemMetadata($row), $marker);
 
       foreach ($filteredRow as $key => $value) {
-        $formattedValue = $this->formatCellValue($key, $value);
+        $formattedValue = $this->formatCellValue($key, $value, $filteredRow);
         $rows .= "<td>" . $formattedValue . "</td>";
       }
       $rows .= "</tr>";
@@ -254,7 +254,47 @@ abstract class AbstractFormatter
   /**
    * Format cell value based on column name
    */
-  protected function formatCellValue(string $columnName, mixed $value): string
+  /**
+   * The currency to print next to an amount: the one the ROW names, never a default assumed.
+   *
+   * A query may return amounts in more than one currency at once - a value stored in the base
+   * currency next to the same value converted at the order rate. Stamping the shop currency on
+   * both labels one of them wrong, and a wrong label reads as fact. So: pair the amount with the
+   * currency column that names it, fall back to the row's only currency, and print NO currency
+   * when the row carries several and none of them can be paired.
+   *
+   * @param string $columnName Amount column being rendered
+   * @param array $row The whole row, empty when the caller has none
+   * @return string Currency to append, or an empty string to append none
+   */
+  private function currencyForAmount(string $columnName, array $row): string
+  {
+    $currencies = [];
+
+    foreach ($row as $key => $value) {
+      if (is_string($key) && preg_match('/currency|devise/i', $key)
+        && is_string($value) && preg_match('/^[A-Za-z]{3}$/', trim($value))) {
+        $currencies[$key] = strtoupper(trim($value));
+      }
+    }
+
+    if ($currencies === []) {
+      return defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '€';
+    }
+
+    // `amount_charged` belongs to `charged_currency`: the qualifier is in both names.
+    foreach ($currencies as $key => $code) {
+      $qualifier = trim(preg_replace('/currency|devise|_+/i', ' ', $key) ?? '');
+
+      if ($qualifier !== '' && stripos($columnName, $qualifier) !== false) {
+        return $code;
+      }
+    }
+
+    return count($currencies) === 1 ? reset($currencies) : '';
+  }
+
+  protected function formatCellValue(string $columnName, mixed $value, array $row = []): string
   {
     if ($value === null) return '-';
     if ($value === '') return '-';
@@ -274,8 +314,9 @@ abstract class AbstractFormatter
     // Prices and amounts
     if (preg_match('/(price|amount|revenue|total_amount|subtotal|cost)/i', $columnName)) {
       if (is_numeric($value)) {
-        $currency = defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '€';
-        return number_format((float)$value, 2, ',', ' ') . ' ' . $currency;
+        $currency = $this->currencyForAmount($columnName, $row);
+
+        return number_format((float)$value, 2, ',', ' ') . ($currency === '' ? '' : ' ' . $currency);
       }
     }
 

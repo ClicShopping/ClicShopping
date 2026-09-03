@@ -188,6 +188,7 @@ text_synth_error_hybrid_incomplete = I couldn't complete your request because pa
 text_synth_error_empty_results = I couldn't find any results for your query. The information you're looking for may not be in the system yet. Please try rephrasing your question, or asking about something else.
 text_synth_error_default = I ran into a problem processing your request. The information you're looking for may not be available, or the query may be malformed. Please try rephrasing your question, or contact support if this persists.
 text_error_prompt_blocked_security = Your request was blocked for security reasons.
+text_error_security_check_unavailable = The security check could not be completed, so your request was not processed. Please try again in a moment.
 text_error_request_processing_failed = An error occurred while processing your request.
 text_error_prompt_empty_after_sanitization = Your request is empty after validation. Please rephrase it.
 text_error_query_truncated_too_long = Your question was too long to be processed in full, so only its beginning was analysed. Please shorten it or split it into several questions.

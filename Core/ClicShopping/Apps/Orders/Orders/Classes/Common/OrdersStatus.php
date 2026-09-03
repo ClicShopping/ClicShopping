@@ -18,13 +18,17 @@ namespace ClicShopping\Apps\Orders\Orders\Classes\Common;
  *
  * Companion to {@see EInvoiceService} which exposes the equivalent
  * invoice-status constants (table :table_orders_status_invoice).
+ *
+ * The ids are those of install/Db/clicshopping_en.sql; the row's
+ * orders_status_definition is what states their business meaning.
  */
 final class OrdersStatus
 {
-  public const PENDING    = 1; // En instance
-  public const CANCELLED  = 2; // Annulé
-  public const DELIVERED  = 3; // Livré
-  public const PROCESSING = 4; // Traitement en cours
+  public const PENDING    = 1; // Pending / En instance
+  public const PROCESSING = 2; // Processing / Traitement en cours
+  public const DELIVERED  = 3; // Delivered / Livré
+  public const CANCELLED  = 4; // Cancelled / Annulé
+  public const REFUND     = 5; // Refund / Remboursement
 
   /**
    * Statuses considered "final" — orders in these states cannot be cancelled

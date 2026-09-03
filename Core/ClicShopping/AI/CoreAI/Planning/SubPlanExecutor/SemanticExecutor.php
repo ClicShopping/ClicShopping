@@ -19,6 +19,7 @@ use ClicShopping\AI\DomainsAI\Shared\Entity\DocumentEntityResolver;
 use ClicShopping\AI\DomainsAI\Shared\Entity\EntityRegistry;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationTurnReader;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
+use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Config\DomainFields;
 
@@ -37,7 +38,6 @@ use ClicShopping\AI\Config\DomainFields;
 
 class SemanticExecutor
 {
-  private const REFERENCE_HISTORY_TURNS = 5;
   private SecurityLogger $logger;
   private bool $debug;
   private ?MultiDBRAGManager $ragManager = null;
@@ -113,7 +113,7 @@ class SemanticExecutor
       $enrichedQuery = $query;
       if (isset($context['last_entity']) && !empty($context['last_entity']) && is_array($context['last_entity'])) {
         $history = (new ConversationTurnReader($this->userId, $this->languageId, $this->debug))
-          ->getRecentTurns(self::REFERENCE_HISTORY_TURNS);
+          ->getRecentTurns(TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_REFERENCE_HISTORY_TURNS'));
 
         $resolution = (new ReferenceResolver($this->debug))->resolve($query, $context['last_entity'], $history);
         $enrichedQuery = $resolution['resolved_query'];

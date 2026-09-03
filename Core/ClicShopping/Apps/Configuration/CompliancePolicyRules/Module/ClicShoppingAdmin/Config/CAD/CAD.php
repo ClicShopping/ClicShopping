@@ -52,41 +52,4 @@ class CAD extends ConfigAbstract
     $this->is_installed = \defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_STATUS') && (trim(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_STATUS) != '');
   }
 
-  /**
-   * Installs the module by adding its reference to the cache of installed modules.
-   *
-   * @return void
-   */
-  public function install()
-  {
-    parent::install();
-
-    if (\defined('MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED')) {
-      $installed = explode(';', MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED);
-    }
-
-    $installed[] = $this->app->vendor . '\\' . $this->app->code . '\\' . $this->code;
-
-    $this->app->saveCfgParam('MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED', implode(';', $installed));
-  }
-
-  /**
-   * Uninstalls the module by removing it from the list of installed modules
-   * and updating the configuration parameter.
-   *
-   * @return void
-   */
-  public function uninstall()
-  {
-    parent::uninstall();
-
-    $installed = explode(';', MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED);
-    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
-
-    if ($installed_pos !== false) {
-      unset($installed[$installed_pos]);
-
-      $this->app->saveCfgParam('MODULE_MODULES_COMPLIANCE_POLICY_RULES_INSTALLED', implode(';', $installed));
-    }
-  }
 }

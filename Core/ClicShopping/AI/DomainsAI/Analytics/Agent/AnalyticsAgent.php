@@ -351,6 +351,7 @@ class AnalyticsAgent implements AgentInterface
       }
 
       $this->announceAnalysisPlanReserve($response);
+      $this->announceMetricBasis($response);
 
       if ($includeSQL) {
         $response['sql_query'] = $results['sql_query'] ?? 'N/A';
@@ -902,6 +903,54 @@ class AnalyticsAgent implements AgentInterface
     $response['interpretation'] = trim($reserve . "\n\n" . (string)($response['interpretation'] ?? ''));
 
     $this->debugLog("PLAN RESERVE announced: " . $reserve, "PLAN");
+  }
+
+  /**
+   * Name the convention the figures are stated on, whenever the plan elected a metric whose
+   * domain declares one.
+   *
+   * The plan knows the identity of the measure before the SQL exists; without this line the
+   * only carrier of the convention down to the user is the column alias, which the interpreting
+   * model re-verbalises at will. Read from the plan, never from the model's prose.
+   *
+   * Rides `interpretation` and is added after the cache write, for the same two reasons as the
+   * reserve above. Placed at the FOOT of the answer: it qualifies figures, it does not warn.
+   *
+   * @param array $response Response being assembled, mutated in place
+   * @return void
+   */
+  private function announceMetricBasis(array &$response): void
+  {
+    $keys = array_values(array_unique(array_filter(
+      array_column($this->analysisPlan['metrics'] ?? [], 'basis'),
+      static fn($key): bool => is_string($key) && $key !== ''
+    )));
+
+    $labels = [];
+
+    foreach ($keys as $key) {
+      $label = CLICSHOPPING::getDef($key);
+
+      // A key that resolves to itself is a missing definition, not a label.
+      if ($label !== '' && $label !== $key) {
+        $labels[] = $label;
+      }
+    }
+
+    if ($labels === []) {
+      return;
+    }
+
+    $basis = CLICSHOPPING::getDef('text_analysis_plan_basis', ['basis' => implode(', ', $labels)]);
+
+    if ($basis === '' || $basis === 'text_analysis_plan_basis') {
+      return;
+    }
+
+    $response['metric_basis'] = $basis;
+    $response['interpretation'] = trim((string)($response['interpretation'] ?? '') . "\n\n" . $basis);
+
+    $this->debugLog("METRIC BASIS announced: " . $basis, "PLAN");
   }
 
   /**

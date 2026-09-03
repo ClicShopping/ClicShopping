@@ -56,9 +56,8 @@ class OrderStatusMapProvider implements PromptPlaceholderProviderInterface
   }
 
   /**
-   * The status tables are never joined by the generated SQL — it filters `orders_status = 3`,
-   * a column of `orders`. Declaring them here is what lets the freshness rule notice that the
-   * merchant rewrote a definition.
+   * Declaring the status tables here is what lets the freshness rule notice that the merchant
+   * rewrote a definition or changed an accounting weight.
    *
    * @return array<int, string> Unprefixed status tables
    */

@@ -67,7 +67,7 @@ class PageContentTab3 implements HooksInterface
 
         $eInvoiceService = new EInvoiceService();
 
- //if ($eInvoiceService->isEnabled()) {
+ if ($eInvoiceService->isEnabled()) {
         $orders_status_invoice_array = [];
 
         $QordersStatusInvoice = $this->app->db->prepare('select orders_status_invoice_id,
@@ -101,77 +101,73 @@ class PageContentTab3 implements HooksInterface
 
           $content = '<!-- order CompliancePolicyRules start -->';
 
-
-
+          $content .= '
+                <div class="row mt-2" id="notifyEInvoice">
+                  <div class="col-md-12">
+                    <div class="card border-secondary">
+                      <!-- Card header: title + portal button -->
+                      <div class="card-header d-flex align-items-center gap-2">
+                        <strong> ' . $this->app->getDef('card_title') . '</strong>
+                        <span class="ms-2 text-muted small">
+                          ' . $this->app->getDef('label_invoice_status') . ' : <strong>' . htmlspecialchars($orders_status_invoice_array[$current_invoice_status_id] ?? '—') . '</strong>
+                        </span>
+                        <a href="' . EInvoiceService::CHORUS_PORTAL_URL . '"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="btn btn-sm btn-primary ms-auto"
+                           title="' . $this->app->getDef('button_portal') . '">
+                          <i class="bi bi-box-arrow-up-right me-1"></i>' . $this->app->getDef('button_portal') . '
+                        </a>
+                      </div>
           
+                      <!-- Card body: contextual status message -->
+                      <div class="card-body py-2">
+             ';
 
-$content .= '
-      <div class="row mt-2" id="notifyEInvoice">
-        <div class="col-md-12">
-          <div class="card border-secondary">
-            <!-- Card header: title + portal button -->
-            <div class="card-header d-flex align-items-center gap-2">
-              <strong> ' . $this->app->getDef('card_title') . '</strong>
-              <span class="ms-2 text-muted small">
-                ' . $this->app->getDef('label_invoice_status') . ' : <strong>' . htmlspecialchars($orders_status_invoice_array[$current_invoice_status_id] ?? '—') . '</strong>
-              </span>
-              <a href="' . EInvoiceService::CHORUS_PORTAL_URL . '"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 class="btn btn-sm btn-primary ms-auto"
-                 title="' . $this->app->getDef('button_portal') . '">
-                <i class="bi bi-box-arrow-up-right me-1"></i>' . $this->app->getDef('button_portal') . '
-              </a>
-            </div>
-
-            <!-- Card body: contextual status message -->
-            <div class="card-body py-2">
- ';
-
-if (!$is_b2b) {
-  $content .= '
-                <span class="badge bg-secondary">' . $this->app->getDef('badge_b2c') . '</span>
-                &nbsp;<span class="text-muted small">' . $this->app->getDef('text_b2c_notice') . '</span>
-  ';
-} elseif ($already_sent) {
-  $content .= '
-                <span class="badge bg-success">' . $this->app->getDef('badge_transmitted') . '</span>
-                &nbsp;<span class="text-success small">' . $this->app->getDef('text_transmitted_notice') . '</span>
-';
-} elseif (!in_array($current_invoice_status_id, [EInvoiceService::STATUS_INVOICE, EInvoiceService::STATUS_CANCEL, EInvoiceService::STATUS_CREDIT_NOTE])) {
-$content .= '
-                <span class="badge bg-warning text-dark">' . $this->app->getDef('badge_pending') . '</span>
-                &nbsp;<span class="text-muted small">' . $this->app->getDef('text_pending_notice') . '</span>
-';
-} else {
-$content .= '
-                <span class="badge bg-info">' . $this->app->getDef('badge_ready') . '</span>
-                &nbsp;<span class="text-muted small">' . $this->app->getDef('text_ready_notice') . '</span>
+            if (!$is_b2b) {
+              $content .= '
+                            <span class="badge bg-secondary">' . $this->app->getDef('badge_b2c') . '</span>
+                            &nbsp;<span class="text-muted small">' . $this->app->getDef('text_b2c_notice') . '</span>
               ';
-              }
+            } elseif ($already_sent) {
+              $content .= '
+                            <span class="badge bg-success">' . $this->app->getDef('badge_transmitted') . '</span>
+                            &nbsp;<span class="text-success small">' . $this->app->getDef('text_transmitted_notice') . '</span>
+            ';
+            } elseif (!in_array($current_invoice_status_id, [EInvoiceService::STATUS_INVOICE, EInvoiceService::STATUS_CANCEL, EInvoiceService::STATUS_CREDIT_NOTE])) {
+            $content .= '
+                            <span class="badge bg-warning text-dark">' . $this->app->getDef('badge_pending') . '</span>
+                            &nbsp;<span class="text-muted small">' . $this->app->getDef('text_pending_notice') . '</span>
+            ';
+            } else {
+            $content .= '
+                            <span class="badge bg-info">' . $this->app->getDef('badge_ready') . '</span>
+                            &nbsp;<span class="text-muted small">' . $this->app->getDef('text_ready_notice') . '</span>
+                          ';
+                          }
 
-// Show the E-Invoice slider only if B2B and not yet transmitted
-if ($is_b2b && !$already_sent) {
-$content .= '
-              <div class="mt-2">
-                <div class="form-group row">
-                  <label class="col-5 col-form-label">
-                    <strong>' . $this->app->getDef('entry_notify_einvoice') . '</strong>
-                  </label>
-                  <div class="col-md-5">
-                    <ul class="list-group-slider list-group-flush">
-                      <li class="list-group-item-slider">
-                        <label class="switch">
-                          <input type="checkbox" name="notify_einvoice" value="1" class="success">
-                          <span class="slider"></span>
-                        </label>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-';
-}
+            // Show the E-Invoice slider only if B2B and not yet transmitted
+            if ($is_b2b && !$already_sent) {
+            $content .= '
+                        <div class="mt-2">
+                          <div class="form-group row">
+                            <label class="col-5 col-form-label">
+                              <strong>' . $this->app->getDef('entry_notify_einvoice') . '</strong>
+                            </label>
+                            <div class="col-md-5">
+                              <ul class="list-group-slider list-group-flush">
+                                <li class="list-group-item-slider">
+                                  <label class="switch">
+                                    <input type="checkbox" name="notify_einvoice" value="1" class="success">
+                                    <span class="slider"></span>
+                                  </label>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+            ';
+            }
 
           $content .= '<!-- order CompliancePolicyRules end -->';
 
@@ -196,6 +192,6 @@ EOD;
         return $output;
         }
       }
-    //}
+    }
   }
 }

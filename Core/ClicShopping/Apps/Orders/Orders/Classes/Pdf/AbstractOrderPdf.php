@@ -110,6 +110,25 @@ abstract class AbstractOrderPdf extends FPDF
   }
 
   /**
+   * Invoice number: date + reference + order id, e.g. 09/02/2026S12.
+   *
+   * The date format is a merchant setting, NOT the language definition `date_format`: that one is
+   * a display setting, and an invoice number must not differ with the language it is read in.
+   *
+   * @param string $invoiceDate Raw invoice date
+   * @param int $oID Order id
+   * @return string
+   */
+  protected function invoiceNumber(string $invoiceDate, int $oID): string
+  {
+    $rules = Registry::get('CompliancePolicyRules');
+    $timestamp = strtotime($invoiceDate);
+    $date = $timestamp === false ? '' : date($rules->displayInvoiceNumberFormat(), $timestamp);
+
+    return $date . $rules->displayInvoiceNumberReference() . $oID;
+  }
+
+  /**
    * Page header: logo + store name/address/email/website.
    */
   public function Header(): void
@@ -188,39 +207,37 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetY(-35);
     $this->SetFont('Arial', '', 7);
     $this->SetTextColor(...$rgb);
-    $this->Cell(0, 10, mb_convert_encoding($this->def('reserve_propriete_next1', ['sell_conditions_url' => HTTP::getShopUrlDomain() . ' ' . CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_URL_SALES_CONDITIONS]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, mb_convert_encoding($this->def('reserve_propriete_next1', ['sell_conditions_url' => HTTP::getShopUrlDomain() . ' ' . $CLICSHOPPING_CompliancePolicyRules->displayUrlSalesCondition()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
-    $info_societe = '';
-    if (!empty(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_SHOP_CAPITAL)) {
-      $info_societe = CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_SHOP_CAPITAL . ' - ';
-    }
+    $shopCapital = $CLICSHOPPING_CompliancePolicyRules->displayShopCapital();
+    $info_societe = $shopCapital === '' ? '' : $shopCapital . ' - ';
 
     if ($CLICSHOPPING_CompliancePolicyRules->displayDoubleTaxes() === false) {
       $this->SetY(-25);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_COMPANY_REGISTRATION_NUMBER, 'shop_code_ape' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_APE_CODE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => $CLICSHOPPING_CompliancePolicyRules->displayRegistrationNumber(), 'shop_code_ape' => $CLICSHOPPING_CompliancePolicyRules->displayApeCode()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
       $this->SetY(-20);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe_next', ['tva_shop_intracom' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_EU_VAT_NUMBER]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe_next', ['tva_shop_intracom' => $CLICSHOPPING_CompliancePolicyRules->displayEUVatNumber()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
     } else {
       $this->SetY(-25);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe1', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_COMPANY_REGISTRATION_NUMBER, 'shop_code_ape' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_APE_CODE]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe1', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => $CLICSHOPPING_CompliancePolicyRules->displayRegistrationNumber(), 'shop_code_ape' => $CLICSHOPPING_CompliancePolicyRules->displayApeCode()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
       $this->SetY(-20);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe_next1', ['tva_shop_provincial' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_REGIONAL_TAXES_NUMBER, 'tva_shop_federal' => CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_CAD_FEDERAL_TAXES_NUMBER]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe_next1', ['tva_shop_provincial' => $CLICSHOPPING_CompliancePolicyRules->displayRegionalTaxesNumber(), 'tva_shop_federal' => $CLICSHOPPING_CompliancePolicyRules->displayFederalTaxesNumber()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
     }
 
     $this->SetY(-15);
     $this->SetFont('Arial', '', 8);
     $this->SetTextColor(...$rgb);
-    $this->Cell(0, 10, mb_convert_encoding(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_SHOP_LEGAL_INFORMATION, 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_CompliancePolicyRules->displayLegalInformation(), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
   }
 
   /**

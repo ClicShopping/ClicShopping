@@ -110,6 +110,7 @@ class AnalysisPlanValidator
 
     $unsatisfiable = array_merge($unsatisfiable, $declared);
     $dimensions = is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : [];
+    $dimensions = self::splitDimensions($metrics, $dimensions, $rankings);
     $periods['time_grain'] = self::timeGrain($periods, $dimensions, $rankings);
 
     // Build the returned plan as an explicit allow-list: only these keys are trusted.
@@ -125,6 +126,39 @@ class AnalysisPlanValidator
 
     return ['plan' => $returnedPlan, 'unsatisfiable' => $unsatisfiable, 'errors' => $errors,
             'no_metric_proposed' => false];
+  }
+
+
+  /**
+   * Break a bare total down by the dimension the domain declared on its metric.
+   *
+   * Two populations that are not established on the same basis must not be silently summed into
+   * one figure: the merchant has to see them apart, and to be told why. The split rides the SAME
+   * query as the total, so the two tables can never disagree with it.
+   *
+   * Only on a BARE total: a question that already asks for a breakdown or a ranking carries its
+   * own grain, and crossing it with this one multiplies the rows without answering anything.
+   *
+   * @param array $metrics Validated metrics, carrying the catalogue's `split` where declared
+   * @param array $dimensions Dimensions the model asked for
+   * @param array $rankings Validated rankings
+   * @return array Dimensions, with the split appended when it applies
+   */
+  private static function splitDimensions(array $metrics, array $dimensions, array $rankings): array
+  {
+    if ($dimensions !== [] || $rankings !== []) {
+      return $dimensions;
+    }
+
+    foreach ($metrics as $metric) {
+      $split = $metric['split'] ?? null;
+
+      if (is_string($split) && $split !== '' && !in_array($split, $dimensions, true)) {
+        $dimensions[] = $split;
+      }
+    }
+
+    return $dimensions;
   }
 
   /**
@@ -227,11 +261,23 @@ class AnalysisPlanValidator
       }
 
       // The catalogue wins over what the model declared.
-      $kept[] = [
+      $entry = [
         'name' => $name,
         'grain' => $this->catalog[$name]['grain'],
         'type' => $this->catalog[$name]['type'],
       ];
+
+      // Carried only when the domain declared one: the plan is what reaches the restitution.
+      if (is_string($this->catalog[$name]['basis'] ?? null) && $this->catalog[$name]['basis'] !== '') {
+        $entry['basis'] = $this->catalog[$name]['basis'];
+      }
+
+      // Same rule for the dimension that breaks the metric down.
+      if (is_string($this->catalog[$name]['split'] ?? null) && $this->catalog[$name]['split'] !== '') {
+        $entry['split'] = $this->catalog[$name]['split'];
+      }
+
+      $kept[] = $entry;
     }
 
     return $kept;

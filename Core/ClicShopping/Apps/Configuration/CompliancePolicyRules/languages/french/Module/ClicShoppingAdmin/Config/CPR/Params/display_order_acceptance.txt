@@ -1,0 +1,4 @@
+cfg_configuration_compliance_policy_rules_display_order_acceptance_title = Voulez-vous afficher l'acceptation de la commande par le consommateur ?
+cfg_configuration_compliance_policy_rules_display_order_acceptance_description = Le bouton de confirmation impose au consommateur d'accepter sa commande. Voulez-vous l'afficher ?
+cfg_configuration_compliance_policy_rules_display_order_acceptance_true = True
+cfg_configuration_compliance_policy_rules_display_order_acceptance_false = False

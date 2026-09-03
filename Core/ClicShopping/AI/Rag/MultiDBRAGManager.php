@@ -9,7 +9,6 @@
 namespace ClicShopping\AI\Rag;
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
@@ -17,8 +16,6 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
-use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
-use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsQueryHeuristics;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\Rag\Reranking\DocumentReranker;
 use LLPhant\Embeddings\Document;
@@ -936,79 +933,6 @@ class MultiDBRAGManager
     }
 
     return $documents;
-  }
-
-
-
-  /**
-   * Executes an analytical query on e-commerce data
-   *
-   * This method is specifically designed for analytical queries
-   * that require calculations, aggregations, or precise searches
-   * on numerical or structured data.
-   *
-   * @param string $query User\'s question or query
-   * @param string|null $entityType Type of entity to analyze (products, orders, etc.)
-   * @return array Analysis results with structured data
-   */
-  public function executeAnalyticsQuery(string $query, string|null $entityType = null): array
-  {
-    try {
-      $analyticsAgent = new AnalyticsAgent();
-
-      //Check the request
-      if (!$analyticsAgent->isAnalyticsQuery($query)) {
-        return [
-          'type' => 'not_analytics',
-          'message' => CLICSHOPPING::getDef('text_not_analytics')
-        ];
-      }
-
-      $results = $analyticsAgent->processBusinessQuery($query);
-
-      if ($results['type'] === 'error') {
-        return [
-          'type' => 'error',
-          'message' => $results['message']
-        ];
-      }
-
-      $matchedCategories = AnalyticsQueryHeuristics::getAnalyticsCategories($query);
-
-      $response = [
-        'type' => 'analytics_results',
-        'query' => $query,
-        'matched_categories' => $matchedCategories,
-        'interpretation' => Hash::displayDecryptedDataText($results['interpretation'] ?? ''),
-        'count' => $results['count'] ?? 0,
-        'results' => $results['results'] ?? []
-      ];
-
-      // If we have multiple SQL query blocks
-      if (isset($results[‘multi_query_results’])) {
-        $response[‘multi_query_results’] = $results[‘multi_query_results’];
-      } // Otherwise return the single SQL query
-      else {
-        // sql_query key created by processBusinessQuery
-        $response[‘sql_query’] = $results[‘sql_query’] ?? ‘’;
-        // if you keep the original
-        if (isset($results[‘original_sql_query’])) {
-          $response[‘original_sql_query’] = $results[‘original_sql_query’];
-        }
-        // possible corrections
-        if (isset($results[‘corrections’])) {
-          $response[‘corrections’] = $results[‘corrections’];
-        }
-      }
-
-      return $response;
-
-    } catch (\Exception $e) {
-      return [
-        'type' => 'error',
-        'message' => 'Error executing analytics query: ' . $e->getMessage()
-      ];
-    }
   }
 
   /**
