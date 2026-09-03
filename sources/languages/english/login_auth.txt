@@ -23,7 +23,7 @@ email_verification_subject = Verification Code for your access Account {{store_n
 email_verification_body = Hello,
 A verification code has been requested to access your account on {{store_name}}.
 Your verification code is: {{verification_code}}
-This code is valid for {{$expiry_minutes}} minutes.
+This code is valid for {{expiry_minutes}} minutes.
 If you did not request this code, please ignore this email and contact our customer service.
 Request IP address:{{remote_address}}
 

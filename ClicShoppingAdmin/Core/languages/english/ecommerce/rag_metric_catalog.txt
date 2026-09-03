@@ -2,8 +2,8 @@ text_metric_catalog_intro = KNOWN METRICS. Use ONLY these names in the plan. Eac
 
 text_metric_catalog_row = - {{name}} | grain: {{grain}} | type: {{type}} | {{definition}}
 
-text_metric_revenue_ttc = Order revenue, tax included: the 'TO' class of orders_total, the grand total actually paid. Choose it ONLY when the question says tax included (TTC, taxes included, gross, what the customer paid).
-text_metric_revenue_ht = Order revenue, tax excluded: the 'TO' class minus the 'TX' class. This is the DEFAULT basis: a bare revenue or turnover question takes this one, never revenue_ttc.
+text_metric_revenue_ttc = INVOICED revenue of an order, tax included: the 'TO' class of orders_total, the grand total actually paid - shipping included, unlike revenue_ht. Choose it ONLY when the question says tax included (TTC, taxes included, gross, what the customer paid).
+text_metric_revenue_ht = MERCHANDISE revenue of an order: the 'TO' class minus the 'TX' class minus the 'SH' class - excluding tax AND excluding shipping. This is the DEFAULT basis: a bare revenue or turnover question takes this one, never revenue_ttc. Shipping is a service billed to the customer, not merchandise sold: it belongs to revenue_ttc, never here.
 text_metric_line_revenue = Revenue of one product line, taken from orders_products, never from orders_total.
 text_metric_average_cart = Average of the 'TO' class over orders, never of the 'ST' class.
 text_metric_quantity_sold = Number of units sold, aggregated over orders_products.
