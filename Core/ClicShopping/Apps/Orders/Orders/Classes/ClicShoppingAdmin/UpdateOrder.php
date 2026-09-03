@@ -231,7 +231,7 @@ class UpdateOrder
    * @param OrderTotalRecalcContext $context
    * @return float Net tax the recomputed modules report as removed (a discount reports a negative).
    */
-  private static function recalculateContractModules(mixed $db, int $order_id, array $meta, OrderTotalRecalcContext $context): float
+  private static function recalculateContractModules(mixed $db, int $order_id, array $meta, OrderTotalRecalcContext $context, array &$recomputed = []): float
   {
     if (!defined('MODULE_ORDER_TOTAL_INSTALLED') || MODULE_ORDER_TOTAL_INSTALLED === null) {
       return 0.0;
@@ -276,6 +276,7 @@ class UpdateOrder
       }
 
       $tax_delta += (float)($result['taxDelta'] ?? 0.0);
+      $recomputed[$code] = true;
 
       $sort_order = $meta[$code]['sort_order'] ?? 0;
       $db->delete('orders_total', ['orders_id' => $order_id, 'class' => $code]);
@@ -322,7 +323,7 @@ class UpdateOrder
   {
     // An unknown rank NEVER moves the base: missing a move is a wrong amount, inventing one is a
     // wrong amount the merchant cannot explain.
-    return self::sumRowsByRank($db, $order_id, static fn(?int $rank): bool => OrderTotalSequence::entersTaxableBase($rank));
+    return self::sumRowsByRank($db, $order_id, static fn(?int $rank, int $sign, string $class): bool => OrderTotalSequence::entersTaxableBase($rank));
   }
 
   /**
@@ -334,14 +335,14 @@ class UpdateOrder
    *
    * @param mixed    $db
    * @param int      $order_id
-   * @param callable $keep  fn(?int $rank): bool
+   * @param callable $keep  fn(?int $rank, int $sign, string $class): bool
    * @return float
    */
   private static function sumRowsByRank(mixed $db, int $order_id, callable $keep): float
   {
     $has_sign = self::ordersTotalHasSignColumn($db);
     $has_rank = self::ordersTotalHasRankColumn($db);
-    $declared = self::declaredByInstalledModules();
+    $declared = self::declaredByAvailableModules();
 
     $columns = 'class, value' . ($has_sign ? ', total_sign' : '') . ($has_rank ? ', total_rank' : '');
     $Q = $db->prepare("select $columns
@@ -360,11 +361,11 @@ class UpdateOrder
         ? $Q->valueInt('total_rank')
         : ($module['rank'] ?? null);
 
-      if (!$keep($rank)) {
+      $sign = $has_sign ? $Q->valueInt('total_sign') : ($module['sign'] ?? 1);
+
+      if (!$keep($rank, $sign < 0 ? -1 : 1, (string)$Q->value('class'))) {
         continue;
       }
-
-      $sign = $has_sign ? $Q->valueInt('total_sign') : ($module['sign'] ?? 1);
 
       $sum += ($sign < 0 ? -1 : 1) * $Q->valueDecimal('value');
     }
@@ -373,7 +374,7 @@ class UpdateOrder
   }
 
   /**
-   * What the INSTALLED order-total modules declare about themselves, keyed by module code:
+   * What the AVAILABLE order-total modules declare about themselves, keyed by module code:
    * the fiscal rank they compute at and the sign of the line they print.
    *
    * Read by reflection, never instantiated — reading a module is a diagnosis, not a run. This is
@@ -383,7 +384,7 @@ class UpdateOrder
    *
    * @return array<string, array{rank: int|null, sign: int}>
    */
-  private static function declaredByInstalledModules(): array
+  private static function declaredByAvailableModules(): array
   {
     static $declared = null;
 
@@ -393,19 +394,16 @@ class UpdateOrder
 
     $declared = [];
 
-    if (!defined('MODULE_ORDER_TOTAL_INSTALLED') || MODULE_ORDER_TOTAL_INSTALLED === null) {
-      return $declared;
-    }
-
-    foreach (explode(';', (string)MODULE_ORDER_TOTAL_INSTALLED) as $moduleRef) {
-      $moduleRef = trim($moduleRef);
+    // Every module ON DISK, not only the installed chain: uninstalling a module deletes neither its
+    // class nor what it declares, and a stored row still needs its fiscal rank to be placed.
+    foreach (Apps::getModules('OrderTotal') as $moduleRef => $class) {
+      $moduleRef = trim((string)$moduleRef);
 
       if (!str_contains($moduleRef, '\\')) {
         continue;
       }
 
       $sign = 1;
-      $class = Apps::getModuleClass($moduleRef, 'OrderTotal');
 
       if (\is_string($class) && class_exists($class)) {
         $sign = (int)((new \ReflectionClass($class))->getDefaultProperties()['total_sign'] ?? 1);
@@ -439,7 +437,7 @@ class UpdateOrder
     return self::sumRowsByRank(
       $db,
       $order_id,
-      static fn(?int $rank): bool => $rank === null || OrderTotalSequence::isOptionalLine($rank)
+      static fn(?int $rank, int $sign, string $class): bool => $rank === null || OrderTotalSequence::isOptionalLine($rank)
     );
   }
 
@@ -808,6 +806,7 @@ class UpdateOrder
     //        class (it was applied at checkout) — editing never introduces a module the order never
     //        had. Non-contract modules (e.g. session-only DiscountCoupon) keep their stored rows.
     //        The context carries the GROSS tax; modules report a taxDelta (a discount reduces it).
+    $recomputed = [];
     $tax_delta = self::recalculateContractModules($db, $order_id, $meta, new OrderTotalRecalcContext(
       subtotal:          $subtotal,
       tax:               $total_tax,
@@ -823,7 +822,22 @@ class UpdateOrder
       orderId:           $order_id,
       pricesIncludeTax:  $order_is_ttc,
       storedRanks:       $stored_ranks
-    ));
+    ), $recomputed);
+
+    // A price reduction granted to the customer leaves the taxable base (dir. 2006/112 art. 79).
+    // When no module recomputed it — it was uninstalled since — the effect is derived from the
+    // STORED row, in the proportion the checkout applies, so the tax stays due on the net base.
+    if (!$double_taxe && $taxable_base_ht > 0.0 && $total_tax > 0.0) {
+      $frozen_reduction = self::sumRowsByRank(
+        $db,
+        $order_id,
+        static fn(?int $rank, int $sign, string $class): bool => $sign < 0
+          && !isset($recomputed[$class])
+          && OrderTotalSequence::entersTaxableBase($rank)
+      );
+
+      $tax_delta += $total_tax * ($frozen_reduction / $taxable_base_ht);
+    }
 
     // ── 5d. The split is computed AFTER the modules, on the base they leave: a reduction ranked
     //        before the tax lowers it, a charge raises it — the rows carry the rank they were

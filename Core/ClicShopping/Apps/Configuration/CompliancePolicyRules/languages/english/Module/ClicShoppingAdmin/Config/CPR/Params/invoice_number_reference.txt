@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_invoice_number_reference_title = Invoice number reference
+cfg_configuration_compliance_policy_rules_invoice_number_reference_description = Characters placed between the date and the order number, for example the S of 09/02/2026S12. Leave empty for no separator.

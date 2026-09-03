@@ -140,6 +140,8 @@ class Order
     $QorderStatusInvoice->execute();
 
     $this->info = [
+      // Null on an order placed before the column: "not derivable", never "excluding tax".
+      'prices_include_tax' => $Qorder->value('orders_prices_include_tax'),
       'currency' => $Qorder->value('currency'),
       'currency_value' => $Qorder->valueDecimal('currency_value'),
       'payment_method' => $Qorder->value('payment_method'),

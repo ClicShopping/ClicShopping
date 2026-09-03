@@ -51,6 +51,25 @@ abstract class AbstractOrderPdf extends FPDF
     $this->renderFooter = $on;
   }
 
+  /**
+   * Absolute SHOP url for a setting that holds either a full url or a ClicShopping route
+   * (`Info&Content&pagesId=4` — the shipped default). The document is printed from the back office,
+   * so the shop domain is forced: a relative link on a PDF points nowhere.
+   *
+   * @param string $routeOrUrl
+   * @return string  empty when the setting is empty — better a missing address than a bare domain
+   */
+  private static function shopUrl(string $routeOrUrl): string
+  {
+    $routeOrUrl = trim($routeOrUrl);
+
+    if ($routeOrUrl === '' || str_starts_with($routeOrUrl, 'http://') || str_starts_with($routeOrUrl, 'https://')) {
+      return $routeOrUrl;
+    }
+
+    return HTTP::getShopUrlDomain() . 'index.php?' . ltrim($routeOrUrl, '?&');
+  }
+
   protected function def(string $key, ?array $values = null): string
   {
     if (!isset($this->defResolver)) {
@@ -197,7 +216,7 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetY(-45);
     $this->SetFont('Arial', '', 7);
     $this->SetTextColor(...$rgb);
-    $this->Cell(0, 10, mb_convert_encoding($this->def('reserve_propriete'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, mb_convert_encoding($this->def('reserve_propriete', ['store_name' => defined('STORE_NAME') ? STORE_NAME : '']), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
     $this->SetY(-40);
     $this->SetFont('Arial', '', 7);
@@ -207,7 +226,7 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetY(-35);
     $this->SetFont('Arial', '', 7);
     $this->SetTextColor(...$rgb);
-    $this->Cell(0, 10, mb_convert_encoding($this->def('reserve_propriete_next1', ['sell_conditions_url' => HTTP::getShopUrlDomain() . ' ' . $CLICSHOPPING_CompliancePolicyRules->displayUrlSalesCondition()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, mb_convert_encoding($this->def('reserve_propriete_next1', ['sell_conditions_url' => self::shopUrl($CLICSHOPPING_CompliancePolicyRules->displayUrlSalesCondition())]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
 
     $shopCapital = $CLICSHOPPING_CompliancePolicyRules->displayShopCapital();
     $info_societe = $shopCapital === '' ? '' : $shopCapital . ' - ';

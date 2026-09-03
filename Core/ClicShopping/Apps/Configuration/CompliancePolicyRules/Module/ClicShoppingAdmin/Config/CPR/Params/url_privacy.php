@@ -17,7 +17,7 @@ class url_privacy extends \ClicShopping\Apps\Configuration\CompliancePolicyRules
 
   protected function init()
   {
-    $this->title = $this->app->getDef('cfg_configuration_compliance_policy_rules_url_sales_conditions_title');
-    $this->description = $this->app->getDef('cfg_configuration_compliance_policy_rules_url_sales_conditions_description');
+    $this->title = $this->app->getDef('cfg_configuration_compliance_policy_rules_url_privacy_title');
+    $this->description = $this->app->getDef('cfg_configuration_compliance_policy_rules_url_privacy_description');
   }
 }

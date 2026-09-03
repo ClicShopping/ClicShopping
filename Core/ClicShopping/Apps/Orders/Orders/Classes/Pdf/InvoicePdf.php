@@ -125,6 +125,7 @@ class InvoicePdf extends AbstractOrderPdf
     $this->outputTableHeadingPdf($Y_Fields_Name_position);
 
     $item_count = 0;
+    $lines_excluding_tax = 0.0;
     $products = $order->products;
     for ($i = 0, $n = count($products); $i < $n; $i++) {
       $this->SetFont('Arial', '', 7);
@@ -177,6 +178,8 @@ class InvoicePdf extends AbstractOrderPdf
       $this->MultiCell(20, 6, mb_convert_encoding(html_entity_decode($CLICSHOPPING_Currencies->format($products[$i]['final_price'] * $products[$i]['qty'], true, $order->info['currency'], $order->info['currency_value'])), 'ISO-8859-1', 'UTF-8'), 1, 'C');
       $Y_Table_Position += 6;
 
+      $lines_excluding_tax += (float)$products[$i]['final_price'] * (float)$products[$i]['qty'];
+
       $item_count++;
       if ((is_int($item_count / 32) && $i >= 20) || ($i == 20)) {
         $this->AddPage();
@@ -184,6 +187,18 @@ class InvoicePdf extends AbstractOrderPdf
         $this->outputTableHeadingPdf($Y_Table_Position - 6);
         if ($i == 20) $item_count = 1;
       }
+    }
+
+    // A tax-inclusive order stores a TTC subtotal while the product columns are titled "excluding
+    // tax": the HT base is then on no line at all. Print it. Summed from the order's own amounts and
+    // converted once, like every stored total row — converting line by line and adding rounds twice.
+    if ((string)($order->info['prices_include_tax'] ?? '') === '1') {
+      $this->SetY($Y_Table_Position + 5);
+      $this->SetX(102);
+      $this->SetFont('Arial', '', 7);
+      $this->MultiCell(94, 6, mb_convert_encoding(html_entity_decode($this->def('entry_total_excluding_tax')), 'ISO-8859-1', 'UTF-8')
+        . ' : ' . mb_convert_encoding(html_entity_decode($CLICSHOPPING_Currencies->format($lines_excluding_tax, true, $order->info['currency'], $order->info['currency_value'])), 'ISO-8859-1', 'UTF-8'), 0, 'R');
+      $Y_Table_Position += 5;
     }
 
     $totals = $order->totals;

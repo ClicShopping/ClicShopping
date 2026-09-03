@@ -89,6 +89,8 @@ class OrderAdmin
     $this->info = [
       'id' => $Qorder->valueInt('orders_id'),
       'total' => null,
+      // Null on an order placed before the column: "not derivable", never "excluding tax".
+      'prices_include_tax' => $Qorder->value('orders_prices_include_tax'),
       'currency' => $Qorder->value('currency'),
       'currency_value' => $Qorder->value('currency_value'),
       'payment_method' => $Qorder->value('payment_method'),

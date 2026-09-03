@@ -24,12 +24,12 @@ thank_you_customer = We thank you for having placed an order with us. We hope to
 
 reserve_propriete = Legal proprieties : According with the laws {{store_name}} reserves the property of the goods delivered until the integral payment of the price.
 reserve_propriete_next = For more informations, please consult our general conditions and terms on the website
-reserve_propriete_next1 = at the following address : {{url_sell_conditions}}
+reserve_propriete_next1 = at the following address : {{sell_conditions_url}}
 
-entry_info_societe = {{info_societe}}
-entry_info_societe_next = {{tva_intracom}}
-entry_info_societe1 = {{info_societe1}}
-entry_info_societe_next1 = {{info_societe1}}
+entry_info_societe = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe_next = {{tva_shop_intracom}}
+entry_info_societe1 = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe_next1 = {{tva_shop_provincial}} - {{tva_shop_federal}}
 
 text_payment_method = Payment method
 

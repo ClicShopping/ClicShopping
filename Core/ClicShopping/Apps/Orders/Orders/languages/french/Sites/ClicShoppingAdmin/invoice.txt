@@ -23,12 +23,12 @@ thank_you_customer = Nous vous remercions d'avoir passé une commande chez nous.
 
 reserve_propriete = Réserve de propriété : Selon la loi en vigueur  {{store_name}} se réserve la propriété des marchandises livrées jusqu'au paiement intégral du prix.
 reserve_propriete_next = Il pourra en demander la restitution par lettre recommandée. Pour tout autre information, veuillez consulter nos conditions générales de vente
-reserve_propriete_next1 = disponible sur le site à l'adresse suivante : {{url_sell_conditions}}
+reserve_propriete_next1 = disponible sur le site à l'adresse suivante : {{sell_conditions_url}}
 
-entry_info_societe = {{info_societe}}
-entry_info_societe_next = {{tva_intracom}}
-entry_info_societe1 = {{info_societe1}}
-entry_info_societe_next1 = {{info_societe1}}
+entry_info_societe = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe_next = {{tva_shop_intracom}}
+entry_info_societe1 = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe_next1 = {{tva_shop_provincial}} - {{tva_shop_federal}}
 
 table_heading_qte = Qté
 table_heading_products_model = Modèle
@@ -36,3 +36,4 @@ table_heading_products = Produits
 table_heading_tax = Taxe
 table_heading_price_excluding_tax = Prix (HT)
 table_heading_total_excluding_tax = Total (HT)
+entry_total_excluding_tax = Total HT

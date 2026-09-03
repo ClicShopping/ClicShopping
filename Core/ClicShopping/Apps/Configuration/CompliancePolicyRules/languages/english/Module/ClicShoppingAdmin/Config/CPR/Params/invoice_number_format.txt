@@ -1,0 +1,5 @@
+cfg_configuration_compliance_policy_rules_invoice_number_format_title = Date format of the invoice number
+cfg_configuration_compliance_policy_rules_invoice_number_format_description = Date part of the invoice number, for example 09/02/2026S12. Kept separate from the display date format so the invoice number does not change with the language it is read in.
+cfg_configuration_compliance_policy_rules_invoice_number_format_dmy = Day / month / year (02/09/2026)
+cfg_configuration_compliance_policy_rules_invoice_number_format_mdy = Month / day / year (09/02/2026)
+cfg_configuration_compliance_policy_rules_invoice_number_format_ymd = Year-month-day (2026-09-02)

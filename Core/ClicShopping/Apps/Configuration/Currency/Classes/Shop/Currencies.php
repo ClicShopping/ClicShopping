@@ -93,12 +93,12 @@ class Currencies
    */
   public function format(float|null $number, bool $calculate_currency_value = true, string|null $currency_type = null, mixed $currency_value = null): ?string
   {
-    if (empty($currency_type) && CLICSHOPPING::getSite() === 'Shop') {
-      $currency_type = $_SESSION['currency'] ?? DEFAULT_CURRENCY;
-    }
-
-    if (CLICSHOPPING::getSite() === 'ClicShoppingAdmin') {
-      $currency_type = DEFAULT_CURRENCY;
+    // A currency passed by the caller WINS on every site. The rate comes from $currency_value, which
+    // is never overridden: replacing only the code converts with one currency and labels with another.
+    if (empty($currency_type)) {
+      $currency_type = CLICSHOPPING::getSite() === 'Shop'
+        ? ($_SESSION['currency'] ?? DEFAULT_CURRENCY)
+        : DEFAULT_CURRENCY;
     }
 
     if ($calculate_currency_value === true) {
@@ -110,7 +110,7 @@ class Currencies
 
       $format_string = '&nbsp;' . $this->currencies[$currency_type]['symbol_left'] . number_format(round($number * $rate, $this->currencies[$currency_type]['decimal_places']), $this->currencies[$currency_type]['decimal_places'], $this->currencies[$currency_type]['decimal_point'], $this->currencies[$currency_type]['thousands_point']) . '&nbsp;' . $this->currencies[$currency_type]['symbol_right'];
     } else {
-      $format_string = '&&nbsp;' . $this->currencies[$currency_type]['symbol_left'] . number_format(round($number, $this->currencies[$currency_type]['decimal_places']), $this->currencies[$currency_type]['decimal_places'], $this->currencies[$currency_type]['decimal_point'], $this->currencies[$currency_type]['thousands_point']) . '&nbsp;' . $this->currencies[$currency_type]['symbol_right'];
+      $format_string = '&nbsp;' . $this->currencies[$currency_type]['symbol_left'] . number_format(round($number, $this->currencies[$currency_type]['decimal_places']), $this->currencies[$currency_type]['decimal_places'], $this->currencies[$currency_type]['decimal_point'], $this->currencies[$currency_type]['thousands_point']) . '&nbsp;' . $this->currencies[$currency_type]['symbol_right'];
     }
 
     return $format_string;
