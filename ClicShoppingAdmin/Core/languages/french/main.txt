@@ -506,7 +506,6 @@ Texte : {{document_text}}
 
 text_rag_answer_question_not_found = Je n'ai pas trouvé d'informations spécifiques pour répondre à votre question. Veuillez reformuler ou poser une autre question.
 text_rag_answer_question_error = Désolé, une erreur s'est produite lors du traitement de votre question. Veuillez réessayer ultérieurement.
-text_not_analytics = Cette requête ne semble pas être une requête d'analyse.
 
 text_parentheses_mismatch_error = Parenthèses non correspondantes : {{openParenCount}} ouvrantes contre {{closeParenCount}} fermantes.
 text_invalid_column_alias_error = Alias de colonne invalide (contient un point).

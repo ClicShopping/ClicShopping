@@ -67,7 +67,7 @@ class PageContentTab3 implements HooksInterface
 
         $eInvoiceService = new EInvoiceService();
 
- if ($eInvoiceService->isEnabled()) {
+      if ($eInvoiceService->isEnabled()) {
         $orders_status_invoice_array = [];
 
         $QordersStatusInvoice = $this->app->db->prepare('select orders_status_invoice_id,
@@ -171,10 +171,7 @@ class PageContentTab3 implements HooksInterface
 
           $content .= '<!-- order CompliancePolicyRules end -->';
 
-        $contentJs = json_encode(
-          $content,
-          JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
-        );
+          $contentJs = HTML::injectJsHtml($content);
 
         $output = <<<EOD
 

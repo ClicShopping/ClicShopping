@@ -444,7 +444,6 @@ Text: {{document_text}}
 
 text_rag_answer_question_not_found = I couldn’t find any specific information to answer your question. Please rephrase or ask another question.
 text_rag_answer_question_error = Sorry, an error has been created during the process. Please try more later.
-text_not_analytics = This query does not appear to be an analytical query.
 
 
 text_parentheses_mismatch_error = Mismatched parentheses: {{openParenCount}} opening vs {{closeParenCount}} closing.

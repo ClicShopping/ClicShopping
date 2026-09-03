@@ -219,7 +219,6 @@ class PageTabContent implements HooksInterface
           ';
       }
 
-
       $output = <<<EOD
   <!-- ######################## -->
   <!--  Start Customer      -->

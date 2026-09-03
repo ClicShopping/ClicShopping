@@ -1343,4 +1343,19 @@ class HTML
 
     return trim($attributes);
   }
+
+  /**
+   * Inject HTml inside Js
+   * @param string $content
+   * @return string
+   */
+  public static function injectJsHtml(string $content):string
+  {
+    $contentJs = json_encode(
+      $content,
+      JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+    );
+
+    return $contentJs;
+  }
 }

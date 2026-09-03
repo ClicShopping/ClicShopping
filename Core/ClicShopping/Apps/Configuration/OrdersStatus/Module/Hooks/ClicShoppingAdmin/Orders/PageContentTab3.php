@@ -96,13 +96,15 @@ class PageContentTab3 implements HooksInterface
         $content .= '</span>';
         $content .= '<!-- order status end -->';
 
+        $contentJs = HTML::injectJsHtml($content);
+
         $output = <<<EOD
 <!-- ######################## -->
 <!--  Start order status     -->
 <!-- ######################## -->
 <script>
 $('#entryStatus').prepend(
-    '{$content}'
+    '{$contentJs}'
 );
 </script>
 <!-- ######################## -->
