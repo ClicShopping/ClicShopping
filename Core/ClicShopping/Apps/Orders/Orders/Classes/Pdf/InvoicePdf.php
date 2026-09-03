@@ -12,6 +12,7 @@ use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Shop\Tax;
+use ClicShopping\Sites\Common\PDF;
 
 /**
  * Single source of truth for the order invoice PDF page (one order).
@@ -77,7 +78,7 @@ class InvoicePdf extends AbstractOrderPdf
     $this->SetX(0);
     $this->SetY(47);
     $this->Cell(9);
-    $this->MultiCell(70, 3.3, mb_convert_encoding($CLICSHOPPING_Address->addressFormat($billingAddress['format_id'], $billingAddress, '', '', "\n"), 'ISO-8859-1', 'UTF-8'), 0, 'L');
+    $this->MultiCell(70, 3.3, PDF::enc($CLICSHOPPING_Address->addressFormat($billingAddress['format_id'], $billingAddress, '', '', "\n")), 0, 'L');
 
     $this->SetFont('Arial', 'B', 8);
     $this->SetTextColor(0);
@@ -85,7 +86,7 @@ class InvoicePdf extends AbstractOrderPdf
     $this->SetX(0);
     $this->SetY(47);
     $this->Cell(111);
-    $this->MultiCell(70, 3.3, mb_convert_encoding($CLICSHOPPING_Address->addressFormat($deliveryAddress['format_id'], $deliveryAddress, '', '', "\n"), 'ISO-8859-1', 'UTF-8'), 0, 'L');
+    $this->MultiCell(70, 3.3, PDF::enc($CLICSHOPPING_Address->addressFormat($deliveryAddress['format_id'], $deliveryAddress, '', '', "\n")), 0, 'L');
 
     $this->SetFont('Arial', 'B', 8);
     $this->SetTextColor(0);
@@ -97,16 +98,16 @@ class InvoicePdf extends AbstractOrderPdf
 
     $this->SetFont('Arial', '', 8);
     $this->SetTextColor(0);
-    $this->Text(15, 95, mb_convert_encoding($this->def('entry_customer_number'), 'ISO-8859-1', 'UTF-8') . ' ' . (int)($order->customer['customers_id'] ?? 0));
+    $this->Text(15, 95, PDF::enc($this->def('entry_customer_number')) . ' ' . (int)($order->customer['customers_id'] ?? 0));
 
     $this->SetFont('Arial', '', 8);
     $this->SetTextColor(0);
-    $this->Text(15, 100, mb_convert_encoding($this->def('entry_phone'), 'ISO-8859-1', 'UTF-8') . ' ' . Hash::displayDecryptedDataText($order->customer['telephone']));
+    $this->Text(15, 100, PDF::enc($this->def('entry_phone')) . ' ' . Hash::displayDecryptedDataText($order->customer['telephone']));
 
     $this->renderOrderNumberLine($oID, $invoiceStatusId, $invoiceTitle, $invoiceDate);
     $this->renderOrderDateLine($invoiceStatusId, $invoiceTitle, $order->info['date_purchased']);
 
-    $temp = substr(mb_convert_encoding($order->info['payment_method'], 'ISO-8859-1', 'UTF-8'), 0, 30);
+    $temp = substr(PDF::enc($order->info['payment_method']), 0, 30);
     $this->Text(120, 113, $this->def('entry_payment_method') . ' ' . $temp);
 
     if ($this->drawTitleBox) {
@@ -150,9 +151,9 @@ class InvoicePdf extends AbstractOrderPdf
       $this->SetX(40);
       $this->SetFont('Arial', '', 6);
       if (strlen($product_name_attrib_contact) > 95) {
-        $this->MultiCell(103, 6, mb_convert_encoding(substr($product_name_attrib_contact, 0, 95), 'ISO-8859-1', 'UTF-8') . ' .. ', 1, 'L');
+        $this->MultiCell(103, 6, PDF::enc(substr($product_name_attrib_contact, 0, 95)) . ' .. ', 1, 'L');
       } else {
-        $this->MultiCell(103, 6, mb_convert_encoding($product_name_attrib_contact, 'ISO-8859-1', 'UTF-8'), 1, 'L');
+        $this->MultiCell(103, 6, PDF::enc($product_name_attrib_contact), 1, 'L');
         if (strlen($product_name_attrib_contact) <= 40) {
           $this->Ln();
         }
@@ -161,7 +162,7 @@ class InvoicePdf extends AbstractOrderPdf
       $this->SetY($Y_Table_Position);
       $this->SetX(15);
       $this->SetFont('Arial', '', 7);
-      $this->MultiCell(25, 6, mb_convert_encoding($products[$i]['model'], 'ISO-8859-1', 'UTF-8'), 1, 'C');
+      $this->MultiCell(25, 6, PDF::enc($products[$i]['model']), 1, 'C');
 
       $this->SetFont('Arial', '', 7);
       $this->SetY($Y_Table_Position);
@@ -171,11 +172,11 @@ class InvoicePdf extends AbstractOrderPdf
       $this->SetY($Y_Table_Position);
       $this->SetX(158);
       $this->SetFont('Arial', '', 7);
-      $this->MultiCell(20, 6, mb_convert_encoding(html_entity_decode($CLICSHOPPING_Currencies->format($products[$i]['final_price'], true, $order->info['currency'], $order->info['currency_value'])), 'ISO-8859-1', 'UTF-8'), 1, 'C');
+      $this->MultiCell(20, 6, PDF::enc(html_entity_decode($CLICSHOPPING_Currencies->format($products[$i]['final_price'], true, $order->info['currency'], $order->info['currency_value']))), 1, 'C');
 
       $this->SetY($Y_Table_Position);
       $this->SetX(178);
-      $this->MultiCell(20, 6, mb_convert_encoding(html_entity_decode($CLICSHOPPING_Currencies->format($products[$i]['final_price'] * $products[$i]['qty'], true, $order->info['currency'], $order->info['currency_value'])), 'ISO-8859-1', 'UTF-8'), 1, 'C');
+      $this->MultiCell(20, 6, PDF::enc(html_entity_decode($CLICSHOPPING_Currencies->format($products[$i]['final_price'] * $products[$i]['qty'], true, $order->info['currency'], $order->info['currency_value']))), 1, 'C');
       $Y_Table_Position += 6;
 
       $lines_excluding_tax += (float)$products[$i]['final_price'] * (float)$products[$i]['qty'];
@@ -196,8 +197,8 @@ class InvoicePdf extends AbstractOrderPdf
       $this->SetY($Y_Table_Position + 5);
       $this->SetX(102);
       $this->SetFont('Arial', '', 7);
-      $this->MultiCell(94, 6, mb_convert_encoding(html_entity_decode($this->def('entry_total_excluding_tax')), 'ISO-8859-1', 'UTF-8')
-        . ' : ' . mb_convert_encoding(html_entity_decode($CLICSHOPPING_Currencies->format($lines_excluding_tax, true, $order->info['currency'], $order->info['currency_value'])), 'ISO-8859-1', 'UTF-8'), 0, 'R');
+      $this->MultiCell(94, 6, PDF::enc(html_entity_decode($this->def('entry_total_excluding_tax')))
+        . ' : ' . PDF::enc(html_entity_decode($CLICSHOPPING_Currencies->format($lines_excluding_tax, true, $order->info['currency'], $order->info['currency_value']))), 0, 'R');
       $Y_Table_Position += 5;
     }
 
@@ -213,7 +214,7 @@ class InvoicePdf extends AbstractOrderPdf
         $totals[$i]['text'] = substr($temp2, 0, strlen($temp2) - 4);
       }
 
-      $this->MultiCell(94, 6, substr(mb_convert_encoding(html_entity_decode($totals[$i]['title']), 'ISO-8859-1', 'UTF-8'), 0, 30) . ' : ' . mb_convert_encoding(html_entity_decode($totals[$i]['text']), 'ISO-8859-1', 'UTF-8'), 0, 'R');
+      $this->MultiCell(94, 6, substr(PDF::enc(html_entity_decode($totals[$i]['title'])), 0, 30) . ' : ' . PDF::enc(html_entity_decode($totals[$i]['text'])), 0, 'R');
       $Y_Table_Position += 5;
     }
   }

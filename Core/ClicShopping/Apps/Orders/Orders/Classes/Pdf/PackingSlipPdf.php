@@ -11,6 +11,7 @@ namespace ClicShopping\Apps\Orders\Orders\Classes\Pdf;
 use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Common\PDF;
 
 /**
  * Single source of truth for the packing-slip PDF page (one order).
@@ -64,7 +65,7 @@ class PackingSlipPdf extends AbstractOrderPdf
     $this->SetX(0);
     $this->SetY(47);
     $this->Cell(9);
-    $this->MultiCell(70, 3.3, mb_convert_encoding($CLICSHOPPING_Address->addressFormat($billingAddress['format_id'], $billingAddress, '', '', "\n"), 'ISO-8859-1', 'UTF-8'), 0, 'L');
+    $this->MultiCell(70, 3.3, PDF::enc($CLICSHOPPING_Address->addressFormat($billingAddress['format_id'], $billingAddress, '', '', "\n")), 0, 'L');
 
     // Delivery address (visible box)
     $this->SetDrawColor(0);
@@ -74,11 +75,11 @@ class PackingSlipPdf extends AbstractOrderPdf
 
     $this->SetFont('Arial', 'B', 8);
     $this->SetTextColor(0);
-    $this->Text(113, 44, mb_convert_encoding($this->def('entry_ship_to'), 'ISO-8859-1', 'UTF-8'));
+    $this->Text(113, 44, PDF::enc($this->def('entry_ship_to')));
     $this->SetX(0);
     $this->SetY(47);
     $this->Cell(111);
-    $this->MultiCell(70, 3.3, mb_convert_encoding($CLICSHOPPING_Address->addressFormat($deliveryAddress['format_id'], $deliveryAddress, '', '', "\n"), 'ISO-8859-1', 'UTF-8'), 0, 'L');
+    $this->MultiCell(70, 3.3, PDF::enc($CLICSHOPPING_Address->addressFormat($deliveryAddress['format_id'], $deliveryAddress, '', '', "\n")), 0, 'L');
 
     // Customer info
     $this->SetFont('Arial', 'B', 8);
@@ -91,11 +92,11 @@ class PackingSlipPdf extends AbstractOrderPdf
 
     $this->SetFont('Arial', '', 8);
     $this->SetTextColor(0);
-    $this->Text(15, 95, mb_convert_encoding($this->def('entry_customer_number'), 'ISO-8859-1', 'UTF-8') . ' ' . (int)($order->customer['customers_id'] ?? 0));
+    $this->Text(15, 95, PDF::enc($this->def('entry_customer_number')) . ' ' . (int)($order->customer['customers_id'] ?? 0));
 
     $this->SetFont('Arial', '', 8);
     $this->SetTextColor(0);
-    $this->Text(15, 100, mb_convert_encoding($this->def('entry_phone'), 'ISO-8859-1', 'UTF-8') . ' ' . Hash::displayDecryptedDataText($order->customer['telephone']));
+    $this->Text(15, 100, PDF::enc($this->def('entry_phone')) . ' ' . Hash::displayDecryptedDataText($order->customer['telephone']));
 
     // Order header box
     $this->SetDrawColor(0);
@@ -107,8 +108,8 @@ class PackingSlipPdf extends AbstractOrderPdf
     $this->renderOrderDateLine($invoiceStatusId, $invoiceTitle, $order->info['date_purchased']);
 
     // Payment method
-    $temp = substr(mb_convert_encoding($order->info['payment_method'], 'ISO-8859-1', 'UTF-8'), 0, 60);
-    $this->Text(110, 113, mb_convert_encoding($this->def('text_payment_method'), 'ISO-8859-1', 'UTF-8') . ' ' . $temp);
+    $temp = substr(PDF::enc($order->info['payment_method']), 0, 60);
+    $this->Text(110, 113, PDF::enc($this->def('text_payment_method')) . ' ' . $temp);
 
     // Title box
     $this->SetDrawColor(0);
@@ -147,9 +148,9 @@ class PackingSlipPdf extends AbstractOrderPdf
       $this->SetX(60);
       $this->SetFont('Arial', '', 6);
       if (strlen($product_name_attrib_contact) > 70) {
-        $this->MultiCell(138, 6, mb_convert_encoding(substr($product_name_attrib_contact, 0, 70), 'ISO-8859-1', 'UTF-8') . ' .. ', 1, 'L');
+        $this->MultiCell(138, 6, PDF::enc(substr($product_name_attrib_contact, 0, 70)) . ' .. ', 1, 'L');
       } else {
-        $this->MultiCell(138, 6, mb_convert_encoding($product_name_attrib_contact, 'ISO-8859-1', 'UTF-8'), 1, 'L');
+        $this->MultiCell(138, 6, PDF::enc($product_name_attrib_contact), 1, 'L');
         if (strlen($product_name_attrib_contact) <= 40) {
           $this->Ln();
         }
@@ -158,7 +159,7 @@ class PackingSlipPdf extends AbstractOrderPdf
       $this->SetY($Y_Table_Position);
       $this->SetX(20);
       $this->SetFont('Arial', '', 7);
-      $this->MultiCell(40, 6, mb_convert_encoding($products[$i]['model'], 'ISO-8859-1', 'UTF-8'), 1, 'C');
+      $this->MultiCell(40, 6, PDF::enc($products[$i]['model']), 1, 'C');
       $Y_Table_Position += 6;
 
       $item_count++;

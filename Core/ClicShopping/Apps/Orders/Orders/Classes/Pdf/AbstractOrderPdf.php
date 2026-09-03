@@ -13,6 +13,7 @@ use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
 use Closure;
 use FPDF;
+use ClicShopping\Sites\Common\PDF;
 
 /**
  * Shared FPDF base for ClicShopping order documents (invoice, packing slip,
@@ -168,7 +169,7 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetTextColor(...$rgb);
     $this->Ln(0);
     $this->Cell(125);
-    $this->MultiCell(100, 3.5, mb_convert_encoding(STORE_NAME, 'ISO-8859-1', 'UTF-8'), 0, 'L');
+    $this->MultiCell(100, 3.5, PDF::enc(STORE_NAME), 0, 'L');
 
     $this->SetX(0);
     $this->SetY(15);
@@ -176,7 +177,7 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetTextColor(...$rgb);
     $this->Ln(0);
     $this->Cell(125);
-    $this->MultiCell(100, 3.5, mb_convert_encoding(STORE_NAME_ADDRESS, 'ISO-8859-1', 'UTF-8'), 0, 'L');
+    $this->MultiCell(100, 3.5, PDF::enc(STORE_NAME_ADDRESS), 0, 'L');
 
     $this->SetX(0);
     $this->SetY(30);
@@ -184,7 +185,7 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetTextColor(...$rgb);
     $this->Ln(0);
     $this->Cell(-3);
-    $this->MultiCell(100, 3.5, mb_convert_encoding($this->def('entry_email'), 'ISO-8859-1', 'UTF-8') . ' ' . STORE_OWNER_EMAIL_ADDRESS, 0, 'L');
+    $this->MultiCell(100, 3.5, PDF::enc($this->def('entry_email')) . ' ' . STORE_OWNER_EMAIL_ADDRESS, 0, 'L');
 
     $this->SetX(0);
     $this->SetY(34);
@@ -211,22 +212,22 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetY(-55);
     $this->SetFont('Arial', 'B', 8);
     $this->SetTextColor(...$rgb);
-    $this->Cell(0, 10, mb_convert_encoding($this->def('thank_you_customer'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, PDF::enc($this->def('thank_you_customer')), 0, 0, 'C');
 
     $this->SetY(-45);
     $this->SetFont('Arial', '', 7);
     $this->SetTextColor(...$rgb);
-    $this->Cell(0, 10, mb_convert_encoding($this->def('reserve_propriete', ['store_name' => defined('STORE_NAME') ? STORE_NAME : '']), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, PDF::enc($this->def('reserve_propriete', ['store_name' => defined('STORE_NAME') ? STORE_NAME : ''])), 0, 0, 'C');
 
     $this->SetY(-40);
     $this->SetFont('Arial', '', 7);
     $this->SetTextColor(...$rgb);
-    $this->Cell(0, 10, mb_convert_encoding($this->def('reserve_propriete_next'), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, PDF::enc($this->def('reserve_propriete_next')), 0, 0, 'C');
 
     $this->SetY(-35);
     $this->SetFont('Arial', '', 7);
     $this->SetTextColor(...$rgb);
-    $this->Cell(0, 10, mb_convert_encoding($this->def('reserve_propriete_next1', ['sell_conditions_url' => self::shopUrl($CLICSHOPPING_CompliancePolicyRules->displayUrlSalesCondition())]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, PDF::enc($this->def('reserve_propriete_next1', ['sell_conditions_url' => self::shopUrl($CLICSHOPPING_CompliancePolicyRules->displayUrlSalesCondition())])), 0, 0, 'C');
 
     $shopCapital = $CLICSHOPPING_CompliancePolicyRules->displayShopCapital();
     $info_societe = $shopCapital === '' ? '' : $shopCapital . ' - ';
@@ -235,28 +236,28 @@ abstract class AbstractOrderPdf extends FPDF
       $this->SetY(-25);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => $CLICSHOPPING_CompliancePolicyRules->displayRegistrationNumber(), 'shop_code_ape' => $CLICSHOPPING_CompliancePolicyRules->displayApeCode()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, PDF::enc($this->def('entry_info_societe', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => $CLICSHOPPING_CompliancePolicyRules->displayRegistrationNumber(), 'shop_code_ape' => $CLICSHOPPING_CompliancePolicyRules->displayApeCode()])), 0, 0, 'C');
 
       $this->SetY(-20);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe_next', ['tva_shop_intracom' => $CLICSHOPPING_CompliancePolicyRules->displayEUVatNumber()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, PDF::enc($this->def('entry_info_societe_next', ['tva_shop_intracom' => $CLICSHOPPING_CompliancePolicyRules->displayEUVatNumber()])), 0, 0, 'C');
     } else {
       $this->SetY(-25);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe1', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => $CLICSHOPPING_CompliancePolicyRules->displayRegistrationNumber(), 'shop_code_ape' => $CLICSHOPPING_CompliancePolicyRules->displayApeCode()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, PDF::enc($this->def('entry_info_societe1', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => $CLICSHOPPING_CompliancePolicyRules->displayRegistrationNumber(), 'shop_code_ape' => $CLICSHOPPING_CompliancePolicyRules->displayApeCode()])), 0, 0, 'C');
 
       $this->SetY(-20);
       $this->SetFont('Arial', '', 8);
       $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, mb_convert_encoding($this->def('entry_info_societe_next1', ['tva_shop_provincial' => $CLICSHOPPING_CompliancePolicyRules->displayRegionalTaxesNumber(), 'tva_shop_federal' => $CLICSHOPPING_CompliancePolicyRules->displayFederalTaxesNumber()]), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+      $this->Cell(0, 10, PDF::enc($this->def('entry_info_societe_next1', ['tva_shop_provincial' => $CLICSHOPPING_CompliancePolicyRules->displayRegionalTaxesNumber(), 'tva_shop_federal' => $CLICSHOPPING_CompliancePolicyRules->displayFederalTaxesNumber()])), 0, 0, 'C');
     }
 
     $this->SetY(-15);
     $this->SetFont('Arial', '', 8);
     $this->SetTextColor(...$rgb);
-    $this->Cell(0, 10, mb_convert_encoding($CLICSHOPPING_CompliancePolicyRules->displayLegalInformation(), 'ISO-8859-1', 'UTF-8'), 0, 0, 'C');
+    $this->Cell(0, 10, PDF::enc($CLICSHOPPING_CompliancePolicyRules->displayLegalInformation()), 0, 0, 'C');
   }
 
   /**
@@ -268,9 +269,9 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetFont('Arial', 'B', 8);
     $this->SetY($y);
     $this->SetX(6);
-    $this->Cell(9, 6, mb_convert_encoding($this->def('table_heading_qte'), 'ISO-8859-1', 'UTF-8'), 1, 0, 'C', 1);
+    $this->Cell(9, 6, PDF::enc($this->def('table_heading_qte')), 1, 0, 'C', 1);
     $this->SetX(15);
-    $this->Cell(27, 6, mb_convert_encoding($this->def('table_heading_products_model'), 'ISO-8859-1', 'UTF-8'), 1, 0, 'C', 1);
+    $this->Cell(27, 6, PDF::enc($this->def('table_heading_products_model')), 1, 0, 'C', 1);
     $this->SetX(40);
     $this->Cell(103, 6, $this->def('table_heading_products'), 1, 0, 'C', 1);
     $this->SetX(143);
@@ -291,9 +292,9 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetFont('Arial', 'B', 8);
     $this->SetY($y);
     $this->SetX(6);
-    $this->Cell(14, 6, mb_convert_encoding($this->def('table_heading_qte'), 'ISO-8859-1', 'UTF-8'), 1, 0, 'C', 1);
+    $this->Cell(14, 6, PDF::enc($this->def('table_heading_qte')), 1, 0, 'C', 1);
     $this->SetX(20);
-    $this->Cell(40, 6, mb_convert_encoding($this->def('table_heading_products_model'), 'ISO-8859-1', 'UTF-8'), 1, 0, 'C', 1);
+    $this->Cell(40, 6, PDF::enc($this->def('table_heading_products_model')), 1, 0, 'C', 1);
     $this->SetX(60);
     $this->Cell(138, 6, $this->def('table_heading_products'), 1, 0, 'C', 1);
     $this->Ln();
