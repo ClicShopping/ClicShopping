@@ -15,6 +15,7 @@ use ClicShopping\OM\Registry;
 class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public mixed $app;
+  private mixed $hooks;
 
   public function __construct()
   {

@@ -14,6 +14,7 @@ use ClicShopping\OM\Registry;
 class RunAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   protected string $code;
+  private mixed $hooks;
 
   public function __construct()
   {

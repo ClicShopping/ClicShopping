@@ -13,6 +13,7 @@ use ClicShopping\OM\Registry;
 class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public mixed $app;
+  private mixed $Hooks;
 
   public function execute()
   {

@@ -15,6 +15,7 @@ use ClicShopping\OM\Registry;
 class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public mixed $app;
+  public mixed $hooks;
 
   public function __construct()
   {
