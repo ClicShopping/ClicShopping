@@ -16,6 +16,7 @@ use ClicShopping\OM\Registry;
 class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public mixed $app;
+  public mixed $hooks;
 
   public function __construct()
   {
@@ -34,7 +35,8 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
     $languages = $CLICSHOPPING_Language->getLanguages();
 
-    $orders_status_definition_array = HTML::sanitize($_POST['orders_status_definition'] ?? []);
+    $orders_status_definition_array = array_map(HTML::sanitize(...), (array)($_POST['orders_status_definition'] ?? []));
+    $orders_status_name_array = array_map(HTML::sanitize(...), (array)($_POST['orders_status_name'] ?? []));
 
     // The column is NOT NULL DEFAULT '': only this guard makes the definition mandatory.
     if (OrderStatusAdmin::hasMissingDefinition($orders_status_definition_array)) {
@@ -43,12 +45,11 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
     }
 
     for ($i = 0, $n = \count($languages); $i < $n; $i++) {
-      $orders_status_name_array = HTML::sanitize($_POST['orders_status_name']);
       $language_id = $languages[$i]['id'];
 
       $sql_data_array = [
-        'orders_status_name' => HTML::sanitize($orders_status_name_array[$language_id]),
-        'orders_status_definition' => HTML::sanitize($orders_status_definition_array[$language_id]),
+        'orders_status_name' => $orders_status_name_array[$language_id] ?? '',
+        'orders_status_definition' => $orders_status_definition_array[$language_id] ?? '',
         'revenue_sign' => \in_array($_POST['revenue_sign'] ?? '1', ['-1', '0', '1'], true) ? (int)$_POST['revenue_sign'] : 1,
         'public_flag' => (isset($_POST['public_flag']) && ($_POST['public_flag'] == '1')) ? '1' : '0',
         'downloads_flag' => (isset($_POST['downloads_flag']) && ($_POST['downloads_flag'] == '1')) ? '1' : '0',

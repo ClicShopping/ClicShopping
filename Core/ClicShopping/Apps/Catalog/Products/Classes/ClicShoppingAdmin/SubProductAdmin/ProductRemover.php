@@ -202,88 +202,105 @@ class ProductRemover
    */
   public function remove(int $id, array $image): void
   {
-    $Qimage = $image;
+    // Decided before the writes, deleted after the commit: unlink cannot be rolled back, and a
+    // rolled-back removal would leave the surviving rows pointing at missing files.
+    $orphaned_files = $this->collectOrphanedImageFiles($id, $image);
 
-    $check_image_total = $this->checkProductImage($image);
-    $check_image_categories_total = $this->checkCategoriesImage($image);
-    $check_image_product_description_total = $this->checkImagesDescription($image);
-    $check_image_banners_total = $this->checkBannerImages($image);
-    $check_image_manufacturers_total = $this->checkManufacturerImages($image);
-    $check_image_suppliers_total = $this->checkSupplierImages($image);
+    // Guarded: a caller may already own one.
+    $owns_transaction = !$this->db->inTransaction();
 
-    if (($check_image_total < 2) &&
-      ($check_image_categories_total == 0) &&
-      ($check_image_product_description_total == 0) &&
-      ($check_image_banners_total == 0) &&
-      ($check_image_manufacturers_total == 0) &&
-      ($check_image_suppliers_total == 0)) {
+    if ($owns_transaction) {
+      $this->db->beginTransaction();
+    }
 
-      if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image'])) {
-        unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image']);
+    try {
+      // Children FIRST, `products` LAST. No foreign key backs this schema: the reverse order
+      // orphans every child the moment a later delete fails, and nothing would refuse them.
+      $this->db->delete('products_images', ['products_id' => $id]);
+      $this->db->delete('products_description', ['products_id' => $id]);
+      $this->db->delete('products_to_categories', ['products_id' => $id]);
+      $this->db->delete('products_notifications', ['products_id' => $id]);
+
+      foreach (['customers_basket', 'customers_basket_attributes'] as $table) {
+        $Qdelete = $this->db->prepare('delete
+                                       from :table_' . $table . '
+                                       where products_id = :products_id
+                                       or products_id like :products_id_att
+                                      ');
+        $Qdelete->bindInt(':products_id', $id);
+        $Qdelete->bindInt(':products_id_att', $id . '{%');
+        $Qdelete->execute();
       }
 
-      if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_zoom'])) {
-        unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_zoom']);
+      $this->db->delete('products', ['products_id' => $id]);
+
+      if ($owns_transaction) {
+        $this->db->commit();
+      }
+    } catch (\Throwable $e) {
+      if ($owns_transaction) {
+        $this->db->rollBack();
       }
 
-      if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_medium'])) {
-        unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_medium']);
-      }
+      throw $e;
+    }
 
-      if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_small'])) {
-        unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimage['products_image_small']);
+    foreach ($orphaned_files as $file) {
+      if (file_exists($file)) {
+        unlink($file);
+      }
+    }
+
+    $this->hooks->call('Products', 'RemoveProduct', ['products_id' => $id]);
+
+    Cache::clear('categories');
+  }
+
+  /**
+   * Image files no other row still points at, resolved BEFORE the deletes while the rows are
+   * readable, and unlinked only once the removal is committed.
+   *
+   * @param int $id The product id being removed.
+   * @param array $image The product image row, resolved by the caller.
+   * @return array<int, string> Absolute paths.
+   */
+  private function collectOrphanedImageFiles(int $id, array $image): array
+  {
+    $path = $this->template->getDirectoryPathTemplateShopImages();
+    $files = [];
+
+    if (($this->checkProductImage($image) < 2) &&
+      ($this->checkCategoriesImage($image) == 0) &&
+      ($this->checkImagesDescription($image) == 0) &&
+      ($this->checkBannerImages($image) == 0) &&
+      ($this->checkManufacturerImages($image) == 0) &&
+      ($this->checkSupplierImages($image) == 0)) {
+
+      foreach (['products_image', 'products_image_zoom', 'products_image_medium', 'products_image_small'] as $key) {
+        if (!empty($image[$key])) {
+          $files[] = $path . $image[$key];
+        }
       }
     }
 
     $Qimages = $this->db->get('products_images', 'image', ['products_id' => $id]);
 
-    if ($Qimages->fetch() !== false) {
-      do {
-        $sql_array = [
-          'image' => $Qimages->value('image'),
-          'products_id' => [
-            'op' => '!=',
-            'val' => (int)$id
-          ]
-        ];
+    while ($Qimages->fetch() !== false) {
+      $sql_array = [
+        'image' => $Qimages->value('image'),
+        'products_id' => [
+          'op' => '!=',
+          'val' => (int)$id
+        ]
+      ];
 
-        $QcheckImage = $this->db->get('products_images', 'id', $sql_array, null, 1);
+      $QcheckImage = $this->db->get('products_images', 'id', $sql_array, null, 1);
 
-        if ($QcheckImage->fetch() === false) {
-          if (file_exists($this->template->getDirectoryPathTemplateShopImages() . $Qimages->value('image'))) {
-            unlink($this->template->getDirectoryPathTemplateShopImages() . $Qimages->value('image'));
-          }
-        }
-      } while ($Qimages->fetch());
-
-      $this->db->delete('products_images', ['products_id' => $id]);
+      if ($QcheckImage->fetch() === false) {
+        $files[] = $path . $Qimages->value('image');
+      }
     }
 
-    $this->db->delete('products', ['products_id' => $id]);
-    $this->db->delete('products_description', ['products_id' => $id]);
-    $this->db->delete('products_to_categories', ['products_id' => $id]);
-    $this->db->delete('products_notifications', ['products_id' => $id]);
-
-    $Qdelete = $this->db->prepare('delete
-                                   from :table_customers_basket
-                                   where products_id = :products_id
-                                   or products_id like :products_id_att
-                                ');
-    $Qdelete->bindInt(':products_id', $id);
-    $Qdelete->bindInt(':products_id_att', $id . '{%');
-    $Qdelete->execute();
-
-    $Qdel = $this->db->prepare('delete
-                                from :table_customers_basket_attributes
-                                where products_id = :products_id
-                                or products_id like :products_id_att
-                               ');
-    $Qdel->bindInt(':products_id', $id);
-    $Qdel->bindInt(':products_id_att', $id . '{%');
-    $Qdel->execute();
-
-    $this->hooks->call('Products', 'RemoveProduct', ['products_id' => $id]);
-
-    Cache::clear('categories');
+    return $files;
   }
 }

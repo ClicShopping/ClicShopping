@@ -11,16 +11,14 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubIntentAnalyzer;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\WebSearch\Patterns\WebSearchPostFilter;
-use ClicShopping\AI\DomainsAI\Analytics\Patterns\SuperlativePostFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\MultiTemporalPostFilter;
 
 /**
  * PostFilterPipeline
  *
  * Applies the pattern-based post-filters that override the LLM classification for
- * deterministic edge cases (temporal-financial, web search, superlative, multi-temporal).
- * Extracted verbatim from UnifiedQueryAnalyzer::analyzeQuery to cut that method's
- * complexity; behaviour is unchanged.
+ * deterministic edge cases (temporal-financial, web search, multi-temporal).
+ * Extracted from UnifiedQueryAnalyzer::analyzeQuery to cut that method's complexity.
  */
 class PostFilterPipeline
 {
@@ -147,53 +145,6 @@ class PostFilterPipeline
       
       if ($this->debug) {
         error_log("🔧 WebSearch " . $this->language->getDef('debug_pattern_override'));
-        error_log("  Original: {$originalIntentType} (confidence: {$originalConfidence})");
-        error_log("  Overridden: {$analysis['intent_type']} (confidence: {$analysis['confidence']})");
-        error_log("  Reason: " . ($analysis['override_reason'] ?? 'unknown'));
-      }
-    }
-    
-    //  CRITICAL: Apply SuperlativePostFilter post-filter (EXCEPTION to Pure LLM)
-    // This pattern-based post-filter overrides LLM classification for superlative queries
-    // where LLM is inconsistent (misclassifies as semantic instead of analytics)
-    // Pattern is called on translated query (English) for deterministic results
-    $originalIntentType = $analysis['intent_type'];
-    $originalConfidence = $analysis['confidence'];
-    
-    $analysis = SuperlativePostFilter::postFilter(
-      $analysis['translated_query'],
-      $analysis
-    );
-    
-    // Log when pattern overrides LLM classification
-    if ($analysis['intent_type'] !== $originalIntentType || $analysis['confidence'] !== $originalConfidence) {
-      // 🔍 DEBUG: Enhanced logging for pattern override
-      if ($this->debug) {
-        error_log("[INFO : ANALYSE] [UnifiedQueryAnalyzer] SuperlativePostFilter Override:");
-        error_log("  BEFORE - Intent: {$originalIntentType}, Confidence: {$originalConfidence}");
-        error_log("  AFTER  - Intent: {$analysis['intent_type']}, Confidence: {$analysis['confidence']}");
-        error_log("  Override reason: " . ($analysis['override_reason'] ?? 'unknown'));
-        error_log("  Detection method: " . ($analysis['detection_method'] ?? 'unknown'));
-      }
-      
-      $this->logger->logStructured(
-        'info',
-        'UnifiedQueryAnalyzer',
-        'superlative_pattern_override',
-        [
-          'query' => $query,
-          'translated_query' => $analysis['translated_query'],
-          'original_intent' => $originalIntentType,
-          'original_confidence' => $originalConfidence,
-          'overridden_intent' => $analysis['intent_type'],
-          'overridden_confidence' => $analysis['confidence'],
-          'override_reason' => $analysis['override_reason'] ?? 'unknown',
-          'detection_method' => $analysis['detection_method'] ?? 'unknown'
-        ]
-      );
-      
-      if ($this->debug) {
-        error_log("🔧 Superlative " . $this->language->getDef('debug_pattern_override'));
         error_log("  Original: {$originalIntentType} (confidence: {$originalConfidence})");
         error_log("  Overridden: {$analysis['intent_type']} (confidence: {$analysis['confidence']})");
         error_log("  Reason: " . ($analysis['override_reason'] ?? 'unknown'));

@@ -581,7 +581,7 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
             $QordersStatus->bindInt(':orders_status_id', $Qhistory->valueInt('orders_status_id'));
             $QordersStatus->execute();
 
-            if ($QordersStatus->valueInt('authorize_to_delete_order') == 1) {
+            if ($QordersStatus->valueInt('authorize_to_delete_order') === 1) {
               echo HTML::link($CLICSHOPPING_Orders->link('Delete&oID=' . $Qorders->valueInt('orders_id')), '<h4><i class="bi bi-trash2" title="' . $CLICSHOPPING_Orders->getDef('icon_delete') . '"></i></h4>');
             } else {
               echo '&nbsp;&nbsp;';

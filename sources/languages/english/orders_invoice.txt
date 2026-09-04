@@ -6,6 +6,7 @@ table_heading_total = Total
 table_heading_price_excluding_tax = Price (ex)
 table_heading_price_including_tax = Price (inc)
 table_heading_total_excluding_tax = Total (ex)
+entry_total_excluding_tax = Total excluding tax
 table_heading_total_including_tax = Total (inc)
 
 entry_sold_to = SOLD TO:
@@ -33,12 +34,11 @@ reserve_propriete = Legal proprieties : According with the laws {{store_name}} r
 reserve_propriete_next = For more informations, please consult our general conditions and terms on the website
 reserve_propriete_next1 = at the following address : {{sell_conditions_url}}
 
-entry_info_societe = {{shop_code_capital}} - {{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
 entry_info_societe_next = {{tva_shop_intracom}}
 
-entry_info_societe1 = {{shop_code_capital}} - {{shop_code_rcs}} - {{shop_code_ape}}
-entry_info_societe_next1 {{tva_shop_provincial}} - {{tva_shop_federal}}
+entry_info_societe1 = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe_next1 = {{tva_shop_provincial}} - {{tva_shop_federal}}
 
-shop_divers = {{shop_divers}}
 
 

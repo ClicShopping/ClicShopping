@@ -6,6 +6,7 @@ table_heading_total = Total
 table_heading_price_excluding_tax = Prix (HT)
 table_heading_price_including_tax = Prix (TTC)
 table_heading_total_excluding_tax = Total (HT)
+entry_total_excluding_tax = Total HT
 table_heading_total_including_tax = Total (TTC)
 
 entry_sold_to = VENDU A :
@@ -33,10 +34,9 @@ reserve_propriete = Réserve de propriété : Selon la loi en vigueur {{store_na
 reserve_propriete_next = Il pourra en demander la restitution par lettre recommandée. Pour tout autre information, veuillez consulter nos conditions générales de vente
 reserve_propriete_next1 = disponible sur le site a l'adresse suivante : {{sell_conditions_url}}
 
-entry_info_societe = {{shop_code_capital}} - {{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
 entry_info_societe_next = {{tva_shop_intracom}}
 
-entry_info_societe1 = {{shop_code_capital}} - {{shop_code_rcs}} - {{shop_code_ape}}
-entry_info_societe_next1 {{tva_shop_provincial}} - {{tva_shop_federal}}
+entry_info_societe1 = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe_next1 = {{tva_shop_provincial}} - {{tva_shop_federal}}
 
-shop_divers = {{shop_divers}}

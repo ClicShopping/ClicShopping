@@ -13,6 +13,7 @@ use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\OrdersStatus\OrdersStatus as OrdersStatusApp;
+use ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin\OrderAdmin;
 
 class PageContentTab3 implements HooksInterface
 {
@@ -81,7 +82,7 @@ class PageContentTab3 implements HooksInterface
       $Qorders = $this->app->db->get('orders', 'orders_id', ['orders_id' => (int)$oID]);
 
       if ($Qorders->fetch()) {
-        if (!Registry::exists('OrdersStatus')) {
+        if (!Registry::exists('Order')) {
           Registry::set('Order', new OrderAdmin($Qorders->valueInt('orders_id')));
         }
 

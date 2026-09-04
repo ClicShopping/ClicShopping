@@ -201,7 +201,7 @@ hours =  H
 minutes =  mn
 secondes =  sec
 
-text_price_with_tax_tag = dont taxe -
+text_price_with_tax_tag = incl. tax -
 text_unknown_tax_rate = Unknown tax rate
 
 text_ccval_error_invalid_date = The expiry date entered for the credit card is invalid.<br />Please check the date and try again.
