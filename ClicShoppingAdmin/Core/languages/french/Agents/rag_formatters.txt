@@ -15,7 +15,7 @@ text_rag_analytics_results_for = Résultats pour:
 text_rag_analytics_interpretation = Interprétation:
 text_rag_analytics_sql_query = Requête SQL:
 text_rag_analytics_data = Données:
-text_rag_analytics_note = Note:
+text_rag_analytics_note = Note :
 text_rag_analytics_detailed_data_available = Les données détaillées sont disponibles dans l'interprétation ci-dessus.
 text_rag_analytics_multiple_queries_note = Cette requête contient {count} sous-requêtes. Les résultats sont affichés séparément ci-dessous.
 text_rag_analytics_note_multiple_queries = Cette requête contient {count} sous-requêtes. Les résultats sont affichés séparément ci-dessous.
@@ -25,12 +25,13 @@ text_rag_analytics_error = Erreur:
 text_rag_analytics_unknown_error = Erreur inconnue
 text_rag_analytics_no_data_found = Aucune donnée trouvée pour cette requête.
 text_rag_analytics_all_sql_queries = Toutes les requêtes SQL exécutées:
-text_rag_analytics_result_count = Nombre de résultats:
 
+text_rag_analytics_result_count = Nombre de résultats:
 text_rag_ambiguous_multiple_interpretations = Interprétations Multiples Détectées
 text_rag_ambiguous_explanation = Votre requête peut avoir plusieurs significations. Voici les résultats pour chaque interprétation:
 text_rag_ambiguous_recommendation = Recommandation:
 text_rag_ambiguous_view_sql = Voir la requête SQL
 text_rag_ambiguous_no_results = Aucun résultat trouvé
 text_rag_ambiguous_analytics_database = Base de données Analytics
+
 text_rag_ambiguous_interpretations = interprétations

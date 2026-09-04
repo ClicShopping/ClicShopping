@@ -70,6 +70,13 @@ class Confirmation extends \ClicShopping\OM\Domains\PagesActionsAbstract
       CLICSHOPPING::redirect(null, 'Checkout&Shipping');
     }
 
+// CSRF: the only POST into this action is the tokenised checkout_payment form; a POST without a
+// matching session token is a forgery. GET navigation to the confirmation page carries no token.
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+      && (!isset($_POST['formid'], $_SESSION['sessiontoken']) || !hash_equals($_SESSION['sessiontoken'], $_POST['formid']))) {
+      CLICSHOPPING::redirect(null, 'Checkout&Billing');
+    }
+
     if (isset($_POST['payment'])) {
       $_SESSION['payment'] = $_POST['payment'];
     }

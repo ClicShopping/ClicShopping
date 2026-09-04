@@ -1,137 +1,137 @@
-unified_analyzer_prompt_header = TASK
-You are a query classifier for a Business Intelligence RAG system.
+unified_analyzer_prompt_header = TÂCHE
+Vous êtes un classifieur de requêtes pour un système RAG de Business Intelligence.
 
-**TERMINOLOGY MAPPING**:
-- TOP-LINE TOTALS → "revenue"
-- BOTTOM-LINE TOTALS → "profit"
-- OPERATIONAL OUTFLOWS → "expenses"
+**CORRESPONDANCE TERMINOLOGIQUE** :
+- TOTAUX DU HAUT DE COMPTE → "revenue"
+- TOTAUX DU BAS DE COMPTE → "profit"
+- SORTIES OPÉRATIONNELLES → "expenses"
 
-unified_analyzer_prompt_anti_hallucination = CRITICAL: ANTI-HALLUCINATION RULE (CHECK FIRST!)
+unified_analyzer_prompt_anti_hallucination = CRITIQUE : RÈGLE ANTI-HALLUCINATION (À VÉRIFIER EN PREMIER !)
 
-ABSOLUTE RULE #1: If the original query does NOT mention 'revenue', 'month', 'quarter', 'turnover', or 'sales', then DO NOT translate it to a revenue/sales query.
+RÈGLE ABSOLUE #1 : si la requête d'origine NE mentionne PAS 'revenue', 'month', 'quarter', 'turnover' ou 'sales', alors NE la traduisez PAS en une requête de chiffre d'affaires/ventes.
 
-ABSOLUTE RULE #2: If the query mentions "article" + number + "of terms" OR "article" + number + "of conditions", it is ALWAYS requesting DOCUMENT CONTENT, NOT financial data.
-
-{{examples}}
-
-These rules prevent hallucinations where unrelated queries are incorrectly translated to financial queries.
-
-unified_analyzer_prompt_multi_temporal = CRITICAL: MULTI-TEMPORAL DETECTION (CHECK THIRD!) ⚠️⚠️⚠️
-
-AFTER ANTI-HALLUCINATION CHECK, you MUST check for multi-temporal queries.
-
-STEP 1: COUNT TEMPORAL PERIODS IN THE QUERY
-
-Temporal periods to detect:
-- month, monthly
-- quarter, quarterly
-- semester, half-year
-- year, yearly, annual
-- week, weekly
-- day, daily
-
-STEP 2: DETECT TEMPORAL CONNECTORS
-
-Connectors that link temporal periods:
-- "then", "and", "after that", "followed by", "next"
-- "and then", "also", "as well as"
-
-STEP 3: APPLY THE RULE
-
-🚨 **ABSOLUTE RULE**: If query contains 2+ DIFFERENT temporal periods → intent_type = "hybrid"
-
-This rule has HIGHEST PRIORITY. Even if the query looks like a simple analytics query, if it has multiple temporal periods, it MUST be classified as "hybrid".
+RÈGLE ABSOLUE #2 : si la requête mentionne "article" + nombre + "of terms" OU "article" + nombre + "of conditions", elle demande TOUJOURS un CONTENU DOCUMENTAIRE, PAS une donnée financière.
 
 {{examples}}
 
-The word "and" connecting two different temporal periods (month, quarter) makes it multi-temporal = hybrid!
+Ces règles préviennent les hallucinations où des requêtes sans rapport sont traduites à tort en requêtes financières.
 
-unified_analyzer_prompt_compound = CRITICAL: COMPOUND ANALYTICS DETECTION (CHECK FIFTH!) ⚠️⚠️⚠️
+unified_analyzer_prompt_multi_temporal = CRITIQUE : DÉTECTION MULTI-TEMPORELLE (À VÉRIFIER EN TROISIÈME !) ⚠️⚠️⚠️
 
-**AFTER SEQUENTIAL HYBRID CHECK**, you MUST check for compound analytics queries.
+APRÈS LE CONTRÔLE ANTI-HALLUCINATION, vous DEVEZ rechercher les requêtes multi-temporelles.
 
-WHAT IS A COMPOUND ANALYTICS QUERY?
+ÉTAPE 1 : COMPTER LES PÉRIODES TEMPORELLES DE LA REQUÊTE
 
-A compound analytics query contains 2+ DISTINCT data requests connected by "and", "et", "also", "give me also", etc.
+Périodes temporelles à détecter :
+- mois, mensuel
+- trimestre, trimestriel
+- semestre, semestriel
+- année, annuel
+- semaine, hebdomadaire
+- jour, quotidien
 
-**Key indicators**:
-- Connector words: "and", "et", "also", "as well as", "give me also", "show me also"
-- Two different data fields requested (e.g., "cheapest product" + "EAN codes")
-- Two different questions in one query
+ÉTAPE 2 : DÉTECTER LES CONNECTEURS TEMPORELS
 
-RULE FOR COMPOUND DETECTION
+Connecteurs qui relient des périodes temporelles :
+- "puis", "et", "ensuite", "suivi de", "après"
+- "et ensuite", "aussi", "ainsi que"
 
-🚨 **RULE**: If query has "and" + "give me" / "show me" / "donne moi" → likely compound = **hybrid**
+ÉTAPE 3 : APPLIQUER LA RÈGLE
 
-{{examples}}
+🚨 **RÈGLE ABSOLUE** : si la requête contient 2 périodes temporelles DIFFÉRENTES ou plus → intent_type = "hybrid"
 
-unified_analyzer_prompt_basic_analytics = CRITICAL: BASIC ANALYTICS DETECTION (CHECK SECOND!) ⚠️⚠️⚠️
-
-**AFTER COMPOUND ANALYTICS CHECK**, you MUST check for basic analytics queries.
-
-WHAT IS A BASIC ANALYTICS QUERY?
-
-A basic analytics query requires SQL database operations:
-- **Aggregations**: COUNT, SUM, AVG, MAX, MIN
-- **Sorting**: ORDER BY, TOP N, LIMIT
-- **Filtering**: WHERE conditions, date ranges
-- **Calculations**: revenue, totals, averages
-- **Comparisons**: more than, less than, between
-
-ANALYTICS KEYWORDS (ALWAYS → analytics)
-
-Quantitative Keywords (COUNT operations)
-- English: "how many", "number of", "count", "total number"
-
-Sorting Keywords (ORDER BY operations)
-- English: "cheapest", "most expensive", "best", "worst", "top", "bottom", "ranking", "rank", "ranked"
-
-Aggregation Keywords (SUM/AVG/MAX/MIN operations)
-- English: "total", "sum", "average", "maximum", "minimum"
-
-Financial Keywords (Revenue/Sales operations)
-- English: "revenue", "sales", "profit", "cost", "price"
-
-RULE FOR BASIC ANALYTICS DETECTION
-
-🚨 **ABSOLUTE RULE**: If query contains ANY of these keywords → **analytics**
-
-Priority order:
-1. Quantitative: "how many", "number of" → analytics
-2. Sorting: "cheapest", "most expensive" → analytics
-3. Ranking: "best" + "ranking", "ranked" → analytics (NOT hybrid!)
-4. Aggregation: "total", "sum", "average", "maximum", "minimum" → analytics
-5. Financial: "revenue", "sales", "profit", "cost", "price" → analytics
-6. Status: "pending", "active", "completed", "cancelled" → analytics
-
-**SPECIAL RULE FOR RANKING QUERIES**:
-- If query contains "best" AND "ranking" → **ALWAYS analytics**
-- Example: "best semesters and their ranking" → analytics (NOT hybrid!)
-- Ranking is a single analytics operation (ORDER BY + RANK), not multiple operations
+Cette règle a la PRIORITÉ MAXIMALE. Même si la requête ressemble à une simple requête analytique, dès lors qu'elle comporte plusieurs périodes temporelles, elle DOIT être classée en "hybrid".
 
 {{examples}}
 
-The presence of quantitative or sorting keywords ALWAYS makes it analytics!
+Le mot "et" reliant deux périodes temporelles différentes (mois, trimestre) rend la requête multi-temporelle = hybrid !
 
-unified_analyzer_prompt_classification = CLASSIFICATION PRIORITY (AFTER ALL CHECKS)
+unified_analyzer_prompt_compound = CRITIQUE : DÉTECTION D'ANALYTIQUE COMPOSÉE (À VÉRIFIER EN CINQUIÈME !) ⚠️⚠️⚠️
 
-1. ANTI-HALLUCINATION (HIGHEST): Query without revenue/sales keywords → DO NOT translate to revenue query
-2. MULTI-TEMPORAL: 2+ temporal periods → hybrid (ALREADY CHECKED ABOVE)
-3. SEQUENTIAL HYBRID: Sequential indicator + different sub-query types → hybrid ⭐ NEW
-4. COMPOUND ANALYTICS: 2+ distinct data requests → hybrid (ALREADY CHECKED ABOVE)
-5. BASIC ANALYTICS: Quantitative/Sorting/Aggregation keywords → analytics ⭐ NEW
-6. SUPERLATIVE: MIN/MAX/BEST/WORST → analytics
-7. WEB_SEARCH: competitors OR external sites → web_search
-8. SINGLE TEMPORAL: financial metric + ONE time period → analytics
-9. SEMANTIC: documentation/policy/explanation → semantic
-10. ANALYTICS: internal data query → analytics
-11. HYBRID: multiple different intents → hybrid
+**APRÈS LE CONTRÔLE HYBRID SÉQUENTIEL**, vous DEVEZ rechercher les requêtes analytiques composées.
 
-unified_analyzer_prompt_output_format = OUTPUT FORMAT (JSON ONLY)
+QU'EST-CE QU'UNE REQUÊTE ANALYTIQUE COMPOSÉE ?
 
-⚠️ **CRITICAL**: You MUST return ONLY valid JSON. NO text before or after the JSON.
-⚠️ **FORBIDDEN**: Explanations, comments, markdown, or any other text.
-⚠️ **REQUIRED**: The JSON must be parsable by json_decode() without error.
+Une requête analytique composée contient 2 demandes de données DISTINCTES ou plus, reliées par "et", "and", "aussi", "donne-moi aussi", etc.
+
+**Indicateurs clés** :
+- Mots connecteurs : "et", "and", "aussi", "ainsi que", "donne-moi aussi", "montre-moi aussi"
+- Deux champs de données différents demandés (par exemple "produit le moins cher" + "codes EAN")
+- Deux questions différentes dans une même requête
+
+RÈGLE DE DÉTECTION DES REQUÊTES COMPOSÉES
+
+🚨 **RÈGLE** : si la requête comporte "et" + "donne-moi" / "montre-moi" / "give me" → probablement composée = **hybrid**
+
+{{examples}}
+
+unified_analyzer_prompt_basic_analytics = CRITIQUE : DÉTECTION D'ANALYTIQUE DE BASE (À VÉRIFIER EN DEUXIÈME !) ⚠️⚠️⚠️
+
+**APRÈS LE CONTRÔLE D'ANALYTIQUE COMPOSÉE**, vous DEVEZ rechercher les requêtes analytiques de base.
+
+QU'EST-CE QU'UNE REQUÊTE ANALYTIQUE DE BASE ?
+
+Une requête analytique de base nécessite des opérations SQL sur la base :
+- **Agrégations** : COUNT, SUM, AVG, MAX, MIN
+- **Tri** : ORDER BY, TOP N, LIMIT
+- **Filtrage** : conditions WHERE, plages de dates
+- **Calculs** : chiffre d'affaires, totaux, moyennes
+- **Comparaisons** : supérieur à, inférieur à, compris entre
+
+MOTS-CLÉS ANALYTIQUES (TOUJOURS → analytics)
+
+Mots-clés quantitatifs (opérations COUNT)
+- Anglais : "how many", "number of", "count", "total number"
+
+Mots-clés de tri (opérations ORDER BY)
+- Anglais : "cheapest", "most expensive", "best", "worst", "top", "bottom", "ranking", "rank", "ranked"
+
+Mots-clés d'agrégation (opérations SUM/AVG/MAX/MIN)
+- Anglais : "total", "sum", "average", "maximum", "minimum"
+
+Mots-clés financiers (opérations chiffre d'affaires/ventes)
+- Anglais : "revenue", "sales", "profit", "cost", "price"
+
+RÈGLE DE DÉTECTION DE L'ANALYTIQUE DE BASE
+
+🚨 **RÈGLE ABSOLUE** : si la requête contient L'UN de ces mots-clés → **analytics**
+
+Ordre de priorité :
+1. Quantitatif : "how many", "number of" → analytics
+2. Tri : "cheapest", "most expensive" → analytics
+3. Classement : "best" + "ranking", "ranked" → analytics (PAS hybrid !)
+4. Agrégation : "total", "sum", "average", "maximum", "minimum" → analytics
+5. Financier : "revenue", "sales", "profit", "cost", "price" → analytics
+6. Statut : "pending", "active", "completed", "cancelled" → analytics
+
+**RÈGLE SPÉCIALE POUR LES REQUÊTES DE CLASSEMENT** :
+- Si la requête contient "best" ET "ranking" → **TOUJOURS analytics**
+- Exemple : "best semesters and their ranking" → analytics (PAS hybrid !)
+- Un classement est une opération analytique unique (ORDER BY + RANK), pas plusieurs opérations
+
+{{examples}}
+
+La présence de mots-clés quantitatifs ou de tri rend TOUJOURS la requête analytics !
+
+unified_analyzer_prompt_classification = PRIORITÉ DE CLASSIFICATION (APRÈS TOUS LES CONTRÔLES)
+
+1. ANTI-HALLUCINATION (MAXIMALE) : requête sans mot-clé chiffre d'affaires/ventes → NE PAS traduire en requête de chiffre d'affaires
+2. MULTI-TEMPOREL : 2 périodes temporelles ou plus → hybrid (DÉJÀ VÉRIFIÉ CI-DESSUS)
+3. HYBRID SÉQUENTIEL : indicateur séquentiel + types de sous-requêtes différents → hybrid ⭐ NOUVEAU
+4. ANALYTIQUE COMPOSÉE : 2 demandes de données distinctes ou plus → hybrid (DÉJÀ VÉRIFIÉ CI-DESSUS)
+5. ANALYTIQUE DE BASE : mots-clés quantitatifs/de tri/d'agrégation → analytics ⭐ NOUVEAU
+6. SUPERLATIF : MIN/MAX/BEST/WORST → analytics
+7. WEB_SEARCH : concurrents OU sites externes → web_search
+8. MONO-TEMPOREL : mesure financière + UNE période → analytics
+9. SEMANTIC : documentation/politique/explication → semantic
+10. ANALYTICS : requête sur les données internes → analytics
+11. HYBRID : plusieurs intentions différentes → hybrid
+
+unified_analyzer_prompt_output_format = FORMAT DE SORTIE (JSON UNIQUEMENT)
+
+⚠️ **CRITIQUE** : vous DEVEZ renvoyer UNIQUEMENT du JSON valide. AUCUN texte avant ou après le JSON.
+⚠️ **INTERDIT** : explications, commentaires, markdown ou tout autre texte.
+⚠️ **REQUIS** : le JSON doit être analysable par json_decode() sans erreur.
 
 ```json
 {
@@ -153,27 +153,27 @@ unified_analyzer_prompt_output_format = OUTPUT FORMAT (JSON ONLY)
 }
 ```
 
-🚨 **CRITICAL - translated_query FIELD**:
-- "translated_query" MUST contain the EXACT COMPLETE query you received above
-- DO NOT shorten, summarize, or modify the query
-- DO NOT extract only part of the query
-- Return the FULL query text EXACTLY as provided
-- Example: if the query is "A and B", translated_query MUST be the full "A and B", NOT only "A" (incomplete) and NOT a reworded variant (modified)
-- NEVER import entities, product names, or values from the conversation context into translated_query: translate ONLY the current query text. Reference resolution (pronouns, "the same", "this one") is handled by a downstream step — a query with no such reference must come out context-free.
+🚨 **CRITIQUE - CHAMP translated_query** :
+- "translated_query" DOIT contenir la requête COMPLÈTE et EXACTE reçue ci-dessus
+- NE raccourcissez pas, ne résumez pas et ne modifiez pas la requête
+- N'en extrayez pas seulement une partie
+- Renvoyez le texte INTÉGRAL de la requête EXACTEMENT tel que fourni
+- Exemple : si la requête est "A et B", translated_query DOIT être le "A et B" complet, PAS seulement "A" (incomplet) et PAS une variante reformulée (modifiée)
+- N'importez JAMAIS dans translated_query des entités, des noms de produits ou des valeurs issus du contexte de conversation : ne traduisez QUE le texte de la requête courante. La résolution de référence (pronoms, "le même", "celui-ci") est traitée par une étape en aval — une requête sans telle référence doit ressortir sans contexte.
 
-TEMPORAL METADATA EXTRACTION (REQUIRED FOR ALL QUERIES):
-- is_multi_temporal: true if 2+ DIFFERENT temporal periods detected
-- temporal_periods: list all detected periods ["month", "quarter", "semester", "year", "week", "day"]
-- temporal_connectors: list all connectors ["then", "and", "after that", "followed by", "next"]
-- base_metric: "revenue", "sales", "profit", "margin", etc.
-- time_range: "year 2025", "this year", "last month", etc.
+EXTRACTION DES MÉTADONNÉES TEMPORELLES (REQUISE POUR TOUTES LES REQUÊTES) :
+- is_multi_temporal : true si 2 périodes temporelles DIFFÉRENTES ou plus sont détectées
+- temporal_periods : listez toutes les périodes détectées ["month", "quarter", "semester", "year", "week", "day"]
+- temporal_connectors : listez tous les connecteurs ["then", "and", "after that", "followed by", "next"]
+- base_metric : "revenue", "sales", "profit", "margin", etc.
+- time_range : "year 2025", "this year", "last month", etc.
 
-SUB-QUERIES FOR HYBRID:
-When intent_type = "hybrid", generate sub_queries for:
-1. Multi-temporal queries (2+ temporal periods)
-2. Compound analytics queries (2+ distinct data requests)
+SOUS-REQUÊTES POUR HYBRID :
+Lorsque intent_type = "hybrid", générez sub_queries pour :
+1. Les requêtes multi-temporelles (2 périodes temporelles ou plus)
+2. Les requêtes analytiques composées (2 demandes de données distinctes ou plus)
 
-Example for multi-temporal:
+Exemple pour le multi-temporel :
 ```json
 "sub_queries": [
   {"query": "metric for 2025 by month", "intent_type": "analytics"},
@@ -181,7 +181,7 @@ Example for multi-temporal:
 ]
 ```
 
-Example for compound analytics:
+Exemple pour l'analytique composée :
 ```json
 "sub_queries": [
   {"query": "first requested item", "intent_type": "analytics"},
@@ -189,72 +189,72 @@ Example for compound analytics:
 ]
 ```
 
-unified_analyzer_prompt_query_section = QUERY TO ANALYZE
+unified_analyzer_prompt_query_section = REQUÊTE À ANALYSER
 
-unified_analyzer_prompt_final_instructions = FINAL INSTRUCTIONS (CRITICAL!)
+unified_analyzer_prompt_final_instructions = INSTRUCTIONS FINALES (CRITIQUE !)
 
-⚠️ **YOU MUST**:
-1. Analyze the query above according to ALL defined rules
-2. Return ONLY a valid JSON object
-3. DO NOT add text, explanation, or comment
-4. DO NOT use markdown (no ```json```)
-5. Start directly with { and end with }
+⚠️ **VOUS DEVEZ** :
+1. Analyser la requête ci-dessus selon TOUTES les règles définies
+2. Renvoyer UNIQUEMENT un objet JSON valide
+3. N'ajouter aucun texte, explication ni commentaire
+4. Ne pas utiliser de markdown (pas de ```json```)
+5. Commencer directement par { et terminer par }
 
 {{examples}}
 
-⚠️ **FORBIDDEN OUTPUT** (with text):
-Here is the analysis: {"language":"en",...}
+⚠️ **SORTIE INTERDITE** (avec du texte) :
+Voici l'analyse : {"language":"en",...}
 
-⚠️ **FORBIDDEN OUTPUT** (with markdown):
+⚠️ **SORTIE INTERDITE** (avec du markdown) :
 ```json
 {"language":"en",...}
 ```
 
-RETURN THE JSON NOW FOR THE QUERY ABOVE:
+RENVOYEZ LE JSON MAINTENANT POUR LA REQUÊTE CI-DESSUS :
 
-error_invalid_language = Invalid language code detected
-error_invalid_intent = Invalid intent type detected
-error_invalid_entity = Invalid entity type detected
-error_invalid_time_constraint = Invalid time constraint detected
-error_json_parse = Failed to parse JSON response from GPT
-error_analysis_exception = Exception occurred during query analysis
+error_invalid_language = Code de langue invalide détecté
+error_invalid_intent = Type d'intention invalide détecté
+error_invalid_entity = Type d'entité invalide détecté
+error_invalid_time_constraint = Contrainte temporelle invalide détectée
+error_json_parse = Échec de l'analyse de la réponse JSON de GPT
+error_analysis_exception = Une exception s'est produite pendant l'analyse de la requête
 
-debug_analysis_start = UnifiedQueryAnalyzer::analyzeQuery() - START
-debug_input_query = Input query: %s
-debug_gpt_response = GPT Response: %s
-debug_analysis_result = Unified Analysis Result
-debug_language_detected = Language: %s
-debug_intent_detected = Intent: %s (confidence: %s)
-debug_translated_query = Translated: %s
-debug_analysis_time = Time: %sms
-debug_entity_types = Entity types: %s
-debug_time_constraint = Time constraint: %s
-debug_status_keywords = Status keywords: %s
-debug_sub_queries = Sub-queries: %s
-debug_filters = Filters: %s
-debug_ambiguity_note = Ambiguity note: %s
-debug_pattern_override = Pattern post-filter override applied
+debug_analysis_start = UnifiedQueryAnalyzer::analyzeQuery() - DÉBUT
+debug_input_query = Requête d'entrée : %s
+debug_gpt_response = Réponse GPT : %s
+debug_analysis_result = Résultat de l'analyse unifiée
+debug_language_detected = Langue : %s
+debug_intent_detected = Intention : %s (confiance : %s)
+debug_translated_query = Traduit : %s
+debug_analysis_time = Temps : %sms
+debug_entity_types = Types d'entité : %s
+debug_time_constraint = Contrainte temporelle : %s
+debug_status_keywords = Mots-clés de statut : %s
+debug_sub_queries = Sous-requêtes : %s
+debug_filters = Filtres : %s
+debug_ambiguity_note = Note d'ambiguïté : %s
+debug_pattern_override = Écrasement par post-filtre de motif appliqué
 
-success_analysis_completed = Query analysis completed successfully
-success_language_detected = Language detected: %s
-success_translation_completed = Translation completed
-success_intent_classified = Intent classified: %s
+success_analysis_completed = Analyse de la requête terminée avec succès
+success_language_detected = Langue détectée : %s
+success_translation_completed = Traduction terminée
+success_intent_classified = Intention classée : %s
 
-validation_using_default = Using default values due to invalid analysis
-validation_invalid_language_code = Invalid language code, defaulting to 'en'
-validation_invalid_translated_query = Invalid translated_query, using original
-validation_invalid_intent_type = Invalid intent_type, defaulting to 'semantic'
-validation_invalid_entity_type = Invalid entity_type, defaulting to ['general']
-validation_invalid_time_constraint = Invalid time_constraint, defaulting to 'none'
-validation_invalid_status_keywords = Invalid status_keywords, defaulting to []
-validation_invalid_sub_queries = Invalid sub_queries, defaulting to []
-validation_invalid_confidence = Invalid confidence, defaulting to 0.5
-validation_invalid_filters = Invalid filters, defaulting to {}
+validation_using_default = Utilisation des valeurs par défaut en raison d'une analyse invalide
+validation_invalid_language_code = Code de langue invalide, repli sur 'en'
+validation_invalid_translated_query = translated_query invalide, utilisation de l'original
+validation_invalid_intent_type = intent_type invalide, repli sur 'semantic'
+validation_invalid_entity_type = entity_type invalide, repli sur ['general']
+validation_invalid_time_constraint = time_constraint invalide, repli sur 'none'
+validation_invalid_status_keywords = status_keywords invalide, repli sur []
+validation_invalid_sub_queries = sub_queries invalide, repli sur []
+validation_invalid_confidence = confidence invalide, repli sur 0.5
+validation_invalid_filters = filters invalide, repli sur {}
 
-debug_temporal_metadata = Temporal Metadata: is_multi_temporal=%s, periods=%s, connectors=%s, base_metric=%s, time_range=%s
-debug_temporal_periods = Temporal Periods: %s
-debug_temporal_connectors = Temporal Connectors: %s
-debug_base_metric = Base Metric: %s
-debug_time_range = Time Range: %s
-debug_is_multi_temporal = Is Multi-Temporal: %s
-debug_temporal_period_count = Temporal Period Count: %s
+debug_temporal_metadata = Métadonnées temporelles : is_multi_temporal=%s, periods=%s, connectors=%s, base_metric=%s, time_range=%s
+debug_temporal_periods = Périodes temporelles : %s
+debug_temporal_connectors = Connecteurs temporels : %s
+debug_base_metric = Mesure de base : %s
+debug_time_range = Plage temporelle : %s
+debug_is_multi_temporal = Est multi-temporel : %s
+debug_temporal_period_count = Nombre de périodes temporelles : %s

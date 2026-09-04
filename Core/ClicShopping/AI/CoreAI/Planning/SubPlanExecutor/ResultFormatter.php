@@ -880,10 +880,7 @@ class ResultFormatter
       if ($this->debug) {
         error_log("[ResultSynthesizer] ✅ Setting primaryType to 'clarification_needed' (only clarification results present)");
       }
-    }
-    // Nothing but errors: terminal, like a clarification. Left as 'mixed' it failed the final
-    // validation ("Mixed result missing data and sources") and its message was replaced.
-    elseif (!empty($aggregated['error_results']) &&
+    } elseif ((!empty($aggregated['failed_panes']) || !empty($aggregated['error_results'])) &&
             empty($aggregated['analytics_results']) &&
             empty($aggregated['semantic_results']) &&
             empty($aggregated['web_results'])) {

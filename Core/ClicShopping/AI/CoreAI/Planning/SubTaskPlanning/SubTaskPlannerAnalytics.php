@@ -15,7 +15,6 @@ namespace ClicShopping\AI\CoreAI\Planning\SubTaskPlanning;
 use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\AI\CoreAI\Planning\TaskStep;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\DomainsAI\DomainRegistry;
 
 
 class SubTaskPlannerAnalytics
@@ -164,7 +163,6 @@ class SubTaskPlannerAnalytics
                 'sub_query' => $stepQuery,
                 'intent' => $intent,
                 'data_source' => 'internal_database',
-                'tables' => $this->getTablesFromDomain(),
                 'processing_mode' => 'sql_generation',
                 'depends_on' => [],
                 'can_run_parallel' => true,
@@ -174,28 +172,6 @@ class SubTaskPlannerAnalytics
         );
     }
 
-    /**
-     * Get tables from active domain configuration
-     * 
-     * @return array Array of table names from domain entity config
-     */
-    private function getTablesFromDomain(): array
-    {
-        $domainApp = DomainRegistry::getInstance()->getActiveApp();
-        if ($domainApp && method_exists($domainApp, 'getEntityConfig')) {
-            $entityConfig = $domainApp->getEntityConfig();
-            $tables = [];
-            foreach ($entityConfig as $entity) {
-                if (isset($entity['table'])) {
-                    $tables[] = $entity['table'];
-                }
-            }
-            return array_unique($tables);
-        }
-        
-        return [];
-    }
-    
     /**
      * Get planner metadata
      * 

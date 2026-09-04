@@ -1,59 +1,59 @@
-rag_context_builder_text = ## [INFO CRITIC] CRITICAL: CURRENT DATE CONTEXT (MANDATORY FOR ALL DATE QUERIES) [INFO CRITIC]
-**YOU MUST READ AND APPLY THIS SECTION FOR ANY QUERY INVOLVING DATES OR TIME PERIODS**
-**Today's Date**: {{currentDate}} ({{currentMonthName}} {{currentDayOfMonth}}, {{currentYear}})
-**Current Year**: {{currentYear}}
-**Current Month**: {{currentMonth}} ({{currentMonthName}})
+rag_context_builder_text = ## [INFO CRITIC] CRITIQUE : CONTEXTE DE LA DATE COURANTE (OBLIGATOIRE POUR TOUTE REQUÊTE DE DATE) [INFO CRITIC]
+**VOUS DEVEZ LIRE ET APPLIQUER CETTE SECTION POUR TOUTE REQUÊTE PORTANT SUR DES DATES OU DES PÉRIODES**
+**Date du jour** : {{currentDate}} ({{currentMonthName}} {{currentDayOfMonth}}, {{currentYear}})
+**Année courante** : {{currentYear}}
+**Mois courant** : {{currentMonth}} ({{currentMonthName}})
 
-rag_context_builder_text_warn = [WARN][WARN][WARN] **CRITICAL YEAR BOUNDARY WARNING** [WARN][WARN][WARN]
-We are in January {{currentYear}}. This means:
-- "last month" = December {{lastYear}} (NOT December {{currentYear}}!)
-- You MUST use year {{lastYear}} for December queries
-- Using year {{currentYear}} for December will return NO DATA (December {{currentYear}} hasn't happened yet!)
-**ABSOLUTE RULE**: When in January, "last month" queries MUST use the PREVIOUS YEAR.
+rag_context_builder_text_warn = [WARN][WARN][WARN] **AVERTISSEMENT CRITIQUE DE CHANGEMENT D'ANNÉE** [WARN][WARN][WARN]
+Nous sommes en janvier {{currentYear}}. Cela signifie :
+- "le mois dernier" = décembre {{lastYear}} (PAS décembre {{currentYear}} !)
+- Vous DEVEZ utiliser l'année {{lastYear}} pour les requêtes de décembre
+- Utiliser l'année {{currentYear}} pour décembre ne renverra AUCUNE DONNÉE (décembre {{currentYear}} n'a pas encore eu lieu !)
+**RÈGLE ABSOLUE** : en janvier, les requêtes "le mois dernier" DOIVENT utiliser l'ANNÉE PRÉCÉDENTE.
 
-rag_context_builder_relative_mappings = ### [INFO MANDATORY] MANDATORY Relative Date Mappings (USE THESE EXACT VALUES)
-**When user says "last month"**:
-- Means: **{{lastMonthName}}**
-- Start date: **{{lastMonthStart}}**
-- End date: **{{lastMonthEnd}}**
-- **REQUIRED SQL**: `date_column > or equal {{lastMonthStart}} AND date_column < {{thisMonthStart}}
+rag_context_builder_relative_mappings = ### [INFO MANDATORY] Correspondances de dates relatives OBLIGATOIRES (UTILISER CES VALEURS EXACTES)
+**Quand l'utilisateur dit "le mois dernier"** :
+- Signifie : **{{lastMonthName}}**
+- Date de début : **{{lastMonthStart}}**
+- Date de fin : **{{lastMonthEnd}}**
+- **SQL REQUIS** : date_column >= {{lastMonthStart}} AND date_column < {{thisMonthStart}}
 
-rag_context_builder_relative_mappings_warn_jan = - [WARN] **NOTE**: This is December {{lastYear}}, NOT December {{currentYear}}!
+rag_context_builder_relative_mappings_warn_jan = - [WARN] **NOTE** : il s'agit de décembre {{lastYear}}, PAS de décembre {{currentYear}} !
 
-rag_context_builder_this_month = **When user says "this month"**:
-- Means: **{{currentMonthName}} {{currentYear}}**
-- Start date: **{{thisMonthStart}}**
-- End date (today): **{{currentDate}}**
-- **REQUIRED SQL**: `date_column > or equal {{thisMonthStart}} AND date_column < or equal {{currentDate}}
+rag_context_builder_this_month = **Quand l'utilisateur dit "ce mois-ci"** :
+- Signifie : **{{currentMonthName}} {{currentYear}}**
+- Date de début : **{{thisMonthStart}}**
+- Date de fin (aujourd'hui) : **{{currentDate}}**
+- **SQL REQUIS** : date_column >= {{thisMonthStart}} AND date_column <= {{currentDate}}
 
-rag_context_builder_last_year = **When user says "last year"**:
-- Means: **{{lastYear}}**
-- Start date: **{{lastYearStart}}**
-- End date: **{{lastYearEnd}}**
-- **REQUIRED SQL**: `date_column > or equal {{lastYearStart}} AND date_column <= or equal {{lastYearEnd}}
+rag_context_builder_last_year = **Quand l'utilisateur dit "l'année dernière"** :
+- Signifie : **{{lastYear}}**
+- Date de début : **{{lastYearStart}}**
+- Date de fin : **{{lastYearEnd}}**
+- **SQL REQUIS** : date_column >= {{lastYearStart}} AND date_column <= {{lastYearEnd}}
 
-rag_context_builder_sql_best_practices = ### [OK] SQL Date Best Practices (MANDATORY)
-**ABSOLUTE RULE**: ALWAYS use explicit date ranges. NEVER use YEAR() or MONTH() functions.
-[OK] **CORRECT** (use this approach):
+rag_context_builder_sql_best_practices = ### [OK] Bonnes pratiques SQL sur les dates (OBLIGATOIRE)
+**RÈGLE ABSOLUE** : TOUJOURS utiliser des plages de dates explicites. NE JAMAIS utiliser les fonctions YEAR() ou MONTH().
+[OK] **CORRECT** (utiliser cette approche) :
 ```sql
-WHERE date_purchased > or equal {{lastMonthStart}} AND date_purchased < {{thisMonthStart}}
--- This correctly queries {{lastMonthName}}
+WHERE date_purchased >= {{lastMonthStart}} AND date_purchased < {{thisMonthStart}}
+-- Interroge correctement {{lastMonthName}}
 ```
-[ERROR] **INCORRECT** (NEVER do this):
+[ERROR] **INCORRECT** (NE JAMAIS faire ceci) :
 ```sql
-WHERE YEAR(date_purchased) equal {{currentYear}} AND MONTH(date_purchased) equal {{lastMonthNumber}}
+WHERE YEAR(date_purchased) = {{currentYear}} AND MONTH(date_purchased) = {{lastMonthNumber}}
 {{incorrectComment}}
 ```
-**Why explicit date ranges are MANDATORY**:
-1. [OK] Correctly handles year boundaries (December -> January)
-2. [OK] Better index usage (date columns can use indexes)
-3. [OK] Avoids function calls on every row (YEAR(), MONTH())
-4. [OK] More readable and maintainable SQL
-5. [OK] Returns correct data (doesn't query future dates)
+**Pourquoi les plages de dates explicites sont OBLIGATOIRES** :
+1. [OK] Gèrent correctement les changements d'année (décembre -> janvier)
+2. [OK] Meilleure utilisation des index (les colonnes de date peuvent utiliser un index)
+3. [OK] Évitent un appel de fonction sur chaque ligne (YEAR(), MONTH())
+4. [OK] SQL plus lisible et plus maintenable
+5. [OK] Renvoient les bonnes données (n'interrogent pas des dates futures)
 
-rag_context_builder_january_final = ### [INFO CRITIC] FINAL REMINDER FOR JANUARY [INFO CRITIC]
-If the user asks about "last month", you MUST:
-1. Use dates from December {{lastYear}} (NOT December {{currentYear}})
-2. Use the SQL: `date_column > or equal {{lastMonthStart}} AND date_column < {{thisMonthStart}}
-3. NEVER use YEAR() equal {{currentYear}} for December queries
+rag_context_builder_january_final = ### [INFO CRITIC] RAPPEL FINAL POUR JANVIER [INFO CRITIC]
+Si l'utilisateur pose une question sur "le mois dernier", vous DEVEZ :
+1. Utiliser les dates de décembre {{lastYear}} (PAS décembre {{currentYear}})
+2. Utiliser le SQL : date_column >= {{lastMonthStart}} AND date_column < {{thisMonthStart}}
+3. NE JAMAIS utiliser YEAR() equal {{currentYear}} pour les requêtes de décembre
 

@@ -1,70 +1,6 @@
 text_system_message = You are an e-commerce expert assistant specialized in data analysis.
 
 
-text_database_schema = IMPORTANT TABLES:
-
-PRODUCTS:
-- products: Basic info (products_id, products_model, products_ean, products_sku, products_price, products_quantity, products_quantity_alert, products_date_added, products_weight, products_status)
-  IMPORTANT: Stock column is 'products_quantity' (NOT 'stock' or 'quantity')
-  IMPORTANT: Stock alert threshold is 'products_quantity_alert'
-  IMPORTANT: Always include products_id and products_name for identification
-- products_description: Multilingual (products_id, language_id, products_name, products_description)
-- products_to_categories: Linking table (products_id, categories_id)
-
-CATEGORIES:
-- categories: Basic info (categories_id, parent_id, status)
-  IMPORTANT: Uses 'status' column (NOT 'categories_status')
-- categories_description: Multilingual (categories_id, language_id, categories_name)
-
-ORDERS:
-- orders: Order info (orders_id, customers_id, date_purchased, orders_status)
-- orders_products: Products in orders (orders_id, products_id, products_quantity, products_price AS TRANSACTION_PRICE)
-- orders_total: One row PER order-total line (orders_id, title, value, class). `class` is the module code, `value` is the amount, `title` is the human label shown on the invoice (e.g. "Remise client : 10%").
-  Classes: 'ST' = Subtotal IN THE TAX CONVENTION OF THAT ORDER (tax-inclusive on some orders, tax-exclusive on others - NEVER sum it for revenue), 'SH' = Shipping, 'TX' = Tax, 'TO' = Total (final order total), 'CD' = Customer Discount (remise client), 'DC' = Discount Coupon (bon de réduction), 'LO' = Low Order Fee, 'SU' = Surcharge.
-  **IMPORTANT**: NEVER use class='ST' for revenue/turnover. The subtotal is written in the tax convention applied to EACH order - tax-inclusive on some, tax-exclusive on others - and both coexist in one shop, because the convention depends on the customer group, not on a date. Summing 'ST' adds tax-inclusive amounts to tax-exclusive ones. MERCHANDISE revenue (the default) = the invoiced total minus tax AND minus shipping = SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) with ot.class IN ('TO','TX','SH'). Revenue INCLUDING tax = SUM(ot.value) with ot.class = 'TO' - that one is the INVOICED total, shipping included. Both hold under either convention; 'ST' holds under neither.
-  **DISCOUNTS/COUPONS granted on orders live HERE**, as orders_total lines: customer discount = class='CD', coupon = class='DC'. The amount is `ot.value`, the label is `ot.title`. This is DIFFERENT from `{{table_prefix}}specials` (product promotional prices). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price) — that is NOT the customer discount.
-  **CURRENCY**: every numeric column here, `ot.value` included, is stored in the shop BASE currency - values are therefore comparable across orders and are the ONLY ones to aggregate. The currency the customer actually paid in is `orders.currency`; the amount actually charged is `ot.value * orders.currency_value`. `ot.text` is a pre-formatted display string in the ORDER's own currency and contains HTML entities: NEVER select it, NEVER aggregate it, NEVER compare it across orders.
-  **WHEN TO CONVERT**: for the DETAIL of ONE order, return BOTH figures, and give EACH ONE its own currency column so no reader ever has to guess which unit an amount is in - `ot.value AS amount_base_currency` with `'{{base_currency}}' AS base_currency`, and `ROUND(ot.value * o.currency_value, 2) AS amount_charged` with `o.currency AS charged_currency`. Never return a single currency column for two amounts expressed in different units. For any AGGREGATE over SEVERAL orders (revenue, average cart, totals per period), use `ot.value` alone and NEVER convert: converting before aggregating adds up different currencies.
-- discount_coupons: Coupon DEFINITIONS only (coupons_id, coupons_description, coupons_discount_amount, coupons_discount_type). Link table discount_coupons_to_orders (coupons_id, orders_id). Use these ONLY to fetch a coupon's code/description; the amount actually applied to an order is the orders_total class='DC' line. For "coupons granted/used ON orders", go through orders_total WHERE class='DC' (it already carries orders_id + value + title) — do NOT answer from discount_coupons alone, it has no per-order amount.
-
-CUSTOMERS:
-- customers: Customer info (customers_id, customers_name, customers_email_address, customers_status)
-  **NOTE**: customers_status is an INT field (0=inactive, 1=active), NOT a foreign key
-  **ENCRYPTED (see RULE -2)**: customers_name and customers_email_address are GDPR-encrypted
-  (non-deterministic). Also present and encrypted on {{table_prefix}}orders as o.customers_name. NEVER use them
-  in GROUP BY / WHERE = / JOIN / HAVING; aggregate by customers_id and expose the name via MAX().
-
-BRANDS & SUPPLIERS:
-- manufacturers: Brand info (manufacturers_id, manufacturers_name, suppliers_id)
-- manufacturers_info: Multilingual descriptions (manufacturers_id, language_id, manufacturers_description)
-- suppliers: Supplier info (suppliers_id)
-- suppliers_info: Multilingual descriptions (suppliers_id, language_id)
-
-REVIEWS & SENTIMENT:
-- reviews: Customer reviews (products_id, customers_name, reviews_rating, reviews_date_added, status)
-- reviews_description: Review text (products_id, languages_id, reviews_text)
-- reviews_votes: Votes on reviews (products_id, reviews_id, customers_id, vote, sentiment)
-- reviews_sentiment: Sentiment analysis (products_id, reviews_id, date_added)
-- reviews_sentiment_description: Sentiment descriptions (id, languages_id, description)
-
-MARKETING & PRICING (for Statistical Analysis):
-- specials: Special prices/discounts (products_id, specials_new_products_price, specials_date_added, expires_date, status)
-  **CRITICAL**: For promotional/discount queries, use {{table_prefix}}specials table (NOT products_percentage field)
-  **IMPORTANT**: Count promotional products with: SELECT COUNT(*) FROM {{table_prefix}}specials WHERE status = 1
-- products_featured: Featured selection ("featured selection", "featured products"), admin-curated merchandising (products_id, products_featured_date_added, scheduled_date, expires_date, status, customers_group_id)
-- products_favorites: Admin-curated merchandising picks ("favorites selection") (products_id, products_favorites_date_added, scheduled_date, expires_date, status, customers_group_id). Same structure/role family as products_featured; it has NO customers_id (it is NOT a customer wishlist)
-- products_recommendations: PER-CUSTOMER recommended products ("recommended products") (customers_id, products_id, score, recommendation_date, product_tag, customers_group_id, status). Every row belongs to a customer (customers_id is always set — NEVER filter customers_id IS NULL). Global list = SELECT DISTINCT over ALL rows with status = 1; per-customer list = filter customers_id = <given id> only when the question names one
-- products_cockpit_ai_action_log: audit log of actions taken by the CockpitAI agent (price/promo actions history). NOT the catalog state — current promotions ALWAYS come from {{table_prefix}}specials (status = 1); use this log only when the question is about AI actions or their history
-- dynamic_pricing_history: Price change history (id, products_id, old_price, new_price, price_change_percentage, date_applied, reason)
-- dynamic_pricing_rules: Pricing rules (id, rule_name, products_id, price_factor, conditions, date_created, status)
-
-RETURNS:
-- return_orders: Return orders (return_id, order_id, products_id, customers_id)
-- return_orders_history: Return history (return_id)
-- return_orders_reason: Return reasons (return_reason_id)
-- return_orders_status: Return status (return_status_id)
-
-
 text_sql_generation_rules = SQL GENERATION RULES:
 
 COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
@@ -407,7 +343,7 @@ EXAMPLES:
 
 'list categories' → SELECT c.categories_id, cd.categories_name FROM {{table_prefix}}categories c JOIN {{table_prefix}}categories_description cd ON c.categories_id = cd.categories_id WHERE cd.language_id = {{language_id}} ORDER BY cd.categories_name LIMIT 100
 
-'list customers' → SELECT customers_id, customers_name, customers_email_address FROM {{table_prefix}}customers ORDER BY customers_name LIMIT 100
+'list customers' → SELECT customers_id, CONCAT(customers_firstname, ' ', customers_lastname) AS customers_name, customers_email_address FROM {{table_prefix}}customers ORDER BY customers_lastname, customers_firstname LIMIT 100
 
 'list orders' → SELECT orders_id, customers_name, date_purchased, orders_status FROM {{table_prefix}}orders ORDER BY date_purchased DESC LIMIT 100
 
@@ -492,7 +428,6 @@ STATUS QUERIES (Most Common):
 - 'products with status off' → SELECT p.products_id, pd.products_name, p.products_status FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE p.products_status = 0 AND pd.language_id = {{language_id}}
 - 'pending orders this year' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}} AND YEAR(o.date_purchased) = YEAR(CURDATE())
 - 'orders this week' → SELECT o.orders_id, o.customers_name, o.date_purchased FROM {{table_prefix}}orders o WHERE YEARWEEK(o.date_purchased, 1) = YEARWEEK(CURDATE(), 1)
-- 'active customers' → SELECT c.customers_id, c.customers_name, c.customers_email_address FROM {{table_prefix}}customers c WHERE c.customers_status = 1
 
 AGGREGATION QUERIES:
 - 'number of products per category' → SELECT cd.categories_name, COUNT(p.products_id) AS product_count FROM {{table_prefix}}products p JOIN {{table_prefix}}products_to_categories ptc ON p.products_id = ptc.products_id JOIN {{table_prefix}}categories_description cd ON ptc.categories_id = cd.categories_id WHERE cd.language_id = {{language_id}} GROUP BY cd.categories_name ORDER BY product_count DESC

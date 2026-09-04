@@ -576,10 +576,14 @@ class AnalyticsExecutor
    */
   private function formatExecutionFailure(array $rawResult): array
   {
-    $message = CLICSHOPPING::getDef('text_query_generation_failed');
+    $message = trim((string)($rawResult['text_response'] ?? ''));
 
-    if ($message === '' || $message === 'text_query_generation_failed') {
-      $message = 'No query could be built for this question.';
+    if ($message === '') {
+      $message = CLICSHOPPING::getDef('text_query_generation_failed');
+
+      if ($message === '' || $message === 'text_query_generation_failed') {
+        $message = 'No query could be built for this question.';
+      }
     }
 
     if ($this->debugRAManager) {

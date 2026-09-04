@@ -1,6 +1,7 @@
 text_rag_decomposition_prompt = Vous êtes un expert en analyse de requêtes complexes. Décomposez la requête suivante en sous-requêtes atomiques.
 
-Requête : "{{query}}"
+Requête :
+{{query}}
 
 Type détecté : {{query_type}}
 Motifs détectés : {{detected_patterns}}
@@ -24,4 +25,3 @@ Format de réponse (JSON) :
 ]
 
 Répondez UNIQUEMENT avec le JSON, sans texte supplémentaire.
-

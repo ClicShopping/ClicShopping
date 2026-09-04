@@ -10,7 +10,6 @@ namespace ClicShopping\AI\CoreAI\Planning\SubTaskPlanning;
 
 use ClicShopping\AI\CoreAI\Planning\TaskStep;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\DomainsAI\DomainRegistry;
 
 
 class SubTaskPlannerStandard
@@ -107,7 +106,6 @@ class SubTaskPlannerStandard
                         'intent' => $intent,
                         'query_type' => 'hybrid_decomposed',
                         'data_source' => 'internal_database',
-                        'tables' => $this->getTablesFromDomain(),
                         'processing_mode' => 'direct_sql',
                         'depends_on' => $dependsOn,
                         'can_run_parallel' => $canRunParallel,
@@ -173,7 +171,6 @@ class SubTaskPlannerStandard
                 'intent' => $intent,
                 'query_type' => 'standard_analytics',
                 'data_source' => 'internal_database',
-                'tables' => $this->getTablesFromDomain(),
                 'processing_mode' => 'direct_sql',
                 'depends_on' => [],
                 'can_run_parallel' => false,
@@ -218,23 +215,6 @@ class SubTaskPlannerStandard
         ];
 
         return $mapping[$subQueryType] ?? 'semantic_search';
-    }
-    
-    private function getTablesFromDomain(): array
-    {
-        $domainApp = DomainRegistry::getInstance()->getActiveApp();
-        if ($domainApp && method_exists($domainApp, 'getEntityConfig')) {
-            $entityConfig = $domainApp->getEntityConfig();
-            $tables = [];
-            foreach ($entityConfig as $entity) {
-                if (isset($entity['table'])) {
-                    $tables[] = $entity['table'];
-                }
-            }
-            return array_unique($tables);
-        }
-        
-        return [];
     }
     
     private function logDebug(string $message): void

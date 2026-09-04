@@ -35,9 +35,9 @@ class ProductSortHeadingRenderer
   public function createSortHeading($sortby, $column, $heading)
   {
     if (isset($_POST['keywords'])) {
-      $keywords = HTML::sanitize($_POST['keywords']);
+      $keywords = HTML::output(HTML::sanitize($_POST['keywords']));
     } elseif (isset($_GET['keywords'])) {
-      $keywords = HTML::sanitize($_GET['keywords']);
+      $keywords = HTML::output(HTML::sanitize($_GET['keywords']));
     } else {
       $keywords = '';
     }

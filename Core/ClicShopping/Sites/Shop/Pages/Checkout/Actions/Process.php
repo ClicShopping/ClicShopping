@@ -36,6 +36,12 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       CLICSHOPPING::redirect(null, 'Account&LogIn');
     }
 
+// CSRF: this action finalises the order and is reached only via the tokenised confirmation form
+// (Stripe re-submits that same form). Reject a request without a matching session token.
+    if (!isset($_POST['formid'], $_SESSION['sessiontoken']) || !hash_equals($_SESSION['sessiontoken'], $_POST['formid'])) {
+      CLICSHOPPING::redirect(null, 'Checkout&Confirmation');
+    }
+
 // if there is nothing in the customers cart, redirect them to the shopping cart page
     if ($CLICSHOPPING_ShoppingCart->getCountContents() < 1) {
       CLICSHOPPING::redirect(null, 'Cart');

@@ -1,64 +1,64 @@
 text_fix_translation = # MISSION
-Task: Strict English Standardization.
-Input: User text (any language).
-Output: A single string of characters in professional English.
-- OUTPUT ONLY the standardized text.
-- NO explanations, justifications, or comments.
-- NO visible reasoning.
-- NO interpretations of the user's intent.
-- NO answering questions contained in the input.
-- NEVER output any example text from this prompt.
-- NEVER introduce new entities, metrics, time periods, or clauses that are not in the input.
-- If the input does NOT mention revenue/profit/expenses, you MUST NOT output those terms.
-- ⚠️ CRITICAL: If the query contains the word "article" followed by a number, it is referring to a DOCUMENT ARTICLE. NEVER translate to financial terms like "revenue", "sales", or "quarter".
-- ⚠️ CRITICAL: "article 5 et article 6" means "article 5 and article 6" (document articles), NOT "revenue by quarter".
-1. DOCUMENT ARTICLE REFERENCES (HIGHEST PRIORITY - CHECK FIRST):
-- If the query mentions "article" + number, it is referring to a DOCUMENT ARTICLE, NOT a financial term.
-- ALWAYS preserve "article" + number in the translation.
-- NEVER translate document article references to "revenue", "sales", "quarter", or any financial term.
-- Examples:
+Tâche : normalisation stricte en anglais.
+Entrée : texte utilisateur (toute langue).
+Sortie : une chaîne de caractères unique, en anglais professionnel.
+- NE PRODUISEZ QUE le texte normalisé.
+- AUCUNE explication, justification ou commentaire.
+- AUCUN raisonnement visible.
+- AUCUNE interprétation de l'intention de l'utilisateur.
+- NE RÉPONDEZ PAS aux questions contenues dans l'entrée.
+- NE PRODUISEZ JAMAIS un texte d'exemple issu de ce prompt.
+- N'INTRODUISEZ JAMAIS d'entités, de mesures, de périodes ou de clauses absentes de l'entrée.
+- Si l'entrée NE mentionne PAS le chiffre d'affaires/le bénéfice/les dépenses, vous NE DEVEZ PAS produire ces termes.
+- ⚠️ CRITIQUE : si la requête contient le mot "article" suivi d'un nombre, elle désigne un ARTICLE DE DOCUMENT. Ne le traduisez JAMAIS par des termes financiers comme "revenue", "sales" ou "quarter".
+- ⚠️ CRITIQUE : "article 5 et article 6" signifie "article 5 and article 6" (articles de document), PAS "revenue by quarter".
+1. RÉFÉRENCES À DES ARTICLES DE DOCUMENT (PRIORITÉ MAXIMALE - À VÉRIFIER EN PREMIER) :
+- Si la requête mentionne "article" + nombre, elle désigne un ARTICLE DE DOCUMENT, PAS un terme financier.
+- Conservez TOUJOURS "article" + nombre dans la traduction.
+- Ne traduisez JAMAIS une référence à un article de document par "revenue", "sales", "quarter" ou tout autre terme financier.
+- Exemples :
 {{article_examples}}
-- This rule has HIGHEST PRIORITY and overrides all other rules.
-- COUNT vs ARTICLE NUMBER: a number placed directly BEFORE a plural noun ("3 clauses", "les 3 clauses", "les 3 articles", "3 important clauses") is a QUANTITY. Keep it as a count and KEEP the plural noun; it is NOT a specific section. NEVER turn "les 3 clauses" into "article 3". Only "article"/"clause" + number ("article 3", "clause 3") is a specific section.
+- Cette règle a la PRIORITÉ MAXIMALE et prime sur toutes les autres.
+- NOMBRE vs NUMÉRO D'ARTICLE : un nombre placé directement DEVANT un nom pluriel ("3 clauses", "les 3 clauses", "les 3 articles", "3 clauses importantes") est une QUANTITÉ. Conservez-la comme un compte et CONSERVEZ le nom pluriel ; ce n'est PAS une section précise. Ne transformez JAMAIS "les 3 clauses" en "article 3". Seul "article"/"clause" + nombre ("article 3", "clause 3") désigne une section précise.
 {{clause_examples}}
-2. IDENTITY TRANSFORM (HARD): If the text is already in English, return it EXACTLY as-is. Do NOT rephrase or substitute any terms. This overrides all examples.
-3. TECHNICAL INTEGRITY: Strictly preserve technical terms. Never modify acronyms, codes, or identifiers (e.g., {{code_examples}}).
-4. ACTION VERBS: DO NOT modify or rephrase operational verbs (e.g., "Show", "Give", "Display", "Search").
-5. ZERO ADDITION: Do not add information like "Price not available" or metadata.
-These examples show the CORRECT way to translate document article queries:
+2. TRANSFORMATION IDENTITÉ (STRICTE) : si le texte est déjà en anglais, renvoyez-le EXACTEMENT tel quel. Ne le reformulez PAS et ne substituez aucun terme. Cela prime sur tous les exemples.
+3. INTÉGRITÉ TECHNIQUE : préservez strictement les termes techniques. Ne modifiez jamais un acronyme, un code ou un identifiant (par exemple {{code_examples}}).
+4. VERBES D'ACTION : NE modifiez ni ne reformulez les verbes opérationnels (par exemple "Show", "Give", "Display", "Search").
+5. ZÉRO AJOUT : n'ajoutez pas d'information comme "Price not available" ni de métadonnées.
+Ces exemples montrent la manière CORRECTE de traduire les requêtes portant sur des articles de document :
 {{article_critical_examples}}
-The word "article" + number ALWAYS refers to a document section, NEVER to financial data.
-6. SMART REDUNDANCY DETECTION:
-Apply this decision logic to determine if two parts of a query are redundant:
-**Step 1: Extract components from each part**
-- What METRIC is requested? ({{metric_examples}}, etc.)
-- What TIME PERIOD? (month, quarter, year, week, day, etc.)
-- What ENTITY? ({{entity_examples}}, etc.)
-- What AGGREGATION? (sum, count, average, list, etc.)
-**Step 2: Compare components**
-- If ALL components are IDENTICAL but expressed with SYNONYMS → REDUNDANT (eliminate)
-- If ANY component is DIFFERENT → NOT REDUNDANT (preserve both)
-**Step 3: Check for sequence indicators**
-- Words like "then", "followed by", "after that" → SEQUENTIAL (preserve both)
-- Sequential requests are NEVER redundant even if similar
-**Examples of comparison logic**:
+Le mot "article" + nombre désigne TOUJOURS une section de document, JAMAIS une donnée financière.
+6. DÉTECTION INTELLIGENTE DE REDONDANCE :
+Appliquez cette logique de décision pour déterminer si deux parties d'une requête sont redondantes :
+**Étape 1 : extraire les composants de chaque partie**
+- Quelle MESURE est demandée ? ({{metric_examples}}, etc.)
+- Quelle PÉRIODE ? (mois, trimestre, année, semaine, jour, etc.)
+- Quelle ENTITÉ ? ({{entity_examples}}, etc.)
+- Quelle AGRÉGATION ? (somme, comptage, moyenne, liste, etc.)
+**Étape 2 : comparer les composants**
+- Si TOUS les composants sont IDENTIQUES mais exprimés par des SYNONYMES → REDONDANT (éliminer)
+- Si UN composant DIFFÈRE → NON REDONDANT (conserver les deux)
+**Étape 3 : rechercher les indicateurs de séquence**
+- Des mots comme "puis", "suivi de", "ensuite" → SÉQUENTIEL (conserver les deux)
+- Les demandes séquentielles ne sont JAMAIS redondantes, même si elles se ressemblent
+**Exemples de logique de comparaison** :
 {{redundancy_examples}}
-Regardless of the source language (Chinese, French, etc.) or synonymous English terms, you MUST map these concepts to these exact keywords:
+Quelle que soit la langue source (chinois, français, etc.) ou les synonymes anglais, vous DEVEZ faire correspondre ces concepts à ces mots-clés exacts :
 {{financial_terms_mapping}}
 {{sales_volume_mapping}}
 {{domain_terminology}}
-- ⚠️ MISSING UNIT (HIGHEST TEMPORAL PRIORITY): If a number has NO time unit attached, DO NOT infer, complete, or add one. Translate the number literally and keep the unit absent.
-* "les 12 derniers" / "les 12 dernières" → "the last 12" (NEVER "last year", "12 months", "12 days", or "12 weeks")
-* "sur les 6 derniers" → "over the last 6" (NEVER "6 months")
-* Preserving the absent unit is MANDATORY — a downstream step resolves the ambiguity. Inventing a unit here is a failure.
-* The mappings below apply ONLY when the unit is EXPLICITLY present in the input.
-- 6-month period → "semester" (NOT "quarter")
-- 3-month period → "quarter" (NOT "semester")
-- 1-month period → "month"
-- 7-day period → "week"
-- 12-month period → "year"
-- 24-hour period → "day"
-- Eliminate redundancy only when ALL components match and are synonyms.
-- Preserve both parts when ANY component differs (metric, period, entity, aggregation).
-- Preserve both parts when sequence indicators exist (then, followed by, after that).
-Any output containing non-English characters (except for original Codes/EAN) or forbidden synonyms is a failure.
+- ⚠️ UNITÉ MANQUANTE (PRIORITÉ TEMPORELLE MAXIMALE) : si un nombre n'a AUCUNE unité de temps attachée, ne l'inférez pas, ne la complétez pas et ne l'ajoutez pas. Traduisez le nombre littéralement et laissez l'unité absente.
+* "les 12 derniers" / "les 12 dernières" → "the last 12" (JAMAIS "last year", "12 months", "12 days" ni "12 weeks")
+* "sur les 6 derniers" → "over the last 6" (JAMAIS "6 months")
+* Préserver l'unité absente est OBLIGATOIRE — une étape en aval lève l'ambiguïté. Inventer une unité ici est un échec.
+* Les correspondances ci-dessous ne s'appliquent QUE lorsque l'unité est EXPLICITEMENT présente dans l'entrée.
+- période de 6 mois → "semester" (PAS "quarter")
+- période de 3 mois → "quarter" (PAS "semester")
+- période de 1 mois → "month"
+- période de 7 jours → "week"
+- période de 12 mois → "year"
+- période de 24 heures → "day"
+- N'éliminez la redondance que lorsque TOUS les composants correspondent et sont synonymes.
+- Conservez les deux parties dès qu'UN composant diffère (mesure, période, entité, agrégation).
+- Conservez les deux parties lorsque des indicateurs de séquence sont présents (puis, suivi de, ensuite).
+Toute sortie contenant des caractères non anglais (hors codes/EAN d'origine) ou des synonymes interdits est un échec.

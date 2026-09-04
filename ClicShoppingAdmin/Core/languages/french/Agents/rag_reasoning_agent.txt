@@ -1,61 +1,64 @@
 text_reasoning_cot_prompt = <<<PROMPT
-You are an expert problem solver. Use step-by-step reasoning to solve this problem.
+Vous êtes un expert en résolution de problèmes. Utilisez un raisonnement étape par étape pour résoudre ce problème.
 
-Problem: {{problem}}
+Problème : {{problem}}
 {{context}}
-Instructions:
-1. Break down the problem into clear steps
-2. For each step, explain your reasoning
-3. Show your work and intermediate results
-4. Arrive at a final answer
+Instructions :
+1. Décomposez le problème en étapes claires
+2. Pour chaque étape, expliquez votre raisonnement
+3. Montrez votre travail et les résultats intermédiaires
+4. Aboutissez à une réponse finale
 
-Format your response as:
+Formatez votre réponse ainsi :
 STEP 1: [Description]
-Reasoning: [Your thought process]
-Result: [What you learned/found]
+Reasoning: [Votre cheminement de pensée]
+Result: [Ce que vous avez appris/trouvé]
 
 STEP 2: ...
 
-FINAL ANSWER: [Your conclusion]
-CONFIDENCE: [0.0 to 1.0]
+FINAL ANSWER: [Votre conclusion]
+CONFIDENCE: [0.0 à 1.0]
 PROMPT;
 
-text_reasoning_tot_prompt = Solve this problem using a specific approach.
+text_reasoning_tot_prompt = <<<PROMPT
+Résolvez ce problème en suivant une approche précise.
 
-Problem: {{problem}}
+Problème : {{problem}}
 
-Your approach: {{approach}}
+Votre approche : {{approach}}
 
-Provide your reasoning and conclusion.
+Exposez votre raisonnement et votre conclusion.
+PROMPT;
 
+text_reasoning_decompose_prompt = <<<PROMPT
+Analysez ce problème et déterminez s'il peut être décomposé en sous-problèmes plus simples.
 
-text_reasoning_decompose_prompt = Analyze this problem and determine if it can be broken down into simpler subproblems.
+Problème : {{problem}}
 
-Problem: {{problem}}
-
-Respond in this format:
+Répondez dans ce format :
 IS_ATOMIC: yes/no
-REASONING: [Why it is or isn't atomic]
+REASONING: [Pourquoi il est atomique ou non]
 
-If not atomic:
+S'il n'est pas atomique :
 SUBPROBLEM 1: [Description]
 SUBPROBLEM 2: [Description]
 ...
-
-
-text_reasoning_verification_prompt = Verify if this solution correctly solves the problem.
-
-Problem: {{problem}}
-
-Proposed Solution: {{solution}}
-
-Respond in this format:
-IS_CORRECT: yes/no
-CONFIDENCE: [0.0 to 1.0]
-EXPLANATION: [Why it is or isn't correct]
-ISSUES: [List any problems found]
 PROMPT;
 
-text_reasoning_tot_approach_data = Approach this problem from a data-driven perspective
-text_reasoning_tot_approach_logical = Approach this problem from a logical reasoning perspective
-text_reasoning_tot_approach_creative = Approach this problem from a creative problem-solving perspective
+text_reasoning_verification_prompt = <<<PROMPT
+Vérifiez si cette solution résout correctement le problème.
+
+Problème : {{problem}}
+
+Solution proposée : {{solution}}
+
+Répondez dans ce format :
+IS_CORRECT: yes/no
+CONFIDENCE: [0.0 à 1.0]
+EXPLANATION: [Pourquoi elle est correcte ou non]
+ISSUES: [Listez les problèmes trouvés]
+PROMPT;
+
+text_reasoning_tot_approach_data = Abordez ce problème sous un angle orienté données
+text_reasoning_tot_approach_logical = Abordez ce problème sous un angle de raisonnement logique
+text_reasoning_tot_approach_creative = Abordez ce problème sous un angle de résolution créative de problèmes

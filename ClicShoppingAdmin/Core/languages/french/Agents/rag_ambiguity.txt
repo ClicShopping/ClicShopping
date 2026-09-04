@@ -27,7 +27,6 @@ Si la requête contient des termes PÉRIODIQUES SANS référence temporelle expl
 * "hebdomadaire", "hebdomadairement" → AMBIGU : peut signifier "semaine en cours" OU "répartition par semaine"
 * "trimestriel", "trimestriellement" → AMBIGU : peut signifier "trimestre en cours" OU "répartition par trimestre"
 * "quotidien", "quotidiennement" → AMBIGU : peut signifier "aujourd'hui" OU "répartition par jour"
-* "monthly", "yearly", "weekly", "quarterly", "daily" → AMBIGU (mêmes règles en anglais)
 Pour l'ambiguïté temporal_period_scope, fournir ces interprétations :
 1. current_period : "Pour la période en cours uniquement" (ex: WHERE MONTH(date) = MONTH(CURRENT_DATE))
 2. breakdown : "Répartition par [période]" (ex: GROUP BY MONTH(date))

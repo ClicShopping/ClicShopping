@@ -1,12 +1,12 @@
-prompt_split_hybrid = Split this hybrid query into separate, independent sub-queries.
-Query: {{query}}
-INSTRUCTIONS:
-1. Identify ALL distinct questions or requests in the query\n
-2. Split them into separate sub-queries\n
-3. Each sub-query must be complete and answerable on its own\n
-4. Classify each as 'analytics' (database data: numbers, prices, lists AND structured catalog attributes), 'semantic' (free-text document content: descriptions, policies, reviews), or 'web_search' (external info)
+prompt_split_hybrid = Décomposez cette requête hybride en sous-requêtes distinctes et indépendantes.
+Requête : {{query}}
+INSTRUCTIONS :
+1. Identifiez TOUTES les questions ou demandes distinctes de la requête\n
+2. Décomposez-les en sous-requêtes séparées\n
+3. Chaque sous-requête doit être complète et pouvoir être répondue seule\n
+4. Classez chacune en 'analytics' (données de base : nombres, prix, listes ET attributs structurés du catalogue), 'semantic' (contenu documentaire en texte libre : descriptions, politiques, avis) ou 'web_search' (information externe)
 5. {{structured_attributes_rule}}
-EXAMPLES:
+EXEMPLES :
 {{examples}}
-Return ONLY a JSON array. No markdown, no explanation.
-JSON:
+Renvoyez UNIQUEMENT un tableau JSON. Pas de markdown, pas d'explication.
+JSON :

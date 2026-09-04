@@ -22,6 +22,21 @@ use ClicShopping\OM\CLICSHOPPING;
  */
 class PDF extends FPDF
 {
+  /**
+   * Encode a UTF-8 string for FPDF's standard fonts.
+   *
+   * They declare `/Encoding /WinAnsiEncoding`, which IS cp1252: the bytes must be Windows-1252.
+   * ISO-8859-1 and ISO-8859-15 both drop characters cp1252 carries (euro, em dash, oe ligature).
+   * Every PDF text goes through here — never spell the charset out at a call site.
+   *
+   * @param string|null $text
+   * @return string
+   */
+  public static function enc(?string $text): string
+  {
+    return mb_convert_encoding((string)$text, 'Windows-1252', 'UTF-8');
+  }
+
   private static function getGlobalPdf()
   {
     if (isset($_SESSION['pdf'])) {
@@ -90,9 +105,9 @@ class PDF extends FPDF
     $pdf->SetFont('Arial', 'B', 8);
     $pdf->SetY($Y_Fields_Name_position);
     $pdf->SetX(6);
-    $pdf->Cell(9, 6, mb_convert_encoding(CLICSHOPPING::getDef('table_heading_qte'), 'ISO-8859-1', 'UTF-8'), 1, 0, 'C', 1);
+    $pdf->Cell(9, 6, self::enc(CLICSHOPPING::getDef('table_heading_qte')), 1, 0, 'C', 1);
     $pdf->SetX(15);
-    $pdf->Cell(27, 6, mb_convert_encoding(CLICSHOPPING::getDef('table_heading_products_model'), 'ISO-8859-1', 'UTF-8'), 1, 0, 'C', 1);
+    $pdf->Cell(27, 6, self::enc(CLICSHOPPING::getDef('table_heading_products_model')), 1, 0, 'C', 1);
     $pdf->SetX(40);
     $pdf->Cell(78, 6, CLICSHOPPING::getDef('table_heading_products'), 1, 0, 'C', 1);
     $pdf->SetX(105);
@@ -114,13 +129,13 @@ class PDF extends FPDF
     $pdf->SetFont('Arial', 'B', 8);
     $pdf->SetY($Y_Fields_Name_position);
     $pdf->SetX(6);
-    $pdf->Cell(9, 6, mb_convert_encoding(CLICSHOPPING::getDef('table_heading_qte'), 'ISO-8859-1', 'UTF-8'), 1, 0, 'C', 1);
+    $pdf->Cell(9, 6, self::enc(CLICSHOPPING::getDef('table_heading_qte')), 1, 0, 'C', 1);
     $pdf->SetX(15);
     $pdf->Cell(13, 6, CLICSHOPPING::getDef('table_heading_customers_id'), 1, 0, 'C', 1);
     $pdf->SetX(28);
     $pdf->Cell(25, 6, CLICSHOPPING::getDef('table_heading_customers_name'), 1, 0, 'C', 1);
     $pdf->SetX(53);
-    $pdf->Cell(30, 6, mb_convert_encoding(CLICSHOPPING::getDef('table_heading_products_model'), 'ISO-8859-1', 'UTF-8'), 1, 0, 'C', 1);
+    $pdf->Cell(30, 6, self::enc(CLICSHOPPING::getDef('table_heading_products_model')), 1, 0, 'C', 1);
     $pdf->SetX(83);
     $pdf->Cell(60, 6, CLICSHOPPING::getDef('table_heading_products'), 1, 0, 'C', 1);
     $pdf->SetX(143);

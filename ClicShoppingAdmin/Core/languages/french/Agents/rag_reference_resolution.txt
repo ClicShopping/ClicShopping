@@ -1,11 +1,11 @@
-text_reference_resolution_prompt = CONVERSATION SO FAR:
+text_reference_resolution_prompt = CONVERSATION JUSQU'ICI :
 {{history}}
-CANDIDATE ENTITY: a {{entity_type}} named "{{entity_name}}".
-This entity is merely the last one the system happened to track. It is often harvested from a row of a previous ANSWER, so its existence is NOT evidence that the user is talking about it.
-NEW QUERY: {{query}}
-Decide whether the NEW QUERY continues to talk about the CANDIDATE ENTITY.
+ENTITÉ CANDIDATE : un(e) {{entity_type}} nommé(e) "{{entity_name}}".
+Cette entité est simplement la dernière que le système a suivie. Elle est souvent récoltée dans une ligne d'une RÉPONSE précédente, donc son existence n'est PAS une preuve que l'utilisateur en parle.
+NOUVELLE REQUÊTE : {{query}}
+Déterminez si la NOUVELLE REQUÊTE continue de parler de l'ENTITÉ CANDIDATE.
 {{focus_requirement}}
-REQUIREMENT 2 — the NEW QUERY must not carry its own subject. A query that states what it is about (a named collection, a category, a policy, a company-wide total) is self-contained: answer false, even right after the user discussed the entity. A query that leaves its subject unspecified — a bare metric, an attribute, a fragment, a pronoun — inherits the entity the user was focused on: answer true.
-Respond ONLY with JSON: {"references_entity": true|false, "resolved_query": "<the NEW QUERY, rewritten to name the entity only if references_entity is true>"}
-text_reference_resolution_no_history = (no earlier turn recorded)
-text_reference_resolution_user_focus = REQUIREMENT 1 — user focus. In one of their OWN turns, the user must have named that entity or asked about it. If the entity only ever appeared inside an Assistant answer — a list, a ranking, a set of results — the user was asking about the list, not about that row: answer false and stop.
+EXIGENCE 2 — la NOUVELLE REQUÊTE ne doit pas porter son propre sujet. Une requête qui énonce ce dont elle parle (une collection nommée, une catégorie, une politique, un total à l'échelle de l'entreprise) se suffit à elle-même : répondez false, même juste après que l'utilisateur a évoqué l'entité. Une requête qui laisse son sujet non spécifié — une mesure seule, un attribut, un fragment, un pronom — hérite de l'entité sur laquelle l'utilisateur était concentré : répondez true.
+Répondez UNIQUEMENT avec du JSON : {"references_entity": true|false, "resolved_query": "<la NOUVELLE REQUÊTE, réécrite pour nommer l'entité uniquement si references_entity vaut true>"}
+text_reference_resolution_no_history = (aucun tour antérieur enregistré)
+text_reference_resolution_user_focus = EXIGENCE 1 — focus de l'utilisateur. Dans l'un de ses PROPRES tours, l'utilisateur doit avoir nommé cette entité ou posé une question dessus. Si l'entité n'est jamais apparue que dans une réponse de l'Assistant — une liste, un classement, un ensemble de résultats — l'utilisateur interrogeait la liste, pas cette ligne : répondez false et arrêtez-vous.

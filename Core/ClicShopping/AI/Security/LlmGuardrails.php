@@ -484,9 +484,9 @@ class LlmGuardrails
    * Specific Hallucination Detection
    *
    * Detects suspicious patterns in the LLM response that may indicate hallucinations,
-   * such as unrealistic sales figures, future dates, or impossible values.
-   * Returns details about detected patterns, future dates, impossible values,
-   * a reversed score, and a suspect flag.
+   * such as unrealistic sales figures or impossible values.
+   * Returns details about detected patterns, impossible values, a reversed score,
+   * and a suspect flag.
    *
    * Uses domain-specific patterns loaded from the active domain app.
    */
@@ -502,35 +502,15 @@ class LlmGuardrails
       }
     }
 
-    // Check for impossible dates
-    $futureDates = self::detectFutureDates($result);
     $impossibleValues = self::detectImpossibleValues($result);
 
     return [
       'suspicious_patterns_count' => $suspiciousCount,
       'detected_patterns' => $detectedPatterns,
-      'future_dates' => $futureDates,
       'impossible_values' => $impossibleValues,
       'score' => 1 - min(1, $suspiciousCount / 3), // Inverted score
-      'is_suspect' => $suspiciousCount > 2 || !empty($futureDates) || !empty($impossibleValues)
+      'is_suspect' => $suspiciousCount > 2 || !empty($impossibleValues)
     ];
-  }
-
-  /**
-   * Detects future dates in the AI-generated response.
-   *
-   * Scans the response for any references to future dates or time periods.
-   * Returns an array of detected future dates or an empty array if none found.
-   *
-   * @param string $result The AI-generated response to scan for future dates.
-   * @return array List of detected future dates.
-   */
-  private static function detectFutureDates(string $result): array
-  {
-    $futureDates = [];
-    // Future date detection logic
-    // Implementation according to specific needs
-    return $futureDates;
   }
 
   /**

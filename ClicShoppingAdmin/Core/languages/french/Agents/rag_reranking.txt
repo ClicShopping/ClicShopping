@@ -8,5 +8,5 @@ Document 2: <texte du deuxième document>
 Document 3: <texte du troisième document>
 Exemple de format de sortie (VOUS DEVEZ RENVOYER LA RÉPONSE SOUS LA FORME DONNÉE PAR L'EXEMPLE SUIVANT SANS RIEN CHANGER D'AUTRE QUE LES NUMÉROS !)
 Relevance order: 3, 1, 2
-text_reranking_question_prefix = Question:
+text_reranking_question_prefix = Question :
 text_reranking_document_prefix = Document

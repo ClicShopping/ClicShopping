@@ -632,16 +632,11 @@ class LlmResponseEvaluator
     $hallucinationData = $evaluationResults['hallucination'] ?? [];
 
     $riskFactors = 0;
-    $totalFactors = 4;
+    $totalFactors = 3;
 
     // Suspicious patterns
     if (isset($hallucinationData['suspicious_patterns_count']) && $hallucinationData['suspicious_patterns_count'] > 0) {
       $riskFactors += min(1.0, $hallucinationData['suspicious_patterns_count'] / 3);
-    }
-
-    // Future dates
-    if (isset($hallucinationData['future_dates']) && !empty($hallucinationData['future_dates'])) {
-      $riskFactors += 1;
     }
 
     // Impossible values

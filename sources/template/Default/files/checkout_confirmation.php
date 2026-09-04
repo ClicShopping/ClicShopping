@@ -15,7 +15,7 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
 
 require_once($CLICSHOPPING_Template->getTemplateFiles('breadcrumb'));
 
-echo HTML::form('checkout_confirmation', $form_action_url, 'post', 'id="checkout_confirmation" role="form" onsubmit="return checkCheckBox(this)"');
+echo HTML::form('checkout_confirmation', $form_action_url, 'post', 'id="checkout_confirmation" role="form" onsubmit="return checkCheckBox(this)"', ['tokenize' => true]);
 ?>
 <section class="checkout_confirmation" id="checkout_confirmation">
   <div class="contentContainer">

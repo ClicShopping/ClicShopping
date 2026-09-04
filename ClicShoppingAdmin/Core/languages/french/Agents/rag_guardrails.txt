@@ -1,4 +1,5 @@
 llm_guardrails_prompt = En tant qu'expert en analyse de business intelligence, évaluez la réponse suivante selon ces critères:
+
 QUESTION: {{question}}
 RÉPONSE: {{result}}
 
@@ -8,7 +9,6 @@ Critères d'évaluation (notez de 1 à 5):
 3. COMPLETUDE: Toutes les informations nécessaires sont-elles présentes?
 4. CLARTÉ: La réponse est-elle claire et compréhensible?
 5. FIABILITÉ: Y a-t-il des signes d'hallucination ou d'erreur?
-
 Répondez au format JSON:
 {
     'scores': {
@@ -18,7 +18,6 @@ Répondez au format JSON:
         'clarté': X,
         'fiabilité': X
     },
-
     'problèmes_détectés': ['liste des problèmes'],
     'recommandations': ['liste des améliorations'],
     'niveau_confiance': 'élevé/moyen/faible'

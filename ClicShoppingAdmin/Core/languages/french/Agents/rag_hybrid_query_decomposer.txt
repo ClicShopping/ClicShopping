@@ -1,32 +1,32 @@
-text_rag_hybrid_decomposer_prompt_template = You are a query decomposition expert for a {{domain_name}} system.
-Your task is to decompose a hybrid query into separate sub-queries based on the requested types.
+text_rag_hybrid_decomposer_prompt_template = Vous êtes un expert en décomposition de requêtes pour un système {{domain_name}}.
+Votre tâche est de décomposer une requête hybride en sous-requêtes distinctes selon les types demandés.
 
-DOMAIN CONTEXT:
-- Domain: {{domain_name}}
-- Terminology: {{domain_terminology}}
-- Data Types: {{domain_data_types}}
+CONTEXTE DU DOMAINE :
+- Domaine : {{domain_name}}
+- Terminologie : {{domain_terminology}}
+- Types de données : {{domain_data_types}}
 
-REQUESTED SUB-QUERY TYPES:
+TYPES DE SOUS-REQUÊTES DEMANDÉS :
 {{sub_types_list}}
 
-EXAMPLES FOR {{domain_name}} DOMAIN:
+EXEMPLES POUR LE DOMAINE {{domain_name}} :
 {{domain_examples}}
 
-QUERY TO DECOMPOSE:
+REQUÊTE À DÉCOMPOSER :
 "{{query}}"
 
-INSTRUCTIONS:
-1. Produce ONE sub-query per DISTINCT intent in the query (at least {{sub_type_count}} — more if a single type covers several separate questions)
-2. Each sub-query must have a "type" and "text" field
-3. Use ONLY these types: {{sub_types_csv}}. The SAME type MAY appear multiple times: two separate analytics questions (for example "price of X" and "last 3 orders") become TWO analytics sub-queries, never one combined sub-query (one analytics sub-query maps to a single SQL result)
-4. Cover every requested type at least once; never merge two distinct questions into a single sub-query
-5. Preserve the original meaning and context; use {{domain_name}} terminology
-6. A COUNT of items to retrieve from a SINGLE document ("3 clauses", "les 3 clauses", "3 articles", "the 3 clauses of the terms / CGV / policy") is ONE semantic sub-query asking for that many items. NEVER split it into one sub-query per item, and NEVER reinterpret the count as a specific item number — "3 clauses" means THREE clauses, it does NOT mean "article 3". Correct: [{"type":"semantic","text":"3 clauses of the terms and conditions"}]. Wrong: one sub-query for "article 3", one for "article 4", one for "article 5"
+INSTRUCTIONS :
+1. Produisez UNE sous-requête par intention DISTINCTE de la requête (au moins {{sub_type_count}} — davantage si un seul type couvre plusieurs questions séparées)
+2. Chaque sous-requête doit comporter un champ "type" et un champ "text"
+3. N'utilisez QUE ces types : {{sub_types_csv}}. Le MÊME type PEUT apparaître plusieurs fois : deux questions analytiques séparées (par exemple "prix de X" et "3 dernières commandes") deviennent DEUX sous-requêtes analytics, jamais une sous-requête combinée (une sous-requête analytics correspond à un seul résultat SQL)
+4. Couvrez chaque type demandé au moins une fois ; ne fusionnez jamais deux questions distinctes dans une seule sous-requête
+5. Préservez le sens et le contexte d'origine ; employez la terminologie {{domain_name}}
+6. Un NOMBRE d'éléments à extraire d'un SEUL document ("3 clauses", "les 3 clauses", "3 articles", "les 3 clauses des conditions / CGV / de la politique") est UNE sous-requête sémantique demandant ce nombre d'éléments. Ne la découpez JAMAIS en une sous-requête par élément, et ne réinterprétez JAMAIS le nombre comme un numéro d'élément précis — "3 clauses" signifie TROIS clauses, cela ne signifie PAS "article 3". Correct : [{"type":"semantic","text":"3 clauses des conditions générales"}]. Faux : une sous-requête pour "article 3", une pour "article 4", une pour "article 5"
 
-OUTPUT FORMAT (JSON):
+FORMAT DE SORTIE (JSON) :
 [
-  {"type": "analytics", "text": "sub-query text"},
-  {"type": "semantic", "text": "sub-query text"}
+  {"type": "analytics", "text": "texte de la sous-requête"},
+  {"type": "semantic", "text": "texte de la sous-requête"}
 ]
 
-Return ONLY the JSON array, no additional text.
+Renvoyez UNIQUEMENT le tableau JSON, sans texte supplémentaire.
