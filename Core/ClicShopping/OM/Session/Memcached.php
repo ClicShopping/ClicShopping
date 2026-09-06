@@ -143,7 +143,7 @@ class Memcached extends \ClicShopping\OM\Domains\SessionAbstract implements \Ses
       return true;
     }
 
-    return !method_exists($this->_conn, 'quit') || $this->_conn->quit();
+    return $this->_conn->quit();
   }
 
   /**
@@ -205,11 +205,11 @@ class Memcached extends \ClicShopping\OM\Domains\SessionAbstract implements \Ses
    * Cleans up old sessions (no-op for Memcached).
    *
    * @param int $maxlifetime Sessions that have not updated for the last maxlifetime seconds will be removed.
-   * @return bool Always returns true.
+   * @return int|false Always 0 — Memcached expires sessions via TTL, nothing to sweep.
    */
-  public function gc(int $maxlifetime): bool
+  public function gc(int $maxlifetime): int|false
   {
-    return true;
+    return 0;
   }
 
   /**

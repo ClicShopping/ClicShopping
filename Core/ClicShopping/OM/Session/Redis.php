@@ -169,11 +169,11 @@ class Redis extends \ClicShopping\OM\Domains\SessionAbstract implements \Session
    * Cleans up old sessions (no-op for Redis).
    *
    * @param int $maxlifetime Sessions that have not updated for the last maxlifetime seconds will be removed.
-   * @return bool Always returns true.
+   * @return int|false Always 0 — Redis expires sessions via TTL, nothing to sweep.
    */
-  public function gc(int $maxlifetime): bool
+  public function gc(int $maxlifetime): int|false
   {
-    return true;
+    return 0;
   }
 
   /**

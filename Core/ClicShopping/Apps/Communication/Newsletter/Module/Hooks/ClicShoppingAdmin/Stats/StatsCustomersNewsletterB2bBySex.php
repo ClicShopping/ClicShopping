@@ -41,9 +41,9 @@ class StatsCustomersNewsletterB2bBySex implements HooksInterface
    * identified as male ('m') who have subscribed to the newsletter. The result
    * is rounded to two decimal places.
    *
-   * @return float|null The percentage of male customers subscribed to the newsletter, or null if the query result is empty.
+   * @return float The percentage of male customers subscribed to the newsletter.
    */
-  private function statsNewsletterCustomersMen(): ?float
+  private function statsNewsletterCustomersMen(): float
   {
     $QstatAnalyseCustomersMan = $this->app->db->prepare('select ROUND(((COUNT(customers_id)/(SELECT COUNT(customers_id) FROM :table_customers))*100),2) AS avgage
                                                            from :table_customers
@@ -55,19 +55,16 @@ class StatsCustomersNewsletterB2bBySex implements HooksInterface
 
     $QstatAnalyseCustomersMan->execute();
 
-    if (!\is_null($QstatAnalyseCustomersMan->valueDecimal('avgage'))) {
-      $statAnalyseCustomersMan = $QstatAnalyseCustomersMan->valueDecimal('avgage');
-      return $statAnalyseCustomersMan;
-    }
+    return $QstatAnalyseCustomersMan->valueDecimal('avgage');
   }
 
   /**
    * Analyzes the percentage of female customers who are subscribed to the newsletter
    * and belong to a specific customer group.
    *
-   * @return float|null Returns the calculated percentage as a float if available, otherwise null.
+   * @return float Returns the calculated percentage as a float.
    */
-  private function statsNewsletterCustomersWomen(): ?float
+  private function statsNewsletterCustomersWomen(): float
   {
     $QstatAnalyseCustomersWomen = $this->app->db->prepare('select ROUND(((COUNT(customers_id)/(SELECT COUNT(customers_id) FROM :table_customers))*100),2) AS avgage
                                                               from :table_customers
@@ -79,10 +76,7 @@ class StatsCustomersNewsletterB2bBySex implements HooksInterface
 
     $QstatAnalyseCustomersWomen->execute();
 
-    if (!\is_null($QstatAnalyseCustomersWomen->valueDecimal('avgage'))) {
-      $statAnalyseCustomersWomen = $QstatAnalyseCustomersWomen->valueDecimal('avgage');
-      return $statAnalyseCustomersWomen;
-    }
+    return $QstatAnalyseCustomersWomen->valueDecimal('avgage');
   }
 
   /**
@@ -90,12 +84,12 @@ class StatsCustomersNewsletterB2bBySex implements HooksInterface
    *
    * @return string The HTML content of the newsletter statistics card, including
    *                statistical data about male and female newsletter customers.
-   *                Returns `false` if the newsletter module is disabled.
+   *                Returns an empty string if the newsletter module is disabled.
    */
   public function display(): string
   {
     if (!\defined('CLICSHOPPING_APP_NEWSLETTER_NL_STATUS') || CLICSHOPPING_APP_NEWSLETTER_NL_STATUS == 'False') {
-      return false;
+      return '';
     }
 
     $output = '

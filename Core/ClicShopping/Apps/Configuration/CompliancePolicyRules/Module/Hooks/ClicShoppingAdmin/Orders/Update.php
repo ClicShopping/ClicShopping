@@ -76,7 +76,7 @@ class Update implements HooksInterface
       EInvoiceService::STATUS_INVOICE,
       EInvoiceService::STATUS_CANCEL,
       EInvoiceService::STATUS_CREDIT_NOTE,
-    ])) {
+    ], true)) {
       return false;
     }
 

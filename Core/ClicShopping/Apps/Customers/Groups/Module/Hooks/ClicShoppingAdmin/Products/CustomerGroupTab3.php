@@ -75,7 +75,7 @@ class CustomerGroupTab3 implements HooksInterface
     $CLICSHOPPING_CompliancePolicyRules = Registry::get('CompliancePolicyRules');
 
     if (!\defined('CLICSHOPPING_APP_CUSTOMERS_GROUPS_GR_STATUS') || CLICSHOPPING_APP_CUSTOMERS_GROUPS_GR_STATUS == 'False') {
-      return false;
+      return '';
     }
 
     if (CLICSHOPPING_APP_CUSTOMERS_GROUPS_GR_STATUS == 'True' && !empty(CLICSHOPPING_APP_CUSTOMERS_GROUPS_GR_STATUS)) {
@@ -83,7 +83,7 @@ class CustomerGroupTab3 implements HooksInterface
 
       $products_array = $this->getProducts();
 
-      if (\is_array($products_array) && $products_array !== false) {
+      if (\is_array($products_array)) {
         $products_id = $products_array[0]['products_id'];
         $products_percentage = $products_array[0]['products_percentage'];
       }
@@ -116,22 +116,17 @@ class CustomerGroupTab3 implements HooksInterface
                                                       ');
         $QcustomersGroup->execute();
 
-        $header = false;
-
         if (B2B == 'true') {
           $override_on = $this->app->getDef('text_override_on');
         } else {
           $override_on = $this->app->getDef('text_override_on1');
         }
 
-        if (!$header) {
-          $header = true;
-          $title = '<div class="mt-1"></div>';
-          $title .= '<div class="col-md-12 mainTitle" style="height:30px;">';
-          $title .= $this->app->getDef('text_cust_groups') . '&nbsp;&nbsp;&nbsp;&nbsp;' . HTML::radioField('products_percentage', '1', $in_percent, 'id="in_percent"') . '&nbsp;' . $override_on . '&nbsp;&nbsp;&nbsp;' . HTML::radioField('products_percentage', '0', $out_percent, 'id="out_percent"') . '&nbsp;' . $this->app->getDef('text_override_off');
-          $title .= '</div>';
-          $title .= '<div class="mt-1"></div>';
-        }
+        $title = '<div class="mt-1"></div>';
+        $title .= '<div class="col-md-12 mainTitle" style="height:30px;">';
+        $title .= $this->app->getDef('text_cust_groups') . '&nbsp;&nbsp;&nbsp;&nbsp;' . HTML::radioField('products_percentage', '1', $in_percent, 'id="in_percent"') . '&nbsp;' . $override_on . '&nbsp;&nbsp;&nbsp;' . HTML::radioField('products_percentage', '0', $out_percent, 'id="out_percent"') . '&nbsp;' . $this->app->getDef('text_override_off');
+        $title .= '</div>';
+        $title .= '<div class="mt-1"></div>';
 
         $content = '<div class="row">';
 
@@ -271,5 +266,7 @@ EOD;
         return $output;
       }
     }
+
+    return '';
   }
 }

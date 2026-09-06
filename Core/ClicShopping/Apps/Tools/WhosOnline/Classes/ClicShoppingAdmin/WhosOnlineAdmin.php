@@ -22,7 +22,7 @@ class WhosOnlineAdmin
     $CLICSHOPPING_Db = Registry::get('Db');
 
     if (isset($_SESSION['admin'])) {
-      static::delete();
+      self::delete();
 
       $QwhosOnline = $CLICSHOPPING_Db->prepare('select distinct session_id,
                                                                   customer_id,
@@ -39,6 +39,8 @@ class WhosOnlineAdmin
 
       return $whosOnlineNumber;
     }
+
+    return 0;
   }
 
   /**

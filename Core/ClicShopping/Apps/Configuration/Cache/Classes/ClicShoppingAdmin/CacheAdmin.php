@@ -359,8 +359,19 @@ class CacheAdmin
 
     $cli = null;
 
-    if (function_exists('shell_exec')) {
-      $out = @shell_exec('php -r ' . escapeshellarg('echo (int)extension_loaded("apcu"), ",", (int)ini_get("apc.enabled"), ",", (int)ini_get("apc.enable_cli"), ",", (int)(function_exists("apcu_enabled") && apcu_enabled());') . ' 2>/dev/null');
+    // Probe the CLI SAPI in a child process (apc.enable_cli is per-SAPI). proc_open with an
+    // array command runs without a shell, so no argument can be interpreted as one.
+    if (function_exists('proc_open')) {
+      $code = 'echo (int)extension_loaded("apcu"), ",", (int)ini_get("apc.enabled"), ",", (int)ini_get("apc.enable_cli"), ",", (int)(function_exists("apcu_enabled") && apcu_enabled());';
+      $out = null;
+      $process = @proc_open(['php', '-r', $code], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+
+      if (is_resource($process)) {
+        $out = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        proc_close($process);
+      }
 
       if (is_string($out) && substr_count($out, ',') === 3) {
         [$loaded, $enabled, $enable_cli, $usable] = explode(',', trim($out));

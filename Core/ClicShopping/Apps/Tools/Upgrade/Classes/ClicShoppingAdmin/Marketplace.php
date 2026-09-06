@@ -123,9 +123,9 @@ class Marketplace
     if (isset($response->error)) {
       $this->messageStack->add($this->upgrade->getDef('text_error_api_connection'), 'error');
       $this->upgrade->redirect('Marketplace');
-    } else {
-      return $response->access_token;
     }
+
+    return $response->access_token;
   }
 
   /**
@@ -160,33 +160,29 @@ class Marketplace
 
     $token = $this->getSessionToken();
 
-    if ($token !== null) {
-      $client = new GuzzleClient([
-        'base_uri' => $communityUrl,
-        'timeout'  => 30,
-        'headers'  => [
-          'User-Agent'    => 'MyUserAgent/1.0',
-          'Authorization' => 'Bearer ' . $token,
-        ]
-      ]);
+    $client = new GuzzleClient([
+      'base_uri' => $communityUrl,
+      'timeout'  => 30,
+      'headers'  => [
+        'User-Agent'    => 'MyUserAgent/1.0',
+        'Authorization' => 'Bearer ' . $token,
+      ]
+    ]);
 
-      $response = $client->request('GET', 'api' . $endpoint);
-      $result = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+    $response = $client->request('GET', 'api' . $endpoint);
+    $result = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
-      if (isset($result['errorCode'])) {
-        $_SESSION['error'] = $result['errorMessage'];
+    if (isset($result['errorCode'])) {
+      $_SESSION['error'] = $result['errorMessage'];
 
-        if ($result['errorMessage'] == 'REVOKED_ACCESS_TOKEN') {
-          unset($_SESSION['token']);
-        }
-
-        return true;
-      } else {
-        return $result;
+      if ($result['errorMessage'] == 'REVOKED_ACCESS_TOKEN') {
+        unset($_SESSION['token']);
       }
-    } else {
+
       return true;
     }
+
+    return $result;
   }
 
   /******************************************************************

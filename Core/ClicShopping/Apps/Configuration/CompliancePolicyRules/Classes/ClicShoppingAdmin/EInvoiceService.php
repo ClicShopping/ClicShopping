@@ -126,7 +126,7 @@ class EInvoiceService
       return $this->skip($this->app->getDef('skip_module_disabled'));
     }
 
-    if (!in_array($invoice_status, [self::STATUS_INVOICE, self::STATUS_CANCEL, self::STATUS_CREDIT_NOTE])) {
+    if (!in_array($invoice_status, [self::STATUS_INVOICE, self::STATUS_CANCEL, self::STATUS_CREDIT_NOTE], true)) {
       return $this->skip($this->app->getDef('skip_status_not_actionable') . ' (' . $invoice_status . ')');
     }
 
@@ -148,7 +148,7 @@ class EInvoiceService
       return $this->failure($msg);
     }
 
-    $doc_type = in_array($invoice_status, [self::STATUS_CANCEL, self::STATUS_CREDIT_NOTE]) ? self::TYPE_CREDIT_NOTE : self::TYPE_INVOICE;
+    $doc_type = in_array($invoice_status, [self::STATUS_CANCEL, self::STATUS_CREDIT_NOTE], true) ? self::TYPE_CREDIT_NOTE : self::TYPE_INVOICE;
 
     $payload = $this->buildPayload($order_id, $customer, $info, $products, $totals, $doc_type);
     if ($payload === null) {

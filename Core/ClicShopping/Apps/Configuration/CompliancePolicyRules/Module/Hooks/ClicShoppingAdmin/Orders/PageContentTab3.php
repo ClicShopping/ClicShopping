@@ -134,7 +134,7 @@ class PageContentTab3 implements HooksInterface
                             <span class="badge bg-success">' . $this->app->getDef('badge_transmitted') . '</span>
                             &nbsp;<span class="text-success small">' . $this->app->getDef('text_transmitted_notice') . '</span>
             ';
-            } elseif (!in_array($current_invoice_status_id, [EInvoiceService::STATUS_INVOICE, EInvoiceService::STATUS_CANCEL, EInvoiceService::STATUS_CREDIT_NOTE])) {
+            } elseif (!in_array($current_invoice_status_id, [EInvoiceService::STATUS_INVOICE, EInvoiceService::STATUS_CANCEL, EInvoiceService::STATUS_CREDIT_NOTE], true)) {
             $content .= '
                             <span class="badge bg-warning text-dark">' . $this->app->getDef('badge_pending') . '</span>
                             &nbsp;<span class="text-muted small">' . $this->app->getDef('text_pending_notice') . '</span>

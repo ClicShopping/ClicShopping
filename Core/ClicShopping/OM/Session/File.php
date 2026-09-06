@@ -110,7 +110,7 @@ class File extends \ClicShopping\OM\Domains\SessionAbstract implements \SessionH
    * @param string $session_data The data to be written to the session file.
    * @return bool Returns true on success or false on failure.
    */
-  public function write(string $session_id, string$session_data)
+  public function write(string $session_id, string $session_data): bool
   {
     $id = basename(mb_convert_encoding($session_id, 'UTF-8', 'ISO-8859-1'));
     return file_put_contents($this->path . '/sess_' . $id, $session_data) !== false;
@@ -137,17 +137,20 @@ class File extends \ClicShopping\OM\Domains\SessionAbstract implements \SessionH
    * Deletes session files that have expired based on their file modification time.
    *
    * @param int $maxlifetime The maximum lifetime (in seconds) for session files before they are considered expired.
-   * @return bool Returns true upon completion of cleanup.
+   * @return int|false Number of expired session files deleted, or false on failure.
    */
-  public function gc(int $maxlifetime): bool
+  public function gc(int $maxlifetime): int|false
   {
+    $deleted = 0;
+
     foreach (glob($this->path . '/sess_*', GLOB_NOSORT) as $file) {
       if (filemtime($file) + $maxlifetime < time()) {
         unlink($file);
+        $deleted++;
       }
     }
 
-    return true;
+    return $deleted;
   }
 
   /**

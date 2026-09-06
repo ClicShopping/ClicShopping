@@ -19,11 +19,12 @@ class WeightAdmin extends \ClicShopping\Apps\Configuration\Weight\Classes\Shop\W
   /**
    * Constructor method to initialize the object with optional precision value.
    *
-   * @param int|null $precision The precision value to set, or null for default behavior.
+   * @param int $precision The precision value to set, defaults to 2.
    * @return void
    */
-  public function __construct(mixed $precision = null)
+  public function __construct(int $precision = 2)
   {
+    parent::__construct($precision);
   }
 
   /**
@@ -70,7 +71,7 @@ class WeightAdmin extends \ClicShopping\Apps\Configuration\Weight\Classes\Shop\W
    */
   public function convert($value, $unit_from, $unit_to): false|string
   {
-    parent::convert($value, $unit_from, $unit_to);
+    return parent::convert($value, $unit_from, $unit_to);
   }
 
   /**
@@ -130,5 +131,7 @@ class WeightAdmin extends \ClicShopping\Apps\Configuration\Weight\Classes\Shop\W
 
       return $result;
     }
+
+    return '';
   }
 }

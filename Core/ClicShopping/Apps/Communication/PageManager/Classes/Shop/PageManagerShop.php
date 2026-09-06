@@ -383,6 +383,8 @@ class PageManagerShop
 
       return $pages_liste_info_box_secondary['text'];
     }
+
+    return '';
   }
 
   /**
@@ -586,7 +588,7 @@ class PageManagerShop
       if (!empty($QPage->value('externallink'))) {
         $search = !self::isExternalLink($QPage->value('externallink'));
         if ($search === false) {
-          $page_liste_footer .= $separation . HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '"', 'class="footerPageManager" rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
+          $page_liste_footer .= $separation . HTML::link($QPage->value('externallink'), $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '" class="footerPageManager" rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
         } else {
           $page_liste_footer .= $separation . HTML::link(self::buildStoredLinkUrl($QPage->value('externallink')), $QPage->value('pages_title'), 'class="footerPageManager" target="' . $QPage->value('links_target') . '" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
         }
@@ -598,7 +600,7 @@ class PageManagerShop
         }
 
         if (!empty($QPage->value('pages_html_text'))) {
-          $page_liste_footer .= $separation . HTML::link($link, $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '"', ' class="footerPageManager" rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
+          $page_liste_footer .= $separation . HTML::link($link, $QPage->value('pages_title'), 'target="' . $QPage->value('links_target') . '" class="footerPageManager" rel="noreferrer" title="' . $QPage->value('pages_title') . '"  id="' . $QPage->value('pages_title') . '"');
         }
       }
     }
