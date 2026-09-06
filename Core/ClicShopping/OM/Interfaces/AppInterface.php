@@ -24,11 +24,10 @@ interface AppInterface
   public function link(): string;
 
   /**
-   * Redirects to a specified location with appended parameters.
-   *
-   * @return string The resulting redirection URL.
+   * Redirects to a specified location with appended parameters. Never returns
+   * (ends on HTTP::redirect, which exits).
    */
-  public function redirect(): string;
+  public function redirect(): never;
 
   /**
    * Get the application code identifier

@@ -77,7 +77,6 @@ class AnalyticsFormatter extends AbstractFormatter
     }
 
     $output = "<div class='analytics-results'>";
-    $output .= "<h4>" . $this->language->getDef('text_rag_analytics_results_for') . " " . htmlspecialchars($question) . "</h4>";
 
     // Display source attribution
     if (isset($results['source_attribution'])) {
@@ -155,12 +154,10 @@ class AnalyticsFormatter extends AbstractFormatter
    */
   private function formatMultipleResults(array $results): array
   {
-    $originalQuery = $results['question'] ?? $results['query'] ?? 'Unknown request';
     $multipleResults = $results['multiple_results'] ?? [];
     $queryCount = count($multipleResults);
 
     $output = "<div class='analytics-results multiple-queries'>";
-    $output .= "<h4>" . $this->language->getDef('text_rag_analytics_results_for') . " " . htmlspecialchars($originalQuery) . "</h4>";
     $output .= "<div class='alert alert-info'>";
     $output .= "<strong>" . $this->language->getDef('text_rag_analytics_note') . "</strong> " . str_replace('{count}', $queryCount, $this->language->getDef('text_rag_analytics_note_multiple_queries'));
     $output .= "</div>";

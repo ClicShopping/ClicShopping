@@ -42,7 +42,7 @@ class DeleteConfirm implements HooksInterface
    */
   private function delete(int $id)
   {
-    if (!\is_null($id)) {
+    if ($id > 0) {
       $this->app->db->delete('orders_status', ['language_id' => $id]);
     }
   }
@@ -55,7 +55,7 @@ class DeleteConfirm implements HooksInterface
   public function execute()
   {
     if (isset($_GET['DeleteConfirm'])) {
-      $id = HTML::sanitize($_GET['lID']);
+      $id = (int)HTML::sanitize($_GET['lID']);
       $this->delete($id);
     }
   }

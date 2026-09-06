@@ -9,6 +9,10 @@
 namespace ClicShopping\Sites\Common;
 
 use ClicShopping\OM\CLICSHOPPING;
+use FPDF;
+if (!class_exists(FPDF::class, false)) {
+  require_once CLICSHOPPING::BASE_DIR . 'External/vendor/setasign/fpdf/fpdf.php';
+}
 
 /**
  * Class PDF
@@ -35,17 +39,6 @@ class PDF extends FPDF
   public static function enc(?string $text): string
   {
     return mb_convert_encoding((string)$text, 'Windows-1252', 'UTF-8');
-  }
-
-  private static function getGlobalPdf()
-  {
-    if (isset($_SESSION['pdf'])) {
-      return $_SESSION['pdf'];
-    }
-
-    global $pdf;
-
-    return $pdf;
   }
 
   /**
@@ -95,12 +88,10 @@ class PDF extends FPDF
   }
 
   /**
-   * Outputs a table header for supplier details in a PDF document.
+   * Outputs a table header for supplier details on the given PDF document.
    */
-  public function outputTableSuppliers(float $Y_Fields_Name_position): void
+  public function outputTableSuppliers(\FPDF $pdf, float $Y_Fields_Name_position): void
   {
-    $pdf = static::getGlobalPdf();
-
     $pdf->SetFillColor(245);
     $pdf->SetFont('Arial', 'B', 8);
     $pdf->SetY($Y_Fields_Name_position);
@@ -119,12 +110,10 @@ class PDF extends FPDF
   }
 
   /**
-   * Outputs a table header for Customers and Suppliers in a PDF document.
+   * Outputs a table header for Customers and Suppliers on the given PDF document.
    */
-  public static function outputTableCustomersSuppliers(float $Y_Fields_Name_position): void
+  public static function outputTableCustomersSuppliers(\FPDF $pdf, float $Y_Fields_Name_position): void
   {
-    $pdf = static::getGlobalPdf();
-
     $pdf->SetFillColor(245);
     $pdf->SetFont('Arial', 'B', 8);
     $pdf->SetY($Y_Fields_Name_position);

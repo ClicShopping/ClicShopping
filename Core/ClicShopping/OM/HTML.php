@@ -112,7 +112,7 @@ class HTML
    * @return string The complete anchor tag as an HTML string.
    */
 
-  public static function link(string $url, ?string $element, mixed $parameters = null)
+  public static function link(string $url, ?string $element, mixed $parameters = null): string
   {
     // Security: Validate URL to prevent javascript: protocol attacks
     $safe_url = static::sanitizeUrl($url);
@@ -225,13 +225,13 @@ class HTML
   public static function image(string $src = '', ?string $alt = null, ?string $width = null, ?string $height = null, ?string $parameters = '', bool $responsive = true, string $bootstrap_css = '', bool $eager = false): string
   {
     if ((empty($src) || ($src == CLICSHOPPING::linkImage(''))) && (IMAGE_REQUIRED == 'false')) {
-      return false;
+      return '';
     }
 
     if (CLICSHOPPING::getSite() == 'Shop') {
       $CLICSHOPPING_Template = Registry::get('Template');
 
-      if ((empty($src) || is_null($src) || static::getUrlFileExists($src) === false) && IMAGE_REQUIRED == 'true') {
+      if ((empty($src) || static::getUrlFileExists($src) === false) && IMAGE_REQUIRED == 'true') {
         $image = CLICSHOPPING::getConfig('http_server') . CLICSHOPPING::getConfig('http_path', 'Shop') . $CLICSHOPPING_Template->getDirectoryTemplateImages() . 'icons/nophoto.png';
 
         if (!is_file(CLICSHOPPING::getConfig('dir_root', 'Shop') . $image)) {
@@ -387,7 +387,7 @@ class HTML
    * Generates an HTML input field.
    *
    * @param string $name The name attribute of the input field.
-   * @param string $value The value attribute of the input field. Defaults to an empty string.
+   * @param mixed $value The value attribute of the input field. Defaults to an empty string; null is accepted.
    * @param string $parameters Additional parameters to include in the input field element.
    * @param string $type The type attribute of the input field (e.g., 'text', 'password'). Defaults to 'text'.
    * @param bool $reinsert_value Whether to reinsert the value from the GET or POST request if available. Defaults to true.
@@ -396,7 +396,7 @@ class HTML
    * @return string The HTML string of the input field element.
    */
 
-  public static function inputField($name, $value = '', $parameters = '', $type = 'text', $reinsert_value = true, $class = 'form-control')
+  public static function inputField($name, $value = '', $parameters = '', $type = 'text', $reinsert_value = true, $class = 'form-control'): string
   {
     $field = '<input type="' . static::output($type) . '" name="' . static::output($name) . '"';
 
@@ -447,14 +447,14 @@ class HTML
    *
    * @param string $name The name attribute of the input field.
    * @param string $type The input type (e.g., "checkbox", "radio").
-   * @param array|string|null $values The values for the input field; can be an array of values or a single value.
-   * @param string|array|bool|null $default The default value(s) to preselect; can be a string, an array of values, or a boolean.
+   * @param mixed $values The values for the input field; can be an array of values or a single value.
+   * @param mixed $default The default value(s) to preselect; can be a string, an array of values, or a boolean.
    * @param string|null $parameters Additional parameters to include in the input element.
    * @param string $separator A string used to separate multiple input fields; defaults to a non-breaking space.
    * @return string The generated HTML string for the input selection field.
    */
 
-  protected static function selectionField(string $name, string $type, mixed $values = null, mixed $default = null,  string|null $parameters = null, string $separator = '&nbsp;&nbsp;')
+  protected static function selectionField(string $name, string $type, mixed $values = null, mixed $default = null,  string|null $parameters = null, string $separator = '&nbsp;&nbsp;'): string
   {
     if (!is_array($values)) {
       $values = array($values);
@@ -543,7 +543,7 @@ class HTML
    * @return string The rendered HTML string of the checkbox field.
    */
 
-  public static function checkboxField(string $name, mixed $values = null, mixed $default = null, mixed $parameters = null, string $separator = '&nbsp;&nbsp;')
+  public static function checkboxField(string $name, mixed $values = null, mixed $default = null, mixed $parameters = null, string $separator = '&nbsp;&nbsp;'): string
   {
     return static::selectionField($name, 'checkbox', $values, $default, $parameters, $separator);
   }
@@ -552,14 +552,14 @@ class HTML
    * Generates a group of radio input fields with associated labels, based on the provided values.
    *
    * @param string $name The name attribute for the radio input fields.
-   * @param array $values An array of values and corresponding labels for the radio options.
-   * @param string|null $default The default selected value. If null, no option is preselected.
-   * @param string|null $parameters Additional parameters or attributes for the radio input fields.
+   * @param mixed $values The value(s) for the radio options. Can be a single value or an array.
+   * @param mixed $default The default selected value(s). Can be a string or an array. If null, no option is preselected.
+   * @param mixed $parameters Additional parameters or attributes for the radio input fields.
    * @param string $separator The string used to separate each radio field. Default is '&nbsp;&nbsp;'.
    * @return string The HTML string for the radio input fields group.
    */
 
-  public static function radioField(string $name, mixed $values, mixed $default = null, mixed $parameters = null, string $separator = '&nbsp;&nbsp;')
+  public static function radioField(string $name, mixed $values, mixed $default = null, mixed $parameters = null, string $separator = '&nbsp;&nbsp;'): string
   {
     return static::selectionField($name, 'radio', $values, $default, $parameters, $separator);
   }
@@ -576,7 +576,7 @@ class HTML
    * @return string The generated HTML for the text area element.
    */
 
-  public static function textAreaField(string $name, mixed $value = null, int|string|null $width = 60, int|string|null $height = 5, mixed $parameters = null, bool $override = true)
+  public static function textAreaField(string $name, mixed $value = null, int|string|null $width = 60, int|string|null $height = 5, mixed $parameters = null, bool $override = true): string
   {
     if (!is_bool($override)) {
       $override = true;
@@ -629,7 +629,7 @@ class HTML
    * @return string The generated HTML string for the select menu.
    */
 
-  public static function selectMenu($name, array $values, $default = null, $parameters = '', $required = false, $class = 'form-select form-control')
+  public static function selectMenu($name, array $values, $default = null, $parameters = '', $required = false, $class = 'form-select form-control'): string
   {
     $group = false;
 
@@ -709,7 +709,7 @@ class HTML
    * @param string|null $parameters Additional parameters for the dropdown menu (default is null).
    * @return string Returns the HTML markup for the dropdown menu.
    */
-  public static function selectMenuCountryList($name, $selected = null, $parameters = null)
+  public static function selectMenuCountryList($name, $selected = null, $parameters = null): string
   {
     $CLICSHOPPING_Address = Registry::get('Address');
 
@@ -732,19 +732,19 @@ class HTML
   }
 
   /**
-   * Hides the session ID by creating a hidden field containing the session name if the session has started and the SID is not empty or null.
+   * Emits a hidden field carrying the session id when the session has started and a SID is present.
    *
-   * @param string $session_started Flag indicating if the session has started.
-   * @param string $SID The session ID to check.
-   * @return mixed Returns a hidden field with the session name if conditions are met, otherwise returns false.
+   * @param bool $session_started Whether the session has started.
+   * @param string $SID The session id to carry.
+   * @return string The hidden field, or an empty string when no SID must be propagated.
    */
-  public static function hideSessionId(string $session_started, string $SID)
+  public static function hideSessionId(bool $session_started, string $SID): string
   {
-    if (($session_started === true) && (!empty($SID) || !is_null($SID))) {
-      return static::hiddenField(session_name(), session_name());
-    } else {
-      return false;
+    if ($session_started && $SID !== '') {
+      return static::hiddenField(session_name(), $SID);
     }
+
+    return '';
   }
 
 
@@ -756,7 +756,7 @@ class HTML
    * @return string The HTML string for a file input field.
    */
 
-  public static function fileField($name, $parameters = '')
+  public static function fileField($name, $parameters = ''): string
   {
     return static::inputField($name, '', $parameters, 'file', false);
   }
@@ -769,7 +769,7 @@ class HTML
    * @return string The HTML of the timezone select menu.
    */
 
-  public static function timeZoneSelectMenu($name, $default = null)
+  public static function timeZoneSelectMenu($name, $default = null): string
   {
     if (!isset($default)) {
       $default = date_default_timezone_get();
@@ -800,7 +800,7 @@ class HTML
    * @return string The processed string with the break characters inserted.
    */
 
-  public static function breakString($string, $len, $break_char = '-')
+  public static function breakString($string, $len, $break_char = '-'): string
   {
     $l = 0;
     $output = '';
@@ -831,18 +831,12 @@ class HTML
    * @param bool $responsive Indicates whether the image should be rendered as responsive (optional, default false).
    * @return string The generated image button HTML string.
    */
-  public static function imageButton($image, $title = '', $parameters = '', $responsive = false)
+  public static function imageButton($image, $title = '', $parameters = '', $responsive = false): string
   {
     $CLICSHOPPING_Template = Registry::get('Template');
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    $image_responsive = '';
-
-    if (!empty($responsive) && ($responsive === false)) {
-      $image_responsive = ' class="img-fluid"';
-    }
-
-    return static::image($CLICSHOPPING_Template->getDirectoryTemplateImages() . 'template/' . SITE_THEMA . DIRECTORY_SEPARATOR . $CLICSHOPPING_Language->get('directory') . DIRECTORY_SEPARATOR . $image, $title, '', '', $parameters, $responsive, $image_responsive);
+    return static::image($CLICSHOPPING_Template->getDirectoryTemplateImages() . 'template/' . SITE_THEMA . DIRECTORY_SEPARATOR . $CLICSHOPPING_Language->get('directory') . DIRECTORY_SEPARATOR . $image, $title, '', '', $parameters, $responsive);
   }
 
   /**
@@ -856,7 +850,7 @@ class HTML
    * @param string $class The CSS class(es) to apply to the select field. Defaults to 'form-control form-select'.
    * @return string The generated HTML select field.
    */
-  public static function selectField($name, $values, $default = null, $parameters = '', $required = false, $class = 'form-control form-select')
+  public static function selectField($name, $values, $default = null, $parameters = '', $required = false, $class = 'form-control form-select'): string
   {
     $group = false;
 
@@ -936,7 +930,7 @@ class HTML
    * @return string The generated HTML hidden input field.
    */
 
-  public static function hiddenField($name, $value = '', $parameters = '')
+  public static function hiddenField($name, $value = '', $parameters = ''): string
   {
     $field = '<input type="hidden" name="' . static::output($name) . '"';
 
@@ -1087,7 +1081,7 @@ class HTML
    * @param string $parameters Additional parameters to include in the HTML select tag. Defaults to an empty string.
    * @return string The HTML string for the select menu.
    */
-  public static function selectMenuIsoList($name, $selected = '', $parameters = '')
+  public static function selectMenuIsoList($name, $selected = '', $parameters = ''): string
   {
     $CLICSHOPPING_Address = Registry::get('Address');
     $countries_array = array(array('id' => '',

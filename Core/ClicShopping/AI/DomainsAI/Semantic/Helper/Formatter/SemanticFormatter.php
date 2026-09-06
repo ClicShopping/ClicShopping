@@ -57,7 +57,6 @@ class SemanticFormatter extends AbstractFormatter
     $question = $results['query'] ?? $results['question'] ?? 'Unknown request';
 
     $output = "<div class='semantic-results'>";
-    $output .= "<h4>" . $this->language->getDef('text_rag_semantic_results_for') . " " . htmlspecialchars($question) . "</h4>";
 
     // Display source attribution
     if (isset($results['source_attribution'])) {

@@ -71,9 +71,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         CLICSHOPPING::redirect(null, 'Products&ReviewsWrite&Success&products_id=' . $CLICSHOPPING_ProductsCommon->getID());
       }
 
-      if ($error === true) {
-        CLICSHOPPING::redirect(null, 'Products&ReviewsWrite&products_id=' . $CLICSHOPPING_ProductsCommon->getID());
-      }
+      CLICSHOPPING::redirect(null, 'Products&ReviewsWrite&products_id=' . $CLICSHOPPING_ProductsCommon->getID());
     }
   }
 }

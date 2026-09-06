@@ -86,7 +86,6 @@ class WebSearchFormatter extends AbstractFormatter
     }
 
     $output = "<div class='web-search-results'>";
-    $output .= "<h4>" . $this->language->getDef('text_rag_web_search_results_for') . " " . htmlspecialchars($question) . "</h4>";
 
     $this->renderPrimaryResultSections($results, $output);
 

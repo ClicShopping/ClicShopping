@@ -125,8 +125,10 @@ class ResponseFormatter
         $formattedResult = $resultFormatter->format($dataToFormat);
       }
       
-      $formatted = $formattedResult['content'] ?? '';
-      
+      // The LLM answer is Markdown; the chat surface renders text_response as HTML. Convert here,
+      // the single presentation chokepoint (web_search above is already HTML). Idempotent on HTML.
+      $formatted = MarkdownToHtml::convert($formattedResult['content'] ?? '');
+
       if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
         error_log('✅ Using ResultFormatter: ' . strlen($formatted) . ' chars');
         if (isset($formattedResult['has_memory_context'])) {

@@ -55,7 +55,6 @@ class HybridFormatter extends AbstractFormatter
     }
 
     $output = '<div class="hybrid-results col-md-12">';
-    $output .= "<h4>" . htmlspecialchars($this->language->getDef('results_for')) . " " . htmlspecialchars($question) . "</h4>";
 
     // Display source attribution (shows combined sources)
     if (isset($results['source_attribution'])) {

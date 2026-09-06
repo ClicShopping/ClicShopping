@@ -93,6 +93,7 @@ temporal_section_custom = Custom Period Results
 results_for = Results for:
 response_label = Response:
 source_details_label = ℹ️ Source Details (
+text_source_combined_multiple = Information combined from multiple sources
 combined_queries_suffix = combined queries)
 semantic_results_title = 📚 Semantic Results
 sources_label = Sources

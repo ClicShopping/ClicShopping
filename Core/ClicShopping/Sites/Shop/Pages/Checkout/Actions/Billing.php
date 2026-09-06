@@ -57,7 +57,6 @@ class Billing extends \ClicShopping\OM\Domains\PagesActionsAbstract
       for ($i = 0, $n = count($products); $i < $n; $i++) {
         if ($CLICSHOPPING_ProductsCommon->getCheckStock($products[$i]['id'], $products[$i]['quantity'])) {
           CLICSHOPPING::redirect(null, 'Cart');
-          break;
         }
       }
     }

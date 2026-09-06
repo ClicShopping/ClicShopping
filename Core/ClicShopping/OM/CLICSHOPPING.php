@@ -445,14 +445,11 @@ class CLICSHOPPING
   }
 
   /**
-   * Redirects to a generated URL based on the provided arguments.
-   *
-   * @return string The URL to which the redirection is performed.
+   * Redirects to a generated URL based on the provided arguments. Never returns
+   * (ends on HTTP::redirect, which exits).
    */
-  public static function redirect(): string
+  public static function redirect(...$args): never
   {
-    $args = func_get_args();
-
     $url = (self::link(...))(...$args);
 
     if ((strstr($url, "\n") !== false) || (strstr($url, "\r") !== false)) {

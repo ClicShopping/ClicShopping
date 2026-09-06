@@ -28,9 +28,7 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $CLICSHOPPING_Language = Registry::get('Language');
 
-    if (isset($_GET['oID'])) {
-      $orders_status_id = HTML::sanitize($_GET['oID']);
-    }
+    $orders_status_id = isset($_GET['oID']) ? HTML::sanitize($_GET['oID']) : 0;
 
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
     $languages = $CLICSHOPPING_Language->getLanguages();

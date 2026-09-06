@@ -17,7 +17,11 @@
     "Hooks": {
       "ClicShoppingAdmin/Orders": {
         "Update": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\Update",
-        "PageContentTab3": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\PageContentTab3"
+        "PageContentTab3": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\PageContentTab3",
+        "InvoicePdf": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\InvoicePdf"
+      },
+      "Shop/Orders": {
+        "InvoicePdf": "Module\\Hooks\\Shop\\Orders\\InvoicePdf"
       }
     }
   },

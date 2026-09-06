@@ -54,7 +54,7 @@ class PageContentTab3 implements HooksInterface
     $CLICSHOPPING_Orders = Registry::get('Orders');
 
     if (!\defined('CLICSHOPPING_APP_ORDERS_STATUS_OU_STATUS') || CLICSHOPPING_APP_ORDERS_STATUS_OU_STATUS == 'False') {
-      return false;
+      return '';
     }
 
     if (isset($_GET['oID'])) {
@@ -113,5 +113,7 @@ EOD;
         return $output;
       }
     }
+
+    return '';
   }
 }

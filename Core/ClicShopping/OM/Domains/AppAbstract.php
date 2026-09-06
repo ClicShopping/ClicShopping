@@ -81,11 +81,10 @@ abstract class AppAbstract implements AppInterface
   }
 
   /**
-   * Redirects to a specified location with appended parameters.
-   *
-   * @return string The resulting redirection URL.
+   * Redirects to a specified location with appended parameters. Never returns
+   * (delegates to CLICSHOPPING::redirect, which ends on HTTP::redirect/exit).
    */
-  final public function redirect(): string
+  final public function redirect(): never
   {
     $args = func_get_args();
 
@@ -99,10 +98,7 @@ abstract class AppAbstract implements AppInterface
 
     array_unshift($args, 'index.php');
 
-    return forward_static_call_array([
-      'ClicShopping\OM\CLICSHOPPING',
-      'redirect'
-    ], $args);
+    CLICSHOPPING::redirect(...$args);
   }
 
   /**

@@ -109,6 +109,43 @@ class ResultFormatter
   }
 
   /**
+   * Derive the attribution banner from the DISTINCT contributing sources, never the attribution
+   * count: N analytics sub-queries all read the same "Analytics Database" — that is ONE source,
+   * not "multiple sources". One distinct source → its own attribution; two or more → the combined
+   * banner listing the distinct sources.
+   *
+   * @param array $attributions Source attributions collected across sub-queries
+   * @return array A single attribution, or the combined banner
+   */
+  private function mergeSourceAttributions(array $attributions): array
+  {
+    $attributions = array_values(array_filter($attributions, 'is_array'));
+
+    if ($attributions === []) {
+      return [];
+    }
+
+    $sourceTypes = array_values(array_unique(array_filter(array_column($attributions, 'source_type'))));
+
+    if (count($sourceTypes) <= 1) {
+      return $attributions[0];
+    }
+
+    $details = CLICSHOPPING::getDef('text_source_combined_multiple');
+    if ($details === '' || $details === 'text_source_combined_multiple') {
+      $details = 'Information combined from multiple sources';
+    }
+
+    return [
+      'source_type' => 'Hybrid',
+      'source_icon' => '🔀',
+      'source_details' => $details,
+      'sources' => $sourceTypes,
+      'source_count' => count($sourceTypes),
+    ];
+  }
+
+  /**
    * Format final result
    *
    * This method combines aggregated sub-query results into a single coherent response.
@@ -271,18 +308,7 @@ class ResultFormatter
     // Build merged source attribution if available
     $sourceAttribution = null;
     if (!empty($aggregated['source_attributions'])) {
-      if (count($aggregated['source_attributions']) === 1) {
-        $sourceAttribution = $aggregated['source_attributions'][0];
-      } else {
-        $sourceTypes = array_unique(array_column($aggregated['source_attributions'], 'source_type'));
-        $sourceAttribution = [
-          'source_type' => 'Hybrid',
-          'source_icon' => '🔀',
-          'source_details' => 'Information combined from multiple sources',
-          'sources' => $sourceTypes,
-          'source_count' => count($aggregated['source_attributions']),
-        ];
-      }
+      $sourceAttribution = $this->mergeSourceAttributions($aggregated['source_attributions']);
     }
 
     $finalResult = [
@@ -371,20 +397,7 @@ class ResultFormatter
     // that preserves information about all data sources used. This is required for
     // validation and provides transparency to users about where data originated.
     if (!empty($aggregated['source_attributions'])) {
-      if (count($aggregated['source_attributions']) === 1) {
-        // Single source - use as-is
-        $finalResult['source_attribution'] = $aggregated['source_attributions'][0];
-      } else {
-        // Multiple sources - create merged attribution with all source types
-        $sourceTypes = array_unique(array_column($aggregated['source_attributions'], 'source_type'));
-        $finalResult['source_attribution'] = [
-          'source_type' => 'Hybrid',
-          'source_icon' => '🔀',
-          'source_details' => 'Information combined from multiple sources',
-          'sources' => $sourceTypes,
-          'source_count' => count($aggregated['source_attributions']),
-        ];
-      }
+      $finalResult['source_attribution'] = $this->mergeSourceAttributions($aggregated['source_attributions']);
     }
 
     // Add analytics-specific fields if present
@@ -776,25 +789,8 @@ class ResultFormatter
         }
       }
 
-      if (count($normalized) === 1) {
-        $finalResult['source_attribution'] = $normalized[0];
-        return $finalResult;
-      }
-
-      if (count($normalized) > 1) {
-        $sourceTypes = array_filter(array_map(function ($attr) {
-          return is_array($attr) ? ($attr['source_type'] ?? null) : null;
-        }, $normalized));
-
-        $finalResult['source_attribution'] = [
-          'source_type' => 'Hybrid',
-          'source_icon' => 'i',
-          'source_details' => 'Combined from multiple sources',
-          'sources' => array_values(array_unique($sourceTypes)),
-          'source_count' => count($normalized),
-          'fallback' => true,
-        ];
-
+      if ($normalized !== []) {
+        $finalResult['source_attribution'] = $this->mergeSourceAttributions($normalized);
         return $finalResult;
       }
     }

@@ -203,45 +203,42 @@ class NavigationHistory
   }
 
   /**
-   * Generates the URL based on the snapshot information if available.
-   * If no snapshot exists, it redirects to the default target.
+   * Builds and returns the URL for the current snapshot, or the default URL
+   * when no snapshot exists. Pure builder — callers decide whether to redirect.
    *
    * @return string The generated URL for the snapshot or the default target.
    */
-  public function getSnapshotURL()
+  public function getSnapshotURL(): string
   {
-    if ($this->hasSnapshot()) {
-      $url = $this->snapshot['application'];
-
-      if (!empty($this->snapshot['action'])) {
-        $url .= '&' . $this->snapshot['action'];
-      }
-
-      $params = $this->parseParameters($this->snapshot['get']);
-      if (!empty($params)) {
-        $url .= '&' . $params;
-      }
-
-      $target = CLICSHOPPING::redirect(null, $url);
-    } else {
-      $target = CLICSHOPPING::redirect();
+    if (!$this->hasSnapshot()) {
+      return CLICSHOPPING::link();
     }
 
-    return $target;
+    $url = $this->snapshot['application'];
+
+    if (!empty($this->snapshot['action'])) {
+      $url .= '&' . $this->snapshot['action'];
+    }
+
+    $params = $this->parseParameters($this->snapshot['get']);
+    if (!empty($params)) {
+      $url .= '&' . $params;
+    }
+
+    return $url;
   }
 
   /**
-   * Redirects to the URL stored in the snapshot and resets the snapshot data.
-   *
-   * @return string The URL to which the redirection should occur.
+   * Resets the stored snapshot, then redirects to its URL. Never returns
+   * (ends on CLICSHOPPING::redirect, which exits).
    */
-  public function redirectToSnapshot()
+  public function redirectToSnapshot(): never
   {
     $target = $this->getSnapshotURL();
 
     $this->resetSnapshot();
 
-    return $target;
+    CLICSHOPPING::redirect(null, $target);
   }
 
   /**

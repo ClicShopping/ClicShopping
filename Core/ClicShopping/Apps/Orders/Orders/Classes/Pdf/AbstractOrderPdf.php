@@ -71,7 +71,7 @@ abstract class AbstractOrderPdf extends FPDF
     return HTTP::getShopUrlDomain() . 'index.php?' . ltrim($routeOrUrl, '?&');
   }
 
-  protected function def(string $key, ?array $values = null): string
+  public function def(string $key, ?array $values = null): string
   {
     if (!isset($this->defResolver)) {
       return CLICSHOPPING::getDef($key, $values);
@@ -80,7 +80,7 @@ abstract class AbstractOrderPdf extends FPDF
     return ($this->defResolver)($key, $values);
   }
 
-  protected function rgb(): array
+  public function rgb(): array
   {
     return explode(',', INVOICE_RGB);
   }
@@ -194,6 +194,10 @@ abstract class AbstractOrderPdf extends FPDF
     $this->Ln(0);
     $this->Cell(-3);
     $this->MultiCell(100, 3.5, $this->def('entry_http_site') . ' ' . CLICSHOPPING::getConfig('http_server', 'Shop'), 0, 'L');
+
+// Country extension point for the header (e.g. a fiscal QR/barcode). Same hook as the footer,
+// distinct action; no country renders here today, so the output is unchanged.
+    Registry::get('Hooks')->call('Orders', 'InvoicePdf', ['pdf' => $this], 'renderHeader');
   }
 
   /**
@@ -229,30 +233,9 @@ abstract class AbstractOrderPdf extends FPDF
     $this->SetTextColor(...$rgb);
     $this->Cell(0, 10, PDF::enc($this->def('reserve_propriete_next1', ['sell_conditions_url' => self::shopUrl($CLICSHOPPING_CompliancePolicyRules->displayUrlSalesCondition())])), 0, 0, 'C');
 
-    $shopCapital = $CLICSHOPPING_CompliancePolicyRules->displayShopCapital();
-    $info_societe = $shopCapital === '' ? '' : $shopCapital . ' - ';
-
-    if ($CLICSHOPPING_CompliancePolicyRules->displayDoubleTaxes() === false) {
-      $this->SetY(-25);
-      $this->SetFont('Arial', '', 8);
-      $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, PDF::enc($this->def('entry_info_societe', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => $CLICSHOPPING_CompliancePolicyRules->displayRegistrationNumber(), 'shop_code_ape' => $CLICSHOPPING_CompliancePolicyRules->displayApeCode()])), 0, 0, 'C');
-
-      $this->SetY(-20);
-      $this->SetFont('Arial', '', 8);
-      $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, PDF::enc($this->def('entry_info_societe_next', ['tva_shop_intracom' => $CLICSHOPPING_CompliancePolicyRules->displayEUVatNumber()])), 0, 0, 'C');
-    } else {
-      $this->SetY(-25);
-      $this->SetFont('Arial', '', 8);
-      $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, PDF::enc($this->def('entry_info_societe1', ['shop_code_capital' => $info_societe, 'shop_code_rcs' => $CLICSHOPPING_CompliancePolicyRules->displayRegistrationNumber(), 'shop_code_ape' => $CLICSHOPPING_CompliancePolicyRules->displayApeCode()])), 0, 0, 'C');
-
-      $this->SetY(-20);
-      $this->SetFont('Arial', '', 8);
-      $this->SetTextColor(...$rgb);
-      $this->Cell(0, 10, PDF::enc($this->def('entry_info_societe_next1', ['tva_shop_provincial' => $CLICSHOPPING_CompliancePolicyRules->displayRegionalTaxesNumber(), 'tva_shop_federal' => $CLICSHOPPING_CompliancePolicyRules->displayFederalTaxesNumber()])), 0, 0, 'C');
-    }
+// Jurisdiction-specific company block: supplied by the country modules through a hook so a new
+// country needs no change here. Registered on both sites, each hook self-guards on its status.
+    Registry::get('Hooks')->call('Orders', 'InvoicePdf', ['pdf' => $this], 'renderFooter');
 
     $this->SetY(-15);
     $this->SetFont('Arial', '', 8);

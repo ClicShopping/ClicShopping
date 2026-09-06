@@ -62,12 +62,12 @@ class Insert implements HooksInterface
    *
    * Checks if the application status is defined and enabled, and performs specific actions if certain GET parameters are set.
    *
-   * @return bool Returns false if the application status is not defined or disabled. Otherwise, performs actions based on the request parameters.
+   * @return void Performs actions based on the request parameters when the app is enabled.
    */
   public function execute()
   {
     if (!\defined('CLICSHOPPING_APP_ORDERS_STATUS_OU_STATUS') || CLICSHOPPING_APP_ORDERS_STATUS_OU_STATUS == 'False') {
-      return false;
+      return;
     }
 
     if (isset($_GET['Langues'], $_GET['Insert'])) {

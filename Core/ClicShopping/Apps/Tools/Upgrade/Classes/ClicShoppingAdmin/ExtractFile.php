@@ -127,7 +127,6 @@ class ExtractFile
     if (!isset($parsed_url['scheme']) || $parsed_url['scheme'] !== 'https') {
       $this->messageStack->add($this->app->getDef('text_file_download_error'), 'error');
       CLICSHOPPING::redirect('Upgrade&Marketplace');
-      return null;
     }
 
     // Active domain whitelist (anti-SSRF): downloads are allowed ONLY from
@@ -136,7 +135,6 @@ class ExtractFile
       if (!in_array($parsed_url['host'] ?? '', $allowed_domains, true)) {
         $this->messageStack->add('Download from unauthorized domain', 'error');
         CLICSHOPPING::redirect('Upgrade&Marketplace');
-        return null;
        }
 
     $downloaded_file = @file_get_contents($file_url);
