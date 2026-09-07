@@ -143,6 +143,10 @@ unified_analyzer_prompt_output_format = OUTPUT FORMAT (JSON ONLY)
   "time_constraint": "comparison|relative_period|specific_date|none",
   "status_keywords": [],
   "sub_queries": [],
+  "multiple_metrics": false,
+  "multiple_grains": false,
+  "has_ranking": false,
+  "has_aggregations": false,
   "confidence": 0.0,
   "ambiguity_note": "string",
   "is_multi_temporal": false,
@@ -188,6 +192,16 @@ Example for compound analytics:
   {"query": "second requested item", "intent_type": "analytics"}
 ]
 ```
+
+unified_analyzer_prompt_routing_characteristics = ROUTING CHARACTERISTICS (REQUIRED — booleans, answer each INDEPENDENTLY)
+
+These decide how the question is executed. Do not answer the question here; only classify its shape.
+- multiple_metrics: true if the question asks for two or more DISTINCT measures. A single measure, even with filters, is false.
+- multiple_grains: true ONLY if answering requires aggregating at two or more DIFFERENT levels of granularity. A transaction level (one row per transaction) and a line level (one row per transaction line) are different levels; aggregating both up to a shared dimension does NOT merge them.
+- has_ranking: true if the question asks for a top/bottom/best/worst N, or an explicit ordering by a measure.
+- has_aggregations: true if the answer is a grouped aggregate (a total/count/average per some dimension); false if it is a single scalar or a raw row list.
+
+{{examples}}
 
 unified_analyzer_prompt_query_section = QUERY TO ANALYZE
 

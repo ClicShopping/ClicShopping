@@ -106,5 +106,11 @@ COMMON MISTAKES TO AVOID
 ✅ CORRECT: Classifying "cheapest products" as "analytics"
 
 
+unified_analyzer_examples_routing_characteristics = ROUTING EXAMPLES:
+- "how many orders and how many units sold per category" → multiple_metrics: true, multiple_grains: true (orders live at the ORDER level, one row per order; units at the PRODUCT-LINE level, one row per order line), has_ranking: false, has_aggregations: true
+- "revenue and margin per category" → multiple_metrics: true, multiple_grains: false (both revenue and margin roll up from product lines to category — one level), has_ranking: false, has_aggregations: true
+- "top 3 categories by revenue" → multiple_metrics: false, multiple_grains: false, has_ranking: true, has_aggregations: true
+- "how many orders in 2025" → multiple_metrics: false, multiple_grains: false, has_ranking: false, has_aggregations: false
+
 unified_analyzer_examples_final_instructions = ⚠️ **CORRECT OUTPUT EXAMPLE**:
-{"language":"en","translated_query":"number of categories","intent_type":"analytics","entity_type":["category"],"filters":{},"time_constraint":"none","status_keywords":[],"sub_queries":[],"confidence":0.9,"ambiguity_note":"","is_multi_temporal":false,"temporal_periods":[],"temporal_connectors":[],"base_metric":null,"time_range":null}
+{"language":"en","translated_query":"number of categories","intent_type":"analytics","entity_type":["category"],"filters":{},"time_constraint":"none","status_keywords":[],"sub_queries":[],"multiple_metrics":false,"multiple_grains":false,"has_ranking":false,"has_aggregations":false,"confidence":0.9,"ambiguity_note":"","is_multi_temporal":false,"temporal_periods":[],"temporal_connectors":[],"base_metric":null,"time_range":null}

@@ -143,6 +143,10 @@ unified_analyzer_prompt_output_format = FORMAT DE SORTIE (JSON UNIQUEMENT)
   "time_constraint": "comparison|relative_period|specific_date|none",
   "status_keywords": [],
   "sub_queries": [],
+  "multiple_metrics": false,
+  "multiple_grains": false,
+  "has_ranking": false,
+  "has_aggregations": false,
   "confidence": 0.0,
   "ambiguity_note": "string",
   "is_multi_temporal": false,
@@ -188,6 +192,16 @@ Exemple pour l'analytique composée :
   {"query": "second requested item", "intent_type": "analytics"}
 ]
 ```
+
+unified_analyzer_prompt_routing_characteristics = CARACTÉRISTIQUES DE ROUTAGE (OBLIGATOIRE — booléens, répondre à chacun INDÉPENDAMMENT)
+
+Elles décident comment la question est exécutée. Ne pas répondre à la question ici ; seulement classer sa forme.
+- multiple_metrics: true si la question demande deux mesures DISTINCTES ou plus. Une seule mesure, même avec des filtres, est false.
+- multiple_grains: true UNIQUEMENT si répondre exige d'agréger à deux niveaux de granularité DIFFÉRENTS ou plus. Un niveau transaction (une ligne par transaction) et un niveau ligne (une ligne par ligne de transaction) sont deux niveaux différents ; agréger les deux vers une dimension commune ne les fusionne PAS.
+- has_ranking: true si la question demande un top/bottom/meilleur/pire N, ou un tri explicite par une mesure.
+- has_aggregations: true si la réponse est un agrégat groupé (un total/compte/moyenne par une dimension) ; false si c'est un scalaire unique ou une liste brute de lignes.
+
+{{examples}}
 
 unified_analyzer_prompt_query_section = REQUÊTE À ANALYSER
 

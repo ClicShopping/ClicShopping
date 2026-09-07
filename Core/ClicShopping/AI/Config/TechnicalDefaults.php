@@ -45,8 +45,9 @@ class TechnicalDefaults
     // it costs nothing unless consumed. A hit ceiling truncates silently; TranslationHandler reports it.
     'CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN' => 500,
 
-    // How many analytics steps one question may be split into — one schema window per step
-    'CLICSHOPPING_APP_CHATGPT_RA_MAX_ANALYTICS_STEPS' => 3,
+    // Hard ceiling on analytics steps (one schema window per step). A latency/budget bound, not a
+    // policy: ExecutionModeMatrix decides whether to decompose at all; this only caps how far.
+    'CLICSHOPPING_APP_CHATGPT_RA_MAX_ANALYTICS_STEPS' => 5,
 
     // How many past turns feed the contextual reference resolver ("its price", "this product")
     'CLICSHOPPING_APP_CHATGPT_RA_REFERENCE_HISTORY_TURNS' => 5,

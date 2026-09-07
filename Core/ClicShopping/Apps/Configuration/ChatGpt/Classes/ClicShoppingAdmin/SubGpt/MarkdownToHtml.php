@@ -45,7 +45,7 @@ class MarkdownToHtml
       } elseif (self::isList($lines)) {
         $html[] = self::renderList($lines);
       } else {
-        $html[] = '<p>' . implode('<br>', array_map([self::class, 'inline'], $lines)) . '</p>';
+        $html[] = '<p>' . implode('<br>', array_map(self::inline(...), $lines)) . '</p>';
       }
     }
 

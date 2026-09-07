@@ -218,7 +218,7 @@ class WorkingMemory
 
     // Remove from the scope's key list
     $scopeKeys = $this->scopes[$this->currentScope] ?? [];
-    $index = array_search($scopedKey, $scopeKeys);
+    $index = array_search($scopedKey, $scopeKeys, true);
 
     if ($index !== false) {
       array_splice($this->scopes[$this->currentScope], $index, 1);

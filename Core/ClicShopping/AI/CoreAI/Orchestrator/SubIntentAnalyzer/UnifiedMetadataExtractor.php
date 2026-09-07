@@ -225,6 +225,7 @@ class UnifiedMetadataExtractor
     $prompt .= $this->resolveSection('unified_analyzer_prompt_basic_analytics', 'unified_analyzer_examples_basic_analytics') . "\n\n";
     $prompt .= $this->language->getDef('unified_analyzer_prompt_classification') . "\n\n";
     $prompt .= $this->language->getDef('unified_analyzer_prompt_output_format') . "\n\n";
+    $prompt .= $this->resolveSection('unified_analyzer_prompt_routing_characteristics', 'unified_analyzer_examples_routing_characteristics') . "\n\n";
     $prompt .= $this->language->getDef('unified_analyzer_prompt_query_section') . "\n";
     $prompt .= $query . "\n\n";  // Insert the actual query here
     $prompt .= $this->resolveSection('unified_analyzer_prompt_final_instructions', 'unified_analyzer_examples_final_instructions') . "\n";

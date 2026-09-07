@@ -13,6 +13,7 @@ namespace ClicShopping\AI\CoreAI\Planning\SubTaskPlanning;
 
 
 use ClicShopping\AI\Config\TechnicalDefaults;
+use ClicShopping\AI\CoreAI\Planning\ExecutionModeMatrix;
 use ClicShopping\AI\CoreAI\Planning\TaskStep;
 use ClicShopping\AI\Security\SecurityLogger;
 
@@ -110,6 +111,21 @@ class SubTaskPlannerAnalytics
 
         if (!is_array($raw) || count($raw) < 2) {
             return [];
+        }
+
+        // the matrix decides whether to decompose at all — SINGLE keeps one query even if the cut has parts (same-grain
+        // multi-metric); the cut is honoured only for DECOMPOSE / MULTI_QUERY. 
+        if (array_key_exists('multiple_grains', $intent)) {
+            $mode = ExecutionModeMatrix::decide(
+                (bool)($intent['multiple_metrics'] ?? false),
+                (bool)($intent['multiple_grains'] ?? false),
+                ($intent['time_constraint'] ?? '') === 'comparison',
+                (bool)($intent['has_ranking'] ?? false)
+            );
+
+            if ($mode === ExecutionModeMatrix::MODE_SINGLE) {
+                return [];
+            }
         }
 
         $texts = [];

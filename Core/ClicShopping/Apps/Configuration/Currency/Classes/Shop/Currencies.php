@@ -263,10 +263,8 @@ class Currencies
 
     $dec_point = '.';
 
-    $currency = $_SESSION['currency'] ?? DEFAULT_CURRENCY;
-
-    if (!empty($this->currencies[$currency]['thousands_point'])) {
-      $dec_point = $this->currencies[$currency]['thousands_point'];
+    if (!empty($this->currencies[$currency_code]['decimal_point'])) {
+      $dec_point = $this->currencies[$currency_code]['decimal_point'];
     }
 
     $number = str_replace($dec_point . str_repeat('0', $this->currencies[$currency_code]['decimal_places']), '', $number);
@@ -456,7 +454,7 @@ class Currencies
       $value = $this->show($number, $code);
 
       if ($use_trim === true) {
-        $value = $this->trim($value);
+        $value = $this->trim($value, $code);
       }
 
       $result[$code] = $value;

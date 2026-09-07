@@ -57,7 +57,7 @@ try {
   
   // Validate feedback_type
   $validTypes = ['positive', 'negative', 'correction'];
-  if (!in_array($input['feedback_type'], $validTypes)) {
+  if (!in_array($input['feedback_type'], $validTypes, true)) {
     echo json_encode([
       'success' => false,
       'error' => 'feedback_type must be one of: ' . implode(', ', $validTypes)
