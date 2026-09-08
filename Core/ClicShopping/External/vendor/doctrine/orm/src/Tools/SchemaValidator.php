@@ -135,6 +135,11 @@ class SchemaValidator
                 return $ce;
             }
 
+            if ($assoc->isManyToOne() && count($class->identifier) === 1 && $class->identifier[0] === $fieldName) {
+                $ce[] = "The association '" . $class->name . '#' . $fieldName . "' is a many-to-one association and is the sole identifier of the entity. " .
+                        'This effectively makes the association one-to-one; use a one-to-one association instead or add another identifier field.';
+            }
+
             if (isset($assoc->id) && $targetMetadata->containsForeignIdentifier) {
                 $ce[] = "Cannot map association '" . $class->name . '#' . $fieldName . ' as identifier, because ' .
                         "the target entity '" . $targetMetadata->name . "' also maps an association as identifier.";
@@ -193,6 +198,12 @@ class SchemaValidator
                     } elseif ($assoc->isManyToMany() && ! $targetAssoc->isManyToMany()) {
                         $ce[] = 'If association ' . $class->name . '#' . $fieldName . ' is many-to-many, then the inversed ' .
                                 'side ' . $targetMetadata->name . '#' . $assoc->inversedBy . ' has to be many-to-many as well.';
+                    }
+
+                    if (! is_a($targetAssoc->targetEntity, $assoc->sourceEntity, true)) {
+                        $ce[] = 'The association ' . $class->name . '#' . $fieldName . ' refers to the inverse side ' .
+                                $assoc->targetEntity . '#' . $assoc->inversedBy . ' which targets a different entity (' .
+                                $targetAssoc->targetEntity . ').';
                     }
                 }
             }

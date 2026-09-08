@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace Doctrine\Common\Collections\Expr;
 
+use Override;
+
 /**
  * Comparison of a field with a value by the given operator.
- *
- * @final since 2.5
  */
-class Comparison implements Expression
+final readonly class Comparison implements Expression
 {
-    final public const EQ          = '=';
-    final public const NEQ         = '<>';
-    final public const LT          = '<';
-    final public const LTE         = '<=';
-    final public const GT          = '>';
-    final public const GTE         = '>=';
-    final public const IS          = '='; // no difference with EQ
-    final public const IN          = 'IN';
-    final public const NIN         = 'NIN';
-    final public const CONTAINS    = 'CONTAINS';
-    final public const MEMBER_OF   = 'MEMBER_OF';
-    final public const STARTS_WITH = 'STARTS_WITH';
-    final public const ENDS_WITH   = 'ENDS_WITH';
+    public const string EQ          = '=';
+    public const string NEQ         = '<>';
+    public const string LT          = '<';
+    public const string LTE         = '<=';
+    public const string GT          = '>';
+    public const string GTE         = '>=';
+    public const string IS          = '='; // no difference with EQ
+    public const string IN          = 'IN';
+    public const string NIN         = 'NIN';
+    public const string CONTAINS    = 'CONTAINS';
+    public const string MEMBER_OF   = 'MEMBER_OF';
+    public const string STARTS_WITH = 'STARTS_WITH';
+    public const string ENDS_WITH   = 'ENDS_WITH';
 
-    private readonly Value $value;
+    private Value $value;
 
-    public function __construct(private readonly string $field, private readonly string $op, mixed $value)
+    public function __construct(private string $field, private string $op, mixed $value)
     {
         if (! ($value instanceof Value)) {
             $value = new Value($value);
@@ -36,28 +36,23 @@ class Comparison implements Expression
         $this->value = $value;
     }
 
-    /** @return string */
-    public function getField()
+    public function getField(): string
     {
         return $this->field;
     }
 
-    /** @return Value */
-    public function getValue()
+    public function getValue(): Value
     {
         return $this->value;
     }
 
-    /** @return string */
-    public function getOperator()
+    public function getOperator(): string
     {
         return $this->op;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function visit(ExpressionVisitor $visitor)
+    #[Override]
+    public function visit(ExpressionVisitor $visitor): mixed
     {
         return $visitor->walkComparison($this);
     }

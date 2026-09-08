@@ -1,10 +1,91 @@
 Note about upgrading: Doctrine uses static and runtime mechanisms to raise
 awareness about deprecated code.
 
-- Use of `@deprecated` docblock that is detected by IDEs (like PHPStorm) or
+- Use of `#[Deprecated]` attribute that is detected by IDEs (like PHPStorm) or
   Static Analysis tools (like Psalm, phpstan)
 - Use of our low-overhead runtime deprecation API, details:
   https://github.com/doctrine/deprecations/
+
+# Upgrade to 3.1
+
+## Deprecated `Order` enum
+
+PHP 8.6 provides a native `\SortDirection` enum that should be used instead of
+the `Doctrine\Common\Collections\Order` enum. The `Order` enum is deprecated
+and will be removed in 4.0.
+
+`\SortDirection` is polyfilled by the `symfony/polyfill-php86` package, that we
+require.
+
+As a consequence, `Criteria::orderings()`, which returns an array of `Order`
+instances, is deprecated in favor of `Criteria::getOrderings()`, which returns
+an array of `\SortDirection` instances.
+
+# Upgrade to 3.0
+
+## `ReadableCollection` now extends `Selectable`
+
+The `Doctrine\Common\Collections\ReadableCollection` interface now extends
+`Doctrine\Common\Collections\Selectable`. Any class implementing
+`ReadableCollection` must also implement `Selectable`.
+
+## Readonly classes
+
+The following classes are now `readonly` classes, making all their properties immutable:
+
+- `Doctrine\Common\Collections\Expr\Comparison`
+- `Doctrine\Common\Collections\Expr\CompositeExpression`
+- `Doctrine\Common\Collections\Expr\Value`
+
+## Final classes
+
+The following classes are now final and can no longer be extended:
+
+- `Doctrine\Common\Collections\Criteria`
+- `Doctrine\Common\Collections\Expr\ClosureExpressionVisitor`
+- `Doctrine\Common\Collections\Expr\Comparison`
+- `Doctrine\Common\Collections\Expr\CompositeExpression`
+- `Doctrine\Common\Collections\Expr\Value`
+- `Doctrine\Common\Collections\ExpressionBuilder`
+
+## The criteria filtering API (the `Doctrine\Common\Collections\Selectable` interface) accesses fields through raw field access only
+
+When using the criteria filtering API properties will be accessed directly through reflection, also bypassing property hooks.
+
+The `$accessRawFieldValues` parameter in the following methods is now a no-op and can be removed in calling code:
+
+* `Doctrine\Common\Collections\Criteria::__construct()`
+* `Doctrine\Common\Collections\Criteria::create()`
+* `Doctrine\Common\Collections\Expr\ClosureExpressionVisitor::getObjectFieldValue()`
+* `Doctrine\Common\Collections\Expr\ClosureExpressionVisitor::sortByField()`
+
+## Deprecated null first result
+
+Passing null as `$firstResult` to
+`Doctrine\Common\Collections\Criteria::__construct()` and to
+`Doctrine\Common\Collections\Criteria::setFirstResult()` is no longer possible.
+Use `0` instead.
+
+## Removed string representation of sort order
+
+Criteria orderings direction is now represented by the
+`Doctrine\Common\Collection\Order` enum.
+
+As a consequence:
+
+- `Criteria::ASC` and `Criteria::DESC` are removed in favor of
+  `Order::Ascending` and `Order::Descending`, respectively.
+- `Criteria::getOrderings()` is removed in favor of `Criteria::orderings()`,
+  which returns `array<string, Order>`.
+- `Criteria::orderBy()` no longer accepts `array<string, string>`, pass
+  `array<string, Order>` instead.
+- `Criteria::__construct()` no longer accepts `array<string, string>` as
+  $orderings, pass `array<string, Order>` instead.
+
+## Signature changes
+
+Native return types have been added. The new signatures are already described
+below [in the section about upgrading to 2.0](#upgrade-to-20).
 
 # Upgrade to 2.6
 
@@ -31,7 +112,7 @@ Extending the following classes is deprecated and will no longer be possible in 
 
 ## Deprecated accessing fields through other means than raw field access when using the criteria filtering API (the `Doctrine\Common\Collections\Selectable` interface)
 
-Starting with the next major version, the only way to access data when using the criteria filtering 
+Starting with the next major version, the only way to access data when using the criteria filtering
 API is through direct (reflection-based) access at properties directly, also bypassing property hooks.
 This is to ensure consistency with how the ORM/ODM works. See https://github.com/doctrine/collections/pull/472 for
 the full motivation.

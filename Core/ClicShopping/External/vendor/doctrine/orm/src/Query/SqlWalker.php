@@ -9,6 +9,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\LockMode;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Deprecations\Deprecation;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -19,6 +20,7 @@ use Doctrine\ORM\Utility\HierarchyDiscriminatorResolver;
 use Doctrine\ORM\Utility\PersisterHelper;
 use InvalidArgumentException;
 use LogicException;
+use SortDirection;
 
 use function array_diff;
 use function array_filter;
@@ -99,7 +101,7 @@ class SqlWalker
     /**
      * Map from Table-Alias + Column-Name to OrderBy-Direction.
      *
-     * @var array<string, string>
+     * @var array<string, SortDirection|string>
      */
     private array $orderedColumnsMap = [];
 
@@ -113,7 +115,7 @@ class SqlWalker
     /**
      * A list of classes that appear in non-scalar SelectExpressions.
      *
-     * @phpstan-var array<string, array{class: ClassMetadata, dqlAlias: string, resultAlias: string|null}>
+     * @phpstan-var array<string, array{class: ClassMetadata, dqlAlias: string, resultAlias: string|null, partial: bool}>
      */
     private array $selectedClasses = [];
 
@@ -386,7 +388,11 @@ class SqlWalker
                 }
 
                 $this->orderedColumnsMap[$orderedColumn] = $orientation;
-                $orderedColumns[]                        = $orderedColumn . ' ' . $orientation;
+                if ($orientation instanceof SortDirection) {
+                    $orientation = ($orientation === SortDirection::Ascending ? 'ASC' : 'DESC');
+                }
+
+                $orderedColumns[] = $orderedColumn . ' ' . $orientation;
             }
         }
 
@@ -688,10 +694,15 @@ class SqlWalker
             $class       = $selectedClass['class'];
             $dqlAlias    = $selectedClass['dqlAlias'];
             $resultAlias = $selectedClass['resultAlias'];
+            $isPartial   = $selectedClass['partial'];
 
             // Register as entity or joined entity result
             if (! isset($this->queryComponents[$dqlAlias]['relation'])) {
                 $this->rsm->addEntityResult($class->name, $dqlAlias, $resultAlias);
+
+                if ($isPartial) {
+                    $this->rsm->markPartialEntityResult($dqlAlias);
+                }
             } else {
                 assert(isset($this->queryComponents[$dqlAlias]['parent']));
 
@@ -700,6 +711,7 @@ class SqlWalker
                     $dqlAlias,
                     $this->queryComponents[$dqlAlias]['parent'],
                     $this->queryComponents[$dqlAlias]['relation']->fieldName,
+                    $isPartial,
                 );
             }
 
@@ -1332,15 +1344,30 @@ class SqlWalker
                     break;
                 }
 
-                if (! $expr instanceof Query\AST\TypedExpression) {
-                    // Conceptually we could resolve field type here by traverse through AST to retrieve field type,
-                    // but this is not a feasible solution; assume 'string'.
-                    $this->rsm->addScalarResult($columnAlias, $resultAlias, 'string');
+                if ($expr instanceof Query\AST\ExpressionWithReturnType) {
+                    $this->rsm->addScalarResult($columnAlias, $resultAlias, $expr->getReturnTypeName());
 
                     break;
                 }
 
-                $this->rsm->addScalarResult($columnAlias, $resultAlias, Type::getTypeRegistry()->lookupName($expr->getReturnType()));
+                if ($expr instanceof Query\AST\TypedExpression) {
+                    Deprecation::trigger(
+                        'doctrine/orm',
+                        'https://github.com/doctrine/orm/pull/12543',
+                        'Implementing %s is deprecated, implement %s instead.',
+                        Query\AST\TypedExpression::class, // @phpstan-ignore classConstant.deprecatedInterface
+                        Query\AST\ExpressionWithReturnType::class,
+                    );
+
+                    // @phpstan-ignore method.deprecatedInterface
+                    $this->rsm->addScalarResult($columnAlias, $resultAlias, Type::getTypeRegistry()->lookupName($expr->getReturnType()));
+
+                    break;
+                }
+
+                // Conceptually we could resolve field type here by traverse through AST to retrieve field type,
+                // but this is not a feasible solution; assume 'string'.
+                $this->rsm->addScalarResult($columnAlias, $resultAlias, Types::STRING);
 
                 break;
 
@@ -1354,7 +1381,7 @@ class SqlWalker
 
                 if (! $hidden) {
                     // We cannot resolve field type here; assume 'string'.
-                    $this->rsm->addScalarResult($columnAlias, $resultAlias, 'string');
+                    $this->rsm->addScalarResult($columnAlias, $resultAlias, Types::STRING);
                 }
 
                 break;
@@ -1397,6 +1424,7 @@ class SqlWalker
                 'class'       => $class,
                 'dqlAlias'    => $dqlAlias,
                 'resultAlias' => $resultAlias,
+                'partial'     => $partialFieldSet !== [],
             ];
         }
 
@@ -2094,6 +2122,7 @@ class SqlWalker
             AST\Literal::STRING => $this->conn->quote($literal->value),
             AST\Literal::BOOLEAN => (string) $this->conn->getDatabasePlatform()->convertBooleans(strtolower($literal->value) === 'true'),
             AST\Literal::NUMERIC => (string) $literal->value,
+            AST\Literal::NULL => 'NULL',
             default => throw QueryException::invalidLiteral($literal),
         };
     }

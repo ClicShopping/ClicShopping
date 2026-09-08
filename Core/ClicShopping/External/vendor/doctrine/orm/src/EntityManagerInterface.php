@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Doctrine\ORM;
 
 use DateTimeInterface;
-use Doctrine\Common\EventManager;
+use Doctrine\Common\EventManagerInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\Exception\ORMException;
@@ -76,6 +76,7 @@ interface EntityManagerInterface extends ObjectManager
      * @return mixed The value returned from the closure.
      * @phpstan-return T
      *
+     * @param-immediately-invoked-callable $func
      * @template T
      */
     public function wrapInTransaction(callable $func): mixed;
@@ -112,9 +113,9 @@ interface EntityManagerInterface extends ObjectManager
      *
      * @param string            $className   The class name of the entity to find.
      * @param mixed             $id          The identity of the entity to find.
-     * @param LockMode|int|null $lockMode    One of the \Doctrine\DBAL\LockMode::* constants
-     *                                       or NULL if no specific lock mode should be used
-     *                                       during the search.
+     * @param LockMode|int|null $lockMode    One of the \Doctrine\DBAL\LockMode::* constants.
+     *                                       Passing NULL is deprecated, use LockMode::NONE
+     *                                       instead.
      * @param int|null          $lockVersion The version of the entity to find when using
      *                                       optimistic locking.
      * @phpstan-param class-string<T> $className
@@ -130,22 +131,22 @@ interface EntityManagerInterface extends ObjectManager
      *
      * @template T of object
      */
-    public function find(string $className, mixed $id, LockMode|int|null $lockMode = null, int|null $lockVersion = null): object|null;
+    public function find(string $className, mixed $id, LockMode|int|null $lockMode = LockMode::NONE, int|null $lockVersion = null): object|null;
 
     /**
      * Refreshes the persistent state of an object from the database,
      * overriding any local changes that have not yet been persisted.
      *
-     * @param LockMode|int|null $lockMode One of the \Doctrine\DBAL\LockMode::* constants
-     *                                    or NULL if no specific lock mode should be used
-     *                                    during the search.
+     * @param LockMode|int|null $lockMode One of the \Doctrine\DBAL\LockMode::* constants.
+     *                                    Passing NULL is deprecated, use LockMode::NONE
+     *                                    instead.
      * @phpstan-param LockMode::*|null $lockMode
      *
      * @throws ORMInvalidArgumentException
      * @throws ORMException
      * @throws TransactionRequiredException
      */
-    public function refresh(object $object, LockMode|int|null $lockMode = null): void;
+    public function refresh(object $object, LockMode|int|null $lockMode = LockMode::NONE): void;
 
     /**
      * Gets a reference to the entity identified by the given type and identifier
@@ -180,9 +181,9 @@ interface EntityManagerInterface extends ObjectManager
     public function lock(object $entity, LockMode|int $lockMode, DateTimeInterface|int|null $lockVersion = null): void;
 
     /**
-     * Gets the EventManager used by the EntityManager.
+     * Gets the EventManagerInterface used by the EntityManager.
      */
-    public function getEventManager(): EventManager;
+    public function getEventManager(): EventManagerInterface;
 
     /**
      * Gets the Configuration used by the EntityManager.

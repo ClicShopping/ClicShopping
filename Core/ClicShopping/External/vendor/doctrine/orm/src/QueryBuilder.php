@@ -9,18 +9,22 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Deprecations\Deprecation;
+use Doctrine\ORM\Cache\Persister\CompatOrderings;
 use Doctrine\ORM\Internal\NoUnknownNamedArguments;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\Query\QueryExpressionVisitor;
 use InvalidArgumentException;
 use RuntimeException;
+use SortDirection;
 use Stringable;
 
 use function array_keys;
 use function array_unshift;
 use function assert;
 use function count;
+use function func_num_args;
+use function get_debug_type;
 use function implode;
 use function in_array;
 use function is_array;
@@ -33,6 +37,7 @@ use function sprintf;
 use function str_starts_with;
 use function strpos;
 use function strrpos;
+use function strtolower;
 use function substr;
 
 /**
@@ -41,6 +46,7 @@ use function substr;
  */
 class QueryBuilder implements Stringable
 {
+    use CompatOrderings;
     use NoUnknownNamedArguments;
 
     /**
@@ -1218,9 +1224,16 @@ class QueryBuilder implements Stringable
      *
      * @return $this
      */
-    public function orderBy(string|Expr\OrderBy $sort, string|null $order = null): static
+    public function orderBy(string|Expr\OrderBy $sort, SortDirection|string|null $order = null): static
     {
-        $orderBy = $sort instanceof Expr\OrderBy ? $sort : new Expr\OrderBy($sort, $order);
+        if (func_num_args() === 1 && is_string($sort)) {
+            $order = SortDirection::Ascending;
+        }
+
+        $orderBy = $sort instanceof Expr\OrderBy ? $sort : new Expr\OrderBy(
+            $sort,
+            $this->getSortDirection($order, __METHOD__),
+        );
 
         return $this->add('orderBy', $orderBy);
     }
@@ -1230,9 +1243,16 @@ class QueryBuilder implements Stringable
      *
      * @return $this
      */
-    public function addOrderBy(string|Expr\OrderBy $sort, string|null $order = null): static
+    public function addOrderBy(string|Expr\OrderBy $sort, SortDirection|string|null $order = null): static
     {
-        $orderBy = $sort instanceof Expr\OrderBy ? $sort : new Expr\OrderBy($sort, $order);
+        if (func_num_args() === 1 && is_string($sort)) {
+            $order = SortDirection::Ascending;
+        }
+
+        $orderBy = $sort instanceof Expr\OrderBy ? $sort : new Expr\OrderBy(
+            $sort,
+            $this->getSortDirection($order, __METHOD__),
+        );
 
         return $this->add('orderBy', $orderBy, true);
     }
@@ -1265,7 +1285,9 @@ class QueryBuilder implements Stringable
             }
         }
 
-        foreach ($criteria->orderings() as $sort => $order) {
+        $orderings = $this->getOrderings($criteria);
+
+        foreach ($orderings as $sort => $order) {
             $hasValidAlias = false;
             foreach ($allAliases as $alias) {
                 if (str_starts_with($sort . '.', $alias . '.')) {
@@ -1278,7 +1300,8 @@ class QueryBuilder implements Stringable
                 $sort = $allAliases[0] . '.' . $sort;
             }
 
-            $this->addOrderBy($sort, $order->value);
+            /** @phpstan-ignore property.deprecatedEnum */
+            $this->addOrderBy($sort, $order instanceof SortDirection ? $order : $order->value);
         }
 
         // Overwrite limits only if they was set in criteria
@@ -1484,5 +1507,30 @@ class QueryBuilder implements Stringable
         }
 
         $this->parameters = new ArrayCollection($parameters);
+    }
+
+    private function getSortDirection(SortDirection|string|null $order, string $method): SortDirection
+    {
+        if ($order instanceof SortDirection) {
+            return $order;
+        }
+
+        Deprecation::trigger(
+            'doctrine/orm',
+            'https://github.com/doctrine/orm/issues/11313',
+            'Passing %s as $order to %s() is deprecated, use an instance of SortDirection instead.',
+            get_debug_type($order),
+            $method,
+        );
+
+        if ($order === null) {
+            return SortDirection::Ascending;
+        }
+
+        return match (strtolower($order)) {
+            'asc' => SortDirection::Ascending,
+            'desc' => SortDirection::Descending,
+            default => throw new InvalidArgumentException(sprintf('Invalid sort direction "%s".', $order)),
+        };
     }
 }

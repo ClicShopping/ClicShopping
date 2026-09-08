@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\Common\Collections\Expr;
 
+use Override;
 use RuntimeException;
 
 use function count;
@@ -13,22 +14,24 @@ use function count;
  *
  * @final since 2.5
  */
-class CompositeExpression implements Expression
+final readonly class CompositeExpression implements Expression
 {
-    final public const TYPE_AND = 'AND';
-    final public const TYPE_OR  = 'OR';
-    final public const TYPE_NOT = 'NOT';
+    final public const string TYPE_AND = 'AND';
+    final public const string TYPE_OR  = 'OR';
+    final public const string TYPE_NOT = 'NOT';
 
     /** @var list<Expression> */
-    private array $expressions = [];
+    private array $expressions;
 
     /**
      * @param Expression[] $expressions
      *
      * @throws RuntimeException
      */
-    public function __construct(private readonly string $type, array $expressions)
+    public function __construct(private string $type, array $expressions)
     {
+        $validatedExpressions = [];
+
         foreach ($expressions as $expr) {
             if ($expr instanceof Value) {
                 throw new RuntimeException('Values are not supported expressions as children of and/or expressions.');
@@ -38,12 +41,14 @@ class CompositeExpression implements Expression
                 throw new RuntimeException('No expression given to CompositeExpression.');
             }
 
-            $this->expressions[] = $expr;
+            $validatedExpressions[] = $expr;
         }
 
-        if ($type === self::TYPE_NOT && count($this->expressions) !== 1) {
+        if ($type === self::TYPE_NOT && count($validatedExpressions) !== 1) {
             throw new RuntimeException('Not expression only allows one expression as child.');
         }
+
+        $this->expressions = $validatedExpressions;
     }
 
     /**
@@ -51,21 +56,18 @@ class CompositeExpression implements Expression
      *
      * @return list<Expression>
      */
-    public function getExpressionList()
+    public function getExpressionList(): array
     {
         return $this->expressions;
     }
 
-    /** @return string */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function visit(ExpressionVisitor $visitor)
+    #[Override]
+    public function visit(ExpressionVisitor $visitor): mixed
     {
         return $visitor->walkCompositeExpression($this);
     }

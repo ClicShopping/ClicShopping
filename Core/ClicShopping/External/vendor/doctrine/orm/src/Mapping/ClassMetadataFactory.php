@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrine\ORM\Mapping;
 
-use Doctrine\Common\EventManager;
+use Doctrine\Common\EventDispatcher;
 use Doctrine\DBAL\Platforms;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\Deprecations\Deprecation;
@@ -55,7 +55,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     private EntityManagerInterface|null $em       = null;
     private AbstractPlatform|null $targetPlatform = null;
     private MappingDriver|null $driver            = null;
-    private EventManager|null $evm                = null;
+    private EventDispatcher|null $eventDispatcher = null;
 
     /** @var mixed[] */
     private array $embeddablesActiveNesting = [];
@@ -109,20 +109,16 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
 
     protected function initialize(): void
     {
-        $this->driver      = $this->em->getConfiguration()->getMetadataDriverImpl();
-        $this->evm         = $this->em->getEventManager();
-        $this->initialized = true;
+        $this->driver          = $this->em->getConfiguration()->getMetadataDriverImpl();
+        $this->eventDispatcher = $this->em->getEventManager();
+        $this->initialized     = true;
     }
 
     protected function onNotFoundMetadata(string $className): ClassMetadata|null
     {
-        if (! $this->evm->hasListeners(Events::onClassMetadataNotFound)) {
-            return null;
-        }
-
         $eventArgs = new OnClassMetadataNotFoundEventArgs($className, $this->em);
 
-        $this->evm->dispatchEvent(Events::onClassMetadataNotFound, $eventArgs);
+        $this->eventDispatcher->dispatchEvent(Events::onClassMetadataNotFound, $eventArgs);
         $classMetadata = $eventArgs->getFoundMetadata();
         assert($classMetadata instanceof ClassMetadata || $classMetadata === null);
 
@@ -145,7 +141,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
             $this->addInheritedFields($class, $parent);
             $this->addInheritedRelations($class, $parent);
             $this->addInheritedEmbeddedClasses($class, $parent);
-            $class->setIdentifier($parent->identifier);
+            $class->setIdentifier($parent->identifier, $parent->identifierPositions);
             $class->setVersioned($parent->isVersioned);
             $class->setVersionField($parent->versionField);
             $class->setDiscriminatorMap($parent->discriminatorMap);
@@ -245,10 +241,10 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
         // During the following event, there may also be updates to the discriminator map as per GH-1257/GH-8402.
         // So, we must not discover the missing subclasses before that.
 
-        if ($this->evm->hasListeners(Events::loadClassMetadata)) {
-            $eventArgs = new LoadClassMetadataEventArgs($class, $this->em);
-            $this->evm->dispatchEvent(Events::loadClassMetadata, $eventArgs);
-        }
+        $this->eventDispatcher->dispatchEvent(
+            Events::loadClassMetadata,
+            new LoadClassMetadataEventArgs($class, $this->em),
+        );
 
         $this->findAbstractEntityClassesNotListedInDiscriminatorMap($class);
 
