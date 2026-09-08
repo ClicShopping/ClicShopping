@@ -857,3 +857,5 @@ Example: The/This sku means the SKU of {{entityName}}
 Example: its price means the price of {{entityName}}
 Example: the product means {{entityName}}
 ----------------------------
+
+text_schema_join_map = JOIN MAP - how the tables in this analysis connect, with the join key and cardinality. Follow a 1-N edge and every value on the 1 side is REPEATED once per row on the N side: aggregate an entity's own value at its own grain, and use the key below for every join.

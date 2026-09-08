@@ -54,9 +54,17 @@ class ResultFormatter
     $failed = $aggregated['failed_panes'] ?? [];
 
     if (!empty($answers)) {
-      $notice = $this->missingPartsNotice($failed);
+      $unreliable = array_filter($failed, static fn(array $p): bool => !empty($p['coherence_rejected']));
+      $notMeasured = array_filter($failed, static fn(array $p): bool => empty($p['coherence_rejected']));
 
-      return $notice === '' ? implode("\n\n", $answers) : $notice . "\n\n" . implode("\n\n", $answers);
+      $notices = array_filter([
+        $this->partsNotice($notMeasured, 'text_partial_report_notice'),
+        $this->partsNotice($unreliable, 'text_unreliable_report_notice'),
+      ]);
+
+      $notices[] = implode("\n\n", $answers);
+
+      return implode("\n\n", $notices);
     }
 
     // Nothing answered: the failure messages ARE the answer — never render 0 character (4novodecies).
@@ -77,33 +85,34 @@ class ResultFormatter
    * the failure message read as an apology under its own results, and nothing said which half was
    * missing. The run stays in `rag_interactions` for the audit either way.
    *
-   * @param array $failed Panes that did not answer
-   * @return string Localised notice, or '' when every pane answered
+   * @param array $panes Panes to announce (not measured, or withheld as unreliable)
+   * @param string $labelKey Notice label; both use the {{missing_count}}/{{missing}} placeholders
+   * @return string Localised notice, or '' when there is nothing to announce
    */
-  private function missingPartsNotice(array $failed): string
+  private function partsNotice(array $panes, string $labelKey): string
   {
-    if (empty($failed)) {
+    if (empty($panes)) {
       return '';
     }
 
-    $notice = CLICSHOPPING::getDef('text_partial_report_notice');
+    $notice = CLICSHOPPING::getDef($labelKey);
 
-    if ($notice === '' || $notice === 'text_partial_report_notice') {
+    if ($notice === '' || $notice === $labelKey) {
       return '';
     }
 
     $subjects = array_filter(array_map(static function (array $pane): string {
       return trim((string)($pane['question'] ?? ''));
-    }, $failed));
+    }, $panes));
 
-    // No sub-question text to quote: say how many parts are missing rather than nothing at all.
+    // No sub-question text to quote: say how many parts are concerned rather than nothing at all.
     $missing = empty($subjects)
-      ? (string)count($failed)
+      ? (string)count($panes)
       : implode(' · ', array_unique($subjects));
 
     return str_replace(
       ['{{missing_count}}', '{{missing}}'],
-      [(string)count($failed), $missing],
+      [(string)count($panes), $missing],
       $notice
     );
   }

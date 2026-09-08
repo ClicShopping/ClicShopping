@@ -41,8 +41,10 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\FinalizeStage;
 use ClicShopping\AI\CoreAI\Planning\PlanExecutor;
 use ClicShopping\AI\CoreAI\Planning\TaskPlanner;
 use ClicShopping\AI\CoreAI\Query\QueryAnalyzer;
+use ClicShopping\AI\CoreAI\Query\ContextRelationResolver;
 use ClicShopping\AI\CoreAI\Response\LlmResponseProcessor;
 use ClicShopping\AI\DomainsAI\DomainRouter;
+use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\DomainsAI\Hybrid\Handler\HybridQueryHandler;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
@@ -107,6 +109,7 @@ class OrchestratorAgent implements AgentInterface
   private string $prefix;
   private array $executionStats = [];
   private ConversationMemory $conversationMemory;
+  private ?ContextRelationResolver $contextRelationResolver = null;
   private WorkingMemory $workingMemory;
   private CorrectionAgent $correctionAgent;
   private ValidationAgent $validationAgent;
@@ -500,6 +503,182 @@ class OrchestratorAgent implements AgentInterface
   }
 
   /**
+   * Resolve a conversational follow-up against the recent DB turns for this user.
+   *
+   * Runs an LLM (ContextRelationResolver) over the recent turns; returns its verdict so the caller
+   * can both rewrite an elliptical follow-up into a self-contained query AND spot a metric-identity
+   * question (about the nature of a value already shown). No history, unrelated query, or LLM
+   * failure all yield an unrelated verdict that leaves $query untouched (honest degradation).
+   *
+   * @param string $query The raw user query
+   * @return array{is_related_to_context: bool, relation_type: string, enriched_query: string}
+   */
+  private function resolveFollowUp(string $query): array
+  {
+    $unrelated = ['is_related_to_context' => false, 'relation_type' => 'new_query', 'enriched_query' => $query];
+
+    $recentTurns = $this->conversationMemory->getRecentTurns();
+    if ($recentTurns === []) {
+      return $unrelated;
+    }
+
+    $this->contextRelationResolver ??= new ContextRelationResolver($this->securityLogger, $this->debug);
+
+    try {
+      $resolution = $this->contextRelationResolver->resolve($query, $recentTurns);
+    } catch (\Throwable $e) {
+      $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'follow_up_resolution_failed', [
+        'error' => $e->getMessage(),
+      ]);
+      return $unrelated;
+    }
+
+    if ($resolution === null || !($resolution['is_related_to_context'] ?? false)) {
+      return $unrelated;
+    }
+
+    $enriched = trim((string)($resolution['enriched_query'] ?? ''));
+    $resolution['enriched_query'] = $enriched !== '' ? $enriched : $query;
+
+    return $resolution;
+  }
+
+  /**
+   * Answer a metric-identity follow-up ("are these HT or TTC?", "what period?") from the domain
+   * metric catalogue, with NO SQL and no schema window. Returns null when the active domain declares
+   * no catalogue (or no LLM answer), so the caller falls through to the normal pipeline.
+   *
+   * Agnostic: Core only resolves the catalogue's label keys via getDef — the tax/currency/period
+   * conventions themselves are declared by the domain (Apps/AI/{Domain}), never named here.
+   *
+   * @param string $question The self-contained identity question (English)
+   * @return array|null A response array (English prose), or null to fall through
+   */
+  private function answerMetricIdentityQuestion(string $question): ?array
+  {
+    $domainApp = DomainRegistry::getInstance()->getActiveApp();
+    $catalog = ($domainApp !== null && method_exists($domainApp, 'getMetricCatalog'))
+      ? $domainApp->getMetricCatalog()
+      : [];
+
+    if ($catalog === []) {
+      return null;
+    }
+
+    // Definition labels live in the domain bucket; basis labels are already loaded in the
+    // constructor via ai_response_labels. Load the former defensively, ignore a missing file.
+    DomainConfig::loadLanguageFile('rag_metric_catalog');
+    $language = Registry::get('Language');
+
+    $lines = [];
+    foreach ($catalog as $key => $meta) {
+      if (!is_array($meta)) {
+        continue;
+      }
+      $parts = [];
+      foreach (['definition', 'basis'] as $labelKey) {
+        if (!empty($meta[$labelKey])) {
+          $text = $language->getDef($meta[$labelKey]);
+          if ($text !== '' && $text !== $meta[$labelKey]) {
+            $parts[] = $text;
+          }
+        }
+      }
+      $lines[] = '- ' . $key . ($parts === [] ? '' : ': ' . implode(' — ', $parts));
+    }
+
+    DomainConfig::loadAgnosticLanguageFile('rag_context_relation');
+    $prompt = $language->getDef('metric_identity_prompt', [
+      'catalog' => implode("\n", $lines),
+      'conversation' => $this->recentTurnsAsText(),
+      'query' => $question,
+    ]);
+
+    try {
+      $answer = trim((string)Gpt::getGptResponse($prompt, 400, 0.0));
+    } catch (\Throwable $e) {
+      $this->securityLogger->logStructured('warning', 'OrchestratorAgent', 'metric_identity_answer_failed', [
+        'error' => $e->getMessage(),
+      ]);
+      return null;
+    }
+
+    if ($answer === '') {
+      return null;
+    }
+
+    return [
+      'success' => true,
+      'type' => 'analytics',
+      'agent_used' => 'metric_identity',
+      'question' => $question,
+      'interpretation' => $answer,
+      'text_response' => $answer,
+      'response' => $answer,
+      'sources' => [],
+      'data' => [],
+    ];
+  }
+
+  /** Recent conversation turns rendered as "User: …\nAssistant: …", for LLM grounding. */
+  private function recentTurnsAsText(): string
+  {
+    $lines = [];
+    foreach ($this->conversationMemory->getRecentTurns() as $turn) {
+      $user = trim((string)($turn['user'] ?? ''));
+      $assistant = trim((string)($turn['assistant'] ?? ''));
+      if ($user !== '') {
+        $lines[] = 'User: ' . $user;
+      }
+      if ($assistant !== '') {
+        $lines[] = 'Assistant: ' . $assistant;
+      }
+    }
+
+    return implode("\n", $lines);
+  }
+
+  /**
+   * Restitution chokepoint: the AI pipeline runs in English; return the user-facing prose in the
+   * interface language. Translates only 'text_response' (and the copies that mirror it), leaving
+   * data/sources/metadata untouched. No-op for the English interface.
+   *
+   * @param array $result The assembled response
+   * @return array The response with its prose translated to the interface language
+   */
+  private function applyRestitution(array $result): array
+  {
+    if (isset($result['text_response']) && is_string($result['text_response']) && trim($result['text_response']) !== ''
+      && !preg_match('/<(?:div|table|script|canvas|h[1-6]|ul|ol|iframe)\b/i', $result['text_response'])) {
+      $originalResponse = $result['text_response'];
+      $result['text_response'] = SemanticAgent::translateToLanguage($originalResponse, $this->languageId);
+
+      // 'response' usually mirrors 'text_response' — reuse the translation, no second LLM call.
+      if (isset($result['response']) && $result['response'] === $originalResponse) {
+        $result['response'] = $result['text_response'];
+      }
+
+      // The prose actually rendered for semantic queries comes from the nested 'data' sub-array
+      // (SemanticFormatter renders data['response']). Propagate the same translation to every nested
+      // copy that still holds the untranslated English prose. Reuses the translation — no extra call.
+      if (isset($result['data']) && is_array($result['data'])) {
+        foreach (['text_response', 'response', 'interpretation'] as $nestedKey) {
+          if (isset($result['data'][$nestedKey]) && $result['data'][$nestedKey] === $originalResponse) {
+            $result['data'][$nestedKey] = $result['text_response'];
+          }
+        }
+      }
+    }
+    foreach (['text_response', 'response'] as $brKey) {
+      if (isset($result[$brKey]) && is_string($result[$brKey]) && $result[$brKey] !== '') {
+        $result[$brKey] = preg_replace('#(?:<br\s*/?>\s*){2,}#i', '<br>', $result[$brKey]);
+      }
+    }
+
+    return $result;
+  }
+
+  /**
    * Main processing entry point with full validation pipeline.
    *
    * @param string $query User query
@@ -543,6 +722,25 @@ class OrchestratorAgent implements AgentInterface
           'sources' => [],
           'data' => []
         ];
+      }
+
+      // Resolve a conversational follow-up BEFORE the out-of-context gate. The gate judges a query
+      // in isolation, so an elliptical follow-up ("add the amount", "is that VAT-inclusive?") looks
+      // out-of-context and is rejected. Pure LLM Mode (ContextRelationResolver), keyed on recent DB turns.
+      $resolution = $this->resolveFollowUp($query);
+
+      // A metric-identity follow-up ("are these HT or TTC?", "what period?") asks about the nature
+      // of a value already shown — it is answered from the domain metric catalogue, with NO SQL and
+      // no schema window. Fall through to the normal path when no catalogue can answer it.
+      if (($resolution['relation_type'] ?? '') === 'metric_identity') {
+        $identityAnswer = $this->answerMetricIdentityQuestion($resolution['enriched_query']);
+        if ($identityAnswer !== null) {
+          return $this->applyRestitution($identityAnswer);
+        }
+      }
+
+      if ($resolution['is_related_to_context'] ?? false) {
+        $query = $resolution['enriched_query'];
       }
 
       // Compute the three-tier out-of-context decision inputs (short-query skip + detection).
@@ -788,40 +986,7 @@ class OrchestratorAgent implements AgentInterface
       // Full orchestration path
       $result = $this->handleFullOrchestration($query, $queryToProcess, $startTime);
 
-      // Restitution: the AI pipeline runs in English; return the user-facing narrative in the
-      // interface language ($this->languageId). Translate only the prose 'text_response' (the
-      // displayed answer for semantic/analytics/hybrid/web), leaving data/sources/metadata
-      // untouched. No-op for the English interface (see SemanticAgent::translateToLanguage).
-      if (isset($result['text_response']) && is_string($result['text_response']) && trim($result['text_response']) !== ''
-        && !preg_match('/<(?:div|table|script|canvas|h[1-6]|ul|ol|iframe)\b/i', $result['text_response'])) {
-        $originalResponse = $result['text_response'];
-        $result['text_response'] = SemanticAgent::translateToLanguage($originalResponse, $this->languageId);
-
-        // 'response' usually mirrors 'text_response' — reuse the translation, no second LLM call.
-        if (isset($result['response']) && $result['response'] === $originalResponse) {
-          $result['response'] = $result['text_response'];
-        }
-
-        // The prose actually rendered for semantic queries comes from the nested 'data' sub-array
-        // (SemanticFormatter renders data['response']), not the top-level field. Propagate the same
-        // translation to every nested copy that still holds the untranslated English prose so this
-        // single restitution chokepoint also covers the field the formatter displays. Reuses the
-        // already-computed translation — no extra LLM call.
-        if (isset($result['data']) && is_array($result['data'])) {
-          foreach (['text_response', 'response', 'interpretation'] as $nestedKey) {
-            if (isset($result['data'][$nestedKey]) && $result['data'][$nestedKey] === $originalResponse) {
-              $result['data'][$nestedKey] = $result['text_response'];
-            }
-          }
-        }
-      }
-      foreach (['text_response', 'response'] as $brKey) {
-        if (isset($result[$brKey]) && is_string($result[$brKey]) && $result[$brKey] !== '') {
-          $result[$brKey] = preg_replace('#(?:<br\s*/?>\s*){2,}#i', '<br>', $result[$brKey]);
-        }
-      }
-
-      return $result;
+      return $this->applyRestitution($result);
     } catch (\Exception $e) {
       $status = 'error';
 

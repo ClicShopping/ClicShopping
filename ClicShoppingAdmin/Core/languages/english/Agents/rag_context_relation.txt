@@ -1,0 +1,39 @@
+context_relation_prompt = TASK
+You decide whether a user's NEW MESSAGE continues an earlier conversation, and if so, rewrite it as ONE self-contained request.
+
+You receive the RECENT CONVERSATION (earlier user requests and the assistant's answers) and the NEW MESSAGE. The new message may be written in any language and may be an elliptical follow-up that only makes sense against the earlier turns — for example: adding a column or metric, changing the sort or the limit, or asking a question about a value already shown.
+
+Decide three things:
+- is_related_to_context: true when the NEW MESSAGE depends on, extends or modifies an earlier turn; false when it stands on its own as a brand-new request.
+- relation_type: one of "new_query", "continuation", "modification", "clarification", "metric_identity".
+  Use "metric_identity" when the message asks about the NATURE of a value already shown — its tax treatment (VAT included or excluded), its unit, its currency, or the time period it covers — rather than requesting new or modified data (e.g. "are these amounts tax-included?", "what period does this cover?", "in which currency?").
+- enriched_query: when related, rewrite the NEW MESSAGE as ONE explicit, self-contained request in English that carries over everything the earlier turn established (the subject, the filters, the sort and the limit) and applies only the change the new message expresses. When NOT related, return the NEW MESSAGE translated to English with its meaning unchanged.
+
+RULES:
+- Never invent a subject, entity, filter, metric or time period that neither the conversation nor the new message states.
+- Preserve the earlier request's constraints exactly; apply ONLY the change the new message expresses.
+- Do not copy raw SQL or table names into the rewritten request; express it in business language.
+- Output ONLY a JSON object — no prose, no explanation, no code fence.
+
+OUTPUT FORMAT (JSON):
+{"is_related_to_context": true, "relation_type": "modification", "enriched_query": "..."}
+
+RECENT CONVERSATION:
+{{conversation}}
+
+NEW MESSAGE:
+{{query}}
+
+metric_identity_prompt = TASK
+The user is asking about the NATURE of a value shown earlier in the conversation — its tax treatment, unit, currency, or the time period it covers. This is NOT a request for new data: answer it from the METRIC DEFINITIONS below, not by querying anything.
+
+Using ONLY the metric definitions and the conversation, answer the QUESTION concisely and directly, in English. Map the value the user is asking about to the metric it corresponds to, then state that metric's basis in plain words. Never mention the internal metric identifiers (such as "revenue_ttc") in your answer — speak only in plain business language. If the definitions do not let you decide, say so plainly rather than guessing.
+
+METRIC DEFINITIONS:
+{{catalog}}
+
+RECENT CONVERSATION:
+{{conversation}}
+
+QUESTION:
+{{query}}

@@ -390,6 +390,10 @@ class Cache
       return;
     }
 
+    if ($this->useRedis || $this->useMemcached) {
+      return;
+    }
+
     $cacheFile = $this->getPromptCacheFilePath();
 
     try {

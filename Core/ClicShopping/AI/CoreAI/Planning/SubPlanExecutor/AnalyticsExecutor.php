@@ -317,51 +317,7 @@ class AnalyticsExecutor
       }
 
       // Store entity in conversation memory for context enrichment in subsequent queries
-      if ($this->conversationMemory !== null) {
-        $entityId = $formattedResult['entity_id'] ?? null;
-        $entityType = $formattedResult['entity_type'] ?? null;
-        
-        if ($entityId !== null && $entityType !== null) {
-          // Extract entity name from results
-          $entityName = null;
-          $results = $formattedResult['results'] ?? [];
-          
-          if (!empty($results) && is_array($results[0])) {
-            $firstRow = $results[0];
-            $nameFields = ['products_name', 'name', 'manufacturers_name', 'categories_name', 'title'];
-            foreach ($nameFields as $field) {
-              if (isset($firstRow[$field]) && !empty($firstRow[$field])) {
-                $entityName = $firstRow[$field];
-                break;
-              }
-            }
-          }
-          
-          try {
-            $this->conversationMemory->setLastEntity((int)$entityId, $entityType, $entityName);
-            
-            if ($this->debug) {
-              $nameInfo = $entityName ? " (name: {$entityName})" : "";
-              $this->logger->logSecurityEvent(
-                "Stored entity in memory from analytics: {$entityType} (ID: {$entityId}){$nameInfo}",
-                'info'
-              );
-            }
-            
-            if ($this->debugRAManager) {
-              $nameInfo = $entityName ? ", Name={$entityName}" : "";
-              error_log("[AnalyticsExecutor] Stored entity in memory: ID={$entityId}, Type={$entityType}{$nameInfo}");
-            }
-          } catch (\Exception $e) {
-            if ($this->debug) {
-              $this->logger->logSecurityEvent(
-                "Error storing entity in memory: " . $e->getMessage(),
-                'warning'
-              );
-            }
-          }
-        }
-      }
+      $this->storeEntityContext($formattedResult, $isSubQuery);
 
       // Record real analytics execution + critic evaluation (no synthetic data).
       // Deferred to AFTER the response is flushed (PostResponseDeferrer): this is post-response
@@ -383,6 +339,66 @@ class AnalyticsExecutor
       error_log("[error] EXCEPTION in executeAnalyticsQuery: " . $e->getMessage());
       error_log(str_repeat("=", 100) . "\n");
       return $this->handleAnalyticsError($e, $query);
+    }
+  }
+
+  /**
+   * Store the produced entity as conversation context for follow-up queries.
+   *
+   * Sink-safe invariant (CONC-1): only the final turn writes context. Analytics sub-query steps
+   * are independent (depends_on: [], can_run_parallel: true) and their anaphora is resolved at
+   * decomposition, so a sub-query step must never write the shared last-entity sink — that write
+   * belongs to the single top-level turn (and StoreMemoryStage post-synthesis), so concurrent
+   * sub-queries cannot race it or pollute a sibling half's resolution.
+   *
+   * @param array $formattedResult Formatted analytics result
+   * @param bool $isSubQuery Whether this call is a decomposed sub-query step
+   * @return void
+   */
+  private function storeEntityContext(array $formattedResult, bool $isSubQuery): void
+  {
+    if ($isSubQuery || $this->conversationMemory === null) {
+      return;
+    }
+
+    $entityId = $formattedResult['entity_id'] ?? null;
+    $entityType = $formattedResult['entity_type'] ?? null;
+
+    if ($entityId === null || $entityType === null) {
+      return;
+    }
+
+    $entityName = null;
+    $results = $formattedResult['results'] ?? [];
+
+    if (!empty($results) && is_array($results[0])) {
+      $firstRow = $results[0];
+      $nameFields = ['products_name', 'name', 'manufacturers_name', 'categories_name', 'title'];
+      foreach ($nameFields as $field) {
+        if (isset($firstRow[$field]) && !empty($firstRow[$field])) {
+          $entityName = $firstRow[$field];
+          break;
+        }
+      }
+    }
+
+    try {
+      $this->conversationMemory->setLastEntity((int)$entityId, $entityType, $entityName);
+
+      if ($this->debug) {
+        $nameInfo = $entityName ? " (name: {$entityName})" : "";
+        $this->logger->logSecurityEvent(
+          "Stored entity in memory from analytics: {$entityType} (ID: {$entityId}){$nameInfo}",
+          'info'
+        );
+      }
+    } catch (\Exception $e) {
+      if ($this->debug) {
+        $this->logger->logSecurityEvent(
+          "Error storing entity in memory: " . $e->getMessage(),
+          'warning'
+        );
+      }
     }
   }
 

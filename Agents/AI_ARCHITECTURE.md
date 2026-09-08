@@ -29,7 +29,7 @@ Core/ClicShopping/AI/
 ├── InterfacesAI/        ✅ Contracts (AgentInterface, ActorInterface, CriticInterface, …)
 ├── LoadBalancing/       ✅ Load balancing
 ├── Rag/                 ✅ RAG Manager
-├── RegistryAI/          ✅ Actor, Critic and WebSearch engine registries
+├── RegistryAI/          ✅ Actor, Critic, WebSearch, PromptPlaceholder and SchemaGraph registries
 └── Security/            ✅ Guardrails and security
 ```
 

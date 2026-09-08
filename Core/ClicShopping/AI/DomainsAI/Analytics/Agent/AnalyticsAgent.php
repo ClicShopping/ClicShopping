@@ -342,13 +342,7 @@ class AnalyticsAgent implements AgentInterface
         $response['cache_age'] = $results['cache_age'];
       }
 
-      if ($this->analysisPlan !== null) {
-        $response['analysis_plan'] = $this->analysisPlan;
-
-        if ($this->conversationMemory !== null && method_exists($this->conversationMemory, 'setLastAnalysisPlan')) {
-          $this->conversationMemory->setLastAnalysisPlan($this->analysisPlan);
-        }
-      }
+      $this->persistAnalysisPlanContext($response, $isSubQuery);
 
       $this->announceAnalysisPlanReserve($response);
       $this->announceMetricBasis($response);
@@ -860,6 +854,30 @@ class AnalyticsAgent implements AgentInterface
     $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId);
 
     return $this->analysisPlanner;
+  }
+
+  /**
+   * Attach the analysis plan to the response and record it as conversation context.
+   *
+   * Sink-safe invariant (CONC-1): only the final turn writes context. A sub-query step
+   * still exposes its plan on its own response, but never writes the shared last-plan sink —
+   * that write belongs to the single top-level turn, so concurrent sub-queries cannot race it.
+   *
+   * @param array $response Response being assembled, mutated in place
+   * @param bool $isSubQuery Whether this call is a decomposed sub-query step
+   * @return void
+   */
+  private function persistAnalysisPlanContext(array &$response, bool $isSubQuery): void
+  {
+    if ($this->analysisPlan === null) {
+      return;
+    }
+
+    $response['analysis_plan'] = $this->analysisPlan;
+
+    if (!$isSubQuery && $this->conversationMemory !== null && method_exists($this->conversationMemory, 'setLastAnalysisPlan')) {
+      $this->conversationMemory->setLastAnalysisPlan($this->analysisPlan);
+    }
   }
 
   /**
@@ -1581,8 +1599,9 @@ class AnalyticsAgent implements AgentInterface
       $this->debugLog("Updating system message with Schema RAG", "SCHEMA_RAG");
       $this->debugLog("Model: {$modelName}", "SCHEMA_RAG");
 
-      // Get query-specific system message
-      $systemMessage = $this->promptBuilder->getSystemMessage('analytics', $query, $modelName);
+      // Get query-specific system message. The plan (built at STEP 0.75) drives the
+      // schema join map: the window is traversed WITH the plan, never the raw question.
+      $systemMessage = $this->promptBuilder->getSystemMessage('analytics', $query, $modelName, $this->analysisPlan);
 
       // Update chat system message
       $this->chat->setSystemMessage($systemMessage);

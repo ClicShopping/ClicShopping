@@ -15,6 +15,7 @@ use ClicShopping\AI\Infrastructure\Schema\SchemaRetriever;
 use ClicShopping\AI\Infrastructure\Schema\SchemaEmbedder;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
+use ClicShopping\AI\RegistryAI\SchemaGraphRegistry;
 use ClicShopping\OM\CLICSHOPPING;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
@@ -46,6 +47,7 @@ class PromptBuilder
   private string $useCache;
   private ?SchemaRetriever $schemaRetriever = null;
   private string $currentQuery = '';
+  private ?array $currentPlan = null;
   private string $tablePrefix;
   
   private string $modelName;
@@ -120,10 +122,11 @@ class PromptBuilder
    * @param string $agentType Agent type (analytics — the only reachable builder)
    * @param string $query User query (optional, for Schema RAG)
    * @param string|null $modelName Model name (optional, for Schema RAG); null keeps the catalogued default
+   * @param array|null $plan Validated analysis plan (optional); drives the schema join map
    * @return string Complete system message
    * @throws \InvalidArgumentException If agent type is invalid
    */
-  public function getSystemMessage(string $agentType = 'analytics', string $query = '', ?string $modelName = null): string
+  public function getSystemMessage(string $agentType = 'analytics', string $query = '', ?string $modelName = null, ?array $plan = null): string
   {
     // Validate agent type
     if (!in_array($agentType, self::AGENT_TYPES, true)) {
@@ -132,6 +135,7 @@ class PromptBuilder
 
     // Store parameters for buildSystemMessage()
     $this->currentQuery = $query;
+    $this->currentPlan = $plan;
     
     if ($modelName !== null && $modelName !== '') {
       $this->modelName = $modelName;
@@ -284,6 +288,9 @@ class PromptBuilder
     // Get table structure instructions (Schema RAG or full schema)
     $tableStructureInstructions = $this->getTableStructureInstructions();
 
+    // Join map (keys + cardinality) for the tables the plan touches — '' when no plan.
+    $schemaJoinMap = $this->buildSchemaJoinMap();
+
     // Debug logging for loaded components
     if ($this->debug) {
       error_log("================================================================================");
@@ -314,6 +321,7 @@ class PromptBuilder
       $securityGuidelines . "\n\n" .                                 // 3. Security and prohibition rules
       $text_rag_system_analytics_rules . "\n\n" .                    // 4. Critical ambiguity rules
       $tableStructureInstructions . "\n\n" .                         // 5. Database schema (the playground)
+      $schemaJoinMap .                                               // 5bis. Plan-scoped join map (own trailing gap, '' when absent)
       $entityMetadataGuidelines . "\n\n" .                           // 6. Schema metadata
       $aggregationRules . "\n\n" .                                   // 7. 🚨 CRITICAL: Aggregation rules (MUST be before SQL generation)
       $orderGrainRules . "\n\n" .                                    // 7bis. Join grain: an order-level value over a product join is repeated per line
@@ -478,6 +486,61 @@ class PromptBuilder
     return $this->buildFullSchemaWithComments();
   }
   
+  /**
+   * Plan-scoped schema join map: the tables the plan's metric grains and dimensions
+   * touch, with the join key and cardinality on each edge. Traversed WITH the plan,
+   * never the raw question, so the aggregation grain is carried by structure rather
+   * than a prompt sentence. Additive to the schema window: it names no route and no
+   * choice, only the keys a JOIN needs (guardrail — knowledge, not decision).
+   *
+   * @return string Rendered block with a trailing gap, or '' when no plan yields edges
+   */
+  private function buildSchemaJoinMap(): string
+  {
+    if ($this->currentPlan === null) {
+      return '';
+    }
+
+    $grains = [];
+
+    foreach (($this->currentPlan['metrics'] ?? []) as $metric) {
+      if (isset($metric['grain']) && is_string($metric['grain'])) {
+        $grains[] = $metric['grain'];
+      }
+    }
+
+    $dimensions = is_array($this->currentPlan['dimensions'] ?? null) ? $this->currentPlan['dimensions'] : [];
+    $startTokens = array_merge($grains, array_filter($dimensions, 'is_string'));
+
+    if ($startTokens === []) {
+      return '';
+    }
+
+    $projection = SchemaGraphRegistry::getInstance()->projectWindow($startTokens);
+
+    if ($projection['edges'] === []) {
+      return '';
+    }
+
+    $header = $this->language->getDef('text_schema_join_map');
+
+    // Key absent: skip rather than emit a raw key name into the prompt.
+    if ($header === '' || $header === 'text_schema_join_map') {
+      return '';
+    }
+
+    $lines = [];
+
+    foreach ($projection['edges'] as $edge) {
+      $from = PromptPlaceholders::TABLE_PREFIX . $edge['from_table'];
+      $to = PromptPlaceholders::TABLE_PREFIX . $edge['to_table'];
+      $lines[] = '- ' . $from . ' (' . $edge['cardinality'] . ') ' . $to
+        . ' ON ' . $from . '.' . $edge['from_col'] . ' = ' . $to . '.' . $edge['to_col'];
+    }
+
+    return $header . "\n" . implode("\n", $lines) . "\n\n";
+  }
+
   /**
    * Estimate token count for text
    *

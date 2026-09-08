@@ -12,6 +12,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\CoreAI\Planning\ExecutionPlan;
+use ClicShopping\AI\CoreAI\Planning\CoherenceGuard;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ResultValidator;
 
 /**
@@ -418,6 +419,40 @@ class ResultSynthesizer
         );
 
         continue;
+      }
+
+      // coherence stage: a calculable-but-untrustworthy analytics figure is WITHHELD, not
+      // rendered as if reliable. It travels as a failed pane so the existing top-notice + audit
+      // path handles it; the detailed reason is journaled (governance role).
+      if ($type === 'analytics' || $type === 'analytics_response') {
+        $verdict = CoherenceGuard::inspectAnalyticsPane($result);
+
+        if ($verdict !== null) {
+          $reason = CLICSHOPPING::getDef($verdict['reason_key']);
+          if ($reason === '' || $reason === $verdict['reason_key']) {
+            $reason = $verdict['reason_key'];
+          }
+
+          $aggregated['failed_panes'][] = [
+            'step_id' => $stepId,
+            'question' => trim((string)($result['question'] ?? '')),
+            'message' => $reason,
+            'error' => 'coherence:' . $verdict['reason_key'],
+            'coherence_rejected' => true,
+          ];
+
+          $this->logger->logSecurityEvent(
+            "Coherence guard withheld step {$stepId}: {$verdict['reason_key']}",
+            'warning',
+            [
+              'reason_key' => $verdict['reason_key'],
+              'column' => $verdict['column'] ?? null,
+              'sql_query' => (string)($result['sql_query'] ?? ''),
+            ]
+          );
+
+          continue;
+        }
       }
 
       // Track successful step

@@ -1,0 +1,39 @@
+context_relation_prompt = TASK
+You decide whether a user's NEW MESSAGE continues an earlier conversation, and if so, rewrite it as ONE self-contained request.
+
+Vous recevez la CONVERSATION RÉCENTE (les demandes antérieures de l'utilisateur et les réponses de l'assistant) et le NOUVEAU MESSAGE. Le nouveau message peut être écrit dans n'importe quelle langue et peut être un suivi elliptique qui n'a de sens que par rapport aux tours précédents — par exemple : ajouter une colonne ou une métrique, changer le tri ou la limite, ou poser une question sur une valeur déjà affichée.
+
+Décidez trois choses :
+- is_related_to_context : true lorsque le NOUVEAU MESSAGE dépend d'un tour précédent, le prolonge ou le modifie ; false lorsqu'il se suffit à lui-même comme une toute nouvelle demande.
+- relation_type : l'une de "new_query", "continuation", "modification", "clarification", "metric_identity".
+  Utilisez "metric_identity" lorsque le message porte sur la NATURE d'une valeur déjà affichée — son traitement fiscal (taxe comprise ou non), son unité, sa devise, ou la période qu'elle couvre — plutôt qu'une demande de données nouvelles ou modifiées (ex. « ces montants sont-ils taxes comprises ? », « quelle période couvre ceci ? », « dans quelle devise ? »).
+- enriched_query : lorsqu'il est lié, réécrivez le NOUVEAU MESSAGE en UNE demande explicite et autonome en anglais qui reprend tout ce que le tour précédent a établi (le sujet, les filtres, le tri et la limite) et applique uniquement le changement que le nouveau message exprime. Lorsqu'il n'est PAS lié, renvoyez le NOUVEAU MESSAGE traduit en anglais sans en changer le sens.
+
+RULES:
+- N'inventez jamais un sujet, une entité, un filtre, une métrique ou une période que ni la conversation ni le nouveau message n'énoncent.
+- Préservez exactement les contraintes de la demande précédente ; appliquez UNIQUEMENT le changement que le nouveau message exprime.
+- Ne recopiez pas de SQL brut ni de noms de tables dans la demande réécrite ; exprimez-la en langage métier.
+- Output ONLY a JSON object — no prose, no explanation, no code fence.
+
+OUTPUT FORMAT (JSON):
+{"is_related_to_context": true, "relation_type": "modification", "enriched_query": "..."}
+
+RECENT CONVERSATION:
+{{conversation}}
+
+NEW MESSAGE:
+{{query}}
+
+metric_identity_prompt = TASK
+The user is asking about the NATURE of a value shown earlier in the conversation — its tax treatment, unit, currency, or the time period it covers. This is NOT a request for new data: answer it from the METRIC DEFINITIONS below, not by querying anything.
+
+En vous appuyant UNIQUEMENT sur les définitions de métriques et la conversation, répondez à la QUESTION de façon concise et directe, en anglais. Rattachez la valeur sur laquelle porte la question à la métrique qui lui correspond, puis énoncez la base de cette métrique en clair. Ne mentionnez jamais les identifiants internes de métrique (comme « revenue_ttc ») dans votre réponse — exprimez-vous uniquement en langage métier. Si les définitions ne permettent pas de trancher, dites-le franchement plutôt que de deviner.
+
+METRIC DEFINITIONS:
+{{catalog}}
+
+RECENT CONVERSATION:
+{{conversation}}
+
+QUESTION:
+{{query}}

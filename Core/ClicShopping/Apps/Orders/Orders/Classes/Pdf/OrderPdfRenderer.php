@@ -8,11 +8,10 @@
 
 namespace ClicShopping\Apps\Orders\Orders\Classes\Pdf;
 
-use ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin\OrderAdmin;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
-
+use ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin\OrderAdmin;
 /**
  * Facade that orchestrates PDF generation for orders.
  *

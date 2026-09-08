@@ -102,6 +102,7 @@ class ConversationMemory
   private ?string $lastQueryType = null;
   private bool $lastQueryReferencedEntity = false;
   private ?array $referencedEntity = null;
+  private ?array $lastAnalysisPlan = null;
 
   // Configuration
   private int $maxHistorySize = 10; // Max number of messages in short-term memory
@@ -207,6 +208,10 @@ class ConversationMemory
     try {
       
       $metadata = $this->normalizeInteractionMetadata($metadata);
+
+      if ($this->lastAnalysisPlan !== null && !isset($metadata['analysis_plan'])) {
+        $metadata['analysis_plan'] = $this->lastAnalysisPlan;
+      }
 
       $this->applyContextSwitch($metadata);
 
@@ -915,9 +920,21 @@ class ConversationMemory
 
 
 
-  //**********
-  // Not used - to check
-  //**********
+
+  /**
+   * Recent conversation turns for THIS user, read from the DB (cross-request), oldest first.
+   *
+   * Unlike getRecentInteractions() (in-process short-term only), this delegates to
+   * ConversationTurnReader, which reads persisted turns — the only history that survives across
+   * HTTP requests. Turns come back in English (the whole AI process runs in English).
+   *
+   * @param int $limit Max turns
+   * @return array<int, array{user: string, assistant: string}> Chronological, oldest first
+   */
+  public function getRecentTurns(int $limit = 4): array
+  {
+    return $this->turnReader->getRecentTurns($limit);
+  }
 
   /**
    * Gets recent interactions from conversation history
@@ -1079,6 +1096,79 @@ class ConversationMemory
     } catch (\Exception $e) {
       $this->securityLogger->logSecurityEvent(
         "Error getting last SQL query: " . $e->getMessage(),
+        'error'
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Stash the last analysis plan so it rides the next addInteraction() into persisted metadata.
+   *
+   * In-memory only; the cross-request persistence happens when addInteraction() folds this into
+   * the metadata JSON stored on rag_conversation_memory_embedding (see getLastAnalysisPlan()).
+   *
+   * @param array $plan Structured analysis plan (metrics, periods, filters, sort, limit)
+   * @return void
+   */
+  public function setLastAnalysisPlan(array $plan): void
+  {
+    $this->lastAnalysisPlan = $plan;
+  }
+
+  /**
+   * Retrieve the last analysis plan for conversational follow-up (amend a plan, question a metric).
+   *
+   * Fast path: the plan set earlier in THIS request. Fallback: the most recent persisted metadata
+   * row for this user and language — scoped exactly like getLastEntity(), so no other admin's plan
+   * can leak. Fail-closed on an empty user id.
+   *
+   * @return array|null The last analysis plan, or null when none is available
+   */
+  public function getLastAnalysisPlan(): ?array
+  {
+    if ($this->lastAnalysisPlan !== null) {
+      return $this->lastAnalysisPlan;
+    }
+
+    if ($this->userId === '') {
+      return null;
+    }
+
+    try {
+      $prefix = CLICSHOPPING::getConfig('db_table_prefix', 'DB');
+      $tableName = $prefix . 'rag_conversation_memory_embedding';
+
+      $sql = "
+        SELECT metadata
+        FROM {$tableName}
+        WHERE user_id = :user_id
+        AND language_id = :language_id
+        AND metadata LIKE '%\"analysis_plan\"%'
+        ORDER BY date_modified DESC
+        LIMIT 1
+      ";
+
+      $result = DoctrineOrm::selectOne($sql, [
+        'user_id' => (string)$this->userId,
+        'language_id' => (int)$this->languageId,
+      ]);
+
+      if ($result && !empty($result['metadata'])) {
+        $metadata = json_decode($result['metadata'], true);
+
+        if (isset($metadata['analysis_plan']) && is_array($metadata['analysis_plan'])) {
+          $this->lastAnalysisPlan = $metadata['analysis_plan'];
+
+          return $this->lastAnalysisPlan;
+        }
+      }
+
+      return null;
+
+    } catch (\Exception $e) {
+      $this->securityLogger->logSecurityEvent(
+        "Error getting last analysis plan: " . $e->getMessage(),
         'error'
       );
       return null;

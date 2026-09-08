@@ -44,10 +44,6 @@ VERDICT  blocked when is_malicious AND threat_score >= threat_threshold
 **Pure LLM Mode**: the LLM is the primary defense; the pattern fallback is optional and disabled by
 default. Processing is always in English internally, whatever the user's language.
 
-⚠️ **The pipeline is fail-OPEN when the LLM is unavailable**: `validateQuery()` returns
-"not blocked" with `detection_method = llm_error`. That is a deliberate availability choice, not an
-oversight — but it means an LLM outage removes the defense. Never widen that path, and never treat
-a `llm_error` verdict as a clean bill of health.
 
 ## 3. The other layers
 
