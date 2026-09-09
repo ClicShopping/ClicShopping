@@ -22,6 +22,7 @@ class Configure extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $this->page->setFile('configure.php');
     $this->page->data['action'] = 'Configure';
 
+    $CLICSHOPPING_ChatGpt->loadDefinitions('ClicShoppingAdmin/main');
     $CLICSHOPPING_ChatGpt->loadDefinitions('ClicShoppingAdmin/configure');
 
     $modules = $CLICSHOPPING_ChatGpt->getConfigModules();

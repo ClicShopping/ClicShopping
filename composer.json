@@ -18,7 +18,6 @@
         "stymiee/email-validator": "^2.1",
         "amnuts/opcache-gui": "^3.6",
         "doctrine/orm": "^3.6",
-        "symfony/cache": "^8.0",
         "symfony/http-client": "^8.0",
         "mattketmo/email-checker": "^3.0",
         "phpmailer/phpmailer": "^7.1",
@@ -26,7 +25,8 @@
         "theodo-group/llphant": "^1.0",
         "guzzlehttp/guzzle": "^7.15",
         "stolt/llms-txt-php": "^3.5",
-        "stripe/stripe-php": "^21.2"
+        "symfony/cache": "^8.1",
+        "stripe/stripe-php": "^21.3"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"

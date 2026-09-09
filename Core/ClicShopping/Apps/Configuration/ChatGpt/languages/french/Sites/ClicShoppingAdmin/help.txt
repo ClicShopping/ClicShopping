@@ -1,205 +1,101 @@
-heading_title = Comprendre les Modèles IA pour Votre Business Intelligence
+heading_title = Comprendre les modèles IA pour votre Business Intelligence
 
 # Introduction
-help_intro_title = Qu'est-ce que RAG Business Intelligence (RAG BI) ?
-help_intro_text = RAG BI est votre assistant intelligent qui vous aide à analyser vos données commerciales en langage naturel. Au lieu d'écrire des requêtes de base de données complexes, vous pouvez simplement poser des questions comme :
+help_intro_title = Qu'est-ce que la Business Intelligence RAG (RAG BI) ?
+help_intro_text = La RAG BI est votre assistant intelligent pour analyser vos données métier en langage courant. Au lieu d'écrire des requêtes de base de données, vous posez simplement des questions comme :
 help_intro_example_1 = Combien de produits avons-nous ?
 help_intro_example_2 = Quelles sont nos ventes ce mois-ci ?
-help_intro_example_3 = Montrez-moi les 10 produits les plus vendus
-help_intro_description = Le système comprend votre question, génère la requête de base de données appropriée, récupère les données et vous les présente dans un format facile à comprendre.
+help_intro_example_3 = Montre-moi les 10 produits les plus vendus
+help_intro_description = Le système comprend votre question, génère la requête de base de données appropriée, récupère les données et les présente dans un format clair et lisible. Il peut aussi chercher dans vos documents, combiner les deux, et atteindre le web lorsque cela est configuré.
 
-# Capacités des Modèles
-help_capabilities_title = Comprendre les Capacités des Modèles
-help_capabilities_intro = Différents modèles IA ont différentes forces. Voici ce que vous devez savoir :
+# Model Capabilities
+help_capabilities_title = Comprendre les capacités des modèles
+help_capabilities_intro = Chaque modèle a ses forces. Voici ce qui compte au moment d'en choisir un :
 
-help_analytics_title = Requêtes Analytiques
-help_analytics_description = Ce sont des questions sur vos données commerciales qui nécessitent des calculs et des analyses. <strong>Tous les modèles supportent cela.</strong>
+help_analytics_title = Requêtes analytiques
+help_analytics_description = Des questions sur vos données métier qui nécessitent une requête de base de données et un calcul. <strong>Tout modèle capable d'analyse IA le prend en charge.</strong>
 help_analytics_examples_title = Exemples :
-help_analytics_example_1 = Comptage de produits et inventaire
+help_analytics_example_1 = Comptages de produits et inventaire
 help_analytics_example_2 = Chiffre d'affaires et tendances
 help_analytics_example_3 = Statistiques clients
 help_analytics_example_4 = Analyse des commandes
 
-help_semantic_title = Recherche Sémantique
-help_semantic_description = Ce sont des questions sur les politiques, procédures ou informations stockées dans vos documents. <strong>Seuls certains modèles supportent cela.</strong>
+help_semantic_title = Recherche sémantique
+help_semantic_description = Des questions répondues à partir de vos documents, politiques et descriptions produits. <strong>Nécessite un modèle avec support des embeddings.</strong>
 help_semantic_examples_title = Exemples :
 help_semantic_example_1 = Politiques de retour
 help_semantic_example_2 = Informations d'expédition
 help_semantic_example_3 = Descriptions de produits
 help_semantic_example_4 = Procédures de l'entreprise
 
-# Comparaison des Modèles
-help_comparison_title = Modèles IA Disponibles - Guide de Comparaison
-help_comparison_intro = Choisissez le bon modèle pour vos besoins. Tous les modèles ont été testés et fonctionnent de manière fiable. Veuillez noter que les modèles peuvent évoluer et avoir un impact sur les résultats. Gpt-4 et Gpt4.1 sont biens adaptés à ce type d'analyse.
+# Model Catalogue
+help_comparison_title = Modèles IA disponibles
+help_comparison_intro = Le tableau ci-dessous reflète votre catalogue de modèles actuel (géré dans la configuration Modèles IA) et se met à jour automatiquement à mesure que des modèles sont ajoutés, tarifés ou retirés. Pour une analyse fiable, privilégiez les modèles de raisonnement à grande fenêtre de contexte.
 
+help_table_provider = Fournisseur
 help_table_model = Modèle
-help_table_best_for = Idéal Pour
-help_table_analytics = Analytique
-help_table_semantic = Recherche Sémantique
-help_table_speed = Vitesse
-help_table_cost = Coût
-help_table_recommendation = Recommandation
-
-# Modèles
-help_model_gpt4o_name = GPT-4o
-help_model_gpt4o_best = Solution complète, toutes les fonctionnalités
-help_model_gpt4o_speed = Bon
-help_model_gpt4o_cost = Moyen
-help_model_gpt4o_recommendation = ⭐ Choix Principal
-
-help_model_gpt41mini_name = GPT-4.1-mini
-help_model_gpt41mini_best = Meilleur équilibre vitesse et fonctionnalités
-help_model_gpt41mini_speed = Le Plus Rapide
-help_model_gpt41mini_cost = Faible
-help_model_gpt41mini_recommendation = ⭐ Meilleur Rapport Qualité-Prix
-
-help_model_gpt4omini_name = GPT-4o-mini
-help_model_gpt4omini_best = Haut volume, économique
-help_model_gpt4omini_speed = Très Rapide
-help_model_gpt4omini_cost = Très Faible
-help_model_gpt4omini_recommendation = Économique
-
-help_model_phi4_name = Microsoft Phi-4
-help_model_phi4_best = Confidentialité, utilisation hors ligne, déploiement local
-help_model_phi4_speed = Rapide
-help_model_phi4_cost = Gratuit
-help_model_phi4_recommendation = ⭐ Local/Confidentialité
-
-help_model_mistral_name = Mistral Large
-help_model_mistral_best = Fournisseur alternatif, diversité des fournisseurs
-help_model_mistral_speed = Bon
-help_model_mistral_cost = Moyen
-help_model_mistral_recommendation = Alternatif
+help_table_context = Contexte (tokens)
+help_table_input_price = Entrée / 1M
+help_table_output_price = Sortie / 1M
+help_table_analytics = Analyse IA
+help_table_status = Statut
+help_table_note = Les prix sont par 1 000 000 de tokens dans la devise du fournisseur ; les modèles locaux (LM Studio, Ollama) sont gratuits. Le contexte est la fenêtre maximale du modèle.
+help_table_empty = Aucun modèle catalogué pour l'instant. Ajoutez des modèles dans la configuration Modèles IA.
 
 help_badge_yes = ✓ Oui
 help_badge_no = ✗ Non
 
-# Cas d'Usage
-help_usecases_title = Quel Modèle Dois-Je Utiliser ?
+help_status_active = Actif
+help_status_inactive = Inactif
+help_status_default = Défaut
+help_status_recommended = Recommandé
+help_status_fallback = Secours
 
-help_usecase_business_title = Pour la Plupart des Entreprises (Recommandé)
-help_usecase_business_model = GPT-4.1-mini
-help_usecase_business_why = Pourquoi ?
-help_usecase_business_reason_1 = Temps de réponse les plus rapides (5,3 secondes en moyenne)
-help_usecase_business_reason_2 = Supporte l'analytique et la recherche sémantique
-help_usecase_business_reason_3 = Le plus économique pour toutes les fonctionnalités
-help_usecase_business_reason_4 = 100% de taux de réussite aux tests
-help_usecase_business_reason_5 = Technologie stable la plus récente
-help_usecase_business_perfect = Parfait pour : Business intelligence quotidienne, requêtes clients, analyse des ventes
+# Example Queries
+help_examples_title = Exemples de questions que vous pouvez poser
 
-help_usecase_volume_title = Pour les Opérations à Haut Volume
-help_usecase_volume_model = GPT-4o-mini
-help_usecase_volume_why = Pourquoi ?
-help_usecase_volume_reason_1 = Coût le plus bas par requête
-help_usecase_volume_reason_2 = Temps de réponse très rapides (5,4 secondes)
-help_usecase_volume_reason_3 = Supporte toutes les fonctionnalités
-help_usecase_volume_reason_4 = Idéal pour traiter des milliers de requêtes
-help_usecase_volume_perfect = Parfait pour : Grands sites e-commerce, rapports automatisés, applications à fort trafic
-
-help_usecase_privacy_title = Pour la Confidentialité et la Sécurité des Données
-help_usecase_privacy_model = Microsoft Phi-4
-help_usecase_privacy_why = Pourquoi ?
-help_usecase_privacy_reason_1 = Fonctionne localement sur votre serveur (aucune donnée envoyée au cloud)
-help_usecase_privacy_reason_2 = Confidentialité et contrôle complets des données
-help_usecase_privacy_reason_3 = Aucun coût par requête
-help_usecase_privacy_reason_4 = Temps de réponse rapides (5,6 secondes)
-help_usecase_privacy_reason_5 = 100% de taux de réussite pour l'analytique
-help_usecase_privacy_note = Note : Ne supporte pas la recherche sémantique (questions sur documents/politiques)
-help_usecase_privacy_perfect = Parfait pour : Santé, finance, gouvernement, ou toute entreprise avec des exigences strictes de confidentialité
-
-help_usecase_maximum_title = Pour les Capacités Maximales
-help_usecase_maximum_model = GPT-4o
-help_usecase_maximum_why = Pourquoi ?
-help_usecase_maximum_reason_1 = Implémentation de référence - le plus testé
-help_usecase_maximum_reason_2 = Gère excellemment les requêtes complexes
-help_usecase_maximum_reason_3 = Supporte toutes les fonctionnalités
-help_usecase_maximum_reason_4 = 100% de taux de réussite
-help_usecase_maximum_reason_5 = Meilleur pour la logique métier complexe
-help_usecase_maximum_perfect = Parfait pour : Analytique complexe, raisonnement multi-étapes, décisions commerciales critiques
-
-help_usecase_diversity_title = Pour la Diversité des Fournisseurs
-help_usecase_diversity_model = Mistral Large
-help_usecase_diversity_why = Pourquoi ?
-help_usecase_diversity_reason_1 = Alternative à OpenAI (réduit la dépendance au fournisseur)
-help_usecase_diversity_reason_2 = Fournisseur basé en Europe
-help_usecase_diversity_reason_3 = Supporte toutes les fonctionnalités
-help_usecase_diversity_reason_4 = Bonnes performances (6,0 secondes)
-help_usecase_diversity_reason_5 = 100% de taux de réussite
-help_usecase_diversity_perfect = Parfait pour : Organisations souhaitant plusieurs fournisseurs IA, exigences de résidence des données européennes
-
-# Exemples de Requêtes
-help_examples_title = Exemples de Requêtes Que Vous Pouvez Poser
-
-help_examples_analytics_title = Requêtes Analytiques (Tous les Modèles)
+help_examples_analytics_title = Requêtes analytiques
 help_examples_analytics_1 = Combien de produits avons-nous ?
 help_examples_analytics_2 = Quel est notre chiffre d'affaires ce mois-ci ?
-help_examples_analytics_3 = Montrez-moi les 10 produits les plus vendus
+help_examples_analytics_3 = Montre-moi les 10 produits les plus vendus
 help_examples_analytics_4 = Combien de commandes avons-nous reçues aujourd'hui ?
-help_examples_analytics_5 = Quel est le niveau de stock pour l'iPhone 17 Pro ?
-help_examples_analytics_6 = Donnez-moi le SKU du produit X
+help_examples_analytics_5 = Quel est le niveau de stock d'un produit donné ?
+help_examples_analytics_6 = Donne-moi le SKU du produit X
 help_examples_analytics_7 = Combien de nouveaux clients ce mois-ci ?
-help_examples_analytics_8 = Quelle est notre valeur moyenne de commande ?
+help_examples_analytics_8 = Quel est notre panier moyen ?
 
-help_examples_semantic_title = Requêtes Sémantiques (GPT-4.1-mini, gpt-4.1-mini, Mistral)
+help_examples_semantic_title = Requêtes sémantiques (modèles avec support des embeddings)
 help_examples_semantic_1 = Quelle est notre politique de retour ?
 help_examples_semantic_2 = Comment expédier à l'international ?
 help_examples_semantic_3 = Quelles sont les conditions de garantie ?
-help_examples_semantic_4 = Parlez-moi des caractéristiques du produit X
-help_examples_semantic_5 = Quels modes de paiement acceptons-nous ?
+help_examples_semantic_4 = Parle-moi des caractéristiques du produit X
+help_examples_semantic_5 = Quels moyens de paiement acceptons-nous ?
 help_examples_semantic_6 = Comment traiter un remboursement ?
-help_examples_semantic_note = <strong>Note :</strong> Microsoft Phi-4 ne supporte pas les requêtes sémantiques
+help_examples_semantic_note = <strong>Note :</strong> les modèles locaux ou chat uniquement, sans support des embeddings, ne peuvent pas répondre aux requêtes sémantiques.
 
-# Performance
-help_performance_title = Performance et Fiabilité
-help_performance_intro = Tous les modèles ont été rigoureusement testés et ont atteint un bon niveau de résultat mais peuvent comporter des erreurs, notamment comment vous formuler votre question. Ci-dessous les résulats de nos tests.
+# Technical Information
+help_technical_title = Informations techniques
 
-help_performance_table_model = Modèle
-help_performance_table_time = Temps de Réponse Moyen
-help_performance_table_success = Taux de Réussite
-help_performance_table_queries = Requêtes Testées
+help_embeddings_title = À propos des embeddings et de la recherche sémantique
+help_embeddings_text = Le « support des embeddings » signifie que le modèle peut être utilisé pour la recherche sémantique. Un modèle d'embedding dédié convertit vos documents en vecteurs recherchables, puis le modèle de chat les utilise pour trouver l'information pertinente.
+help_embeddings_with = <strong>Avec support des embeddings :</strong> les fournisseurs cloud (OpenAI, Anthropic, Mistral, Gemini) gèrent l'analytique et la recherche sémantique.
+help_embeddings_without = <strong>Sans support des embeddings :</strong> la plupart des modèles locaux (LM Studio, Ollama) sont réservés à l'analytique.
 
-help_performance_gpt41mini = 5,3 secondes
-help_performance_gpt4omini = 5,4 secondes
-help_performance_phi4 = 5,6 secondes
-help_performance_mistral = 6,0 secondes
-help_performance_gpt4o = 6,5 secondes
-help_performance_success = 100%
-help_performance_queries = 5/5
+help_notes_title = Notes importantes
+help_notes_1 = Chaque modèle doit être configuré dans les paramètres Modèles IA (clé API, fenêtre de contexte, tarifs).
+help_notes_2 = Les modèles locaux nécessitent LM Studio ou Ollama en cours d'exécution sur votre serveur.
+help_notes_3 = Les temps de réponse varient selon la complexité de la question, le modèle choisi et la charge du serveur.
+help_notes_4 = La justesse de l'analyse dépend du modèle : un modèle de raisonnement à grand contexte est le plus fiable.
 
-help_performance_note = Tests effectués en décembre 2025 avec 5 requêtes représentatives de business intelligence par modèle.
+# LLM Configuration (local models)
+help_llmconfig_title = Configuration des LLM locaux (LM Studio / Ollama)
+help_llmconfig_intro = Les modèles locaux doivent pouvoir contenir le prompt analytique de ClicShopping, qui inclut le schéma de la base et peut atteindre environ 25 000 tokens. Configurez le modèle en conséquence sur votre serveur local.
+help_llmconfig_context = <strong>Fenêtre de contexte :</strong> chargez le modèle avec un contexte d'au moins 32 000 tokens. Un modèle limité à 16k (par exemple Phi-4) ne peut pas répondre aux requêtes analytiques — le prompt seul dépasse sa fenêtre et la réponse revient vide.
+help_llmconfig_reasoning = <strong>Modèles à raisonnement</strong> (avec une étape de réflexion interne, comme Qwen3) : ils consacrent une partie de leur budget de sortie à réfléchir avant de répondre. Définissez une limite de sortie suffisante (LM Studio utilise jusqu'à 8000 tokens) sinon la réponse finale est tronquée ou vide. Les modèles non-raisonnants évitent ce problème et sont plus rapides.
+help_llmconfig_speed = <strong>Temps de réponse :</strong> un modèle local peut prendre plusieurs minutes par réponse analytique selon votre matériel ; les modèles cloud répondent en quelques secondes.
+help_llmconfig_reliability = Les modèles de raisonnement à grand contexte donnent l'analyse la plus fiable.
+help_llmconfig_pricing = Les tarifs d'utilisation des modèles peuvent varier. Veuillez les mettre à jour.
 
-# Guide de Décision Rapide
-help_decision_title = Guide de Décision Rapide
-help_decision_subtitle = Choisissez Votre Modèle en 3 Questions :
-
-help_decision_q1 = Avez-vous besoin de la recherche sémantique (questions sur politiques/documents) ?
-help_decision_q1_yes = Oui → Choisissez GPT-4.1-mini,ou Mistral Large
-help_decision_q1_no = Non → Microsoft Phi-4 est également une option
-
-help_decision_q2 = La confidentialité des données est-elle critique (santé, finance) ?
-help_decision_q2_yes = Oui → Choisissez Microsoft Phi-4 (déploiement local)
-help_decision_q2_no = Non → Continuez à la question 3
-
-help_decision_q3 = Quelle est votre priorité ?
-help_decision_q3_value = Meilleur rapport qualité-prix → GPT-4.1-mini
-help_decision_q3_cost = Coût le plus bas → gpt-4.1-mini
-help_decision_q3_capability = Capacité maximale → GPT-4o
-help_decision_q3_diversity = Diversité des fournisseurs → Mistral Large
-
-# Informations Techniques
-help_technical_title = Informations Techniques
-
-help_embeddings_title = À Propos des Embeddings et de la Recherche Sémantique
-help_embeddings_text = Quand nous disons qu'un modèle "supporte les embeddings", cela signifie que le modèle peut fonctionner avec les fonctionnalités de recherche sémantique. Le système utilise un modèle d'embedding séparé (text-embedding-3-large) pour convertir vos documents en vecteurs recherchables, puis le modèle de chat utilise ces vecteurs pour trouver les informations pertinentes.
-help_embeddings_with = <strong>Modèles avec support des embeddings :</strong>gpt-4.1-mini, Mistral Large
-help_embeddings_without = <strong>Modèles sans support des embeddings :</strong> Microsoft Phi-4 (analytique uniquement)
-
-help_notes_title = Notes Importantes
-help_notes_1 = Tous les modèles nécessitent une configuration appropriée dans les paramètres ChatGPT
-help_notes_2 = Microsoft Phi-4 nécessite que LM Studio soit en cours d'exécution localement
-help_notes_3 = Les temps de réponse peuvent varier en fonction de la complexité de la requête et de la charge du serveur
-help_notes_4 = Tous les modèles ont été testés et validés pour une utilisation en production
-
-# Pied de page
-help_footer_validated = Tous les modèles testés et validés en décembre 2025
+# Footer
+help_footer_validated = Les modèles sont configurés et maintenus dans les paramètres Modèles IA.
 help_footer_support = Pour le support technique ou des questions, veuillez contacter votre administrateur système.

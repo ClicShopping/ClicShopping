@@ -95,6 +95,87 @@ abstract class AbstractFormatter
   }
 
   /**
+   * Render rows as a table, split into captioned sub-tables when a column carries a
+   * text_table_split_reason_<col> label; a single table otherwise. Shared by the analytics
+   * and hybrid paths so both restitution channels apply the same split.
+   *
+   * @param array $data Result rows
+   * @param string $cssClass Table CSS classes
+   * @return string Rendered HTML
+   */
+  protected function renderDataTable(array $data, string $cssClass = 'table table-bordered table-striped'): string
+  {
+    $column = $this->splitColumn($data);
+
+    if ($column === null) {
+      return $this->generateTable($data, $cssClass);
+    }
+
+    $output = "<p class='split-reason'>" . htmlspecialchars($this->language->getDef('text_table_split_reason_' . $column)) . "</p>";
+
+    foreach ($this->groupRows($data, $column) as $value => $rows) {
+      $key = 'text_table_split_' . $column . '_' . $value;
+      $caption = $this->language->getDef($key);
+
+      $output .= "<h6>" . htmlspecialchars($caption === $key ? (string)$value : $caption) . "</h6>";
+      $output .= $this->generateTable($rows, $cssClass);
+    }
+
+    return $output;
+  }
+
+  /**
+   * The column the rows are split on, or null when they render as one table.
+   *
+   * A column is a split column when its REASON label is defined: declaring the label is what
+   * turns the split on, so no domain name is ever written here. One group renders as one table.
+   *
+   * @param array $data Result rows
+   * @return string|null Column name, or null
+   */
+  protected function splitColumn(array $data): ?string
+  {
+    $first = reset($data);
+
+    if (!is_array($first) || count($data) < 2) {
+      return null;
+    }
+
+    foreach (array_keys($first) as $column) {
+      $key = 'text_table_split_reason_' . $column;
+
+      if (is_string($column) && $this->language->getDef($key) !== $key
+        && count($this->groupRows($data, $column)) > 1) {
+        return $column;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * @param array $data Result rows
+   * @param string $column Column to group on
+   * @return array<string, array> Rows per value, the column itself dropped from each row
+   */
+  protected function groupRows(array $data, string $column): array
+  {
+    $groups = [];
+
+    foreach ($data as $row) {
+      if (!is_array($row) || !array_key_exists($column, $row)) {
+        continue;
+      }
+
+      $value = (string)$row[$column];
+      unset($row[$column]);
+      $groups[$value][] = $row;
+    }
+
+    return $groups;
+  }
+
+  /**
    * Build table attributes for bootstrap-table with a unique id.
    */
   protected function buildTableOpenTag(string $cssClass): array

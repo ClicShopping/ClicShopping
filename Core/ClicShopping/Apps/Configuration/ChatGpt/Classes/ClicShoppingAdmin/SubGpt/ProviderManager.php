@@ -179,21 +179,13 @@ class ProviderManager
       $config->modelOptions['temperature'] = (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE;
     }
 
-    // LM Studio models need more tokens to allow reasoning with <think> tags
-    // Use dedicated config if available, otherwise use higher default
-    if (defined('CLICSHOPPING_APP_CHATGPT_LMSTUDIO_MAX_TOKEN')) {
-      $config->modelOptions['max_tokens'] = (int)CLICSHOPPING_APP_CHATGPT_LMSTUDIO_MAX_TOKEN;
-    } elseif (defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN')) {
-      // For LM Studio, multiply by 3 to allow reasoning space
-      // Example: 350 tokens → 1050 tokens for <think> + answer
-      $baseTokens = (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN;
-      $config->modelOptions['max_tokens'] = $baseTokens * 3;
-      
-      error_log("🔧 LM Studio: Using {$config->modelOptions['max_tokens']} tokens (base: $baseTokens × 3 for reasoning)");
-    } else {
-      // Default: 1000 tokens for LM Studio (allows reasoning)
-      $config->modelOptions['max_tokens'] = 1000;
-    }
+    // LM Studio reasoning models need a large <think> + answer budget, independent of the shared
+    // chat cap (which is a short cloud-answer limit). Default 8000, kept within context; a dedicated
+    // override may set a different value but is still ceiled at 8000.
+    $lmStudioMax = defined('CLICSHOPPING_APP_CHATGPT_LMSTUDIO_MAX_TOKEN')
+      ? (int)CLICSHOPPING_APP_CHATGPT_LMSTUDIO_MAX_TOKEN
+      : 8000;
+    $config->modelOptions['max_tokens'] = min($lmStudioMax, 8000);
 
     // Créer et retourner l'instance de LmStudioChat avec la config
     return CountingChat::wrap(new LmStudioChat($config));

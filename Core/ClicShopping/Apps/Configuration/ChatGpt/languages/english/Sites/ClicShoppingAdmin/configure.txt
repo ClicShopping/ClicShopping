@@ -2,4 +2,4 @@ module_ch_short_title = Gpt
 module_ch_sql_update = Update SQL
 module_ch_confirmation = Are you sure you want to update the SQL database? <br>You must have at MariaDB 11.7 or higher installed (it does not work with MySql 9.x).<br>Click OK to continue or Cancel to stop the update.
 alert_module_install_update = The update was successful. You can now use the RAG BI. However, you must update all your data for it to work. You can use the embeddings Cronjob (tools menu) to make this easier your life.
-
+button_help = Help

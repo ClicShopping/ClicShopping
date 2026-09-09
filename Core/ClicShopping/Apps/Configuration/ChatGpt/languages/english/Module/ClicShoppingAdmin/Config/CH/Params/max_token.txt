@@ -1,8 +1,5 @@
 cfg_chatgpt_max_token_title = Max Token
-cfg_chatgpt_max_token_description = Please, a number<br />
-The maximum number of tokens to generate in the completion.
-The token count of your prompt plus max_tokens cannot exceed the model's context length. <br />
-1000 tokens : around 750 words<br />
- gpt-3.5-turbo-instruct  : 4000<br />
-Gpt-4 (beta test) : 8,192 tokens <br />
-gpt-4-32k (beta test)  : 32,768 tokens
+cfg_chatgpt_max_token_description = Please enter a number.<br />
+Maximum number of tokens generated in the answer (completion). Your prompt tokens plus this value cannot exceed the model's context length, so keep a margin.<br />
+Guide: 1000 tokens is about 750 words.<br />
+A higher value allows longer answers but costs more and is slower. Typical values: short answers 300-1000; detailed or SQL/analytics answers 2000-4000.

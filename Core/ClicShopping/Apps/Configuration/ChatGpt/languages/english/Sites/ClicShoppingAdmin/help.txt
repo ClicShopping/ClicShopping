@@ -2,18 +2,18 @@ heading_title = Understanding AI Models for Your Business Intelligence
 
 # Introduction
 help_intro_title = What is RAG Business Intelligence (RAG BI)?
-help_intro_text = RAG BI is your intelligent assistant that helps you analyze your business data using natural language. Instead of writing complex database queries, you can simply ask questions like:
+help_intro_text = RAG BI is your intelligent assistant for analysing your business data in plain language. Instead of writing database queries, you simply ask questions such as:
 help_intro_example_1 = How many products do we have?
 help_intro_example_2 = What are our sales this month?
 help_intro_example_3 = Show me the top 10 best-selling products
-help_intro_description = The system understands your question, generates the appropriate database query, retrieves the data, and presents it to you in an easy-to-understand format.
+help_intro_description = The system understands your question, generates the appropriate database query, retrieves the data, and presents it in a clear, readable format. It can also search your documents, combine both, and reach the web when that is configured.
 
 # Model Capabilities
 help_capabilities_title = Understanding Model Capabilities
-help_capabilities_intro = Different AI models have different strengths. Here's what you need to know:
+help_capabilities_intro = Different models have different strengths. Here is what matters when you choose one:
 
 help_analytics_title = Analytics Queries
-help_analytics_description = These are questions about your business data that require calculations and analysis. <strong>All models support this.</strong>
+help_analytics_description = Questions about your business data that require a database query and a calculation. <strong>Every AI-capable model supports this.</strong>
 help_analytics_examples_title = Examples:
 help_analytics_example_1 = Product counts and inventory
 help_analytics_example_2 = Sales revenue and trends
@@ -21,185 +21,81 @@ help_analytics_example_3 = Customer statistics
 help_analytics_example_4 = Order analysis
 
 help_semantic_title = Semantic Search
-help_semantic_description = These are questions about policies, procedures, or information stored in your documents. <strong>Only some models support this.</strong>
+help_semantic_description = Questions answered from your documents, policies and product descriptions. <strong>Requires a model with embedding support.</strong>
 help_semantic_examples_title = Examples:
 help_semantic_example_1 = Return policies
 help_semantic_example_2 = Shipping information
 help_semantic_example_3 = Product descriptions
 help_semantic_example_4 = Company procedures
 
-# Model Comparison
-help_comparison_title = Available AI Models - Comparison Guide
-help_comparison_intro = Choose the right model for your needs. All models have been tested and work reliably. Please note that models can evolve and impact results. Gpt-4 and Gpt4.1 are well-suited for this type of analysis.
+# Model Catalogue
+help_comparison_title = Available AI Models
+help_comparison_intro = The table below reflects your current model catalogue (managed in the AI Models configuration) and updates automatically as models are added, priced or retired. For reliable analytics, prefer reasoning models with a large context window.
 
+help_table_provider = Provider
 help_table_model = Model
-help_table_best_for = Best For
-help_table_analytics = Analytics
-help_table_semantic = Semantic Search
-help_table_speed = Speed
-help_table_cost = Cost
-help_table_recommendation = Recommendation
-
-# Models
-help_model_gpt4o_name = GPT-4o
-help_model_gpt4o_best = Complete solution, all features
-help_model_gpt4o_speed = Good
-help_model_gpt4o_cost = Medium
-help_model_gpt4o_recommendation = ⭐ Primary Choice
-
-help_model_gpt41mini_name = GPT-4.1-mini
-help_model_gpt41mini_best = Best balance of speed and features
-help_model_gpt41mini_speed = Fastest
-help_model_gpt41mini_cost = Low
-help_model_gpt41mini_recommendation = Best Value
-
-help_model_gpt4omini_name = GPT-4o-mini
-help_model_gpt4omini_best = High-volume, cost-effective
-help_model_gpt4omini_speed = Very Fast
-help_model_gpt4omini_cost = Very Low
-help_model_gpt4omini_recommendation = Cost-Effective
-
-help_model_phi4_name = Microsoft Phi-4
-help_model_phi4_best = Privacy, offline use, local deployment
-help_model_phi4_speed = Fast
-help_model_phi4_cost = Free
-help_model_phi4_recommendation = ⭐ Local/Privacy
-
-help_model_mistral_name = Mistral Large
-help_model_mistral_best = Alternative provider, vendor diversity
-help_model_mistral_speed = Good
-help_model_mistral_cost = Medium
-help_model_mistral_recommendation = Alternative
+help_table_context = Context (tokens)
+help_table_input_price = Input / 1M
+help_table_output_price = Output / 1M
+help_table_analytics = AI analysis
+help_table_status = Status
+help_table_note = Prices are per 1,000,000 tokens in the provider's currency; local models (LM Studio, Ollama) are free. Context is the model's maximum window.
+help_table_empty = No model catalogued yet. Add models in the AI Models configuration.
 
 help_badge_yes = ✓ Yes
 help_badge_no = ✗ No
 
-# Use Cases
-help_usecases_title = Which Model Should I Use?
-
-help_usecase_business_title = For Most Businesses (Recommended)
-help_usecase_business_model = GPT-4.1-mini
-help_usecase_business_why = Why?
-help_usecase_business_reason_1 = Fastest response times (5.3 seconds average)
-help_usecase_business_reason_2 = Supports both analytics and semantic search
-help_usecase_business_reason_3 = Most cost-effective for full features
-help_usecase_business_reason_4 = 100% success rate in testing
-help_usecase_business_reason_5 = Latest stable technology
-help_usecase_business_perfect = Perfect for: Daily business intelligence, customer inquiries, sales analysis
-
-help_usecase_volume_title = For High-Volume Operations
-help_usecase_volume_model = GPT-4o-mini
-help_usecase_volume_why = Why?
-help_usecase_volume_reason_1 = Lowest cost per query
-help_usecase_volume_reason_2 = Very fast response times (5.4 seconds)
-help_usecase_volume_reason_3 = Supports all features
-help_usecase_volume_reason_4 = Ideal for processing thousands of queries
-help_usecase_volume_perfect = Perfect for: Large e-commerce sites, automated reporting, high-traffic applications
-
-help_usecase_privacy_title = For Privacy & Data Security
-help_usecase_privacy_model = Microsoft Phi-4
-help_usecase_privacy_why = Why?
-help_usecase_privacy_reason_1 = Runs locally on your server (no data sent to cloud)
-help_usecase_privacy_reason_2 = Complete data privacy and control
-help_usecase_privacy_reason_3 = No per-query costs
-help_usecase_privacy_reason_4 = Fast response times (5.6 seconds)
-help_usecase_privacy_reason_5 = 100% success rate for analytics
-help_usecase_privacy_note = Note: Does not support semantic search (document/policy questions)
-help_usecase_privacy_perfect = Perfect for: Healthcare, finance, government, or any business with strict data privacy requirements
-
-help_usecase_maximum_title = For Maximum Capabilities
-help_usecase_maximum_model = GPT-4o
-help_usecase_maximum_why = Why?
-help_usecase_maximum_reason_1 = Reference implementation - most tested
-help_usecase_maximum_reason_2 = Handles complex queries excellently
-help_usecase_maximum_reason_3 = Supports all features
-help_usecase_maximum_reason_4 = 100% success rate
-help_usecase_maximum_reason_5 = Best for complex business logic
-help_usecase_maximum_perfect = Perfect for: Complex analytics, multi-step reasoning, critical business decisions
-
-help_usecase_diversity_title = For Vendor Diversity
-help_usecase_diversity_model = Mistral Large
-help_usecase_diversity_why = Why?
-help_usecase_diversity_reason_1 = Alternative to OpenAI (reduces vendor lock-in)
-help_usecase_diversity_reason_2 = European-based provider
-help_usecase_diversity_reason_3 = Supports all features
-help_usecase_diversity_reason_4 = Good performance (6.0 seconds)
-help_usecase_diversity_reason_5 = 100% success rate
-help_usecase_diversity_perfect = Perfect for: Organizations wanting multiple AI providers, European data residency requirements
+help_status_active = Active
+help_status_inactive = Inactive
+help_status_default = Default
+help_status_recommended = Recommended
+help_status_fallback = Fallback
 
 # Example Queries
 help_examples_title = Example Queries You Can Ask
 
-help_examples_analytics_title = Analytics Queries (All Models)
+help_examples_analytics_title = Analytics Queries
 help_examples_analytics_1 = How many products do we have?
 help_examples_analytics_2 = What's our revenue this month?
 help_examples_analytics_3 = Show me the top 10 best-selling products
 help_examples_analytics_4 = How many orders did we receive today?
-help_examples_analytics_5 = What's the stock level for iPhone 17 Pro?
+help_examples_analytics_5 = What's the stock level for a given product?
 help_examples_analytics_6 = Give me the SKU for product X
 help_examples_analytics_7 = How many new customers this month?
 help_examples_analytics_8 = What's our average order value?
 
-help_examples_semantic_title = Semantic Queries (GPT-4.1-mini, Mistral)
+help_examples_semantic_title = Semantic Queries (models with embedding support)
 help_examples_semantic_1 = What is our return policy?
 help_examples_semantic_2 = How do I ship internationally?
 help_examples_semantic_3 = What are the warranty terms?
 help_examples_semantic_4 = Tell me about product X features
 help_examples_semantic_5 = What payment methods do we accept?
 help_examples_semantic_6 = How do I process a refund?
-help_examples_semantic_note = <strong>Note:</strong> Microsoft Phi-4 does not support semantic queries
-
-# Performance
-help_performance_title = Performance & Reliability
-help_performance_intro = All models have been rigorously tested and have achieved a good level of performance, but they may still contain errors—particularly depending on how you phrase your question. Below are the results of our tests.
-
-help_performance_table_model = Model
-help_performance_table_time = Average Response Time
-help_performance_table_success = Success Rate
-help_performance_table_queries = Queries Tested
-
-help_performance_gpt41mini = 5.3 seconds
-help_performance_gpt4omini = 5.4 seconds
-help_performance_phi4 = 5.6 seconds
-help_performance_mistral = 6.0 seconds
-help_performance_gpt4o = 6.5 seconds
-help_performance_success = 100%
-help_performance_queries = 5/5
-
-help_performance_note = Testing conducted December 2025 with 5 representative business intelligence queries per model.
-
-# Quick Decision Guide
-help_decision_title = Quick Decision Guide
-help_decision_subtitle = Choose Your Model in 3 Questions:
-
-help_decision_q1 = Do you need semantic search (policy/document questions)?
-help_decision_q1_yes = Yes → Choose GPT-4.1-mini,or Mistral Large
-help_decision_q1_no = No → Microsoft Phi-4 is also an option
-
-help_decision_q2 = Is data privacy critical (healthcare, finance)?
-help_decision_q2_yes = Yes → Choose Microsoft Phi-4 (local deployment)
-help_decision_q2_no = No → Continue to question 3
-
-help_decision_q3 = What's your priority?
-help_decision_q3_value = Best value → GPT-4.1-mini
-help_decision_q3_cost = Lowest cost → gpt-4.1-mini
-help_decision_q3_capability = Maximum capability → GPT-4o
-help_decision_q3_diversity = Vendor diversity → Mistral Large
+help_examples_semantic_note = <strong>Note:</strong> local or chat-only models without embedding support cannot answer semantic queries.
 
 # Technical Information
 help_technical_title = Technical Information
 
 help_embeddings_title = About Embeddings & Semantic Search
-help_embeddings_text = When we say a model "supports embeddings," it means the model can work with semantic search features. The system uses a separate embedding model (text-embedding-3-large) to convert your documents into searchable vectors, then the chat model uses these to find relevant information.
-help_embeddings_with = <strong>Models with embedding support:</strong>GPT-4.1-mini, Mistral Large
-help_embeddings_without = <strong>Models without embedding support:</strong> Microsoft Phi-4 (analytics only)
+help_embeddings_text = "Embedding support" means the model can be used for semantic search. A dedicated embedding model converts your documents into searchable vectors, then the chat model uses them to find the relevant information.
+help_embeddings_with = <strong>With embedding support:</strong> cloud providers (OpenAI, Anthropic, Mistral, Gemini) handle both analytics and semantic search.
+help_embeddings_without = <strong>Without embedding support:</strong> most local models (LM Studio, Ollama) are analytics only.
 
 help_notes_title = Important Notes
-help_notes_1 = All models require proper configuration in the ChatGPT settings
-help_notes_2 = Microsoft Phi-4 requires LM Studio to be running locally
-help_notes_3 = Response times may vary based on query complexity and server load
-help_notes_4 = All models have been tested and validated for production use
+help_notes_1 = Each model must be configured in the AI Models settings (API key, context window, pricing).
+help_notes_2 = Local models require LM Studio or Ollama running on your server.
+help_notes_3 = Response times vary with query complexity, the chosen model, and server load.
+help_notes_4 = Analytics accuracy depends on the model: a reasoning model with a large context is the most reliable.
+
+# LLM Configuration (local models)
+help_llmconfig_title = Local LLM Configuration (LM Studio / Ollama)
+help_llmconfig_intro = Local models must be able to hold ClicShopping's analytics prompt, which includes the database schema and can reach around 25,000 tokens. Configure the model accordingly on your local server.
+help_llmconfig_context = <strong>Context window:</strong> load the model with a context of at least 32,000 tokens. A model limited to 16k (for example Phi-4) cannot answer analytics queries — the prompt alone exceeds its window and the reply comes back empty.
+help_llmconfig_reasoning = <strong>Reasoning models</strong> (with an internal thinking step, such as Qwen3): they spend part of their output budget thinking before answering. Set a high enough output limit (LM Studio uses up to 8000 tokens) or the final answer is truncated or empty. Non-reasoning models avoid this and are faster.
+help_llmconfig_speed = <strong>Response time:</strong> a local model can take several minutes per analytics answer depending on your hardware; cloud models answer in seconds.
+help_llmconfig_reliability = Reasoning models with a large context window give the most reliable analysis.
+help_llmconfig_pricing = Model usage pricing may change over time. Please keep it up to date.
 
 # Footer
-help_footer_validated = All models tested and validated December 2025
+help_footer_validated = Models are configured and maintained in the AI Models settings.
 help_footer_support = For technical support or questions, please contact your system administrator.

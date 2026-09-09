@@ -1,3 +1,4 @@
 module_ch_short_title = Chat Gpt
 module_ch_confirmation = Êtes-vous sûr de vouloir mettre à jour la base de données SQL ? <br>Vous devez avoir MariaDB 11.7 ou une version supérieure installée (cela ne fonctionne pas avec MySql 9.x).<br>Cliquez sur OK pour continuer ou sur Annuler pour arrêter la mise à jour.
 alert_module_install_update = La mise a jour s'est bien passé. Vous pouvez dés à présent utilser le RAG BI. Toutefois, vous devez mettre à jour l'ensemble de vos données pour que cela fonctionne. Vous pouvez utiliser le Cronjob (menu outils) embeddings qui vous facilitera la vie.
+button_help = Aide

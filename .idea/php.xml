@@ -43,8 +43,6 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/psr/log" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/ralouphie/getallheaders" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stymiee/email-validator" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache-contracts" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/deprecation-contracts" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client" />
@@ -53,7 +51,6 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-intl-grapheme" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-intl-normalizer" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-mbstring" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php84" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/service-contracts" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/stopwatch" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/string" />
@@ -73,6 +70,9 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpoffice/phpword" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/openai-php/client" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stolt/llms-txt-php" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php86" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache-contracts" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stripe/stripe-php" />
     </include_path>
   </component>

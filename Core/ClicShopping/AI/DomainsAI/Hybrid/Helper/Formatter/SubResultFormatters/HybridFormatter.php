@@ -210,33 +210,9 @@ class HybridFormatter extends AbstractFormatter
       }
 
       
-      // Display results as table
+      // Shared split-aware renderer: header translation + tax-convention split, like the pure-analytics path.
       if (isset($analyticsComp['results']) && is_array($analyticsComp['results']) && !empty($analyticsComp['results'])) {
-        $tableParts = $this->buildTableOpenTag('table table-sm table-bordered table-striped');
-        $output .= $tableParts['toolbar'] . $tableParts['table'];
-        
-        // Table header
-        $firstRow = $analyticsComp['results'][0];
-        if (is_array($firstRow)) {
-          $output .= "<thead class='table-light'><tr>";
-          foreach (array_keys($firstRow) as $column) {
-            $output .= "<th>" . htmlspecialchars(ucfirst(str_replace('_', ' ', $column))) . "</th>";
-          }
-          $output .= "</tr></thead>";
-          
-          // Table body
-          $output .= "<tbody>";
-          foreach ($analyticsComp['results'] as $row) {
-            $output .= "<tr>";
-          foreach ($row as $column => $value) {
-            $output .= "<td>" . $this->formatCellValue((string)$column, $value, $row) . "</td>";
-          }
-            $output .= "</tr>";
-          }
-          $output .= "</tbody>";
-        }
-        
-        $output .= "</table>";
+        $output .= $this->renderDataTable($analyticsComp['results'], 'table table-sm table-bordered table-striped');
       }
       
       $output .= "</div>";
@@ -407,25 +383,10 @@ class HybridFormatter extends AbstractFormatter
     if (isset($subQuery['results']) && is_array($subQuery['results'])) {
       $output .= "<div class='analytics-results'>";
       
-      // If results are already rows (associative arrays), render directly
+      // Row-shaped results: render via the shared split-aware table, so the hybrid path gets the
+      // same column-name translation and tax-convention split as the pure-analytics path.
       if (!empty($subQuery['results']) && is_array($subQuery['results'][0])) {
-        $firstRow = $subQuery['results'][0];
-        $tableParts = $this->buildTableOpenTag('table table-sm table-bordered');
-        $output .= $tableParts['toolbar'] . $tableParts['table'];
-        $output .= "<thead><tr>";
-        foreach (array_keys($firstRow) as $column) {
-          $output .= "<th>" . htmlspecialchars($column) . "</th>";
-        }
-        $output .= "</tr></thead>";
-        $output .= "<tbody>";
-        foreach ($subQuery['results'] as $row) {
-          $output .= "<tr>";
-          foreach ($row as $column => $value) {
-            $output .= "<td>" . $this->formatCellValue((string)$column, $value, $row) . "</td>";
-          }
-          $output .= "</tr>";
-        }
-        $output .= "</tbody></table>";
+        $output .= $this->renderDataTable($subQuery['results'], 'table table-sm table-bordered');
         $output .= "</div>";
         return $output;
       }
