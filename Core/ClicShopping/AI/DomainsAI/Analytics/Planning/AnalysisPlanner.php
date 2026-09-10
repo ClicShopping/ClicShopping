@@ -101,9 +101,11 @@ class AnalysisPlanner
    */
   protected function assemblePrompt(string $skeleton, string $englishQuestion): string
   {
+    // Same clock PeriodResolver treats as "today"; the model needs it to anchor a relative
+    // period the question states (last quarter/month/year) to concrete bounds.
     return str_replace(
-      ['{{question}}', '{{examples}}'],
-      [$englishQuestion, $this->examples()],
+      ['{{today}}', '{{question}}', '{{examples}}'],
+      [date('Y-m-d'), $englishQuestion, $this->examples()],
       $skeleton
     );
   }

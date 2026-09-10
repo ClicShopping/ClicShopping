@@ -22,6 +22,8 @@ text_ambiguity_detect_examples = - "How many products in stock?" -> AMBIGUOUS (c
 - "revenue this month" -> NOT ambiguous (explicit "this month" = current month only).
 - "Average price of products" -> NOT ambiguous (statistical language "average").
 - "Highest revenue this year" -> NOT ambiguous (extreme language "highest" + explicit temporal "this year").
+- "Which product sold the most last quarter" -> NOT ambiguous (extreme "sold the most" + explicit relative period "last quarter": the period is stated, resolve it to that quarter, do NOT ask which period).
+- "Best-selling smartphone in the last quarter" -> NOT ambiguous (extreme "best-selling" + explicit relative period "last quarter"; a superlative that carries a relative period like last quarter / last month / last year is never the missing-period case).
 - "price and SKU" -> NOT ambiguous (multi-field query with 2 specific fields).
 - "model and price" -> NOT ambiguous (multi-field query with 2 specific fields).
 - "Show model and price" -> NOT ambiguous (display verb + multi-field query).
