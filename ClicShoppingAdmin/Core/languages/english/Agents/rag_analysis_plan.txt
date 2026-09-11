@@ -33,3 +33,4 @@ text_analysis_plan_time_grain_shape_monthly = presentation: the current window s
 text_analysis_plan_ranking_line = - {{direction}} {{n}} by {{metric}}, partitioned by {{partition}}
 text_analysis_plan_ranking_no_partition = no partition
 text_analysis_plan_dimensions_line = dimensions: {{dimensions}}
+text_analysis_plan_excluded_line = OMIT THESE COLUMNS, but still generate the query for the metric(s) listed above: {{metrics}}. The question named them, yet they are order-level figures a per-product breakdown would count once per line and inflate, so leave them out entirely - no column, no CASE, no join, no NULL placeholder, no mention. This is NOT a reason to refuse or return prose: build the SELECT for the listed metric(s) normally; the user is told about these separately.

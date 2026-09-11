@@ -33,7 +33,11 @@ class MetricCatalog
    * `split` is optional and names the DIMENSION the answer is broken down by when the question
    * asks for a bare total: two populations the merchant must see apart, never silently merged.
    *
-   * @return array<string, array{grain: string, type: string, definition: string, basis?: string, split?: string}>
+   * `line_alternative` is optional and names the ORDER_LINE-grain metric that answers the same
+   * intent when an order-grain figure is broken down by a product dimension: revenue per category
+   * IS the sum of line revenues, so the plan swaps to it rather than fanning the order total out.
+   *
+   * @return array<string, array{grain: string, type: string, definition: string, basis?: string, split?: string, line_alternative?: string}>
    */
   public static function all(): array
   {
@@ -51,6 +55,7 @@ class MetricCatalog
         'definition' => 'text_metric_revenue_ht',
         'basis' => 'text_metric_basis_revenue_ht',
         'split' => 'tax_convention',
+        'line_alternative' => 'line_revenue',
       ],
       'line_revenue' => [
         'grain' => 'order_line',

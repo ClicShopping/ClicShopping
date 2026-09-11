@@ -17,8 +17,6 @@
         "php-http/discovery": "^1.20",
         "stymiee/email-validator": "^2.1",
         "amnuts/opcache-gui": "^3.6",
-        "doctrine/orm": "^3.6",
-        "symfony/http-client": "^8.0",
         "mattketmo/email-checker": "^3.0",
         "phpmailer/phpmailer": "^7.1",
         "setasign/fpdf": "^1.9",
@@ -26,7 +24,9 @@
         "guzzlehttp/guzzle": "^7.15",
         "stolt/llms-txt-php": "^3.5",
         "symfony/cache": "^8.1",
-        "stripe/stripe-php": "^21.3"
+        "stripe/stripe-php": "^21.3",
+        "symfony/http-client": "^8.1",
+        "doctrine/orm": "^3.7"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"

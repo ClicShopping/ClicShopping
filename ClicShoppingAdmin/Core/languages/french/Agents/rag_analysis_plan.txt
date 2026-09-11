@@ -33,3 +33,4 @@ text_analysis_plan_time_grain_shape_monthly = présentation : la fenêtre actuel
 text_analysis_plan_ranking_line = - {{direction}} {{n}} par {{metric}}, partitionné par {{partition}}
 text_analysis_plan_ranking_no_partition = aucune partition
 text_analysis_plan_dimensions_line = dimensions : {{dimensions}}
+text_analysis_plan_excluded_line = OMETS CES COLONNES, mais génère quand même la requête pour la ou les métriques listées ci-dessus : {{metrics}}. La question les nomme, mais ce sont des grandeurs au niveau de la commande qu'une ventilation par produit compterait une fois par ligne et gonflerait, donc laisse-les entièrement de côté - ni colonne, ni CASE, ni jointure, ni valeur NULL de remplacement, aucune mention. Ce n'est PAS une raison de refuser ni de répondre en prose : construis le SELECT pour la ou les métriques listées normalement ; l'utilisateur en est informé séparément.

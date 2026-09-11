@@ -218,6 +218,22 @@ class AnalysisPlanner
       ]);
     }
 
+    // Metrics dropped for a grain conflict were requested by the question but cannot be computed
+    // at this breakdown: name them so the generator OMITS them instead of fanning them out.
+    $excluded = [];
+
+    foreach ($plan['unsatisfiable'] ?? [] as $item) {
+      if (($item['kind'] ?? '') === 'grain_conflict' && ($item['label'] ?? '') !== '') {
+        $excluded[] = $item['label'];
+      }
+    }
+
+    if ($excluded !== []) {
+      $block .= "\n" . $this->getDef('text_analysis_plan_excluded_line', [
+        'metrics' => implode(', ', $excluded),
+      ]);
+    }
+
     return $block;
   }
 

@@ -18,16 +18,10 @@
   <component name="PhpIncludePathManager">
     <include_path>
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/daveearley/daves-email-validation-tool" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/collections" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/dbal" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/deprecations" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/event-manager" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/inflector" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/instantiator" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/lexer" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/migrations" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/orm" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/persistence" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/guzzle" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/promises" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/guzzlehttp/psr7" />
@@ -45,8 +39,6 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stymiee/email-validator" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/console" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/deprecation-contracts" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client-contracts" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-ctype" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-intl-grapheme" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-intl-normalizer" />
@@ -70,10 +62,18 @@
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/phpoffice/phpword" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/openai-php/client" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stolt/llms-txt-php" />
-      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php86" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/cache-contracts" />
       <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/stripe/stripe-php" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client-contracts" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/http-client" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/symfony/polyfill-php86" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/inflector" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/persistence" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/collections" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/instantiator" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/orm" />
+      <path value="$PROJECT_DIR$/Core/ClicShopping/External/vendor/doctrine/lexer" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.5">

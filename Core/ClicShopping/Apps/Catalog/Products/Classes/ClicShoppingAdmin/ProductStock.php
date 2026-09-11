@@ -214,6 +214,8 @@ class ProductStock
 
   /**
    * Calculate mean and standard deviation for a numeric series.
+   * @param array $values
+   * @return array
    */
   public static function calculateDemandStats(array $values): array
   {
@@ -244,6 +246,9 @@ class ProductStock
 
   /**
    * Forecast total demand over a horizon based on daily demand series.
+   * @param array $dailyDemand
+   * @param int $horizonDays
+   * @return array
    */
   public static function calculateDemandForecast(array $dailyDemand, int $horizonDays): array
   {
@@ -263,7 +268,11 @@ class ProductStock
   }
 
   /**
-   * Calculate safety stock using daily demand and lead time.
+   * @param array $dailyDemand
+   * @param int $leadTimeDays
+   * @param float $serviceLevel
+   * @return float
+   *  Calculate safety stock using daily demand and lead time.
    */
   public static function calculateSafetyStockFromDailyDemand(array $dailyDemand, int $leadTimeDays, float $serviceLevel = 0.95): float
   {
@@ -274,8 +283,13 @@ class ProductStock
     return $zScore * $stats['stddev'] * sqrt($leadTimeDays);
   }
 
+
   /**
-   * Calculate probability of stock-out over a horizon.
+   * @param float $currentStock
+   * @param float $meanDemand
+   * @param float $stdDevDemand
+   * @return float
+   *  Calculate probability of stock-out over a horizon.
    */
   public static function calculateStockoutProbability(float $currentStock, float $meanDemand, float $stdDevDemand): float
   {
@@ -290,7 +304,11 @@ class ProductStock
   }
 
   /**
-   * Calculate reorder quantity based on expected demand and safety stock.
+   * @param float $currentStock
+   * @param float $expectedDemand
+   * @param float $safetyStock
+   * @return float
+   *  Calculate reorder quantity based on expected demand and safety stock.
    */
   public static function calculateReorderQuantity(float $currentStock, float $expectedDemand, float $safetyStock): float
   {
@@ -299,7 +317,9 @@ class ProductStock
   }
 
   /**
-   * Convert service level to Z-score.
+   * @param float $serviceLevel
+   * @return float
+   *  Convert service level to Z-score.
    */
   private static function getZScoreForServiceLevel(float $serviceLevel): float
   {
@@ -308,7 +328,11 @@ class ProductStock
   }
 
   /**
-   * Normal CDF approximation.
+   * @param float $x
+   * @param float $mean
+   * @param float $stdDev
+   * @return float
+   *  Normal CDF approximation.
    */
   private static function normalCdf(float $x, float $mean, float $stdDev): float
   {
@@ -321,7 +345,9 @@ class ProductStock
   }
 
   /**
-   * Error function approximation (Abramowitz-Stegun 7.1.26).
+   * @param float $x
+   * @return float
+   *  Error function approximation (Abramowitz-Stegun 7.1.26).
    */
   private static function erfApprox(float $x): float
   {

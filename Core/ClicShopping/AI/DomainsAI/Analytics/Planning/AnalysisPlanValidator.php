@@ -41,7 +41,7 @@ class AnalysisPlanValidator
    * proposed was rejected". Only the second is a refusal the user must be told about.
    *
    * @param array $plan Raw plan as parsed from the model's JSON
-   * @return array{plan: array|null, unsatisfiable: array<int, array{element: string, label: string, reason: string}>, errors: array<int, string>, no_metric_proposed: bool}
+   * @return array{plan: array|null, unsatisfiable: array<int, array{element: string, label: string, reason: string, kind?: string}>, errors: array<int, string>, no_metric_proposed: bool}
    */
   public function validate(array $plan): array
   {
@@ -111,6 +111,19 @@ class AnalysisPlanValidator
     $unsatisfiable = array_merge($unsatisfiable, $declared);
     $dimensions = is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : [];
     $dimensions = self::splitDimensions($metrics, $dimensions, $rankings);
+
+    // An order-grain metric broken down by a product dimension fans out (counted once per line):
+    // swap to the catalogue's line-grain sibling, or record it unsatisfiable.
+    $renamed = [];
+    $metrics = $this->resolveGrainConflicts($metrics, $dimensions, $unsatisfiable, $renamed);
+
+    if ($metrics === []) {
+      // Everything proposed was an order-grain figure the dimension cannot carry: a named refusal.
+      return ['plan' => null, 'unsatisfiable' => $unsatisfiable, 'errors' => $errors,
+              'no_metric_proposed' => false];
+    }
+
+    $rankings = self::remapRankings($rankings, $renamed, array_column($metrics, 'name'));
     $periods['time_grain'] = self::timeGrain($periods, $dimensions, $rankings);
 
     // Build the returned plan as an explicit allow-list: only these keys are trusted.
@@ -159,6 +172,115 @@ class AnalysisPlanValidator
     }
 
     return $dimensions;
+  }
+
+  /**
+   * Keep an order-grain metric honest under a product breakdown.
+   *
+   * A JOIN to reach a product dimension (category, product, supplier) turns one order into one
+   * row per line, so an order-level value summed or averaged over it is weighted by lines-per-
+   * order - a silently wrong figure. A dimension is order-side (safe) only when it is a declared
+   * `split`; every other dimension is a product breakdown. When the catalogue names a line-grain
+   * sibling the metric is swapped to it (revenue per category IS the sum of line revenues);
+   * otherwise the value is not attributable to the dimension and is recorded unsatisfiable.
+   *
+   * ponytail: order-side dimensions are read as the catalogue's splits; a future non-split
+   * order-side dimension would be over-flagged (an honest refusal, never a wrong number). Give
+   * dimensions their own declared grain then.
+   *
+   * @param array<int, array{name: string, grain: string, type: string}> $metrics Validated metrics
+   * @param array<int, string> $dimensions Resolved dimensions
+   * @param array $unsatisfiable Collected removals, by reference
+   * @param array<string, string> $renamed Swaps applied, by reference (old name => new name)
+   * @return array<int, array> Metrics with order-grain conflicts swapped or removed
+   */
+  private function resolveGrainConflicts(array $metrics, array $dimensions, array &$unsatisfiable, array &$renamed): array
+  {
+    $splitDimensions = [];
+    foreach ($this->catalog as $entry) {
+      if (is_string($entry['split'] ?? null) && $entry['split'] !== '') {
+        $splitDimensions[$entry['split']] = true;
+      }
+    }
+
+    $productDimensions = array_filter($dimensions, static fn($d): bool => !isset($splitDimensions[$d]));
+
+    if ($productDimensions === []) {
+      return $metrics;
+    }
+
+    $resolved = [];
+    $seen = [];
+
+    foreach ($metrics as $metric) {
+      if (($metric['grain'] ?? '') !== 'order') {
+        $name = $metric['name'];
+        if (!isset($seen[$name])) { $seen[$name] = true; $resolved[] = $metric; }
+
+        continue;
+      }
+
+      $alt = $this->catalog[$metric['name']]['line_alternative'] ?? null;
+
+      if (is_string($alt) && $alt !== '' && isset($this->catalog[$alt])) {
+        $renamed[$metric['name']] = $alt;
+
+        if (!isset($seen[$alt])) {
+          $seen[$alt] = true;
+          $entry = ['name' => $alt, 'grain' => $this->catalog[$alt]['grain'], 'type' => $this->catalog[$alt]['type']];
+
+          if (is_string($this->catalog[$alt]['basis'] ?? null) && $this->catalog[$alt]['basis'] !== '') {
+            $entry['basis'] = $this->catalog[$alt]['basis'];
+          }
+
+          if (is_string($this->catalog[$alt]['split'] ?? null) && $this->catalog[$alt]['split'] !== '') {
+            $entry['split'] = $this->catalog[$alt]['split'];
+          }
+
+          $resolved[] = $entry;
+        }
+
+        continue;
+      }
+
+      $unsatisfiable[] = [
+        'element' => 'metric:' . $metric['name'],
+        'label' => $metric['name'],
+        'reason' => 'an order-level metric cannot be broken down by a product dimension without counting each order once per line',
+        'kind' => 'grain_conflict',
+      ];
+    }
+
+    return $resolved;
+  }
+
+  /**
+   * Follow the grain-conflict swaps into the rankings: rename a ranked metric that was swapped,
+   * and drop a ranking whose metric no longer survives (a ranking on nothing ranks nothing).
+   *
+   * @param array<int, array> $rankings Validated rankings
+   * @param array<string, string> $renamed Swaps applied (old name => new name)
+   * @param array<int, string> $keptNames Names of the metrics still in the plan
+   * @return array<int, array> Rankings, remapped and pruned
+   */
+  private static function remapRankings(array $rankings, array $renamed, array $keptNames): array
+  {
+    $out = [];
+
+    foreach ($rankings as $ranking) {
+      $metric = $ranking['metric'] ?? '';
+
+      if (isset($renamed[$metric])) {
+        $ranking['metric'] = $renamed[$metric];
+        $metric = $renamed[$metric];
+      }
+
+      if (in_array($metric, $keptNames, true)) {
+        $out[] = $ranking;
+      }
+    }
+
+    return $out;
   }
 
   /**
