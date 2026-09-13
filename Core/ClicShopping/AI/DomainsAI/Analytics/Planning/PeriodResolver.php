@@ -36,8 +36,9 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
  *    more than 29 February. It is a SECOND metric next to the calendar one, never a replacement: the
  *    two answer different questions and are never summed or substituted for one another.
  * An unknown convention degrades to `none`: no comparison is better than a window nobody asked for.
- * A MISSING current window is not resolved at all: the plan is flagged `period_missing` and the
- * caller asks the user for the period.
+ * A MISSING current window falls back on the configured default span (DefaultAnalysisWindow) and is
+ * flagged `period_defaulted`, so the answer can name the window it used. With no default configured
+ * the plan is flagged `period_missing` instead and the caller asks the user for the period.
  *
  * @package ClicShopping\AI\DomainsAI\Analytics\Planning
  */
@@ -55,16 +56,26 @@ final class PeriodResolver
    * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_year_comparable_days|previous_period}`
    * @param \DateTimeImmutable|null $observedAt Observation date; defaults to now. Injected by tests only.
    * @return array Allow-listed `{current: {from, to}, compare, previous?: {from, to}}`, every bound Y-m-d,
-   *               or `{current: {from: null, to: null}, compare: none, period_missing: true}`
+   *               plus `default_days` when the window came from the default, or
+   *               `{current: {from: null, to: null}, compare: none, period_missing: true}`
    * @throws \InvalidArgumentException When the current window is reversed or contains unreadable dates
    */
   public static function resolve(array $periods, ?\DateTimeImmutable $observedAt = null): array
   {
     $from = (string)($periods['current']['from'] ?? '');
     $to = (string)($periods['current']['to'] ?? '');
+    $defaultDays = 0.0;
 
     if ($from === '' || $to === '') {
-      return ['current' => ['from' => null, 'to' => null], 'compare' => self::COMPARE_NONE, 'period_missing' => true];
+      $default = DefaultAnalysisWindow::window($observedAt);
+
+      if ($default === null) {
+        return ['current' => ['from' => null, 'to' => null], 'compare' => self::COMPARE_NONE, 'period_missing' => true];
+      }
+
+      $from = $default['from'];
+      $to = $default['to'];
+      $defaultDays = DefaultAnalysisWindow::days();
     }
 
     try {
@@ -103,6 +114,11 @@ final class PeriodResolver
       ],
       'compare' => $compare,
     ];
+
+    // Carried so the answer can say the window was not asked for, and how wide it is.
+    if ($defaultDays > 0.0) {
+      $resolved['default_days'] = $defaultDays;
+    }
 
     if ($compare === self::COMPARE_NONE) {
       return $resolved;

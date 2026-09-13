@@ -283,8 +283,10 @@ class AnalyticsExecutor
         $query = $this->resolveSubQueryReferences($query, $context);
       }
 
+      $widerRequest = $isSubQuery ? (string)($context['plan_intent']['translated_query'] ?? '') : '';
+
       // Classification is always skipped here: the orchestrator already routed this as analytics.
-      $rawResult = $this->analyticsAgent->processBusinessQuery($query, true, [], true, $isSubQuery);
+      $rawResult = $this->analyticsAgent->processBusinessQuery($query, true, [], true, $isSubQuery, $widerRequest);
       $executionTimeMs = (int)round((microtime(true) - $executionStart) * 1000);
 
       if ($this->debugRAManager) {
@@ -553,6 +555,7 @@ class AnalyticsExecutor
       'original_sql_query' => $rawResult['original_sql_query'] ?? $rawResult['sql_query'] ?? '',
       'entity_id' => $rawResult['entity_id'] ?? null,
       'entity_type' => $rawResult['entity_type'] ?? null,
+      'derived_columns' => $rawResult['derived_columns'] ?? [],
     ];
 
     // 🆕 Add source attribution for analytics queries

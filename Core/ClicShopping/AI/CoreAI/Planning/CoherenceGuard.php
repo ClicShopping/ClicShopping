@@ -39,6 +39,106 @@ class CoherenceGuard
     /** Its `.value` is one row per order-total class — order-level, so MAX is right after the join. */
     private const ORDER_LEVEL_TOTAL = 'orders_total';
 
+    /** Dimension values kept in a dropped row's label: enough to name a cell, not to retype the row. */
+    private const LABEL_MAX_PARTS = 2;
+    
+    /**
+     * Drop the rows whose margin has no cost basis, and NAME them.
+     *
+     * A breakdown mixes what the catalogue prices and what it does not: one category with no cost
+     * recorded puts a 100% line next to lines that are true. Withholding the pane for it withholds
+     * the true lines too, which is how a whole margin report becomes unanswerable on a catalogue
+     * that is merely incomplete. So the unit of rejection is the ROW — and a row removed in silence
+     * would be worse than the 100%: the caller says which ones went, and why.
+     *
+     * Runs BEFORE the results are interpreted. Filtering them afterwards leaves the prose quoting
+     * the very figure the guard just withheld.
+     *
+     * Every row at the bound means there is nothing to keep: the rows come back untouched and
+     * inspectAnalyticsPane() withholds the pane, which is the right verdict then.
+     *
+     * @param array $rows Result rows of one analytics pane
+     * @return array{rows: array, withheld: array<int, string>, column: ?string} Kept rows, and the
+     *         label of each row dropped (empty when nothing was dropped)
+     */
+    public static function withholdMissingCostBasisRows(array $rows): array
+    {
+        $kept = [];
+        $withheld = [];
+        $column = null;
+
+        foreach ($rows as $key => $row) {
+            $offending = is_array($row) ? self::marginWithoutCostBasis($row) : null;
+
+            if ($offending === null) {
+                $kept[$key] = $row;
+                continue;
+            }
+
+            $column ??= $offending;
+            $withheld[] = self::rowLabel($row);
+        }
+
+        if ($withheld === [] || $kept === []) {
+            return ['rows' => $rows, 'withheld' => [], 'column' => null];
+        }
+
+        return ['rows' => $kept, 'withheld' => $withheld, 'column' => $column];
+    }
+
+    /**
+     * Name of the percentage-margin column sitting at the impossible bound, or null.
+     *
+     * @param array $row One result row
+     * @return string|null Offending column name
+     */
+    private static function marginWithoutCostBasis(array $row): ?string
+    {
+        foreach ($row as $col => $val) {
+            if (!is_numeric($val)) {
+                continue;
+            }
+
+            $name = strtolower((string)$col);
+
+            if (self::hasAny($name, self::MARGIN_TOKENS)
+                && self::hasAny($name, self::PERCENT_TOKENS)
+                && (float)$val >= 100.0) {
+                return (string)$col;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * What to call a dropped row: its non-numeric values, which are the dimensions it is broken
+     * down by. Naming only the FIRST one reads as if the whole dimension went - "no margin for
+     * Table linens" while four of its quarters are shown right below. A row carrying no text at
+     * all is still named, never dropped unnamed.
+     *
+     * @param mixed $row One result row
+     * @return string Label
+     */
+    private static function rowLabel(mixed $row): string
+    {
+        $parts = [];
+
+        if (is_array($row)) {
+            foreach ($row as $val) {
+                if (is_string($val) && trim($val) !== '' && !is_numeric($val)) {
+                    $parts[] = trim($val);
+                }
+
+                if (count($parts) === self::LABEL_MAX_PARTS) {
+                    break;
+                }
+            }
+        }
+
+        return $parts === [] ? '?' : implode(' ', $parts);
+    }
+
     /**
      * Inspect an analytics pane. Returns null when reliable, or a verdict
      * ['reason_key' => string, 'column' => ?string] naming the failed check.
@@ -56,7 +156,8 @@ class CoherenceGuard
         }
 
         // #3 Missing cost basis: a percentage margin at an impossible bound. margin% == 100 ⟺
-        // cost == 0; > 100 is impossible. Absorbs 4duovicies (margin shown at 100% on zero cost).
+        // cost == 0; > 100 is impossible. Reached only when EVERY row is at that bound — a pane
+        // still holding one computable line is pruned row by row upstream, never withheld whole.
         foreach ($rows as $row) {
             if (!is_array($row)) {
                 continue;
@@ -79,6 +180,12 @@ class CoherenceGuard
 
         // #4 Silently-empty filter: an order count at 0 in the same row as positive revenue. Revenue
         // means orders existed, so a zero order-count is a filter that matched nothing (SQL-2).
+        $derived = [];
+
+        foreach ((array)($pane['derived_columns'] ?? []) as $col) {
+            $derived[strtolower((string)$col)] = true;
+        }
+
         foreach ($rows as $row) {
             if (!is_array($row)) {
                 continue;
@@ -94,6 +201,10 @@ class CoherenceGuard
 
                 $name = strtolower((string)$col);
                 $f = (float)$val;
+
+                if (isset($derived[$name])) {
+                    continue;
+                }
 
                 if (self::hasAny($name, self::ORDER_TOKENS) && self::hasAny($name, self::COUNT_TOKENS) && $f === 0.0) {
                     $zeroOrderCount = true;

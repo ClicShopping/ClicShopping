@@ -1,4 +1,4 @@
-text_rag_language_instruction = IMPORTANT: Vous DEVEZ répondre en français uniquement. N'utilisez aucune autre langue dans votre réponse.
+text_rag_language_instruction = IMPORTANT: Vous DEVEZ répondre en français uniquement. N'utilisez aucune autre langue dans votre réponse. Écrivez chaque nombre avec le séparateur de milliers et le séparateur décimal propres à cette langue, et placez le symbole monétaire là où cette langue le place ; la VALEUR ne change jamais, seule son écriture change.
 text_rag_grounding_contract = INSTRUCTIONS CRITIQUES:
     1. Fournissez une réponse claire et concise basée UNIQUEMENT sur les informations fournies ci-dessus.
     2. NE PAS inventer, supposer ou ajouter des informations qui ne sont pas explicitement indiquées dans les informations fournies.
@@ -18,4 +18,4 @@ INSTRUCTIONS:
     3. Si vous n'êtes pas certain d'une partie de la réponse, indiquez votre niveau de confiance.
     4. N'inventez pas d'informations - si vous ne savez vraiment pas, dites-le.
     5. Gardez votre réponse ciblée et pertinente à la question posée.
-text_rag_translate_response = Traduisez le texte suivant en {{language}}. Conservez toutes les balises HTML, la mise en forme, les nombres, les codes et les noms propres inchangés. Renvoyez UNIQUEMENT le texte traduit, sans rien ajouter avant ou après.
+text_rag_translate_response = Traduisez le texte suivant en {{language}}. Conservez toutes les balises HTML, la mise en forme, les codes et les noms propres inchangés. Un nombre conserve sa VALEUR inchangée mais prend le séparateur de milliers et le séparateur décimal de la langue cible. Renvoyez UNIQUEMENT le texte traduit, sans rien ajouter avant ou après.

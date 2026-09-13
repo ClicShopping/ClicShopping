@@ -1,6 +1,6 @@
 ai_model_name_id int(11) unsigned not_null auto_increment comment(Primary key - unique identifier for each model)
 ai_model_provider_id int(11) unsigned not_null comment(Reference to ai_models_provider.ai_model_provider_id)
-model_technical_name varchar(100) not_null comment(Technical name for the LLPhant library - gpt-4.1-mini, claude-sonnet-4-6, qwen3.6:35b)
+model_technical_name varchar(100) not_null comment(Technical name for the LLPhant library - gpt-5-luna, claude-opus-5, qwen3.6:35b)
 model_display_name varchar(150) not_null comment(Display name shown in administration - OpenAI GPT-4.1 mini)
 ai_model_description varchar(255) not_null comment(Capabilities description shown in admin and used as RAG schema context - max context, reasoning, local, chat only)
 ai_model_status tinyint(1) not_null default(0) comment(General activation status - 1 active, 0 inactive)

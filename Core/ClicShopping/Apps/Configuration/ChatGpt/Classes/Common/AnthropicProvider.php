@@ -3,7 +3,7 @@
  * Anthropic Provider Implementation
  *
  * Implements LLM provider interface for Anthropic Claude API.
- * Supports Claude 3 models (Opus, Sonnet, Haiku).
+ * Supports the current Claude catalog (Opus 5, Sonnet 5, Haiku 4.5).
  *
  * @package ClicShopping\Apps\Configuration\ChatGpt\Classes
  * @since 4.11
@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\Common;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\AbstractLLMProvider;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ModelManager;
 
 use LLPhant\Chat\ChatInterface;
 use LLPhant\Chat\AnthropicChat;
@@ -43,16 +44,18 @@ class AnthropicProvider extends AbstractLLMProvider
    */
   public function buildRequestBody(string $prompt, array $options = []): array
   {
-    $model = $options['model'] ?? $this->model;
+    $model = $this->mapModelName($options['model'] ?? $this->model);
 
-    return [
-      'model' => $this->mapModelName($model),
+    $body = [
+      'model' => $model,
       'messages' => $options['messages'] ?? [
         ['role' => 'user', 'content' => $prompt]
       ],
       'temperature' => $options['temperature'] ?? $this->temperature,
       'max_tokens' => $options['max_tokens'] ?? $this->maxTokens,
     ];
+
+    return ModelManager::normalizeAnthropicOptions($model, $body);
   }
 
   /**
@@ -79,6 +82,11 @@ class AnthropicProvider extends AbstractLLMProvider
       throw new \RuntimeException('Anthropic API error: ' . $errorMessage);
     }
 
+    // A safety decline is an HTTP 200 with no usable content; check it before reading content[0].
+    if (($data['stop_reason'] ?? null) === 'refusal') {
+      throw new \RuntimeException('Anthropic refused the request: ' . ($data['stop_details']['category'] ?? 'unknown'));
+    }
+
     // Extract content from response
     if (isset($data['content'][0]['text'])) {
       return $data['content'][0]['text'];
@@ -90,28 +98,15 @@ class AnthropicProvider extends AbstractLLMProvider
   /**
    * Map model name to Anthropic API format
    *
-   * Converts short model names to full API model names.
-   * Examples:
-   * - 'claude-3-opus' => 'claude-3-opus-20240229'
-   * - 'claude-3-sonnet' => 'claude-3-sonnet-20240229'
-   * - 'claude-3-haiku' => 'claude-3-haiku-20240307'
+   * Delegates to the catalog chokepoint so there is ONE alias table.
+   * Example: 'anth-opus' => 'claude-opus-5'.
    *
    * @param string $model Short or full model name
    * @return string Full API model name
    */
   private function mapModelName(string $model): string
   {
-    // Model name mapping for convenience
-    $mapping = [
-      'claude-3-opus' => 'claude-3-opus-20240229',
-      'claude-3-sonnet' => 'claude-3-sonnet-20240229',
-      'claude-3-haiku' => 'claude-3-haiku-20240307',
-      'claude-3.5-sonnet' => 'claude-3-5-sonnet-20240620',
-      'claude-3-5-sonnet' => 'claude-3-5-sonnet-20240620',
-    ];
-
-    // Return mapped name if exists, otherwise return original
-    return $mapping[$model] ?? $model;
+    return ModelManager::mapAnthropicModelName($model);
   }
 
   /**
@@ -126,10 +121,11 @@ class AnthropicProvider extends AbstractLLMProvider
   {
     // AnthropicConfig is readonly: everything goes through the constructor. Assigning afterwards
     // raised "Cannot modify readonly property" and made this whole path unusable.
-    $options = $this->llphantModelOptions();
+    $model = $this->mapModelName($this->model);
+    $options = ModelManager::normalizeAnthropicOptions($model, $this->llphantModelOptions());
 
     $config = new AnthropicConfig(
-      model: $this->mapModelName($this->model),
+      model: $model,
       maxTokens: $options['max_tokens'] ?? 1024,
       modelOptions: array_diff_key($options, ['max_tokens' => null]),
       apiKey: $this->apiKey

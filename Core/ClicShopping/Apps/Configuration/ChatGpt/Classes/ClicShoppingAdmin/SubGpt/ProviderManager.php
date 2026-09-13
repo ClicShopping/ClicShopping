@@ -198,7 +198,7 @@ class ProviderManager
    * The provider interface is used for new code and parallel execution.
    *
    * @param string $model The real Anthropic technical model name from the catalog
-   * (e.g. 'claude-sonnet-4-6'); legacy 'anth-*' aliases are still resolved for backward compatibility.
+   * (e.g. 'claude-opus-5'); legacy 'anth-*' aliases are still resolved for backward compatibility.
    * @param int|null $maxtoken The maximum number of tokens the model can output.
    *                           Defaults to the configured max token if not provided.
    * @param array|null $modelOptions Additional configuration options for the model.
@@ -210,19 +210,22 @@ class ProviderManager
 
     $api_key = ModelManager::getProviderApiKey('anthropic')['api_key'];
 
+    if (is_null($maxtoken) || $maxtoken <= 0) {
+      $maxtoken = (int)(defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 2500);
+    }
+
     if ($api_key !== '') {
       if (is_null($modelOptions)) {
         $modelOptions = [
           'temperature' => (float) CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE,
           'top_p' => (float) CLICSHOPPING_APP_CHATGPT_CH_TOP_P,
-          'max_tokens_to_sample' => (int) CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN,
-          'stop_sequences' => ['\n']
         ];
       }
 
       // $model is the real technical name from the catalog (option A). mapAnthropicModelName()
       // is a passthrough for real names and still resolves any legacy anth-* alias.
       $apiModel = ModelManager::mapAnthropicModelName($model);
+      $modelOptions = ModelManager::normalizeAnthropicOptions($apiModel, $modelOptions);
 
       $result = new AnthropicChat(
         new AnthropicConfig($apiModel, $maxtoken, $modelOptions, $api_key)

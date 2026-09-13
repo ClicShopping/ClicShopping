@@ -49,6 +49,10 @@ class TechnicalDefaults
     // policy: ExecutionModeMatrix decides whether to decompose at all; this only caps how far.
     'CLICSHOPPING_APP_CHATGPT_RA_MAX_ANALYTICS_STEPS' => 5,
 
+    // Window an analytic question is measured over when it states none. 0 disables the default
+    // and the period is asked for instead; the answer always names the window it used.
+    'CLICSHOPPING_APP_CHATGPT_RA_DEFAULT_ANALYSIS_DAYS' => 30,
+
     // How many past turns feed the contextual reference resolver ("its price", "this product")
     'CLICSHOPPING_APP_CHATGPT_RA_REFERENCE_HISTORY_TURNS' => 5,
 

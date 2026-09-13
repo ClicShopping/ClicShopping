@@ -226,7 +226,7 @@ class Gpt
    * Map Anthropic model names between internal and API formats
    *
    * @param string $model Internal model name (e.g., 'anth-sonnet')
-   * @return string API model name (e.g., 'claude-3-5-sonnet-20241022')
+   * @return string API model name (e.g., 'claude-opus-5')
    */
   public static function mapAnthropicModelName(string $model): string
   {

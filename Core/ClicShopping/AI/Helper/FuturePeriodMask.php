@@ -23,11 +23,22 @@ namespace ClicShopping\AI\Helper;
  * A row whose year cannot be established is left untouched: a bare month number belongs to no
  * year, and guessing one would mask a past series.
  *
+ * The period is what the row was MEASURED over. A column that names itself an estimate is the
+ * row's subject, not its window: a forecast is future by construction, and reading it as the
+ * observation period masks the very figures it was computed to carry. An identifier is never a
+ * measure either — a masked row must still say which entity it describes.
+ *
  * @package ClicShopping\AI\Helper
  */
 final class FuturePeriodMask
 {
   private const PERIOD_COLUMN = '/(date|month|period|day|week|quarter|year)/i';
+
+  /** A projection, not an observation window: never read as the row's period. */
+  private const PROJECTED_COLUMN = '/(estimat|forecast|predict|project|expected|until|remaining)/i';
+
+  /** An identity, not a measure: never replaced by the marker. */
+  private const IDENTIFIER_COLUMN = '/(^|_)id(s)?$/i';
 
   /**
    * @param array $row One rendered row, column => value
@@ -44,7 +55,9 @@ final class FuturePeriodMask
     }
 
     foreach ($row as $key => $value) {
-      if (is_numeric($value) && !preg_match(self::PERIOD_COLUMN, (string)$key)) {
+      if (is_numeric($value)
+        && !preg_match(self::PERIOD_COLUMN, (string)$key)
+        && !preg_match(self::IDENTIFIER_COLUMN, (string)$key)) {
         $row[$key] = $marker;
       }
     }
@@ -63,6 +76,10 @@ final class FuturePeriodMask
 
     foreach ($row as $key => $value) {
       if (!is_scalar($value) || !preg_match(self::PERIOD_COLUMN, (string)$key)) {
+        continue;
+      }
+
+      if (preg_match(self::PROJECTED_COLUMN, (string)$key)) {
         continue;
       }
 

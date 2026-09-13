@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 use ClicShopping\AI\InterfacesAI\AgentInterface;
+use ClicShopping\AI\InterfacesAI\AnalyticsResultEnricherInterface;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\OM\Registry;
@@ -23,7 +24,9 @@ use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
+use ClicShopping\AI\CoreAI\Planning\CoherenceGuard;
 use ClicShopping\AI\DomainsAI\Analytics\Planning\AnalysisPlanner;
+use ClicShopping\AI\DomainsAI\Analytics\Planning\DefaultAnalysisWindow;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
@@ -93,6 +96,9 @@ class AnalyticsAgent implements AgentInterface
   private ?AnalysisPlanner $analysisPlanner = null;
   private ?array $analysisPlan = null;
   private array $analysisPlanReserve = [];
+
+  /** Labels of the rows dropped for having no cost basis, named in the answer. */
+  private array $withheldRows = [];
   private AmbiguityHandler $ambiguityHandler;
   private AnalyticsErrorHandler $errorHandler;
   private AnalyticsObjectiveRunner $objectiveRunner;
@@ -240,7 +246,7 @@ class AnalyticsAgent implements AgentInterface
    *               - results: Query results
    *               - corrections: Any applied corrections
    */
-  public function processBusinessQuery(string $question, bool $includeSQL = true, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
+  public function processBusinessQuery(string $question, bool $includeSQL = true, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false, string $widerRequest = ''): array
   {
     $this->debugLog("\n" . str_repeat("=", 100));
     $this->debugLog("DEBUG: AnalyticsAgent.processBusinessQuery() - START");
@@ -279,7 +285,7 @@ class AnalyticsAgent implements AgentInterface
       $this->debugLog("\n--- STEP 2: Execute query ---");
       $this->debugLog("Calling executeQuery()...");
 
-      $results = $this->executeQuery($question, $feedbackContext, $skipClassification, $isSubQuery);
+      $results = $this->executeQuery($question, $feedbackContext, $skipClassification, $isSubQuery, $widerRequest);
 
       $this->debugLog("executeQuery() returned:");
       $this->debugLog("  type: " . ($results['type'] ?? 'unknown'));
@@ -298,6 +304,13 @@ class AnalyticsAgent implements AgentInterface
       if ($earlyReturn !== null) {
         return $earlyReturn;
       }
+
+      // 2.5. Let the active domain add columns to the rows (forecast, risk, ...)
+      $results = $this->enrichResultRows($results);
+
+      // 2.75. Drop the lines whose margin has no cost basis, BEFORE interpretation: pruning after
+      // it would leave the prose quoting the figure the guard withheld.
+      $results = $this->withholdRowsWithoutCostBasis($results);
 
       // 3. Interpret the results
       $this->debugLog("\n--- STEP 3: Interpret results ---");
@@ -335,6 +348,7 @@ class AnalyticsAgent implements AgentInterface
         'count' => $results['count'],
         'results' => $results['results'],
         'cached' => $results['cached'] ?? false,  // 🆕 Propagate cached flag
+        'derived_columns' => $results['derived_columns'] ?? [],
       ];
 
       // Add cache metadata if available
@@ -345,6 +359,8 @@ class AnalyticsAgent implements AgentInterface
       $this->persistAnalysisPlanContext($response, $isSubQuery);
 
       $this->announceAnalysisPlanReserve($response);
+      $this->announceWithheldRows($response);
+      $this->announceAnalysisPeriod($response);
       $this->announceMetricBasis($response);
 
       if ($includeSQL) {
@@ -389,6 +405,80 @@ class AnalyticsAgent implements AgentInterface
         'question' => $question,
       ];
     }
+  }
+
+  /**
+   * STEP 2.5: hand the executed rows to the active domain's result enrichers.
+   *
+   * Skipped when the interpretation is already cached: the answer text is built, enriching
+   * would only pay the enricher's queries for nothing.
+   *
+   * @param array $results Executed query results
+   * @return array Results whose rows may carry extra columns
+   */
+  private function enrichResultRows(array $results): array
+  {
+    if (empty($results['results']) || !\is_array($results['results'])) {
+      return $results;
+    }
+
+    if (!empty($results['interpretation'])) {
+      return $results;
+    }
+
+    $domainApp = DomainRegistry::getInstance()->getActiveApp();
+
+    if ($domainApp === null || !method_exists($domainApp, 'getAnalyticsResultEnrichers')) {
+      return $results;
+    }
+
+    foreach ($domainApp->getAnalyticsResultEnrichers() as $enricher) {
+      if (!$enricher instanceof AnalyticsResultEnricherInterface) {
+        continue;
+      }
+
+      try {
+        $enriched = $enricher->enrich($results['results']);
+
+        if ($enriched !== $results['results']) {
+          $this->debugLog("Rows enriched by " . $enricher::class, "ENRICH");
+          $results['derived_columns'] = array_values(array_unique(array_merge(
+            $results['derived_columns'] ?? [],
+            self::addedColumns($results['results'], $enriched)
+          )));
+          $results['results'] = $enriched;
+        }
+      } catch (\Throwable $e) {
+        // An enricher is additive: its failure must never cost the answer.
+        $this->debugLog("Result enricher failed: " . $e->getMessage(), "ENRICH");
+      }
+    }
+
+    return $results;
+  }
+
+  /**
+   * Column names present in the enriched rows and absent from the ones handed to the enricher.
+   *
+   * @param array $before Rows as executed
+   * @param array $after Rows as returned by the enricher
+   * @return array<int, string>
+   */
+  private static function addedColumns(array $before, array $after): array
+  {
+    $keysOf = static function (array $rows): array {
+      $keys = [];
+
+      foreach ($rows as $row) {
+        if (\is_array($row)) {
+          $keys += array_flip(array_map('strval', array_keys($row)));
+        }
+      }
+
+      return $keys;
+    };
+
+    return array_keys(array_diff_key($keysOf($after), $keysOf($before)));
   }
 
   /**
@@ -596,6 +686,8 @@ class AnalyticsAgent implements AgentInterface
    * @param bool $skipClassification When true, the orchestrator already classified this as analytics
    * @param bool $isSubQuery When true, the query is a decomposed fragment (from PlanExecutor) and the
    *                         ambiguity gate is skipped — a fragment has no period of its own to ask about
+   * @param string $widerRequest The whole request the fragment was cut from, already English — where
+   *                             that period was stated. Empty when the question stands alone.
    * @return array Results array containing:
    *               - type: 'success' or 'error'
    *               - message: Result message or error description
@@ -603,7 +695,7 @@ class AnalyticsAgent implements AgentInterface
    *               - suggestion: Error fix suggestion if applicable
    *               - recovery_attempted: Boolean indicating if recovery was attempted
    */
-  public function executeQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
+  public function executeQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false, string $widerRequest = ''): array
   {
     $this->debugLog(str_repeat("-", 100));
     $this->debugLog("DEBUG: AnalyticsAgent.executeQuery() - START");
@@ -619,7 +711,7 @@ class AnalyticsAgent implements AgentInterface
 
     try {
       $this->debugLog("\nCalling processAnalyticsQuery()...");
-      $result = $this->processAnalyticsQuery($question, $feedbackContext, $skipClassification, $isSubQuery);
+      $result = $this->processAnalyticsQuery($question, $feedbackContext, $skipClassification, $isSubQuery, $widerRequest);
 
       $this->debugLog("processAnalyticsQuery() returned:");
       $this->debugLog("  type: " . ($result['type'] ?? 'unknown'));
@@ -658,11 +750,13 @@ class AnalyticsAgent implements AgentInterface
    * @param bool $skipClassification When true, the orchestrator already classified this as analytics
    * @param bool $isSubQuery When true (decomposed fragment from PlanExecutor), the ambiguity-detection
    *                         stage is skipped — see STEP 0/0.5 below
+   * @param string $widerRequest The whole request this fragment was cut from, already English. Empty
+   *                             when the question stands alone.
    *
    * A failure is RETURNED as a 'error' response carrying the ambiguity metadata, never thrown:
    * that metadata exists only in this scope.
    */
-  private function processAnalyticsQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
+  private function processAnalyticsQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false, string $widerRequest = ''): array
   {
     $this->debugLog(str_repeat(".", 100));
     $this->debugLog("AnalyticsAgent.processAnalyticsQuery() - START", "QUERY");
@@ -677,6 +771,7 @@ class AnalyticsAgent implements AgentInterface
     // previous one would silently key the SQL cache of this one.
     $this->analysisPlan = null;
     $this->analysisPlanReserve = [];
+    $this->withheldRows = [];
 
     try {
 
@@ -759,7 +854,7 @@ class AnalyticsAgent implements AgentInterface
       if ($planner !== null) {
         $this->debugLog("--- STEP 0.75: Build the analysis plan ---", "PLAN");
 
-        $planResult = $planner->plan($this->translateForGeneration($questionForGeneration));
+        $planResult = $planner->plan($this->translateForGeneration($questionForGeneration), $widerRequest);
         $this->analysisPlan = $planResult['plan'];
 
         if ($this->analysisPlan === null) {
@@ -921,6 +1016,113 @@ class AnalyticsAgent implements AgentInterface
     $response['interpretation'] = trim($reserve . "\n\n" . (string)($response['interpretation'] ?? ''));
 
     $this->debugLog("PLAN RESERVE announced: " . $reserve, "PLAN");
+  }
+
+  /**
+   * Remove the result lines whose margin percentage sits at the impossible bound, keeping the
+   * lines that do have a cost basis.
+   *
+   * A catalogue is rarely priced in full, and one unpriced category used to withhold the whole
+   * breakdown - the true lines with it. The rejection unit is the row; what left is NAMED by
+   * announceWithheldRows(). Every line at the bound is left alone: CoherenceGuard then withholds
+   * the pane, which is the honest verdict when nothing is computable.
+   *
+   * @param array $results Result set of the executed query
+   * @return array The same set, minus the lines with no cost basis
+   */
+  private function withholdRowsWithoutCostBasis(array $results): array
+  {
+    $rows = $results['results'] ?? null;
+
+    if (!is_array($rows) || $rows === []) {
+      return $results;
+    }
+
+    $verdict = CoherenceGuard::withholdMissingCostBasisRows($rows);
+
+    if ($verdict['withheld'] === []) {
+      return $results;
+    }
+
+    $this->withheldRows = $verdict['withheld'];
+    $results['results'] = array_values($verdict['rows']);
+    $results['count'] = count($results['results']);
+
+    $this->debugLog('COHERENCE: ' . count($verdict['withheld']) . ' row(s) withheld for a missing cost basis ('
+      . implode(', ', $verdict['withheld']) . ')', 'PLAN');
+
+    return $results;
+  }
+
+  /**
+   * Name the lines that were dropped for having no cost basis.
+   *
+   * At the HEAD of the answer, like the plan reserve: a reader who is not told a line is missing
+   * reads the breakdown as complete. Saying which line went, and why, is what makes the pruning
+   * honest rather than convenient.
+   *
+   * @param array $response Response being assembled, mutated in place
+   * @return void
+   */
+  private function announceWithheldRows(array &$response): void
+  {
+    if ($this->withheldRows === []) {
+      return;
+    }
+
+    $labels = array_values(array_unique($this->withheldRows));
+    $key = 'text_coherence_rows_withheld_missing_cost';
+    $notice = CLICSHOPPING::getDef($key, ['labels' => implode(', ', $labels)]);
+
+    if ($notice === '' || $notice === $key) {
+      return;
+    }
+
+    $response['coherence_withheld_rows'] = $labels;
+    $response['interpretation'] = trim($notice . "\n\n" . (string)($response['interpretation'] ?? ''));
+
+    $this->debugLog('WITHHELD ROWS announced: ' . $notice, 'PLAN');
+  }
+
+  /**
+   * Say WHICH window the figures cover, every time the plan carries one.
+   *
+   * The window is the one fact the reader cannot recover from the figures, and a default one is
+   * invisible unless it is said. Stating it is also how the merchant knows a different span is
+   * his to ask for - the next question naming a period simply replaces what this line reports.
+   *
+   * Rides `interpretation` at the FOOT, added after the cache write, like the basis below.
+   *
+   * @param array $response Response being assembled, mutated in place
+   * @return void
+   */
+  private function announceAnalysisPeriod(array &$response): void
+  {
+    $periods = $this->analysisPlan['periods'] ?? [];
+    $from = (string)($periods['current']['from'] ?? '');
+    $to = (string)($periods['current']['to'] ?? '');
+
+    if ($from === '' || $to === '') {
+      return;
+    }
+
+    $days = (float)($periods['default_days'] ?? 0.0);
+    $key = $days > 0.0 ? 'text_analysis_period_default' : 'text_analysis_period_window';
+    $notice = CLICSHOPPING::getDef($key, [
+      'from' => $from,
+      'to' => $to,
+      'days' => rtrim(rtrim(number_format($days, 1, '.', ''), '0'), '.'),
+    ]);
+
+    if ($notice === '' || $notice === $key) {
+      return;
+    }
+
+    $response['analysis_period'] = ['from' => $from, 'to' => $to, 'default_days' => $days];
+    $response['analysis_period_notice'] = $notice;
+    $response['interpretation'] = trim((string)($response['interpretation'] ?? '') . "\n\n" . $notice);
+
+    $this->debugLog("ANALYSIS PERIOD announced: " . $notice, "PLAN");
   }
 
   /**
@@ -1485,7 +1687,7 @@ class AnalyticsAgent implements AgentInterface
   private function analyzeAmbiguity(string $question, string $queryForAmbiguity): array
   {
     // Detector analyses are cached, so the cost is one call per distinct query, not per request.
-    return $this->ambiguityDetector->detectAmbiguity($queryForAmbiguity);
+    return DefaultAnalysisWindow::demoteTimeAmbiguity($this->ambiguityDetector->detectAmbiguity($queryForAmbiguity));
   }
 
   /**

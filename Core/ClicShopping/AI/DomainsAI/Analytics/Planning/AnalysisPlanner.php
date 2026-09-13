@@ -52,9 +52,11 @@ class AnalysisPlanner
    * Ask the model for a plan, then validate it.
    *
    * @param string $englishQuestion Question already normalised to English
+   * @param string $widerRequest The whole request this question is one part of, already English.
+   *                             Empty when the question stands alone.
    * @return array{plan: array|null, unsatisfiable: array, errors: array<int, string>, no_metric_proposed: bool, raw: string}
    */
-  public function plan(string $englishQuestion): array
+  public function plan(string $englishQuestion, string $widerRequest = ''): array
   {
     $skeleton = $this->resolvePromptSkeleton();
 
@@ -68,7 +70,7 @@ class AnalysisPlanner
       ];
     }
 
-    $prompt = $this->assemblePrompt($skeleton, $englishQuestion);
+    $prompt = $this->assemblePrompt($skeleton, $englishQuestion, $widerRequest);
 
     $raw = (string)Gpt::getGptResponse($prompt, $this->responseMaxTokens($englishQuestion), 0.0);
 
@@ -97,15 +99,16 @@ class AnalysisPlanner
    *
    * @param string $skeleton Resolved skeleton, from resolvePromptSkeleton()
    * @param string $englishQuestion Question already normalised to English
+   * @param string $widerRequest The whole request this question is a part of; empty when it stands alone
    * @return string Prompt ready to be sent to the model
    */
-  protected function assemblePrompt(string $skeleton, string $englishQuestion): string
+  protected function assemblePrompt(string $skeleton, string $englishQuestion, string $widerRequest = ''): string
   {
     // Same clock PeriodResolver treats as "today"; the model needs it to anchor a relative
     // period the question states (last quarter/month/year) to concrete bounds.
     return str_replace(
-      ['{{today}}', '{{question}}', '{{examples}}'],
-      [date('Y-m-d'), $englishQuestion, $this->examples()],
+      ['{{today}}', '{{wider_request}}', '{{question}}', '{{examples}}'],
+      [date('Y-m-d'), trim($widerRequest), $englishQuestion, $this->examples()],
       $skeleton
     );
   }

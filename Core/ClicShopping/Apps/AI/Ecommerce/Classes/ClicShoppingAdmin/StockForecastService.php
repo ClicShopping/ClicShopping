@@ -31,7 +31,7 @@ class StockForecastService
     $Qproduct = $CLICSHOPPING_Db->prepare('select p.products_id,
                                                  p.products_quantity,
                                                  p.products_quantity_alert,
-                                                 p.products_shipping_delay_out_of_stock,
+                                                 pd.products_shipping_delay_out_of_stock,
                                                  p.products_model,
                                                  pd.products_name
                                           from :table_products p

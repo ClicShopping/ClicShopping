@@ -17,6 +17,8 @@ Question: "revenue including tax and the net promoter score this year"
 {"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "revenue_ttc"}], "unsupported": ["net promoter score"], "dimensions": [], "rankings": [], "filters": {}, "complexity": 1}
 Question: "revenue including tax for orders delivered to France in 2026"
 {"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "revenue_ttc"}], "unsupported": [], "dimensions": [], "rankings": [], "filters": {"country": "France"}, "complexity": 2}
+Question: "why is the gross margin declining for this Bar category"
+{"periods": {"current": null, "compare": "none"}, "metrics": [{"name": "gross_margin_amount"}, {"name": "gross_margin_percent"}, {"name": "quantity_sold"}], "unsupported": [], "dimensions": ["category"], "rankings": [], "filters": {"category": "Bar"}, "complexity": 3}
 Question: "how to improve the gross margin on my weakest products this year"
 {"periods": {"current": {"from": "2026-01-01", "to": "2026-12-31"}, "compare": "none"}, "metrics": [{"name": "gross_margin_amount"}, {"name": "gross_margin_percent"}, {"name": "quantity_sold"}], "unsupported": ["weakest products"], "dimensions": ["product"], "rankings": [], "filters": {}, "complexity": 3}
 Question: "the last 5 customers who registered"

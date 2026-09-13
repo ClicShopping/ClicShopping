@@ -625,20 +625,63 @@ class ModelManager
    * Map Anthropic model names between internal and API formats
    *
    * @param string $model Internal model name (e.g., 'anth-sonnet')
-   * @return string API model name (e.g., 'claude-3-5-sonnet-20241022')
+   * @return string API model name (e.g., 'claude-opus-5')
    */
   public static function mapAnthropicModelName(string $model): string
   {
-    // Note: Deprecation warning in comment only (as per task requirements)
-    // This method is maintained for backward compatibility
-    // LLPhant's AnthropicConfig handles model name mapping internally
-    
+    // Legacy aliases only; a real catalog name passes through untouched.
     $mapping = [
-      'anth-sonnet' => 'claude-sonnet-4-6',
-      'anth-opus' => 'claude-opus-4-8',
-      'anth-haiku' => 'claude-haiku-4-5-20251001'
+      'anth-sonnet' => 'claude-sonnet-5',
+      'anth-opus' => 'claude-opus-5',
+      'anth-haiku' => 'claude-haiku-4-5'
     ];
 
     return $mapping[$model] ?? $model;
+  }
+
+  /**
+   * Does this Anthropic model reject the sampling parameters?
+   *
+   * temperature / top_p / top_k and the legacy max_tokens_to_sample are a 400 from Claude Opus 4.7
+   * onward; depth is steered by output_config.effort instead.
+   *
+   * @param string $model Anthropic technical model name
+   * @return bool True when sampling options must be dropped before the call
+   */
+  public static function anthropicRejectsSampling(string $model): bool
+  {
+    $array_llm = ['claude-opus-5', 'claude-opus-4-7', 'claude-opus-4-8', 'claude-sonnet-5', 'claude-fable-', 'claude-mythos-'];
+    
+    foreach ($array_llm as $prefix) {
+      if (str_starts_with($model, $prefix)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Rewrite Anthropic generation options into what the target model accepts.
+   *
+   * Single chokepoint for the Anthropic wire format, mirroring normalizeGenerationOptions() for
+   * OpenAI. Anything the model still accepts is passed through.
+   *
+   * @param string $model Anthropic technical model name
+   * @param array<string, mixed> $options Generation options
+   * @return array<string, mixed> Options safe to send for this model
+   */
+  public static function normalizeAnthropicOptions(string $model, array $options): array
+  {
+    if (!self::anthropicRejectsSampling($model)) {
+      return $options;
+    }
+
+    return array_diff_key($options, [
+      'temperature' => null,
+      'top_p' => null,
+      'top_k' => null,
+      'max_tokens_to_sample' => null,
+    ]);
   }
 }

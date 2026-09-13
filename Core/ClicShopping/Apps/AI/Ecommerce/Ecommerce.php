@@ -15,6 +15,7 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ProductHelper;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\AnalyticsPatterns;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\EntityKeywords;
 use ClicShopping\OM\Domains\AbstractDomainApp;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Analytics\StockResultEnricher;
 
 /**
  * Ecommerce Domain App for ClicShopping AI
@@ -198,6 +199,19 @@ class Ecommerce extends AbstractDomainApp
   public function getMetricCatalog(): array
   {
     return MetricCatalog::all();
+  }
+
+  /**
+   * Result enrichers applied to the analytics rows after execution, before interpretation.
+   * Each one decides from the row shape whether it applies.
+   *
+   * @return array<int, \ClicShopping\AI\InterfacesAI\AnalyticsResultEnricherInterface>
+   */
+  public function getAnalyticsResultEnrichers(): array
+  {
+    return [
+      new StockResultEnricher(),
+    ];
   }
 
   /**

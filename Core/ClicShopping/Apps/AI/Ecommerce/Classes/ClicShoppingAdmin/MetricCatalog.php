@@ -96,11 +96,13 @@ class MetricCatalog
         'grain' => 'product',
         'type' => MetricType::AMOUNT,
         'definition' => 'text_metric_gross_margin_amount',
+        'basis' => 'text_metric_basis_cost_current',
       ],
       'gross_margin_percent' => [
         'grain' => 'product',
         'type' => MetricType::RATE,
         'definition' => 'text_metric_gross_margin_percent',
+        'basis' => 'text_metric_basis_cost_current',
       ],
       'avg_shipping_delay' => [
         'grain' => 'order',

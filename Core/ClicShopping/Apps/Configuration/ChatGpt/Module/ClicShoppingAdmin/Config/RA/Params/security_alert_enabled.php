@@ -12,7 +12,7 @@ use ClicShopping\OM\HTML;
 
 class security_alert_enabled extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = 'False';
+  public $default = 'True';
   public int|null $sort_order = 140;
 
   protected function init()

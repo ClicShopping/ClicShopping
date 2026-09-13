@@ -12,7 +12,7 @@ use ClicShopping\OM\HTML;
 
 class rag_manager extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = 'False';
+  public $default = 'True';
   public int|null $sort_order = 37;
 
   protected function init()

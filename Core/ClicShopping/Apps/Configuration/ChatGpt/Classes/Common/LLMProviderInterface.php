@@ -59,7 +59,7 @@ interface LLMProviderInterface
    * Get model name
    *
    * Returns the model/engine name to use for requests.
-   * Examples: 'gpt-4', 'claude-3-opus', 'llama2'
+   * Examples: 'gpt-4', 'claude-opus-5', 'llama2'
    *
    * @return string Model name
    */
