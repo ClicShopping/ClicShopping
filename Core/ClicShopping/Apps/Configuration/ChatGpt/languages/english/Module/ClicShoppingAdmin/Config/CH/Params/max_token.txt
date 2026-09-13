@@ -2,4 +2,4 @@ cfg_chatgpt_max_token_title = Max Token
 cfg_chatgpt_max_token_description = Please enter a number.<br />
 Maximum number of tokens generated in the answer (completion). Your prompt tokens plus this value cannot exceed the model's context length, so keep a margin.<br />
 Guide: 1000 tokens is about 750 words.<br />
-A higher value allows longer answers but costs more and is slower. Typical values: short answers 300-1000; detailed or SQL/analytics answers 2000-4000.
+A higher value allows longer answers but costs more and is slower. Typical values: default 3500; detailed or SQL/analytics answers 2000-4000.

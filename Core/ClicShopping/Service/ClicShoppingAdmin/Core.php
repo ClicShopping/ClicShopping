@@ -34,8 +34,6 @@ class Core implements \ClicShopping\OM\Interfaces\ServiceInterface
     if (is_file(CLICSHOPPING::BASE_DIR . 'OM/MessageStack.php')) {
       Registry::set('MessageStack', new MessageStackClassAdmin());
 
-      // Say it here rather than let the refusal to encrypt surface as a fatal on the first
-      // customer create/edit/checkout: an install predating `data_encryption` has no other clue.
       if (!Hash::isEncryptionKeyConfigured()) {
         Registry::get('MessageStack')->add(CLICSHOPPING::getDef('error_data_encryption_missing'), 'error');
       }

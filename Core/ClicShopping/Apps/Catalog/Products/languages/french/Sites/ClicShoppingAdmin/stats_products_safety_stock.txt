@@ -1,5 +1,7 @@
 heading_title = Stock de sécurité prédicitif
 
+text_safety_stock_demand_note = Cette estimation est calculée sur la demande client brute : les commandes annulées ou remboursées ne sont pas exclues du calcul.
+
 table_heading_products = Nom du produit
 table_heading_model = Référence
 table_heading_qty = Quantités restantes

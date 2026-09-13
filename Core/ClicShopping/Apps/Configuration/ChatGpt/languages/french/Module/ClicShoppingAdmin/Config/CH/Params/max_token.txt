@@ -2,4 +2,4 @@ cfg_chatgpt_max_token_title = Max Token
 cfg_chatgpt_max_token_description = Veuillez insérer un nombre.<br />
 Nombre maximal de jetons générés dans la réponse (complétion). Le nombre de jetons de votre prompt plus cette valeur ne peut pas dépasser la longueur de contexte du modèle : gardez une marge.<br />
 Repère : 1000 jetons correspondent environ à 750 mots.<br />
-Une valeur élevée autorise des réponses plus longues mais coûte davantage et ralentit. Valeurs typiques : réponses courtes 300-1000 ; réponses détaillées ou SQL/analytique 2000-4000.
+Une valeur élevée autorise des réponses plus longues mais coûte davantage et ralentit. Valeurs typiques : par défaut 3500 ; réponses détaillées ou SQL/analytique 2000-4000.

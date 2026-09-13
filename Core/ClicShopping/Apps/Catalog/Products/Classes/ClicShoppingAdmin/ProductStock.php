@@ -35,69 +35,48 @@ class ProductStock
   }
 
   /**
-   * Calculates the safety stock based on historical demand, lead time, desired service level,
-   * and standard deviation factor.
-   *
-   * @param array $historicalDemand An array of historical demand values used to calculate the mean and standard deviation.
-   * @param int $leadTime The lead time in relevant time units (e.g., days, weeks) for replenishment.
-   * @param float $serviceLevel Optional parameter specifying the desired service level as a probability (default is 0.95).
-   * @param float $standardDeviationFactor Optional parameter representing the Z-score or factor for standard deviation calculation (default is 1.65).
-   * @return float|int The calculated safety stock value, rounded to meet specified parameters.
-   */
-  private static function calculateSafetyStock(array $historicalDemand, int $leadTime, float $serviceLevel = 0.95, float $standardDeviationFactor = 1.65): float|int
-  {
-    $historicalDemand = self::normalizeSeries($historicalDemand);
-
-    if (empty($historicalDemand)) {
-      return 0;
-    }
-
-    // Calculate the mean (average) of historical demand
-    $meanDemand = array_sum($historicalDemand) / count($historicalDemand);
-
-    // Calculate the standard deviation of historical demand
-    $standardDeviation = 0;
-    foreach ($historicalDemand as $demand) {
-      $standardDeviation += pow($demand - $meanDemand, 2);
-    }
-    $standardDeviation = sqrt($standardDeviation / count($historicalDemand));
-
-    // Calculate the safety stock using the formula: Safety Stock = (Z-score * Standard Deviation * sqrt(Lead Time)) + Mean Demand
-    $zScore = abs(static::norMinv((1 - $serviceLevel) / 2, 0, 1));
-    $safetyStock = ($zScore * $standardDeviation * sqrt($leadTime)) + $meanDemand;
-
-    return $safetyStock;
-  }
-
-  /**
    * Calculates the inverse of the normal cumulative distribution function (CDF).
    *
    * @param float $p The probability at which to evaluate the inverse normal CDF. Must be in the range (0, 1).
    * @param float $mean The mean (μ) of the normal distribution.
    * @param float $stddev The standard deviation (σ) of the normal distribution. Must be positive.
-   * @return float|int The value x such that the cumulative distribution function equals $p. The result is a float or an integer based on the computation.
+   * @return float The value x such that the cumulative distribution function equals $p.
    */
-  private static function norMinv($p, $mean, $stddev): float|int
+  private static function norMinv($p, $mean, $stddev): float
   {
-    $b1 = 0.319381530;
-    $b2 = -0.356563782;
-    $b3 = 1.781477937;
-    $b4 = -1.821255978;
-    $b5 = 1.330274429;
+    // Acklam's rational approximation of the standard-normal quantile (rel. error < 1.15e-9).
+    // Returns mean + stddev * z; the previous coefficients were the forward-CDF polynomial and
+    // produced a wrong z (0.33 instead of 1.96 at p=0.025), silently under-sizing safety stock.
+    $p = min(1 - 1e-16, max(1e-16, (float)$p));
+
+    $a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
+          1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00];
+    $b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
+          6.680131188771972e+01, -1.328068155288572e+01];
+    $c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
+          -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00];
+    $d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00,
+          3.754408661907416e+00];
+
     $p_low = 0.02425;
     $p_high = 1 - $p_low;
 
     if ($p < $p_low) {
       $q = sqrt(-2 * log($p));
-      return (((((($b5 * $q) + $b4) * $q) + $b3) * $q + $b2) * $q + $b1) / $p_high;
+      $z = ((((($c[0] * $q + $c[1]) * $q + $c[2]) * $q + $c[3]) * $q + $c[4]) * $q + $c[5])
+         / (((($d[0] * $q + $d[1]) * $q + $d[2]) * $q + $d[3]) * $q + 1);
     } elseif ($p <= $p_high) {
       $q = $p - 0.5;
       $r = $q * $q;
-      return (((((($b5 * $r) + $b4) * $r) + $b3) * $r + $b2) * $q + $b1) * $stddev + $mean;
+      $z = ((((($a[0] * $r + $a[1]) * $r + $a[2]) * $r + $a[3]) * $r + $a[4]) * $r + $a[5]) * $q
+         / ((((($b[0] * $r + $b[1]) * $r + $b[2]) * $r + $b[3]) * $r + $b[4]) * $r + 1);
     } else {
       $q = sqrt(-2 * log(1 - $p));
-      return -(((((($b5 * $q) + $b4) * $q) + $b3) * $q + $b2) * $q + $b1) / $p_high;
+      $z = -((((($c[0] * $q + $c[1]) * $q + $c[2]) * $q + $c[3]) * $q + $c[4]) * $q + $c[5])
+         / (((($d[0] * $q + $d[1]) * $q + $d[2]) * $q + $d[3]) * $q + 1);
     }
+
+    return $mean + $stddev * $z;
   }
 
   /**
@@ -124,45 +103,24 @@ class ProductStock
   }
 
   /**
-   * Retrieves the historical customer demand for a specified product and calculates the safety stock based on the lead time.
+   * Predictive safety stock for a product, from its recent daily demand series.
    *
-   * @param int|string|null $products_id The ID of the product for which historical demand is to be calculated. Can be null.
-   * @param int|null $leadTime The lead time for calculating safety stock. Defaults to a predefined constant if null.
-   *
-   * @return float|false Returns the calculated safety stock as a float, or false if the product ID is not set or if there is an error during calculation.
+   * @param int|string|null $products_id Product ID
+   * @return float Safety stock (Z * sigma_daily * sqrt(lead time)); 0.0 when it cannot be computed
    */
-  public static function getHistoricalCustomerDemandByProducts(int|string|null $products_id = null, ?int $leadTime = null): float|false
+  public static function getSafetyStockByProducts(int|string|null $products_id = null): float
   {
-    $CLICSHOPPING_Db = Registry::get('Db');
-
-    if (is_null($leadTime)) {
-      $leadTime = self::configuredLeadTimeDays();
+    if (!isset($products_id)) {
+      return 0.0;
     }
 
-    if (isset($products_id) && !is_null($products_id)) {
-      $QhistoricalDemand = $CLICSHOPPING_Db->get('orders_products', ['products_id', 'products_quantity'], ['products_id' => (int)$products_id]);
+    $series = self::getDailyDemandSeriesByProducts($products_id);
 
-      $historicalDemand = $QhistoricalDemand->toArray();
-
-      if (is_array($historicalDemand)) {
-        $series = [];
-        foreach ($historicalDemand as $row) {
-          if (is_array($row) && isset($row['products_quantity'])) {
-            $series[] = $row['products_quantity'];
-          } elseif (is_numeric($row)) {
-            $series[] = $row;
-          }
-        }
-
-        $safetyStock = self::calculateSafetyStock($series, $leadTime);
-
-        return round($safetyStock, 2);
-      } else {
-        return false;
-      }
-    } else {
-      return false;
+    if ($series === []) {
+      return 0.0;
     }
+
+    return round(self::calculateSafetyStockFromDailyDemand($series, self::configuredLeadTimeDays()), 2);
   }
 
   /**

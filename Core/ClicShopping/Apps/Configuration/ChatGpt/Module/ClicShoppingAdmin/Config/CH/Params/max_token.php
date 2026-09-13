@@ -10,7 +10,7 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Confi
 
 class max_token extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = '350';
+  public $default = '3500';
   public int|null $sort_order = 51;
   public bool $app_configured = true;
 

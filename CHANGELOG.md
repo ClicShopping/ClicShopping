@@ -10,6 +10,7 @@ version4.33
 - Order total improvement and updated in function the regulation
 - Regularion information refacted for a better country integration
 - Improvement :Page resolution now requires the exact case of the page code, so a category slug can no longer serve another page on a case-insensitive filesystem (macOS, Windows)
+- Preditive stock improved
 - AI
   - Add distinction between Agents and Actors
   - AI review sentiment analysis improved and refactored with agentic approach

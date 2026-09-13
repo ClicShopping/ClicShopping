@@ -1,5 +1,7 @@
 heading_title = Predictive safety stock
 
+text_safety_stock_demand_note = This estimate is computed on gross customer demand: cancelled or refunded orders are not excluded from the calculation.
+
 table_heading_products = Product name
 table_heading_model = Model
 table_heading_qty_left = Quantity left

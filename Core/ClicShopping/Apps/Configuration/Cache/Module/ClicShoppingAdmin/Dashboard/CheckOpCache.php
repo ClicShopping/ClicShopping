@@ -59,7 +59,7 @@ class CheckOpCache extends AdminDashboardAbstract
   {
     $output = '';
 
-    if(CacheAdmin::checkOpCache() === true) {
+    if(CacheAdmin::checkOpCache() === false) {
       $link = HTML::link( $this->app ->link('Configuration\Cache&OpCache'), $this->app->getDef('module_admin_dashboard_check_opcache_app_link'));
 
       $output = '<div class="col-md-' . (int)MODULE_ADMIN_DASHBOARD_CACHE_CHECK_OPCACHE_APP_CONTENT_WIDTH . '">';

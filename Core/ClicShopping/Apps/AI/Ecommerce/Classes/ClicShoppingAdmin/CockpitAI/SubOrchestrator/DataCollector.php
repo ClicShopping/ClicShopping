@@ -617,10 +617,12 @@
           if ($currentStock <= 0) {
             $result['stockout_probability'] = 1.0;
           } else {
+            // Stock-out over the 30-day horizon: pass the HORIZON demand (mean_total/stddev_total),
+            // not the daily stats — daily would compare current stock against a single day's demand.
             $stockoutProb = ProductStock::calculateStockoutProbability(
               (float)$currentStock,
-              $demandStats['mean'],
-              $demandStats['stddev']
+              $demandForecast['mean_total'],
+              $demandForecast['stddev_total']
             );
             $result['stockout_probability'] = round($stockoutProb, 4);
           }

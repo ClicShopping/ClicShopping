@@ -37,6 +37,10 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
   </div>
   <div class="mt-1"></div>
 
+  <div class="alert alert-info" role="alert">
+    <?php echo $CLICSHOPPING_Products->getDef('text_safety_stock_demand_note'); ?>
+  </div>
+
   <table
     id="table"
     data-toggle="table"
@@ -96,7 +100,7 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
 
     if ($listingTotalRow > 0) {
       while ($Qproducts->fetch()) {
-        $safety_stock = ProductStock::getHistoricalCustomerDemandByProducts($Qproducts->valueInt('products_id'));
+        $safety_stock = ProductStock::getSafetyStockByProducts($Qproducts->valueInt('products_id'));
         if ($safety_stock > 0) {
           ?>
           <tr>

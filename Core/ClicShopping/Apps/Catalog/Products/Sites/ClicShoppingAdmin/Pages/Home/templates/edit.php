@@ -493,7 +493,7 @@ echo HTML::button($CLICSHOPPING_Products->getDef('button_cancel'), null, $CLICSH
                 </div>
               </div>
               <?php
-              $historical = ProductStock::getHistoricalCustomerDemandByProducts($pInfo->products_id, null);
+              $historical = ProductStock::getSafetyStockByProducts($pInfo->products_id);
 
               if ($historical > 0) {
                 ?>
