@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9fdb0a19be9047eb2789cbb3cb1c5395",
+    "content-hash": "1cfc8960711e743aa0c8eaffb0da5bfb",
     "packages": [
         {
             "name": "amnuts/opcache-gui",
@@ -2437,22 +2437,22 @@
         },
         {
             "name": "stolt/llms-txt-php",
-            "version": "v3.5.0",
+            "version": "v4.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/raphaelstolt/llms-txt-php.git",
-                "reference": "4059449564eca163e1b37356db112e49407b11c1"
+                "reference": "fdcb02efc4b5b954dd417e163181878f70eb5a5a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/raphaelstolt/llms-txt-php/zipball/4059449564eca163e1b37356db112e49407b11c1",
-                "reference": "4059449564eca163e1b37356db112e49407b11c1",
+                "url": "https://api.github.com/repos/raphaelstolt/llms-txt-php/zipball/fdcb02efc4b5b954dd417e163181878f70eb5a5a",
+                "reference": "fdcb02efc4b5b954dd417e163181878f70eb5a5a",
                 "shasum": ""
             },
             "require": {
                 "ext-dom": "*",
                 "ext-libxml": "*",
-                "php": ">=8.1"
+                "php": ">=8.2"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.70.1",
@@ -2481,18 +2481,19 @@
                     "email": "raphael.stolt@gmail.com"
                 }
             ],
-            "description": "A library for writing, reading, and validating llms.txt Markdown files.",
+            "description": "A library for creating, parsing, validating, discovering, and expanding llms.txt files.",
             "keywords": [
                 "llms",
                 "llms-txt",
+                "llms.txt",
                 "php",
                 "port"
             ],
             "support": {
                 "issues": "https://github.com/raphaelstolt/llms-txt-php/issues",
-                "source": "https://github.com/raphaelstolt/llms-txt-php/tree/v3.5.0"
+                "source": "https://github.com/raphaelstolt/llms-txt-php/tree/v4.3.0"
             },
-            "time": "2026-08-15T16:14:01+00:00"
+            "time": "2026-09-09T08:09:56+00:00"
         },
         {
             "name": "stripe/stripe-php",
