@@ -47,7 +47,7 @@ Intent types:
   * "iPhone 17 Pro price" → simple price query (no comparison)
   
 - market_research: User wants market analysis, insights, or synthesis about trends (uses Google Overview AI)
-  MANDATORY CRITERIA: Query requests analysis, insights, synthesis, or "what are the trends"
+  MANDATORY CRITERIA: Query requests analysis, insights, synthesis, or "what are the trends" - and does NOT ask how something evolves over time.
   Examples:
   * "analyze upcoming trends in smartphones"
   * "give me an analysis of next trends in e-commerce"
@@ -61,6 +61,7 @@ Intent types:
   
 - trend_analysis: User wants temporal evolution / interest over time chart (uses Google Trends)
   MANDATORY CRITERIA: Query explicitly requests a trend CHART, GRAPH, EVOLUTION, or POPULARITY over time
+  THE DISCRIMINATOR IS THE FORM ASKED FOR, NEVER THE SUBJECT: a product, a brand, a sector, a market, an industry or a place are ALL valid subjects of a temporal chart. "the evolution of the trend of X" is trend_analysis whatever X is - never downgrade it to market_research because X happens to be a market, a sector or a region.
   Examples:
   * "show me the trend for iPhone 17 Pro" → temporal chart
   * "Google Trends for smartphones 2025" → explicit Google Trends request
@@ -70,6 +71,8 @@ Intent types:
   * "graphique de tendance pour les smartphones" → trend graph
   * "popularity chart for iPhone 17 Pro" → popularity over time
   * "search interest for smartphones" → search volume over time
+  * "what is the evolution of the real estate trend in Var" → temporal evolution, the subject is a sector and a place, still a chart
+  * "how is the used car market evolving" → temporal evolution of a market, still a chart
   NOT trend_analysis (use market_research instead):
   * "analyze upcoming trends in smartphones" → analysis request, not chart
   * "what are the latest smartphone trends" → general analysis, not temporal chart

@@ -87,7 +87,7 @@ class GoogleShoppingEngine implements WebSearchInterface
       // Handle search failure
       if ($data === false) {
         return $this->buildErrorResponse(
-          'SerpAPI request failed',
+          $this->client->lastError(),
           $query,
           $startTime
         );

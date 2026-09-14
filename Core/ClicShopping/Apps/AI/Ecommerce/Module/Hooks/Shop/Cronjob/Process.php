@@ -18,6 +18,7 @@
   use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Common\CronLogger;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\CockpitAIOrchestrator;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\EmbeddingService;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\FeedbackCollector;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\RuleAdjuster;
   use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\SeoCronRunner;
@@ -361,10 +362,11 @@ class Process implements HooksInterface
   }
     
   /**
-   * Fetch distinct (product_id, language_id) pairs for products ordered today.
+   * Fetch distinct (product_id, language_id) pairs to analyse.
    *
-   * Crosses today's ordered products with all active store languages so the
-   * analysis is stored for every language the store supports.
+   * Four sources, crossed with all active store languages: (A) ordered today,
+   * (B) modified since the last analysis, (C) never analysed, (D) latest analysis
+   * written on an older EMBEDDING_FORMAT_VERSION.
    *
    * "Today" = date_purchased >= CURDATE() in the server timezone.
    * Status ≥ 3 = processing or completed (matches DataCollector convention).
@@ -435,6 +437,35 @@ class Process implements HooksInterface
     } catch (\Throwable $e) {
       if ($this->debug) {
         error_log('[ProductCockpitAi] Source C (never analysed) query failed: ' . $e->getMessage());
+      }
+    }
+
+    // ── Source D: latest analysis written on an older metadata format ──
+    // The only source that does not depend on a product changing: a corrected
+    // calculation reaches the catalogue by bumping EMBEDDING_FORMAT_VERSION.
+    try {
+      $QstaleFormat = $this->db->prepare('
+        SELECT DISTINCT e.entity_id AS products_id
+        FROM :table_products_cockpit_ai_embedding e
+        INNER JOIN (
+          SELECT entity_id, language_id, MAX(id) AS last_id
+          FROM :table_products_cockpit_ai_embedding
+          GROUP BY entity_id, language_id
+        ) l ON l.last_id = e.id
+        INNER JOIN :table_products p ON p.products_id = e.entity_id
+        WHERE p.products_status = 1
+          AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(e.metadata, \'$.embedding_format_version\')), \'\') <> :format_version
+        ORDER BY e.entity_id
+        LIMIT 100
+      ');
+      $QstaleFormat->bindValue(':format_version', EmbeddingService::EMBEDDING_FORMAT_VERSION);
+      $QstaleFormat->execute();
+      while ($row = $QstaleFormat->fetch()) {
+        $productIds[(int)$row['products_id']] = true;
+      }
+    } catch (\Throwable $e) {
+      if ($this->debug) {
+        error_log('[ProductCockpitAi] Source D (stale format) query failed: ' . $e->getMessage());
       }
     }
 

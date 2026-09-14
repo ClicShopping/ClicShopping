@@ -1054,7 +1054,7 @@ class MultiDBRAGManager
       }
 
       try {
-        $answer = Gpt::getGptResponse($synthesisPrompt, 300);
+        $answer = Gpt::getGptResponse($synthesisPrompt, Gpt::maxToken());
 
         if ($this->debug) {
           error_log("Generated answer length: " . strlen($answer) . " chars");

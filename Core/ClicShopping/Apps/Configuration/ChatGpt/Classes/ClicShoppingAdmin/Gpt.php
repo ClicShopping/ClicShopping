@@ -347,6 +347,17 @@ class Gpt
   }
 
   /**
+   * Configured generation ceiling, in tokens. Single reading of CH_MAX_TOKEN for the callers
+   * that must stay coherent with each other: an answer and its restitution share one budget.
+   *
+   * @return int
+   */
+  public static function maxToken(): int
+  {
+    return defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 3500;
+  }
+
+  /**
    * Get GPT response (PUBLIC API - NO CHANGES TO SIGNATURE)
    *
    * @param string $question The question/prompt

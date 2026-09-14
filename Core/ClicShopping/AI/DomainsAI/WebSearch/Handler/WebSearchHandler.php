@@ -16,6 +16,8 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Handler;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 
 /**
  * WebSearchHandler Class
@@ -46,6 +48,10 @@ class WebSearchHandler
   {
     $this->logger = new SecurityLogger();
     $this->debug = $debug;
+
+    if (Registry::exists('Language')) {
+      Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+    }
 
     try {
       $this->webSearchFacade = new WebSearchFacade();
@@ -106,7 +112,7 @@ class WebSearchHandler
         return [
           'success' => false,
           'error' => 'Web search failed',
-          'text_response' => "La recherche web a échoué. Erreur: " . ($webResults['error'] ?? 'Unknown error')
+          'text_response' => CLICSHOPPING::getDef('text_web_search_failed', ['reason' => (string)($webResults['error'] ?? '')])
         ];
       }
 

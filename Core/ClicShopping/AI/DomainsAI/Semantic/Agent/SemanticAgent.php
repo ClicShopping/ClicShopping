@@ -307,10 +307,12 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
         return $text;
       }
 
-      $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, 600, 0.0);
+      $maxTokens = Gpt::maxToken();
+
+      $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, $maxTokens, 0.0);
 
       if (self::keptSourceLanguage($translated, $text)) {
-        $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, 600, 0.3);
+        $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, $maxTokens, 0.3);
 
         if (self::keptSourceLanguage($translated, $text)) {
           self::logSecurityEvent('restitution: the answer stayed in English after a second attempt', 'warning');

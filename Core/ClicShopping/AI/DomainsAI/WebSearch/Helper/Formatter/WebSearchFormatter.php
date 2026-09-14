@@ -743,6 +743,7 @@ class WebSearchFormatter extends AbstractFormatter
 
     $keyword    = $trendsData['keyword']    ?? '';
     $dateRange  = $trendsData['date_range'] ?? 'today 12-m';
+    $geo        = (string)($trendsData['geo'] ?? '');
     $timeline   = $trendsData['timeline'];
     $pointCount = count($timeline);
 
@@ -845,11 +846,139 @@ class WebSearchFormatter extends AbstractFormatter
         . "ℹ️ " . htmlspecialchars($disclaimer)
         . "</div>";
 
+    // What was actually measured: the searched keyword is not always the user's wording, and the
+    // scope is not always the area they named - Trends has no department granularity.
+    $scope = $geo !== '' ? $geo : $this->language->getDef('text_rag_trends_scope_worldwide');
+    $output .= "<p style='font-size:0.85em; color:#666; margin-bottom:4px;'>"
+        . htmlspecialchars($this->language->getDef('text_rag_trends_scope', ['keyword' => $keyword, 'scope' => $scope]))
+        . "</p>";
+
+    $output .= $this->formatTrendsSparsityNotice($values);
+    $output .= $this->formatTrendsAnalysis($timeline);
+
     $output .= "<p style='font-size:0.85em; color:#666; margin-bottom:12px;'>{$pointCount} points — " . htmlspecialchars($dateRange) . "</p>";
     $output .= $svg;
     $output .= "</div>";
 
     return $output;
+  }
+
+  /**
+   * Warn when the series is too sparse to read as a trend.
+   *
+   * A rare keyword returns mostly zeros, and Trends normalises to the peak: one isolated week then
+   * reads 100 and the curve looks like a spike. Measured 2026-09-14: 96% zeros on a rare keyword,
+   * 0% on a usable one - the threshold sits far from both.
+   *
+   * @param array $values The normalised timeline values
+   * @return string The notice HTML, empty when the series is dense enough
+   */
+  private function formatTrendsSparsityNotice(array $values): string
+  {
+    $total = count($values);
+
+    if ($total === 0) {
+      return '';
+    }
+
+    $zeros = count(array_filter($values, static fn($v) => (int)$v === 0));
+
+    if (!$this->trendsIsSparse($values)) {
+      return '';
+    }
+
+    return "<div class='alert alert-warning' style='font-size:0.85em; color:#856404; background:#fff3cd; "
+        . "border:1px solid #ffeeba; border-radius:4px; padding:8px 12px; margin:8px 0;'>⚠️ "
+        . htmlspecialchars($this->language->getDef('text_rag_trends_sparse', ['zeros' => (string)$zeros, 'total' => (string)$total]))
+        . "</div>";
+  }
+
+  /**
+   * Is the series too sparse to be read as a trend? 60% of empty weeks, measured far from both a
+   * rare keyword (96%) and a usable one (0%).
+   *
+   * @param array $values The normalised timeline values
+   * @return bool True when the series carries too little data
+   */
+  private function trendsIsSparse(array $values): bool
+  {
+    $total = count($values);
+
+    if ($total === 0) {
+      return true;
+    }
+
+    return count(array_filter($values, static fn($v) => (int)$v === 0)) * 100 >= $total * 60;
+  }
+
+  /**
+   * Deterministic reading of the series: period, peak, recent level against the period average.
+   *
+   * Computed from the timeline, never narrated by a model - the figures shown are the figures
+   * measured. A running last week is excluded from every average: it is incomplete, not low. A
+   * direction is stated only when the series is dense enough to carry one.
+   *
+   * @param array $timeline The normalised timeline, oldest first
+   * @return string The analysis HTML, empty when nothing can be read
+   */
+  private function formatTrendsAnalysis(array $timeline): string
+  {
+    $complete = array_values(array_filter($timeline, static fn($p) => empty($p['partial'])));
+    $hadPartial = count($complete) !== count($timeline);
+    $weeks = count($complete);
+
+    if ($weeks < 4) {
+      return '';
+    }
+
+    $values = array_map(static fn($p) => (int)($p['value'] ?? 0), $complete);
+    $average = array_sum($values) / $weeks;
+
+    $peakIndex = (int)array_search(max($values), $values, true);
+    $recentCount = min(4, $weeks);
+    $recent = array_sum(array_slice($values, -$recentCount)) / $recentCount;
+
+    $lines = [];
+    $lines[] = $this->language->getDef('text_rag_trends_analysis_period', [
+      'from' => (string)($complete[0]['date'] ?? ''),
+      'to' => (string)($complete[$weeks - 1]['date'] ?? ''),
+      'weeks' => (string)$weeks,
+    ]);
+    $lines[] = $this->language->getDef('text_rag_trends_analysis_peak', [
+      'date' => (string)($complete[$peakIndex]['date'] ?? ''),
+      'value' => (string)$values[$peakIndex],
+    ]);
+
+    // A direction on a mostly-empty series would be noise dressed as a finding.
+    if ($average > 0 && !$this->trendsIsSparse($values)) {
+      $delta = $recent - $average;
+      $key = abs($delta) < 5 ? 'flat' : ($delta > 0 ? 'up' : 'down');
+
+      $lines[] = $this->language->getDef('text_rag_trends_analysis_level', [
+        'weeks' => (string)$recentCount,
+        'recent' => (string)(int)round($recent),
+        'average' => (string)(int)round($average),
+      ]);
+      $lines[] = $this->language->getDef('text_rag_trends_analysis_' . $key, [
+        'delta' => (string)(int)round(abs($delta)),
+        'percent' => (string)(int)round(abs($delta) / $average * 100),
+      ]);
+    }
+
+    if ($hadPartial) {
+      $lines[] = $this->language->getDef('text_rag_trends_analysis_partial');
+    }
+
+    $output = "<div class='trends-analysis' style='font-size:0.9em; color:#212529; background:#f8f9fa; "
+        . "border:1px solid #e9ecef; border-radius:4px; padding:10px 12px; margin:8px 0;'>";
+    $output .= "<strong>" . htmlspecialchars($this->language->getDef('text_rag_trends_analysis_title')) . "</strong>";
+    $output .= "<ul style='margin:6px 0 0 0; padding-left:20px;'>";
+
+    foreach ($lines as $line) {
+      $output .= "<li>" . htmlspecialchars($line) . "</li>";
+    }
+
+    return $output . "</ul></div>";
   }
 
   /**

@@ -492,12 +492,7 @@ class AnalyticsExecutor
             'original_sql_query' => $bestInterpretation['sql_query'] ?? '',
             'entity_id' => null,
             'entity_type' => null,
-            'source_attribution' => [
-              'source_type' => 'Analytics Database',
-              'source_icon' => '📊',
-              'source_details' => 'Data retrieved from transactional database',
-              'table_name' => $this->extractTableNameFromSql($bestInterpretation['sql_query'] ?? null),
-            ],
+            'source_attribution' => $this->analyticsSourceAttribution($bestInterpretation['sql_query'] ?? null),
           ];
         }
       }
@@ -520,12 +515,7 @@ class AnalyticsExecutor
 
       // 🆕 Add source attribution if not already present
       if (!isset($rawResult['source_attribution'])) {
-        $rawResult['source_attribution'] = [
-          'source_type' => 'Analytics Database',
-          'source_icon' => '📊',
-          'source_details' => 'Data retrieved from transactional database',
-          'table_name' => $this->extractTableNameFromSql($rawResult['sql_query'] ?? null),
-        ];
+        $rawResult['source_attribution'] = $this->analyticsSourceAttribution($rawResult['sql_query'] ?? null);
       }
 
       return $rawResult;
@@ -559,12 +549,7 @@ class AnalyticsExecutor
     ];
 
     // 🆕 Add source attribution for analytics queries
-    $formatted['source_attribution'] = [
-      'source_type' => 'Analytics Database',
-      'source_icon' => '📊',
-      'source_details' => 'Data retrieved from transactional database',
-      'table_name' => $this->extractTableNameFromSql($formatted['sql_query']),
-    ];
+    $formatted['source_attribution'] = $this->analyticsSourceAttribution($formatted['sql_query']);
 
     // Add step entity metadata for tracking through pipeline
     if (isset($rawResult['entity_id'])) {
@@ -625,7 +610,7 @@ class AnalyticsExecutor
       'source_attribution' => [
         'source_type' => 'Analytics Database',
         'source_icon' => '⚠️',
-        'source_details' => 'No query was executed for this question',
+        'source_details' => CLICSHOPPING::getDef('text_source_details_no_query'),
         'table_name' => 'unknown',
       ],
     ];
@@ -908,7 +893,7 @@ class AnalyticsExecutor
       'source_attribution' => [
         'source_type' => 'Analytics Database',
         'source_icon' => '⚠️',
-        'source_details' => "SQL generation failed for {$temporalPeriod} period",
+        'source_details' => CLICSHOPPING::getDef('text_source_details_sql_failed', ['period' => $temporalPeriod]),
         'table_name' => 'unknown',
       ],
     ];
@@ -1002,7 +987,7 @@ class AnalyticsExecutor
       'source_attribution' => [
         'source_type' => 'Analytics Database',
         'source_icon' => 'ℹ️',
-        'source_details' => "No {$baseMetric} data available for {$temporalPeriod} aggregation",
+        'source_details' => CLICSHOPPING::getDef('text_source_details_no_data', ['metric' => $baseMetric, 'period' => $temporalPeriod]),
         'table_name' => 'orders', // Default table for analytics
       ],
     ];
@@ -1114,4 +1099,21 @@ class AnalyticsExecutor
     return $this->analyticsAgent;
   }
 
+
+  /**
+   * Source attribution of an analytics answer. source_type stays an internal identifier; only the
+   * details are user-facing prose and carry the interface language.
+   *
+   * @param string|null $sql The query that produced the rows
+   * @return array The source attribution block
+   */
+  private function analyticsSourceAttribution(?string $sql): array
+  {
+    return [
+      'source_type' => 'Analytics Database',
+      'source_icon' => '📊',
+      'source_details' => CLICSHOPPING::getDef('text_source_details_analytics_db'),
+      'table_name' => $this->extractTableNameFromSql($sql),
+    ];
+  }
 }

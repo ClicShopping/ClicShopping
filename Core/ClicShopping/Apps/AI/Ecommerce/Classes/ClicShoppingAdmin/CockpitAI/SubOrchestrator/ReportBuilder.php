@@ -8,17 +8,18 @@
 
   namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\SubOrchestrator;
 
+  use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+
   /**
    * ReportBuilder
    *
    * Assembles the final Analysis_Report JSON structure and the embedding metadata
    * from the completed pipeline context.
-   * (Requirements 18.1–18.8, 16.1–16.10, 11.1–11.5)
    *
    * Extracted from CockpitAIOrchestrator to keep assembly logic independently
    * testable and the orchestrator focused on sequencing.
    *
-   * ── Analysis_Report structure (Req. 18) ─────────────────────────────────────
+   * Analysis_Report structure
    *
    * {
    *   "header"           : product_id, language_id, analysis_date, pipeline_duration_ms
@@ -34,13 +35,14 @@
    *                        embedding_format_version, pipeline_duration_ms
    * }
    *
-   * ── Embedding metadata structure (Req. 16) ──────────────────────────────────
+   * Embedding metadata structure
    *
    * {
    *   "version", "schema", "embedding_format_version",
    *   "scores"            : { score_x, score_y, quadrant },
    *   "seo"               : { status, score },
    *   "commercial_metrics": { views_30d, orders, conversion_rate, returns },
+   *                          orders and conversion_rate share the views_30d window.
    *   "feature_flags"     : { promo_active, feature, reviews, recommendations },
    *   "strategy"          : { strategy_x, strategy_y },
    *   "actions"           : [...],
@@ -55,7 +57,7 @@
     /**
      * Build the Analysis_Report returned to the caller (Hook / AJAX endpoint).
      *
-     * Requirements 11.1–11.5: includes 'inventory_metrics' section only when
+     * includes 'inventory_metrics' section only when
      * stock_velocity or stockout_probability is non-null in product data.
      *
      * @param array $context   Completed pipeline context
@@ -190,7 +192,7 @@
      * Returns null when neither stock_velocity nor stockout_probability is present,
      * so the section is omitted entirely from the report (Req. 11.3).
      *
-     * Formatting (Requirements 11.4, 11.5):
+     * Formatting:
      *   - stock_velocity        : float, 2 decimal places
      *   - demand_mean           : float, 2 decimal places
      *   - demand_stddev         : float, 2 decimal places
@@ -248,7 +250,6 @@
      *
      * Includes raw (unformatted) inventory_metrics for storage in the embedding,
      * so downstream components can re-use the data without parsing formatted strings.
-     * (Requirements 11.1, 11.2, 16.4)
      *
      * @param array  $context                Completed pipeline context
      * @param string $embeddingFormatVersion Version string from EmbeddingService
@@ -292,7 +293,7 @@
 
         'commercial_metrics' => [
           'views_30d'       => $product['views_30d']       ?? 0,
-          'orders'          => $product['order_count']     ?? 0,
+          'orders'          => $product['orders_30d']      ?? 0,
           'conversion_rate' => $product['conversion_rate'] ?? 0.0,
           'returns'         => $product['return_count']    ?? 0,
         ],
@@ -300,6 +301,7 @@
         'feature_flags' => [
           'promo_active'    => (bool) ($product['promo_active']          ?? false),
           'feature'         => (bool) ($product['feature']               ?? false),
+          'favorites'       => (bool) ($product['favorites']             ?? false),
           'reviews'         => (int)  ($product['review_count']          ?? 0),
           'recommendations' => (int)  ($product['recommendation_count']  ?? 0),
         ],
@@ -307,6 +309,21 @@
         'strategy' => [
           'strategy_x' => $strategy['axis_x'] ?? 'quality',
           'strategy_y' => $strategy['axis_y'] ?? 'performance',
+        ],
+
+        // The thresholds that actually classified the quadrant, and whether they were this
+        // product's own: a stored default says nothing about the decision it stands for.
+        'thresholds' => [
+          'T_high'         => $scores['T_high'] ?? null,
+          'T_low'          => $scores['T_low']  ?? null,
+          'dynamic'        => (bool) ($scores['thresholds_dynamic'] ?? false),
+          'analysis_count' => (int)  ($scores['thresholds_analysis_count'] ?? 0),
+        ],
+
+        // Provenance of the catalogue scale the scores were normalised against.
+        'catalog_normalization' => [
+          'fallback_used' => (bool) ($scores['normalization_fallback_used'] ?? false),
+          'sample_size'   => (int)  ($scores['normalization_sample_size']   ?? 0),
         ],
 
         'actions' => $this->serializeActions($actions),
@@ -325,11 +342,13 @@
         ],
 
         'technical' => [
-          'model_used'           => \defined('CLICSHOPPING_APP_CHATGPT_AI_MODEL') ? CLICSHOPPING_APP_CHATGPT_AI_MODEL
-            : 'unknown',
+          'model_used'           => Gpt::defaultModel(),
           'pipeline_duration_ms' => $duration,
           'timestamp'            => date('Y-m-d\TH:i:s\Z'),
         ],
+
+        // The name is the most retrievable token of a product embedding: never 'Unknown'.
+        'product_name' => (string) ($product['name'] ?? ''),
       ];
 
       // ── Inventory metrics in metadata — raw values, no formatting (Req. 11.1, 11.2) ──

@@ -73,7 +73,7 @@ class GoogleTrendsEngine implements WebSearchInterface
     $data = $this->client->search(self::SERPAPI_ENGINE, $query, $params);
 
     if ($data === false) {
-      return $this->buildErrorResponse('SerpAPI request failed', $query, $startTime);
+      return $this->buildErrorResponse($this->client->lastError(), $query, $startTime);
     }
 
     $timelineData = $data['interest_over_time']['timeline_data'] ?? [];
@@ -93,6 +93,9 @@ class GoogleTrendsEngine implements WebSearchInterface
       'trends_data' => [
         'keyword' => $query,
         'date_range' => $params['date'] ?? self::DEFAULT_DATE_RANGE,
+        // The scope the series was actually computed on. It travels so the answer can STATE it:
+        // Trends has no department granularity, so a question about one is served on a wider area.
+        'geo' => $params['geo'] ?? '',
         'timeline' => $normalizedData,
         'point_count' => count($normalizedData),
       ],
@@ -140,6 +143,8 @@ class GoogleTrendsEngine implements WebSearchInterface
         'date' => $point['date'] ?? '',
         'timestamp' => (int)($point['timestamp'] ?? 0),
         'value' => (int)$value,
+        // A running week is reported low because it is incomplete: compare it, never average it in.
+        'partial' => !empty($point['partial_data']),
       ];
     }
 

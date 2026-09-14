@@ -12,9 +12,12 @@
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\Registry;
   use ClicShopping\Sites\Shop\BotDetector;
+  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\SubOrchestrator\DataCollector;
 
   class ProductsTracking
   {
+    public const DEFAULT_RETENTION_DAYS = 90;
+
       /**
      * ProductsTracking constructor.
      */
@@ -201,41 +204,38 @@
     }
 
     /**
-     * Maintain a fixed number of rows per module (FIFO logic)
-     * Ensures the IA Cockpit works with fresh data and prevents DB bloating
+     * Retention in days for the impression rows.
+     * Read defensively: the row may not exist yet on an install predating the parameter.
+     */
+    private static function retentionDays(): int
+    {
+      $days = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_TRACKING_RETENTION_DAYS')
+        ? (int)CLICSHOPPING_APP_ECOMMERCE_CAI_TRACKING_RETENTION_DAYS
+        : self::DEFAULT_RETENTION_DAYS;
+
+      return max(DataCollector::metricsWindowDays(), $days);
+    }
+
+    /**
+     * Purge the impressions older than the retention window, for one module.
+     *
+     * A cap by DURATION, never by row count: a row quota makes the depth a function of the
+     * module's traffic, so the busiest module keeps the shortest history — exactly the one
+     * whose history the analysis needs most.
+     *
      * @param string $module_code
      */
     private static function applyCircularQuota(string $module_code): void
     {
       $db = Registry::get('Db');
-      $quota = 1000;
 
-      // compter les lignes
-      $Qcount = $db->prepare('SELECT COUNT(*) as total 
-                            FROM :table_products_cockpit_ai_tracking_impressions 
-                            WHERE module_code = :module_code
-                            ');
-      $Qcount->bindValue(':module_code', $module_code);
-      $Qcount->execute();
-
-      $row = $Qcount->fetch();
-      $total = (int)$row['total'];
-
-      if ($total <= $quota) {
-        return;
-      }
-
-      // suppression déterministe des plus anciennes entrées
-      $limit = $total - $quota;
-
-      $Qdel = $db->prepare('DELETE FROM :table_products_cockpit_ai_tracking_impressions 
-                             WHERE module_code = :module_code 
-                             ORDER BY id ASC 
-                             LIMIT :limit
-                             ');
+      $Qdel = $db->prepare('DELETE FROM :table_products_cockpit_ai_tracking_impressions
+                             WHERE module_code = :module_code
+                             AND displayed_at < DATE_SUB(NOW(), INTERVAL :retention_days DAY)
+                           ');
 
       $Qdel->bindValue(':module_code', $module_code);
-      $Qdel->bindInt(':limit', $limit);
+      $Qdel->bindInt(':retention_days', self::retentionDays());
       $Qdel->execute();
     }
 

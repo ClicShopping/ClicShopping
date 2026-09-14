@@ -479,19 +479,19 @@
       ]);
 
       try {
-        // ── Step 1: Data Collection (CRITICAL) ────────────────────────────
+        // Step 1: Data Collection (CRITICAL)
         $ctx = $this->runner->run(1, 'data_collection', function () use ($productId, $languageId): array {
           return $this->dataCollector->collect($productId, $languageId);
         }, $ctx, critical: true);
 
         $ctx['product_data'] = $ctx['data_collection'];
 
-        // ── Step 2: Catalog Normalization ─────────────────────────────────
+        // Step 2: Catalog Normalization
         $ctx = $this->runner->run(2, 'catalog_normalization', function (): object {
           return $this->scoringEngine->computeCatalogNormalization();
         }, $ctx, critical: false);
 
-        // ── Step 3: Scoring Calculation (CRITICAL) ────────────────────────
+        //Step 3: Scoring Calculation (CRITICAL)
         $ctx = $this->runner->run(3, 'scoring_calculation', function (array $context): array {
           $velocityMax = max(1.0, (float)($context['product_data']['stock_velocity'] ?? 1.0));
 
@@ -508,22 +508,22 @@
           return $this->scoringEngine->computeScores($context['product_data'], $scoringContext);
         }, $ctx, critical: true);
 
-        // ── Step 4: SEO Analysis (conditional) ───────────────────────────
+        // Step 4: SEO Analysis (conditional)
         $ctx = $this->runner->run(4, 'seo_analysis', function (array $context) use ($productId, $languageId): array {
           return $this->seoInvoker->invoke($productId, $languageId, $context['product_data']);
         }, $ctx, critical: false);
 
-        // ── Step 5: RAG Context Retrieval ─────────────────────────────────
+        // Step 5: RAG Context Retrieval
         $ctx = $this->runner->run(5, 'rag_context_retrieval', function () use ($productId, $languageId): array {
           return $this->embeddingService->getHistoricalContext($productId, $languageId, 3);
         }, $ctx, critical: false);
 
-        // ── Step 6: LLM Analysis Generation ──────────────────────────────
+        //Step 6: LLM Analysis Generation
         $ctx = $this->runner->run(6, 'llm_analysis_generation', function (array $context): array {
           return $this->generateLLMAnalysis($context);
         }, $ctx, critical: false);
 
-        // ── Step 7: Rules Engine Execution ────────────────────────────────
+        // Step 7: Rules Engine Execution
         $ctx = $this->runner->run(7, 'rules_engine_execution', function (array $context): array {
           $scores  = $context['scoring_calculation'];
           $product = $context['product_data'];
@@ -550,40 +550,16 @@
           );
         }, $ctx, critical: false);
 
-
-
-        // ── Step 8: Embedding Persistence ─────────────────────────────────
+        // Step 8: Embedding Persistence
         $ctx = $this->runner->run(8, 'embedding_persistence', function (array $context) use ($productId, $languageId): ?int {
-          $rawScores = $context['scoring_calculation'] ?? [];
-
-          // On construit manuellement SANS passer par buildMetadata pour éviter l'erreur de log
-          $finalMetadata = [
-            'version'                  => $this->embeddingService->getEmbeddingFormatVersion(),
-            'embedding_format_version' => $this->embeddingService->getEmbeddingFormatVersion(),
-            'schema'                   => 'cockpit_ai_v1',
-            'entity_id'                => (int)$productId,
-            'scores' => [
-              'score_x'   => (float)($rawScores['score_x'] ?? 0),
-              'score_y'   => (float)($rawScores['score_y'] ?? 0),
-              'factors_x' => $rawScores['factors_x'] ?? [],
-              'factors_y' => $rawScores['factors_y'] ?? [],
-              'quadrant'  => $rawScores['quadrant'] ?? 'Q_intermediate'
-            ],
-            'factors_x'         => $rawScores['factors_x'] ?? [], // Doublon racine
-            'factors_y'         => $rawScores['factors_y'] ?? [], // Doublon racine
-            'analysis'          => $context['llm_analysis_generation'] ?? [],
-            'inventory_metrics' => $context['product_data'] ?? [],
-            'seo'               => $context['seo_analysis'] ?? [],
-            'strategy'          => $context['strategy_preferences'] ?? [],
-            'commercial_metrics'=> $context['commercial_analysis'] ?? [],
-            'actions'           => $context['rules_engine_actions'] ?? [],
-          ];
-
-          // On appelle directement le service
-          return $this->embeddingService->storeEmbedding($finalMetadata, $productId, $languageId);
+          $metadata = $this->reportBuilder->buildMetadata(
+            $context,
+            $this->embeddingService->getEmbeddingFormatVersion()
+          );
+          return $this->embeddingService->storeEmbedding($metadata, $productId, $languageId);
         }, $ctx, critical: false);
 
-// ── Step 9: Rapport & Auto-Pilote (REQ-EXE-01) ────────────────────
+        // Step 9: Rapport & Auto-Pilote
         $report = $this->reportBuilder->buildReport($ctx);
 
         // Activation réelle de l'exécution automatique pour le CRON

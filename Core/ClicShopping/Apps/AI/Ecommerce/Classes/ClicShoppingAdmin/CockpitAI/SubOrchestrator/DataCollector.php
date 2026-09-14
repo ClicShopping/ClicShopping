@@ -34,7 +34,7 @@
    *
    * Score_Y (commercial performance) sources:
    *   clic_products_viewed       : views last 30 days
-   *   clic_orders_products       : order count, total quantity
+   *   clic_orders_products       : order count (lifetime + metrics window), total quantity
    *   clic_orders_products_download + clic_orders : return count
    *   clic_specials              : active promotion
    *   clic_products              : products_view flag
@@ -51,6 +51,21 @@
   class DataCollector
   {
     private const TIMEOUT_SECONDS = 2.0;
+    // fallback can never drift apart.
+    public const DEFAULT_METRICS_WINDOW_DAYS = 30;
+
+    /**
+     * Window shared by views, orders and the conversion rate, in days.
+     * A rate whose two terms do not share one window has no dimension.
+     */
+    public static function metricsWindowDays(): int
+    {
+      $days = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_METRICS_WINDOW_DAYS')
+        ? (int)CLICSHOPPING_APP_ECOMMERCE_CAI_METRICS_WINDOW_DAYS
+        : self::DEFAULT_METRICS_WINDOW_DAYS;
+
+      return max(1, $days);
+    }
 
     private mixed $db;
     private mixed $debug;
@@ -71,10 +86,11 @@
      */
     public function collect(int $productId, int $languageId): array
     {
-      $startTime = microtime(true);
+      $startTime  = microtime(true);
+      $windowDays = self::metricsWindowDays();
 
       try {
-        // ── Core product + description ──────────────────────────────────────
+        // Core product + description
         // Note: products_image_medium / products_image_small do not exist in
         //       clic_products — only products_image and products_image_zoom.
         // Note: products_featured_status does not exist - using products_view instead
@@ -144,17 +160,18 @@
         // Stratégie :
         //   1. Si CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING = True → lire depuis tracking (données précises)
         //   2. Sinon → utiliser products_viewed (cumulatif, proxy imparfait mais disponible)
-        // Dans les deux cas, on respecte products_date_available : un produit disponible
-        // depuis moins de 30 jours ne peut pas avoir 30 jours de vues.
         $views30d = 0;
 
-        if (\defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING') && CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING === 'True') {
+        $viewsAreWindowed = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING')
+                         && CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING === 'True';
+
+        if ($viewsAreWindowed) {
           // Source précise : tracking pondéré sur 30 jours
           $Qviews30d = $this->db->prepare('SELECT COUNT(*) AS views_30d
                                            FROM :table_products_cockpit_ai_tracking_impressions
                                            WHERE products_id = :product_id
                                            AND language_id = :language_id
-                                           AND displayed_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
+                                           AND displayed_at >= DATE_SUB(NOW(), INTERVAL ' . $windowDays . ' DAY)');
           $Qviews30d->bindInt(':product_id', $productId);
           $Qviews30d->bindInt(':language_id', $languageId);
           $Qviews30d->execute();
@@ -165,17 +182,15 @@
           $views30d = (int)($product['products_viewed'] ?? 0);
         }
 
-        // Respect de products_date_available : si le produit est disponible depuis
-        // moins de 30 jours, les vues sont forcément <= jours_disponibles
-        // (ne pas surestimer le trafic d'un produit récent)
+        // Normalise onto the window: tracking rows are already bounded, the lifetime
+        // counter is scaled DOWN when the product is OLDER than the window.
         $dateAvailable = $product['products_date_available'] ?? $product['products_date_added'] ?? null;
+        $daysAvailable = ($dateAvailable && $dateAvailable !== '0000-00-00 00:00:00')
+                       ? max(1, (int)((time() - strtotime($dateAvailable)) / 86400))
+                       : $windowDays;
 
-        if ($dateAvailable && $dateAvailable !== '0000-00-00 00:00:00') {
-          $daysAvailable = max(1, (int)((time() - strtotime($dateAvailable)) / 86400));
-          if ($daysAvailable < 30) {
-            // Pro-rata : views × (jours_disponibles / 30)
-            $views30d = (int)round($views30d * ($daysAvailable / 30));
-          }
+        if (!$viewsAreWindowed && $daysAvailable > $windowDays) {
+          $views30d = (int)round($views30d * ($windowDays / $daysAvailable));
         }
 
         // ── Views last 7 days — produit + moyenne catalogue ────────────────
@@ -199,9 +214,13 @@
         $Qavg7d->execute();
         $avgViews7d = (float)$Qavg7d->valueDecimal('avg_views_7d');
 
-        // ── Orders ─────────────────────────────────────────────────────────
+        // Orders
         $Qorders = $this->db->prepare(' SELECT COUNT(DISTINCT op.orders_id) AS order_count,
-                                               COALESCE(SUM(op.products_quantity), 0) AS total_quantity
+                                               COALESCE(SUM(op.products_quantity), 0) AS total_quantity,
+                                               COUNT(DISTINCT CASE
+                                                 WHEN o.date_purchased >= DATE_SUB(NOW(), INTERVAL ' . $windowDays . ' DAY)
+                                                 THEN op.orders_id
+                                               END) AS order_count_window
                                         FROM :table_orders_products op
                                         INNER JOIN :table_orders o ON op.orders_id = o.orders_id
                                         WHERE op.products_id = :product_id
@@ -209,8 +228,9 @@
                                       ');
         $Qorders->bindInt(':product_id', $productId);
         $Qorders->execute();
-        $orderCount    = $Qorders->valueInt('order_count');
-        $totalQuantity = $Qorders->valueInt('total_quantity');
+        $orderCount       = $Qorders->valueInt('order_count');
+        $orderCount30d    = $Qorders->valueInt('order_count_window');
+        $totalQuantity    = $Qorders->valueInt('total_quantity');
 
         $this->checkTimeout($startTime, 'orders query');
 
@@ -415,11 +435,11 @@
           }
         }
 
-        // ── Derived metrics ────────────────────────────────────────────────
-        $conversionRate = $views30d > 0 ? ($orderCount / $views30d) : 0.0;
+        // Derived metrics
+        $conversionRate = $views30d > 0 ? ($orderCount30d / $views30d) : 0.0;
         $returnRate     = $orderCount > 0 ? ($returnCount / $orderCount) : 0.0;
 
-        // ── Featured (products_featured) ──────────────────────────────────
+        // Featured (products_featured)
         // Table: clic_products_featured (products_id, status, ...) — status=1 = active.
         $Qfeatured = $this->db->prepare('SELECT COUNT(*) AS featured_count
                                           FROM :table_products_featured
@@ -492,6 +512,7 @@
           'views_30d'            => $views30d,
           'orders'               => $orderCount,
           'order_count'          => $orderCount,
+          'orders_30d'           => $orderCount30d,
           'total_quantity'       => $totalQuantity,
           'conversion_rate'      => $conversionRate,
           'return_count'         => $returnCount,

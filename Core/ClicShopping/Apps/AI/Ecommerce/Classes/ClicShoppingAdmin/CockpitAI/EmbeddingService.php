@@ -36,7 +36,7 @@ use ClicShopping\OM\Registry;
 class EmbeddingService
 {
   private const TABLE_NAME = 'products_cockpit_ai_embedding'; // Table name without prefix
-  private const EMBEDDING_FORMAT_VERSION = '1.0';
+  public const EMBEDDING_FORMAT_VERSION = '1.3';
   
   private MultiDBRAGManager $ragManager;
   private bool $debug;
@@ -148,6 +148,11 @@ class EmbeddingService
           'quadrant' => $metadata['scores']['quadrant'] ?? 'Q_intermediate',
         ],
 
+        // Per-factor detail: generateContent() reads it, and it is the only trace of WHY a
+        // score landed where it did.
+        'factors_x' => $source['factors_x'] ?? $source['scores']['factors_x'] ?? [],
+        'factors_y' => $source['factors_y'] ?? $source['scores']['factors_y'] ?? [],
+
         'seo' => [
           'score' => (int)($source['seo']['score'] ?? 0),
           'status' => $metadata['seo']['status'] ?? 'NOT_ANALYZED',
@@ -159,6 +164,10 @@ class EmbeddingService
           'conversion_rate' => (float)($source['commercial_metrics']['conversion_rate'] ?? 0.0),
           'returns' => (int)($source['commercial_metrics']['returns'] ?? 0),
         ],
+
+        // Velocity block, read by the dashboard. ReportBuilder only emits it when the
+        // collector produced a value: a key absent here reads as 'no data', not as zero.
+        'inventory_metrics' => $source['inventory_metrics'] ?? $metadata['inventory_metrics'] ?? null,
 
         'feature_flags' => [
           'promo_active' => (bool)($source['feature_flags']['promo_active'] ?? false),
@@ -191,10 +200,10 @@ class EmbeddingService
         ],
 
         // Catalog normalization context (Requirement 7.1-7.5)
-        'catalog_normalization' => $metadata['catalog_normalization'] ?? [],
+        'catalog_normalization' => $source['catalog_normalization'] ?? $metadata['catalog_normalization'] ?? [],
 
         // Thresholds used (Requirement 8.1-8.5)
-        'thresholds' => $metadata['thresholds'] ?? ['T_high' => 70, 'T_low' => 30],
+        'thresholds' => $source['thresholds'] ?? $metadata['thresholds'] ?? ['T_high' => 70, 'T_low' => 30],
 
         // Technical metadata (Requirement 16.10)
         'technical' => [
@@ -205,7 +214,7 @@ class EmbeddingService
 
         // Product identification
         'entity_id' => $productId,
-        'product_name' => $metadata['product_name'] ?? 'Unknown',
+        'product_name' => $source['product_name'] ?? $metadata['product_name'] ?? 'Unknown',
       ];
 
 

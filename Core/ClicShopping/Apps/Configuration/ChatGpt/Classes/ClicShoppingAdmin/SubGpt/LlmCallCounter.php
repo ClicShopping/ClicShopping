@@ -352,10 +352,10 @@ final class LlmCallCounter
 
   /**
    * Call site of the current call, read off the stack: the first frame outside the ChatGpt
-   * provider layer that is not a relay. Depth is unbounded on purpose — the façade path is
+   * provider layer that is not a relay. Public: the ceiling signal names its caller with it. Depth is unbounded on purpose — the façade path is
    * several frames deep and a truncated stack would file real callers as unknown.
    */
-  private static function deriveSite(): string
+  public static function deriveSite(): string
   {
     foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
       $class = $frame['class'] ?? '';

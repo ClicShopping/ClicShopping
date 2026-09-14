@@ -60,6 +60,11 @@ class TechnicalDefaults
     'CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL' => 3600,
     'CLICSHOPPING_APP_CHATGPT_RA_CACHE_WARMUP_TTL' => null,
 
+    // SerpAPI HTTP timeout, in seconds. Measured 2026-09-14: the google_trends engine answers in
+    // 1.6-10.1 s, the google engine in 0.05 s cached but up to 51 s cold - a cold call must not be
+    // reported as an API failure. Stays well under RA_MAX_EXECUTION_TIME.
+    'CLICSHOPPING_APP_CHATGPT_WEB_SERPAPI_TIMEOUT' => 30,
+
     // Fallback
     'CLICSHOPPING_APP_CHATGPT_RA_ENABLE_WEB_FALLBACK' => 'True',
     'CLICSHOPPING_APP_CHATGPT_RA_ENABLE_LLM_FALLBACK' => 'True',

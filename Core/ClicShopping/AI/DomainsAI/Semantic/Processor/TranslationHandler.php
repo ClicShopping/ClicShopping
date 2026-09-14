@@ -129,16 +129,9 @@ class TranslationHandler
       $translation = Gpt::getGptResponse($prompt, $maxTokens, 0.0);
 
       // A hit ceiling truncates the normalised input mid-sentence and it travels downstream as
-      // the question — a wrong answer to a question nobody asked. `completion == budget` is the
-      // signature; never let it pass unreported.
+      // the question. The ceiling is reported at the chokepoint; here it is kept as STATE, which
+      // the callers read to decide what to do with a truncated query.
       self::$lastTruncated = ((int)(Gpt::getLastTokenUsage()['completion_tokens'] ?? 0)) >= $maxTokens;
-
-      if (self::$lastTruncated) {
-        self::$logger->logSecurityEvent(
-          sprintf('Input normalisation hit its %d-token ceiling — the query was truncated', $maxTokens),
-          'warning'
-        );
-      }
 
       // 🔍 DIAGNOSTIC: Log résultat GPT
       if ($translation === false) {

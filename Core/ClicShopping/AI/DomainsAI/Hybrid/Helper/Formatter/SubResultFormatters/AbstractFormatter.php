@@ -427,11 +427,11 @@ abstract class AbstractFormatter
     }
 
     $output = '<div class="source-attribution alert alert-info" style="margin-top: 10px; padding: 10px; border-left: 4px solid #17a2b8;">';
-    $output .= '<h6 style="margin-top: 0;"><strong>📍 Source d\'Information</strong></h6>';
-    
-    // Main source type with icon
+    $output .= '<h6 style="margin-top: 0;"><strong>' . htmlspecialchars($this->language->getDef('text_source_attribution_title')) . '</strong></h6>';
+
+    // Main source type with icon. source_type is an internal identifier: label it here, never at the producer.
     $icon = $sourceAttribution['source_icon'] ?? '📄';
-    $sourceType = $sourceAttribution['source_type'] ?? 'Unknown';
+    $sourceType = $this->sourceTypeLabel((string)($sourceAttribution['source_type'] ?? ''));
     $sourceDetails = $sourceAttribution['source_details'] ?? '';
     
     $output .= '<div style="margin-bottom: 5px;">';
@@ -448,27 +448,27 @@ abstract class AbstractFormatter
     // Additional details based on source type
     if (isset($sourceAttribution['table_name']) && $sourceAttribution['table_name'] !== 'database') {
       $output .= '<div style="font-size: 0.85em; color: #555;">';
-      $output .= '📋 Table: <code>' . htmlspecialchars($sourceAttribution['table_name']) . '</code>';
+      $output .= htmlspecialchars($this->language->getDef('text_source_attribution_table')) . ' <code>' . htmlspecialchars($sourceAttribution['table_name']) . '</code>';
       $output .= '</div>';
     }
     
     if (isset($sourceAttribution['document_count']) && $sourceAttribution['document_count'] > 0) {
       $output .= '<div style="font-size: 0.85em; color: #555;">';
-      $output .= '📚 Documents: ' . $sourceAttribution['document_count'];
+      $output .= htmlspecialchars($this->language->getDef('text_source_attribution_documents')) . ' ' . $sourceAttribution['document_count'];
       $output .= '</div>';
     }
     
     if (isset($sourceAttribution['urls']) && is_array($sourceAttribution['urls']) && !empty($sourceAttribution['urls'])) {
       $output .= '<div style="font-size: 0.85em; color: #555; margin-top: 5px;">';
-      $output .= '🔗 URLs: ';
+      $output .= htmlspecialchars($this->language->getDef('text_source_attribution_urls')) . ' ';
       $urlCount = count($sourceAttribution['urls']);
-      $output .= '<span class="badge badge-secondary">' . $urlCount . ' source(s)</span>';
+      $output .= '<span class="badge badge-secondary">' . $urlCount . ' ' . htmlspecialchars($this->language->getDef('text_source_attribution_url_count')) . '</span>';
       $output .= '</div>';
     }
     
     if (isset($sourceAttribution['sources']) && is_array($sourceAttribution['sources'])) {
       $output .= '<div style="font-size: 0.85em; color: #555; margin-top: 5px;">';
-      $output .= '🔀 Sources multiples: ';
+      $output .= htmlspecialchars($this->language->getDef('text_source_attribution_multiple')) . ' ';
       $output .= '<ul style="margin: 5px 0; padding-left: 20px;">';
       foreach ($sourceAttribution['sources'] as $source) {
         $output .= '<li>' . htmlspecialchars($source) . '</li>';
@@ -480,5 +480,23 @@ abstract class AbstractFormatter
     $output .= '</div>';
     
     return $output;
+  }
+
+  /**
+   * Label an internal source-type identifier, falling back to the identifier when no label exists.
+   *
+   * @param string $sourceType Internal identifier, e.g. 'Analytics Database'
+   * @return string The label in the interface language
+   */
+  private function sourceTypeLabel(string $sourceType): string
+  {
+    if ($sourceType === '') {
+      return $this->language->getDef('text_source_attribution_unknown');
+    }
+
+    $key = 'text_source_type_' . strtolower(preg_replace('/[^a-z0-9]+/i', '_', $sourceType));
+    $label = $this->language->getDef($key);
+
+    return ($label === '' || $label === $key) ? $sourceType : $label;
   }
 }

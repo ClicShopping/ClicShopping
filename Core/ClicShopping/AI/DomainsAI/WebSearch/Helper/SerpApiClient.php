@@ -8,6 +8,7 @@
 
 namespace ClicShopping\AI\DomainsAI\WebSearch\Helper;
 
+use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 use ClicShopping\OM\HTTP;
 
@@ -22,10 +23,10 @@ use ClicShopping\OM\HTTP;
 class SerpApiClient
 {
   private const SERPAPI_BASE_URL = 'https://serpapi.com/search';
-  private const DEFAULT_TIMEOUT = 10;
 
   private string $apiKey;
   private bool $debug;
+  private string $lastError = '';
 
   /**
    * Constructor
@@ -49,6 +50,8 @@ class SerpApiClient
    */
   public function search(string $engine, string $query, array $params = []): array|false
   {
+    $this->lastError = '';
+    $timeout = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_WEB_SERPAPI_TIMEOUT');
     // Per-engine query param key is declared by the registered provider
     // (default 'q'; some providers return 'k'). Core stays brand-free.
     $queryParamKey = WebSearchEngineRegistry::getInstance()->getSerpApiQueryParam($engine);
@@ -79,18 +82,16 @@ class SerpApiClient
     $response = HTTP::getResponse([
       'url' => $url,
       'method' => 'get',
-      'timeout' => self::DEFAULT_TIMEOUT,
+      'timeout' => $timeout,
       'header' => [
         'User-Agent: ClicShoppingAI/1.0'
       ]
     ], ['serpapi.com']);
 
-    // Handle HTTP failure
+    // Handle HTTP failure. No response at all is a timeout or a network refusal, not an API
+    // verdict: naming it so is what separates "the provider said no" from "we did not wait".
     if ($response === false || empty($response)) {
-      if ($this->debug) {
-        error_log('[SerpApiClient] HTTP request failed');
-      }
-      return false;
+      return $this->fail($engine, sprintf('no response within %ds (timeout or network failure)', $timeout));
     }
 
     // Decode JSON response
@@ -98,21 +99,41 @@ class SerpApiClient
 
     // Handle JSON decode error
     if (json_last_error() !== JSON_ERROR_NONE) {
-      if ($this->debug) {
-        error_log('[SerpApiClient] JSON decode error: ' . json_last_error_msg());
-      }
-      return false;
+      return $this->fail($engine, 'malformed response: ' . json_last_error_msg());
     }
 
     // Handle SerpAPI error response
     if (isset($data['error'])) {
-      if ($this->debug) {
-        error_log('[SerpApiClient] SerpAPI error: ' . $data['error']);
-      }
-      return false;
+      return $this->fail($engine, 'provider error: ' . (string)$data['error']);
     }
 
     return $data;
+  }
+
+  /**
+   * Record a failure cause and log it. Logged unconditionally: the three causes collapse into one
+   * `false`, and behind a debug flag the reason is unreadable on the server that produced it.
+   *
+   * @param string $engine The engine that failed
+   * @param string $reason Why the call produced no data
+   * @return false Always, so a caller can return it directly
+   */
+  private function fail(string $engine, string $reason): false
+  {
+    $this->lastError = $reason;
+    error_log(sprintf('[SerpApiClient] %s failed - %s', $engine, $reason));
+
+    return false;
+  }
+
+  /**
+   * Why the last search() returned false, empty when it succeeded.
+   *
+   * @return string The failure cause
+   */
+  public function lastError(): string
+  {
+    return $this->lastError;
   }
 
   /**
@@ -149,17 +170,11 @@ class SerpApiClient
     $data = json_decode($jsonResponse, true);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
-      if ($this->debug) {
-        error_log('[SerpApiClient] JSON decode error: ' . json_last_error_msg());
-      }
-      return false;
+      return $this->fail('parseResponse', 'malformed response: ' . json_last_error_msg());
     }
 
     if (isset($data['error'])) {
-      if ($this->debug) {
-        error_log('[SerpApiClient] SerpAPI error: ' . $data['error']);
-      }
-      return false;
+      return $this->fail('parseResponse', 'provider error: ' . (string)$data['error']);
     }
 
     return $data;

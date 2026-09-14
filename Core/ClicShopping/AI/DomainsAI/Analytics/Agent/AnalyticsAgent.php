@@ -361,6 +361,7 @@ class AnalyticsAgent implements AgentInterface
       $this->announceAnalysisPlanReserve($response);
       $this->announceWithheldRows($response);
       $this->announceAnalysisPeriod($response);
+      $this->announceAnalysisScope($response);
       $this->announceMetricBasis($response);
 
       if ($includeSQL) {
@@ -1123,6 +1124,54 @@ class AnalyticsAgent implements AgentInterface
     $response['interpretation'] = trim((string)($response['interpretation'] ?? '') . "\n\n" . $notice);
 
     $this->debugLog("ANALYSIS PERIOD announced: " . $notice, "PLAN");
+  }
+
+  /**
+   * Say WHICH scope the figures cover, whenever the plan breaks down on a dimension it does not
+   * restrict.
+   *
+   * Read from the plan, exactly like the period above: a plan carrying `dimensions` and no
+   * matching `filters` measures EVERY member of that dimension. The plan of "this category" and
+   * of "all categories" are byte-identical, so the widening can never be deduced from the
+   * question - only the retained scope can be stated, and it is the one fact the reader would
+   * otherwise take for a restriction.
+   *
+   * Rides `interpretation` at the FOOT, added after the cache write, like the period above.
+   *
+   * @param array $response Response being assembled, mutated in place
+   * @return void
+   */
+  private function announceAnalysisScope(array &$response): void
+  {
+    $dimensions = array_values(array_filter(
+      array_map('strval', $this->analysisPlan['dimensions'] ?? []),
+      static fn(string $d): bool => $d !== ''
+    ));
+
+    if ($dimensions === []) {
+      return;
+    }
+
+    $filters = array_keys(array_filter($this->analysisPlan['filters'] ?? [], static fn($v): bool => is_scalar($v) && (string)$v !== ''));
+    $unrestricted = array_values(array_diff($dimensions, $filters));
+
+    if ($unrestricted === []) {
+      return;
+    }
+
+    $notice = CLICSHOPPING::getDef('text_analysis_scope_unrestricted', [
+      'dimensions' => implode(', ', $unrestricted),
+    ]);
+
+    if ($notice === '' || $notice === 'text_analysis_scope_unrestricted') {
+      return;
+    }
+
+    $response['analysis_scope'] = ['unrestricted' => $unrestricted];
+    $response['analysis_scope_notice'] = $notice;
+    $response['interpretation'] = trim((string)($response['interpretation'] ?? '') . "\n\n" . $notice);
+
+    $this->debugLog('ANALYSIS SCOPE announced: ' . $notice, 'PLAN');
   }
 
   /**

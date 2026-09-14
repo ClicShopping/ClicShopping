@@ -372,6 +372,8 @@ class ResponseProcessor
         }
       }
 
+      self::reportCeilingReached($maxtoken, (string)$engine);
+
       return $result;
       
     } catch (\Exception $e) {
@@ -385,6 +387,37 @@ class ResponseProcessor
       
       return false;
     }
+  }
+
+  /**
+   * Declare a hit output ceiling, once, where every caller passes. `completion >= budget` is the
+   * signature: the text is cut mid-sentence and nothing downstream says so.
+   *
+   * @param int|null $maxtoken Budget the caller asked for, null when it bounded nothing
+   * @param string $engine Model the call was made against
+   * @return void
+   */
+  private static function reportCeilingReached(?int $maxtoken, string $engine): void
+  {
+    if ($maxtoken === null || $maxtoken <= 0 || self::$lastTokenUsage === null) {
+      return;
+    }
+
+    $completion = (int)(self::$lastTokenUsage['completion_tokens'] ?? 0);
+
+    if ($completion < $maxtoken) {
+      return;
+    }
+
+    // An estimated count is derived from the text length, so it says "probably" — it is reported
+    // as such rather than dropped: a silent truncation is the costlier of the two.
+    (new SecurityLogger())->logStructured('warning', 'ResponseProcessor', 'output_ceiling_reached', [
+      'site' => LlmCallCounter::deriveSite(),
+      'model' => $engine,
+      'budget' => $maxtoken,
+      'completion_tokens' => $completion,
+      'estimated' => (bool)(self::$lastTokenUsage['estimated'] ?? false),
+    ]);
   }
 
   /**

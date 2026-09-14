@@ -478,13 +478,12 @@ class DashboardData
     ];
 
     try {
+      // Counts and freshness are facts about the whole history.
       $Qkpi = $this->db->prepare('
         SELECT
-          COUNT(DISTINCT entity_id)                                            AS total_products,
-          COUNT(*)                                                             AS total_analyses,
-          ROUND(AVG(JSON_EXTRACT(metadata, \'$.scores.score_x\')), 1)         AS avg_score_x,
-          ROUND(AVG(JSON_EXTRACT(metadata, \'$.scores.score_y\')), 1)         AS avg_score_y,
-          MAX(date_modified)                                                   AS last_analysis
+          COUNT(DISTINCT entity_id) AS total_products,
+          COUNT(*)                  AS total_analyses,
+          MAX(date_modified)        AS last_analysis
         FROM :table_' . self::TABLE . '
         WHERE language_id = :language_id
       ');
@@ -497,11 +496,33 @@ class DashboardData
         return $defaults;
       }
 
+      // Averages describe the CURRENT state: latest analysis per product, like every other
+      // method here. Averaged over the history they blend past and present scores.
+      $Qavg = $this->db->prepare('
+        SELECT
+          ROUND(AVG(JSON_EXTRACT(e.metadata, \'$.scores.score_x\')), 1) AS avg_score_x,
+          ROUND(AVG(JSON_EXTRACT(e.metadata, \'$.scores.score_y\')), 1) AS avg_score_y
+        FROM :table_' . self::TABLE . ' e
+        INNER JOIN (
+          SELECT entity_id, MAX(date_modified) AS latest
+          FROM :table_' . self::TABLE . '
+          WHERE language_id = :language_id
+          GROUP BY entity_id
+        ) latest ON e.entity_id = latest.entity_id
+                 AND e.date_modified = latest.latest
+        WHERE e.language_id = :language_id2
+      ');
+
+      $Qavg->bindInt(':language_id',  $languageId);
+      $Qavg->bindInt(':language_id2', $languageId);
+      $Qavg->execute();
+      $avg = $Qavg->fetch() ?: [];
+
       $result = [
         'total_products' => (int)   ($row['total_products'] ?? 0),
         'total_analyses' => (int)   ($row['total_analyses'] ?? 0),
-        'avg_score_x'    => (float) ($row['avg_score_x']    ?? 0),
-        'avg_score_y'    => (float) ($row['avg_score_y']    ?? 0),
+        'avg_score_x'    => (float) ($avg['avg_score_x']   ?? 0),
+        'avg_score_y'    => (float) ($avg['avg_score_y']   ?? 0),
         'last_analysis'  => $row['last_analysis'] ?? null,
         // The denominator of the coverage clause: an analysed count alone cannot say what it misses.
         'catalogue_total' => $this->countCatalogue(),
