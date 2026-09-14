@@ -89,17 +89,21 @@ class ResultSynthesizer
 
     // Get all step results
     $stepResults = $plan->getAllStepResults();
-    foreach ($stepResults as $stepResult) {
-      if (is_array($stepResult) && ($stepResult['type'] ?? '') === 'clarification_needed') {
-        return $this->formatter->ensureSourceAttribution([
-          'type' => 'clarification_needed',
-          'clarification_needed' => true,
-          'text_response' => $stepResult['message'] ?? '',
-          'ambiguity_type' => $stepResult['ambiguity_type'] ?? null,
-          'query' => $stepResult['query'] ?? '',
-          'data' => [],
-        ]);
-      }
+
+    $panes = array_filter($stepResults, 'is_array');
+    $clarifications = array_filter($panes, static fn(array $p): bool => ($p['type'] ?? '') === 'clarification_needed');
+
+    if ($clarifications !== [] && count($clarifications) === count($panes)) {
+      $stepResult = reset($clarifications);
+
+      return $this->formatter->ensureSourceAttribution([
+        'type' => 'clarification_needed',
+        'clarification_needed' => true,
+        'text_response' => $stepResult['message'] ?? '',
+        'ambiguity_type' => $stepResult['ambiguity_type'] ?? null,
+        'query' => $stepResult['query'] ?? '',
+        'data' => [],
+      ]);
     }
 
     $validatedResults = $this->validateStepResults($stepResults);
@@ -416,6 +420,25 @@ class ResultSynthesizer
         $this->logger->logSecurityEvent(
           "Step {$stepId} did not answer ({$type}): " . ($result['error'] ?? 'unknown'),
           'warning'
+        );
+
+        continue;
+      }
+
+      if ($type === 'clarification_needed') {
+        $ask = trim((string)($result['message'] ?? $result['text_response'] ?? ''));
+
+        $aggregated['failed_panes'][] = [
+          'step_id' => $stepId,
+          'question' => $ask,
+          'message' => $ask,
+          'error' => 'clarification:' . (string)($result['ambiguity_type'] ?? 'unknown'),
+          'clarification_needed' => true,
+        ];
+
+        $this->logger->logSecurityEvent(
+          "Step {$stepId} asked for a precision: " . ($result['ambiguity_type'] ?? 'unknown'),
+          'info'
         );
 
         continue;

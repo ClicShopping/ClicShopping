@@ -134,6 +134,7 @@ text_error_executing_query = An error occurred while executing your query. Pleas
 text_query_generation_failed = I could not build a query for this question, so nothing was measured. This is a limit on my side, not a problem with the way you asked.<br />
 text_partial_report_notice = ⚠️ Incomplete report: {{missing_count}} part(s) of your question could not be measured, so what follows answers the rest of it. Not measured: {{missing}}<br />
 text_unreliable_report_notice = ⚠️ Reliability check: {{missing_count}} figure(s) failed a consistency check and were withheld rather than shown as trustworthy. Withheld: {{missing}}<br />
+text_clarification_report_notice = ⚠️ Precision needed: {{missing_count}} part(s) of your question could not be answered without a precision, so what follows answers the rest of it. Please specify: {{missing}}<br />
 text_coherence_missing_cost_basis = the profit margin came out at 100% because no product cost is recorded, so the figure is not meaningful
 text_coherence_rows_withheld_missing_cost = Note: no margin is shown for {{labels}} - no purchase cost is recorded for those products, so their margin would come out at 100%. They are left out rather than shown as a figure; the lines below are computed on a real cost basis.<br />
 text_coherence_zero_count_with_activity = the order count came back at zero while there is recorded revenue, so the filter matched nothing

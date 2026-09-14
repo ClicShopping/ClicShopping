@@ -178,8 +178,6 @@ class CoherenceGuard
             }
         }
 
-        // #4 Silently-empty filter: an order count at 0 in the same row as positive revenue. Revenue
-        // means orders existed, so a zero order-count is a filter that matched nothing (SQL-2).
         $derived = [];
 
         foreach ((array)($pane['derived_columns'] ?? []) as $col) {

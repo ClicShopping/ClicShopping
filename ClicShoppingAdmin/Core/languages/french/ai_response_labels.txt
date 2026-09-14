@@ -134,6 +134,7 @@ text_error_executing_query = Une erreur s'est produite lors de l'exécution de v
 text_query_generation_failed = Je n'ai pas pu construire de requête pour cette question : rien n'a donc été mesuré. La limite est de mon côté, elle ne vient pas de votre formulation.<br />
 text_partial_report_notice = ⚠️ Rapport incomplet : {{missing_count}} partie(s) de votre question n'ont pas pu être mesurées, ce qui suit répond donc au reste. Non mesuré : {{missing}}<br />
 text_unreliable_report_notice = ⚠️ Contrôle de fiabilité : {{missing_count}} chiffre(s) ont échoué à un contrôle de cohérence et ont été retenus plutôt que présentés comme fiables. Retenu : {{missing}}<br />
+text_clarification_report_notice = ⚠️ Précision nécessaire : {{missing_count}} partie(s) de votre question n'ont pas pu être traitées sans une précision, ce qui suit répond donc au reste. À préciser : {{missing}}<br />
 text_coherence_missing_cost_basis = la marge est ressortie à 100 % faute de coût produit renseigné, le chiffre n'a donc pas de sens
 text_coherence_rows_withheld_missing_cost = À noter : aucune marge n'est affichée pour {{labels}} — aucun prix d'achat n'est enregistré pour ces produits, leur marge ressortirait donc à 100 %. Ces lignes sont écartées plutôt que présentées comme un chiffre ; celles ci-dessous sont calculées sur une base de coût réelle.<br />
 text_coherence_zero_count_with_activity = le nombre de commandes est ressorti à zéro alors qu'il existe du chiffre d'affaires, le filtre n'a donc rien apparié

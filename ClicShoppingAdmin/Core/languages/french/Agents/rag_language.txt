@@ -19,3 +19,4 @@ INSTRUCTIONS:
     4. N'inventez pas d'informations - si vous ne savez vraiment pas, dites-le.
     5. Gardez votre réponse ciblée et pertinente à la question posée.
 text_rag_translate_response = Traduisez le texte suivant en {{language}}. Conservez toutes les balises HTML, la mise en forme, les codes et les noms propres inchangés. Un nombre conserve sa VALEUR inchangée mais prend le séparateur de milliers et le séparateur décimal de la langue cible. Renvoyez UNIQUEMENT le texte traduit, sans rien ajouter avant ou après.
+text_rag_source_language_markers = the|is|are|of|and|for|with|from|this|that|these|not|was|were|will|has|have|been|its|their|which|when|what|excluding|including

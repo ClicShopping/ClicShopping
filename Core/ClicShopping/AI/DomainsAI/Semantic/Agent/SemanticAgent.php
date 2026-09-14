@@ -298,14 +298,28 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
 
       // Agnostic translation prompt (English layer); {{language}} = target language name.
       DomainConfig::loadAgnosticLanguageFile('rag_language', 'en');
-      $prompt = CLICSHOPPING::getDef('text_rag_translate_response', ['language' => $targetName]);
+      $prompt = CLICSHOPPING::getDef('text_rag_translate_response', [
+        'language' => $targetName . ' (ISO 639-1: ' . $targetCode . ')',
+      ]);
       if ($prompt === '' || $prompt === 'text_rag_translate_response') {
+        self::logSecurityEvent('restitution: the translation prompt is missing, the answer stays in English', 'warning');
+
         return $text;
       }
 
-      $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, 600);
+      $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, 600, 0.0);
+
+      if (self::keptSourceLanguage($translated, $text)) {
+        $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, 600, 0.3);
+
+        if (self::keptSourceLanguage($translated, $text)) {
+          self::logSecurityEvent('restitution: the answer stayed in English after a second attempt', 'warning');
+        }
+      }
 
       if (!is_string($translated) || trim($translated) === '') {
+        self::logSecurityEvent('restitution: the model returned nothing, the answer stays in English', 'warning');
+
         return $text;
       }
 
@@ -315,6 +329,40 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
 
       return $text;
     }
+  }
+
+  /**
+   * Did the restitution give back the pipeline's source language instead of translating?
+   *
+   * Two shapes, and the second is the one an identity check misses: a verbatim echo, and a
+   * REWRITTEN English, which differs from its source character for character. Function words
+   * only - a proper noun, a code or a figure carried over never trips it.
+   *
+   * @param mixed $translated What the model returned
+   * @param string $source The English text it was given
+   * @return bool True when the answer is still in the source language
+   */
+  private static function keptSourceLanguage(mixed $translated, string $source): bool
+  {
+    if (!is_string($translated) || trim($translated) === '') {
+      return false;
+    }
+
+    if (trim($translated) === trim($source)) {
+      return true;
+    }
+
+    $markers = CLICSHOPPING::getDef('text_rag_source_language_markers');
+
+    if ($markers === '' || $markers === 'text_rag_source_language_markers') {
+      return false;
+    }
+
+    $words = preg_split('/[^\p{L}]+/u', mb_strtolower($translated), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    $present = array_intersect(explode('|', $markers), array_unique($words));
+
+    // Three distinct function words is prose, not a borrowed name.
+    return count($present) >= 3;
   }
 
   /**

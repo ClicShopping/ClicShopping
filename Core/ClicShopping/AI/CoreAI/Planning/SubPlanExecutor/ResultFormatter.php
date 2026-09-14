@@ -54,10 +54,12 @@ class ResultFormatter
     $failed = $aggregated['failed_panes'] ?? [];
 
     if (!empty($answers)) {
+      $clarification = array_filter($failed, static fn(array $p): bool => !empty($p['clarification_needed']));
       $unreliable = array_filter($failed, static fn(array $p): bool => !empty($p['coherence_rejected']));
-      $notMeasured = array_filter($failed, static fn(array $p): bool => empty($p['coherence_rejected']));
+      $notMeasured = array_filter($failed, static fn(array $p): bool => empty($p['coherence_rejected']) && empty($p['clarification_needed']));
 
       $notices = array_filter([
+        $this->partsNotice($clarification, 'text_clarification_report_notice'),
         $this->partsNotice($notMeasured, 'text_partial_report_notice'),
         $this->partsNotice($unreliable, 'text_unreliable_report_notice'),
       ]);

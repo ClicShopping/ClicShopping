@@ -104,8 +104,6 @@ class AnalysisPlanner
    */
   protected function assemblePrompt(string $skeleton, string $englishQuestion, string $widerRequest = ''): string
   {
-    // Same clock PeriodResolver treats as "today"; the model needs it to anchor a relative
-    // period the question states (last quarter/month/year) to concrete bounds.
     return str_replace(
       ['{{today}}', '{{wider_request}}', '{{question}}', '{{examples}}'],
       [date('Y-m-d'), trim($widerRequest), $englishQuestion, $this->examples()],
@@ -218,6 +216,22 @@ class AnalysisPlanner
     if (!empty($plan['dimensions'])) {
       $block .= "\n" . $this->getDef('text_analysis_plan_dimensions_line', [
         'dimensions' => implode(', ', $plan['dimensions']),
+      ]);
+    }
+
+    // A filter the plan elected is a restriction the generator must honour; unrendered, the plan
+    // carried it nowhere. It says WHICH criterion applies, never how the stored value is spelled.
+    $filters = [];
+
+    foreach ($plan['filters'] ?? [] as $column => $value) {
+      if (is_scalar($value) && (string)$value !== '') {
+        $filters[] = $column . ' = ' . $value;
+      }
+    }
+
+    if ($filters !== []) {
+      $block .= "\n" . $this->getDef('text_analysis_plan_filters_line', [
+        'filters' => implode(', ', $filters),
       ]);
     }
 
