@@ -101,7 +101,7 @@ BEFORE DELIVERY:
 | **DB in `AI/`**  | `Core/ClicShopping/AI/` → Doctrine ORM only                                                       |
 | **DB elsewhere** | `Registry::get('Db')` only — NEVER mix both paradigms in the same file                            |
 | **Sessions**     | 4 backends with automatic fallback (Database, File, Memcached, Redis)                             |
-| **Cache**        | 5-tier architecture (OpCache, Static, Memcached, Redis, APCu)                                     |
+| **Cache**        | 5-tier architecture (OpCache, Static, APCu, Memcached, Redis)                                     |
 
 For AI-specific rules (LLPhant, agents, RAG, guardrails) → `AI_SYSTEM.md`.
 For DB paradigm details and code examples → `DATABASE.md`.

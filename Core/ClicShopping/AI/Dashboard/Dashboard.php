@@ -343,9 +343,9 @@ class Dashboard
       }
 
       return [
-        'analytics' => ['success_rate' => $agentStats['analytics_agent']['success_rate'] ?? '0%'],
-        'semantic' => ['success_rate' => $agentStats['semantic_agent']['success_rate'] ?? '0%'],
-        'hybrid' => ['success_rate' => $agentStats['hybrid_agent']['success_rate'] ?? '0%'],
+        'analytics' => ['success_rate' => ($byClassification['analytics']['success_rate'] ?? 0) . '%'],
+        'semantic' => ['success_rate' => ($byClassification['semantic']['success_rate'] ?? 0) . '%'],
+        'hybrid' => ['success_rate' => ($byClassification['hybrid']['success_rate'] ?? 0) . '%'],
         'orchestrator' => ['success_rate' => $agentStats['orchestrator']['success_rate'] ?? '0%'],
         'websearch' => ['success_rate' => $agentStats['web_search']['success_rate'] ?? '0%'],
         'cache' => ['average_quality_score' => $cacheAvgQuality / 100],

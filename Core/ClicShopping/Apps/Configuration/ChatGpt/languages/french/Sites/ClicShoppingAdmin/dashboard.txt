@@ -73,14 +73,14 @@ security_low_scores = Scores faibles
 # Agents
 agents_total_usage = Utilisations Totales
 agents_avg_success_rate = Taux de Succès Moyen
-agents_all = Tous agents confondus
-agents_most_used = Agent le Plus Utilisé
-agents_main = Agent principal
-agents_performance = Performance par Agent
+agents_all = Tous composants confondus
+agents_most_used = Composant le Plus Utilisé
+agents_main = Composant principal
+agents_performance = Performance par Composant
 agents_usage = Utilisations
 agents_success_rate = Taux de Succès
 agents_avg_confidence = Confiance Moyenne
-agents_usage_distribution = Répartition de l'Usage des Agents
+agents_usage_distribution = Répartition de l'Usage des Composants
 
 # Modes de Raisonnement
 reasoning_modes_title = Statistiques des Modes de Raisonnement
@@ -101,8 +101,8 @@ chart_performance_evolution = Évolution des Performances
 chart_severity_distribution = Distribution des Sévérités
 chart_request_types = Distribution des Types de Requêtes
 chart_security_scores = Scores de Sécurité
-chart_agents_performance = Performance par Agent
-chart_agents_usage = Répartition de l'Usage des Agents
+chart_agents_performance = Performance par Composant
+chart_agents_usage = Répartition de l'Usage des Composants
 chart_reasoning_modes = Utilisation des Modes de Raisonnement
 chart_no_data = Pas de données disponibles
 
@@ -301,15 +301,15 @@ latency_auto_collect = Les métriques de latence seront collectées automatiquem
 # Évolution des Performances
 perf_evolution = 📈 Évolution des Performances
 perf_severity_distribution = Distribution des Sévérités
-perf_agent_distribution = Répartition de l'Usage des Agents
-perf_agent_performance = 📊 Performance par Agent
-perf_agent_name = Agent
+perf_agent_distribution = Répartition de l'Usage des Composants
+perf_agent_performance = 📊 Performance par Composant
+perf_agent_name = Composant
 perf_agent_usage = Utilisations
 perf_agent_percentage = %
 perf_agent_success_rate = Taux de Succès
 perf_agent_avg_confidence = Confiance Moyenne
 perf_no_agent_data = Aucune donnée d'agents disponible
-perf_agent_data_info = Les statistiques des agents apparaîtront ici une fois que des requêtes auront été traitées.
+perf_agent_data_info = Les statistiques des composants apparaîtront ici une fois que des requêtes auront été traitées.
 
 # Onglets
 tab_general = Général

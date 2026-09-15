@@ -15,6 +15,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationBoundary;
 
 define('CLICSHOPPING_BASE_DIR', dirname(__DIR__, 3) . '/Core/ClicShopping/');
 
@@ -50,28 +51,16 @@ try {
   // Initialize ConversationMemory
   $conversationMemory = new ConversationMemory($userId, $languageId);
   
-  // Clear current context
+  // Clear the in-request objects...
   $conversationMemory->clearContext();
-  
-  // Generate new context ID
+
+  // ...and the durable boundary both conversational readers honour. Without it the next question
+  // reads the same rows back: they scope on user and language, never on a context.
+  ConversationBoundary::reset((string)$userId, $languageId);
+
   $newContextId = 'context_' . $userId . '_' . time() . '_' . bin2hex(random_bytes(4));
-  
-  // Store new context ID in session
   $_SESSION['chat_context_id'] = $newContextId;
   $_SESSION['chat_context_created_at'] = time();
-  
-  // Clear conversation history in session
-  if (isset($_SESSION['conversation_history'])) {
-    unset($_SESSION['conversation_history']);
-  }
-  
-  // Clear entity context
-  if (isset($_SESSION['last_entity_id'])) {
-    unset($_SESSION['last_entity_id']);
-  }
-  if (isset($_SESSION['last_entity_type'])) {
-    unset($_SESSION['last_entity_type']);
-  }
   
   error_log("DEBUG ResetContext - New context ID: {$newContextId}");
   

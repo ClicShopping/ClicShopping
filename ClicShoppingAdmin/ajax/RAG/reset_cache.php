@@ -88,7 +88,7 @@ try {
       $prefix = CLICSHOPPING::getConfig('db_table_prefix');
       $deleted = 0;
 
-      foreach (['rag_query_cache', 'rag_web_cache_embedding'] as $table) {
+      foreach (['rag_query_cache', 'rag_web_cache_embedding', 'rag_calculator_cache'] as $table) {
         $fullTable = $prefix . $table;
 
         // Only touch tables that actually exist (graceful on partial installs)

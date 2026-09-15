@@ -73,14 +73,14 @@ security_low_scores = Low scores
 # Agents
 agents_total_usage = Total Usage
 agents_avg_success_rate = Average Success Rate
-agents_all = All agents
-agents_most_used = Most Used Agent
-agents_main = Main agent
-agents_performance = Performance by Agent
+agents_all = All components
+agents_most_used = Most Used Component
+agents_main = Main component
+agents_performance = Performance by Component
 agents_usage = Usage
 agents_success_rate = Success Rate
 agents_avg_confidence = Average Confidence
-agents_usage_distribution = Agent Usage Distribution
+agents_usage_distribution = Component Usage Distribution
 
 # Reasoning Modes
 reasoning_modes_title = Reasoning Modes Statistics
@@ -101,8 +101,8 @@ chart_performance_evolution = Performance Evolution
 chart_severity_distribution = Severity Distribution
 chart_request_types = Request Types Distribution
 chart_security_scores = Security Scores
-chart_agents_performance = Agent Performance
-chart_agents_usage = Agent Usage Distribution
+chart_agents_performance = Component Performance
+chart_agents_usage = Component Usage Distribution
 chart_reasoning_modes = Reasoning Modes Usage
 chart_no_data = No data available
 
@@ -301,15 +301,15 @@ latency_auto_collect = Latency metrics will be collected automatically during ne
 # Performance Evolution
 perf_evolution = 📈 Performance Evolution
 perf_severity_distribution = Distribution of Severities
-perf_agent_distribution = Agent Usage Distribution
-perf_agent_performance = 📊 Performance by Agent
-perf_agent_name = Agent
+perf_agent_distribution = Component Usage Distribution
+perf_agent_performance = 📊 Performance by Component
+perf_agent_name = Component
 perf_agent_usage = Usage
 perf_agent_percentage = %
 perf_agent_success_rate = Success Rate
 perf_agent_avg_confidence = Average Confidence
 perf_no_agent_data = No agent data available
-perf_agent_data_info = Agent statistics will appear here once requests have been processed.
+perf_agent_data_info = Component statistics will appear here once requests have been processed.
 
 # Tabs
 tab_general = General

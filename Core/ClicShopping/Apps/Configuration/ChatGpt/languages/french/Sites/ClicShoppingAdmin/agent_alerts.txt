@@ -81,3 +81,5 @@ text_purge_question_cache_title = Vider la réponse en cache pour cette question
 text_purge_done = Cache vidé ({rows}) — reposez la question
 text_purge_none = Rien n’était en cache pour cette question — le signalement porte sur une réponse générée à neuf
 text_purge_failed = Le cache n’a pas pu être vidé
+button_delete_reports = Supprimer les signalements
+text_delete_reports_confirm = Supprimer tous les signalements utilisateurs des types de demande sélectionnés sur la période ? Les réponses et les questions sont conservées, seuls les signalements partent.

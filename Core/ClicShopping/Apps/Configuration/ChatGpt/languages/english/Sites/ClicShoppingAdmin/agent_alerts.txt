@@ -81,3 +81,5 @@ text_purge_question_cache_title = Clear the cached answer for this question, the
 text_purge_done = Cache cleared ({rows}) — ask the question again
 text_purge_none = Nothing was cached for this question — the report concerns a freshly generated answer
 text_purge_failed = Could not clear the cache
+button_delete_reports = Delete the reports
+text_delete_reports_confirm = Delete every user report of the selected kinds of request over the period? The answers and the questions are kept; only the reports go.

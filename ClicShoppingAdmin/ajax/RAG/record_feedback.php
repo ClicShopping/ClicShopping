@@ -7,6 +7,7 @@
  */
 
 use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
+use ClicShopping\AI\CoreAI\Orchestrator\CorrectionAgent;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
@@ -80,18 +81,23 @@ try {
   error_log("DEBUG Feedback - User ID: {$userId}, Language ID: {$languageId}");
   error_log("DEBUG Feedback - Interaction ID: {$interactionId}, Type: {$feedbackType}");
   
-  // If original_query not provided, try to get it from rag_interactions table
-  if (empty($originalQuery)) {
-    $interactionQuery = $CLICSHOPPING_Db->prepare("
-      SELECT question
-      FROM :table_rag_interactions
-      WHERE client_interaction_id = :interaction_id
-      LIMIT 1
-    ");
-    $interactionQuery->bindValue(':interaction_id', $interactionId);
-    $interactionQuery->execute();
-    
-    if ($interactionQuery->fetch()) {
+  // The learner compares the answer that was given with the one the user expected, so fetch both
+  // the question and the response of the interaction being corrected.
+  $originalResponse = '';
+
+  $interactionQuery = $CLICSHOPPING_Db->prepare("
+    SELECT question, response
+    FROM :table_rag_interactions
+    WHERE client_interaction_id = :interaction_id
+    LIMIT 1
+  ");
+  $interactionQuery->bindValue(':interaction_id', $interactionId);
+  $interactionQuery->execute();
+
+  if ($interactionQuery->fetch()) {
+    $originalResponse = (string)$interactionQuery->value('response');
+
+    if (empty($originalQuery)) {
       $originalQuery = $interactionQuery->value('question');
     }
   }
@@ -100,10 +106,14 @@ try {
   $conversationMemory = new ConversationMemory($userId, $languageId);
   
   // Prepare feedback data with original query and corrected text
+  // storeCorrectionPattern() reads original_response / corrected_response and returns false on
+  // either being empty — the other two keys are what the dashboards already read.
   $feedbackData = [
     'feedback_text' => $feedbackText,
     'corrected_text' => $correctedText,
     'original_query' => $originalQuery,
+    'original_response' => $originalResponse,
+    'corrected_response' => $correctedText,
     'timestamp' => time(),
     'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
     'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
@@ -121,7 +131,18 @@ try {
   );
   
   error_log("DEBUG Feedback - Result: " . ($result ? 'SUCCESS' : 'FAILED'));
-  
+
+  // A correction is the only feedback the learner can store, and it is rare: learn from the row
+  // just written (limit 1), never from the whole backlog, which would re-store known patterns.
+  if ($result && $feedbackType === 'correction' && $correctedText !== '') {
+    try {
+      (new CorrectionAgent((string)$userId, (int)$languageId))->learnFromFeedback(1);
+    } catch (\Throwable $e) {
+      // Learning must never cost the user his feedback: the row is already stored.
+      error_log('DEBUG Feedback - learnFromFeedback failed: ' . $e->getMessage());
+    }
+  }
+
   if ($result) {
     echo json_encode([
       'success' => true,

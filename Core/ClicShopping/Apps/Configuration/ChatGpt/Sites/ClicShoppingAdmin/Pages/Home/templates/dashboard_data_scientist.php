@@ -345,29 +345,6 @@ include __DIR__ . '/dashboard/_data.php';
                             </tr>
                           <?php endforeach; ?>
                           
-                          <!-- WebSearch Agent Row -->
-                          <?php if (!empty($websearchStats) && $websearchStats['total_queries'] > 0): ?>
-                            <tr style="background-color: #f0f8ff;">
-                              <td><strong>🌐 Web Search</strong></td>
-                              <td><?php echo $websearchStats['total_queries']; ?></td>
-                              <td>
-                                <?php 
-                                $totalAgentUsage = $advancedStats['agents']['total_usage'] ?? 1;
-                                $websearchPercentage = round(($websearchStats['total_queries'] / $totalAgentUsage) * 100, 1);
-                                ?>
-                                <div class="progress" style="width: 60px; height: 20px;">
-                                  <div class="progress-bar bg-info" style="width: <?php echo $websearchPercentage; ?>%"></div>
-                                </div>
-                                <?php echo $websearchPercentage; ?>%
-                              </td>
-                              <td>
-                                <span class="badge <?php echo $websearchStats['success_rate'] >= 80 ? 'bg-success' : ($websearchStats['success_rate'] >= 60 ? 'bg-warning' : 'bg-danger');?>">
-                                  <?php echo $websearchStats['success_rate']; ?>%
-                                </span>
-                              </td>
-                              <td><?php echo $websearchStats['avg_confidence']; ?>%</td>
-                            </tr>
-                          <?php endif; ?>
                           </tbody>
                         </table>
                       </div>

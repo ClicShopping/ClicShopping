@@ -390,29 +390,11 @@ class DashboardStatsCollector
                 $total_usage += $usage_count;
             }
 
-            // 🔧 ADD WEBSEARCH AGENT DATA (2025-12-28)
-            // WebSearch queries don't have agent_type, they use intent_type='web_search'
-            // We need to add them separately from rag_interactions
-            $websearchResults = DoctrineOrm::select("
-                SELECT 
-                    COUNT(DISTINCT i.interaction_id) as usage_count,
-                    AVG(s.confidence_score) as avg_confidence
-                FROM {$this->prefix}rag_interactions i
-                LEFT JOIN {$this->prefix}rag_statistics s ON i.interaction_id = s.interaction_id
-                WHERE i.date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
-                    AND i.intent_type = 'web_search'
-            ", [$days]);
-
-            if (!empty($websearchResults) && ($websearchResults[0]['usage_count'] ?? 0) > 0) {
-                $websearch_usage = $websearchResults[0]['usage_count'] ?? 0;
-                $agents[] = [
-                    'name' => 'web_search',
-                    'usage_count' => $websearch_usage,
-                    'avg_confidence' => round($websearchResults[0]['avg_confidence'] ?? 0, 2),
-                    'success_rate' => 85.0 // Valeur par défaut
-                ];
-                $total_usage += $websearch_usage;
-            }
+            // No web_search line here on purpose: web search is a KIND OF REQUEST, handled by
+            // the orchestrator, not a component of its own. Its calls are already counted under
+            // agent_type = 'orchestrator'; adding them from rag_interactions counted them twice
+            // and mixed two populations in one total. The kinds of request are the subject of the
+            // source distribution — see Dashboard::getSourceStats().
 
             // Calculate percentages
             foreach ($agents as &$agent) {

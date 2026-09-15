@@ -66,7 +66,6 @@
       updateElement('alert-systematic', data.summary.systematic_issues || 0);
       updateElement('alert-consensus', data.summary.failed_consensus || 0);
       updateElement('alert-failed', data.summary.failed_objectives || 0);
-      updateElement('alert-negative', data.summary.negative_feedback || 0);
     }
     
     // Update tables
@@ -74,7 +73,6 @@
     updateSystematicTable(data.systematic_issues || []);
     updateConsensusTable(data.failed_consensus || []);
     updateFailedTable(data.failed_objectives || []);
-    updateNegativeFeedbackTable(data.negative_feedback || []);
   }
 
   function getLabels() {
@@ -204,52 +202,20 @@
     `).join('');
   }
 
-  function updateNegativeFeedbackTable(rows) {
-    const tbody = document.getElementById('negative-tbody');
-    if (!tbody) return;
-
-    const labels = getLabels();
-
-    if (rows.length === 0) {
-      tbody.innerHTML = emptyRow(8, labels.no_negative_feedback || '');
-      return;
-    }
-
-    // One button per question: a report may be about a replayed answer, and clearing the whole
-    // cache to check one of them costs every other entry.
-    const bullets = list => (list || []).map(v => `
-      <li>
-        ${escapeHtml(v)}
-        <button class="btn btn-sm btn-outline-secondary ms-1 py-0"
-                data-purge-question="${escapeAttr(v)}"
-                title="${escapeAttr(labels.purge_question_cache_title || '')}">
-          <i class="bi bi-eraser"></i> ${escapeHtml(labels.purge_question_cache || '')}
-        </button>
-      </li>`).join('');
-
-    tbody.innerHTML = rows.map(row => `
-      <tr>
-        <td>${escapeHtml(row.request_type || '')}</td>
-        <td>${escapeHtml(String(row.negative_count || 0))}</td>
-        <td>${escapeHtml(String(row.answers_total || 0))}</td>
-        <td>${escapeHtml((Math.round((row.negative_rate || 0) * 1000) / 10).toFixed(1))}%</td>
-        <td><ul class="mb-0 ps-3">${bullets(row.sample_questions)}</ul></td>
-        <td><ul class="mb-0 ps-3">${bullets(row.sample_comments)}</ul></td>
-        <td>${formatDate(row.last_at)}</td>
-        <td><span class="badge bg-${row.severity === 'critical' ? 'danger' : 'warning'}">${escapeHtml(row.severity || '')}</span></td>
-      </tr>
-    `).join('');
-  }
-
+  /**
+   * Clear the cached answer of ONE question, in place.
+   *
+   * Deliberately AJAX where the deletion is a form: this must NOT reload the page — you purge,
+   * you read the outcome next to the question, then you go and ask it again.
+   */
   function purgeQuestionCache(button) {
     const labels = getLabels();
     const question = button.getAttribute('data-purge-question') || '';
     const config = window.AgentAlertsConfig || {};
-    const url = (config.baseUrl || '') + (config.purgeQuestionCacheEndpoint || '');
 
     button.disabled = true;
 
-    fetch(url, {
+    fetch((config.baseUrl || '') + (config.purgeQuestionCacheEndpoint || ''), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({question: question})
@@ -280,6 +246,15 @@
     if (button) {
       event.preventDefault();
       purgeQuestionCache(button);
+    }
+  });
+
+  // The form posts to the DeleteAll action; the reports do not come back, so ask first.
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('#negative-delete');
+
+    if (button && !confirm(getLabels().delete_reports_confirm || '')) {
+      event.preventDefault();
     }
   });
 
