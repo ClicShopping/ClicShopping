@@ -171,7 +171,9 @@ class UIGenerator
         'clarification_status_received' => CLICSHOPPING::getDef('text_chat_clarification_status_received'),
         'clarification_error_invalid_response' => CLICSHOPPING::getDef('text_chat_clarification_error_invalid_response'),
         'clarification_response_prefix' => CLICSHOPPING::getDef('text_chat_clarification_response_prefix'),
-        'clarification_retry' => CLICSHOPPING::getDef('text_chat_clarification_retry')
+        'clarification_retry' => CLICSHOPPING::getDef('text_chat_clarification_retry'),
+        'feedback_correction_label' => CLICSHOPPING::getDef('text_chat_feedback_correction_label'),
+        'feedback_correction_placeholder' => CLICSHOPPING::getDef('text_chat_feedback_correction_placeholder')
       ];
 
       $config = [

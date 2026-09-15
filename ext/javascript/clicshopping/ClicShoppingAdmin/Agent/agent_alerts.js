@@ -66,6 +66,7 @@
       updateElement('alert-systematic', data.summary.systematic_issues || 0);
       updateElement('alert-consensus', data.summary.failed_consensus || 0);
       updateElement('alert-failed', data.summary.failed_objectives || 0);
+      updateElement('alert-negative', data.summary.negative_feedback || 0);
     }
     
     // Update tables
@@ -73,6 +74,7 @@
     updateSystematicTable(data.systematic_issues || []);
     updateConsensusTable(data.failed_consensus || []);
     updateFailedTable(data.failed_objectives || []);
+    updateNegativeFeedbackTable(data.negative_feedback || []);
   }
 
   function getLabels() {
@@ -202,6 +204,85 @@
     `).join('');
   }
 
+  function updateNegativeFeedbackTable(rows) {
+    const tbody = document.getElementById('negative-tbody');
+    if (!tbody) return;
+
+    const labels = getLabels();
+
+    if (rows.length === 0) {
+      tbody.innerHTML = emptyRow(8, labels.no_negative_feedback || '');
+      return;
+    }
+
+    // One button per question: a report may be about a replayed answer, and clearing the whole
+    // cache to check one of them costs every other entry.
+    const bullets = list => (list || []).map(v => `
+      <li>
+        ${escapeHtml(v)}
+        <button class="btn btn-sm btn-outline-secondary ms-1 py-0"
+                data-purge-question="${escapeAttr(v)}"
+                title="${escapeAttr(labels.purge_question_cache_title || '')}">
+          <i class="bi bi-eraser"></i> ${escapeHtml(labels.purge_question_cache || '')}
+        </button>
+      </li>`).join('');
+
+    tbody.innerHTML = rows.map(row => `
+      <tr>
+        <td>${escapeHtml(row.request_type || '')}</td>
+        <td>${escapeHtml(String(row.negative_count || 0))}</td>
+        <td>${escapeHtml(String(row.answers_total || 0))}</td>
+        <td>${escapeHtml((Math.round((row.negative_rate || 0) * 1000) / 10).toFixed(1))}%</td>
+        <td><ul class="mb-0 ps-3">${bullets(row.sample_questions)}</ul></td>
+        <td><ul class="mb-0 ps-3">${bullets(row.sample_comments)}</ul></td>
+        <td>${formatDate(row.last_at)}</td>
+        <td><span class="badge bg-${row.severity === 'critical' ? 'danger' : 'warning'}">${escapeHtml(row.severity || '')}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  function purgeQuestionCache(button) {
+    const labels = getLabels();
+    const question = button.getAttribute('data-purge-question') || '';
+    const config = window.AgentAlertsConfig || {};
+    const url = (config.baseUrl || '') + (config.purgeQuestionCacheEndpoint || '');
+
+    button.disabled = true;
+
+    fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({question: question})
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success) {
+          button.insertAdjacentHTML('afterend', ` <span class="text-danger">${escapeHtml(labels.purge_failed || '')}</span>`);
+          return;
+        }
+
+        // Nothing cached is an ANSWER, not a failure: it says the report is about a fresh answer.
+        const message = data.rows_deleted > 0
+          ? (labels.purge_done || '').replace('{rows}', String(data.rows_deleted))
+          : (labels.purge_none || '');
+
+        button.insertAdjacentHTML('afterend', ` <span class="text-success">${escapeHtml(message)}</span>`);
+      })
+      .catch(() => {
+        button.insertAdjacentHTML('afterend', ` <span class="text-danger">${escapeHtml(labels.purge_failed || '')}</span>`);
+      })
+      .finally(() => button.remove());
+  }
+
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('[data-purge-question]');
+
+    if (button) {
+      event.preventDefault();
+      purgeQuestionCache(button);
+    }
+  });
+
   function calculateOverdue(createdAt, estimatedTime) {
     const labels = getLabels();
     if (!createdAt || !estimatedTime) return labels.na || '';
@@ -253,6 +334,19 @@
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  /**
+   * Escape for a QUOTED ATTRIBUTE. escapeHtml() leaves quotes alone — enough between tags, not
+   * enough inside an attribute, where a question carrying " would close it and inject its own.
+   */
+  function escapeAttr(text) {
+    return String(text === null || text === undefined ? '' : text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   function updateElement(id, value) {

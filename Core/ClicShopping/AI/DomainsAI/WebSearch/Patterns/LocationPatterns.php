@@ -123,8 +123,18 @@
     {
       $countryCode   = mb_strtoupper(trim($countryCode));
       $defaultRegion = mb_strtoupper(trim($defaultRegion));
-      $params = self::$locationCurrencyMap[$countryCode] ?? self::$locationCurrencyMap[$defaultRegion] ?? self::$locationCurrencyMap['FR'];
-      $params['country_code'] = $countryCode;
+
+      // country_code must name the entry actually served, never the raw request:
+      // an unmapped input ("VAR", "EN") falls back but used to be echoed back as a country.
+      $resolved = match (true) {
+        isset(self::$locationCurrencyMap[$countryCode])   => $countryCode,
+        isset(self::$locationCurrencyMap[$defaultRegion]) => $defaultRegion,
+        default                                           => 'FR'
+      };
+
+      $params = self::$locationCurrencyMap[$resolved];
+      $params['country_code'] = $resolved;
+
       return $params;
     }
 

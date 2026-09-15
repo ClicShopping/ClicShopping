@@ -9,11 +9,6 @@
  *
  * Licensed under AGPLv3 or commercial license.
  * See LICENSE file.
- *
- * @package ClicShopping\AI\DomainsAI\WebSearch\Processor
- * @since 2026-05-05
- *
- * Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.1.1, 9.1.2, 9.1.3, 9.1.4, 9.1.5
  */
 
 namespace ClicShopping\AI\DomainsAI\WebSearch\Processor;
@@ -56,6 +51,11 @@ class ModeSelector
    * @var string Database table prefix
    */
   private string $prefixDb;
+
+  /**
+   * @var string|null Store country ISO-2, resolved once per request
+   */
+  private static ?string $storeCountryIso = null;
 
   /**
    * @var string|null Current query being processed (for analytics)
@@ -820,6 +820,43 @@ class ModeSelector
   }
 
   /**
+   * The country the shop itself sells from, as an ISO-2 code
+   *
+   * Google Trends has no finer mesh than a region, so a departement-level question is served at
+   * country level; the answer announces its scope. The interface language is NOT a country —
+   * reading it as one produced "EN" as a country code.
+   *
+   * STORE_COUNTRY is a countries_id of the Countries app, where a row can be edited, disabled or
+   * deleted. `status` gates whether a country is OFFERED, never what the shop's own country is,
+   * so it is deliberately not filtered here; a missing row falls back.
+   *
+   * @return string ISO-2 code, the interface language code when the store country cannot be read
+   */
+  private function storeCountryIso(): string
+  {
+    if (self::$storeCountryIso !== null) {
+      return self::$storeCountryIso;
+    }
+
+    $fallback = mb_strtoupper($this->language->getCode() ?? 'FR');
+
+    if (!\defined('STORE_COUNTRY')) {
+      return self::$storeCountryIso = $fallback;
+    }
+
+    try {
+      $sql = "SELECT countries_iso_code_2 FROM {$this->prefixDb}countries WHERE countries_id = :id";
+      $row = DoctrineOrm::selectOne($sql, ['id' => (int)STORE_COUNTRY]);
+    } catch (\Throwable $e) {
+      return self::$storeCountryIso = $fallback;
+    }
+
+    $iso = mb_strtoupper(trim((string)($row['countries_iso_code_2'] ?? '')));
+
+    return self::$storeCountryIso = $iso !== '' ? $iso : $fallback;
+  }
+
+  /**
    * Map location to currency and region parameters
    *
    * Implements requirement 9.1.2: Location-to-currency mapping.
@@ -833,7 +870,7 @@ class ModeSelector
    */
   public function mapLocationToParams(?string $location): array
   {
-    $defaultRegion = mb_strtoupper($this->language->getCode() ?? 'FR');
+    $defaultRegion = $this->storeCountryIso();
     $defaultParams = LocationPatterns::getLocationParams($defaultRegion);
 
     if ($location === null || trim($location) === '') {

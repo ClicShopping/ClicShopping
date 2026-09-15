@@ -1,0 +1,5 @@
+cfg_chatgpt_validation_gate_status_title = Enable Analytics Validation Gate
+cfg_chatgpt_validation_gate_status_description = Have an LLM score every analytics answer and regenerate it once when the score is low, keeping the new answer only if it scores strictly better. Catches an answer that reads well but rests on a wrong query. Costs one extra evaluation call per analytics answer
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

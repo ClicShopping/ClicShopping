@@ -189,6 +189,18 @@ class LlmResponseProcessor
         $normalized['data_results'] = $normalized['data_results'] ?? [];
         $normalized['source_attribution'] = $normalized['source_attribution'] ?? [];
 
+        if (empty($normalized['results'])
+            && empty($normalized['data_results'])
+            && isset($normalized['sub_queries'])
+            && \is_array($normalized['sub_queries'])
+            && \count($normalized['sub_queries']) === 1) {
+            $only = \reset($normalized['sub_queries']);
+
+            if (\is_array($only) && !empty($only['results']) && \is_array($only['results'])) {
+                $normalized['results'] = $only['results'];
+            }
+        }
+
         // Rename 'results' to 'data_results' if 'results' exists (for internal compatibility if needed)
         if (isset($normalized['results'])) {
             if (!isset($normalized['data_results']) || empty($normalized['data_results'])) {

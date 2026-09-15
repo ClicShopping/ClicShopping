@@ -657,7 +657,7 @@ class LlmResponseEvaluator
    */
   private static function calculateSourceQuality(array $evaluationResults): float
   {
-    $sourceData = $evaluationResults['sources'] ?? [];
+    $sourceData = $evaluationResults['guardrails']['sources'] ?? [];
 
     if (!isset($sourceData['source_count']) || $sourceData['source_count'] == 0) {
       return 0.3; // No sources = low quality but not critical
@@ -716,12 +716,12 @@ class LlmResponseEvaluator
     // New security recommendations
     $hallucinationRisk = self::calculateHallucinationRisk($evaluationResults);
     if ($hallucinationRisk > 0.5) {
-      $reco[] = "Warning: high hallucination risk detected";
+      $reco[] = CLICSHOPPING::getDef('llm_guardrails_prompt_hallucination');
     }
 
     $sourceQuality = self::calculateSourceQuality($evaluationResults);
     if ($sourceQuality < 0.5) {
-      $reco[] = "Improve the quality and reliability of sources";
+      $reco[] = CLICSHOPPING::getDef('llm_guardrails_prompt_sources');
     }
 
     return $reco;

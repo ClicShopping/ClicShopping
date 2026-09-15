@@ -65,6 +65,15 @@
     },
 
     /**
+     * Label from the shared chat i18n channel, with a fallback.
+     */
+    t: function(key, fallback) {
+      const i18n = window.CHAT_CONFIG && window.CHAT_CONFIG.i18n ? window.CHAT_CONFIG.i18n : {};
+
+      return typeof i18n[key] === 'string' && i18n[key].length ? i18n[key] : fallback;
+    },
+
+    /**
      * Add feedback buttons to a message element
      */
     addFeedbackButtons: function(messageElement, interactionId) {
@@ -86,7 +95,11 @@
         </div>
         <div class="feedback-form" style="display:none;">
           <div class="form-group mt-2">
-            <textarea class="form-control" rows="3" placeholder="Que pouvons-nous améliorer ? (optionnel)"></textarea>
+            <textarea class="form-control feedback-comment" rows="3" placeholder="Que pouvons-nous améliorer ? (optionnel)"></textarea>
+          </div>
+          <div class="form-group mt-2">
+            <label class="form-label small">${this.t('feedback_correction_label', 'Connaissez-vous la bonne réponse ? (optionnel)')}</label>
+            <textarea class="form-control feedback-correction" rows="3" placeholder="${this.t('feedback_correction_placeholder', '')}"></textarea>
           </div>
           <div class="mt-2">
             <button class="btn btn-sm btn-primary btn-submit-feedback">Envoyer</button>
@@ -127,9 +140,19 @@
 
       if (btnSubmit) {
         btnSubmit.addEventListener('click', () => {
-          const textarea = container.querySelector('textarea');
-          const feedbackText = textarea ? textarea.value : '';
-          this.submitFeedback(interactionId, 'negative', feedbackText, container);
+          const comment = container.querySelector('.feedback-comment');
+          const correction = container.querySelector('.feedback-correction');
+          const feedbackText = comment ? comment.value : '';
+          const correctedText = correction ? correction.value.trim() : '';
+
+          // A corrected answer is what the learner stores; a bare comment stays a negative.
+          this.submitFeedback(
+            interactionId,
+            correctedText !== '' ? 'correction' : 'negative',
+            feedbackText,
+            container,
+            correctedText
+          );
         });
       }
 
@@ -180,11 +203,12 @@
     /**
      * Submit feedback to server
      */
-    submitFeedback: function(interactionId, feedbackType, feedbackText, container) {
+    submitFeedback: function(interactionId, feedbackType, feedbackText, container, correctedText) {
       const data = {
         interaction_id: interactionId,
         feedback_type: feedbackType,
-        feedback_text: feedbackText
+        feedback_text: feedbackText,
+        corrected_text: correctedText || ''
       };
 
       // Show loading state

@@ -478,6 +478,8 @@ llm_guardrails_prompt_relevance = Improve relevance.
 llm_guardrails_prompt_accuracy = Check business accuracy.
 llm_guardrails_prompt_completeness = Add details.
 llm_guardrails_prompt_clarity = Clarify the writing.
+llm_guardrails_prompt_hallucination = Warning: high hallucination risk detected.
+llm_guardrails_prompt_sources = Improve the quality and reliability of sources.
 
 
 llm_guardrails_accuracy = Accuracy
@@ -581,6 +583,8 @@ text_chat_clarification_status_received = Clarification received.
 text_chat_clarification_error_invalid_response = Invalid clarification response
 text_chat_clarification_response_prefix = Clarification:
 text_chat_clarification_retry = Retry
+text_chat_feedback_correction_label = Do you know the right answer? (optional)
+text_chat_feedback_correction_placeholder = Write the answer you expected — it is what the system learns from.
 
 text_query_too_ambiguous = Your query is too ambiguous. Please be more specific about what you want to know.
 text_multiple_interpretations_review = Multiple interpretations provided. Please review all results.

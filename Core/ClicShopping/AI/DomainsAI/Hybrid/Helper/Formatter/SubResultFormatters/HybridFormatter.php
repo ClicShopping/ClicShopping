@@ -136,7 +136,7 @@ class HybridFormatter extends AbstractFormatter
     // Display the synthesized response (optional, as summary)
     if (!empty($responseContent) && (empty($results['analytics_component']) && empty($results['semantic_component']))) {
       // Only show text_response if we don't have structured components
-      $formattedResponse = nl2br(Hash::displayDecryptedDataText($responseContent));
+      $formattedResponse = Hash::displayDecryptedDataText($responseContent);
       $output .= "<div class='response'><strong>" . htmlspecialchars($this->language->getDef('response_label')) . "</strong><br>" . $formattedResponse . "</div>";
     }
 

@@ -74,24 +74,27 @@ class ConversationTurnReader
     try {
       $table = CLICSHOPPING::getConfig('db_table_prefix', 'DB') . 'rag_conversation_memory_embedding';
 
-      // Over-fetch, then keep one row per distinct user message: a chunked answer produces several
-      // rows repeating the same question, and those duplicates would crowd out the older turns.
-      // Do NOT filter on chunknumber — interactions are written with the column's 128 fallback
-      // (MariaDBVectorStore:160), never 0, so such a filter silently returns nothing.
+      $params = [
+        'user_id' => $this->userId,
+        'language_id' => $this->languageId,
+      ];
+
+      // "New context" is a real boundary, not a screen wipe: rows older than it are another
+      // conversation.
+      $boundary = ConversationBoundary::clause($this->userId, $this->languageId, $params);
+
       $sql = "
         SELECT content
         FROM {$table}
         WHERE user_id = :user_id
         AND language_id = :language_id
         AND content IS NOT NULL
+        {$boundary}
         ORDER BY date_modified DESC
         LIMIT {$fetch}
       ";
 
-      $rows = DoctrineOrm::select($sql, [
-        'user_id' => $this->userId,
-        'language_id' => $this->languageId,
-      ]);
+      $rows = DoctrineOrm::select($sql, $params);
 
       $turns = [];
       $seen = [];

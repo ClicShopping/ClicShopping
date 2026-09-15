@@ -154,6 +154,9 @@ class EntityTracker
 
       // Query the most recent interaction with a valid entity
       // Order by date_modified (most recent first)
+      // Same boundary as ConversationTurnReader: the two feed the same reference resolution.
+      $boundary = ConversationBoundary::clause($this->userId, $this->languageId, $params);
+
       $sql = "
         SELECT entity_id, metadata
         FROM {$tableName}
@@ -161,6 +164,7 @@ class EntityTracker
         {$languageFilter}
         AND entity_id IS NOT NULL
         AND entity_id != 0
+        {$boundary}
         ORDER BY date_modified DESC
         LIMIT 1
       ";

@@ -46,7 +46,7 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
   <!-- Alert Summary Cards -->
   <div class="row">
-    <div class="col-md-3">
+    <div class="col-md">
       <div class="card text-center border-warning">
         <div class="card-body">
           <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_overdue_objectives'); ?></h5>
@@ -54,7 +54,7 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md">
       <div class="card text-center border-danger">
         <div class="card-body">
           <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_systematic_issues'); ?></h5>
@@ -62,7 +62,7 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md">
       <div class="card text-center border-warning">
         <div class="card-body">
           <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_failed_consensus'); ?></h5>
@@ -70,11 +70,19 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md">
       <div class="card text-center border-danger">
         <div class="card-body">
           <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_failed_objectives'); ?></h5>
           <h2 id="alert-failed" class="text-danger">-</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md">
+      <div class="card text-center border-warning">
+        <div class="card-body">
+          <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_negative_feedback'); ?></h5>
+          <h2 id="alert-negative" class="text-warning">-</h2>
         </div>
       </div>
     </div>
@@ -102,6 +110,11 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="failed-tab" data-bs-toggle="tab" data-bs-target="#failed" type="button">
         <?php echo $CLICSHOPPING_ChatGpt->getDef('text_failed_objectives'); ?>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="negative-tab" data-bs-toggle="tab" data-bs-target="#negative" type="button">
+        <?php echo $CLICSHOPPING_ChatGpt->getDef('text_negative_feedback'); ?>
       </button>
     </li>
   </ul>
@@ -185,6 +198,32 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
               </tr>
             </thead>
             <tbody id="consensus-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Reports Tab -->
+    <div class="tab-pane fade" id="negative" role="tabpanel">
+      <div class="card">
+        <div class="card-body">
+          <div class="alert alert-info">
+            <?php echo $CLICSHOPPING_ChatGpt->getDef('text_negative_note'); ?>
+          </div>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th><?php echo $CLICSHOPPING_ChatGpt->getDef('text_request_type'); ?></th>
+                <th><?php echo $CLICSHOPPING_ChatGpt->getDef('text_negatives'); ?></th>
+                <th><?php echo $CLICSHOPPING_ChatGpt->getDef('text_answers_total'); ?></th>
+                <th><?php echo $CLICSHOPPING_ChatGpt->getDef('text_negative_rate'); ?></th>
+                <th><?php echo $CLICSHOPPING_ChatGpt->getDef('text_sample_questions'); ?></th>
+                <th><?php echo $CLICSHOPPING_ChatGpt->getDef('text_sample_comments'); ?></th>
+                <th><?php echo $CLICSHOPPING_ChatGpt->getDef('text_last_report'); ?></th>
+                <th><?php echo $CLICSHOPPING_ChatGpt->getDef('text_severity'); ?></th>
+              </tr>
+            </thead>
+            <tbody id="negative-tbody"></tbody>
           </table>
         </div>
       </div>
@@ -293,6 +332,7 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
           <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_systematic'); ?></li>
           <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_consensus'); ?></li>
           <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_failed'); ?></li>
+          <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_negative'); ?></li>
         </ul>
       </div>
 
@@ -307,6 +347,7 @@ window.AgentAlertsConfig = {
   alertsEndpoint: 'ajax/Agent/get_agent_alerts.php',
   objectivesEndpoint: 'ajax/Agent/get_agent_objectives.php',
   manageEndpoint: 'ajax/Agent/agent_manage_objective.php',
+  purgeQuestionCacheEndpoint: 'ajax/RAG/purge_question_cache.php',
   labels: {
     no_overdue: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_no_overdue'); ?>",
     no_systematic: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_no_systematic'); ?>",
@@ -333,7 +374,13 @@ window.AgentAlertsConfig = {
     avg_score: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_avg_score'); ?>",
     min_score: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_min_score'); ?>",
     max_score: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_max_score'); ?>",
-    severity: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_severity'); ?>"
+    severity: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_severity'); ?>",
+    no_negative_feedback: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_no_negative_feedback'); ?>",
+    purge_question_cache: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_question_cache'); ?>",
+    purge_question_cache_title: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_question_cache_title'); ?>",
+    purge_done: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_done'); ?>",
+    purge_none: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_none'); ?>",
+    purge_failed: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_failed'); ?>"
   }
 };
 </script>
