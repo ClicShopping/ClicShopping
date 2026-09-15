@@ -17,6 +17,7 @@ use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use function count;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * ReviewSentimentCronRunner — daily auto-generation of product review sentiment.
@@ -37,9 +38,6 @@ class ReviewSentimentCronRunner
 {
   private const CRON_CODE  = 'productReviewSentiment';
   private const BATCH_SIZE = 30;
-
-  /** Minimum AI-summary votes before the "unhelpful" signal (B) triggers a regeneration. */
-  private const MIN_AI_SUMMARY_VOTES = 3;
 
   private mixed $db;
 
@@ -195,7 +193,7 @@ class ReviewSentimentCronRunner
 
   /**
    * Signal B — approved analyses whose AI-summary (reviews_id = 0) got more "not
-   * helpful" than "helpful" votes (min MIN_AI_SUMMARY_VOTES) are regenerated so a
+   * helpful" than "helpful" votes (min RS_MIN_AI_SUMMARY_VOTES) are regenerated so a
    * poorly-received summary gets a fresh attempt (re-verified + re-gated).
    *
    * @return array<int,array{products_id:int,anchor:int}>
@@ -217,7 +215,7 @@ class ReviewSentimentCronRunner
                              WHERE rs.sentiment_approved = 1
                              GROUP BY rs.products_id
                              LIMIT :limit');
-    $Q->bindInt(':min_votes', self::MIN_AI_SUMMARY_VOTES);
+    $Q->bindInt(':min_votes', EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_RS_MIN_AI_SUMMARY_VOTES'));
     $Q->bindInt(':limit', $limit);
     $Q->execute();
 

@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\Sub
 
 use ClicShopping\OM\Cache;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * NormalizationValidator
@@ -81,7 +82,6 @@ class NormalizationValidator
   private const OUTLIER_RATIO_MAX = 50.0;
 
   /** Minimum sample size for reliable distribution statistics */
-  private const MIN_SAMPLE_SIZE = 10;
 
   // ── Dynamic thresholds constants ──────────────────────────────────────────
 
@@ -92,10 +92,10 @@ class NormalizationValidator
   private const DYNAMIC_T_LOW_PERCENTILE  = 25;
 
   /** Minimum gap between T_high and T_low (safety guard) */
-  private const MIN_THRESHOLD_GAP = 10.0;
+
+  /** Minutes the catalogue median is cached: it only moves when the catalogue is re-analysed. */
 
   /** Cache TTL in minutes for per-product threshold data */
-  private const THRESHOLD_CACHE_TTL = '60';
 
   private mixed $db;
 
@@ -124,8 +124,8 @@ class NormalizationValidator
     $confidence = 1.0;
 
     // ── Check 1: sample size ──────────────────────────────────────────────
-    if ($sampleSize < self::MIN_SAMPLE_SIZE) {
-      $warnings[]  = "Sample too small ({$sampleSize} products < " . self::MIN_SAMPLE_SIZE . " minimum). Distribution unreliable.";
+    if ($sampleSize < EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_MIN_SAMPLE_SIZE')) {
+      $warnings[]  = "Sample too small ({$sampleSize} products < " . EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_MIN_SAMPLE_SIZE') . " minimum). Distribution unreliable.";
       $confidence *= 0.5;
     }
 
@@ -167,7 +167,7 @@ class NormalizationValidator
     }
 
     $confidence = max(0.0, min(1.0, $confidence));
-    $isValid    = $confidence >= 0.5 && $sampleSize >= self::MIN_SAMPLE_SIZE;
+    $isValid    = $confidence >= 0.5 && $sampleSize >= EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_MIN_SAMPLE_SIZE');
 
     return new ValidationResult($confidence, $warnings, $isValid, $sampleSize);
   }
@@ -175,17 +175,20 @@ class NormalizationValidator
   /**
    * Resolve thresholds for a specific product + language.
    *
-   * If the product has enough historical analyses in products_cockpit_ai_embedding 
-   * (≥ $minAnalyses), computes dynamic T_high/T_low from P75/P25 of that
-   * product's own score_y history.
+   * If the product has enough historical analyses in products_cockpit_ai_embedding
+   * (≥ $minAnalyses), computes dynamic thresholds from P75/P25 of that product's own
+   * history — ONE PAIR PER AXIS. A quality scale and a performance scale are different
+   * distributions: a threshold read off one says nothing about the other.
    *
-   * Otherwise, returns the static thresholds from $context unchanged.
+   * Otherwise, returns the static thresholds from $context unchanged, on both axes.
    *
    * @param int   $productId      Product to resolve thresholds for
    * @param int   $languageId     Language filter for embedding history
    * @param array $staticThresholds Current ['T_high' => float, 'T_low' => float]
    * @param int|null $minAnalyses Minimum analyses required (null = use constant/default)
-   * @return array  Resolved ['T_high' => float, 'T_low' => float, 'dynamic' => bool, 'analysis_count' => int]
+   * @return array  ['x' => ['T_high','T_low'], 'y' => ['T_high','T_low'],
+   *                 'T_high','T_low' (the y axis, for readers that know a single pair),
+   *                 'dynamic' => bool, 'analysis_count' => int]
    */
   public function resolveThresholds(
     int   $productId,
@@ -202,15 +205,19 @@ class NormalizationValidator
       return $cached;
     }
 
-    // Fetch product's score_y history from products_cockpit_ai_embedding 
     $history = $this->fetchProductScoreHistory($productId, $languageId);
-    $count   = count($history);
+    $count   = min(count($history['x']), count($history['y']));
+
+    $staticPair = [
+      'T_high' => (float) ($staticThresholds['T_high'] ?? 70.0),
+      'T_low'  => (float) ($staticThresholds['T_low']  ?? 30.0),
+    ];
 
     if ($count < $minAnalyses) {
-      // Not enough data — use static thresholds
-      $result = [
-        'T_high'         => (float) ($staticThresholds['T_high'] ?? 70.0),
-        'T_low'          => (float) ($staticThresholds['T_low']  ?? 30.0),
+      // Not enough data — the same static pair on both axes
+      $result = $staticPair + [
+        'x'              => $staticPair,
+        'y'              => $staticPair,
         'dynamic'        => false,
         'analysis_count' => $count,
         'min_required'   => $minAnalyses,
@@ -220,29 +227,43 @@ class NormalizationValidator
       return $result;
     }
 
-    // Compute dynamic thresholds from P75/P25 of historical score_y values
-    $tHigh = $this->percentile($history, self::DYNAMIC_T_HIGH_PERCENTILE);
-    $tLow  = $this->percentile($history, self::DYNAMIC_T_LOW_PERCENTILE);
+    $xPair = $this->percentilePair($history['x']);
+    $yPair = $this->percentilePair($history['y']);
 
-    // Safety guard: ensure minimum gap between thresholds
-    if (($tHigh - $tLow) < self::MIN_THRESHOLD_GAP) {
-      // Expand symmetrically from the midpoint
-      $mid   = ($tHigh + $tLow) / 2.0;
-      $tHigh = min(95.0, $mid + self::MIN_THRESHOLD_GAP / 2.0);
-      $tLow  = max(5.0,  $mid - self::MIN_THRESHOLD_GAP / 2.0);
-    }
-
-    $result = [
-      'T_high'         => round($tHigh, 1),
-      'T_low'          => round($tLow,  1),
+    // T_high/T_low at the root stay the y axis: commercial performance is what the
+    // quadrant vocabulary (Stars / Issues) has always been named after.
+    $result = $yPair + [
+      'x'              => $xPair,
+      'y'              => $yPair,
       'dynamic'        => true,
       'analysis_count' => $count,
       'min_required'   => $minAnalyses,
     ];
 
-    $this->writeThresholdCache($cacheKey, $result, self::THRESHOLD_CACHE_TTL);
+    $this->writeThresholdCache($cacheKey, $result, EcommerceDefaults::get('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_THRESHOLD_CACHE_TTL'));
 
     return $result;
+  }
+
+  /**
+   * P75/P25 of one axis, with the minimum-gap guard.
+   *
+   * @param float[] $values
+   * @return array{T_high: float, T_low: float}
+   */
+  private function percentilePair(array $values): array
+  {
+    $tHigh = $this->percentile($values, self::DYNAMIC_T_HIGH_PERCENTILE);
+    $tLow  = $this->percentile($values, self::DYNAMIC_T_LOW_PERCENTILE);
+
+    if (($tHigh - $tLow) < EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_MIN_THRESHOLD_GAP')) {
+      // Expand symmetrically from the midpoint
+      $mid   = ($tHigh + $tLow) / 2.0;
+      $tHigh = min(95.0, $mid + EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_MIN_THRESHOLD_GAP') / 2.0);
+      $tLow  = max(5.0,  $mid - EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_MIN_THRESHOLD_GAP') / 2.0);
+    }
+
+    return ['T_high' => round($tHigh, 1), 'T_low' => round($tLow, 1)];
   }
 
   /**
@@ -262,9 +283,10 @@ class NormalizationValidator
   {
     try {
       $cache = new Cache($key, 'CockpitAI');
-      if ($cache->exists(self::THRESHOLD_CACHE_TTL)) {
+      if ($cache->exists(EcommerceDefaults::get('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_THRESHOLD_CACHE_TTL'))) {
         $data = $cache->get();
-        if (is_array($data) && isset($data['T_high'])) {
+        // Keyed on the per-axis shape: an entry written before it must be recomputed.
+        if (is_array($data) && isset($data['x']['T_high'], $data['y']['T_high'])) {
           return $data;
         }
       }
@@ -274,21 +296,92 @@ class NormalizationValidator
   }
 
   /**
-   * Fetch all historical score_y values for a product from products_cockpit_ai_embedding .
+   * Median of the CURRENT score_y across the catalogue, for one language.
    *
-   * Reads JSON_EXTRACT(metadata, '$.scores.score_y') ordered by date_modified DESC.
-   * Returns a flat array of floats for percentile computation.
+   * The performance axis is judged against the shop, never against an absolute bar: score_y is
+   * already a third catalogue-relative by construction, and three of its thirteen factors are
+   * constants that keep it inside a narrow band (see BACKLOG_ARCHIVE, CAI-QUAD2).
    *
-   * @return float[]
+   * @return float|null null when no analysis exists yet — a product cannot be positioned
+   *                    against a catalogue that has not been measured.
+   */
+  public function catalogScoreMedian(int $languageId): ?float
+  {
+    $cacheKey = "catalog_score_y_median_{$languageId}";
+
+    try {
+      $cache = new Cache($cacheKey, 'CockpitAI');
+      if ($cache->exists(EcommerceDefaults::get('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_CATALOG_MEDIAN_TTL'))) {
+        $cached = $cache->get();
+        if (is_array($cached) && array_key_exists('median', $cached)) {
+          return $cached['median'] === null ? null : (float)$cached['median'];
+        }
+      }
+    } catch (\Throwable) {
+    }
+
+    $median = null;
+
+    try {
+      // Latest analysis per product only: the store keeps every generation.
+      $Q = $this->db->prepare('
+        SELECT JSON_EXTRACT(e.metadata, \'$.scores.score_y\') AS score_y
+        FROM :table_products_cockpit_ai_embedding e
+        INNER JOIN (
+          SELECT entity_id, MAX(id) AS last_id
+          FROM :table_products_cockpit_ai_embedding
+          WHERE language_id = :language_id
+          GROUP BY entity_id
+        ) l ON l.last_id = e.id
+        WHERE JSON_EXTRACT(e.metadata, \'$.scores.score_y\') IS NOT NULL
+      ');
+      $Q->bindInt(':language_id', $languageId);
+      $Q->execute();
+
+      $scores = [];
+      while ($row = $Q->fetch()) {
+        if (is_numeric($row['score_y'])) {
+          $scores[] = (float) $row['score_y'];
+        }
+      }
+
+      if ($scores !== []) {
+        sort($scores);
+        $n = count($scores);
+        $median = $n % 2 === 1
+          ? $scores[intdiv($n, 2)]
+          : ($scores[$n / 2 - 1] + $scores[$n / 2]) / 2.0;
+        $median = round($median, 2);
+      }
+    } catch (\Throwable) {
+      return null;
+    }
+
+    try {
+      (new Cache($cacheKey, 'CockpitAI'))->save(['median' => $median]);
+    } catch (\Throwable) {
+    }
+
+    return $median;
+  }
+
+  /**
+   * Fetch the historical score_x and score_y of a product, one pass.
+   *
+   * @return array{x: float[], y: float[]}
    */
   private function fetchProductScoreHistory(int $productId, int $languageId): array
   {
+    $scores = ['x' => [], 'y' => []];
+
     try {
       $Qhistory = $this->db->prepare('
-        SELECT JSON_EXTRACT(metadata, \'$.scores.score_y\') AS score_y
-        FROM :table_products_cockpit_ai_embedding 
+        SELECT JSON_EXTRACT(metadata, \'$.scores.score_x\') AS score_x,
+               JSON_EXTRACT(metadata, \'$.scores.score_y\') AS score_y
+        FROM :table_products_cockpit_ai_embedding
         WHERE JSON_EXTRACT(metadata, \'$.entity_id\') = :entity_id
           AND language_id = :language_id
+          AND JSON_EXTRACT(metadata, \'$.scores.score_x\') IS NOT NULL
           AND JSON_EXTRACT(metadata, \'$.scores.score_y\') IS NOT NULL
         ORDER BY date_modified DESC
       ');
@@ -297,19 +390,16 @@ class NormalizationValidator
       $Qhistory->bindInt(':language_id', $languageId);
       $Qhistory->execute();
 
-      $scores = [];
       while ($row = $Qhistory->fetch()) {
-        $val = $row['score_y'];
-        if ($val !== null && is_numeric($val)) {
-          $scores[] = (float) $val;
+        if (is_numeric($row['score_x']) && is_numeric($row['score_y'])) {
+          $scores['x'][] = (float) $row['score_x'];
+          $scores['y'][] = (float) $row['score_y'];
         }
       }
-
-      return $scores;
-
     } catch (\Throwable) {
-      return [];
     }
+
+    return $scores;
   }
 
   /**

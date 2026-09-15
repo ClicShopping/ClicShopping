@@ -14,6 +14,7 @@ use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\InterfacesAI\PromptPlaceholderProviderInterface;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\DashboardData;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * DomainActionsProvider
@@ -35,7 +36,6 @@ class DomainActionsProvider implements PromptPlaceholderProviderInterface
 
   // ponytail: renders the whole store (a dozen products here). Key it on the ids of the
   // result rows if the analysed catalogue ever outgrows a prompt block.
-  private const MAX_PRODUCTS = 10;
 
   private mixed $language;
   private ?DashboardData $dashboardData;
@@ -74,7 +74,7 @@ class DomainActionsProvider implements PromptPlaceholderProviderInterface
   public function render(int $languageId): string
   {
     $reader = $this->dashboardData ??= new DashboardData();
-    $products = $reader->getRecommendedActions($languageId, self::MAX_PRODUCTS);
+    $products = $reader->getRecommendedActions($languageId, EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_PROMPT_MAX_PRODUCTS'));
     $kpis = $reader->getKpis($languageId);
 
     $coverage = $this->getDef('text_domain_actions_coverage', [

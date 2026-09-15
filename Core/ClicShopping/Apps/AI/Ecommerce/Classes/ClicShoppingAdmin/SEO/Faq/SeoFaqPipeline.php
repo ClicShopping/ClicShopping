@@ -19,6 +19,7 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEmbedding;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoEntityAdapter;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\SeoReport;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\TranslationServiceWrapper;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * SeoFaqPipeline
@@ -82,8 +83,6 @@ class SeoFaqPipeline
    * gap with ~0.13 margin on each side. The previous 0.7 was unreachable for
    * this model (verbatim facts cap around 0.5) and rejected every FAQ.
    */
-  private const GROUNDING_THRESHOLD = 0.45;
-  private const MAX_RETRIES         = 2;
 
   /**
    * Minimum number of individually-grounded Q/A pairs required to persist a FAQ.
@@ -92,7 +91,6 @@ class SeoFaqPipeline
    * threshold and reject the ENTIRE FAQ, which made the action fail at random.
    * We now keep the grounded pairs and drop only the ungrounded ones.
    */
-  private const MIN_GROUNDED_FAQ_ITEMS = 2;
 
   private string $entityType;
   private SeoEntityAdapter $adapter;
@@ -158,7 +156,7 @@ class SeoFaqPipeline
       // empty FAQ than a hallucinated one.
       return [
         'success'         => false,
-        'error'           => 'Grounding failed after ' . self::MAX_RETRIES . ' attempts; FAQ not persisted.',
+        'error'           => 'Grounding failed after ' . EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MAX_RETRIES') . ' attempts; FAQ not persisted.',
         'source_language' => ['id' => $sourceLangId, 'code' => 'en'],
         'languages'       => ['en' => [
           'language_id' => $sourceLangId,
@@ -198,7 +196,7 @@ class SeoFaqPipeline
         $translatedCtx = $this->translateContextSnippets($context, 'en', $code);
         $grounding     = $this->verifyFaqGrounding($translatedFaq, $translatedCtx);
 
-        if ($grounding['confidence'] < self::GROUNDING_THRESHOLD) {
+        if ($grounding['confidence'] < EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_GROUNDING_THRESHOLD')) {
           $perLanguage[$code] = [
             'language_id' => $targetId,
             'status'      => 'flagged',
@@ -277,7 +275,7 @@ class SeoFaqPipeline
     $factChecker = new SeoFaqFactChecker($langCode, $this->debug);
 
     $lastGrounding = [];
-    for ($attempt = 0; $attempt <= self::MAX_RETRIES; $attempt++) {
+    for ($attempt = 0; $attempt <= EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MAX_RETRIES'); $attempt++) {
       $faqCandidate = $agent->generateFaqForVars($vars, $langCode);
       if (empty($faqCandidate)) {
         $this->logDebug('Empty FAQ from agent', ['attempt' => $attempt]);
@@ -303,7 +301,7 @@ class SeoFaqPipeline
         $itemGrounding = $this->grounder->verifyGrounding(trim($q . ' ' . $a), $embeddedSources);
         $confidence    = (float)($itemGrounding['confidence'] ?? 0);
 
-        if ($confidence < self::GROUNDING_THRESHOLD) {
+        if ($confidence < EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_GROUNDING_THRESHOLD')) {
           $flagged[] = ['sentence' => trim($q . ' ' . $a), 'score' => $confidence, 'reason' => 'Low grounding score (off-topic)'];
           continue;
         }
@@ -335,7 +333,7 @@ class SeoFaqPipeline
         'dropped' => count($flagged),
       ]);
 
-      if ($keptCount >= self::MIN_GROUNDED_FAQ_ITEMS) {
+      if ($keptCount >= EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MIN_GROUNDED_ITEMS')) {
         return [
           'faq'       => $groundedItems,
           'grounding' => [

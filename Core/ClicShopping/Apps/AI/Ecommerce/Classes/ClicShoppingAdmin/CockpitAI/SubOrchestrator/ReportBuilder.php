@@ -316,8 +316,11 @@
         'thresholds' => [
           'T_high'         => $scores['T_high'] ?? null,
           'T_low'          => $scores['T_low']  ?? null,
+          'x'              => $scores['thresholds_x'] ?? null,
+          'y'              => $scores['thresholds_y'] ?? null,
           'dynamic'        => (bool) ($scores['thresholds_dynamic'] ?? false),
           'analysis_count' => (int)  ($scores['thresholds_analysis_count'] ?? 0),
+          'quadrant_split' => $scores['quadrant_split'] ?? null,
         ],
 
         // Provenance of the catalogue scale the scores were normalised against.

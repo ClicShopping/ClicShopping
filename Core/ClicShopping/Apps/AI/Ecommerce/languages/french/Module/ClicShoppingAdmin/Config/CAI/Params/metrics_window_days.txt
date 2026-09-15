@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_metrics_window_days_title = Fenêtre des métriques commerciales (jours)
+cfg_ecommerce_cockpit_ai_metrics_window_days_description = Période sur laquelle sont lues les métriques commerciales : les vues, les commandes et le taux de conversion qui les divise. Une fenêtre courte réagit plus vite, une fenêtre longue est plus stable sur les produits à faible trafic. Les deux termes du taux partagent toujours cette fenêtre. L'élargir élargit aussi la rétention des impressions, qui ne peut jamais descendre en dessous.

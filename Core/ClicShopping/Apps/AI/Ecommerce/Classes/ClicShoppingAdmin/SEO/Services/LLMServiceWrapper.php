@@ -11,6 +11,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services;
 use ClicShopping\OM\Cache;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * LLMServiceWrapper
@@ -36,10 +37,7 @@ use ClicShopping\Sites\Common\HTMLOverrideCommon;
  */
 class LLMServiceWrapper
 {
-  private const CACHE_TTL = 3600; // 1 hour in seconds
   private const CACHE_PREFIX = 'seo_llm_';
-  private const MAX_RETRIES = 3;
-  private const INITIAL_BACKOFF_MS = 1000; // 1 second
   
   private bool $debug;
   private string $defaultModel;
@@ -158,7 +156,7 @@ class LLMServiceWrapper
   {
     $cache = new Cache($key, 'SEO');
 
-    $expireMinutes = (int)ceil(self::CACHE_TTL / 60);
+    $expireMinutes = (int)ceil(EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_LLM_CACHE_TTL') / 60);
     if ($cache->exists((string)$expireMinutes)) {
       return $cache->get();
     }
@@ -186,7 +184,7 @@ class LLMServiceWrapper
     $attempt = 0;
     $lastException = null;
 
-    while ($attempt < self::MAX_RETRIES) {
+    while ($attempt < EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_LLM_MAX_RETRIES')) {
       try {
         if ($this->debug && $attempt > 0) {
           error_log("[LLMServiceWrapper] Retry attempt {$attempt} for model: {$model}");
@@ -212,12 +210,12 @@ class LLMServiceWrapper
         }
 
         // Check if we should retry
-        if ($attempt >= self::MAX_RETRIES) {
+        if ($attempt >= EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_LLM_MAX_RETRIES')) {
           break;
         }
 
         // Exponential backoff
-        $backoffMs = self::INITIAL_BACKOFF_MS * pow(2, $attempt - 1);
+        $backoffMs = EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_LLM_BACKOFF_MS') * pow(2, $attempt - 1);
 
         if ($this->debug) {
           error_log("[LLMServiceWrapper] Backing off for {$backoffMs}ms before retry");
@@ -230,7 +228,7 @@ class LLMServiceWrapper
     // All retries failed
     error_log("[LLMServiceWrapper] All {$attempt} retries FAILED for model: {$model}");
     throw new \Exception(
-      "LLM generation failed after " . self::MAX_RETRIES . " retries: " .
+      "LLM generation failed after " . EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_LLM_MAX_RETRIES') . " retries: " .
       ($lastException ? $lastException->getMessage() : "Unknown error")
     );
   }
@@ -273,7 +271,7 @@ class LLMServiceWrapper
   private function saveToCache(string $key, string $value): void
   {
     $cache = new Cache($key, 'SEO');
-    $cache->save($value, ['ttl_seconds' => self::CACHE_TTL]);
+    $cache->save($value, ['ttl_seconds' => EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_LLM_CACHE_TTL')]);
   }
 
   /**

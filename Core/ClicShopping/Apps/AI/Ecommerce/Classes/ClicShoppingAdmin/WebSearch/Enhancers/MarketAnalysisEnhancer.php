@@ -17,6 +17,7 @@ use ClicShopping\AI\DomainsAI\WebSearch\Helper\NumericBandFilter;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * MarketAnalysisEnhancer — Ecommerce result enhancer for comparative_lookup
@@ -50,7 +51,6 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
      * Max length we send to the LLM as the comparison summary. Keeps the
      * synthesis prompt tiny (the LLM only needs the stats, not the cards).
      */
-    private const MAX_PROMPT_TOKENS = 500;
 
     public function getEnhancerId(): string
     {
@@ -198,7 +198,7 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
 
         $prompt = implode("\n", $promptLines);
 
-        $response = Gpt::getGptResponse($prompt, self::MAX_PROMPT_TOKENS, 0.3);
+        $response = Gpt::getGptResponse($prompt, EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_WEB_MAX_PROMPT_TOKENS'), 0.3);
 
         if ($response === false || !is_string($response)) {
             return '';

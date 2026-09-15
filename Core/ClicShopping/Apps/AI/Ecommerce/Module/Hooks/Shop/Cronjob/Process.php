@@ -264,7 +264,12 @@ class Process implements HooksInterface
           // Si CLICSHOPPING_APP_ECOMMERCE_CAI_AUTO_MODE est True, le prix change ici.
           // Variante cron OBLIGATOIRE : executeAnalysis() exige $_SESSION['admin'] et meurt
           // sur « Access denied » depuis un ordonnanceur externe (CAI-1 b, mesuré).
-          $result = $orchestrator->executeAnalysisCron($productId, $languageId, self::CRON_USER_ID);
+          // (A) and (B) only: the product itself changed. A format bump (D) rewrites the
+          // metadata, it does not make the analysis stale — forcing it there would buy an
+          // LLM call per product for a shape change.
+          $productChanged = \in_array($target['reason'] ?? '', ['ordered', 'modified'], true);
+
+          $result = $orchestrator->executeAnalysisCron($productId, $languageId, self::CRON_USER_ID, $productChanged);
 
           $summary['analyses_succeeded']++;
 
@@ -366,7 +371,9 @@ class Process implements HooksInterface
    *
    * Four sources, crossed with all active store languages: (A) ordered today,
    * (B) modified since the last analysis, (C) never analysed, (D) latest analysis
-   * written on an older EMBEDDING_FORMAT_VERSION.
+   * written on an older EMBEDDING_FORMAT_VERSION. Each target carries the reason it
+   * was picked: only (A) and (B) mean the PRODUCT changed, and so demand a fresh
+   * LLM analysis rather than the stored one.
    *
    * "Today" = date_purchased >= CURDATE() in the server timezone.
    * Status ≥ 3 = processing or completed (matches DataCollector convention).
@@ -375,7 +382,7 @@ class Process implements HooksInterface
    */
   private function fetchTodayTargets(): array
   {
-    // ── Source A: products ordered today (priority 1) ──────────────────
+    // Source A: products ordered today (priority 1
     $Qproducts = $this->db->prepare('SELECT DISTINCT op.products_id
                                       FROM :table_orders_products op
                                       INNER JOIN :table_orders o ON op.orders_id = o.orders_id
@@ -386,7 +393,7 @@ class Process implements HooksInterface
 
     $productIds = [];
     while ($row = $Qproducts->fetch()) {
-      $productIds[(int)$row['products_id']] = true;
+      $productIds[(int)$row['products_id']] ??= 'ordered';
     }
 
     // ── Source B: products modified since the last CockpitAI analysis ──
@@ -408,7 +415,7 @@ class Process implements HooksInterface
       ');
       $QmodSinceLast->execute();
       while ($row = $QmodSinceLast->fetch()) {
-        $productIds[(int)$row['products_id']] = true;
+        $productIds[(int)$row['products_id']] ??= 'modified';
       }
     } catch (\Throwable $e) {
       if ($this->debug) {
@@ -432,7 +439,7 @@ class Process implements HooksInterface
       ');
       $QneverAnalysed->execute();
       while ($row = $QneverAnalysed->fetch()) {
-        $productIds[(int)$row['products_id']] = true;
+        $productIds[(int)$row['products_id']] ??= 'never';
       }
     } catch (\Throwable $e) {
       if ($this->debug) {
@@ -461,7 +468,7 @@ class Process implements HooksInterface
       $QstaleFormat->bindValue(':format_version', EmbeddingService::EMBEDDING_FORMAT_VERSION);
       $QstaleFormat->execute();
       while ($row = $QstaleFormat->fetch()) {
-        $productIds[(int)$row['products_id']] = true;
+        $productIds[(int)$row['products_id']] ??= 'stale_format';
       }
     } catch (\Throwable $e) {
       if ($this->debug) {
@@ -470,7 +477,6 @@ class Process implements HooksInterface
     }
 
     if (empty($productIds)) return [];
-    $productIds = array_keys($productIds);
 
     // 2. Fetch active languages
     $Qlangs = $this->db->prepare('SELECT languages_id 
@@ -482,11 +488,12 @@ class Process implements HooksInterface
 
     // 3. Build the target list (Product x Languages)
     $targets = [];
-    foreach ($productIds as $pId) {
+    foreach ($productIds as $pId => $reason) {
       foreach ($languages as $l) {
         $targets[] = [
           'products_id' => $pId,
-          'languages_id' => (int)$l['languages_id']
+          'languages_id' => (int)$l['languages_id'],
+          'reason' => $reason,
         ];
       }
     }

@@ -16,17 +16,15 @@
   use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
   use ClicShopping\OM\CLICSHOPPING;
   use ClicShopping\OM\Registry;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
   class ProductsRecommendations
   {
     // Minimum number of orders required to activate Case 2 (personal history)
-    const MIN_ORDERS_FOR_PERSONAL = 3;
 
     // Default anti-clone threshold if $cosinus is not provided (avoids very close substitutes)
-    const MIN_COSINE_DISTANCE = 0.15;
 
     // Minimum co-occurrence score for Case 2 (filters weak associations)
-    const MIN_RELEVANCE_SCORE = 2;
 
     public function __construct() {
     }
@@ -85,7 +83,7 @@
       $language_id = $params['language_id'] ?? 1;
       $limit       = $params['limit']       ?? 6;
       $product_ids = $params['product_ids'] ?? [];
-      $cosinus     = $params['cosinus']     ?? self::MIN_COSINE_DISTANCE;
+      $cosinus     = $params['cosinus']     ?? EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_RECO_MIN_COSINE_DISTANCE');
 
       if (empty($product_ids)) {
         return [];
@@ -136,7 +134,7 @@
 
       $orderCount = self::countCustomerOrders($customer_id);
 
-      return ($orderCount >= self::MIN_ORDERS_FOR_PERSONAL)
+      return ($orderCount >= EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_RECO_MIN_ORDERS_PERSONAL'))
         ? 'personal'       // Case 2
         : 'complementary'; // Case 1 (logged-in but insufficient history)
     }
@@ -370,7 +368,7 @@
       $placeholders = implode(',', array_map('intval', $product_ids));
 
       // Adaptive threshold based on cosine parameter
-      $min_relevance = max(self::MIN_RELEVANCE_SCORE, (int)round($cosinus * 10));
+      $min_relevance = max(EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_RECO_MIN_RELEVANCE_SCORE'), (int)round($cosinus * 10));
 
       if ($group_id == 0) {
         // ---- B2C ----

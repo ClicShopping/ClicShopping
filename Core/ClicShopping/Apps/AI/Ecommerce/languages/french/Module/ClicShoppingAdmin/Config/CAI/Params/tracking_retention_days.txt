@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_tracking_retention_days_title = Rétention des impressions (jours)
+cfg_ecommerce_cockpit_ai_tracking_retention_days_description = Durée de conservation d'une impression produit, en jours. Les lignes plus anciennes sont purgées. Garder cette valeur au-dessus de la plus large fenêtre lue dans les impressions, aujourd'hui 30 jours : une rétention plus courte raccourcit l'analyse en silence, et de façon inégale entre les modules d'affichage.

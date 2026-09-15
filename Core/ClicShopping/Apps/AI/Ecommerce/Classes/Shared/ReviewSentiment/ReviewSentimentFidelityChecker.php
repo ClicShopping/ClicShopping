@@ -11,6 +11,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * ReviewSentimentFidelityChecker — LLM fact-check against the source reviews.
@@ -24,9 +25,6 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
  */
 class ReviewSentimentFidelityChecker
 {
-  /** Minimum fraction of analysis claims that must be supported by the reviews. */
-  public const MIN_SUPPORTED = 0.90;
-
   /**
    * @param array<int,string> $claims Analysis claims to fact-check (strengths, issues, summary).
    * @return array{available:bool,fidelity_ok:bool,supported_fraction:float,unsupported_claims:list<string>}
@@ -91,6 +89,6 @@ class ReviewSentimentFidelityChecker
    */
   public static function gateFromFraction(float $fraction): bool
   {
-    return $fraction >= self::MIN_SUPPORTED;
+    return $fraction >= EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_RS_MIN_SUPPORTED');
   }
 }

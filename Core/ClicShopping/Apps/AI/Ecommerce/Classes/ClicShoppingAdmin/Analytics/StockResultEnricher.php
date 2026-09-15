@@ -12,6 +12,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Analytics;
 
 use ClicShopping\AI\InterfacesAI\AnalyticsResultEnricherInterface;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\StockForecastService;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * StockResultEnricher
@@ -28,7 +29,6 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\StockForecastServic
 final class StockResultEnricher implements AnalyticsResultEnricherInterface
 {
   /** One forecast costs several queries per product; a wide result set is not a stock question. */
-  private const MAX_ROWS = 25;
 
   /**
    * Enrich stock rows with their forecast, or return the rows unchanged.
@@ -83,7 +83,7 @@ final class StockResultEnricher implements AnalyticsResultEnricherInterface
    */
   private function isStockResult(array $rows): bool
   {
-    if ($rows === [] || \count($rows) > self::MAX_ROWS) {
+    if ($rows === [] || \count($rows) > EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_STOCK_MAX_ROWS')) {
       return false;
     }
 

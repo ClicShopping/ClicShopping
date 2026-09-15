@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Faq;
 
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Prompts\ContentGenerationPrompts;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\LLMServiceWrapper;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * SeoFaqFactChecker
@@ -45,7 +46,6 @@ class SeoFaqFactChecker
    * explicit `supported` boolean; a pair is kept only when BOTH agree, so a
    * single unsupported hard fact (a fabricated warranty) drops the pair.
    */
-  public const MIN_SUPPORT = 1.0;
 
   private LLMServiceWrapper $llm;
   private ContentGenerationPrompts $prompts;
@@ -110,11 +110,11 @@ class SeoFaqFactChecker
       // The model's explicit boolean is authoritative; when absent, derive it.
       $supportedFlag = array_key_exists('supported', $json)
         ? (bool)$json['supported']
-        : ($score >= self::MIN_SUPPORT && empty($unsupported));
+        : ($score >= EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MIN_SUPPORT') && empty($unsupported));
 
       // Keep only when the model says supported AND lists no unsupported claim AND
       // the fraction clears the floor — any single fabricated hard fact drops it.
-      $supported = $supportedFlag && empty($unsupported) && $score >= self::MIN_SUPPORT;
+      $supported = $supportedFlag && empty($unsupported) && $score >= EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MIN_SUPPORT');
 
       return [
         'available'          => true,

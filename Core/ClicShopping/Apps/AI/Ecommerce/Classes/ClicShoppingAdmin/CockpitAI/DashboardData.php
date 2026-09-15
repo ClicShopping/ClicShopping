@@ -80,12 +80,11 @@ class DashboardData
           COUNT(*) AS cnt
         FROM :table_' . self::TABLE . ' e
         INNER JOIN (
-          SELECT entity_id, MAX(date_modified) AS latest
+          SELECT MAX(id) AS last_id
           FROM :table_' . self::TABLE . '
           WHERE language_id = :language_id
           GROUP BY entity_id
-        ) latest ON e.entity_id = latest.entity_id
-                 AND e.date_modified = latest.latest
+        ) latest ON e.id = latest.last_id
         WHERE e.language_id = :language_id2
           AND JSON_EXTRACT(e.metadata, \'$.scores.quadrant\') IS NOT NULL
         GROUP BY quadrant
@@ -136,12 +135,11 @@ class DashboardData
           e.date_modified                                                      AS analysis_date
         FROM :table_' . self::TABLE . ' e
         INNER JOIN (
-          SELECT entity_id, MAX(date_modified) AS latest
+          SELECT MAX(id) AS last_id
           FROM :table_' . self::TABLE . '
           WHERE language_id = :language_id
           GROUP BY entity_id
-        ) latest ON e.entity_id = latest.entity_id
-                 AND e.date_modified = latest.latest
+        ) latest ON e.id = latest.last_id
         LEFT JOIN :table_products_description pd
                ON pd.products_id = e.entity_id
               AND pd.language_id = :language_id2
@@ -204,12 +202,11 @@ class DashboardData
           ROUND(JSON_EXTRACT(e.metadata, \'$.scores.score_y\'), 1)                          AS score_y
         FROM :table_' . self::TABLE . ' e
         INNER JOIN (
-          SELECT entity_id, MAX(date_modified) AS latest
+          SELECT MAX(id) AS last_id
           FROM :table_' . self::TABLE . '
           WHERE language_id = :language_id
           GROUP BY entity_id
-        ) latest ON e.entity_id = latest.entity_id
-                 AND e.date_modified = latest.latest
+        ) latest ON e.id = latest.last_id
         LEFT JOIN :table_products_description pd
                ON pd.products_id = e.entity_id
               AND pd.language_id = :language_id2
@@ -339,12 +336,11 @@ class DashboardData
           END) AS no_data_count
         FROM :table_' . self::TABLE . ' e
         INNER JOIN (
-          SELECT entity_id, MAX(date_modified) AS latest
+          SELECT MAX(id) AS last_id
           FROM :table_' . self::TABLE . '
           WHERE language_id = :language_id
           GROUP BY entity_id
-        ) latest ON e.entity_id = latest.entity_id
-                 AND e.date_modified = latest.latest
+        ) latest ON e.id = latest.last_id
         WHERE e.language_id = :language_id2
       ');
 
@@ -403,13 +399,12 @@ class DashboardData
           JSON_EXTRACT(e.metadata, \'$.actions\')                            AS actions
         FROM :table_' . self::TABLE . ' e
         INNER JOIN (
-          SELECT entity_id, MAX(date_modified) AS latest
+          SELECT MAX(id) AS last_id
           FROM :table_' . self::TABLE . '
           WHERE language_id = :language_id
             AND JSON_LENGTH(JSON_EXTRACT(metadata, \'$.actions\')) > 0
           GROUP BY entity_id
-        ) latest ON e.entity_id = latest.entity_id
-                 AND e.date_modified = latest.latest
+        ) latest ON e.id = latest.last_id
         LEFT JOIN :table_products_description pd
                ON pd.products_id = e.entity_id
               AND pd.language_id = :language_id2
@@ -504,12 +499,11 @@ class DashboardData
           ROUND(AVG(JSON_EXTRACT(e.metadata, \'$.scores.score_y\')), 1) AS avg_score_y
         FROM :table_' . self::TABLE . ' e
         INNER JOIN (
-          SELECT entity_id, MAX(date_modified) AS latest
+          SELECT MAX(id) AS last_id
           FROM :table_' . self::TABLE . '
           WHERE language_id = :language_id
           GROUP BY entity_id
-        ) latest ON e.entity_id = latest.entity_id
-                 AND e.date_modified = latest.latest
+        ) latest ON e.id = latest.last_id
         WHERE e.language_id = :language_id2
       ');
 

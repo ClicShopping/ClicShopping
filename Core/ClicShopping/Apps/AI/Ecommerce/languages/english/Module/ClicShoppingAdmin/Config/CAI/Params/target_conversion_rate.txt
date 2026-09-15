@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_target_conversion_rate_title = Target conversion rate (%)
+cfg_ecommerce_cockpit_ai_target_conversion_rate_description = Conversion rate worth a full mark on the commercial score. A real rate lives between 0 and a few percent: scored against a perfect 100 % the factor never leaves the floor and stops telling a good product from a bad one. Set it to the rate you consider excellent for your shop.

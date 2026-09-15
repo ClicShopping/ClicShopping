@@ -39,7 +39,6 @@ use ClicShopping\AI\InterfacesAI\WebSearchInterface;
 class AmazonShoppingEngine implements WebSearchInterface
 {
     private const ENGINE_NAME = 'amazon';
-    private const DEFAULT_MAX_RESULTS = 20;
 
     private SerpApiClient $client;
     private WebSearchLogger $logger;

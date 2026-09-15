@@ -438,7 +438,7 @@
      * @return array              Analysis_Report (same shape as executeAnalysis())
      * @throws \Exception         If a critical step fails (Steps 1 or 3)
      */
-    public function executeAnalysisCron(int $productId, int $languageId, string $cronUserId = 'cron'): array
+    public function executeAnalysisCron(int $productId, int $languageId, string $cronUserId = 'cron', bool $productChanged = false): array
     {
       $startTime = microtime(true);
 
@@ -451,8 +451,10 @@
         'action_type' => 'system_update_flag'
       ], 'date_created desc', 1);
 
-      $forceRefresh = false;
-      if ($QlastEmbedding->check() && $QlastLogFlag->check()) {
+      // The caller knows why it picked this product; the flag below only sees admin edits
+      // on favorites, specials and featured.
+      $forceRefresh = $productChanged;
+      if (!$forceRefresh && $QlastEmbedding->check() && $QlastLogFlag->check()) {
         // Si le flag de modification est plus récent que la dernière analyse, on force l'IA
         if (strtotime($QlastLogFlag->value('date_created')) > strtotime($QlastEmbedding->value('date_modified'))) {
           $forceRefresh = true;

@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO;
 
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Prompts\ContentGenerationPrompts;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\LLMServiceWrapper;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * SeoFidelityChecker
@@ -34,7 +35,6 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\LLMSer
 class SeoFidelityChecker
 {
   /** Minimum fraction of source business facts that must survive optimization. */
-  public const MIN_PRESERVATION = 0.95;
 
   private LLMServiceWrapper $llm;
   private ContentGenerationPrompts $prompts;
@@ -107,7 +107,7 @@ class SeoFidelityChecker
       $totalEntities = (int)($json['total_entities'] ?? count($missing));
 
       // The gate: a fact-preservation fraction at or above the threshold.
-      $fidelityOk = $preservation >= self::MIN_PRESERVATION;
+      $fidelityOk = $preservation >= EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_MIN_PRESERVATION');
 
       return [
         'available'          => true,

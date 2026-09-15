@@ -53,6 +53,24 @@
 
     $stockColor = $stockoutN > 0 ? '#dc2626' : '#16a34a';
 
+    // Score X is language-specific (description, SEO tags): a single figure would average away
+    // a sheet that is complete in one language and thin in another. Shown side by side,
+    $currentCode = strtoupper($this->lang->getCode());
+    $perLanguage = [];
+
+    foreach ($this->lang->getAll() as $code => $l) {
+      $id = (int)($l['id'] ?? 0);
+      if ($id < 1) {
+        continue;
+      }
+      $q = $dash->getQuadrantDistribution($id);
+      $perLanguage[] = [
+        'code'    => strtoupper((string)$code),
+        'current' => $id === (int)$this->lang->getId(),
+        'counts'  => [$q['Q1'], $q['Q2'], $q['Q3'], $q['Q4'], $q['Q_intermediate']],
+      ];
+    }
+
     ob_start(); ?>
 <span class="<?= $content_width ?>">
 <div class="card border-0 shadow-sm" style="font-family:'Segoe UI',sans-serif;color:#1a1f2e;">
@@ -60,7 +78,7 @@
   <!-- Header -->
   <div class="card-header text-white d-flex flex-wrap justify-content-between align-items-center gap-2"
        style="background:#1a1f2e;">
-    <strong>Product CockpitAI — Overview</strong>
+    <strong>Product CockpitAI — Overview <span class="fw-normal" style="opacity:.75;"><?= HTML::sanitize($currentCode) ?></span></strong>
     <a href="<?= $dashUrl ?>" class="small text-decoration-none" style="color:#93c5fd;">
       Full dashboard &rsaquo;
     </a>
@@ -107,6 +125,29 @@
         </div>
       </div>
     </div>
+
+    <!-- Per-language quadrant split: compared, never summed -->
+    <?php 
+    if (\count($perLanguage) > 1) { 
+    ?>
+    <div class="d-flex flex-wrap gap-3 mb-3 small text-muted">
+    <?php
+     foreach ($perLanguage as $pl) { 
+     ?>
+      <span<?= $pl['current'] ? ' class="fw-bold text-dark"' : '' ?>>
+        <?= HTML::sanitize($pl['code']) ?>
+        Q1 <?= (int)$pl['counts'][0] ?> ·
+        Q2 <?= (int)$pl['counts'][1] ?> ·
+        Q3 <?= (int)$pl['counts'][2] ?> ·
+        Q4 <?= (int)$pl['counts'][3] ?><?= $pl['counts'][4] > 0 ? ' · ? ' . (int)$pl['counts'][4] : '' ?>
+      </span>
+      <?php 
+        } 
+      ?>
+    </div>
+    <?php 
+    } 
+    ?>
 
     <!-- Two charts side by side (stack on mobile/tablet) -->
     <div class="row g-3">

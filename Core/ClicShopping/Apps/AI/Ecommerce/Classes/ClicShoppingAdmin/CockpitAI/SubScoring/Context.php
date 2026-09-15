@@ -8,6 +8,8 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\SubScoring;
 
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
+
 /**
  * Context
  *
@@ -67,8 +69,8 @@ readonly class Context
       seoStatus: self::SEO_NOT_ANALYZED,
       seoScore: null,
       thresholds: [
-        'T_high' => \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_T_HIGH') ? (float) CLICSHOPPING_APP_ECOMMERCE_CAI_T_HIGH : 70.0,
-        'T_low'  => \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_T_LOW')  ? (float) CLICSHOPPING_APP_ECOMMERCE_CAI_T_LOW  : 30.0,
+        'T_high' => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_T_HIGH'),
+        'T_low'  => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_T_LOW'),
       ],
       catalog: CatalogNormalization::defaults(),
       languageId: $languageId,

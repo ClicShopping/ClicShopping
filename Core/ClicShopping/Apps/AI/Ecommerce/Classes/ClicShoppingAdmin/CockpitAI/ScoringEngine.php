@@ -76,6 +76,8 @@ class ScoringEngine
       $cached = $cache->get();
 
       if (is_array($cached) && isset($cached['views_p95'])) {
+        $this->lastSampleSize = (int)($cached['sample_size'] ?? 0);
+
         // New cache format (includes p95 + distribution stats)
         return CatalogNormalization::fromCacheArray($cached);
       }
@@ -199,8 +201,9 @@ class ScoringEngine
       // Store sample size for propagation to computeScores()
       $this->lastSampleSize = $sampleSize;
 
-      // Store in cache (new flat format via toCacheArray)
-      $cache->save($normalization->toCacheArray());
+      // Store in cache (new flat format via toCacheArray). The sample size travels alongside:
+      // it belongs to the measurement, not to the distribution the DTO carries.
+      $cache->save($normalization->toCacheArray() + ['sample_size' => $sampleSize]);
 
       return $normalization;
 
@@ -346,7 +349,16 @@ class ScoringEngine
       ));
     }
 
-    $quadrant = $this->classifyQuadrant($scoreX, $scoreY, $resolvedThresholds);
+    // Quadrant: absolute on X, catalogue-relative on Y
+    // Quality has an absolute answer ("is the sheet complete?") and its score reaches the bar.
+    // Performance does not: score_y is already a third catalogue-relative and three of its
+    // thirteen factors are constants — it never leaves a narrow mid band.
+    $splits = [
+      'x_split' => $context->getThresholdHigh(),
+      'y_split' => $this->validator->catalogScoreMedian($languageId),
+    ];
+
+    $quadrant = $this->classifyQuadrant($scoreX, $scoreY, $splits);
 
     // Detect whether catalog normalization used hardcoded defaults.
     // Delegates to CatalogNormalization::isDefault() which checks viewsMax + ordersMax.
@@ -364,6 +376,15 @@ class ScoringEngine
       // Threshold provenance (plan 6.1/6.2)
       'T_high'                      => $resolvedThresholds['T_high'],
       'T_low'                       => $resolvedThresholds['T_low'],
+      'thresholds_x'                => $resolvedThresholds['x'] ?? null,
+      'thresholds_y'                => $resolvedThresholds['y'] ?? null,
+      // What actually classified the quadrant, and on what basis.
+      'quadrant_split'              => [
+        'x'       => $splits['x_split'],
+        'y'       => $splits['y_split'],
+        'x_basis' => 'absolute',
+        'y_basis' => 'catalog_median',
+      ],
       'thresholds_dynamic'          => $resolvedThresholds['dynamic'],
       'thresholds_analysis_count'   => $resolvedThresholds['analysis_count'],
     ];
@@ -386,26 +407,19 @@ class ScoringEngine
    */
   public function classifyQuadrant(float $scoreX, float $scoreY, array $thresholds = []): string
   {
-    $tHigh = (float) ($thresholds['T_high'] ?? 70.0);
-    $tLow  = (float) ($thresholds['T_low']  ?? 30.0);
+    $xSplit = $thresholds['x_split'] ?? $thresholds['x']['T_high'] ?? $thresholds['T_high'] ?? null;
+    $ySplit = $thresholds['y_split'] ?? $thresholds['y']['T_high'] ?? $thresholds['T_high'] ?? null;
 
-    if ($scoreX >= $tHigh && $scoreY >= $tHigh) {
-      return 'Q1';
+    // A product cannot be positioned against a catalogue that has not been measured yet.
+    if ($xSplit === null || $ySplit === null) {
+      return 'Q_intermediate';
     }
 
-    if ($scoreX >= $tHigh && $scoreY < $tLow) {
-      return 'Q2';
+    if ($scoreX >= (float)$xSplit) {
+      return $scoreY >= (float)$ySplit ? 'Q1' : 'Q2';
     }
 
-    if ($scoreX < $tLow && $scoreY < $tLow) {
-      return 'Q3';
-    }
-
-    if ($scoreX < $tLow && $scoreY >= $tHigh) {
-      return 'Q4';
-    }
-
-    return 'Q_intermediate';
+    return $scoreY >= (float)$ySplit ? 'Q4' : 'Q3';
   }
 
   /**

@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_target_conversion_rate_title = Taux de conversion cible (%)
+cfg_ecommerce_cockpit_ai_target_conversion_rate_description = Taux de conversion qui vaut la note maximale sur le score commercial. Un taux réel vit entre 0 et quelques pour cent : noté contre un 100 % parfait, le facteur ne décolle jamais et cesse de distinguer un bon produit d'un mauvais. À régler sur le taux que vous jugez excellent pour votre boutique.

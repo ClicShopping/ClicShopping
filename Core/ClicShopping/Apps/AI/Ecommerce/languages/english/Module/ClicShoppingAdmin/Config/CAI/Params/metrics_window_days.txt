@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_metrics_window_days_title = Commercial metrics window (days)
+cfg_ecommerce_cockpit_ai_metrics_window_days_description = Period the commercial metrics are read on: views, orders and the conversion rate that divides them. A short window reacts faster, a long one is steadier on low-traffic products. Both terms of the rate always share this window. Widening it also widens the impression retention, which can never fall below it.

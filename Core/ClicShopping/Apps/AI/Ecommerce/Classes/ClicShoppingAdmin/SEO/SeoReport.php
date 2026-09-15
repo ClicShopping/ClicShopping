@@ -14,6 +14,7 @@
   use ClicShopping\OM\HTTP;
   use ClicShopping\OM\Registry;
   use GuzzleHttp\Client as GuzzleClient;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
   class SeoReport
   {
@@ -24,7 +25,6 @@
      * product pages).  Used by getSiteMeta() to flag the report and by
      * calculateSeoScore() to cap the headline score accordingly.
      */
-    public const THIN_CONTENT_CRITICAL_WORDS = 50;   // below: critical, score capped at 40
     public const THIN_CONTENT_WARNING_WORDS  = 150;  // below: warning,  score capped at 70
     public const THIN_CONTENT_TARGET_WORDS   = 300;  // recommended optimum for product pages
     public const THIN_CONTENT_CRITICAL_CAP   = 40;   // max seo_score when wordcount < CRITICAL_WORDS
@@ -305,7 +305,7 @@
       $report['wordcount_body'] = (int)$wordCount;
 
       // Normalised level enum: 'critical' | 'warning' | 'ok'
-      if ($wordCount < self::THIN_CONTENT_CRITICAL_WORDS) {
+      if ($wordCount < EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_THIN_CONTENT_WORDS')) {
         $report['thin_content']       = true;
         $report['thin_content_level'] = 'critical';
         $report['thin_content_msg']   = (string)$this->app->getDef(
@@ -352,7 +352,7 @@
         ? (int)str_word_count(preg_replace('/[^\p{L}\p{N}\s]+/u', ' ', $cleanText))
         : 0;
 
-      if ($wordCount < self::THIN_CONTENT_CRITICAL_WORDS) {
+      if ($wordCount < EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_THIN_CONTENT_WORDS')) {
         return [
           'word_count'   => $wordCount,
           'level'        => 'critical',

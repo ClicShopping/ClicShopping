@@ -24,7 +24,7 @@
    * Timeout: 2 s (enforced by the caller — PipelineRunner).
    * On failure: throw exception → pipeline aborts (Step 1 is critical).
    *
-   * ── Data collected ───────────────────────────────────────────────────────────
+   * Data collected
    *
    * Score_X (product quality) sources:
    *   clic_products              : image, zoom image, date_added, model, sku, ean,
@@ -51,8 +51,8 @@
   class DataCollector
   {
     private const TIMEOUT_SECONDS = 2.0;
-    // fallback can never drift apart.
     public const DEFAULT_METRICS_WINDOW_DAYS = 30;
+
 
     /**
      * Window shared by views, orders and the conversion rate, in days.
@@ -437,7 +437,9 @@
 
         // Derived metrics
         $conversionRate = $views30d > 0 ? ($orderCount30d / $views30d) : 0.0;
-        $returnRate     = $orderCount > 0 ? ($returnCount / $orderCount) : 0.0;
+
+        // The return query above is disabled: 0 is NOT MEASURED, not "no returns". null excludes
+        $returnRate = null;
 
         // Featured (products_featured)
         // Table: clic_products_featured (products_id, status, ...) — status=1 = active.

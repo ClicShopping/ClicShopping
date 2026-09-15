@@ -11,6 +11,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\Sub
 use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * LlmAnalysisGenerator
@@ -33,7 +34,6 @@ use ClicShopping\OM\Registry;
  */
 class LlmAnalysisGenerator
 {
-  private const VELOCITY_THRESHOLD = 2.0;
   private bool $debug;
 
   // Velocity threshold: products selling ≥ 2× their stock in 90 days = fast-moving
@@ -74,7 +74,7 @@ class LlmAnalysisGenerator
     if (!$forceRefresh) {
       $existingAnalysis = $embeddingService->getLatestEmbedding($productId, $languageId);
 
-      if (!empty($existingAnalysis)) {
+      if (trim((string)($existingAnalysis['analysis_text'] ?? '')) !== '') {
         if ($this->debug) {
           error_log("[CockpitAI] Cache Hit: Utilisation de l'analyse existante pour le produit $productId");
         }
@@ -416,7 +416,7 @@ class LlmAnalysisGenerator
     $velocityHint = '';
     if ($hasVelocity) {
       $v = (float) $product['stock_velocity'];
-      if ($v >= self::VELOCITY_THRESHOLD) {
+      if ($v >= EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_VELOCITY_THRESHOLD')) {
         $velocityHint = ' [fast-moving]';
       } elseif ($v > 0.0) {
         $velocityHint = ' [slow-moving]';

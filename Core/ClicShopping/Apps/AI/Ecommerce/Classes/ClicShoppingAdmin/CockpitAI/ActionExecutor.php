@@ -74,30 +74,18 @@
             }
 
 
-            // Pour specials : on delete avant re-insert seulement si une ligne existe déjà
-            // (évite de supprimer une promo créée dans le même run par une autre action)
-            // Pour featured/favorites : delete+insert est toujours safe (pas de conflit)
-            if ($tableName === ':table_specials' && $status === 'ADD') {
-              // Vérifier qu'il n'y a pas déjà une promo active avant de supprimer
-              $Qcheck = $this->db->prepare('SELECT COUNT(*) as cnt 
-                                            FROM :table_specials 
-                                            WHERE products_id = :pid 
-                                            AND status = 1
-                                            ');
-              $Qcheck->bindInt(':pid', $productId);
-              $Qcheck->execute();
-	      
-              if ($Qcheck->valueInt('cnt') > 0) {
-                $this->db->delete($tableName, ['products_id' => $productId]);
-              }
-            } else {
-              $this->db->delete($tableName, ['products_id' => $productId]);
-            }
-
-            $this->applyAction($tableName, $productId, array_merge($params, $decision));
+            // One row per product: the existing one is updated, never deleted and re-inserted.
+            $applied = $this->applyAction($tableName, $productId, array_merge($params, $decision), $code);
 
             if ($this->debug) {
-              error_log("[CockpitAI ExecutePlan] -> $status : applyAction done for product=$productId table=$tableName");
+              error_log("[CockpitAI ExecutePlan] -> $status : applyAction=$applied for product=$productId table=$tableName");
+            }
+
+            if ($applied === 'skipped_admin') {
+              $this->logAction($productId, $decision, $productData, 'skipped', $params, $code);
+              $results[] = ['action' => $code, 'status' => 'SKIPPED_ADMIN'];
+              $this->markActionAsProcessed($productData, $action['code']);
+              break;
             }
 
             $triggerStrategy = $decision['trigger_strategy'] ?? 'standard';
@@ -190,41 +178,186 @@
       return ':table_specials';
     }
 
-    private function applyAction(string $table, int $productId, array $params): void {
-      $data = ['products_id' => (int)$productId, 'status' => 1];
+    /**
+     * Apply one marketing action, one row per product.
+     *
+     * @return string 'inserted' | 'updated' | 'skipped_admin'
+     */
+    private function applyAction(string $table, int $productId, array $params, string $actionCode = ''): string {
+      $existingId = $this->existingRowId($table, $productId);
 
-      if ($table === ':table_specials') {
-        if (!isset($params['new_price'])) {
-          $Qprice = $this->db->prepare('SELECT products_price 
-                                        FROM :table_products 
-                                        WHERE products_id = :id
-                                        ');
-          $Qprice->bindInt(':id', $productId);
-          $Qprice->execute();
-
-          $basePrice = (float)$Qprice->valueDecimal('products_price');
-          $rate = $params['new_rate'] ?? 5;
-          $params['new_price'] = $basePrice * (1 - ($rate / 100));
+      // A row the automation never created belongs to the administrator: it is never rewritten.
+      if ($existingId !== null && !$this->isAutomationOwned($productId, $actionCode)) {
+        if ($this->debug) {
+          error_log("[CockpitAI applyAction] admin-owned row on $table for product=$productId, left untouched");
         }
 
-        $data['specials_new_products_price'] = (float)$params['new_price'];
-        $data['specials_date_added'] = 'now()';
-        $data['scheduled_date'] = 'now()';
+        return 'skipped_admin';
+      }
+
+      $prefix = $table === ':table_specials' ? 'specials' : str_replace(':table_', '', $table);
+      $data   = ['products_id' => (int)$productId, 'status' => 1];
+      $rate   = (float)($params['new_rate'] ?? $params['discount_rate'] ?? 0);
+
+      if ($table === ':table_specials') {
+        $Qprice = $this->db->prepare('SELECT products_price
+                                      FROM :table_products
+                                      WHERE products_id = :id
+                                      ');
+        $Qprice->bindInt(':id', $productId);
+        $Qprice->execute();
+
+        $basePrice = (float)$Qprice->valueDecimal('products_price');
+
+        if ($rate <= 0 && isset($params['new_price']) && $basePrice > 0) {
+          $rate = (1 - ((float)$params['new_price'] / $basePrice)) * 100;
+        }
+
+        if ($rate <= 0) {
+          $rate = PromotionWindow::defaultRate();
+        }
+
+        $data['specials_new_products_price'] = (float)($params['new_price'] ?? $basePrice * (1 - ($rate / 100)));
+      }
+
+      $data['scheduled_date'] = 'now()';
+
+      if ($existingId === null) {
+        $data[$prefix . '_date_added'] = 'now()';
+
+        if ($this->debug) {
+          error_log("[CockpitAI applyAction] insert on $table | " . json_encode($data));
+        }
+
+        $this->db->save($table, $data);
+        $existingId = $this->existingRowId($table, $productId);
+        $outcome = 'inserted';
       } else {
-        // Correction dynamique du nom de colonne : products_featured_date_added etc.
-        $columnName = str_replace(':table_', '', $table) . '_date_added';
-        $data[$columnName] = 'now()';
-      }
-      
-      if ($this->debug) {
-        error_log("[CockpitAI applyAction] db->save on table=$table | data=" . json_encode($data));
+        // The product went off, or the promotion changed: the same row carries the new state.
+        $data[$prefix . '_last_modified'] = 'now()';
+        $data['date_status_change']       = 'now()';
+        unset($data['products_id']);
+
+        if ($this->debug) {
+          error_log("[CockpitAI applyAction] update $table#$existingId | " . json_encode($data));
+        }
+
+        $this->db->save($table, $data, [$prefix . '_id' => $existingId]);
+        $outcome = 'updated';
       }
 
-      $this->db->save($table, $data);
+      $this->setExpiry($table, $prefix, $existingId, $rate);
 
-      if ($this->debug) {
-        error_log("[CockpitAI applyAction] db->save done");
+      return $outcome;
+    }
+
+    /**
+     * Expiry of an automated action: the deeper the discount, the longer it stays on screen.
+     *
+     * Set apart because Db::save() passes only 'now()' through as raw SQL — any other expression
+     * would be bound as a string into a datetime column.
+     */
+    private function setExpiry(string $table, string $prefix, ?int $rowId, float $rate): void
+    {
+      if ($rowId === null) {
+        return;
       }
+
+      try {
+        $Q = $this->db->prepare('UPDATE ' . $table . '
+                                 SET expires_date = DATE_ADD(NOW(), INTERVAL :days DAY)
+                                 WHERE ' . $prefix . '_id = :row_id');
+        $Q->bindInt(':days', PromotionWindow::days($rate));
+        $Q->bindInt(':row_id', $rowId);
+        $Q->execute();
+      } catch (\Throwable $e) {
+        if ($this->debug) {
+          error_log('[CockpitAI setExpiry] ' . $e->getMessage());
+        }
+      }
+    }
+
+    /**
+     * Id of the single row this product may have in the target table, whatever its status.
+     */
+    private function existingRowId(string $table, int $productId): ?int
+    {
+      $prefix = $table === ':table_specials' ? 'specials' : str_replace(':table_', '', $table);
+
+      try {
+        $Q = $this->db->prepare('SELECT ' . $prefix . '_id AS row_id
+                                 FROM ' . $table . '
+                                 WHERE products_id = :pid
+                                 ORDER BY ' . $prefix . '_id ASC
+                                 LIMIT 1');
+        $Q->bindInt(':pid', $productId);
+        $Q->execute();
+
+        if ($Q->fetch() !== false) {
+          return $Q->valueInt('row_id') ?: null;
+        }
+      } catch (\Throwable $e) {
+        if ($this->debug) {
+          error_log('[CockpitAI existingRowId] ' . $e->getMessage());
+        }
+      }
+
+      return null;
+    }
+
+    /**
+     * Whether the automation is the one that created the current row for this product.
+     * The action log is the only record of authorship: no row there means the administrator did it.
+     */
+    private function isAutomationOwned(int $productId, string $actionCode): bool
+    {
+      $actionType = $this->actionTypeOf($actionCode);
+
+      if ($actionType === null) {
+        return false;
+      }
+
+      try {
+        $Q = $this->db->prepare('SELECT COUNT(*) AS n
+                                 FROM :table_products_cockpit_ai_action_log
+                                 WHERE product_id = :pid
+                                   AND action_type = :type
+                                   AND status = :executed');
+        $Q->bindInt(':pid', $productId);
+        $Q->bindValue(':type', $actionType);
+        $Q->bindValue(':executed', 'executed');
+        $Q->execute();
+
+        return $Q->valueInt('n') > 0;
+      } catch (\Throwable $e) {
+        if ($this->debug) {
+          error_log('[CockpitAI isAutomationOwned] ' . $e->getMessage());
+        }
+      }
+
+      // Unknown authorship is treated as the administrator's: never overwrite on a doubt.
+      return false;
+    }
+
+    /**
+     * Action code → action_log ENUM value.
+     */
+    private function actionTypeOf(string $actionCode): ?string
+    {
+      $typeMap = [
+        'FEATURED'  => 'featured',
+        'FAVORITE'  => 'favorites',
+        'PROMOTION' => 'specials',
+        'DISCOUNT'  => 'specials',
+      ];
+
+      foreach ($typeMap as $keyword => $type) {
+        if (str_contains($actionCode, $keyword)) {
+          return $type;
+        }
+      }
+
+      return null;
     }
 
     /**
@@ -253,22 +386,7 @@
      */
     private function getRevocationToken(int $productId, string $actionCode): ?string
     {
-      // Mapping code action → action_type ENUM ('featured','favorites','specials')
-      $typeMap = [
-        'FEATURED'  => 'featured',
-        'FAVORITE'  => 'favorites',
-        'PROMOTION' => 'specials',
-        'DISCOUNT'  => 'specials',
-      ];
-
-      $actionType = null;
-
-      foreach ($typeMap as $keyword => $type) {
-        if (str_contains($actionCode, $keyword)) {
-          $actionType = $type;
-          break;
-        }
-      }
+      $actionType = $this->actionTypeOf($actionCode);
 
       if ($actionType === null) return null;
 
@@ -347,9 +465,9 @@
           'language_id'         => (int)($ctx['language_id'] ?? 1),
           'status'              => $dbStatus,
           'triggered_by'        => (php_sapi_name() == 'cli') ? 'cron' : 'admin',
-          'score_x_at_trigger'  => (float)($ctx['metadata']['scores']['score_x'] ?? 0),
-          'score_y_at_trigger'  => (float)($ctx['metadata']['scores']['score_y'] ?? 0),
-          'quadrant_at_trigger' => (string)($ctx['metadata']['scores']['quadrant'] ?? 'unknown'),
+          'score_x_at_trigger'  => (float)($ctx['scores']['x'] ?? 0),
+          'score_y_at_trigger'  => (float)($ctx['scores']['y'] ?? 0),
+          'quadrant_at_trigger' => (string)($ctx['quadrant'] ?? 'unknown'),
           'validation_reason'   => $validation['reason'] ?? null,
           'date_created'        => 'now()'
         ];

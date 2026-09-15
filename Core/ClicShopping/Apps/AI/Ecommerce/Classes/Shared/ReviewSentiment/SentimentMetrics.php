@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shared\ReviewSentiment;
 
 use function count;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * SentimentMetrics — deterministic sentiment metrics computed from star ratings.
@@ -25,6 +26,7 @@ class SentimentMetrics
 
   /** Std-dev (on the 1..5 scale) at/above which the corpus is flagged polarized. */
   public const POLARIZATION_STDDEV_THRESHOLD = 1.2;
+
 
   /**
    * @param array<int,int|string> $ratings Star ratings (1..5).

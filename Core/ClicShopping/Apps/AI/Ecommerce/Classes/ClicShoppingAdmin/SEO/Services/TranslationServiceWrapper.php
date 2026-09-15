@@ -13,6 +13,7 @@ use ClicShopping\OM\Cache;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Services\LLMServiceWrapper;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * TranslationServiceWrapper
@@ -38,7 +39,6 @@ use ClicShopping\Sites\Common\HTMLOverrideCommon;
  */
 class TranslationServiceWrapper
 {
-  private const CACHE_TTL = 604800; // 7 days in seconds
   private const CACHE_PREFIX = 'seo_translation_';
   
   private bool $debug;
@@ -164,7 +164,7 @@ class TranslationServiceWrapper
   {
     $cache = new Cache($key, 'SEO');
 
-    $expireMinutes = (int)ceil(self::CACHE_TTL / 60);
+    $expireMinutes = (int)ceil(EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_TRANSLATION_CACHE_TTL') / 60);
     if ($cache->exists((string)$expireMinutes)) {
       return $cache->get();
     }
@@ -430,7 +430,7 @@ class TranslationServiceWrapper
   private function saveToCache(string $key, string $value): void
   {
     $cache = new Cache($key, 'SEO');
-    $cache->save($value, ['ttl_seconds' => self::CACHE_TTL]);
+    $cache->save($value, ['ttl_seconds' => EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SEO_TRANSLATION_CACHE_TTL')]);
   }
 
   /**

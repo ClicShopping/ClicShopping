@@ -2,6 +2,7 @@
   namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI;
 
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\MarginCalculator;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
   /**
 * PromotionScheduler v5
@@ -23,7 +24,6 @@
   class PromotionScheduler
   {
     /** Seuil high_intent_ratio au-dessus duquel l'accélération P1→P2 se déclenche */
-    private const HIGH_INTENT_THRESHOLD = 0.7;
 
     private array $config;
     private bool $debug;
@@ -34,10 +34,10 @@
 
       // Récupération des taux depuis la configuration ou valeurs par défaut
       $this->config = [
-        'p1' => (float)(defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P1') ? CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P1 : 5),
-        'p2' => (float)(defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P2') ? CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P2 : 8),
-        'p3' => (float)(defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P3') ? CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P3 : 12),
-        'p4' => (float)(defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P4') ? CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P4 : 15),
+        'p1' => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P1'),
+        'p2' => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P2'),
+        'p3' => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P3'),
+        'p4' => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P4'),
       ];
     }
 
@@ -65,8 +65,8 @@
 
       // Bonus high-intent : si ratio élevé, on commence légèrement plus haut que P1
       // mais sans dépasser P2 (l'accélération franche est dans getNextStep)
-      if ($highIntentRatio > self::HIGH_INTENT_THRESHOLD) {
-        $intentBonus = ($highIntentRatio - self::HIGH_INTENT_THRESHOLD) * 2.0; // 0..0.6
+      if ($highIntentRatio > EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD')) {
+        $intentBonus = ($highIntentRatio - EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD')) * 2.0; // 0..0.6
         $coefficient = max($coefficient, 1.0 + $intentBonus);
       }
 
@@ -168,21 +168,21 @@
       //   3. Marge suffisante (MarginCalculator)
       //   4. Stock déjà contrôlé plus haut, pour tous les chemins
       //   5. Promo au début du cycle (daysActive < seuil P2 normal)
-      if ($highIntentRatio > self::HIGH_INTENT_THRESHOLD
+      if ($highIntentRatio > EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD')
         && !empty($productData)
         && $this->isMarginSufficient($productData)
         && $daysActive < 7  // seulement au début — sinon laisser la progression normale
       ) {
         if ($this->debug) {
           error_log("[Info CockpitAI PromotionScheduler] HIGH-INTENT ACCELERATION:"
-            . " ratio=$highIntentRatio threshold=" . self::HIGH_INTENT_THRESHOLD
+            . " ratio=$highIntentRatio threshold=" . EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD')
             . " → skipping P1, starting at P2");
         }
 
         return [
           'action'           => 'P2',
           'rate'             => $this->config['p2'],
-          'reason'           => "High-intent acceleration (ratio=$highIntentRatio > " . self::HIGH_INTENT_THRESHOLD . "): starting at P2",
+          'reason'           => "High-intent acceleration (ratio=$highIntentRatio > " . EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD') . "): starting at P2",
           'trigger_strategy' => 'high_intent_flash',  // tag pour FeedbackCollector
         ];
       }
@@ -248,9 +248,7 @@
           return false;
         }
 
-        $minMarginRate = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_MARGIN_RATE')
-          ? (float)CLICSHOPPING_APP_ECOMMERCE_CAI_MARGIN_RATE
-          : 15.0;
+        $minMarginRate = EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_MARGIN_RATE');
 
         $marginPct = $margin['margin_percentage'] ?? 0;
 

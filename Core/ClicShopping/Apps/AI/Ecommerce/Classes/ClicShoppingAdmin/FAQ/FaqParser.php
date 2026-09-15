@@ -19,6 +19,7 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\FAQ;
 
 use ClicShopping\OM\HTML;
 use ClicShopping\Sites\Common\HTMLOverrideCommon;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * FaqParser Class
@@ -42,12 +43,10 @@ class FaqParser
   /**
    * Maximum length for FAQ questions (in characters)
    */
-  private const MAX_QUESTION_LENGTH = 500;
 
   /**
    * Maximum length for FAQ answers (in characters)
    */
-  private const MAX_ANSWER_LENGTH = 2000;
 
   /**
    * Debug mode flag
@@ -232,8 +231,8 @@ class FaqParser
           }
 
           // Check question length
-          if (mb_strlen($item['q']) > self::MAX_QUESTION_LENGTH) {
-            $error = "FAQ item #{$itemNumber} question exceeds maximum length of " . self::MAX_QUESTION_LENGTH . " characters";
+          if (mb_strlen($item['q']) > EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MAX_QUESTION_LENGTH')) {
+            $error = "FAQ item #{$itemNumber} question exceeds maximum length of " . EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MAX_QUESTION_LENGTH') . " characters";
             $errors[] = $error;
             error_log('[FaqParser] Validation error: ' . $error);
           }
@@ -255,8 +254,8 @@ class FaqParser
           }
 
           // Check answer length
-          if (mb_strlen($item['a']) > self::MAX_ANSWER_LENGTH) {
-            $error = "FAQ item #{$itemNumber} answer exceeds maximum length of " . self::MAX_ANSWER_LENGTH . " characters";
+          if (mb_strlen($item['a']) > EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MAX_ANSWER_LENGTH')) {
+            $error = "FAQ item #{$itemNumber} answer exceeds maximum length of " . EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MAX_ANSWER_LENGTH') . " characters";
             $errors[] = $error;
             error_log('[FaqParser] Validation error: ' . $error);
           }

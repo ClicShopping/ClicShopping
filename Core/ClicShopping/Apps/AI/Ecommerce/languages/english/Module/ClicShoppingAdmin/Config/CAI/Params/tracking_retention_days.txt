@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_tracking_retention_days_title = Impression retention (days)
+cfg_ecommerce_cockpit_ai_tracking_retention_days_description = How long a product impression is kept, in days. Older rows are purged. Keep it above the widest window read from the impressions, today 30 days: a shorter retention silently shortens the analysis, and it does so unequally between display modules.

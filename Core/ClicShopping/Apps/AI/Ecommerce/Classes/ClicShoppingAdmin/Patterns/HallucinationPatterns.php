@@ -14,6 +14,8 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns;
 
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
+
 /**
  * HallucinationPatterns
  *
@@ -35,7 +37,6 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns;
 class HallucinationPatterns
 {
   /** How many years past the current one still count as a suspicious future reference. */
-  private const FUTURE_YEAR_HORIZON = 9;
 
   /**
    * Returns all suspicious patterns for hallucination detection
@@ -136,7 +137,7 @@ class HallucinationPatterns
    */
   public static function getFutureDatePatterns(): array
   {
-    $years = implode('|', range((int)date('Y') + 1, (int)date('Y') + self::FUTURE_YEAR_HORIZON));
+    $years = implode('|', range((int)date('Y') + 1, (int)date('Y') + EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_HALLUCINATION_FUTURE_YEAR_HORIZON')));
 
     return [
       '/in\s+(?:' . $years . ')\b/i',

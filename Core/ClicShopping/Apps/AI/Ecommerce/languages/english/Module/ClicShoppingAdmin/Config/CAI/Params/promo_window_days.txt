@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_promo_window_days_title = Promotion display window (days)
+cfg_ecommerce_cockpit_ai_promo_window_days_description = How long an automated promotion, featured or favorites entry stays on screen, at the smallest discount tier (P1). Deeper tiers stay proportionally longer: a product that needs the deepest discount is a product that is not selling, and a short window does not settle that.

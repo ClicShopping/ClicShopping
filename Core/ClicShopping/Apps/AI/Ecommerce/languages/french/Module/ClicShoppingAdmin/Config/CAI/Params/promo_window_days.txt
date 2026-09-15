@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_promo_window_days_title = Fenêtre d'affichage des promotions (jours)
+cfg_ecommerce_cockpit_ai_promo_window_days_description = Durée pendant laquelle une promotion, une mise en avant ou un favori créé par l'automatisation reste affiché, au plus petit palier de remise (P1). Les paliers plus profonds restent proportionnellement plus longtemps : un produit qui réclame la remise la plus forte est un produit qui ne se vend pas, et une fenêtre courte n'y change rien.

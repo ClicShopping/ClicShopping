@@ -9,6 +9,7 @@
   namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI;
 
   use ClicShopping\OM\Registry;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
   /**
    * RuleAdjuster v5
@@ -36,7 +37,6 @@
     private FeedbackCollector $feedbackCollector;
 
     private const MIN_SAMPLES        = 30;
-    private const MAX_ADJUSTMENT_PCT = 0.20;
 
     private const BOUNDS = [
       'seo_low_score'        => ['min' => 20.0,  'max' => 80.0],
@@ -187,7 +187,7 @@
       $direction = $this->computeDirection($stats['avg_delta_y'], $stats['positive_rate']);
       if ($direction === 0 || !$this->canAdjust('promo_p1')) return null;
 
-      $factor  = min(abs($stats['avg_delta_y']) / 10, self::MAX_ADJUSTMENT_PCT);
+      $factor  = min(abs($stats['avg_delta_y']) / 10, EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_MAX_ADJUSTMENT_PCT'));
       $results = [];
 
       $currentP1     = $this->readThreshold('promo_p1',    5.0);
