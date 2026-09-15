@@ -10,6 +10,8 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\ObjectInfo;
 use ClicShopping\OM\Registry;
 
+$CLICSHOPPING_MessageStack = Registry::get('MessageStack');
+
 $CLICSHOPPING_OrdersStatusInvoice = Registry::get('OrdersStatusInvoice');
 $CLICSHOPPING_Language = Registry::get('Language');
 

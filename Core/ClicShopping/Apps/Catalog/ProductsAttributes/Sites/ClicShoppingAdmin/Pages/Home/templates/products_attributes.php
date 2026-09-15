@@ -12,6 +12,8 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Catalog\ProductsAttributes\Classes\ClicShoppingAdmin\ProductsAttributesAdmin;
+
+$CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 use ClicShopping\Apps\Customers\Groups\Classes\ClicShoppingAdmin\GroupsB2BAdmin;
 
 $CLICSHOPPING_ProductsAttributes = Registry::get('ProductsAttributes');

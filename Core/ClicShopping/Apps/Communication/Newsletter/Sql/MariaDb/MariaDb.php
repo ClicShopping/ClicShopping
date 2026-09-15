@@ -25,6 +25,7 @@ class MariaDb
 
     self::installDbMenuAdministration();
     self::installDb();
+    self::installDbConfiguration();
   }
 
   /**
@@ -165,5 +166,41 @@ CREATE TABLE :table_newsletters_no_account (
 EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
+  }
+
+  /**
+   * Seeds the registration constant of the Newsletter configuration modules.
+   *
+   * Installs made before this method registered the module under a key named after the module code
+   * ('NL') instead of MODULE_MODULES_NEWSLETTER_INSTALLED: that row is carried over, then removed.
+   *
+   * @return void
+   */
+  private static function installDbConfiguration(): void
+  {
+    $CLICSHOPPING_Db = Registry::get('Db');
+
+    $Qlegacy = $CLICSHOPPING_Db->get('configuration', 'configuration_value', ['configuration_key' => 'NL']);
+    $legacy = $Qlegacy->fetch() === false ? null : $Qlegacy->value('configuration_value');
+
+    $Qcheck = $CLICSHOPPING_Db->get('configuration', 'configuration_key', ['configuration_key' => 'MODULE_MODULES_NEWSLETTER_INSTALLED']);
+
+    if ($Qcheck->fetch() === false) {
+      $CLICSHOPPING_Db->save('configuration', [
+        'configuration_title' => 'Installed Newsletter Modules',
+        'configuration_key' => 'MODULE_MODULES_NEWSLETTER_INSTALLED',
+        'configuration_value' => $legacy ?? 'Communication\\Newsletter\\NL',
+        'configuration_description' => 'Configuration modules of the Newsletter app currently installed',
+        'configuration_group_id' => 6,
+        'sort_order' => 0,
+        'date_added' => 'now()'
+      ]);
+    }
+
+    if (!is_null($legacy)) {
+      $CLICSHOPPING_Db->delete('configuration', ['configuration_key' => 'NL']);
+    }
+
+    Cache::clear('configuration');
   }
 }

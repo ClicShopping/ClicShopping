@@ -1,0 +1,2 @@
+cfg_chatgpt_default_analysis_days_title = Default analysis period (days)
+cfg_chatgpt_default_analysis_days_description = Number of days an analytic question is measured over when it names no period, so you do not have to state one every time. Decimals are allowed (0.5 = half a day, which is read as today). The answer always names the window it used; naming a period in the question overrides it. Set 0 to disable the default and have the period asked for instead.

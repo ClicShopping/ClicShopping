@@ -1,0 +1,2 @@
+cfg_chatgpt_default_analysis_days_title = Période d'analyse par défaut (jours)
+cfg_chatgpt_default_analysis_days_description = Nombre de jours sur lequel une question analytique est mesurée lorsqu'elle n'indique aucune période, pour éviter d'en donner une à chaque fois. Les décimales sont acceptées (0,5 = une demi-journée, lue comme la journée d'aujourd'hui). La réponse annonce toujours la fenêtre utilisée ; indiquer une période dans la question l'emporte. Mettre 0 pour désactiver le défaut et faire demander la période.

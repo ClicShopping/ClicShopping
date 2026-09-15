@@ -43,7 +43,7 @@ class NL extends \ClicShopping\Apps\Communication\Newsletter\Module\ClicShopping
 
     $installed[] = $this->app->vendor . '\\' . $this->app->code . '\\' . $this->code;
 
-    $this->app->saveCfgParam('NL', implode(';', $installed));
+    $this->app->saveCfgParam('MODULE_MODULES_NEWSLETTER_INSTALLED', implode(';', $installed));
   }
 
   /**
@@ -54,6 +54,10 @@ class NL extends \ClicShopping\Apps\Communication\Newsletter\Module\ClicShopping
   public function uninstall()
   {
     parent::uninstall();
+
+    if (!\defined('MODULE_MODULES_NEWSLETTER_INSTALLED')) {
+      return;
+    }
 
     $installed = explode(';', MODULE_MODULES_NEWSLETTER_INSTALLED);
     $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);

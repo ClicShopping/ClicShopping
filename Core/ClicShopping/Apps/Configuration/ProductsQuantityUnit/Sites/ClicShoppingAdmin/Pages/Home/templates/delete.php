@@ -11,6 +11,8 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\ObjectInfo;
 use ClicShopping\OM\Registry;
 
+$CLICSHOPPING_MessageStack = Registry::get('MessageStack');
+
 $CLICSHOPPING_Language = Registry::get('Language');
 $CLICSHOPPING_ProductsQuantityUnit = Registry::get('ProductsQuantityUnit');
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();

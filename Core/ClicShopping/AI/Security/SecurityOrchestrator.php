@@ -17,7 +17,7 @@ use ClicShopping\AI\Security\SecurityLogger;
  *
  * Coordinates security layers for query validation.
  * 
- * PURE LLM MODE:
+ * PURE LLM MODE (not optional - no switch disables it):
  * - Primary defense: SemanticSecurityAnalyzer (LLM-based)
  * - Pattern fallback: OPTIONAL (disabled by default)
  * - Processing: Always in English internally
@@ -217,14 +217,6 @@ class SecurityOrchestrator
    */
   private static function loadConfiguration(): array
   {
-    // Handle both boolean and string 'True'/'False' formats (DB compatibility)
-    $llmEnabled = true; // default
-
-    if (defined('CLICSHOPPING_APP_CHATGPT_RA_USE_LLM_PRIMARY_SECURITY')) {
-      $configValue = CLICSHOPPING_APP_CHATGPT_RA_USE_LLM_PRIMARY_SECURITY;
-      $llmEnabled = ($configValue === true || $configValue == 'True' || $configValue === 'true' || $configValue === '1');
-    }
-
     // Provide safe defaults when RAG/RA config is not installed
     $patternFallbackEnabled = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_PATTERN_FALLBACK');
     $threatThreshold = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_THREAT_THRESHOLD');
@@ -232,9 +224,6 @@ class SecurityOrchestrator
     $logBlockedOnly = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_BLOCKED_ONLY');
 
     return [
-      // LLM-based security (PRIMARY)
-      'llm_enabled' => $llmEnabled,
-      
       // Pattern fallback (OPTIONAL - disabled by default)
       'pattern_fallback_enabled' => $patternFallbackEnabled,
       
@@ -303,11 +292,6 @@ class SecurityOrchestrator
   {
     $config = self::loadConfiguration();
     $errors = [];
-
-    // Check if LLM is enabled
-    if (!$config['llm_enabled']) {
-      $errors[] = 'LLM security is disabled - this is not recommended';
-    }
 
     // Check threat threshold
     if ($config['threat_threshold'] < 0.0 || $config['threat_threshold'] > 1.0) {

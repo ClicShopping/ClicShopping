@@ -9,6 +9,8 @@
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
+$CLICSHOPPING_MessageStack = Registry::get('MessageStack');
+
 $CLICSHOPPING_Newsletter = Registry::get('Newsletter');
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 
