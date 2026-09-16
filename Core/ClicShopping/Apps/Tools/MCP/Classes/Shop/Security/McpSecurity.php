@@ -687,8 +687,11 @@ class McpSecurity
         return false;
       }
 
+      $seenIps = [];
+
       foreach ($Qips as $allowedIp) {
         $ip = $allowedIp['ip'];
+        $seenIps[] = $ip;
 
         if ($ip === '127.0.0.1' || $ip === 'localhost') {
           if (in_array($clientIp, ['127.0.0.1', '::1'])) {
@@ -721,7 +724,7 @@ class McpSecurity
       self::logSecurityEvent('IP access denied', [
         'mcp_id' => $mcp_id,
         'client_ip' => $clientIp,
-        'allowed_ips' => array_column($Qips->toArray(), 'ip')
+        'allowed_ips' => $seenIps
       ]);
 
       return false;

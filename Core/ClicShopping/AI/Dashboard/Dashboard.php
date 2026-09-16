@@ -257,6 +257,27 @@ class Dashboard
         ];
       }
 
+      // agent_type says which agent ran, classification_type says what was ASKED.
+      // The report below reads the second: read it, never derive it from the first.
+      $classificationResults = DoctrineOrm::select("
+        SELECT 
+          classification_type,
+          COUNT(*) as total,
+          SUM(CASE WHEN error_occurred = 0 THEN 1 ELSE 0 END) as success
+        FROM {$prefix}rag_statistics
+        WHERE classification_type IS NOT NULL
+        GROUP BY classification_type
+      ");
+
+      $byClassification = [];
+      foreach ($classificationResults as $row) {
+        $total = (int)$row['total'];
+
+        $byClassification[$row['classification_type']] = [
+          'success_rate' => $total > 0 ? round(((int)$row['success'] / $total) * 100, 1) : 0
+        ];
+      }
+
       // Calculate cache hit rate
       $cacheResults = DoctrineOrm::select("
         SELECT 

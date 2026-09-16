@@ -847,6 +847,9 @@ input:checked + .slider:before {
   top: 0;
   height: 100%;
   margin: 0;
+  /* Le tiroir suit la largeur d'ecran ; max-width annule le plafond 800px de .modal-lg. */
+  width: min(1400px, 92vw);
+  max-width: none;
 }
 
 .modal-right .modal-content {

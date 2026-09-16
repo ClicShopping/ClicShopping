@@ -331,6 +331,13 @@ class ComposerStaticInit559d5c9b702bf740c3f0e192226eea14
                 0 => __DIR__ . '/..' . '/smalot/pdfparser/src',
             ),
         ),
+        'P' =>
+        array (
+            'Parsedown' =>
+            array (
+                0 => __DIR__ . '/..' . '/erusev/parsedown',
+            ),
+        ),
     );
 
     public static $classMap = array (

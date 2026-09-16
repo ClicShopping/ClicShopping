@@ -11,6 +11,7 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubG
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
+use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
 use function defined;
@@ -118,13 +119,15 @@ class UIGenerator
       $httpServer = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin');
       $httpPath = CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin');
 
-      $recordUrl = $httpServer . $httpPath . 'ajax/RAG/record_feedback.php';
-      $ajaxUrl   = $httpServer . $httpPath . 'ajax/ChatGpt/chatGpt.php';
+      $lang = '?language=' . rawurlencode(Registry::get('Language')->getCode());
+
+      $recordUrl = $httpServer . $httpPath . 'ajax/RAG/record_feedback.php' . $lang;
+      $ajaxUrl   = $httpServer . $httpPath . 'ajax/ChatGpt/chatGpt.php' . $lang;
 
       $userId     = (int)(AdministratorAdmin::getUserAdminId() ?? 0);
       $languageId = (int)($_SESSION['languages_id'] ?? 1);
 
-      $resetContextUrl = $httpServer . $httpPath . 'ajax/RAG/reset_context.php';
+      $resetContextUrl = $httpServer . $httpPath . 'ajax/RAG/reset_context.php' . $lang;
       $maxLength = 1000;
 
       $i18n = [

@@ -592,6 +592,14 @@ column_products_description = Description
 column_categories_description = Description
 column_customers_email_address = Email
 column_customers_telephone = Téléphone
+column_variation_percent = Évolution (%)
+column_variation_points = Évolution (points)
+column_period_year = Année
+column_period_quarter = Trimestre
+column_quarter_num = Trimestre
+column_period_month = Mois
+column_line_revenue = CA produits
+column_revenue_ht = Chiffre d'affaires
 
 status_inactive = ❌ Inactif
 status_active = ✅ Actif
@@ -606,7 +614,7 @@ value_unknown = Inconnu
 
 
 text_chat_loading_analyzing = Analyse en cours de votre demande. Veuillez patienter. Merci.<br>
-Note : Veuillez toujours vérifier la réponse de l'AI.
+Note : Veuillez toujours vérifier la réponse de l'IA.
 
 text_chat_loading_request = Envoi de votre demande...
 text_chat_validation_empty = Veuillez entrer une question
