@@ -65,6 +65,10 @@ class LlmResponseEvaluator
       $evaluationResults['guardrails'] = $guardrailsValidation;
     }
 
+    // Unverified user reports travel with the metadata but never go back into the payload.
+    $userReports = array_values(array_filter(array_map('strval', (array)($groundingMetadata['user_reports'] ?? []))));
+    unset($groundingMetadata['user_reports']);
+
     if (!empty($groundingMetadata)) {
       $evaluationResults['grounding_metadata'] = $groundingMetadata;
 
@@ -100,7 +104,7 @@ class LlmResponseEvaluator
 
       // 5. Use evaluation model if available
       if (str_starts_with(Gpt::defaultModel(), 'gpt') || str_starts_with(Gpt::defaultModel(), 'anth')) {
-        $llmEvaluation = self::performLlmEvaluation($question, $result);
+        $llmEvaluation = self::performLlmEvaluation($question, $result, $userReports);
         $evaluationResults['llm_evaluation'] = $llmEvaluation;
       }
 
@@ -243,13 +247,13 @@ class LlmResponseEvaluator
    * and parses the returned evaluation. The result typically includes scores and comments
    * about accuracy, reliability, relevance, and clarity.
    */
-  private static function performLlmEvaluation(string $question, string $result): array
+  private static function performLlmEvaluation(string $question, string $result, array $userReports = []): array
   {
     self::initLogger();
     $trimmedResult = self::trimResultForCritic($result);
 
     $criteriaPrompt = self::getDefaultCriteriaEvaluatorPromptBuilder();
-    $evaluationPrompt = $criteriaPrompt->getEvaluationPromptForQuestion($question, $trimmedResult);
+    $evaluationPrompt = $criteriaPrompt->getEvaluationPromptForQuestion($question, $trimmedResult, $userReports);
 
     if (self::$debug) {
       self::$securityLogger->logSecurityEvent('LLM Evaluation Prompt: ' . $evaluationPrompt, 'info');
@@ -336,17 +340,26 @@ class LlmResponseEvaluator
         $this->language = Registry::get('Language');
       }
 
-      public function getEvaluationPromptForQuestion(string $question, string $result): string
+      public function getEvaluationPromptForQuestion(string $question, string $result, array $userReports = []): string
       {
         // Internal SYSTEM prompt in English for LLM evaluation (not user-facing).
         // Loaded from a dedicated Agents/ file so it no longer reloads the shared 'main'
         // group (which would overwrite the application-language user-facing definitions
         // and force the final answer into English — the FR->EN restitution bug).
         DomainConfig::loadAgnosticLanguageFile('rag_guardrails', 'en');
-        return $this->language->getDef('llm_guardrails_prompt', [
+        $prompt = $this->language->getDef('llm_guardrails_prompt', [
           'result' => $result,
           'question' => $question
         ]);
+
+        // Appended only when a report exists, so the no-report prompt stays byte-identical.
+        if ($userReports !== []) {
+          $prompt .= "\n\n" . $this->language->getDef('llm_guardrails_user_reports', [
+            'reports' => implode(' | ', $userReports)
+          ]);
+        }
+
+        return $prompt;
       }
     };
   }

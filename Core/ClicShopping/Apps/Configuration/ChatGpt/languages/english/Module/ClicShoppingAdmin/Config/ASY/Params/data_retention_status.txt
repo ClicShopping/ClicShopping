@@ -1,0 +1,5 @@
+cfg_chatgpt_data_retention_status_title = Enable AI journal retention
+cfg_chatgpt_data_retention_status_description = Delete the AI agent journals once they are older than the retention window. Off by default because the job deletes rows. Reputation, the measurement corpus and the objective queue are never touched
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

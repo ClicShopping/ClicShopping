@@ -431,7 +431,6 @@ latency_rec_speedup = Le fast-lane est {factor}x plus rapide! Continuez à l'opt
 latency_rec_normal = Les performances sont dans la normale. Continuez à surveiller.
 
 # Analyse IA
-ai_analysis_title = 🤖 Analyse IA
 
 # Modal Réinitialiser Stats
 modal_reset_stats_title = ⚠️ Réinitialiser toutes les statistiques
@@ -539,9 +538,6 @@ tab7_recommendations = Recommandations
 
 # Onglet 11 - Analyse Feedback
 tab11_title = ⭐ Analyse des Feedbacks
-tab11_analyze_negative = 🔍 Analyser Négatifs
-tab11_analyze_positive = ✨ Analyser Positifs
-tab11_analyze_complete = 📊 Analyse Complète
 tab11_no_feedback = Aucun feedback enregistré
 tab11_feedback_will_appear = Les feedbacks apparaîtront ici une fois que les utilisateurs auront soumis leurs retours.
 tab11_recent_feedbacks = 📝 Feedbacks Récents
@@ -684,7 +680,6 @@ cache_reset_resetting = Resetting...
 # Éléments UI additionnels
 tab6_global_metrics = Métriques Globales
 tab11_metrics_summary = Résumé des métriques
-tab11_analysis_in_progress = Analyse en cours...
 
 
 # Répartition des Sources
@@ -918,3 +913,28 @@ security_exposure_watch = Vigilance — détections à instruire
 security_exposure_danger = Danger — menaces détectées et bloquées
 security_exposure_unknown = Inconnu — le journal n'a pas pu être lu
 security_coverage_line = Couverture : {{events}} événement(s) de sécurité sur {{days}} jours, couches : {{layers}}. Une exposition à 0 ne veut dire quelque chose que si cette ligne n'est pas vide.
+feedback_report_button = Constats
+feedback_report_title = Rapport du journal des retours
+feedback_report_generated = Généré le {{date}} — fenêtre : {{days}} derniers jours. Les deux tableaux de bord lisent ce même run.
+feedback_report_scope = Portée : agent {{agent}}, intention {{intent}}
+feedback_report_no_finding = Aucun constat sur cette fenêtre : chaque retour atteint son interaction, porte sa trace et s'accorde avec la porte de validation.
+feedback_report_limits = Ce que ce rapport ne peut pas dire : il ne couvre que les {{days}} derniers jours et les retours réellement déposés. Un utilisateur mécontent qui n'a rien dit n'y laisse aucune trace : ce rapport décrit ce qui a été signalé, jamais ce qui a été vécu.
+feedback_report_failed = Le rapport des retours n'a pas pu être généré.
+feedback_report_unjoinable_feedback_title = {{unjoinable}} retour(s) n'atteignent aucune interaction
+feedback_report_unjoinable_feedback_body = {{unjoinable}} retours sur {{total}} portent un jeton qui ne correspond à aucune ligne du journal d'interactions. Rien ne dit ce qui a été demandé, ce qui a été répondu ni quel agent a tourné : ces retours ne sont pas exploitables du tout.
+feedback_report_unjoinable_feedback_action = Vérifier que le jeton frappé avant la persistance est bien celui rendu au navigateur. Les retours antérieurs à ce lien sont perdus et ne font que sortir de la fenêtre avec le temps.
+feedback_report_blind_trace_title = {{without_sql}} retour(s) sur une réponse que le système ne sait pas montrer
+feedback_report_blind_trace_body = Sur {{sql_bearing}} réponses signalées construites à partir de SQL, {{without_sql}} ne portent aucun SQL et {{without_verdict}} aucun verdict de porte. On demande à un humain de corriger une requête que rien n'a enregistrée.
+feedback_report_blind_trace_action = Rien à réparer sur les anciennes lignes : les colonnes se remplissent à partir de maintenant. Si le chiffre ne baisse pas à mesure que de nouveaux retours arrivent, la trace ne s'écrit pas — vérifier que le journal d'interactions reçoit le SQL exécuté.
+feedback_report_negative_concentration_title = {{share}} % des plaintes tombent sur un seul agent et une seule intention
+feedback_report_negative_concentration_body = {{negatives}} retours négatifs sur {{reported}} concernent le même agent et la même intention. Une concentration aussi forte est un défaut sur un chemin, pas un mécontentement général.
+feedback_report_negative_concentration_action = Lire le SQL de ces interactions avant de changer quoi que ce soit d'autre : un seul chemin porte toute la plainte, et le reste de la plateforme n'est pas ce qui est signalé.
+feedback_report_silent_comment_title = {{silent}} retour(s) négatif(s) sans un mot
+feedback_report_silent_comment_body = {{silent}} retours négatifs sur {{negatives}} ne portent aucun texte. Ils disent que quelque chose n'allait pas, et rien d'autre : ils pèsent sur tous les taux sans être exploitables.
+feedback_report_silent_comment_action = Ils comptent quand même comme un mécontentement. Juger les taux sur les retours qui portent un texte, et ne jamais lire un retour muet comme un défaut décrit.
+feedback_report_verdict_disagreement_title = {{disagreements}} réponse(s) validées par la porte et rejetées par le lecteur
+feedback_report_verdict_disagreement_body = Sur {{with_verdict}} réponses signalées portant un verdict, {{disagreements}} ont été marquées « pass » par la porte de validation et signalées comme fausses par l'utilisateur. Le critique machine et son lecteur ne sont pas d'accord sur celles-là.
+feedback_report_verdict_disagreement_action = C'est la paire à lire en premier : le score de qualité a jugé ces réponses acceptables. Comparer leur SQL à ce qui était demandé avant de toucher aux seuils de la porte.
+feedback_report_thin_population_title = {{total}} retour(s) sur {{days}} jours — trop peu pour un taux
+feedback_report_thin_population_body = La fenêtre porte {{total}} retours, en dessous du seuil de {{threshold}} sous lequel un pourcentage décrit deux ou trois lignes. Chaque part ci-dessus est exacte, aucune n'est représentative.
+feedback_report_thin_population_action = Lire les constats un retour à la fois, pas comme des taux. Cet avertissement disparaît de lui-même quand le corpus grandit.

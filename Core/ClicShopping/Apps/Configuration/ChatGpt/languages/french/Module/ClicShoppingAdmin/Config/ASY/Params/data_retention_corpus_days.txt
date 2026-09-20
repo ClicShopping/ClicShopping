@@ -1,0 +1,2 @@
+cfg_chatgpt_data_retention_corpus_days_title = Conservation du corpus de mesure (jours)
+cfg_chatgpt_data_retention_corpus_days_description = Nombre de jours du corpus de mesure à conserver : les questions posées par les utilisateurs, les réponses rendues et le SQL exécuté. C'est le seul journal IA qui porte ce qu'une personne a réellement écrit, sa fenêtre est donc la vôtre, distincte de celle des journaux d'agents. Zéro, la valeur par défaut, le conserve indéfiniment — le corpus est ce sur quoi se lit chaque mesure, et sa suppression est irréversible

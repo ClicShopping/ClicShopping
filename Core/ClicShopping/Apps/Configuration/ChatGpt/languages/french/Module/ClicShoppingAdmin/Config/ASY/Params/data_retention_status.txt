@@ -1,0 +1,5 @@
+cfg_chatgpt_data_retention_status_title = Activer la purge des journaux IA
+cfg_chatgpt_data_retention_status_description = Supprime les journaux des agents IA passé la durée de conservation. Désactivé par défaut car la tâche supprime des lignes. La réputation, le corpus de mesure et la file d'objectifs ne sont jamais touchés
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

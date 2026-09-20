@@ -18,6 +18,7 @@ use LLPhant\LmStudioConfig;
 use LLPhant\MistralAIConfig;
 use LLPhant\GeminiOpenAIConfig;
 use LLPhant\OpenAIConfig;
+use ClicShopping\AI\Security\OutboundPolicy;
 use LLPhant\OllamaConfig;
 use LLPhant\AnthropicConfig;
 use LLPhant\Chat\AnthropicChat;
@@ -42,6 +43,9 @@ use function is_null;
  */
 class ProviderManager
 {
+  /** Endpoint of the provider whose LLPhant config exposes no url, for the outbound policy. */
+  private const ANTHROPIC_ENDPOINT = 'https://api.anthropic.com';
+
   /**
    * Initializes and returns an instance of OpenAIChat configured with the given parameters.
    * 
@@ -81,6 +85,8 @@ class ProviderManager
     if ($usingDbKey) {
       self::applyOpenAiOrganisation($config, $credential['organisation'] ?? null);
     }
+
+    OutboundPolicy::assertAllowed((string)$config->url, 'llm');
 
     $chat = new OpenAIChat($config);
 
@@ -134,6 +140,8 @@ class ProviderManager
   {
     $config = new OllamaConfig();
     $config->model = $model;
+    OutboundPolicy::assertAllowed($config->url, 'llm');
+
     $chat = new OllamaChat($config);
 
     return CountingChat::wrap($chat);
@@ -188,6 +196,8 @@ class ProviderManager
     $config->modelOptions['max_tokens'] = min($lmStudioMax, 8000);
 
     // Créer et retourner l'instance de LmStudioChat avec la config
+    OutboundPolicy::assertAllowed((string)$config->url, 'llm');
+
     return CountingChat::wrap(new LmStudioChat($config));
   }
 
@@ -226,6 +236,9 @@ class ProviderManager
       // is a passthrough for real names and still resolves any legacy anth-* alias.
       $apiModel = ModelManager::mapAnthropicModelName($model);
       $modelOptions = ModelManager::normalizeAnthropicOptions($apiModel, $modelOptions);
+
+      // AnthropicConfig carries no url: LLPhant's AnthropicChat holds the endpoint itself.
+      OutboundPolicy::assertAllowed(self::ANTHROPIC_ENDPOINT, 'llm');
 
       $result = new AnthropicChat(
         new AnthropicConfig($apiModel, $maxtoken, $modelOptions, $api_key)
@@ -287,6 +300,8 @@ class ProviderManager
     }
 
     try {
+      OutboundPolicy::assertAllowed((string)$config->url, 'llm');
+
       return CountingChat::wrap(new MistralAIChat($config));
     } catch (\Exception $e) {
       throw new \Exception('Error creating MistralAIChat instance: ' . $e->getMessage());
@@ -328,6 +343,8 @@ class ProviderManager
     }
 
     try {
+      OutboundPolicy::assertAllowed((string)$config->url, 'llm');
+
       return CountingChat::wrap(new OpenAIChat($config));
     } catch (\Exception $e) {
       throw new \Exception('Error creating Gemini chat instance: ' . $e->getMessage());

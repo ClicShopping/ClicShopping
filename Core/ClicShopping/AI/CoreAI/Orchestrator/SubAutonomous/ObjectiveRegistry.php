@@ -34,6 +34,39 @@ class ObjectiveRegistry
   }
 
   /**
+   * The pending objective this agent already holds for that goal, if any.
+   *
+   * @param string $agentId Agent that would create it
+   * @param string $goalStatement Goal, compared as a whole
+   * @return string|null Existing objective id, null when the goal is new
+   */
+  private function pendingObjectiveId(string $agentId, string $goalStatement): ?string
+  {
+    try {
+      $stmt = $this->db->prepare(
+        'SELECT objective_id FROM :table_rag_agent_objectives
+          WHERE agent_id = :agent_id
+            AND goal_statement = :goal_statement
+            AND status = \'pending\'
+          ORDER BY created_at DESC
+          LIMIT 1'
+      );
+      $stmt->bindValue(':agent_id', $agentId);
+      $stmt->bindValue(':goal_statement', $goalStatement);
+      $stmt->execute();
+
+      $row = $stmt->fetch();
+
+      return \is_array($row) && isset($row['objective_id']) ? (string)$row['objective_id'] : null;
+    } catch (Exception $e) {
+      // A probe that cannot answer must not block the creation it was meant to spare.
+      error_log('[ObjectiveRegistry] pending probe failed: ' . $e->getMessage());
+
+      return null;
+    }
+  }
+
+  /**
    * Register a new objective
    *
    * Persists a LocalObjective to the database and returns its ID.
@@ -67,6 +100,14 @@ class ObjectiveRegistry
           $data
         );
         throw new Exception('Agent not authorized to create objective');
+      }
+
+      // A queue holds work to do, not a record of how often it was asked for. The same pending
+      // goal is returned instead of stacked: nothing consumes the copies, they only grow the table.
+      $existing = $this->pendingObjectiveId($data['agent_id'], $data['goal_statement']);
+
+      if ($existing !== null) {
+        return $existing;
       }
 
       $sql = "INSERT INTO :table_rag_agent_objectives 
@@ -438,6 +479,9 @@ class ObjectiveRegistry
   public function cancelObjective(string $objectiveId, string $reason): void
   {
     try {
+      $objective = $this->getObjective($objectiveId);
+      $oldStatus = $objective ? $objective->getStatus() : 'unknown';
+
       $sql = "UPDATE :table_rag_agent_objectives 
               SET status = 'cancelled',
                   completed_at = :completed_at,
@@ -449,10 +493,6 @@ class ObjectiveRegistry
       $stmt->bindValue(':completed_at', (new DateTimeImmutable())->format('Y-m-d H:i:s'));
       $stmt->bindValue(':reason', $reason);
       $stmt->execute();
-
-      // Get current status for logging
-      $objective = $this->getObjective($objectiveId);
-      $oldStatus = $objective ? $objective->getStatus() : 'unknown';
 
       // Log the state transition
       $this->logStateTransition(
@@ -583,6 +623,11 @@ class ObjectiveRegistry
     string $newStatus,
     string $reason
   ): void {
+    // A transition is a CHANGE: X -> X carries no origin and is never journalled
+    if ($oldStatus === $newStatus) {
+      return;
+    }
+
     try {
       // Persist to database
       $sql = "INSERT INTO :table_rag_agent_objective_state_transitions 

@@ -14,7 +14,6 @@ use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Infrastructure\Cache\TranslationCache;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
-use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * TranslationHandler
@@ -125,7 +124,10 @@ class TranslationHandler
       error_log("Calling Gpt::getGptResponse()...");
       
       // Temperature 0.0: this is a normalisation, not a piece of writing.
-      $maxTokens = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN');
+      // Seeded by CH/Params/translation_max_token.php: read under defined(), never declared in
+       $maxTokens = \defined('CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN')
+        ? (int)CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN
+        : 500;
       $translation = Gpt::getGptResponse($prompt, $maxTokens, 0.0);
 
       // A hit ceiling truncates the normalised input mid-sentence and it travels downstream as

@@ -1,0 +1,2 @@
+cfg_chatgpt_data_retention_corpus_days_title = Measurement corpus retention (days)
+cfg_chatgpt_data_retention_corpus_days_description = How many days of the measurement corpus to keep: the questions users asked, the answers returned and the SQL executed. This is the only AI journal carrying what a person actually wrote, so its window is yours to set, separately from the agent journals. Zero, the default, keeps it for ever — the corpus is what every measurement is read on, and deleting it cannot be undone

@@ -144,8 +144,23 @@ include __DIR__ . '/dashboard/_data.php';
       <?php if ($config['rag_enabled']): ?>
       <div class="mt-3 mb-3">
         <div class="card">
-          <div class="card-header">
+          <div class="card-header d-flex justify-content-between align-items-center">
             <h6 class="mb-0"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_agent_monitoring_management'); ?></h6>
+            <button type="button" class="btn btn-outline-primary btn-sm feedbackReportBtn">
+              <i class="bi bi-file-earmark-text"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('feedback_report_button'); ?>
+            </button>
+          </div>
+
+          <div class="modal fade" id="feedbackReportModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('feedback_report_title'); ?></h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="feedbackReportBody"></div>
+              </div>
+            </div>
           </div>
           <div class="card-body">
             <div class="row">

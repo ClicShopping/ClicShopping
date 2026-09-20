@@ -14,19 +14,14 @@ use ClicShopping\AI\Security\SecurityLogger;
 /**
  * FeedbackManager Class
  *
- * Manages user feedback on conversation interactions.
- * Responsibilities include:
- * - Recording positive/negative feedback
- * - Storing feedback corrections
- * - Tracking feedback statistics
- * - Analyzing feedback patterns
+ * Reads user feedback on conversation interactions, for learning purposes.
+ * Writing is not its job: rag_feedback is written by ConversationMemory::recordFeedback().
  */
 class FeedbackManager
 {
   private mixed $db;
   private SecurityLogger $securityLogger;
   private bool $debug;
-  private string $tableName = 'rag_feedback';
 
   /**
    * Constructor
@@ -38,76 +33,6 @@ class FeedbackManager
     $this->db = Registry::get('Db');
     $this->securityLogger = new SecurityLogger();
     $this->debug = $debug;
-  }
-
-  /**
-   * Records user feedback for an interaction
-   *
-   * @param string $interactionId Unique interaction identifier
-   * @param string $feedbackType Type of feedback (positive, negative, correction)
-   * @param array $feedbackData Additional feedback data
-   * @return bool Success of the operation
-   */
-  public function recordFeedback(string $interactionId,string $feedbackType, array $feedbackData): bool
-  {
-    try {
-      // Validate feedback type
-      $validTypes = ['positive', 'negative', 'correction'];
-      if (!in_array($feedbackType, $validTypes, true)) {
-        throw new \InvalidArgumentException("Invalid feedback type: {$feedbackType}");
-      }
-
-      // Extract required data
-      $userId = $feedbackData['user_id'] ?? 'unknown';
-      $languageId = $feedbackData['language_id'] ?? 1;
-      $timestamp = $feedbackData['timestamp'] ?? time();
-
-      // Prepare feedback data for JSON storage
-      $jsonData = [
-        'feedback_text' => $feedbackData['feedback_text'] ?? '',
-        'user_agent' => $feedbackData['user_agent'] ?? 'unknown',
-        'ip_address' => $feedbackData['ip_address'] ?? 'unknown',
-      ];
-
-      // Add correction-specific data if applicable
-      if ($feedbackType === 'correction' && isset($feedbackData['correction'])) {
-        $jsonData['correction'] = $feedbackData['correction'];
-      }
-
-      // Add rating if provided
-      if (isset($feedbackData['rating'])) {
-        $jsonData['rating'] = $feedbackData['rating'];
-      }
-
-      // Prepare SQL data
-      $sqlData = [
-        'interaction_id' => $interactionId,
-        'feedback_type' => $feedbackType,
-        'feedback_data' => json_encode($jsonData),
-        'user_id' => $userId,
-        'timestamp' => $timestamp,
-        'language_id' => $languageId,
-        'date_added' => date('Y-m-d H:i:s')
-      ];
-
-      // Insert into database
-      $result = $this->db->save($this->tableName, $sqlData);
-
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Feedback recorded: {$feedbackType} for interaction {$interactionId}",
-          'info'
-        );
-      }
-
-      return $result !== false;
-
-    } catch (\Exception $e) {
-      $this->securityLogger->logApplicationError(
-        "Error recording feedback: " . $e->getMessage()
-      );
-      return false;
-    }
   }
 
   /**
@@ -134,9 +59,9 @@ class FeedbackManager
          LEFT JOIN :table_rag_interactions i ON f.interaction_id = i.client_interaction_id
          WHERE f.user_id = :user_id
          AND f.language_id = :language_id
-         AND f.feedback_type IN ('correction', 'positive')
+         AND f.feedback_type IN ('correction', 'positive', 'negative')
          ORDER BY 
-           CASE WHEN f.feedback_type = 'correction' THEN 1 ELSE 2 END,
+           CASE WHEN f.feedback_type IN ('correction', 'negative') THEN 1 ELSE 2 END,
            f.date_added DESC
          LIMIT :limit"
       );
@@ -159,20 +84,21 @@ class FeedbackManager
           'date_added' => $row['date_added']
         ];
 
-        // Add correction details if available
-        if ($row['feedback_type'] === 'correction') {
-          if (isset($feedbackData['correction']['corrected_text'])) {
-            $item['corrected_response'] = $feedbackData['correction']['corrected_text'];
-          }
-          if (isset($feedbackData['correction']['comment'])) {
-            $item['correction_comment'] = $feedbackData['correction']['comment'];
-          }
-          if (isset($feedbackData['corrected_text'])) {
-            $item['corrected_response'] = $feedbackData['corrected_text'];
-          }
-          if (isset($feedbackData['comment'])) {
-            $item['correction_comment'] = $feedbackData['comment'];
-          }
+        // The user's own words live in feedback_text; the correction/* keys are only written
+        // by the 'correction' channel, which no interface produces today.
+        $comment = $feedbackData['correction']['comment']
+          ?? $feedbackData['comment']
+          ?? $feedbackData['feedback_text']
+          ?? '';
+
+        if ($comment !== '') {
+          $item['correction_comment'] = $comment;
+        }
+
+        $corrected = $feedbackData['correction']['corrected_text'] ?? $feedbackData['corrected_text'] ?? '';
+
+        if ($corrected !== '') {
+          $item['corrected_response'] = $corrected;
         }
 
         // Add SQL query if available in metadata

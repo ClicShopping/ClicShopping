@@ -6,3 +6,6 @@ module_admin_dashboard_check_api_app_alert = Please do not forget to create you 
 Some update may be required to use the Agentic IA inside ClicShopping AI, look the Gpt / RAG ... Setting and update your database if you use mariaDb 11.7 at least (not work with MySQL 9.x and MariaDb < 11.7).<br />
 but you can use the default Setting nt the Agentic Rag BI technology.
 You can remove this module in Configuration / Backoffice / Dashboard
+
+module_admin_dashboard_check_api_app_ai_act_alert = <strong>AI Act</strong> - the responsible person is mandatory and is not set. Open {{gpt_link}} / Agent System and fill "AI Act responsible person": Regulation (EU) 2024/1689 requires the deployer of an AI system to be identified in the AI governance declaration.
+module_admin_dashboard_check_api_app_error = ChatGPT configuration error

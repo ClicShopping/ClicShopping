@@ -674,87 +674,87 @@ MARKDOWN;
    */
   public function generateAPIReference(): string
   {
-    return <<<MARKDOWN
+    return <<<'MARKDOWN'
 # API Reference
 
 ## MonitoringAgent
 
 ### Register components
-\`\`\`php
+```php
 $monitoring->registerComponent(string $componentName, object $component, array $metricsToTrack = []): void
-\`\`\`
+```
 
 ### Collect metrics
-\`\`\`php
+```php
 $metrics = $monitoring->collectMetrics(): array
-\`\`\`
+```
 
 ### Rapports
-\`\`\`php
+```php
 $health = $monitoring->getHealthReport(): array
 $summary = $monitoring->getQuickSummary(): array
-\`\`\`
+```
 
 ## MetricsCollector
 
 ### Timers
-\`\`\`php
+```php
 $collector->startTimer(string $name, array $tags = []): void
 $elapsed = $collector->stopTimer(string $name): ?float
-\`\`\`
+```
 
 ### Compteurs
-\`\`\`php
+```php
 $collector->increment(string $name, int $value = 1, array $tags = []): void
 $collector->decrement(string $name, int $value = 1, array $tags = []): void
-\`\`\`
+```
 
 ### Gauges
-\`\`\`php
+```php
 $collector->gauge(string $name, float $value, array $tags = []): void
-\`\`\`
+```
 
 ### Histogrammes
-\`\`\`php
+```php
 $collector->recordHistogram(string $name, float $value, array $tags = []): void
 $stats = $collector->getHistogramStats(string $name, array $tags = []): ?array
-\`\`\`
+```
 
 ## AlertManager
 
 ### Règles
-\`\`\`php
+```php
 $alertManager->addRule(string $ruleId, array $ruleConfig): void
 $alertManager->enableRule(string $ruleId): bool
 $alertManager->disableRule(string $ruleId): bool
-\`\`\`
+```
 
 ### Alertes
-\`\`\`php
+```php
 $triggered = $alertManager->triggerAlert(string $alertId, array $alertData): bool
 $alertManager->acknowledgeAlert(string $alertId, string $acknowledgedBy = 'system'): bool
 $alertManager->resolveAlert(string $alertId, string $resolution = ''): bool
-\`\`\`
+```
 
 ### Notifications
-\`\`\`php
+```php
 $alertManager->addNotificationChannel(string $channelName, callable $handler): void
-\`\`\`
+```
 
 ## StatsAggregator
 
 ### Agrégation
-\`\`\`php
+```php
 $aggregated = $aggregator->aggregate(): array
 $report = $aggregator->getFullReport(): array
 $summary = $aggregator->getExecutiveSummary(): array
-\`\`\`
+```
 
 ### Export
-\`\`\`php
+```php
 $json = $aggregator->exportJSON(): string
 $csv = $aggregator->exportCSV(): string
-\`\`\`
+```
 
 MARKDOWN;
   }
@@ -804,8 +804,8 @@ MARKDOWN;
    */
   public function generateREADME(): string
   {
-    return <<<MARKDOWN
-# {$this->projectName} - Phase 4: Monitoring & Analytics
+    return '# ' . $this->projectName . <<<'MARKDOWN'
+ - Phase 4: Monitoring & Analytics
 
 ## Overview
 
@@ -857,7 +857,7 @@ Statistics aggregator that combines data from multiple sources and generates syn
 1. Copier les 4 fichiers PHP dans votre projet
 2. Initialiser les composants:
 
-\`\`\`php
+```php
 use ClicShopping\\Apps\\Configuration\\ChatGpt\\Classes\\Tools\\Monitoring\\{
   MonitoringAgent,
   MetricsCollector,
@@ -869,60 +869,60 @@ $monitoring = new MonitoringAgent();
 $collector = new MetricsCollector($monitoring);
 $alertManager = new AlertManager();
 $aggregator = new StatsAggregator();
-\`\`\`
+```
 
 ### Register components
 
-\`\`\`php
+```php
 $monitoring->registerComponent('OrchestratorAgent', $orchestrator);
 $monitoring->registerComponent('TaskPlanner', $planner);
 $monitoring->registerComponent('PlanExecutor', $executor);
-\`\`\`
+```
 
 ### Collect metrics
 
-\`\`\`php
+```php
 $collector->startTimer('operation');
 // ... do something ...
 $collector->stopTimer('operation');
 
 $collector->increment('requests_total');
 $collector->gauge('memory_usage_mb', memory_get_usage(true) / 1024 / 1024);
-\`\`\`
+```
 
 ### Configure alerts
 
-\`\`\`php
+```php
 $alertManager->addRule('high_error_rate', [
   'message' => 'Error rate exceeded 10%',
   'severity' => 'error',
-  'condition' => fn(\$m) => (\$m['error_rate'] ?? 0) > 0.1,
+  'condition' => fn($m) => ($m['error_rate'] ?? 0) > 0.1,
   'channels' => ['log', 'email'],
 ]);
-\`\`\`
+```
 
 ### Generate reports
 
-\`\`\`php
+```php
 $health = $monitoring->getHealthReport();
 $summary = $aggregator->getExecutiveSummary();
 $html = $monitoring->exportMetrics('html');
-\`\`\`
+```
 
 ## Configuration
 
 ### Development
-\`\`\`php
+```php
 define('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER', 'True');
 $alertManager->setCooldownPeriod(60);
-\`\`\`
+```
 
 ### Production
-\`\`\`php
+```php
 define('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER', 'False');
 $alertManager->setCooldownPeriod(1800);
 $collector->bufferSize = 50;
-\`\`\`
+```
 
 ## Documentation
 

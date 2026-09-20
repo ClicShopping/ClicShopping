@@ -1,0 +1,21 @@
+journal_id INT not_null auto_increment comment(Primary key - unique finding identifier)
+generated_at DATETIME not_null comment(When the report that produced this finding was run - all findings of one run share it)
+period_days INT not_null comment(Window in days the finding was measured on)
+code VARCHAR(48) not_null comment(Finding code, never prose - the wording belongs to the rendering surface)
+severity VARCHAR(16) not_null comment(critical, high, medium or low)
+population INT not_null comment(What the figures were measured on - a figure without its population cannot be opposed)
+agent_used VARCHAR(50) default null comment(Cross key: agent the finding points at, null when it covers the whole window)
+intent_type VARCHAR(50) default null comment(Cross key: intent the finding points at, null when it covers the whole window)
+figures TEXT default null comment(JSON figures of the finding, read by the surface that renders it)
+
+--
+primary journal_id
+idx_generated_at generated_at
+idx_code code
+idx_agent_used agent_used
+idx_intent_type intent_type
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

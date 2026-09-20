@@ -5,3 +5,6 @@ module_admin_dashboard_check_api_app_link = Gpt
 module_admin_dashboard_check_api_app_alert = N'oubliez pas de créer votre clé API sur OpenAI.com pour utiliser l'IA générative dans ClicShoppingAI : {{gpt_link}}<br />
 Des mises à jour peuvent être nécessaires pour utiliser l'AI Agentique dans ClicShopping AI, consultez les paramètres Gpt / RAG ... et mettez à jour votre base de données si vous utilisez au moins MariaDb 11.7 (ne fonctionne pas avec MySQL 9.x et MariaDb < 11.7).<br />
 Vous pouvez cependant utiliser la configuration par défaut sans la technologie Agentique Rag BI.
+
+module_admin_dashboard_check_api_app_ai_act_alert = <strong>AI Act</strong> - le nom du responsable est obligatoire et n'est pas renseigné. Ouvrez {{gpt_link}} / Système d'agents et renseignez « Responsable AI Act » : le règlement (UE) 2024/1689 impose d'identifier le responsable du déploiement du système d'IA dans la déclaration de gouvernance IA.
+module_admin_dashboard_check_api_app_error = Erreur de configuration ChatGPT

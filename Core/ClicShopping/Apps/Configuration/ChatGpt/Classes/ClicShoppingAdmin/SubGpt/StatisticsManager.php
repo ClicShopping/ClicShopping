@@ -134,6 +134,7 @@ class StatisticsManager
     // CLICSHOPPING_APP_CHATGPT_RA_INTERACTION_RESPONSE_MAX_CHARS after running
     // the ALTER to MEDIUMTEXT (suggested value: 16_000_000).
     $interactionData = self::truncateOversizedColumns($interactionData);
+    $interactionData = self::dropTraceColumnsWhenAbsent($interactionData, $db);
 
     try {
       $db->save('rag_interactions', $interactionData);
@@ -200,6 +201,50 @@ class StatisticsManager
     );
 
     return self::saveStatistics($statsTracker, self::persistInteraction($interactionData, $statsTracker));
+  }
+
+  /**
+   * Drop the AIACT-2 trace columns when the 4.33 upgrade has not been applied here.
+   * Sending an unknown column fails the whole INSERT, and the audit row is what would be lost.
+   *
+   * @param array $interactionData Row about to be written
+   * @param mixed $db Database instance
+   * @return array Row the current schema accepts
+   */
+  private static function dropTraceColumnsWhenAbsent(array $interactionData, mixed $db): array
+  {
+    if (self::interactionsHasTraceColumns($db)) {
+      return $interactionData;
+    }
+
+    unset($interactionData['sql_query'], $interactionData['validation_action'], $interactionData['validation_score']);
+
+    return $interactionData;
+  }
+
+  /**
+   * Whether rag_interactions carries the AIACT-2 trace columns. Probed at most once per request.
+   * A probe that cannot answer reports absence: degrading the row beats losing it.
+   *
+   * @param mixed $db Database instance
+   * @return bool
+   */
+  private static function interactionsHasTraceColumns(mixed $db): bool
+  {
+    static $exists = null;
+
+    if ($exists === null) {
+      try {
+        $Q = $db->prepare("SHOW COLUMNS FROM :table_rag_interactions LIKE 'sql_query'");
+        $Q->execute();
+        $exists = (bool)$Q->fetch();
+      } catch (\Exception $e) {
+        error_log('[INFO : ERROR]StatisticsManager: trace column probe failed: ' . $e->getMessage());
+        $exists = false;
+      }
+    }
+
+    return $exists;
   }
 
   /**
@@ -313,7 +358,9 @@ class StatisticsManager
     
     $resolvedAgentUsed = $aiResponse['agent_used'] ?? 'unknown';
     $resolvedIntentType = $aiResponse['intent']['type'] ?? 'unknown';
-    
+
+    $validation = self::extractValidationVerdict($aiResponse);
+
     return [
       'user_id' => $userId,
       'session_id' => $sessionId,
@@ -332,7 +379,69 @@ class StatisticsManager
       'entity_type' => $metadata['entity_type'],
       'agent_used' => $resolvedAgentUsed,
       'intent_type' => $resolvedIntentType,
+      'sql_query' => self::extractSqlQuery($aiResponse),
+      'validation_action' => $validation['action'],
+      'validation_score' => $validation['score'],
       'date_added' => 'now()',
+    ];
+  }
+
+  /**
+   * The SQL the run actually executed, read where the response exposes it.
+   *
+   * A compound run collapses to its first analytics sub-query: that is what the response itself
+   * carries, not a choice made here.
+   *
+   * @param array $aiResponse AI response from orchestrator
+   * @return string|null Executed SQL, null when the path ran none
+   */
+  private static function extractSqlQuery(array $aiResponse): ?string
+  {
+    $candidates = [
+      $aiResponse['sql_query'] ?? null,
+      $aiResponse['data']['sql_query'] ?? null,
+      $aiResponse['result']['sql_query'] ?? null,
+    ];
+
+    foreach ($candidates as $sql) {
+      if (!is_string($sql)) {
+        continue;
+      }
+
+      $sql = trim($sql);
+
+      // 'N/A' is the agent's own placeholder for "no SQL here" — store nothing rather than a word.
+      if ($sql !== '' && strtoupper($sql) !== 'N/A') {
+        return $sql;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * The validation gate verdict on the delivered answer.
+   *
+   * `reason` is not stored: it is derivable from the pair — a null score under 'pass' is
+   * "no score available".
+   *
+   * @param array $aiResponse AI response from orchestrator
+   * @return array{action: string|null, score: float|null}
+   */
+  private static function extractValidationVerdict(array $aiResponse): array
+  {
+    $validation = $aiResponse['validation'] ?? $aiResponse['data']['validation'] ?? null;
+
+    if (!is_array($validation)) {
+      return ['action' => null, 'score' => null];
+    }
+
+    $action = $validation['action'] ?? null;
+    $score = $validation['score'] ?? null;
+
+    return [
+      'action' => is_string($action) && $action !== '' ? $action : null,
+      'score' => is_numeric($score) ? round((float)$score, 3) : null,
     ];
   }
 }

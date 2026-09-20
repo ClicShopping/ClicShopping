@@ -1,5 +1,5 @@
 cfg_chatgpt_validation_gate_status_title = Activer le contrôle de validation analytique
 cfg_chatgpt_validation_gate_status_description = Faire noter chaque réponse analytique par un LLM et la régénérer une fois lorsque la note est basse, en ne gardant la nouvelle que si elle est strictement meilleure. Rattrape une réponse qui se lit bien mais repose sur une requête fausse. Coûte un appel d’évaluation supplémentaire par réponse analytique
 
-cfg_chatgpt_status_true = Oui
-cfg_chatgpt_status_false = Non
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

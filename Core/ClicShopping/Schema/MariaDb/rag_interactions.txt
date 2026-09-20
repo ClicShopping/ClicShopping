@@ -16,6 +16,9 @@ entity_id INT default 0 comment(Entity ID (0 = no specific entity, null = unknow
 entity_type VARCHAR(50) default null comment(Type of entity (product, category, page, etc.))
 agent_used VARCHAR(50) default null comment(Agent that processed the query (orchestrator, analytics_agent, semantic_agent, etc.))
 intent_type VARCHAR(50) default null comment(Intent classification (analytics, semantic, hybrid, web_search))
+sql_query TEXT default null comment(SQL actually executed for this interaction, as the response exposed it - null when the path ran no SQL)
+validation_action VARCHAR(16) default null comment(Validation gate verdict on the delivered answer: pass, annotate or regenerate)
+validation_score DECIMAL(4,3) default null comment(Normalised 0-1 quality score the verdict was taken on - null when no score was available)
 date_added DATETIME not_null default CURRENT_TIMESTAMP comment(Timestamp when the interaction was created)
 
 --
@@ -29,6 +32,7 @@ idx_response_time response_time
 idx_entity entity_id entity_type
 idx_agent_used agent_used
 idx_intent_type intent_type
+idx_validation_action validation_action
 
 ##
 engine innodb

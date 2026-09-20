@@ -51,7 +51,7 @@ class CheckAPI extends AdminDashboardAbstract
 
   /**
    * Generates and returns the dashboard output for the module.
-   * If the API key for the ChatGPT application is not set, returns an alert message.
+   * Alerts on a missing API key, and on a missing AI Act responsible person.
    *
    * @return string The generated output, including alert information if the API key is missing.
    */
@@ -59,24 +59,39 @@ class CheckAPI extends AdminDashboardAbstract
   {
     $output = '';
 
-    $apiKey = Gpt::getProviderApiKey('openai')['api_key'];
+    try {
+      $apiKey = Gpt::getProviderApiKey('openai')['api_key'];
 
-    if (empty($apiKey)) {
-      try {
+      // Mandatory under Regulation (EU) 2024/1689: the accountable deployer must be named.
+      $responsible = \defined('CLICSHOPPING_APP_CHATGPT_ASY_AI_ACT_RESPONSIBLE')
+        ? trim(CLICSHOPPING_APP_CHATGPT_ASY_AI_ACT_RESPONSIBLE)
+        : '';
+
+      if (empty($apiKey) || $responsible === '') {
         $link = HTML::link($this->app->link('Configuration\ChatGpt&Configure'), $this->app->getDef('module_admin_dashboard_check_api_app_link'));
 
         $contentWidth = defined('MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_CONTENT_WIDTH') ? (int) MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_CONTENT_WIDTH : 12;
 
         $output = '<div class="col-md-' . $contentWidth . '">';
-        $output .= '<div class="alert alert-warning" role="alert">';
-        $output .= $this->app->getDef('module_admin_dashboard_check_api_app_alert', ['gpt_link' => $link]);
+
+        if (empty($apiKey)) {
+          $output .= '<div class="alert alert-warning" role="alert">';
+          $output .= $this->app->getDef('module_admin_dashboard_check_api_app_alert', ['gpt_link' => $link]);
+          $output .= '</div>';
+        }
+
+        if ($responsible === '') {
+          $output .= '<div class="alert alert-danger" role="alert">';
+          $output .= $this->app->getDef('module_admin_dashboard_check_api_app_ai_act_alert', ['gpt_link' => $link]);
+          $output .= '</div>';
+        }
+
         $output .= '</div>';
-        $output .= '</div>';
-      } catch (Exception $e) {
-        error_log("Dashboard CheckAPI error: " . $e->getMessage());
-        $output = '<div class="col-md-12"><div class="alert alert-danger">Erreur de configuration ChatGPT</div></div>';
       }
-   }
+    } catch (\Exception $e) {
+      error_log("Dashboard CheckAPI error: " . $e->getMessage());
+      $output = '<div class="col-md-12"><div class="alert alert-danger">' . $this->app->getDef('module_admin_dashboard_check_api_app_error') . '</div></div>';
+    }
 
     return $output;
   }

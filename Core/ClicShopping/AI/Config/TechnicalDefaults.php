@@ -41,9 +41,6 @@ class TechnicalDefaults
     'CLICSHOPPING_APP_CHATGPT_RA_MAX_RESULTS_PER_STORE' => 5,
     'CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT' => 5,
 
-    // Output ceiling for the English normalisation of the user input. A CEILING, not a target:
-    // it costs nothing unless consumed. A hit ceiling truncates silently; TranslationHandler reports it.
-    'CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN' => 500,
 
     // Hard ceiling on analytics steps (one schema window per step). A latency/budget bound, not a
     // policy: ExecutionModeMatrix decides whether to decompose at all; this only caps how far.

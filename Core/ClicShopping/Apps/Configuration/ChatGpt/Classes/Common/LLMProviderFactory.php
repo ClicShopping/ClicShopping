@@ -23,6 +23,7 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\LMStudioProvider;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\MistralProvider;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\GeminiProvider;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\AI\Security\OutboundPolicy;
 
 /**
  * Class LLMProviderFactory
@@ -92,6 +93,10 @@ class LLMProviderFactory
 
     // Load configuration for this provider
     $config = $this->loadConfig($providerName, $overrides);
+
+    // The deployment policy decides before the client exists, so no provider can be built
+    // towards a destination the operator forbade.
+    OutboundPolicy::assertAllowed((string)($config['api_url'] ?? ''), 'llm');
 
     // Instantiate provider with configuration
     return new $providerClass($config);

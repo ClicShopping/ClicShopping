@@ -576,6 +576,40 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
+   * Negative reports the user filed on THIS question, for the critic to weigh.
+   *
+   * Matching is exact on the stored question: a report on another question says nothing
+   * about this answer. An unverified report is an input to the critic, never a generator
+   * instruction (AGENTS.md).
+   *
+   * @param string $question Question under evaluation
+   * @return array<int, string> Reported wordings, newest first
+   */
+  private function collectUserReportsFor(string $question): array
+  {
+    if ($this->conversationMemory === null || !method_exists($this->conversationMemory, 'getFeedbackContext')) {
+      return [];
+    }
+
+    $needle = mb_strtolower(trim($question));
+    $reports = [];
+
+    foreach ($this->conversationMemory->getFeedbackContext($question, 10) as $item) {
+      if (($item['feedback_type'] ?? '') !== 'negative') {
+        continue;
+      }
+
+      $comment = trim((string)($item['correction_comment'] ?? ''));
+
+      if ($comment !== '' && mb_strtolower(trim((string)($item['original_query'] ?? ''))) === $needle) {
+        $reports[] = $comment;
+      }
+    }
+
+    return array_slice($reports, 0, 3);
+  }
+
+  /**
    * Apply the optional LLM validation gate to a built analytics response.
    *
    * OFF by default (flag undefined) -> no behaviour change. When enabled, an LLM
@@ -597,7 +631,9 @@ class AnalyticsAgent implements AgentInterface
     if (AgentSystemConfig::isValidationGateEnabled()
         && is_string($interpretation) && $interpretation !== '') {
       try {
-        $evaluation = LlmGuardrails::checkGuardrails($question, $interpretation);
+        $evaluation = LlmGuardrails::checkGuardrails($question, $interpretation, [
+          'user_reports' => $this->collectUserReportsFor($question)
+        ]);
 
         if (is_array($evaluation)) {
           $score = isset($evaluation['overall_score']) ? (float) $evaluation['overall_score'] : null;

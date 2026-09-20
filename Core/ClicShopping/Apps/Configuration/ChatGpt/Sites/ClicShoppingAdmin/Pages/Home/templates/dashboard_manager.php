@@ -735,17 +735,24 @@ require __DIR__ . '/dashboard/_data.php';
                 <div class="card-header d-flex justify-content-between align-items-center">
                   <h5><?php echo $CLICSHOPPING_ChatGpt->getDef('tab11_title'); ?></h5>
                   <div>
-                    <button class="btn btn-primary btn-sm" onclick="analyzeFeedbacks('negative')">
-                      <?php echo $CLICSHOPPING_ChatGpt->getDef('tab11_analyze_negative'); ?>
-                    </button>
-                    <button class="btn btn-success btn-sm ms-2" onclick="analyzeFeedbacks('positive')">
-                      <?php echo $CLICSHOPPING_ChatGpt->getDef('tab11_analyze_positive'); ?>
-                    </button>
-                    <button class="btn btn-info btn-sm ms-2" onclick="analyzeFeedbacks('all')">
-                      <?php echo $CLICSHOPPING_ChatGpt->getDef('tab11_analyze_complete'); ?>
+                    <button type="button" class="btn btn-outline-primary btn-sm feedbackReportBtn">
+                      <i class="bi bi-file-earmark-text"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('feedback_report_button'); ?>
                     </button>
                   </div>
                 </div>
+
+                <div class="modal fade" id="feedbackReportModal" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('feedback_report_title'); ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body" id="feedbackReportBody"></div>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="card-body">
                   <!-- <?php echo $CLICSHOPPING_ChatGpt->getDef('tab11_metrics_summary'); ?> -->
                   <div class="row mb-4">
@@ -803,18 +810,6 @@ require __DIR__ . '/dashboard/_data.php';
                       <li><strong><?php echo $CLICSHOPPING_ChatGpt->getDef('feedback_min_satisfaction_goal'); ?>:</strong> 70%</li>
                       <li><strong><?php echo $CLICSHOPPING_ChatGpt->getDef('feedback_optimal_satisfaction_goal'); ?>:</strong> 85%</li>
                     </ul>
-                  </div>
-
-                  <!-- Résultat de l'analyse IA -->
-                  <div id="aiAnalysisResult" class="mt-4" style="display: none;">
-                    <h6><?php echo $CLICSHOPPING_ChatGpt->getDef('ai_analysis_title'); ?></h6>
-                    <div class="alert alert-info">
-                      <div id="aiAnalysisLoading" style="display: none;">
-                        <div class="spinner-border spinner-border-sm me-2"></div>
-                        <?php echo $CLICSHOPPING_ChatGpt->getDef('tab11_analysis_in_progress'); ?>
-                      </div>
-                      <div id="aiAnalysisContent"></div>
-                    </div>
                   </div>
 
                   <!-- Recent feedbacks list -->

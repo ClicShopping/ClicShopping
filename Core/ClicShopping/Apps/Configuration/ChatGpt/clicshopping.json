@@ -24,12 +24,14 @@
       "ClicShoppingAdmin/Cronjob": {
         "Process": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\Process",
         "ReputationDecay": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationDecay",
-        "ReputationUpdateProcessor": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationUpdateProcessor"
+        "ReputationUpdateProcessor": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationUpdateProcessor",
+        "AiDataRetention": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\AiDataRetention"
       },
       "Shop/Cronjob": {
         "Process": "Module\\Hooks\\Shop\\Cronjob\\Process",
         "ReputationDecay": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationDecay",
-        "ReputationUpdateProcessor": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationUpdateProcessor"
+        "ReputationUpdateProcessor": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationUpdateProcessor",
+        "AiDataRetention": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\AiDataRetention"
       },
       "ClicShoppingAdmin/Language": {
         "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm"

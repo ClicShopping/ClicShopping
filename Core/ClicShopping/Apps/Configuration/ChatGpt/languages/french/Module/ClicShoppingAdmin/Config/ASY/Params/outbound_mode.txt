@@ -1,0 +1,5 @@
+cfg_chatgpt_outbound_mode_title = Politique des appels sortants
+cfg_chatgpt_outbound_mode_description = Les destinations que la couche IA peut joindre : le fournisseur de LLM (chat, génération, SQL), le fournisseur d'embeddings et le fournisseur de recherche web. Ouvert autorise tout, comme auparavant. Souverain n'autorise que la boucle locale et les réseaux privés : un modèle auto-hébergé sur cette machine ou ce réseau continue de fonctionner, et aucune donnée ne quitte le site. Liste blanche n'autorise que les hôtes déclarés ci-dessous. Un appel bloqué échoue avec un motif explicite, jamais en silence
+cfg_chatgpt_outbound_mode_open = Ouvert - aucune restriction
+cfg_chatgpt_outbound_mode_sovereign = Souverain - réseaux locaux et privés uniquement
+cfg_chatgpt_outbound_mode_allowlist = Liste blanche - hôtes déclarés uniquement

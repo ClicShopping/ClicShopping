@@ -1,0 +1,5 @@
+cfg_chatgpt_outbound_mode_title = Outbound call policy
+cfg_chatgpt_outbound_mode_description = Which destinations the AI layer may reach: the LLM provider (chat, generation, SQL), the embedding provider, and the web search provider. Open allows everything, as before. Sovereign allows only loopback and private networks, so a self-hosted model on this machine or this LAN keeps working while no data leaves the site. Allowlist allows only the hosts declared below. A blocked call fails with an explicit reason, never silently
+cfg_chatgpt_outbound_mode_open = Open - no restriction
+cfg_chatgpt_outbound_mode_sovereign = Sovereign - local and private networks only
+cfg_chatgpt_outbound_mode_allowlist = Allowlist - declared hosts only

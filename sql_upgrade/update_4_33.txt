@@ -587,3 +587,14 @@ SELECT m.id, 'Informations Redis', 2 FROM clic_administrator_menu m
   WHERE m.link = 'index.php?A&Configuration\\Cache&Redis'
     AND NOT EXISTS (SELECT 1 FROM clic_administrator_menu_description d
                      WHERE d.id = m.id AND d.language_id = 2);
+
+
+// Cronjob
+INSERT INTO clic_cron (code, description, cycle, action, status, date_added)
+SELECT 'ai_data_retention',
+       'Delete AI agent journals older than the configured retention window (OBS-1)',
+       'day',
+       'AiDataRetention',
+       0,
+       NOW()
+WHERE NOT EXISTS (SELECT 1 FROM clic_cron WHERE code = 'ai_data_retention');

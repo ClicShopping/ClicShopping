@@ -10,6 +10,8 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Helper;
 
 use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
+use ClicShopping\AI\Security\OutboundBlockedException;
+use ClicShopping\AI\Security\OutboundPolicy;
 use ClicShopping\OM\HTTP;
 
 /**
@@ -76,6 +78,13 @@ class SerpApiClient
         $query,
         json_encode($params)
       ));
+    }
+
+    // The deployment policy decides before the connection, not after.
+    try {
+      OutboundPolicy::assertAllowed($url, 'websearch');
+    } catch (OutboundBlockedException $e) {
+      return $this->fail($engine, $e->getMessage());
     }
 
     // Execute HTTP request

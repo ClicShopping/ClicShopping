@@ -1,0 +1,2 @@
+cfg_chatgpt_data_retention_days_title = AI journal retention (days)
+cfg_chatgpt_data_retention_days_description = How many days of AI agent journals to keep. Zero or less disables the purge

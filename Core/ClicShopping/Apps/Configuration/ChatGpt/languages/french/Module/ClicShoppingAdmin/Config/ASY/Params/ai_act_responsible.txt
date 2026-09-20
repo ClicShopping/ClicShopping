@@ -1,0 +1,2 @@
+cfg_chatgpt_ai_act_responsible_title = Responsable AI Act (obligatoire)
+cfg_chatgpt_ai_act_responsible_description = Nom de la personne physique ou morale responsable de ce système d'IA, exigé par le règlement (UE) 2024/1689. Publié dans la déclaration de gouvernance IA
