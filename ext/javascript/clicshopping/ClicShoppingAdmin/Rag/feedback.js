@@ -64,47 +64,6 @@ function createFeedbackDistributionChart() {
 // ANALYZE FEEDBACKS VIA AI
 // ====================================================================
 
-function analyzeFeedbacks(type = 'all') {
-  const resultDiv = document.getElementById('aiAnalysisResult');
-  const loadingDiv = document.getElementById('aiAnalysisLoading');
-  const contentDiv = document.getElementById('aiAnalysisContent');
-
-  resultDiv.style.display = 'block';
-  loadingDiv.style.display = 'block';
-  contentDiv.innerHTML = '';
-
-  const url = window.APP_DATA?.ajax?.analyzeFeedbacksUrl || '';
-  if (!url) {
-    console.error('Analyze feedbacks URL not defined in APP_DATA');
-    loadingDiv.style.display = 'none';
-    return;
-  }
-
-  fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: type, period_days: 30 })
-  })
-    .then(response => response.json())
-    .then(data => {
-      loadingDiv.style.display = 'none';
-      if (data.success) {
-        contentDiv.innerHTML =
-          `<div class="alert alert-success">
-            <h6>🤖 Analyse IA - ${data.type_label}</h6>
-            <p><strong>Feedbacks analysés:</strong> ${data.feedbacks_analyzed}</p>
-            <pre style="white-space: pre-wrap;">${data.full_analysis}</pre>
-          </div>`;
-      } else {
-        contentDiv.innerHTML = `<div class="alert alert-danger">Erreur: ${data.error}</div>`;
-      }
-    })
-    .catch(() => {
-      loadingDiv.style.display = 'none';
-      contentDiv.innerHTML = '<div class="alert alert-warning">Fonctionnalité en cours de développement</div>';
-    });
-}
-
 // ====================================================================
 // LOAD RECENT FEEDBACKS
 // ====================================================================

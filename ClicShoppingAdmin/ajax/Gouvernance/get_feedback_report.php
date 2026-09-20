@@ -39,7 +39,11 @@ try {
   $app = Registry::get('ChatGpt');
   $app->loadDefinitions('Sites/ClicShoppingAdmin/dashboard');
 
-  $report = (new FeedbackJournal())->refresh(isset($_GET['days']) ? (int)$_GET['days'] : 30);
+  // force=1 produces a new run instead of reading the stored one: displaying is not analysing.
+  $report = (new FeedbackJournal())->refresh(
+    isset($_GET['days']) ? (int)$_GET['days'] : 30,
+    isset($_GET['force']) && $_GET['force'] === '1'
+  );
 
   foreach ($report['findings'] as $i => $finding) {
     $figures = $finding['figures'] + ['population' => $finding['population']];
@@ -55,6 +59,40 @@ try {
           'intent' => (string)($finding['intent_type'] ?? '')
         ]);
   }
+
+  // A share grades on two or three rows under the threshold: the figure stays true, the alert
+  // level says nothing. Marked here, attenuated at render, NEVER rewritten in the journal.
+  $thin = FeedbackJournal::unstableFigures($report['findings']);
+
+  // Below the threshold a share grades on two or three rows: it cannot conclude, so it is WITHHELD
+  // rather than shown greyed — an unreadable finding is noise. Counts stay: a row with no SQL is
+  // still a row with no SQL, whatever the volume. Nothing is removed from the journal itself.
+  $withheld = 0;
+
+  if ($thin !== null) {
+    $kept = [];
+
+    foreach ($report['findings'] as $finding) {
+      if ($finding['code'] === 'thin_population') {
+        continue; // it becomes the frame of the report, not one of its findings
+      }
+
+      if (\in_array($finding['code'], FeedbackJournal::RATE_BASED, true)) {
+        $withheld++;
+        continue;
+      }
+
+      $kept[] = $finding;
+    }
+
+    $report['findings'] = $kept;
+  }
+
+  // Present only while the window is thin: it clears itself once the corpus reaches the threshold.
+  $report['unstable'] = $thin === null ? null : [
+    'notice' => $app->getDef('feedback_report_unstable_notice', $thin),
+    'withheld' => $withheld === 0 ? '' : $app->getDef('feedback_report_withheld', $thin + ['withheld' => $withheld])
+  ];
 
   $report['no_finding'] = $app->getDef('feedback_report_no_finding');
 

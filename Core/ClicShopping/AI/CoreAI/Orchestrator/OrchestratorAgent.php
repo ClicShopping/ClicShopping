@@ -58,7 +58,6 @@ use ClicShopping\AI\Infrastructure\Monitoring\PerformanceTracker;
 use ClicShopping\AI\InterfacesAI\AgentInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Security\Validation\HallucinationDetector;
-use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveManager;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
 /**
@@ -105,7 +104,6 @@ class OrchestratorAgent implements AgentInterface
   private bool $perfTrace;
   private int $languageId;
   private int $entityId;
-  private $db;
   private string $prefix;
   private array $executionStats = [];
   private ConversationMemory $conversationMemory;
@@ -126,7 +124,6 @@ class OrchestratorAgent implements AgentInterface
   private DomainRouter $domainRouter;
   private QueryProcessor $queryProcessor;
   private HybridQueryHandler $hybridQueryHandler;
-  private ObjectiveManager $objectiveManager;
   private ComplexQueryHandler $complexQueryHandler;
   private QueryAnalyzer $queryAnalyzer;
   private ErrorHandlerComponent $errorHandler;
@@ -156,7 +153,6 @@ class OrchestratorAgent implements AgentInterface
     // Core initialization
     $this->userId = $userId;
     $this->entityId = $entityId;
-    $this->db = Registry::get('Db');
     $this->languageId = is_null($languageId) ? Registry::get('Language')->getId() : $languageId;
     $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
 
@@ -300,9 +296,6 @@ class OrchestratorAgent implements AgentInterface
     // Phase 5: Performance Tracking - Initialize PerformanceTracker
     $this->performanceTracker = new PerformanceTracker($this->collector, $this->debug);
 
-    // Phase 6B: Autonomous Agent Management - Initialize ObjectiveManager
-    $this->objectiveManager = new ObjectiveManager($this->db, $this->securityLogger, $this->debug);
-
     $this->complexQueryHandler = new ComplexQueryHandler($this->debug);
 
     // Phase 4: build the ordered orchestration stage pipeline. Core registers the agnostic stages;
@@ -422,51 +415,6 @@ class OrchestratorAgent implements AgentInterface
   public function getLatencyMetrics(): array
   {
     return $this->performanceTracker->getLatencyMetrics();
-  }
-
-  // ========================================
-  // AUTONOMOUS AGENT INTEGRATION
-  // ========================================
-
-  /**
-   * Approve or reject an agent's local objective
-   *
-   * Delegates to ObjectiveManager for objective approval/rejection.
-   *
-   * @param string $objectiveId The objective ID to approve/reject
-   * @param bool $approve True to approve, false to reject
-   * @param string $reason Reason for the decision
-   * @return array Approval result
-   */
-  public function approveObjective(string $objectiveId, bool $approve, string $reason = ''): array
-  {
-    return $this->objectiveManager->approveObjective($objectiveId, $approve, $reason);
-  }
-
-  /**
-   * Resolve conflicts between agent objectives
-   *
-   * Delegates to ObjectiveManager for conflict resolution.
-   *
-   * @param array $conflictingObjectiveIds Array of conflicting objective IDs
-   * @param string $resolutionStrategy Strategy: 'cancel_lower_priority', 'merge', 'sequence', 'allow_both'
-   * @return array Resolution result
-   */
-  public function resolveObjectiveConflict(array $conflictingObjectiveIds, string $resolutionStrategy = 'cancel_lower_priority'): array
-  {
-    return $this->objectiveManager->resolveObjectiveConflict($conflictingObjectiveIds, $resolutionStrategy);
-  }
-
-  /**
-   * Get active objectives across all agents
-   *
-   * Delegates to ObjectiveManager for retrieving active objectives.
-   *
-   * @return array Array of active objectives
-   */
-  public function getActiveObjectives(): array
-  {
-    return $this->objectiveManager->getActiveObjectives();
   }
 
   /**

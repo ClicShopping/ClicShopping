@@ -1,0 +1,2 @@
+cfg_chatgpt_data_retention_objectives_days_title = Agent objective queue retention (days)
+cfg_chatgpt_data_retention_objectives_days_description = How many days of the agent objective queue to keep, with its state transitions and metrics. Its success criteria store the question the user asked, in plain text, so this window is yours to set, separately from the agent journals. Zero, the default, keeps it for ever — a purged pending objective is simply created again the next time the same condition is met

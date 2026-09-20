@@ -55,6 +55,25 @@ class FeedbackJournal
    */
   public const REFRESH_AFTER_HOURS = 24;
 
+  /**
+   * How many rows a finding carries. Enough to open, never a listing.
+   */
+  public const SAMPLES = 5;
+
+  /**
+   * Findings whose STATEMENT is a share, and which therefore say nothing under THIN_POPULATION.
+   * Set aside at render below the threshold — showing them would only be noise.
+   *
+   * ⛔ Membership is decided on what the finding SAYS, never on how its severity is computed.
+   * blind_trace is NOT here: it states counts ("2 answers carry no SQL"), true at any volume, and
+   * withholding it would hide the one thing a thin window can still prove. Only its critical/high
+   * switch reads a ratio, which the instability notice already tells the reader to discount.
+   *
+   * Nothing is withheld from the journal itself: rag_feedback_journal is kept for the trend across
+   * runs, and a stored severity that moved with the corpus size would make two runs uncomparable.
+   */
+  public const RATE_BASED = ['negative_concentration'];
+
   private string $prefix;
 
   public function __construct()
@@ -126,11 +145,12 @@ class FeedbackJournal
    * manager and the data scientist two different analyses of the same window.
    *
    * @param int $days Window in days
+   * @param bool $force Recompute even when the stored run is still current
    * @return array{generated_at:?string, period_days:int, findings:array<int, array<string, mixed>>, refreshed:bool}
    */
-  public function refresh(int $days = 30): array
+  public function refresh(int $days = 30, bool $force = false): array
   {
-    if (!$this->isStale($days)) {
+    if (!$force && !$this->isStale($days)) {
       $findings = $this->latest();
 
       return [
@@ -184,7 +204,8 @@ class FeedbackJournal
       SELECT code, severity, population, agent_used, intent_type, figures, period_days, generated_at
       FROM {$this->prefix}rag_feedback_journal
       WHERE generated_at = (SELECT MAX(generated_at) FROM {$this->prefix}rag_feedback_journal)
-      ORDER BY FIELD(severity, 'critical', 'high', 'medium', 'low'), code
+      ORDER BY code = 'thin_population' DESC,
+               FIELD(severity, 'critical', 'high', 'medium', 'low'), code
       LIMIT " . max(1, $limit)
     );
 
@@ -240,7 +261,8 @@ class FeedbackJournal
 
     return $this->finding('unjoinable_feedback', 'high', $population['total'], [
       'unjoinable' => $unjoinable,
-      'total' => $population['total']
+      'total' => $population['total'],
+      'samples' => $this->samples($days, 'AND i.client_interaction_id IS NULL')
     ]);
   }
 
@@ -274,9 +296,19 @@ class FeedbackJournal
 
     return $this->finding(
       'blind_trace',
-      $withoutSql === $population['sql_bearing'] ? 'critical' : 'high',
+      self::blindTraceSeverity($withoutSql, $population['sql_bearing']),
       $population['sql_bearing'],
-      ['without_sql' => $withoutSql, 'without_verdict' => $withoutVerdict, 'sql_bearing' => $population['sql_bearing']]
+      [
+        'without_sql' => $withoutSql,
+        'without_verdict' => $withoutVerdict,
+        'sql_bearing' => $population['sql_bearing'],
+        'samples' => $this->samples(
+          $days,
+          'AND i.intent_type IN (' . implode(',', array_fill(0, count(self::SQL_BEARING_INTENTS), '?')) . ')'
+          . ' AND (i.sql_query IS NULL OR i.validation_action IS NULL)',
+          self::SQL_BEARING_INTENTS
+        )
+      ]
     );
   }
 
@@ -312,7 +344,20 @@ class FeedbackJournal
       'negative_concentration',
       $share >= 100.0 ? 'high' : 'medium',
       $population['negative'],
-      ['negatives' => $negatives, 'reported' => $population['negative'], 'share' => $share],
+      [
+        'negatives' => $negatives,
+        'reported' => $population['negative'],
+        'share' => $share,
+        // Named, not just designated: a finding that says "one agent" without saying which
+        // cannot be acted on. Bounded to an identifier: the label is rendered as raw HTML.
+        'agent' => self::identifier($row['agent_used'] ?? null),
+        'intent' => self::identifier($row['intent_type'] ?? null),
+        'samples' => $this->samples(
+          $days,
+          "AND f.feedback_type = 'negative' AND i.agent_used <=> ? AND i.intent_type <=> ?",
+          [$row['agent_used'], $row['intent_type']]
+        )
+      ],
       ['agent_used' => $row['agent_used'], 'intent_type' => $row['intent_type']]
     );
   }
@@ -340,7 +385,12 @@ class FeedbackJournal
 
     return $this->finding('silent_comment', 'medium', $population['negative'], [
       'silent' => $silent,
-      'negatives' => $population['negative']
+      'negatives' => $population['negative'],
+      'samples' => $this->samples(
+        $days,
+        "AND f.feedback_type = 'negative'"
+        . " AND COALESCE(TRIM(JSON_UNQUOTE(JSON_EXTRACT(f.feedback_data, '$.feedback_text'))), '') = ''"
+      )
     ]);
   }
 
@@ -368,6 +418,10 @@ class FeedbackJournal
     }
 
     return $this->finding('verdict_disagreement', 'high', $population['with_verdict'], [
+      'samples' => $this->samples(
+        $days,
+        "AND f.feedback_type = 'negative' AND i.validation_action = 'pass'"
+      ),
       'disagreements' => $disagreements,
       'with_verdict' => $population['with_verdict']
     ]);
@@ -400,6 +454,77 @@ class FeedbackJournal
    * @param array $keys Cross keys, when the finding points at one agent or intent
    * @return array{code:string, severity:string, population:int, keys:array, figures:array}
    */
+  /**
+   * How grave a blind trace is. "Every one of them" separates a broken writer from a sporadic
+   * miss — but only over an adequate population: on two rows it says nothing, and used to raise
+   * a critical anyway.
+   *
+   * ⛔ The general rule this fixes: a ratio may decide a severity ONLY above THIN_POPULATION.
+   * Below it, the severity falls back to the level the bare fact deserves.
+   */
+  public static function blindTraceSeverity(int $withoutSql, int $sqlBearing): string
+  {
+    $everyOne = $sqlBearing > 0 && $withoutSql === $sqlBearing;
+
+    return ($everyOne && $sqlBearing >= self::THIN_POPULATION) ? 'critical' : 'high';
+  }
+
+  /**
+   * The figures behind the instability notice, or null once the window is wide enough.
+   *
+   * The notice is BUILT from thin_population: above THIN_POPULATION that probe returns nothing,
+   * so the notice and the dimming cannot outlive the threshold.
+   *
+   * @param array<int, array<string, mixed>> $findings
+   * @return array<string, mixed>|null
+   */
+  public static function unstableFigures(array $findings): ?array
+  {
+    foreach ($findings as $finding) {
+      if (($finding['code'] ?? null) === 'thin_population') {
+        return $finding['figures'] ?? [];
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * The rows a finding designates. A rate without the lines to open cannot be worked on.
+   *
+   * @param string $where Extra predicate, on f (feedback) and i (interaction)
+   * @param array $params Its bindings, after the window
+   * @return array<int, array{id:string, asked:string, question:string}>
+   */
+  private function samples(int $days, string $where, array $params = []): array
+  {
+    $rows = DoctrineOrm::select("
+      SELECT f.interaction_id AS id, i.question, i.date_added AS asked
+      FROM {$this->prefix}rag_feedback f
+      LEFT JOIN {$this->prefix}rag_interactions i ON i.client_interaction_id = f.interaction_id
+      WHERE f.date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
+        {$where}
+      ORDER BY f.date_added DESC
+      LIMIT " . self::SAMPLES, [$days, ...$params]);
+
+    return array_map(static fn(array $r): array => [
+      'id' => (string)$r['id'],
+      'asked' => (string)($r['asked'] ?? ''),
+      // Truncated here, escaped at render: these are the user's own words.
+      'question' => mb_substr((string)($r['question'] ?? ''), 0, 160)
+    ], $rows);
+  }
+
+  /**
+   * A column value on its way into a label that is rendered as raw HTML: keep identifiers only.
+   */
+  private static function identifier(?string $value): string
+  {
+    $clean = preg_replace('/[^A-Za-z0-9_.-]/', '', (string)$value);
+
+    return ($clean === '' || $clean === null) ? '?' : $clean;
+  }
+
   private function finding(string $code, string $severity, int $population, array $figures, array $keys = []): array
   {
     return [

@@ -23,8 +23,8 @@ use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron as Cronjob;
 /**
  * Deletes AI agent journals older than the configured window.
  *
- * Gated on CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_STATUS, which is off by default: the job
- * deletes rows, so it never runs unless an operator turned it on.
+ * Gated on CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_STATUS, on by default: the job deletes
+ * nothing until the ai_data_retention cron row is enabled.
  */
 class AiDataRetention implements HooksInterface
 {

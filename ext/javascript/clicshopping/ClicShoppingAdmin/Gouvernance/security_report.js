@@ -89,6 +89,12 @@ function loadSecurityReport() {
   const labels = window.APP_DATA?.labels?.security || {};
 
   body.innerHTML = '<div class="text-center py-4"><div class="spinner-border" role="status"></div></div>';
+  // The markup sits inside a card: a positioned ancestor makes its own stacking context and the
+  // backdrop paints over the dialog. Re-parent to body, where Bootstrap expects a modal.
+  if (modalEl.parentElement !== document.body) {
+    document.body.appendChild(modalEl);
+  }
+
   new bootstrap.Modal(modalEl).show();
 
   fetch(url)

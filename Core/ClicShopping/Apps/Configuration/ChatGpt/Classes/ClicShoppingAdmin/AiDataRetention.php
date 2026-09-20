@@ -39,6 +39,17 @@ class AiDataRetention
     'rag_feedback' => 'date_added',
   ];
 
+  /**
+   * The objective queue: its success criteria carry the user's own question, so the operator sets
+   * its window separately. A purged pending objective is re-created on the next occurrence.
+   *
+   * @var array<string, string>
+   */
+  private const OBJECTIVES = [
+    'rag_agent_objectives' => 'created_at',
+    'rag_agent_objective_metrics' => 'recorded_at',
+  ];
+
   private const JOURNALS = [
     'rag_agent_critic_evaluations' => 'evaluated_at',
     'rag_agent_actor_executions' => 'executed_at',
@@ -60,7 +71,6 @@ class AiDataRetention
     'rag_agent_reputation' => 'accumulating state — deleting it is what REPUT-1 repaired',
     'rag_agent_reputation_history' => 'feeds the reputation calculation, not a log',
     'rag_agent_reputation_evaluation_outcomes' => 'same calculation input',
-    'rag_agent_objectives' => 'a queue, not a journal — purging pending drops work if a consumer is ever turned on (GOV-AUTO2)',
     'rag_agent_actor_registry' => 'registry; its throwaway identities are REPUT-3, not retention',
     'rag_feedback_journal' => 'findings history — the trend over runs is the point, and it carries no user words',
   ];
@@ -109,6 +119,18 @@ class AiDataRetention
   }
 
   /**
+   * Window for the objective queue, chosen by the operator. Zero — the default — keeps it for ever.
+   */
+  public static function objectivesRetentionDays(): int
+  {
+    $days = defined('CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_OBJECTIVES_DAYS')
+      ? (int)CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_OBJECTIVES_DAYS
+      : 0;
+
+    return $days > 0 ? $days : 0;
+  }
+
+  /**
    * Rows that WOULD be deleted, per table. Read-only — the operator sees the cost before enabling.
    *
    * @return array<string, int>
@@ -134,6 +156,14 @@ class AiDataRetention
     if ($corpusDays > 0) {
       foreach (self::CORPUS as $table => $column) {
         $counts[$table] = $this->countExpired($table, $column, $corpusDays);
+      }
+    }
+
+    $objectiveDays = self::objectivesRetentionDays();
+
+    if ($objectiveDays > 0) {
+      foreach (self::OBJECTIVES as $table => $column) {
+        $counts[$table] = $this->countExpired($table, $column, $objectiveDays);
       }
     }
 
@@ -167,6 +197,18 @@ class AiDataRetention
     if ($corpusDays > 0) {
       foreach (self::CORPUS as $table => $column) {
         $count = $this->deleteExpired($table, $column, $corpusDays);
+
+        if ($count !== null) {
+          $deleted[$table] = $count;
+        }
+      }
+    }
+
+    $objectiveDays = self::objectivesRetentionDays();
+
+    if ($objectiveDays > 0) {
+      foreach (self::OBJECTIVES as $table => $column) {
+        $count = $this->deleteExpired($table, $column, $objectiveDays);
 
         if ($count !== null) {
           $deleted[$table] = $count;

@@ -16,8 +16,8 @@ use ClicShopping\OM\HTML;
 /**
  * Enable/disable the time-based purge of the AI agent journals.
  *
- * Off by default: the job deletes rows. Accumulating state and the measurement corpus are never
- * touched — the excluded list is declared in AiDataRetention::EXCLUDED.
+ * On by default: the job still deletes nothing until the ai_data_retention cron row is enabled.
+ * Accumulating state and the measurement corpus are never touched — see AiDataRetention::EXCLUDED.
  *
  * @package ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ASY\Params
  * @since 4.33.0

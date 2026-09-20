@@ -1,0 +1,2 @@
+cfg_chatgpt_data_retention_objectives_days_title = Conservation de la file d'objectifs des agents (jours)
+cfg_chatgpt_data_retention_objectives_days_description = Nombre de jours de la file d'objectifs des agents à conserver, avec ses transitions d'état et ses métriques. Ses critères de succès stockent en clair la question posée par l'utilisateur : cette fenêtre est donc la vôtre, distincte de celle des journaux d'agents. Zéro, la valeur par défaut, la conserve indéfiniment — un objectif en attente purgé est simplement recréé à la prochaine occurrence de la même condition

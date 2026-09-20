@@ -47,7 +47,11 @@ use ClicShopping\OM\Registry;
       ],
       'feedback' => [
         'generated' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_generated'),
-        'reportFailed' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_failed')
+        'reportFailed' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_failed'),
+        'recompute' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_recompute'),
+        'runFresh' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_run_fresh'),
+        'runStored' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_run_stored'),
+        'samples' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_samples')
       ]
     ],
     'systemReport' => $systemReport,
