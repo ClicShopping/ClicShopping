@@ -147,13 +147,13 @@ class EcommerceWebSearchFacade extends WebSearchFacade
       $productName = $product['name'];
       $competitorPrices = [];
 
-      // Extract prices from web search results
-      // Note: WebSearchFacade returns 'organic_results' not 'items'
-      $items = $webResults['organic_results'] ?? $webResults['items'] ?? [];
+      // The aggregate names its population: it is EXACTLY what the answer renders as offers.
+      // `organic_results` are never rendered as offers (PlanExecutor forces their price to null),
+      // so a price read from their snippet would weigh on the average without being showable.
+      $items = $webResults['shopping_results'] ?? [];
 
-      if (isset($webResults['shopping_results']) && is_array($webResults['shopping_results'])) {
-        // Also check shopping_results for structured product data
-        $items = array_merge($items, $webResults['shopping_results']);
+      if (!is_array($items)) {
+        $items = [];
       }
 
       foreach ($items as $item) {
@@ -189,6 +189,7 @@ class EcommerceWebSearchFacade extends WebSearchFacade
       $competitorPrices = $priceBound['kept'];
 
       if (empty($competitorPrices)) {
+        // Same shape as the nominal return: a caller reading the population must not get nothing.
         return [
           'success' => true,
           'product_name' => $productName,
@@ -202,6 +203,11 @@ class EcommerceWebSearchFacade extends WebSearchFacade
           ],
           'recommendation' => 'No competitor prices found for comparison.',
           'competitive_status' => 'unknown',
+          'total_competitors_found' => 0,
+          'price_bound' => [
+            'excluded' => $competitorPricesExcluded,
+            'bound_percent' => $priceBound['bound_percent'],
+          ],
         ];
       }
 
@@ -370,14 +376,10 @@ class EcommerceWebSearchFacade extends WebSearchFacade
         }
       }
 
-      // Fallback to SQL LIKE search
-      $product = null;
-
-      if ($this->entityHelper !== null && method_exists($this->entityHelper, 'searchProductByName')) {
-        $product = $this->entityHelper->searchProductByName($query, $languageId);
-      } else {
-        $product = $this->searchProductByName($query, $languageId);
-      }
+      // Fallback to a term-by-term catalogue search. Several candidates means the question did
+      // not name one product: return none rather than elect one of them in silence.
+      $candidates = $this->findProductCandidates($query, $languageId);
+      $product = \count($candidates) === 1 ? $candidates[0] : null;
 
       if ($product !== null) {
         $product['detection_method'] = 'sql_like';
@@ -454,80 +456,110 @@ class EcommerceWebSearchFacade extends WebSearchFacade
   }
 
   /**
-   * Search product by name using SQL LIKE
+   * Search the catalogue for every product matching the query terms.
    *
-   * Searches for products using SQL LIKE query with intelligent ranking.
-   * Cleans query by removing common words and prioritizes exact matches.
+   * The query is matched TERM BY TERM ("samsung ultra" => samsung AND ultra), never as one
+   * string: a term carrying a noise word ("Samsung products") matched nothing and the caller
+   * silently lost its comparison.
    *
    * @param string $query Search query
    * @param int|null $languageId Language ID (defaults to current language)
-   * @return array|null Product data with structure:
-   *                    - product_id: int - Product ID
-   *                    - name: string - Product name
-   *                    - price: float - Product price
-   *                    - model: string - Product model
+   * @param int $limit Maximum number of candidates returned
+   * @return array List of products (product_id, name, price, model), best match first
    */
-  private function searchProductByName(string $query, ?int $languageId = null): ?array
+  public function findProductCandidates(string $query, ?int $languageId = null, int $limit = 10): array
   {
     try {
       if ($languageId === null) {
         $languageId = $this->language !== null ? $this->language->getId() : 1;
       }
 
-      // Clean query by removing common words
-      $cleanQuery = preg_replace('/\b(stock|price|compare|competitors?|show|give|display|of|the|a|an)\b/i', '', $query);
-      $cleanQuery = trim($cleanQuery);
+      $terms = self::searchTerms($query);
 
-      if (empty($cleanQuery)) {
-        return null;
+      if ($terms === []) {
+        return [];
       }
 
-      $Qproduct = $this->db->prepare(' SELECT p.products_id as product_id,
+      $conditions = [];
+      $bindings = [];
+
+      foreach ($terms as $i => $term) {
+        $conditions[] = "(pd.products_name LIKE :term{$i} OR p.products_model LIKE :term{$i})";
+        $bindings[":term{$i}"] = '%' . $term . '%';
+      }
+
+      $joined = implode("\n                                          AND ", $conditions);
+
+      $Qproducts = $this->db->prepare(' SELECT p.products_id as product_id,
                                                pd.products_name as name,
                                                p.products_price as price,
                                                p.products_model as model
                                         FROM :table_products p
                                         INNER JOIN :table_products_description pd ON p.products_id = pd.products_id
-                                        WHERE (pd.products_name LIKE :search_term
-                                           OR p.products_model LIKE :search_term)
+                                        WHERE ' . $joined . '
                                           AND pd.language_id = :language_id
                                           AND p.products_status = 1
-                                        ORDER BY 
-                                          CASE 
+                                        ORDER BY
+                                          CASE
                                             WHEN pd.products_name = :exact_term THEN 1
                                             WHEN pd.products_name LIKE :starts_with THEN 2
                                             ELSE 3
-                                          END
-                                        LIMIT 1
+                                          END,
+                                          pd.products_name
+                                        LIMIT ' . max(1, $limit) . '
                                       ');
 
-      $searchTerm = '%' . $cleanQuery . '%';
-      $startsWith = $cleanQuery . '%';
+      foreach ($bindings as $placeholder => $value) {
+        $Qproducts->bindValue($placeholder, $value);
+      }
 
-      $Qproduct->bindValue(':search_term', $searchTerm);
-      $Qproduct->bindValue(':exact_term', $cleanQuery);
-      $Qproduct->bindValue(':starts_with', $startsWith);
-      $Qproduct->bindInt(':language_id', $languageId);
-      $Qproduct->execute();
+      $exact = implode(' ', $terms);
+      $Qproducts->bindValue(':exact_term', $exact);
+      $Qproducts->bindValue(':starts_with', $terms[0] . '%');
+      $Qproducts->bindInt(':language_id', $languageId);
+      $Qproducts->execute();
 
-      if ($Qproduct->fetch()) {
-        return [
-          'product_id' => $Qproduct->valueInt('product_id'),
-          'name' => $Qproduct->value('name'),
-          'price' => $Qproduct->valueDecimal('price'),
-          'model' => $Qproduct->value('model'),
+      $candidates = [];
+
+      while ($Qproducts->fetch()) {
+        $candidates[] = [
+          'product_id' => $Qproducts->valueInt('product_id'),
+          'name' => $Qproducts->value('name'),
+          'price' => $Qproducts->valueDecimal('price'),
+          'model' => $Qproducts->value('model'),
         ];
       }
 
-      return null;
+      return $candidates;
 
     } catch (\Exception $e) {
       $this->logger->logSecurityEvent(
-        "Error searching product by name: " . $e->getMessage(),
+        "Error searching product candidates: " . $e->getMessage(),
         'error'
       );
-      return null;
+
+      return [];
     }
+  }
+
+  /**
+   * Split a query into the terms a catalogue search should match.
+   *
+   * @param string $query Search query
+   * @return array Significant lowercase terms, in order
+   */
+  private static function searchTerms(string $query): array
+  {
+    // Words the question carries about the SEARCH, never about the product itself.
+    $stripped = preg_replace(
+      '/\b(stock|price|prices|cost|compare|comparison|competitors?|show|give|display|find|search|list|product|products|item|items|article|articles|of|the|a|an|for|with|and|to|my|our)\b/i',
+      ' ',
+      $query
+    );
+
+    $terms = preg_split('/[^\p{L}\p{N}]+/u', (string) $stripped, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+    return array_values(array_filter($terms, static fn(string $t): bool => mb_strlen($t) > 1));
   }
 
   /**
@@ -539,7 +571,7 @@ class EcommerceWebSearchFacade extends WebSearchFacade
    * @param array $result Web search result item
    * @return float|null Extracted price or null if not found
    */
-  private function extractPriceFromResult(array $result): ?float
+  public function extractPriceFromResult(array $result): ?float
   {
     $text = '';
 

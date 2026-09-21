@@ -71,27 +71,4 @@ interface WebSearchInterface
    *               - quality_score: Engine quality rating (0.0-1.0)
    */
   public function getMetadata(): array;
-
-  /**
-   * Build SerpAPI URL for parallel execution
-   *
-   * This method constructs the complete SerpAPI URL with all parameters
-   * for use in parallel HTTP execution via curl_multi_exec.
-   *
-   * @param string $query The search query string
-   * @param array $options Optional parameters (same as search() method)
-   * @return string Complete SerpAPI URL with query parameters
-   */
-  public function buildSerpApiUrl(string $query, array $options = []): string;
-
-  /**
-   * Parse SerpAPI JSON response
-   *
-   * This method parses the raw JSON response from SerpAPI and extracts
-   * engine-specific data into the unified result structure.
-   *
-   * @param string $jsonResponse Raw JSON response from SerpAPI
-   * @return array Parsed result structure (same format as search() method)
-   */
-  public function parseResponse(string $jsonResponse): array;
 }

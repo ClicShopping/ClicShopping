@@ -12,7 +12,6 @@ namespace ClicShopping\AI\CoreAI\Query;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Helper\LanguageHelper;
 use ClicShopping\AI\DomainsAI\Shared\Patterns\Common\EntityDetectionPattern;
-use ClicShopping\AI\DomainsAI\Shared\Patterns\Common\ContinuationPattern;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\OperatorPattern;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\QueryCriteriaPattern;
 
@@ -55,8 +54,8 @@ class QueryAnalyzer
   /**
    * Analyze query's relation to conversation context
    *
-   * Determines if the query is a new query, continuation, modification, or clarification
-   * based on keyword similarity, entity overlap, and continuation patterns.
+   * Determines if the query is a new query, modification or clarification, on keyword and entity
+   * overlap alone. The conversational verdict belongs to ContextRelationResolver, upstream.
    *
    * @param string $query User query
    * @param array $context Conversation context (short_term_context, long_term_context)
@@ -66,7 +65,7 @@ class QueryAnalyzer
   {
     $analysis = [
       'is_related_to_context' => false,
-      'relation_type' => 'new_query', // new_query, continuation, modification, clarification
+      'relation_type' => 'new_query', // new_query, modification, clarification
       'confidence' => 0.0,
       'related_entities' => [],
       'context_keywords' => [],
@@ -115,24 +114,19 @@ class QueryAnalyzer
     $commonKeywords = array_intersect($analysis['query_keywords'], $contextKeywords);
     $keywordSimilarity = count($contextKeywords) > 0 ? count($commonKeywords) / count($contextKeywords) : 0;
 
-    // Detect continuation/modification patterns using ContinuationPattern
-    $isContinuation = ContinuationPattern::matches($query);
-
     // Detect common entities (products, categories, etc.)
     $queryEntities = $this->extractEntitiesFromMessage($query);
     $commonEntities = array_intersect($queryEntities, $contextEntities);
     $entitySimilarity = count($contextEntities) > 0 ? count($commonEntities) / count($contextEntities) : 0;
 
     // Calculate overall confidence
-    $confidence = ($keywordSimilarity * 0.4) + ($entitySimilarity * 0.4) + ($isContinuation ? 0.2 : 0);
+    $confidence = ($keywordSimilarity * 0.4) + ($entitySimilarity * 0.4);
 
     // Determine relation type
-    if ($confidence > 0.7 || $isContinuation) {
+    if ($confidence > 0.7) {
       $analysis['is_related_to_context'] = true;
 
-      if ($isContinuation) {
-        $analysis['relation_type'] = 'continuation';
-      } elseif ($keywordSimilarity > 0.8) {
+      if ($keywordSimilarity > 0.8) {
         $analysis['relation_type'] = 'clarification';
       } else {
         $analysis['relation_type'] = 'modification';
@@ -241,7 +235,7 @@ class QueryAnalyzer
   /**
    * Enrich query with conversation context
    *
-   * Adds relevant context information to the query for continuation or modification queries.
+   * Adds relevant context information to the query for modification queries.
    * Includes entities, filters, ranges, and previous SQL queries from conversation history.
    *
    * @param string $query User query
@@ -254,8 +248,8 @@ class QueryAnalyzer
     $enrichedQuery = $query;
     $contextInfo = [];
 
-    // Only enrich for continuation or modification queries
-    if ($contextAnalysis['relation_type'] === 'continuation' || $contextAnalysis['relation_type'] === 'modification') {
+    // Only enrich a modification: the conversational verdict is the LLM resolver's, upstream.
+    if ($contextAnalysis['relation_type'] === 'modification') {
 
       // 1. Extract relevant information from short-term context (Memory)
       if (!empty($context['short_term_context'])) {

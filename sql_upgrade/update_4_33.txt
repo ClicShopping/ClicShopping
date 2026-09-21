@@ -592,9 +592,52 @@ SELECT m.id, 'Informations Redis', 2 FROM clic_administrator_menu m
 // Cronjob
 INSERT INTO clic_cron (code, description, cycle, action, status, date_added)
 SELECT 'ai_data_retention',
-       'Delete AI agent journals older than the configured retention window (OBS-1)',
+       'Delete AI agent journals older than the configured retention window. The measurement corpus has its own window (CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_CORPUS_DAYS, 0 = kept for ever)',
        'day',
        'AiDataRetention',
        0,
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM clic_cron WHERE code = 'ai_data_retention');
+
+// AIACT-2 — persist the executed SQL and the validation gate verdict on the AI interaction log.
+// Without them a signalled answer cannot be corrected: one sees what was asked and what was
+// returned, never what the system did to get there.
+ALTER TABLE clic_rag_interactions
+  ADD COLUMN IF NOT EXISTS sql_query TEXT DEFAULT NULL
+    COMMENT 'SQL actually executed for this interaction, as the response exposed it - null when the path ran no SQL'
+    AFTER intent_type,
+  ADD COLUMN IF NOT EXISTS validation_action VARCHAR(16) DEFAULT NULL
+    COMMENT 'Validation gate verdict on the delivered answer: pass, annotate or regenerate'
+    AFTER sql_query,
+  ADD COLUMN IF NOT EXISTS validation_score DECIMAL(4,3) DEFAULT NULL
+    COMMENT 'Normalised 0-1 quality score the verdict was taken on - null when no score was available'
+    AFTER validation_action,
+  ADD INDEX IF NOT EXISTS idx_validation_action (validation_action);
+
+
+// AIACT-3 — the feedback findings journal. Two surfaces consulted at different moments must read
+// the SAME analysis, so the findings are stored with their cross keys instead of recomputed.
+CREATE TABLE IF NOT EXISTS clic_rag_feedback_journal (
+  journal_id INT NOT NULL AUTO_INCREMENT COMMENT 'Primary key - unique finding identifier',
+  generated_at DATETIME NOT NULL COMMENT 'When the report that produced this finding was run - all findings of one run share it',
+  period_days INT NOT NULL COMMENT 'Window in days the finding was measured on',
+  code VARCHAR(48) NOT NULL COMMENT 'Finding code, never prose - the wording belongs to the rendering surface',
+  severity VARCHAR(16) NOT NULL COMMENT 'critical, high, medium or low',
+  population INT NOT NULL COMMENT 'What the figures were measured on - a figure without its population cannot be opposed',
+  agent_used VARCHAR(50) DEFAULT NULL COMMENT 'Cross key: agent the finding points at, null when it covers the whole window',
+  intent_type VARCHAR(50) DEFAULT NULL COMMENT 'Cross key: intent the finding points at, null when it covers the whole window',
+  figures TEXT DEFAULT NULL COMMENT 'JSON figures of the finding, read by the surface that renders it',
+  PRIMARY KEY (journal_id),
+  KEY idx_generated_at (generated_at),
+  KEY idx_code (code),
+  KEY idx_agent_used (agent_used),
+  KEY idx_intent_type (intent_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+##IP
+#english
+INSERT INTO clic_configuration VALUES(null, 'Do you want to block outgoing calls to private networks ?', 'HTTP_BLOCK_PRIVATE_NETWORK', 'false', 'Refuses every outgoing HTTP call whose destination resolves to a loopback, link-local or private address (127.0.0.0/8, 10/8, 172.16/12, 192.168/16, 169.254/16, ::1, fc00::/7). Leave it on false when this shop calls its own internal services - a self-hosted AI model, an internal ERP - otherwise they become unreachable.', 1, 25, NULL, '2026-09-21 00:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
+#french
+INSERT INTO clic_configuration VALUES(null, 'Voulez-vous bloquer les appels sortants vers les réseaux privés ?', 'HTTP_BLOCK_PRIVATE_NETWORK', 'false', 'Refuse tout appel HTTP sortant dont la destination résout vers une adresse de boucle locale, de lien local ou privée (127.0.0.0/8, 10/8, 172.16/12, 192.168/16, 169.254/16, ::1, fc00::/7). Laissez false si cette boutique appelle ses propres services internes - un modèle IA auto-hébergé, un ERP interne - sinon ils deviennent injoignables.', 1, 25, NULL, '2026-09-21 00:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
+

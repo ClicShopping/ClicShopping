@@ -354,12 +354,8 @@ class UnifiedQueryAnalyzer
       }
       $analysis['entity_type'] = ['general'];
     } else {
-      // Sanitize entity types
-      $validEntities = ['product', 'order', 'customer', 'category', 'manufacturer', 'supplier', 'general'];
-      $analysis['entity_type'] = array_values(array_intersect($analysis['entity_type'], $validEntities));
-      if (empty($analysis['entity_type'])) {
-        $analysis['entity_type'] = ['general'];
-      }
+      // Never filter on a vocabulary: this layer is domain-agnostic and the value is only reported.
+      $analysis['entity_type'] = array_values($analysis['entity_type']);
     }
 
     // Validate time_constraint

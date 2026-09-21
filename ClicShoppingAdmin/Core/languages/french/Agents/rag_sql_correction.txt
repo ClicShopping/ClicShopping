@@ -22,3 +22,36 @@ Lors de l'utilisation de fonctions d'agrégation (YEAR, QUARTER, MONTH, etc.) da
 Corrigez UNIQUEMENT la clause ORDER BY. Préservez les clauses SELECT et GROUP BY exactement telles qu'elles sont.
 
 Retournez UNIQUEMENT la requête SQL corrigée, rien d'autre.
+
+llm_prompt_reasoning_correction = Vous êtes un expert du débogage SQL. Analysez et corrigez cette erreur SQL par un raisonnement pas à pas.
+
+--- ERROR CONTEXT ---
+Error Type: {{error_type}}
+Error Message: {{error_message}}
+Failed Query:
+```sql
+{{failed_query}}
+```
+{{original_query_block}}
+{{similar_cases_block}}
+--- YOUR TASK ---
+Analysez cette erreur pas à pas :
+1. **Understand**: quelle est la cause racine de cette erreur ?
+2. **Plan**: quelles modifications sont nécessaires pour la corriger ?
+3. **Apply**: produisez la requête SQL corrigée
+4. **Validate**: vérifiez que la correction a du sens
+
+Répondez dans ce format :
+REASONING: <votre analyse pas à pas>
+CORRECTED_QUERY: <la requête SQL corrigée>
+CONFIDENCE: <0.0 à 1.0>
+SUGGESTIONS: <suggestions d'amélioration facultatives>
+
+llm_prompt_reasoning_original_query = Original User Question: {{original_query}}
+
+llm_prompt_reasoning_similar_cases_header = --- SIMILAR CASES FROM HISTORY ---
+
+llm_prompt_reasoning_similar_case = Case {{index}}:
+- Original Error: {{original_error}}
+- Correction Applied: {{correction_method}}
+- Similarity: {{similarity}}%

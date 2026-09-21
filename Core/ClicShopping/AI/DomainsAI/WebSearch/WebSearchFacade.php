@@ -480,10 +480,11 @@ class WebSearchFacade
     }
 
     // Extract a small, enhancer-friendly context from the routing decision.
-    $intent = [];
+    $routingArray = [];
     if (is_object($routing) && method_exists($routing, 'toArray')) {
-      $intent = $routing->toArray()['intent'] ?? [];
+      $routingArray = $routing->toArray();
     }
+    $intent = $routingArray['intent'] ?? [];
 
     $context = [
       'query'         => $query,
@@ -494,6 +495,8 @@ class WebSearchFacade
       'language'      => $intent['language']      ?? ($options['language'] ?? null),
       'language_id'   => $options['language_id']  ?? null,
       'confidence'    => $intent['confidence']    ?? null,
+      // The region the offers were searched in: an enhancer stating an amount needs its unit.
+      'location_params' => $routingArray['location_params'] ?? [],
     ];
 
     foreach ($enhancers as $enhancer) {

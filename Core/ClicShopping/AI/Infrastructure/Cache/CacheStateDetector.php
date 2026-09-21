@@ -292,24 +292,4 @@ class CacheStateDetector
     return $cacheState['state'] === 'warm';
   }
 
-  /**
-   * Get recommended timeout based on cache state
-   * 
-   * Provides timeout recommendation based on cache state.
-   * This is a helper method - actual timeout management should use AdaptiveTimeoutManager.
-   * 
-   * @param array $cacheState Cache state from detectCacheState()
-   * @return int Recommended timeout in seconds
-   */
-  public function getRecommendedTimeout(array $cacheState): int
-  {
-    // Cold cache: extended timeout (120 seconds)
-    // Warm cache: standard timeout (30 seconds)
-    
-    if ($this->isCold($cacheState)) {
-      return 120; // Extended timeout for cold cache
-    } else {
-      return 30; // Standard timeout for warm cache
-    }
-  }
 }

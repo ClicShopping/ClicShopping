@@ -1068,6 +1068,43 @@ class DoctrineOrm
   }
   
   /**
+   * Get the single-column primary key of a table
+   *
+   * Reads INFORMATION_SCHEMA only: it never consults any entity classification.
+   * A composite or missing primary key yields null, so the caller can fall back.
+   *
+   * @param string $tableName Table name
+   * @return string|null Primary key column, or null if none or composite
+   */
+  public static function getPrimaryKeyColumn(string $tableName): ?string
+  {
+    static $cache = [];
+
+    if (\array_key_exists($tableName, $cache)) {
+      return $cache[$tableName];
+    }
+
+    try {
+      $sql = "SELECT COLUMN_NAME
+              FROM INFORMATION_SCHEMA.COLUMNS
+              WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = :tableName
+              AND COLUMN_KEY = 'PRI'
+              ORDER BY ORDINAL_POSITION";
+
+      $result = self::select($sql, ['tableName' => $tableName]);
+      $cache[$tableName] = \count($result) === 1 ? $result[0]['COLUMN_NAME'] : null;
+
+      return $cache[$tableName];
+    } catch (\Exception $e) {
+      if (self::$debug) {
+        error_log("DoctrineOrm::getPrimaryKeyColumn() error: " . $e->getMessage());
+      }
+      return null;
+    }
+  }
+
+  /**
    * Execute an INSERT/UPDATE/DELETE query
    * 
    * Returns the number of affected rows.

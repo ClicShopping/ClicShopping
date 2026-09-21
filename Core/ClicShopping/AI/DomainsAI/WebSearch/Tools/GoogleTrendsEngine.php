@@ -170,16 +170,6 @@ class GoogleTrendsEngine implements WebSearchInterface
     return $params;
   }
 
-  public function buildSerpApiUrl(string $query, array $options = []): string
-  {
-    return $this->client->buildUrl(self::SERPAPI_ENGINE, $query, $this->buildSearchParams($options));
-  }
-
-  public function parseResponse(string $jsonResponse): array
-  {
-    return $this->client->parseResponse($jsonResponse) ?: $this->buildErrorResponse('JSON parse error', '', 0);
-  }
-
   public function getName(): string
   {
     return self::ENGINE_NAME;

@@ -26,9 +26,11 @@ class CloneAttributes extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $CLICSHOPPING_Hooks->call('CloneAttributes', 'PreAction');
 
-    $multi_clone_products_id_to = HTML::sanitize($_POST['clone_products_id_to']);
+    // Le gabarit poste clone_products_id_to[] : HTML::sanitize rend '' sur un tableau, et le
+    // is_array() ci-dessous ne passait jamais. Un identifiant de produit est un entier.
+    $multi_clone_products_id_to = array_values(array_filter(array_map('intval', (array)($_POST['clone_products_id_to'] ?? []))));
 
-    if (\is_array($multi_clone_products_id_to)) {
+    if ($multi_clone_products_id_to !== []) {
       for ($i = 0, $iMax = \count($multi_clone_products_id_to); $i < $iMax; $i++) {
         $clone_product_id_from = HTML::sanitize($_POST['clone_products_id_from']);
         $clone_product_id_to = $multi_clone_products_id_to[$i];

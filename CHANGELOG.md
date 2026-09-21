@@ -22,7 +22,8 @@ version4.33
   - best solidity chat response
   - Add AI ACT European Law, ClicShopping conformity (almost not perfect)
   - graph & granularité implemented
-  
+  - Governance & AI-Act implemented (not a complete observability system) : modèle ADG basis approach
+
 ---------------
 version4.32
 - Schema updated

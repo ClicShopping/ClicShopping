@@ -48,6 +48,11 @@ class EntityTableClassifier
     // Pass 1 — a table owning its id column is an entity, and seeds the vocabulary the
     // satellites resolve against. A bare 'id' identifies nothing, so it never qualifies.
     foreach ($derived as $table => $name) {
+      // An AI-layer store is never a business entity, whatever key of its own it carries.
+      if (str_starts_with($name, 'rag_')) {
+        continue;
+      }
+
       $idColumn = $idColumnFor($name);
 
       if ($name !== '' && $idColumn !== null && $idColumn !== 'id'

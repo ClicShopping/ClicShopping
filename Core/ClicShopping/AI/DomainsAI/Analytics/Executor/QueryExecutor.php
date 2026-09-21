@@ -291,7 +291,7 @@ class QueryExecutor
     }
 
     try {
-      $entity = EntityRegistry::getInstance()->extractEntityFromRow($results[0]);
+      $entity = EntityRegistry::getInstance()->extractEntityFromRows($results);
     } catch (\Exception $e) {
       $this->securityLogger->logApplicationError(
         "Entity extraction unavailable, no entity attached to this result: " . $e->getMessage()

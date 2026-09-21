@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\DomainsAI\WebSearch\Tools;
 
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\SerpApiClient;
+use ClicShopping\AI\InterfacesAI\BatchableWebSearchInterface;
 use ClicShopping\AI\InterfacesAI\WebSearchInterface;
 
 /**
@@ -26,7 +27,7 @@ use ClicShopping\AI\InterfacesAI\WebSearchInterface;
  *
  * @package ClicShopping\AI\DomainsAI\WebSearch\Executor
  */
-class GoogleAIOverviewEngine implements WebSearchInterface
+class GoogleAIOverviewEngine implements WebSearchInterface, BatchableWebSearchInterface
 {
   private const ENGINE_NAME = 'google';
   private const DEFAULT_MAX_RESULTS = 10;
@@ -123,6 +124,47 @@ class GoogleAIOverviewEngine implements WebSearchInterface
         $startTime
       );
     }
+  }
+
+  /**
+   * Declare this engine's single call so the executor can run it alongside the others.
+   *
+   * @param string $query Search query
+   * @param array $options Options array
+   * @return array<string,array> One request, keyed by the engine name
+   */
+  public function prepareBatchRequests(string $query, array $options = []): array
+  {
+    if (!$this->validateConfig()) {
+      return [];
+    }
+
+    $request = $this->client->buildHttpRequest(self::ENGINE_NAME, $query, $this->buildSearchParams($options));
+
+    return $request === false ? [] : [self::ENGINE_NAME => $request];
+  }
+
+  /**
+   * Build the usual result structure from the response to the declared call.
+   *
+   * @param array<string,string|false> $responses Raw body keyed as prepareBatchRequests()
+   * @param string $query Search query
+   * @param array $options Unused, the parsing needs no option
+   * @return array Same structure search() returns
+   */
+  public function buildResultFromBatch(array $responses, string $query, array $options = []): array
+  {
+    $startTime = microtime(true);
+    $data = $this->client->decodeResponse(self::ENGINE_NAME, $responses[self::ENGINE_NAME] ?? false);
+
+    if ($data === false) {
+      return $this->buildErrorResponse($this->client->lastError(), $query, $startTime);
+    }
+
+    $result = $this->buildResultFromData($data);
+    $result['metadata']['engine'] = self::ENGINE_NAME;
+
+    return $result;
   }
 
   /**
@@ -236,46 +278,14 @@ class GoogleAIOverviewEngine implements WebSearchInterface
   }
 
   /**
-   * Build SerpAPI URL for parallel execution
-   *
-   * @param string $query The search query string
-   * @param array $options Optional parameters
-   * @return string Complete SerpAPI URL with query parameters
-   */
-  public function buildSerpApiUrl(string $query, array $options = []): string
-  {
-    $params = $this->buildSearchParams($options);
-    return $this->client->buildUrl(self::ENGINE_NAME, $query, $params);
-  }
-
-  /**
-   * Parse SerpAPI JSON response
-   *
-   * @param string $jsonResponse Raw JSON response from SerpAPI
-   * @return array Parsed result structure
-   */
-  public function parseResponse(string $jsonResponse): array
-  {
-    $data = $this->client->parseResponse($jsonResponse);
-
-    if ($data === false) {
-      return $this->buildErrorResponse(
-        'Failed to parse SerpAPI response',
-        '',
-        0
-      );
-    }
-
-    return $this->buildResultFromData($data);
-  }
-
-  /**
    * Build unified result structure from SerpAPI data
+   *
+   * Public because it is the extraction seam the tests feed with a recorded response.
    *
    * @param array $data Decoded SerpAPI response
    * @return array Unified result structure
    */
-  private function buildResultFromData(array $data): array
+  public function buildResultFromData(array $data): array
   {
     // Extract ai_overview field (may be null or missing)
     $aiOverview = $data['ai_overview'] ?? null;

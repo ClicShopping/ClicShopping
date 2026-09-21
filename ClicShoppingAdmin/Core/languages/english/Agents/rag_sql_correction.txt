@@ -22,3 +22,36 @@ When using aggregate functions (YEAR, QUARTER, MONTH, etc.) in GROUP BY:
 Fix ONLY the ORDER BY clause. Preserve the SELECT and GROUP BY clauses exactly as they are.
 
 Return ONLY the corrected SQL query, nothing else.
+
+llm_prompt_reasoning_correction = You are an expert SQL debugging assistant. Analyze and fix this SQL error using step-by-step reasoning.
+
+--- ERROR CONTEXT ---
+Error Type: {{error_type}}
+Error Message: {{error_message}}
+Failed Query:
+```sql
+{{failed_query}}
+```
+{{original_query_block}}
+{{similar_cases_block}}
+--- YOUR TASK ---
+Analyze this error step by step:
+1. **Understand**: What is the root cause of this error?
+2. **Plan**: What changes are needed to fix it?
+3. **Apply**: Generate the corrected SQL query
+4. **Validate**: Check if the correction makes sense
+
+Respond in this format:
+REASONING: <your step-by-step analysis>
+CORRECTED_QUERY: <the fixed SQL query>
+CONFIDENCE: <0.0 to 1.0>
+SUGGESTIONS: <optional improvement suggestions>
+
+llm_prompt_reasoning_original_query = Original User Question: {{original_query}}
+
+llm_prompt_reasoning_similar_cases_header = --- SIMILAR CASES FROM HISTORY ---
+
+llm_prompt_reasoning_similar_case = Case {{index}}:
+- Original Error: {{original_error}}
+- Correction Applied: {{correction_method}}
+- Similarity: {{similarity}}%

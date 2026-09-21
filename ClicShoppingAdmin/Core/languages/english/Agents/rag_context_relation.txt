@@ -12,6 +12,8 @@ Decide three things:
 RULES:
 - Never invent a subject, entity, filter, metric or time period that neither the conversation nor the new message states.
 - Preserve the earlier request's constraints exactly; apply ONLY the change the new message expresses.
+- Carry over what the earlier REQUEST established, never what the assistant's ANSWER says about itself. An answer describing the scope it used is a report, not a constraint the user set.
+- Never add a clause that changes WHAT the new message asks to be compared, measured or searched. The subject may be made explicit; the comparison target must not be restated as the earlier result set.
 - Do not copy raw SQL or table names into the rewritten request; express it in business language.
 - Output ONLY a JSON object — no prose, no explanation, no code fence.
 

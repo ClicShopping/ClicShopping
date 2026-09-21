@@ -10,7 +10,9 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Executor;
 
 use ClicShopping\AI\DomainsAI\WebSearch\Exception\ConfigurationException;
 use ClicShopping\AI\DomainsAI\WebSearch\Processor\RoutingDecision;
+use ClicShopping\AI\InterfacesAI\BatchableWebSearchInterface;
 use ClicShopping\AI\InterfacesAI\WebSearchInterface;
+use ClicShopping\OM\HTTP;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
 
 /**
@@ -22,8 +24,9 @@ use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
  *
  * Key Features:
  * - Single-mode execution: Execute one engine and return results
- * - Hybrid-mode execution: Execute multiple engines sequentially via search() calls,
- *   preserving full context (target_site, location_params) across all engines
+ * - Hybrid-mode execution: engines that declare their calls up front run in ONE round, so the
+ *   query costs the slowest engine instead of their sum; the others keep the sequential search()
+ *   path. Full context (target_site, location_params) is preserved either way.
  * - Graceful error handling: Continue if at least one engine succeeds
  * - Configuration validation: Ensure engines are properly configured
  * - Execution metrics logging: Track performance and result counts
@@ -32,6 +35,8 @@ use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
  */
 class WebSearchExecutor
 {
+  private const MAX_CONCURRENT_REQUESTS = 5;
+
   private WebSearchEngineRegistry $registry;
   private bool $debug;
 
@@ -146,15 +151,16 @@ class WebSearchExecutor
     // Prepare options with location params
     $engineOptions = $this->prepareEngineOptions($options, $routing);
 
-    // Per-engine query-type preference is declared by the provider, so Core
-    // never needs to hard-code which mode IDs prefer the canonical product query.
-    $provider = $this->registry->getProvider($mode);
-    $usesProductQuery = $provider !== null && $provider->usesProductQuery();
-    $productQuery = $routing->getProduct();
-    $engineQuery = ($usesProductQuery && $productQuery !== null) ? $productQuery : $query;
+    $engineQuery = $this->resolveEngineQuery($mode, $query, $routing->getProduct());
 
     // Execute search
     $result = $engine->search($engineQuery, $engineOptions);
+
+    // A single engine gets the same conversion as a hybrid one: grouping its offers per site
+    // is an internal shape, not something a reader knows how to render.
+    if (!empty($result['rag_results']) && empty($result['shopping_results'])) {
+      $result['shopping_results'] = $this->ragResultsAsOffers($result['rag_results']);
+    }
 
     // Add execution metadata
     $result['metadata']['mode_type'] = $mode;
@@ -174,22 +180,20 @@ class WebSearchExecutor
   }
 
   /**
-   * Execute hybrid mode using direct search() calls per engine
+   * Execute hybrid mode, one round for the engines that can declare their calls
    *
-   * Each engine's search() method is called sequentially with the full options context.
-   * This preserves all context variables (target_site, location_params, etc.) throughout
-   * the execution chain, avoiding the URL serialization/deserialization that caused
-   * variable transmission breaks with the previous parallel HTTP approach.
+   * An engine implementing {@see BatchableWebSearchInterface} declares its requests instead of
+   * running them; every declared request of every such engine is issued in a single parallel
+   * round, so the worst case is the slowest engine, not the sum of them. An engine that declares
+   * nothing — including any engine of a domain that never heard of the capability — keeps the
+   * sequential path unchanged.
    *
-   * Mode C (RagWebSearchEngine) is incompatible with single-URL parallel execution
-   * because it makes N requests (one per active site). Using search() directly handles
-   * this correctly without requiring buildSerpApiUrl() / parseResponse().
-   *
-   * @param array $modes Array of mode identifiers
+   * @param array $modes Mode identifiers
    * @param string $query Search query
    * @param array $options Options array
    * @param RoutingDecision $routing Routing decision
    * @return array Merged result structure
+   * @throws \RuntimeException If every engine failed
    */
   private function executeHybridMode(
     array $modes,
@@ -198,72 +202,41 @@ class WebSearchExecutor
     RoutingDecision $routing
   ): array {
     $startTime = microtime(true);
-    $engineResults = [];
-    $successCount = 0;
 
     // Prepare engine options ONCE — all context preserved for every engine
     $engineOptions = $this->prepareEngineOptions($options, $routing);
-
-    // For shopping/scraping engines, use only the product name (stripped of comparison language)
-    // Mode A (AI Overview) needs the full query for context
     $productQuery = $routing->getProduct();
 
+    $declared = [];
+    $sequential = [];
+
     foreach ($modes as $mode) {
-      $engineStartTime = microtime(true);
+      $engineQuery = $this->resolveEngineQuery($mode, $query, $productQuery);
 
       try {
         $engine = $this->instantiateEngine($mode);
-
-        // Per-engine query-type preference is declared by the provider
-        $provider = $this->registry->getProvider($mode);
-        $usesProductQuery = $provider !== null && $provider->usesProductQuery();
-        $engineQuery = ($usesProductQuery && $productQuery !== null) ? $productQuery : $query;
-
-        if ($this->debug) {
-          error_log(sprintf(
-            '[WebSearchExecutor] Executing engine %s via search() — query: "%s"',
-            $mode,
-            $engineQuery
-          ));
-        }
-
-        // Direct search() call — full context preserved, no URL serialization
-        $result = $engine->search($engineQuery, $engineOptions);
-
-        if ($result['success']) {
-          $result['metadata']['execution_time'] = microtime(true) - $engineStartTime;
-          $result['metadata']['mode'] = $mode;
-          $engineResults[] = $result;
-          $successCount++;
-
-          if ($this->debug) {
-            error_log(sprintf(
-              '[WebSearchExecutor] Engine %s succeeded in %.3fs — %d shopping, %d rag',
-              $mode,
-              $result['metadata']['execution_time'],
-              count($result['shopping_results'] ?? []),
-              count($result['rag_results'] ?? [])
-            ));
-          }
-        } else {
-          if ($this->debug) {
-            error_log(sprintf(
-              '[WebSearchExecutor] Engine %s returned error: %s',
-              $mode,
-              $result['metadata']['error'] ?? 'unknown'
-            ));
-          }
-        }
+        $requests = $engine instanceof BatchableWebSearchInterface
+          ? $engine->prepareBatchRequests($engineQuery, $engineOptions)
+          : [];
       } catch (\Exception $e) {
-        if ($this->debug) {
-          error_log(sprintf(
-            '[WebSearchExecutor] Engine %s failed with exception: %s',
-            $mode,
-            $e->getMessage()
-          ));
-        }
+        $this->logEngineFailure($mode, $e->getMessage());
+        continue;
       }
+
+      if ($requests === []) {
+        $sequential[$mode] = ['engine' => $engine, 'query' => $engineQuery];
+        continue;
+      }
+
+      $declared[$mode] = ['engine' => $engine, 'query' => $engineQuery, 'requests' => $requests];
     }
+
+    $engineResults = array_merge(
+      $this->runDeclaredRound($declared, $engineOptions),
+      $this->runSequentially($sequential, $engineOptions)
+    );
+
+    $successCount = count($engineResults);
 
     if ($successCount === 0) {
       throw new \RuntimeException('All engines failed in hybrid mode');
@@ -277,17 +250,187 @@ class WebSearchExecutor
     $mergedResult['metadata']['total_execution_time'] = microtime(true) - $startTime;
     $mergedResult['metadata']['successful_engines'] = $successCount;
     $mergedResult['metadata']['failed_engines'] = count($modes) - $successCount;
+    $mergedResult['metadata']['parallel_engines'] = count($declared);
 
     if ($this->debug) {
       error_log(sprintf(
-        '[WebSearchExecutor] Hybrid mode completed: %d/%d engines succeeded in %.3fs',
+        '[WebSearchExecutor] Hybrid mode completed: %d/%d engines succeeded in %.3fs (%d in one round)',
         $successCount,
         count($modes),
-        $mergedResult['metadata']['total_execution_time']
+        $mergedResult['metadata']['total_execution_time'],
+        count($declared)
       ));
     }
 
     return $mergedResult;
+  }
+
+  /**
+   * Issue every declared request of every declaring engine in ONE round, then give each engine
+   * its own responses back.
+   *
+   * The allowlist is the set of hosts the engines declared: a redirect off them is refused, as it
+   * is on the sequential path. Each engine already ran its own outbound policy check per URL.
+   *
+   * @param array<string,array{engine:BatchableWebSearchInterface,query:string,requests:array}> $declared
+   * @param array $engineOptions Options the requests were declared with
+   * @return array Successful engine results
+   */
+  private function runDeclaredRound(array $declared, array $engineOptions): array
+  {
+    if ($declared === []) {
+      return [];
+    }
+
+    $requests = [];
+
+    foreach ($declared as $mode => $entry) {
+      foreach ($entry['requests'] as $key => $request) {
+        $requests[$mode . "\0" . $key] = $request;
+      }
+    }
+
+    $hosts = [];
+
+    foreach ($requests as $request) {
+      $host = parse_url((string)$request['url'], PHP_URL_HOST);
+
+      if (\is_string($host) && $host !== '') {
+        $hosts[] = $host;
+      }
+    }
+
+    $roundStart = microtime(true);
+    $responses = HTTP::getParallelResponses($requests, array_values(array_unique($hosts)), self::MAX_CONCURRENT_REQUESTS);
+    $roundTime = microtime(true) - $roundStart;
+
+    $results = [];
+
+    foreach ($declared as $mode => $entry) {
+      $own = [];
+
+      foreach (array_keys($entry['requests']) as $key) {
+        $response = $responses[$mode . "\0" . $key] ?? null;
+        $own[$key] = ($response !== null && ($response['success'] ?? false)) ? $response['data'] : false;
+      }
+
+      try {
+        $result = $entry['engine']->buildResultFromBatch($own, $entry['query'], $engineOptions);
+      } catch (\Exception $e) {
+        $this->logEngineFailure($mode, $e->getMessage());
+        continue;
+      }
+
+      if (empty($result['success'])) {
+        $this->logEngineFailure($mode, (string)($result['metadata']['error'] ?? 'unknown'));
+        continue;
+      }
+
+      $result['metadata']['execution_time'] = $roundTime;
+      $result['metadata']['mode'] = $mode;
+      $results[] = $result;
+    }
+
+    return $results;
+  }
+
+  /**
+   * Run the engines that declared nothing, one after the other, as before.
+   *
+   * @param array<string,array{engine:WebSearchInterface,query:string}> $sequential Engine per mode
+   * @param array $engineOptions Options array
+   * @return array Successful engine results
+   */
+  private function runSequentially(array $sequential, array $engineOptions): array
+  {
+    $results = [];
+
+    foreach ($sequential as $mode => $entry) {
+      $engineStartTime = microtime(true);
+
+      try {
+        $result = $entry['engine']->search($entry['query'], $engineOptions);
+      } catch (\Exception $e) {
+        $this->logEngineFailure($mode, $e->getMessage());
+        continue;
+      }
+
+      if (empty($result['success'])) {
+        $this->logEngineFailure($mode, (string)($result['metadata']['error'] ?? 'unknown'));
+        continue;
+      }
+
+      $result['metadata']['execution_time'] = microtime(true) - $engineStartTime;
+      $result['metadata']['mode'] = $mode;
+      $results[] = $result;
+    }
+
+    return $results;
+  }
+
+  /**
+   * Which query this engine expects, as its provider declares it.
+   *
+   * @param string $mode Mode identifier
+   * @param string $query Full conversational query
+   * @param string|null $productQuery Canonical product query, when the routing extracted one
+   * @return string The query to pass to the engine
+   */
+  private function resolveEngineQuery(string $mode, string $query, ?string $productQuery): string
+  {
+    $provider = $this->registry->getProvider($mode);
+    $usesProductQuery = $provider !== null && $provider->usesProductQuery();
+
+    return ($usesProductQuery && $productQuery !== null) ? $productQuery : $query;
+  }
+
+  /**
+   * @param string $mode Mode that produced no usable result
+   * @param string $reason Why
+   */
+  private function logEngineFailure(string $mode, string $reason): void
+  {
+    if ($this->debug) {
+      error_log(sprintf('[WebSearchExecutor] Engine %s produced no result: %s', $mode, $reason));
+    }
+  }
+
+  /**
+   * Turn per-site RAG results into the offer rows every reader expects.
+   *
+   * `rag_results` is grouped by site and NOTHING downstream reads it: the enhancer gates on
+   * `shopping_results` and the formatter renders only that key. A mode C result that keeps its
+   * offers grouped therefore renders nothing at all — the merchant's own configured competitors
+   * answered and the user saw an empty response.
+   *
+   * @param array $ragResults Site groups, each with 'site', 'site_name', 'results'
+   * @param int $offset Offers already collected, so a missing position stays sequential
+   * @return array Offer rows in shopping_results format
+   */
+  private function ragResultsAsOffers(array $ragResults, int $offset = 0): array
+  {
+    $offers = [];
+
+    foreach ($ragResults as $siteResult) {
+      foreach (($siteResult['results'] ?? []) as $ragItem) {
+        $offers[] = [
+          'position' => $ragItem['position'] ?? $offset + count($offers) + 1,
+          'title' => $ragItem['title'] ?? '',
+          'link' => $ragItem['link'] ?? '',
+          'product_link' => $ragItem['link'] ?? '',
+          'source' => $ragItem['source'] ?? $siteResult['site'],
+          'price' => $ragItem['price'] ?? null,
+          'extracted_price' => $ragItem['extracted_price'] ?? null,
+          'rating' => $ragItem['rating'] ?? null,
+          'reviews' => $ragItem['reviews'] ?? null,
+          'thumbnail' => $ragItem['thumbnail'] ?? null,
+          'snippet' => $ragItem['snippet'] ?? '',
+          'data_source' => $ragItem['data_source'] ?? 'rag_websearch',
+        ];
+      }
+    }
+
+    return $offers;
   }
 
   /**
@@ -344,59 +487,17 @@ class WebSearchExecutor
 
       // **NEW: Merge rag_results (Mode C - registered competitor sites)**
       if (!empty($result['rag_results'])) {
-        // **DEBUG: Log rag_results detection**
         if ($this->debug) {
           error_log(sprintf(
             '[WebSearchExecutor::mergeEngineResults] Found rag_results with %d sites',
             count($result['rag_results'])
           ));
         }
-        
-        // rag_results is an array of site results, each with 'site', 'site_name', 'results'
-        // We need to flatten the results from all sites into shopping_results format
-        foreach ($result['rag_results'] as $siteResult) {
-          if (!empty($siteResult['results'])) {
-            // **DEBUG: Log site results**
-            if ($this->debug) {
-              error_log(sprintf(
-                '[WebSearchExecutor::mergeEngineResults] Processing site %s with %d results',
-                $siteResult['site'] ?? 'unknown',
-                count($siteResult['results'])
-              ));
-            }
-            
-            // Convert RAG results to shopping_results format for display
-            foreach ($siteResult['results'] as $ragItem) {
-              // **DEBUG: Log what we're converting**
-              if ($this->debug) {
-                error_log(sprintf(
-                  '[WebSearchExecutor] Converting RAG item: title=%s, price=%s, extracted_price=%s, thumbnail=%s, rating=%s',
-                  $ragItem['title'] ?? 'NULL',
-                  $ragItem['price'] ?? 'NULL',
-                  $ragItem['extracted_price'] ?? 'NULL',
-                  $ragItem['thumbnail'] ?? 'NULL',
-                  $ragItem['rating'] ?? 'NULL'
-                ));
-              }
-              
-              $merged['shopping_results'][] = [
-                'position' => $ragItem['position'] ?? count($merged['shopping_results']) + 1,
-                'title' => $ragItem['title'] ?? '',
-                'link' => $ragItem['link'] ?? '',
-                'product_link' => $ragItem['link'] ?? '',
-                'source' => $ragItem['source'] ?? $siteResult['site'],
-                'price' => $ragItem['price'] ?? null,
-                'extracted_price' => $ragItem['extracted_price'] ?? null,
-                'rating' => $ragItem['rating'] ?? null,
-                'reviews' => $ragItem['reviews'] ?? null,
-                'thumbnail' => $ragItem['thumbnail'] ?? null,
-                'snippet' => $ragItem['snippet'] ?? '',
-                'data_source' => $ragItem['data_source'] ?? 'rag_websearch',
-              ];
-            }
-          }
+
+        foreach ($this->ragResultsAsOffers($result['rag_results'], count($merged['shopping_results'])) as $offer) {
+          $merged['shopping_results'][] = $offer;
         }
-        
+
         // Also keep original rag_results for reference
         $merged['rag_results'] = array_merge(
           $merged['rag_results'],

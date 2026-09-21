@@ -173,14 +173,31 @@ class HTTP
       return false;
     }
 
-    // Check if the URL is allowed
-    $host = parse_url($data['url'], PHP_URL_HOST);
-    if (\is_array($allowed_hosts) && !in_array($host, $allowed_hosts, true)) {
+    // Only the web schemes: file:// and friends are not what this method is for.
+    if (!in_array(strtolower((string)parse_url($data['url'], PHP_URL_SCHEME)), ['http', 'https'], true)) {
+      trigger_error('URL scheme not allowed in getResponse().');
+      return false;
+    }
+
+    // A caller owning its own outbound policy forces the private-network gate.
+    $allowPrivate = isset($data['allow_private_network']) ? (bool)$data['allow_private_network'] : null;
+
+    // Check if the URL is allowed — same decision as the parallel call, and as every redirect hop.
+    if (!self::hostAllowed(parse_url($data['url'], PHP_URL_HOST), $allowed_hosts, $allowPrivate)) {
       trigger_error('URL host not allowed in getResponse().');
       return false;
     }
 
-    $options = [];
+    $options = [
+      // A redirect is a second request: the allowlist decides again, or it decides nothing.
+      'allow_redirects' => [
+        'on_redirect' => static function ($request, $response, $uri) use ($allowed_hosts, $allowPrivate): void {
+          if (!self::hostAllowed($uri->getHost(), $allowed_hosts, $allowPrivate)) {
+            throw new \RuntimeException('Redirect to a host that is not allowed: ' . $uri->getHost());
+          }
+        },
+      ],
+    ];
 
     if (!empty($data['header'])) {
       foreach ($data['header'] as $h) {
@@ -433,6 +450,98 @@ class HTTP
   }
 
   /**
+   * Is this host one the caller allowed, and may we reach it at all?
+   *
+   * Two decisions, two owners: the allowlist belongs to the developer (which hosts this feature
+   * calls), the private-network gate to the operator (HTTP_BLOCK_PRIVATE_NETWORK).
+   *
+   * @param string|null $host Host part of the URL
+   * @param array|null $allowed_hosts Allowed hostnames, or null for no restriction
+   * @param bool|null $allow_private true/false forces the gate, null follows the configuration.
+   *                                 A caller that owns its own outbound policy forces it.
+   * @return bool
+   */
+  private static function hostAllowed(?string $host, array|null $allowed_hosts, ?bool $allow_private = null): bool
+  {
+    $host = self::normaliseHost($host);
+
+    if (\is_array($allowed_hosts)) {
+      if ($host === '') {
+        return false;
+      }
+
+      $allowed = array_map(static fn(string $h): string => self::normaliseHost($h), $allowed_hosts);
+
+      if (!in_array($host, $allowed, true)) {
+        return false;
+      }
+    }
+
+    return self::privateNetworkAllowed($host, $allow_private);
+  }
+
+  /**
+   * Lowercase, no trailing dot, no IPv6 brackets — an allowlist compares graphies.
+   *
+   * @param string|null $host Raw host, as parse_url() returns it
+   * @return string
+   */
+  private static function normaliseHost(?string $host): string
+  {
+    return trim(rtrim(strtolower((string)$host), '.'), '[]');
+  }
+
+  /**
+   * May we reach this host when it sits on a private network?
+   *
+   * The operator decides through HTTP_BLOCK_PRIVATE_NETWORK; a caller that owns its own outbound
+   * policy — the AI layer and its sovereign mode — forces the answer instead of inheriting it.
+   * A name resolving to several addresses is refused as soon as ONE of them is private.
+   *
+   * @param string $host Normalised host
+   * @param bool|null $allow_private Forced answer, or null to follow the configuration
+   * @return bool
+   */
+  private static function privateNetworkAllowed(string $host, ?bool $allow_private): bool
+  {
+    if ($allow_private === true) {
+      return true;
+    }
+
+    if ($allow_private === null) {
+      // Absent constant means no policy: a fresh install and install/rpc.php must keep working.
+      $blocking = \defined('HTTP_BLOCK_PRIVATE_NETWORK') && HTTP_BLOCK_PRIVATE_NETWORK == 'true';
+
+      if (!$blocking) {
+        return true;
+      }
+    }
+
+    if ($host === '') {
+      return false;
+    }
+
+    // A literal address needs no resolution.
+    if (IpAddress::execute($host, 'any')) {
+      return IpAddress::execute($host, 'public');
+    }
+
+    $addresses = gethostbynamel($host);
+
+    if ($addresses === false) {
+      return false;
+    }
+
+    foreach ($addresses as $address) {
+      if (!IpAddress::execute($address, 'public')) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
    * Executes multiple HTTP requests in parallel using Guzzle promises.
    *
    * This method is designed for scenarios where multiple independent HTTP requests
@@ -448,6 +557,9 @@ class HTTP
    *                        - 'format' (string): Optional. Expected response format (e.g., 'json').
    * @param array|null $allowed_hosts Optional. Array of allowed hostnames for security validation.
    *                                   If provided, only requests to these hosts will be executed.
+   * @param int $max_concurrent Optional. How many requests are in flight at once. Requests beyond
+   *                            that wait for the current batch, so a long list cannot open one
+   *                            socket per entry. Defaults to 5.
    * @return array An array of responses indexed by the same keys as the input $requests array.
    *               Each response contains:
    *               - 'success' (bool): Whether the request succeeded.
@@ -467,7 +579,7 @@ class HTTP
    * }
    * ```
    */
-  public static function getParallelResponses(array $requests, array|null $allowed_hosts = null): array
+  public static function getParallelResponses(array $requests, array|null $allowed_hosts = null, int $max_concurrent = 5): array
   {
     if (empty($requests)) {
       return [];
@@ -490,9 +602,22 @@ class HTTP
         continue;
       }
 
+      // Only the web schemes: file:// and friends are not what this method is for.
+      if (!in_array(strtolower((string)parse_url($data['url'], PHP_URL_SCHEME)), ['http', 'https'], true)) {
+        $results[$key] = [
+          'success' => false,
+          'data' => null,
+          'error' => 'URL scheme not allowed',
+          'status_code' => null,
+        ];
+        continue;
+      }
+
+      // A caller owning its own outbound policy forces the private-network gate.
+      $allowPrivate = isset($data['allow_private_network']) ? (bool)$data['allow_private_network'] : null;
+
       // Check if the URL is allowed
-      $host = parse_url($data['url'], PHP_URL_HOST);
-      if (\is_array($allowed_hosts) && !in_array($host, $allowed_hosts, true)) {
+      if (!self::hostAllowed(parse_url($data['url'], PHP_URL_HOST), $allowed_hosts, $allowPrivate)) {
         $results[$key] = [
           'success' => false,
           'data' => null,
@@ -520,6 +645,14 @@ class HTTP
         'timeout' => (int)$data['timeout'],
         'connect_timeout' => (int)$data['timeout'],
         'http_errors' => false, // Don't throw exceptions on HTTP errors
+        // A redirect is a second request: the allowlist decides again, or it decides nothing.
+        'allow_redirects' => [
+          'on_redirect' => static function ($request, $response, $uri) use ($allowed_hosts, $allowPrivate): void {
+            if (!self::hostAllowed($uri->getHost(), $allowed_hosts, $allowPrivate)) {
+              throw new \RuntimeException('Redirect to a host that is not allowed: ' . $uri->getHost());
+            }
+          },
+        ],
       ];
 
       // Add headers
@@ -564,11 +697,10 @@ class HTTP
       }
     }
 
-    // Execute all promises in parallel
-    if (!empty($promises)) {
-      $responses = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
+    // Execute in batches: a caller passing a long list must not open one socket per entry.
+    foreach (array_chunk($promises, max(1, $max_concurrent), true) as $batch) {
+      $responses = \GuzzleHttp\Promise\Utils::settle($batch)->wait();
 
-      // Process responses
       foreach ($responses as $key => $response) {
         if ($response['state'] === 'fulfilled') {
           try {

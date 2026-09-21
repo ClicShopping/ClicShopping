@@ -43,7 +43,9 @@
       medium: 'border-info'
     };
 
-    if (!(data.findings || []).length) {
+    // The green all-clear asserts health. It must never fire on a window that could not conclude:
+    // there, nothing was found because nothing could be, which is not the same statement.
+    if (!(data.findings || []).length && !data.unstable) {
       return `<div class="alert alert-success mb-0">${data.no_finding || ''}</div>`;
     }
 
@@ -63,8 +65,17 @@
         </div>
       </div>`).join('');
 
+    // Interpolated server-side from the thin_population figures, and absent above the threshold.
+    const notice = data.unstable
+      ? `<div class="alert alert-info small">
+           ${data.unstable.notice || ''}
+           ${data.unstable.withheld ? `<div class="mt-2">${data.unstable.withheld}</div>` : ''}
+         </div>`
+      : '';
+
     return `
       <p class="text-muted small">${labels.generated}</p>
+      ${notice}
       ${findings}
       <div class="alert alert-secondary small mb-0">${data.limits || ''}</div>`;
   }

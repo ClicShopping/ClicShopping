@@ -85,6 +85,12 @@
      *
      * @var array<string, array{currency: string, gl: string, hl: string}>
      */
+    /**
+     * Region served when neither the request nor the default is mapped.
+     * Serving FR/EUR here announced euros to a shop nobody could place.
+     */
+    public const FALLBACK_REGION = 'US';
+
     public static array $locationCurrencyMap = [
       'FR' => ['currency' => 'EUR', 'gl' => 'fr', 'hl' => 'fr'],
       'US' => ['currency' => 'USD', 'gl' => 'us', 'hl' => 'en'],
@@ -115,9 +121,13 @@
      *
      * Returns SerpAPI parameters (gl, hl, currency) for a given country code.
      *
+     * Neither the request nor the default being mapped is a LAST-RESORT fallback: it serves US/USD
+     * and says so through `is_fallback`, because a region nobody established must not be announced
+     * as if it had been.
+     *
      * @param string $countryCode Country code (e.g., "FR")
      * @param string $defaultRegion Default region if country code not found
-     * @return array Location parameters with keys: currency, gl, hl, country_code
+     * @return array Location parameters with keys: currency, gl, hl, country_code, is_fallback
      */
     public static function getLocationParams(string $countryCode, string $defaultRegion = 'FR'): array
     {
@@ -129,11 +139,12 @@
       $resolved = match (true) {
         isset(self::$locationCurrencyMap[$countryCode])   => $countryCode,
         isset(self::$locationCurrencyMap[$defaultRegion]) => $defaultRegion,
-        default                                           => 'FR'
+        default                                           => self::FALLBACK_REGION
       };
 
       $params = self::$locationCurrencyMap[$resolved];
       $params['country_code'] = $resolved;
+      $params['is_fallback'] = $resolved !== $countryCode && $resolved !== $defaultRegion;
 
       return $params;
     }

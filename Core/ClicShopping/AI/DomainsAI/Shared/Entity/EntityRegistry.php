@@ -176,14 +176,10 @@ class EntityRegistry
         "Failed to get embedding tables from EmbeddingTableDiscovery: " . $e->getMessage(),
         'warning'
       );
-      
-      // Ultimate fallback: minimal list
-      $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-      return [
-        $prefix . 'products_embedding',
-        $prefix . 'categories_embedding',
-        $prefix . 'pages_manager_embedding',
-      ];
+
+      // No list to invent: a schema we cannot read names no entity, same rule as
+      // EmbeddingTableDiscovery::discover().
+      return [];
     }
   }
 
@@ -245,8 +241,9 @@ class EntityRegistry
   /**
    * Get ID column name for a given entity type
    *
-   * Handles special cases and standard patterns
-   * 
+   * The schema decides: the id column is the table's primary key. No table name is
+   * hardcoded here, so no domain vocabulary enters the agnostic layer.
+   *
    * IMPORTANT: Entity types here do NOT include '_embedding' suffix
    * The suffix is stripped before this method is called
    * See DomainsAI/Shared/README.md (Entity/) for the naming convention
@@ -256,24 +253,14 @@ class EntityRegistry
    */
   public function getIdColumnForEntityType(string $entityType): ?string
   {
-    // Special cases where the ID column doesn't follow the standard pattern
-    // Note: entityType has already had '_embedding' suffix stripped by getIdColumnForTable()
-    $specialCases = [
-      'pages_manager' => 'pages_id',
-      'return_orders' => 'return_id',
-      'reviews_sentiment' => 'id',
-      'rag_conversation_memory' => 'id',        // Maps to rag_conversation_memory_embedding table
-      'rag_memory_retention_log' => 'id',       // System table (no embedding)
-      'rag_correction_patterns' => 'id',        // Maps to rag_correction_patterns_embedding table
-      'rag_web_cache' => 'id',
-    ];
+    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
 
-    if (isset($specialCases[$entityType])) {
-      return $specialCases[$entityType];
-    }
+    // A type whose store only exists as an embedding table declares its key there.
+    $primaryKey = DoctrineOrm::getPrimaryKeyColumn($prefix . $entityType)
+      ?? DoctrineOrm::getPrimaryKeyColumn($prefix . $entityType . '_embedding');
 
-    // Standard pattern: {entity_type}_id
-    return $entityType . '_id';
+    // Offline fallback only: the schema is unreachable or the key is composite.
+    return $primaryKey ?? $entityType . '_id';
   }
 
   /**
@@ -506,6 +493,51 @@ class EntityRegistry
     }
 
     return ['entity_id' => null, 'entity_type' => null];
+  }
+
+  /**
+   * Extract the entity a RESULT SET is about.
+   *
+   * A result carrying several distinct entities is not about one of them: electing the first row
+   * would hand a homonym to the trace, to last_entity and to the correction attribution.
+   *
+   * @param array $rows Query result rows
+   * @return array{entity_id: int|null, entity_type: string|null}
+   */
+  public function extractEntityFromRows(array $rows): array
+  {
+    $none = ['entity_id' => null, 'entity_type' => null];
+
+    if ($rows === [] || !is_array($rows[array_key_first($rows)] ?? null)) {
+      return $none;
+    }
+
+    $entity = $this->extractEntityFromRow($rows[array_key_first($rows)]);
+
+    if ($entity['entity_id'] === null) {
+      return $none;
+    }
+
+    foreach ($rows as $row) {
+      if (!is_array($row)) {
+        continue;
+      }
+
+      $other = $this->extractEntityFromRow($row);
+
+      if ($other['entity_id'] !== null && $other['entity_id'] !== $entity['entity_id']) {
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "EntityRegistry: several distinct entities in the rows, none attached (first={$entity['entity_id']}, other={$other['entity_id']})",
+            'info'
+          );
+        }
+
+        return $none;
+      }
+    }
+
+    return $entity;
   }
 
   /**

@@ -102,19 +102,17 @@ class Update implements HooksInterface
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 
     if (isset($_GET['Update'])) {
-      if (isset($_POST['move_to_category_id'])) {
-        $new_category = HTML::sanitize($_POST['move_to_category_id']);
-      } else {
-        $new_category = null;
-      }
+      // L'onglet poste move_to_category_id[] : HTML::sanitize rend '' sur un tableau, et ni le
+      // deplacement ni la liaison ne s'executaient. Un identifiant de categorie est un entier.
+      $new_category = array_values(array_filter(array_map('intval', (array)($_POST['move_to_category_id'] ?? []))));
 
       if (empty($this->productsLink) || $this->productsLink == 'move') {
-        $move_new_category = $new_category[0];
-
-        $this->moveCategory($move_new_category, $id);
+        if ($new_category !== []) {
+          $this->moveCategory($new_category[0], $id);
+        }
       } elseif ($this->productsLink != 'move') {
 //link the category
-        if (\is_array($new_category) && isset($new_category)) {
+        if ($new_category !== []) {
           foreach ($new_category as $value_id) {
             $insert_sql = [
               'products_id' => (int)$id,

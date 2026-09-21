@@ -18,6 +18,8 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\Strategies\JoinErrorS
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\Strategies\TypeMismatchStrategy;
 use ClicShopping\AI\CoreAI\Orchestrator\SubCorrectionAgent\Strategies\SemanticErrorStrategy;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\OM\Registry;
 
 /**
  * CorrectionStrategyManager Class
@@ -218,7 +220,10 @@ class CorrectionStrategyManager
 
   /**
    * Build reasoning prompt for LLM
-   * Uses English for internal processing as per domain agnosticism requirement
+   *
+   * The prompt lives in Agents/rag_sql_correction; it DECLARES the output contract
+   * (REASONING/CORRECTED_QUERY/CONFIDENCE/SUGGESTIONS) that parseReasoningResponse() reparses —
+   * those four markers are never translated, moved or reordered.
    * 
    * @param array $errorContext Error context
    * @param array $errorAnalysis Error analysis
@@ -230,49 +235,39 @@ class CorrectionStrategyManager
     array $errorAnalysis,
     array $similarCases
   ): string {
-    $parts = [];
+    DomainConfig::loadAgnosticLanguageFile('rag_sql_correction');
+    $language = Registry::get('Language');
 
-    $parts[] = "You are an expert SQL debugging assistant. Analyze and fix this SQL error using step-by-step reasoning.";
-    $parts[] = "";
-    $parts[] = "## Error Context";
-    $parts[] = "Error Type: " . $errorAnalysis['type'];
-    $parts[] = "Error Message: " . $errorContext['error_message'];
-    $parts[] = "Failed Query:";
-    $parts[] = "```sql";
-    $parts[] = $errorContext['failed_query'];
-    $parts[] = "```";
+    $originalQuery = '';
 
     if (!empty($errorContext['original_query'])) {
-      $parts[] = "";
-      $parts[] = "Original User Question: " . $errorContext['original_query'];
+      $originalQuery = $language->getDef('llm_prompt_reasoning_original_query', [
+        'original_query' => $errorContext['original_query']
+      ]);
     }
 
-    if (!empty($similarCases)) {
-      $parts[] = "";
-      $parts[] = "## Similar Cases from History";
-      foreach (array_slice($similarCases, 0, 2) as $i => $case) {
-        $parts[] = "Case " . ($i + 1) . ":";
-        $parts[] = "- Original Error: " . $case['original_error'];
-        $parts[] = "- Correction Applied: " . $case['correction_method'];
-        $parts[] = "- Similarity: " . round($case['similarity_score'] * 100, 1) . "%";
-      }
+    $similar = [];
+
+    foreach (array_slice($similarCases, 0, 2) as $i => $case) {
+      $similar[] = $language->getDef('llm_prompt_reasoning_similar_case', [
+        'index' => (string)($i + 1),
+        'original_error' => $case['original_error'] ?? '',
+        'correction_method' => $case['correction_method'] ?? '',
+        'similarity' => (string)round((float)($case['similarity_score'] ?? 0) * 100, 1)
+      ]);
     }
 
-    $parts[] = "";
-    $parts[] = "## Your Task";
-    $parts[] = "Analyze this error step by step:";
-    $parts[] = "1. **Understand**: What is the root cause of this error?";
-    $parts[] = "2. **Plan**: What changes are needed to fix it?";
-    $parts[] = "3. **Apply**: Generate the corrected SQL query";
-    $parts[] = "4. **Validate**: Check if the correction makes sense";
-    $parts[] = "";
-    $parts[] = "Respond in this format:";
-    $parts[] = "REASONING: <your step-by-step analysis>";
-    $parts[] = "CORRECTED_QUERY: <the fixed SQL query>";
-    $parts[] = "CONFIDENCE: <0.0 to 1.0>";
-    $parts[] = "SUGGESTIONS: <optional improvement suggestions>";
+    $similarBlock = $similar === []
+      ? ''
+      : $language->getDef('llm_prompt_reasoning_similar_cases_header') . "\n" . implode("\n", $similar);
 
-    return implode("\n", $parts);
+    return $language->getDef('llm_prompt_reasoning_correction', [
+      'error_type' => $errorAnalysis['type'] ?? '',
+      'error_message' => $errorContext['error_message'] ?? '',
+      'failed_query' => $errorContext['failed_query'] ?? '',
+      'original_query_block' => $originalQuery,
+      'similar_cases_block' => $similarBlock
+    ]);
   }
 
   /**

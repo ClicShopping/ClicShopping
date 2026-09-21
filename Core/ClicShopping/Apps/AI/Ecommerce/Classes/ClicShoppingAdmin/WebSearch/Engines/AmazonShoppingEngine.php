@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Engines;
 
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\SerpApiClient;
-use ClicShopping\AI\DomainsAI\WebSearch\Logger\WebSearchLogger;
+use ClicShopping\AI\InterfacesAI\BatchableWebSearchInterface;
 use ClicShopping\AI\InterfacesAI\WebSearchInterface;
 
 /**
@@ -36,12 +36,11 @@ use ClicShopping\AI\InterfacesAI\WebSearchInterface;
  * @package ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\WebSearch\Engines
  * @since 2026-05-24 (relocated from Core)
  */
-class AmazonShoppingEngine implements WebSearchInterface
+class AmazonShoppingEngine implements WebSearchInterface, BatchableWebSearchInterface
 {
     private const ENGINE_NAME = 'amazon';
 
     private SerpApiClient $client;
-    private WebSearchLogger $logger;
     private bool $debug;
 
     public function __construct()
@@ -51,7 +50,6 @@ class AmazonShoppingEngine implements WebSearchInterface
             && \CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
         $this->client = new SerpApiClient($apiKey, $this->debug);
-        $this->logger = new WebSearchLogger();
     }
 
     private function loadApiKey(): string
@@ -156,6 +154,47 @@ class AmazonShoppingEngine implements WebSearchInterface
     }
 
     /**
+     * Declare this engine's single call so the executor can run it alongside the others.
+     *
+     * @param string $query Search query
+     * @param array $options Options array
+     * @return array<string,array> One request, keyed by the engine name
+     */
+    public function prepareBatchRequests(string $query, array $options = []): array
+    {
+        if (!$this->validateConfig()) {
+            return [];
+        }
+
+        $request = $this->client->buildHttpRequest(self::ENGINE_NAME, $query, $this->buildSearchParams($options));
+
+        return $request === false ? [] : [self::ENGINE_NAME => $request];
+    }
+
+    /**
+     * Build the usual result structure from the response to the declared call.
+     *
+     * @param array<string,string|false> $responses Raw body keyed as prepareBatchRequests()
+     * @param string $query Search query
+     * @param array $options Unused, the parsing needs no option
+     * @return array Same structure search() returns
+     */
+    public function buildResultFromBatch(array $responses, string $query, array $options = []): array
+    {
+        $startTime = \microtime(true);
+        $data = $this->client->decodeResponse(self::ENGINE_NAME, $responses[self::ENGINE_NAME] ?? false);
+
+        if ($data === false) {
+            return $this->buildErrorResponse($this->client->lastError(), $query, $startTime);
+        }
+
+        $result = $this->buildResultFromData($data);
+        $result['metadata']['engine'] = self::ENGINE_NAME;
+
+        return $result;
+    }
+
+    /**
      * Amazon engine specifics:
      * - Does NOT support the `num` parameter
      * - Supports `amazon_domain` for country-specific searches
@@ -233,27 +272,10 @@ class AmazonShoppingEngine implements WebSearchInterface
         ];
     }
 
-    public function buildSerpApiUrl(string $query, array $options = []): string
-    {
-        $params = $this->buildSearchParams($options);
-        return $this->client->buildUrl(self::ENGINE_NAME, $query, $params);
-    }
-
-    public function parseResponse(string $jsonResponse): array
-    {
-        $data = $this->client->parseResponse($jsonResponse);
-
-        if ($data === false) {
-            return $this->buildErrorResponse('Failed to parse SerpAPI response', '', 0);
-        }
-
-        return $this->buildResultFromData($data);
-    }
-
     /**
      * Amazon returns results in `organic_results` (not `shopping_results`).
      */
-    private function buildResultFromData(array $data): array
+    public function buildResultFromData(array $data): array
     {
         if ($this->debug) {
             \error_log('[AmazonShoppingEngine::buildResultFromData] Response keys: '

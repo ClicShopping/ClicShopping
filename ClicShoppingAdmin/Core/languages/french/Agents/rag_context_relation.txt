@@ -12,6 +12,8 @@ Décidez trois choses :
 RULES:
 - N'inventez jamais un sujet, une entité, un filtre, une métrique ou une période que ni la conversation ni le nouveau message n'énoncent.
 - Préservez exactement les contraintes de la demande précédente ; appliquez UNIQUEMENT le changement que le nouveau message exprime.
+- Reprenez ce que la DEMANDE précédente a établi, jamais ce que la RÉPONSE de l'assistant dit d'elle-même. Une réponse qui décrit la portée qu'elle a retenue est un compte rendu, pas une contrainte posée par l'utilisateur.
+- N'ajoutez jamais de clause qui change CE QUE le nouveau message demande de comparer, de mesurer ou de rechercher. Le sujet peut être explicité ; la cible de comparaison ne doit pas être reformulée comme l'ensemble de résultats précédent.
 - Ne recopiez pas de SQL brut ni de noms de tables dans la demande réécrite ; exprimez-la en langage métier.
 - Output ONLY a JSON object — no prose, no explanation, no code fence.
 

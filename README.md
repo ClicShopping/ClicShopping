@@ -2,7 +2,7 @@
   <img src="https://www.clicshopping.org/images/logonew.png">
 </p>
 
-ClicShopping™ AI is a powerful, open-source e-commerce platform designed for B2B, B2C, and hybrid B2B-B2C businesses with autonomous agent (agentic). Built on modern, responsive design principles, it delivers excellent performance across all devices — mobile, tablet, and desktop — while keeping your data, your infrastructure, and your business logic fully under your control.
+ClicShopping™ AI is a powerful agentic platform, open-source e-commerce platform designed for B2B, B2C, and hybrid B2B-B2C businesses with autonomous agent (agentic). Built on modern, responsive design principles, it delivers excellent performance across all devices — mobile, tablet, and desktop — while keeping your data, your infrastructure, and your business logic fully under your control.
 
 ### What Makes It Different
 Unlike cloud-hosted platforms, ClicShopping™ AI is designed for businesses that require data sovereignty, GDPR compliance, and full ownership of their e-commerce stack. Deploy it on your own server, your own infrastructure, or any standard hosting environment — including shared hosting via Softaculous — without vendor lock-in.

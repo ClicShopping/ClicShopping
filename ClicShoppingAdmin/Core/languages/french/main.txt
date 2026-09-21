@@ -575,6 +575,11 @@ column_products_ordered = Quantité Vendue
 
 column_products_price = Prix
 column_price = Prix
+column_source = Marchand
+column_title = Offre
+column_old_price = Prix précédent
+column_rating = Note
+column_link = Lien
 column_total_price = Montant Total
 column_final_price = Prix Final
 

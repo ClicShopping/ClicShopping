@@ -33,9 +33,11 @@ class CopyConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $this->currentCategoryId = HTML::sanitize($_POST['current_category_id']);
     $this->copyAs = $_POST['copy_as'];
 
-    if ( isset($_POST['categories_id'])) {
-      $this->categoriesId = HTML::sanitize($_POST['categories_id']);
-    } else {
+    // Le formulaire poste categories_id[] : HTML::sanitize rend '' sur un tableau, et les deux
+    // branches ci-dessous testent is_array(). Un identifiant de categorie est un entier.
+    $this->categoriesId = array_values(array_filter(array_map('intval', (array)($_POST['categories_id'] ?? []))));
+
+    if ($this->categoriesId === []) {
       $this->messageStack->add($this->app->getDef('alert_copy_category'), 'warning');
       $this->app->redirect('Products&cPath=' . $this->currentCategoryId . '&pID=' . $this->Id);
     }
@@ -49,34 +51,24 @@ class CopyConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
    */
   private function Link(): void
   {
-    if ($this->categoriesId != $this->currentCategoryId) {
-      $new_category = $this->categoriesId;
+    foreach ($this->categoriesId as $value_id) {
+      if ($value_id == $this->currentCategoryId) {
+        continue;
+      }
 
-      if (\is_array($new_category) && isset($new_category)) {
-        foreach ($new_category as $value_id) {
+      $update_array = [
+        'products_id' => (int)$this->Id,
+        'categories_id' => $value_id
+      ];
 
-          $update_array = [
-            'products_id' => (int)$this->Id,
-            'categories_id' => (int)$value_id
-          ];
+      $Qcheck = $this->app->db->get('products_to_categories', 'categories_id', $update_array);
 
-          $Qcheck = $this->app->db->get('products_to_categories', 'categories_id', $update_array);
+      if ($Qcheck->fetch() !== false) {
+        continue;
+      }
 
-          if ($Qcheck->fetch() === false) {
-            if ($value_id != $this->currentCategoryId) {
-              $count = $this->productsAdmin->getCountProductsToCategory($this->Id, $value_id);
-
-              if ($count < 1) {
-                $sql_array = [
-                  'products_id' => $this->Id,
-                  'categories_id' => $value_id
-                ];
-
-                $this->app->db->save('products_to_categories', $sql_array);
-              }
-            }
-          }
-        }
+      if ($this->productsAdmin->getCountProductsToCategory((int)$this->Id, $value_id) < 1) {
+        $this->app->db->save('products_to_categories', $update_array);
       }
     }
   }
@@ -87,14 +79,12 @@ class CopyConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
    */
   private function productsDuplicate(): void
   {
-    $new_category = $this->categoriesId;
+    if ($this->copyAs !== 'duplicate') {
+      return;
+    }
 
-    if (\is_array($new_category) && isset($new_category)) {
-      foreach ($new_category as $value_id) {
-        if ($this->copyAs == 'duplicate') {
-          $this->productsAdmin->cloneProductsInOtherCategory($this->Id, $value_id);
-        }
-      }
+    foreach ($this->categoriesId as $value_id) {
+      $this->productsAdmin->cloneProductsInOtherCategory((int)$this->Id, $value_id);
     }
   }
 
@@ -104,13 +94,18 @@ class CopyConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
    */
   private function productsLink(): void
   {
-    if ($this->copyAs == 'link') {
-      if ($this->categoriesId != $this->currentCategoryId) {
-        $this->Link();
-      } else {
-        $this->messageStack->add($this->app->getDef('error_cannot_link_to_same_category'), 'error');
-      }
+    if ($this->copyAs !== 'link') {
+      return;
     }
+
+    // Une seule categorie choisie, et c'est celle d'origine : il n'y a rien a lier, et le dire
+    // vaut mieux qu'un ecran qui revient inchange.
+    if ($this->categoriesId === [(int)$this->currentCategoryId]) {
+      $this->messageStack->add($this->app->getDef('error_cannot_link_to_same_category'), 'error');
+      return;
+    }
+
+    $this->Link();
   }
 
   /**
@@ -120,7 +115,7 @@ class CopyConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
-    if (isset($this->Id) && isset($this->categoriesId)) {
+    if (isset($this->Id) && $this->categoriesId !== []) {
       $this->productsDuplicate();
       $this->productsLink();
 

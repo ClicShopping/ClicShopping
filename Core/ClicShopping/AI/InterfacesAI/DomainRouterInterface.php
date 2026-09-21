@@ -132,55 +132,6 @@ interface DomainRouterInterface
     ): bool;
 
     /**
-     * Get domain capabilities
-     *
-     * Returns information about what a domain can do.
-     * Used for capability-based routing and feature availability checks.
-     *
-     * Capability structure:
-     * [
-     *     'available' => bool,            // Whether domain is available
-     *     'domain_class' => string,       // Domain class name
-     *     'query_types' => array,         // Supported query types
-     *     'operations' => array,          // Supported operations
-     *     'features' => array,            // Available features
-     *     'entity_types' => array,        // Supported entity types
-     *     'limitations' => array,         // Known limitations (optional)
-     *     'dependencies' => array         // Required dependencies (optional)
-     * ]
-     *
-     * Query types by domain:
-     * - Semantic: ['factual', 'informational', 'similarity']
-     * - Analytics: ['analytical', 'statistical', 'aggregation']
-     * - Hybrid: ['complex', 'multi-faceted', 'comparative']
-     * - WebSearch: ['external', 'real-time', 'market_data']
-     *
-     * Operations by domain:
-     * - Semantic: ['search', 'retrieve', 'compare']
-     * - Analytics: ['aggregate', 'analyze', 'calculate', 'filter']
-     * - Hybrid: ['split', 'synthesize', 'coordinate']
-     * - WebSearch: ['search', 'fetch', 'compare']
-     *
-     * Features by domain:
-     * - Semantic: ['caching', 'embeddings', 'vector_search']
-     * - Analytics: ['sql_generation', 'caching', 'validation']
-     * - Hybrid: ['task_planning', 'parallel_execution', 'result_synthesis']
-     * - WebSearch: ['external_api', 'caching', 'rate_limiting']
-     *
-     * Examples:
-     * - getDomainCapabilities('semantic') → ['available' => true,
-     *   'query_types' => ['factual', 'informational'], ...]
-     * - getDomainCapabilities('analytics') → ['available' => true,
-     *   'operations' => ['aggregate', 'analyze'], ...]
-     * - getDomainCapabilities('unknown') → ['available' => false,
-     *   'error' => 'Domain not found']
-     *
-     * @param string $intentType Intent type to get capabilities for
-     * @return array Domain capabilities information
-     */
-    public function getDomainCapabilities(string $intentType): array;
-
-    /**
      * Get domain metrics
      *
      * Returns performance and usage metrics for a domain.

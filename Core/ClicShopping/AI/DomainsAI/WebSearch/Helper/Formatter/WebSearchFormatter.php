@@ -85,6 +85,10 @@ class WebSearchFormatter extends AbstractFormatter
       }
     }
 
+    if (!isset($results['comparison_table']) && !empty($results['shopping_results'])) {
+      $results['comparison_table'] = $this->buildComparisonTable($results['shopping_results']);
+    }
+
     $output = "<div class='web-search-results'>";
 
     $this->renderPrimaryResultSections($results, $output);
@@ -387,6 +391,64 @@ class WebSearchFormatter extends AbstractFormatter
     $output .= "</div>";
 
     return $output;
+  }
+
+  /**
+   * Derive the comparison table from the shopping offers: one row per competitor.
+   *
+   * Agnostic — the keys come from the engine's own result rows, no merchant is named here.
+   *
+   * @param array $shoppingResults Offers as returned by the search engine
+   * @return array Rows ready for generateTable(), empty when no offer carries a price
+   */
+  private function buildComparisonTable(array $shoppingResults): array
+  {
+    $rows = [];
+
+    foreach ($shoppingResults as $offer) {
+      if (!is_array($offer)) {
+        continue;
+      }
+
+      $price = (string)($offer['price'] ?? '');
+      $title = (string)($offer['title'] ?? '');
+
+      if ($price === '' && $title === '') {
+        continue;
+      }
+
+      $row = [
+        'source' => (string)($offer['source'] ?? ''),
+        'title' => $title,
+        'price' => $price,
+      ];
+
+      if (isset($offer['old_price']) && (string)$offer['old_price'] !== '') {
+        $row['old_price'] = (string)$offer['old_price'];
+      }
+
+      if (isset($offer['rating']) && $offer['rating'] !== '') {
+        $row['rating'] = (string)$offer['rating'];
+      }
+
+      $link = '';
+
+      foreach (['link', 'product_link'] as $key) {
+        if (!empty($offer[$key]) && is_string($offer[$key])) {
+          $link = $offer[$key];
+          break;
+        }
+      }
+
+      if ($link !== '') {
+        $row['link'] = $link;
+      }
+
+      $rows[] = $row;
+    }
+
+    // Une seule offre n'est pas une comparaison.
+    return count($rows) > 1 ? $rows : [];
   }
 
   /**

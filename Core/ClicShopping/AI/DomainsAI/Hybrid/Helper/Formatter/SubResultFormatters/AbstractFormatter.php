@@ -83,10 +83,37 @@ abstract class AbstractFormatter
     $tableParts = $this->buildTableOpenTag($cssClass);
     $output = $tableParts['toolbar'] . $tableParts['table'];
 
-    $firstRow = !empty($data) ? array_values($data)[0] : null;
-    if (is_array($firstRow)) {
-      $output .= $this->generateTableHeaders($firstRow);
-      $output .= $this->generateTableRows($data);
+    // Les colonnes sont l'UNION des cles, et chaque ligne est alignee dessus : une ligne plus courte
+    // que l'en-tete decale ses cellules, et bootstrap-table lit alors une colonne qui n'existe pas.
+    $columns = [];
+
+    foreach ($data as $row) {
+      if (is_array($row)) {
+        foreach (array_keys($row) as $key) {
+          $columns[$key] = '';
+        }
+      }
+    }
+
+    if ($columns !== []) {
+      $aligned = [];
+
+      foreach ($data as $row) {
+        if (!is_array($row)) {
+          continue;
+        }
+
+        $line = [];
+
+        foreach ($columns as $key => $empty) {
+          $line[$key] = $row[$key] ?? '';  // TEMOIN
+        }
+
+        $aligned[] = $line;
+      }
+
+      $output .= $this->generateTableHeaders($columns);
+      $output .= $this->generateTableRows($aligned);
     }
 
     $output .= "</table>";
