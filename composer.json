@@ -17,7 +17,7 @@
         "php-http/discovery": "^1.20",
         "stymiee/email-validator": "^2.1",
         "amnuts/opcache-gui": "^3.6",
-        "doctrine/orm": "^3.6",
+        "doctrine/orm": "^3.7",
         "symfony/cache": "^8.0",
         "symfony/http-client": "^8.0",
         "mattketmo/email-checker": "^3.0",
