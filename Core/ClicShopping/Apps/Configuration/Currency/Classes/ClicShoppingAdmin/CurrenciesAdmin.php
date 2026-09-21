@@ -121,11 +121,11 @@ class CurrenciesAdmin extends \ClicShopping\Apps\Configuration\Currency\Classes\
     $currencies = [];
 
     foreach ($this->getAll() as $c) {
-      $currencies[$c['id']] = null;
+      $currencies[(string)$c['id']] = null;
     }
 
     // This is a constant
-    $currencies[$sourceCurrency] = 1;
+    $currencies[$sourceCurrency] = 1.0;
 
     $XML = new SimpleXMLElement($XML);
 
@@ -137,13 +137,7 @@ class CurrenciesAdmin extends \ClicShopping\Apps\Configuration\Currency\Classes\
     }
 
     if ($defaultCurrency !== $sourceCurrency) {
-      // Conversion is required
-      $convertedCurrencies = [];
-      foreach (array_keys($currencies) as $code) {
-        $convertedCurrencies[$code] = $currencies[$code] / $currencies[$defaultCurrency];
-      }
-
-      $currencies = $convertedCurrencies;
+      $currencies = self::convertRates($currencies, $defaultCurrency);
     }
 
     foreach ($currencies as $code => $value) {
@@ -155,5 +149,33 @@ class CurrenciesAdmin extends \ClicShopping\Apps\Configuration\Currency\Classes\
         }
       }
     }
+  }
+
+  /**
+   * Rebases quoted rates on the default currency.
+   *
+   * A currency the source does not quote stays null: dividing it would write 0 and price its
+   * products at zero. Public because it is the extraction seam the test feeds.
+   *
+   * @param array<string,float|null> $rates Quoted rates, null for a currency the source ignores
+   * @param string $defaultCurrency Currency the rates must be expressed in
+   * @return array<string,float|null> Rebased rates, still null where there was no quote
+   * @throws Exception When the default currency itself carries no quote
+   */
+  public static function convertRates(array $rates, string $defaultCurrency): array
+  {
+    $base = $rates[$defaultCurrency] ?? null;
+
+    if (empty($base)) {
+      throw new Exception('The default currency ' . $defaultCurrency . ' carries no quote: no rate can be expressed in it');
+    }
+
+    $converted = [];
+
+    foreach ($rates as $code => $value) {
+      $converted[$code] = is_null($value) ? null : $value / $base;
+    }
+
+    return $converted;
   }
 }

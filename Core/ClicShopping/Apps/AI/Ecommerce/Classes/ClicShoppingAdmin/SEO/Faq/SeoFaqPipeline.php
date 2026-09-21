@@ -275,7 +275,9 @@ class SeoFaqPipeline
     $factChecker = new SeoFaqFactChecker($langCode, $this->debug);
 
     $lastGrounding = [];
-    for ($attempt = 0; $attempt <= EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MAX_RETRIES'); $attempt++) {
+    $maxRetries    = EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_FAQ_MAX_RETRIES');
+
+    for ($attempt = 0; $attempt <= $maxRetries; $attempt++) {
       $faqCandidate = $agent->generateFaqForVars($vars, $langCode);
       if (empty($faqCandidate)) {
         $this->logDebug('Empty FAQ from agent', ['attempt' => $attempt]);
