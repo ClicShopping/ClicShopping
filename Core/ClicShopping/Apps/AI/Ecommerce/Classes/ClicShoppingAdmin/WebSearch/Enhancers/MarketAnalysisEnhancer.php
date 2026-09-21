@@ -51,6 +51,16 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
     /** Named unit when the install declares none — stated to the reader, never silent. */
     private const CURRENCY_FALLBACK = 'USD';
 
+    /**
+     * Graphies SerpAPI actually emits, which the shop's own table does not carry: `currencies` holds
+     * whatever the merchant typed as symbol (this install: 'EUR', 'USD', 'CAD'), never '€' or '¥'.
+     * One unit has several graphies — the yen is written '¥' (U+00A5) or '￥' (U+FFE5).
+     */
+    private const WIRE_GRAPHIES = [
+        '€' => 'EUR', '£' => 'GBP', '¥' => 'JPY', '￥' => 'JPY', 'US$' => 'USD', '$' => 'USD',
+        'CHF' => 'CHF', 'Fr.' => 'CHF',
+    ];
+
     public function getEnhancerId(): string
     {
         return self::ENHANCER_ID;
@@ -91,6 +101,16 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
                 return $results;
             }
 
+            // The table above states the unit a region is EXPECTED to serve. The offers can
+            // contradict it, never elect one: '$' is USD, CAD or AUD and needs the region to be read.
+            $contradiction = self::contradictingGraphie($results['shopping_results'] ?? [], $baseCurrency);
+
+            if ($contradiction !== '') {
+                $results['market_analysis'] = $this->buildCurrencyContradictedEncart($baseCurrency, $contradiction);
+
+                return $results;
+            }
+
             $facade = new EcommerceWebSearchFacade();
 
             // 1) Locate the internal product the user is asking about.
@@ -115,10 +135,18 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
             // One reading of the price, one bounding, one population: what is rendered as an offer
             // is EXACTLY what the average counts. Two sets would put two counts on one screen.
             $unreadable = 0;
+            $installments = 0;
             $priced = [];
 
             foreach (($results['shopping_results'] ?? []) as $offer) {
                 if (!is_array($offer)) {
+                    continue;
+                }
+
+                // A monthly payment is not a cash price: '$17.50/mo' would weigh on the average
+                // as one. Set the row aside rather than widen the price pattern.
+                if (!empty($offer['installment'])) {
+                    $installments++;
                     continue;
                 }
 
@@ -162,7 +190,8 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
                 $comparison,
                 $synthesisText,
                 $unreadable,
-                $this->baseCurrencyIsDeclared() && $regionEstablished ? '' : $baseCurrency
+                $this->baseCurrencyIsDeclared() && $regionEstablished ? '' : $baseCurrency,
+                $installments
             );
 
             return $results;
@@ -351,6 +380,157 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
     }
 
     /**
+     * The graphie the offers are overwhelmingly written in, when it names ANOTHER unit than $currency.
+     *
+     * Returns '' whenever nothing is positively recognised: an unread token never refuses anything.
+     *
+     * @param array $offers Offers as received, before pricing and bounding
+     * @param string $currency Unit the aggregate would be expressed in
+     * @return string Contradicting graphie, '' when the offers corroborate or say nothing
+     */
+    private static function contradictingGraphie(array $offers, string $currency): string
+    {
+        $votes = [];
+        $priced = 0;
+        $graphies = self::currencyGraphies();
+
+        foreach ($offers as $offer) {
+            $price = is_array($offer) ? trim((string) ($offer['price'] ?? '')) : '';
+
+            if ($price === '') {
+                continue;
+            }
+
+            $priced++;
+            $graphie = self::readGraphie($price, $graphies);
+
+            if ($graphie !== '') {
+                $votes[$graphie] = ($votes[$graphie] ?? 0) + 1;
+            }
+        }
+
+        if ($priced === 0 || $votes === []) {
+            return '';
+        }
+
+        arsort($votes);
+        $dominant = (string) array_key_first($votes);
+
+        // A refusal needs a majority of the PRICED offers, not of those that happened to be read.
+        if ($votes[$dominant] * 2 <= $priced) {
+            return '';
+        }
+
+        return $graphies[$dominant] === strtoupper($currency) ? '' : $dominant;
+    }
+
+    /** First known graphie contained in the price string, '' when none is recognised. */
+    private static function readGraphie(string $price, array $graphies): string
+    {
+        foreach ($graphies as $graphie => $iso) {
+            if (str_contains($price, $graphie)) {
+                return $graphie;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Graphie => ISO, the shop's declared currencies on top of the wire ones.
+     *
+     * @return array<string, string> Longest graphie first: 'US$' must win over '$'
+     */
+    private static function currencyGraphies(): array
+    {
+        $declared = [];
+
+        if (Registry::exists('Currencies')) {
+            $currencies = Registry::get('Currencies');
+
+            foreach ($currencies->getAll() as $row) {
+                $code = strtoupper(trim((string) ($row['id'] ?? '')));
+
+                if ($code === '') {
+                    continue;
+                }
+
+                $declared[$code] = [$code, (string) $currencies->get('symbol_left', $code), (string) $currencies->get('symbol_right', $code)];
+            }
+        }
+
+        return self::buildGraphies($declared);
+    }
+
+    /**
+     * A graphie claimed by TWO units names none: it is dropped rather than made to elect one.
+     *
+     * That is what '$' is once a shop declares both USD and CAD with it — the blind spot becomes
+     * silence instead of a wrong refusal.
+     *
+     * @param array<string, array<string>> $declared ISO => graphies the shop writes it with
+     * @return array<string, string> Graphie => ISO, longest graphie first
+     */
+    private static function buildGraphies(array $declared): array
+    {
+        $claims = [];
+
+        foreach (self::WIRE_GRAPHIES as $graphie => $iso) {
+            $claims[$graphie][$iso] = true;
+        }
+
+        foreach ($declared as $iso => $graphies) {
+            foreach ($graphies as $graphie) {
+                $graphie = trim($graphie);
+
+                if ($graphie !== '') {
+                    $claims[$graphie][strtoupper((string) $iso)] = true;
+                }
+            }
+        }
+
+        $map = [];
+
+        foreach ($claims as $graphie => $isos) {
+            if (\count($isos) === 1) {
+                $map[(string) $graphie] = (string) array_key_first($isos);
+            }
+        }
+
+        uksort($map, static fn($a, $b) => mb_strlen((string) $b) <=> mb_strlen((string) $a));
+
+        return $map;
+    }
+
+    /**
+     * Refuse the synthesis when the offers came back written in another unit than the catalogue.
+     *
+     * Distinct from {@see self::buildCurrencyMismatchEncart()}: that one states where the offers were
+     * SEARCHED, this one what they were RENDERED in — two different facts, two sentences.
+     */
+    private function buildCurrencyContradictedEncart(string $baseCurrency, string $graphie): string
+    {
+        Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+
+        return $this->buildCurrencyRefusalEncart(
+            Registry::get('Language')->getDef('text_rag_market_analysis_currency_contradicted', [
+                'base' => $baseCurrency,
+                'graphie' => $graphie,
+            ])
+        );
+    }
+
+    /** Shared markup of both currency refusals: a warning, never a synthesis. */
+    private function buildCurrencyRefusalEncart(string $sentence): string
+    {
+        return "<div class='market-analysis alert alert-warning' "
+             . "style='margin-bottom:15px; background:#fff3cd; border:1px solid #ffeeba; "
+             . "color:#856404; border-radius:6px; padding:12px 15px;'><div>⚠️ "
+             . htmlspecialchars($sentence)
+             . "</div></div>";
+    }
+
+    /**
      * Refuse the synthesis when the offers and the catalogue are not in the same unit.
      *
      * The cards stay: each one is factual in its own currency. Only the AGGREGATE is withheld —
@@ -363,16 +543,13 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
     private function buildCurrencyMismatchEncart(string $baseCurrency, string $regionCurrency): string
     {
         Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
-        $language = Registry::get('Language');
 
-        return "<div class='market-analysis alert alert-warning' "
-             . "style='margin-bottom:15px; background:#fff3cd; border:1px solid #ffeeba; "
-             . "color:#856404; border-radius:6px; padding:12px 15px;'><div>⚠️ "
-             . htmlspecialchars($language->getDef('text_rag_market_analysis_currency_mismatch', [
-                 'base' => $baseCurrency,
-                 'region' => $regionCurrency,
-             ]))
-             . "</div></div>";
+        return $this->buildCurrencyRefusalEncart(
+            Registry::get('Language')->getDef('text_rag_market_analysis_currency_mismatch', [
+                'base' => $baseCurrency,
+                'region' => $regionCurrency,
+            ])
+        );
     }
 
     /**
@@ -384,8 +561,9 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
      *
      * @param int $unreadable Offers set aside because their price could not be read
      * @param string $assumedCurrency Non-empty when the unit was assumed rather than established
+     * @param int $installments Offers set aside because they quote a monthly payment
      */
-    private function buildHtmlEncart(array $internal, array $comparison, string $synthesisText, int $unreadable = 0, string $assumedCurrency = ''): string
+    private function buildHtmlEncart(array $internal, array $comparison, string $synthesisText, int $unreadable = 0, string $assumedCurrency = '', int $installments = 0): string
     {
         Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
 
@@ -422,6 +600,12 @@ final class MarketAnalysisEnhancer implements WebSearchResultEnhancerInterface
         if ($unreadable > 0) {
             $html .= "<div class='market-analysis-unreadable' style='margin-top:6px; font-size:0.85em; color:#856404; background:#fff3cd; border:1px solid #ffeeba; border-radius:4px; padding:6px 10px;'>⚠️ "
                    . htmlspecialchars($language->getDef('text_rag_price_unreadable_notice', ['unreadable' => $unreadable]))
+                   . "</div>";
+        }
+
+        if ($installments > 0) {
+            $html .= "<div class='market-analysis-installment' style='margin-top:6px; font-size:0.85em; color:#856404; background:#fff3cd; border:1px solid #ffeeba; border-radius:4px; padding:6px 10px;'>⚠️ "
+                   . htmlspecialchars($language->getDef('text_rag_price_installment_notice', ['installments' => $installments]))
                    . "</div>";
         }
 

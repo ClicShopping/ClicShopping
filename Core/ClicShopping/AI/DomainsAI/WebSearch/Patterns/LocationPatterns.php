@@ -74,32 +74,13 @@
     ];
 
     /**
-     * Location-to-currency mapping
-     *
-     * Maps country codes to currency, geolocation (gl), and language (hl) parameters
-     * for SerpAPI calls. This ensures location-aware searches with proper currency
-     * and language settings.
-     *
-     * TODO v2: Externalize to database for better maintainability and support for
-     * additional markets (Belgium, Switzerland, Morocco, etc.)
-     *
-     * @var array<string, array{currency: string, gl: string, hl: string}>
-     */
-    /**
      * Region served when neither the request nor the default is mapped.
      * Serving FR/EUR here announced euros to a shop nobody could place.
      */
     public const FALLBACK_REGION = 'US';
 
-    public static array $locationCurrencyMap = [
-      'FR' => ['currency' => 'EUR', 'gl' => 'fr', 'hl' => 'fr'],
-      'US' => ['currency' => 'USD', 'gl' => 'us', 'hl' => 'en'],
-      'GB' => ['currency' => 'GBP', 'gl' => 'uk', 'hl' => 'en'],
-      'JP' => ['currency' => 'JPY', 'gl' => 'jp', 'hl' => 'ja'],
-      'DE' => ['currency' => 'EUR', 'gl' => 'de', 'hl' => 'de'],
-      'ES' => ['currency' => 'EUR', 'gl' => 'es', 'hl' => 'es'],
-      'IT' => ['currency' => 'EUR', 'gl' => 'it', 'hl' => 'it'],
-    ];
+    /** Resolved region currencies, per request. */
+    private static array $regionCurrency = [];
 
     /**
      * Stopwords configuration for title normalization
@@ -119,34 +100,96 @@
     /**
      * Get location parameters for a country code
      *
-     * Returns SerpAPI parameters (gl, hl, currency) for a given country code.
+     * Returns SerpAPI parameters (gl, hl, currency) for a given country code. NOTHING here is a
+     * list of countries: `gl` is the ISO-2 code itself (measured: `gb` serves what `uk` served) and
+     * the currency comes from ICU, which knows every region — a shop in Belgium, Switzerland,
+     * Portugal or Morocco is served like any other.
      *
-     * Neither the request nor the default being mapped is a LAST-RESORT fallback: it serves US/USD
-     * and says so through `is_fallback`, because a region nobody established must not be announced
-     * as if it had been.
+     * `hl` is the language the ANSWER is dressed in, not the market: `gl` alone decides the offers
+     * and their currency. It is the reader's language, never inferred from the country — nothing in
+     * this platform states that Italy speaks Italian, and inventing it would be a list again.
      *
-     * @param string $countryCode Country code (e.g., "FR")
-     * @param string $defaultRegion Default region if country code not found
+     * Neither the request nor the default being a real region is a LAST-RESORT fallback: it serves
+     * {@see self::FALLBACK_REGION} and says so through `is_fallback`, because a region nobody
+     * established must not be announced as if it had been.
+     *
+     * No country is written here as a default: an unresolved region falls to
+     * {@see self::FALLBACK_REGION}, never to whichever country this file happened to name.
+     *
+     * @param string $countryCode ISO-2 country code
+     * @param string $defaultRegion Region to serve when the code is not a real region, '' for none
+     * @param string $language Interface language code the answer is served in
      * @return array Location parameters with keys: currency, gl, hl, country_code, is_fallback
      */
-    public static function getLocationParams(string $countryCode, string $defaultRegion = 'FR'): array
+    public static function getLocationParams(string $countryCode, string $defaultRegion = '', string $language = 'en'): array
     {
       $countryCode   = mb_strtoupper(trim($countryCode));
       $defaultRegion = mb_strtoupper(trim($defaultRegion));
 
       // country_code must name the entry actually served, never the raw request:
-      // an unmapped input ("VAR", "EN") falls back but used to be echoed back as a country.
+      // an unreal region ("VAR", "EN") falls back but used to be echoed back as a country.
       $resolved = match (true) {
-        isset(self::$locationCurrencyMap[$countryCode])   => $countryCode,
-        isset(self::$locationCurrencyMap[$defaultRegion]) => $defaultRegion,
-        default                                           => self::FALLBACK_REGION
+        self::isRegion($countryCode)   => $countryCode,
+        self::isRegion($defaultRegion) => $defaultRegion,
+        default                        => self::FALLBACK_REGION
       };
 
-      $params = self::$locationCurrencyMap[$resolved];
-      $params['country_code'] = $resolved;
-      $params['is_fallback'] = $resolved !== $countryCode && $resolved !== $defaultRegion;
+      $language = mb_strtolower(trim($language));
 
-      return $params;
+      return [
+        'currency' => self::regionCurrency($resolved),
+        'gl' => mb_strtolower($resolved),
+        'hl' => preg_match('/^[a-z]{2}$/', $language) === 1 ? $language : 'en',
+        'country_code' => $resolved,
+        'is_fallback' => $resolved !== $countryCode && $resolved !== $defaultRegion
+      ];
+    }
+
+    /**
+     * Is this ISO-2 code a region ICU knows, rather than a language code read as a country?
+     *
+     * Without ext-intl nothing can refute a well-formed code, so the shape alone decides: an install
+     * keeps searching its own market, and the currency simply stays unestablished.
+     */
+    private static function isRegion(string $countryCode): bool
+    {
+      if (preg_match('/^[A-Z]{2}$/', $countryCode) !== 1) {
+        return false;
+      }
+
+      if (!\extension_loaded('intl')) {
+        return true;
+      }
+
+      // Two independent ICU signals: an unknown region echoes its own code back as a name.
+      return self::regionCurrency($countryCode) !== ''
+          && \Locale::getDisplayRegion('en_' . $countryCode, 'en') !== $countryCode;
+    }
+
+    /**
+     * The currency a region trades in, from ICU — '' when it is not established.
+     *
+     * 'XXX' is the ISO code for "no currency" and 'XAD' what ICU serves for an unknown region:
+     * both mean unestablished, and an unnamed unit must stay unnamed rather than be guessed.
+     */
+    private static function regionCurrency(string $countryCode): string
+    {
+      if (isset(self::$regionCurrency[$countryCode])) {
+        return self::$regionCurrency[$countryCode];
+      }
+
+      if (!\extension_loaded('intl') || preg_match('/^[A-Z]{2}$/', $countryCode) !== 1) {
+        return self::$regionCurrency[$countryCode] = '';
+      }
+
+      try {
+        $formatter = \NumberFormatter::create('en_' . $countryCode, \NumberFormatter::CURRENCY);
+        $currency = $formatter === null ? '' : (string) $formatter->getTextAttribute(\NumberFormatter::CURRENCY_CODE);
+      } catch (\Throwable) {
+        $currency = '';
+      }
+
+      return self::$regionCurrency[$countryCode] = \in_array($currency, ['', 'XXX', 'XAD'], true) ? '' : $currency;
     }
 
     /**

@@ -336,6 +336,8 @@ class GoogleShoppingEngine implements WebSearchInterface, BatchableWebSearchInte
       'extracted_price' => $extractedPrice,
       'old_price' => $result['old_price'] ?? null,
       'extracted_old_price' => $extractedOldPrice,
+      // Kept so a caller can tell '$17.50/mo' from a cash price: the row carries an instalment plan.
+      'installment' => $result['installment'] ?? null,
       'source' => $result['source'] ?? '',
       'product_link' => $result['link'] ?? '',
       'thumbnail' => $result['thumbnail'] ?? '',

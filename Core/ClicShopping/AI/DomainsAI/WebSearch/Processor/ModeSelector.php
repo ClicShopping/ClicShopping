@@ -838,7 +838,9 @@ class ModeSelector
       return self::$storeCountryIso;
     }
 
-    $fallback = mb_strtoupper($this->language->getCode() ?? 'FR');
+    // A language code is NOT a country: it is refused downstream and falls to FALLBACK_REGION.
+    // No country is named here — removing a language must not move the shop to another market.
+    $fallback = mb_strtoupper($this->language->getCode() ?? 'en');
 
     if (!\defined('STORE_COUNTRY')) {
       return self::$storeCountryIso = $fallback;
@@ -871,7 +873,8 @@ class ModeSelector
   public function mapLocationToParams(?string $location): array
   {
     $defaultRegion = $this->storeCountryIso();
-    $defaultParams = LocationPatterns::getLocationParams($defaultRegion);
+    $interfaceLanguage = (string) ($this->language->getCode() ?? 'en');
+    $defaultParams = LocationPatterns::getLocationParams($defaultRegion, '', $interfaceLanguage);
 
     if ($location === null || trim($location) === '') {
       if ($this->debug) {
@@ -883,7 +886,7 @@ class ModeSelector
     // PureLLM: location est déjà un code ISO retourné par IntentRouter (ex: "FR", "US")
     // getLocationParams gère le fallback si le code est inconnu
     $countryCode = mb_strtoupper(trim($location));
-    $params = LocationPatterns::getLocationParams($countryCode, $defaultRegion);
+    $params = LocationPatterns::getLocationParams($countryCode, $defaultRegion, $interfaceLanguage);
 
     if ($this->debug) {
       error_log("ModeSelector::mapLocationToParams() - Country: {$countryCode}, Params: " . json_encode($params));
@@ -915,19 +918,6 @@ class ModeSelector
     return LocationPatterns::getStopwords($language);
   }
 
-  /**
-   * Get location currency map
-   *
-   * Returns the complete location-to-currency mapping.
-   * Useful for debugging and testing.
-   * Delegates to LocationPatterns.
-   *
-   * @return array Location currency map
-   */
-  public function getLocationCurrencyMap(): array
-  {
-    return LocationPatterns::$locationCurrencyMap;
-  }
 
   /**
    * Process user choice for mode selection
