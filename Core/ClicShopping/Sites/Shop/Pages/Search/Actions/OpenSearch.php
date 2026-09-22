@@ -11,7 +11,6 @@ namespace ClicShopping\Sites\Shop\Pages\Search\Actions;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use function is_null;
 
 class OpenSearch extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
@@ -21,46 +20,48 @@ class OpenSearch extends \ClicShopping\OM\Domains\PagesActionsAbstract
       exit;
     }
 
-    header('Content-Type: text/xml');
+    $cfg = static fn(string $key): string => \defined($key) ? HTML::outputProtected((string)\constant($key)) : '';
 
-    $output = '<?xml version="1.0"?>' . "\n";
-    $output .= '
 
-      <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
-      <ShortName>' . HTML::output(MODULE_HEADER_TAGS_OPENSEARCH_SITE_SHORT_NAME) . '</ShortName>
-      <Description>' . HTML::output(MODULE_HEADER_TAGS_OPENSEARCH_SITE_DESCRIPTION) . '</Description>
-      ';
-    if (!is_null(MODULE_HEADER_TAGS_OPENSEARCH_SITE_CONTACT)) {
-      $output .= '<Contact>' . HTML::output(MODULE_HEADER_TAGS_OPENSEARCH_SITE_CONTACT) . '</Contact>' . "\n";
+    $searchUrl = HTML::outputProtected(CLICSHOPPING::link(null, 'Search&Q&keywords=', false, false)) . '{searchTerms}';
+
+    $output = '<?xml version="1.0"?>' . "\n"
+      . '<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">' . "\n"
+      . '<ShortName>' . $cfg('MODULE_HEADER_TAGS_OPENSEARCH_SITE_SHORT_NAME') . '</ShortName>' . "\n"
+      . '<Description>' . $cfg('MODULE_HEADER_TAGS_OPENSEARCH_SITE_DESCRIPTION') . '</Description>' . "\n";
+
+    foreach (['SITE_CONTACT' => 'Contact', 'SITE_TAGS' => 'Tags', 'SITE_ATTRIBUTION' => 'Attribution'] as $key => $tag) {
+      $value = $cfg('MODULE_HEADER_TAGS_OPENSEARCH_' . $key);
+
+      if ($value !== '') {
+        $output .= '<' . $tag . '>' . $value . '</' . $tag . '>' . "\n";
+      }
     }
 
-    if (!is_null(MODULE_HEADER_TAGS_OPENSEARCH_SITE_TAGS)) {
-      $output .= ' <Tags>' . HTML::output(MODULE_HEADER_TAGS_OPENSEARCH_SITE_TAGS) . '</Tags>' . "\n";
+    if (\defined('MODULE_HEADER_TAGS_OPENSEARCH_SITE_ADULT_CONTENT') && MODULE_HEADER_TAGS_OPENSEARCH_SITE_ADULT_CONTENT == 'True') {
+      $output .= '<AdultContent>true</AdultContent>' . "\n";
     }
 
-    if (!is_null(MODULE_HEADER_TAGS_OPENSEARCH_SITE_ATTRIBUTION)) {
-      $output .= ' <Attribution>' . HTML::output(MODULE_HEADER_TAGS_OPENSEARCH_SITE_ATTRIBUTION) . '</Attribution>' . "\n";
+    $icon = $cfg('MODULE_HEADER_TAGS_OPENSEARCH_SITE_ICON');
+
+    if ($icon !== '') {
+      $output .= '<Image height="16" width="16" type="image/x-icon">' . $icon . '</Image>' . "\n";
     }
 
-    if (MODULE_HEADER_TAGS_OPENSEARCH_SITE_ADULT_CONTENT == 'True') {
-      $output .= ' <AdultContent>True</AdultContent>' . "\n";
+    $image = $cfg('MODULE_HEADER_TAGS_OPENSEARCH_SITE_IMAGE');
+
+    if ($image !== '') {
+      $output .= '<Image height="64" width="64" type="image/png">' . $image . '</Image>' . "\n";
     }
 
-    if (!is_null(MODULE_HEADER_TAGS_OPENSEARCH_SITE_ICON)) {
-      $output .= '<Image height="16" width="16" type="image/x-icon">' . HTML::output(MODULE_HEADER_TAGS_OPENSEARCH_SITE_ICON) . '</Image>' . "\n";
-    }
+    $output .= '<InputEncoding>UTF-8</InputEncoding>' . "\n"
+      . '<Url type="text/html" method="get" template="' . $searchUrl . '" />' . "\n"
+      . '</OpenSearchDescription>' . "\n";
 
-    if (!is_null(MODULE_HEADER_TAGS_OPENSEARCH_SITE_IMAGE)) {
-      $output .= '<Image height="64" width="64" type="image/png">' . HTML::output(MODULE_HEADER_TAGS_OPENSEARCH_SITE_IMAGE) . '</Image>' . "\n";
-    }
-
-    $output .= '
-      <InputEncoding>UTF-8</InputEncoding>
-      <Url type="text/html" method="get" template="' . CLICSHOPPING::link(null, 'Search&amp;Q&amp;keywords={searchTerms}', false, false) . '" />
-      </OpenSearchDescription>
-     ';
-
-// templates
-    return $output;
+    // The dispatcher DROPS what an action returns (PagesAbstract::runAction): a raw document is
+    // echoed and the request ends here, as the RSS action does.
+    header('Content-Type: application/opensearchdescription+xml; charset=UTF-8');
+    echo $output;
+    exit;
   }
 }

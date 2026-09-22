@@ -1,7 +1,7 @@
 products_id int not_null comment(FK to products table - product this description belongs to)
 language_id int default(1) not_null comment(FK to languages table - language of this description)
 products_name varchar(255) default('') not_null comment(Product name in this language)
-products_description text comment(Full product description in this language - HTML allowed)
+products_description text comment(Full product SHEET in this language: the DESCRIPTIVE characteristics of the product - what it is, what it does, its qualities and its uses - and its TECHNICAL specifications - its attributes, components, materials, dimensions, capacities and measured values. Written as prose - HTML allowed)
 products_url varchar(255) comment(External product URL for more information)
 products_viewed int(5) default(0) comment(Number of times product has been viewed)
 products_seo_url varchar(255) comment(SEO-friendly URL slug for this product)
@@ -19,4 +19,4 @@ products_name products_name
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment PRODUCT NAMES and marketing texts, one row per product and per language (language_id). The name a user types when naming a product is here (products_name), together with the description, the summary, the SEO tags and the shipping delay messages.
+comment PRODUCT NAMES and PRODUCT SHEET TEXTS, one row per product and per language (language_id). The name a user types when naming a product is here (products_name). products_description holds the full product sheet in prose, and it carries BOTH registers: the DESCRIPTIVE characteristics of the product - what it is, what it does, its qualities and its uses - and the TECHNICAL specifications and features stated on its sheet - its attributes, its components, its materials, its dimensions, its capacities and its measured values. Also the short summary, the SEO tags and the shipping delay messages.
