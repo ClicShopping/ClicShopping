@@ -426,9 +426,13 @@ class AgentResponseHelper
     ?string $ambiguityType = null,
     ?string $customMessage = null
   ): array {
-    // A missing period is not a vague question: the metric is clear, only its window is absent.
-    // Asking "be more specific" there tells the user nothing about WHAT to supply.
-    $definitionKey = $ambiguityType === 'time' ? 'text_query_missing_period' : 'text_query_too_ambiguous';
+    // A question whose window is absent, or whose current unit is still running, is not a vague
+    // question: the metric is clear. Asking "be more specific" tells the user nothing to supply.
+    $definitionKey = match ($ambiguityType) {
+      'time' => 'text_query_missing_period',
+      'temporal_current_unit' => 'text_query_current_unit_scope',
+      default => 'text_query_too_ambiguous',
+    };
     $message = $customMessage ?? CLICSHOPPING::getDef($definitionKey);
 
     // Fallback if the key comes back unresolved

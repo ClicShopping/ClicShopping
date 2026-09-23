@@ -8,20 +8,19 @@ version4.33
 - URL canonical improvement (front office) for SEO
 - Catalog speed optimization queries optimization
 - Order total improvement and updated in function the regulation
-- Regularion information refacted for a better country integration
+- Regulation information refactored for a better country integration
 - Improvement :Page resolution now requires the exact case of the page code, so a category slug can no longer serve another page on a case-insensitive filesystem (macOS, Windows)
 - Preditive stock improved
 - AI
   - Add distinction between Agents and Actors
   - AI review sentiment analysis improved and refactored with agentic approach
   - ChatGpt Apps refactored
-    - Gpt-4 series removed for Gpt-5 only
+    - Gpt-4 series removed for Gpt-5  & Gpt-6 only
     - New features and configuration for use Llm
   - AI response time optimization
   - Some AI refactorisation and improvement to solidify the code, response
   - best solidity chat response
-  - Add AI ACT European Law, ClicShopping conformity (almost not perfect)
-  - graph & granularité implemented
+  - graph & granularity implemented
   - Governance & AI-Act implemented (not a complete observability system) : modèle ADG basis approach
 
 ---------------

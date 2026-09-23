@@ -97,9 +97,11 @@ class InputValidator
   private static function getDangerousPatterns(): array
   {
     return [
-      '/;\s*DROP\s+/i',           // Prevent DROP statements
-      '/;\s*DELETE\s+/i',         // Prevent DELETE statements outside of proper context
-      '/[\'\"]\s*UNION\s+(ALL\s+)?SELECT/i', // Prevent UNION-based injections (quote before UNION = injection)
+      // Any statement chained after the first one, not just DROP/DELETE: what reaches here must
+      // stay the single SELECT/WITH that looksLikeSqlStatement() admitted.
+      '/;\s*(DROP|DELETE|UPDATE|INSERT|REPLACE|TRUNCATE|ALTER|CREATE|RENAME|GRANT|REVOKE|SET|CALL|LOAD)\b/i',
+      // No quote-before-UNION rule: a closing literal cannot be told apart from an injected one,
+      // and a UNION branch reads nothing the leading SELECT could not already read.
       '/INTO\s+OUTFILE/i',        // Prevent file operations
       '/INFORMATION_SCHEMA/i',    // Prevent schema exploration
       '/SLEEP\s*\(/i',            // Prevent time-based attacks

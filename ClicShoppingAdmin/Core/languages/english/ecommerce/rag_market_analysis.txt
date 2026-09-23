@@ -1,0 +1,19 @@
+llm_prompt_market_analysis = You are an e-commerce pricing analyst.
+Write a SHORT synthesis (3 to 5 sentences, no bullet points, no headings)
+explaining whether the merchant's price is aligned with the market.
+Be factual, neutral and quote the numbers.
+
+Respond in {{response_language}}.
+
+DATA:
+- product: {{product}}
+- merchant_price: {{merchant_price}}
+- competitor_count: {{competitor_count}}
+- average_competitor_price: {{average_competitor_price}}
+- competitive_status: {{competitive_status}}
+{{cheapest_line}}
+{{most_expensive_line}}
+
+llm_prompt_market_analysis_cheapest = - cheapest_competitor: {{source}} at {{price}}
+
+llm_prompt_market_analysis_most_expensive = - most_expensive_competitor: {{source}} at {{price}}

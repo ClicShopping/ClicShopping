@@ -1144,10 +1144,20 @@ class AnalyticsAgent implements AgentInterface
     }
 
     $days = (float)($periods['default_days'] ?? 0.0);
-    $key = $days > 0.0 ? 'text_analysis_period_default' : 'text_analysis_period_window';
+    $today = date('Y-m-d');
+
+    // A window reaching past today holds days no data can cover: say it, never let the answer
+    // present a running period as a complete one.
+    $key = match (true) {
+      $days > 0.0 => 'text_analysis_period_default',
+      $to > $today => 'text_analysis_period_running',
+      default => 'text_analysis_period_window',
+    };
+
     $notice = CLICSHOPPING::getDef($key, [
       'from' => $from,
       'to' => $to,
+      'today' => $today,
       'days' => rtrim(rtrim(number_format($days, 1, '.', ''), '0'), '.'),
     ]);
 

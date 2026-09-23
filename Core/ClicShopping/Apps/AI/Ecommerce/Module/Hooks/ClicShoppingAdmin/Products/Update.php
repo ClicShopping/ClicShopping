@@ -166,8 +166,12 @@ class Update implements HooksInterface
             // add embedding
             //********************
             if ($embedding_enabled) {
-              $embedding_data = $this->app->getDef('text_product_name') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_name) . "\n";
-              $embedding_data .= $this->app->getDef('text_product_id') . ': ' . $products_id . "\n";
+              // Identity block repeated on EVERY chunk: without it only chunk 0 names the product
+              // and the following chunks are unattributable — and unreachable by name.
+              $identity_header = $this->app->getDef('text_product_name') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_name) . "\n"
+                . $this->app->getDef('text_product_id') . ': ' . $products_id;
+
+              $embedding_data = $identity_header . "\n";
 
               if (!empty($products_model)) {
                 $embedding_data .= $this->app->getDef('text_product_model') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_model) . "\n";
@@ -273,7 +277,7 @@ class Update implements HooksInterface
 
               try {
                 // Generate embeddings
-                $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
+                $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data, null, $identity_header);
 
                 if (!empty($embeddedDocuments)) {
                   // Prepare base metadata

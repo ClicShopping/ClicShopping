@@ -932,6 +932,14 @@ echo "[info] CACHE CLEARING SUMMARY\n";
 echo str_repeat("=", 80) . "\n";
 echo "Total items cleared: {$totalCleared}\n";
 
+// A CLI run creates today's error log as the shell user; the web must still be able to append.
+$dayLog = __DIR__ . '/Core/ClicShopping/Work/Log/errors-' . date('Ymd') . '.txt';
+
+if (is_file($dayLog)) {
+  @chmod($dayLog, 0666);
+  echo "   ✅ Today's error log left writable by the web user (" . basename($dayLog) . ")\n";
+}
+
 if (!empty($errors)) {
   echo "\n⚠️  ERRORS ENCOUNTERED:\n";
   foreach ($errors as $error) {

@@ -27,6 +27,10 @@ text_translation_domain_terminology = This is an e-commerce system. Use e-commer
 - Product classification → "category"
 - Product maker → "manufacturer"
 - Product provider → "supplier"
+- CONCEPT: A PRODUCT'S DESCRIPTIVE AND TECHNICAL DETAIL SHEET — the register of a product's attributes, components, materials, dimensions, capacities and measured values, asked as a whole rather than as one named catalog field
+-> ALWAYS use: "specifications"
+-> FORBIDDEN: "features", "characteristics", "specs", "properties", "details"
+-> Applies ONLY when the question asks for the sheet as a whole; a question naming ONE field (price, stock, weight, SKU) keeps that field's own term.
 - Catalog merchandising STATES (whatever the source language, map the concept to its canonical English term — never paraphrase a state into a sales metric):
   - Products with an active special/discounted price → "on promotion"
   - The shop's own curated selection of products put forward on the storefront — the products the shop has picked out, i.e. products spoken of as "selected", as "in the selection", or as "the selection" of products → "featured selection"

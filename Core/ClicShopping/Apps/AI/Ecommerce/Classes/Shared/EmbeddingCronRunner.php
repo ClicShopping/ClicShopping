@@ -710,7 +710,10 @@ class EmbeddingCronRunner
 //********************
 // add embedding
 //********************
-      $embedding_data = $this->app->getDef('text_product_name') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_name) . "\n";
+      $identity_header = $this->app->getDef('text_product_name') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_name) . "\n"
+        . $this->app->getDef('text_product_id') . ': ' . (int)$item['products_id'];
+
+      $embedding_data = $identity_header . "\n";
 
       if (!empty($products_model)) {
         $embedding_data .= $this->app->getDef('text_product_model') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_model) . "\n";
@@ -794,7 +797,7 @@ class EmbeddingCronRunner
         }
       }
 
-      $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
+      $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data, null, $identity_header);
 
       // Prepare base metadata
       $baseMetadata = [

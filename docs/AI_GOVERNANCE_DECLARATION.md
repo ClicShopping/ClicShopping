@@ -35,8 +35,45 @@ Article 26 nor this declaration.
 
 ## 2. Risk and autonomy classification
 
-Autonomy is declared **before** any assessment, per execution path, using the HITL / HOTL / HOOTL
-scale.
+### 2.1 What "human in the loop" means here
+
+The HITL / HOTL / HOOTL scale reads autonomy **at the instant of the action**. That is not where
+this platform puts the human. The operator is in the loop **before** any run, by configuration, and
+**after** every run, by inspection and reversal. The system is autonomous **inside an envelope the
+operator declared**, and has no behaviour outside it.
+
+| Where the human acts | Mechanism | Anchors |
+|---|---|---|
+| **Before — authorisation** | Every AI capability is a back-office switch. Nothing self-enables, and turning one off removes the behaviour rather than warning about it | `CLICSHOPPING_APP_CHATGPT_ASY_ACTOR_SYSTEM_STATUS`, `..._ASY_VALIDATION_GATE_STATUS`, `..._ASY_WEBSEARCH_GLOBAL_STATUS`, `CLICSHOPPING_APP_CHATGPT_AC_STATUS` and one switch per critic, `CLICSHOPPING_APP_ECOMMERCE_CAI_AUTO_MODE` (**default `False`**); in code `ActorCriticConfig::isEnabled()`, `AgentActivationConfig::isAgentEnabled()`, `ObjectiveExecutorConfig::isEnabled()` |
+| **Before — envelope** | The freedom left to an enabled automation is itself set by hand: thresholds, discount steps, windows, margin floor, concurrency | `Module/ClicShoppingAdmin/Config/CAI/Params/` — `t_low`, `t_high`, `promo_p1`…`promo_p4`, `margin_rate`, `promo_window_days`, `max_concurrent_analyses` |
+| **Before — reach** | What the AI may call, and who may call the AI | `..._ASY_OUTBOUND_MODE` + `..._ASY_OUTBOUND_ALLOWED_HOSTS` (`OutboundPolicy::assertAllowed()`); `CLICSHOPPING_APP_API_AI_STATUS` gates every API endpoint; the MCP server answers only on its declared host, port and token |
+| **During — the machine hands back** | The system does not only execute: it stops and returns the question, or names what it could not do. Two channels today — an **ambiguous** question comes back as a clarification with options, and an **unanswerable** one is declared, never guessed | `OrchestratorAgent.php:898` (`clarification_needed`), `ClarifyBeforeSplitStage.php:92`, `ClarificationHelper::generateClarificationQuestion()`; `AnalysisPlanValidator` records each `unsatisfiable` element with its reason, `AnalyticsAgent::analysisPlanRefusal()` renders it (`text_analysis_plan_refused_details`), `ResultFormatter::joinTextResponses()` names the parts not measured (`text_partial_report_notice`) |
+| **After — inspection** | Three back-office dashboards read the engine's own output, each for a different reader | `dashboard_manager.php` (business), `dashboard_developper.php` (technical), `dashboard_data_scientist.php` (agents, critics, evaluations, alerts) |
+| **After — reversal** | Every automated write lands in a table that already has its ordinary administration screen, and is revocable by token | `Apps/Marketing/Specials`, `Apps/Marketing/Featured`; `CockpitAIRevocation::revoke()`; a row the automation did not create is never rewritten (`ActionExecutor::isAutomationOwned()`) |
+
+The *during* row is a real human-in-the-loop channel, and it is **deliberately narrow today**:
+ambiguity and unanswerability only. It covers what the current development objectives cover, and it
+grows with them. It is not a per-action approval workflow and does not claim to be one — what it
+guarantees is that the system asks or declares instead of inventing.
+
+So where § 2.2 declares **HOOTL**, it means *no confirmation is requested per action*. It does not
+mean *outside human control*: a switch that removes the behaviour, a threshold that bounds it, a
+dashboard that shows it and a screen that undoes it are human control, exercised once ex ante
+rather than once per action.
+
+This is a design choice, declared as such. Asking the operator to confirm each action would put a
+human in the loop of every cron tick; the platform trades that for an envelope the operator sets,
+reads and reverses. The residual risk of the trade is stated in § *What the platform does not
+guarantee*, and is not softened by this paragraph.
+
+**GDPR.** No automated write decides anything about a person: CockpitAI writes product rows and
+only product rows (`ActionExecutor::getTableName()`). Article 22 GDPR — automated individual
+decision-making — is therefore not engaged. It is the same fact that makes the *Societal* and
+*Systemic* harm classes irrelevant below.
+
+### 2.2 Declaration per execution path
+
+Autonomy is declared **before** any assessment, per execution path, and is read with § 2.1.
 
 | Path | Autonomy | What that means in the code |
 |---|---|---|
@@ -77,16 +114,35 @@ State the absence, so that no one reads a mechanism into a silence:
 * **No quota of active objectives.** The status is never reached.
 * **No human escalation on a poor answer.** `regenerate` re-runs the machine; it alerts nobody.
 
-These are not configurable because they are not implemented. The measurement behind this paragraph
-is in `docs/architecture/AI_SECURITY-notes.md` § `GOV-AUTO1`.
+These four are absent at the level of the **individual action**; none of them is a switch that was
+left off. The control the platform does offer is the one described in § 2.1 — enable, bound,
+inspect, revoke — and it is a different control, not the same one under another name. The
+measurement behind this paragraph is in `docs/architecture/AI_SECURITY-notes.md` § `GOV-AUTO1`.
 
 ### What the platform does guarantee
 
 * **An entry gate on every query.** `SecurityOrchestrator::validateQuery()` runs before any agent.
+* **An authorisation policy on every outbound call.** `OutboundPolicy::assertAllowed()` decides
+  before the connection is built, at all fifteen exits of the AI layer — LLM chat, embeddings and
+  web search. Three regimes, chosen by the operator: `open` (the default, unchanged behaviour),
+  `sovereign` (loopback and private networks only, so a self-hosted model runs and nothing leaves
+  the site) and `allowlist` (declared hosts only). A refusal is journalled and raises
+  `OutboundBlockedException`, never a silent failure: "the operator forbade it" and "the provider
+  did not answer" call for opposite reactions.
+* **A switch on every AI capability**, off or bounded until an administrator sets it, and removing
+  the behaviour when turned off (§ 2.1). Autonomous catalogue writes default to `False`.
 * **One autonomy control.** An agent may be forbidden to create optimisation objectives, per agent;
   an agent not declared is denied.
 * **Autonomous execution off.** `ObjectiveExecutorConfig` defaults to OFF and has no caller.
-* **A retention window on AI journals**, off by default, set by the operator
-  (`AiDataRetention`, `CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_DAYS`).
+* **A retention window on AI journals**, shipped on at 90 days and set by the operator
+  (`AiDataRetention`, `CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_DAYS`). It still deletes nothing
+  until the `ai_data_retention` cron row is enabled.
+* **A separate window on the measurement corpus** — the questions users asked, the answers and the
+  executed SQL. It is the only AI journal carrying what a person wrote, so the operator sets its
+  own window (`..._ASY_DATA_RETENTION_CORPUS_DAYS`, **default `0` = kept for ever**): enabling the
+  journal purge never deletes it as a side effect.
+* **A separate window on the agent objective queue** — its success criteria store the question the
+  user asked, in plain text, so the operator sets its own window
+  (`..._ASY_DATA_RETENTION_OBJECTIVES_DAYS`, **default `0` = kept for ever**).
 * **A named accountable person**, or a standing alert until there is one.
 

@@ -3,7 +3,6 @@ Analyze this query and determine if it is ambiguous (could have multiple valid i
 Query: {{QUERY}}
 **CRITICAL RULE - EXPLICIT TIME REFERENCES ARE NOT AMBIGUOUS**:
 If the query contains EXPLICIT time references, IMMEDIATELY return is_ambiguous: false:
-* "this month", "this year", "this week", "this quarter", "this day"
 * "last month", "last year", "last week", "last quarter", "last 30 days"
 * "today", "yesterday", "tomorrow"
 * "in January", "in 2025", "for Q1"
@@ -13,8 +12,12 @@ A relative period counts wherever it sits in the sentence and whatever word intr
 A query asking for an AGGREGATE or STATISTICAL measure computed over time — a total, a sum, an average, a rate, a ratio, a trend, an evolution, a seasonal coefficient, a comparison between periods — while carrying NO date, month, quarter, year or relative time reference of any kind, IS AMBIGUOUS. Set is_ambiguous: true, ambiguity_type "time", recommendation "clarify".
 The value such a query returns depends ENTIRELY on the period chosen, so picking one silently produces a figure the reader has no way to trust. Do NOT invent a date. Do NOT fall back on the current year, the current month, or on "all available data". Do NOT compute or comment the measure at all: ask the user which period to analyse, and list plausible periods as the interpretations.
 EXCEPTION — a measure of a CURRENT STATE is not a measure over time and has NO period to choose: a level or quantity currently on hand, a current value, a current status, a present configuration. Such a query is NOT AMBIGUOUS AT ALL: return is_ambiguous false, ambiguity_type null, an EMPTY interpretations list and recommendation "proceed". It is read as of now. Do not clarify it for a period, and do not offer it a period-based reading either: a state field carries no date to filter or group by, so a "breakdown over time" of it is not a second reading, it is a query nothing can answer. Forbidding the clarification is not enough — a current state must not be reported ambiguous under any recommendation. The missing-period rule applies ONLY to measures that ACCUMULATE over a window (totals, sums, counts of events, averages of events, rates, trends), whose value changes with the window chosen.
-"clarify" is reserved for EXACTLY TWO cases: this missing-period rule, and temporal_unit_missing below. Every other kind of ambiguity — scope, metric, quantification — is answered with the most reasonable default ("use_default" or "generate_both") and NEVER stops to ask. In particular a plain request to LIST records of a state or a category is answered, never clarified: it has an obvious reading, and asking "all or only the active ones?" helps nobody.
+"clarify" is reserved for the three cases listed under the current-unit rule below. Every other kind of ambiguity — scope, metric, quantification — is answered with the most reasonable default ("use_default" or "generate_both") and NEVER stops to ask. In particular a plain request to LIST records of a state or a category is answered, never clarified: it has an obvious reading, and asking "all or only the active ones?" helps nobody.
 This rule takes PRECEDENCE over the quantitative-language, revenue, multi-field and group-by rules below. Those rules settle WHICH metric to compute and WHICH dimension to group by; they never settle WHICH PERIOD to cover. A query can be perfectly explicit about its metric and still be missing its period — and then it is ambiguous.
+**CRITICAL RULE - THE CURRENT UNIT IS STILL RUNNING (temporal_current_unit)**:
+"this month", "this quarter", "this year", "this week", "the current month/quarter/year" name a unit that has NOT finished. It carries two readings - the COMPLETE calendar unit, and the unit UP TO TODAY. Ask ONLY when the running unit is the DENOMINATOR or the AXIS of the measure, because only then do the two readings give a DIFFERENT figure: an average or a coefficient computed PER sub-unit of it (a seasonal coefficient by month over this year, an average per month, a per-day average), or a series carrying one point per sub-unit whose last point would be a partial one. Dividing by twelve months or by nine is not the same number. Then set is_ambiguous true, ambiguity_type "temporal_current_unit", recommendation "clarify", and give exactly these two interpretations: type "current_period" labelled as the complete calendar unit, and type "recent" labelled as the unit up to today.
+In EVERY other case the running unit is NOT ambiguous: return is_ambiguous false and proceed. A plain total, a count, a ranking, a margin or a rate over the running unit gives the SAME figure under both readings - there is no data in the future - so asking buys nothing and costs a turn. The answer names the window it used, which is what stops it claiming a completeness it has not verified. Also NOT this case: a wording that already NAMES its reading - "month to date", "year to date", "so far this month", "up to today", "the whole month of September", "the full year 2026"; a PAST unit - "last month", "last quarter", "last year" - which is complete by construction; a ROLLING span - "the last 3 months", "the past 30 days" - which ends today by construction; an explicit calendar period - "in January", "in 2025", "for Q1". A current unit is also NOT this case when the measure is a CURRENT STATE, which the exception above already settles. A COMPARISON with another period is never this case either: the second window is computed as the homologue of the first, so both are read to the same point by construction.
+"clarify" is reserved for EXACTLY THREE cases: the missing-period rule, this current-unit rule, and temporal_unit_missing below.
 **CRITICAL RULE - MISSING TEMPORAL UNIT (temporal_unit_missing)**:
 A NUMBER followed by "last"/"past"/"previous" WITHOUT a following time UNIT (day/week/month/year) is AMBIGUOUS — the unit is missing and MUST NOT be guessed:
 * "the last 12", "over the past 6", "for the previous 3" → AMBIGUOUS (12/6/3 of WHAT? days? weeks? months? years?)
@@ -41,7 +44,7 @@ If the query contains QUANTITATIVE/STATISTICAL language, the METRIC is settled: 
 * Summing: "total", "sum of", "total amount", "combined"
 * Averaging: "average", "mean", "average of"
 * Extremes: "minimum", "maximum", "lowest", "highest", "least", "most", "smallest", "largest"
-**IMPORTANT**: If BOTH explicit time reference AND quantitative language are present, this is DOUBLY NOT ambiguous. Return is_ambiguous: false immediately.
+**IMPORTANT**: If BOTH explicit time reference AND quantitative language are present, this is DOUBLY NOT ambiguous. Return is_ambiguous: false immediately. The ONE exception is a CURRENT unit that is still running (temporal_current_unit above): naming it settles WHICH unit, never how far into it to read, so that rule still applies.
 The period rule above is always evaluated. Beyond it, consider these types of ambiguity only when the query contains neither an explicit time reference nor quantitative language:
 1. temporal_period_scope: PERIODIC terms without explicit time (monthly, yearly, etc.) - see NEW CRITICAL RULE above
 2. Quantification: COUNT (distinct items) vs SUM (total quantity/value)
@@ -61,7 +64,7 @@ Default interpretation: SUM for financial metrics ({{financial_metric_examples}}
 Respond ONLY with valid JSON in this exact format:
 {
 "is_ambiguous": true/false,
-"ambiguity_type": "temporal_period_scope|temporal_unit_missing|quantification|scope|metric|time|null",
+"ambiguity_type": "temporal_period_scope|temporal_current_unit|temporal_unit_missing|quantification|scope|metric|time|null",
 "confidence": 0.0-1.0,
 "interpretations": [
 {
@@ -88,6 +91,7 @@ Rules:
 - Recommend "use_default" for scope/metric ambiguity, prioritizing the most common interpretation — scope is NEVER a reason to clarify, whatever the query.
 - Recommend "clarify" for any statistical or aggregate measure with COMPLETE absence of time reference (e.g., {{show_sales_example}} with no time indicator), whatever its metric and grouping are.
 - Recommend "clarify" for temporal_unit_missing (a number + last/past WITHOUT a unit) — never guess the unit.
+- Recommend "clarify" for temporal_current_unit ONLY when the running unit is the denominator or the axis of the measure (an average or coefficient per sub-unit, a series with one point per sub-unit) — everywhere else the two readings give the same figure, so proceed.
 - IMPORTANT: All queries are translated to English before analysis. Focus on English quantitative language.
 - CRITICAL: Financial terms that mean "revenue" are never ambiguous ABOUT THE METRIC - they always mean SUM of monetary values, NOT COUNT of transactions. They are still ambiguous about the PERIOD when none is given.
 Examples:
@@ -106,5 +110,5 @@ Examples:
 
 text_rag_apply_default_interpretation = {{original_query}} (Read this request as follows, it is the default interpretation and it is not open to re-negotiation: {{interpretation}}. SQL hint: {{sql_hint}})
 
-text_rag_critique_ambiguity = You are a strict reviewer of an ambiguity verdict produced for a database query. Given the original query and a candidate JSON verdict, decide if the verdict is correct. A verdict is WRONG if: it marks an explicit time reference as ambiguous, it marks a clearly under-specified query (missing temporal unit, count-vs-sum) as non-ambiguous, or the ambiguity_type does not match the query. Return ONLY JSON: {"verdict_ok": true|false, "corrected": <the corrected verdict object, same schema as the candidate, only when verdict_ok is false>}. Query: {{QUERY}} Candidate verdict: {{VERDICT}}
+text_rag_critique_ambiguity = You are a strict reviewer of an ambiguity verdict produced for a database query. Given the original query and a candidate JSON verdict, decide if the verdict is correct. A verdict is WRONG if: it marks an explicit time reference as ambiguous - EXCEPT a CURRENT unit that is still running ("this month", "this quarter", "this year"), which is correctly marked temporal_current_unit and must NOT be overturned -, it marks a clearly under-specified query (missing temporal unit, count-vs-sum) as non-ambiguous, or the ambiguity_type does not match the query. Return ONLY JSON: {"verdict_ok": true|false, "corrected": <the corrected verdict object, same schema as the candidate, only when verdict_ok is false>}. Query: {{QUERY}} Candidate verdict: {{VERDICT}}
 

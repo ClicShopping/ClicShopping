@@ -39,6 +39,10 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
  * A MISSING current window falls back on the configured default span (DefaultAnalysisWindow) and is
  * flagged `period_defaulted`, so the answer can name the window it used. With no default configured
  * the plan is flagged `period_missing` instead and the caller asks the user for the period.
+ * A window is missing for two different reasons and only the plan can tell them apart: `set_bounded`
+ * says something OTHER than time already bounds the measured set - the last N of an entity, one
+ * customer, one category. Such a measure has no window to choose, so none is applied and none is
+ * asked for; applying one narrows a set the question had already closed.
  *
  * @package ClicShopping\AI\DomainsAI\Analytics\Planning
  */
@@ -53,11 +57,12 @@ final class PeriodResolver
   private const COMPARABLE_DAYS_SHIFT = '-364 days';
 
   /**
-   * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_year_comparable_days|previous_period}`
+   * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_year_comparable_days|previous_period, set_bounded?: bool}`
    * @param \DateTimeImmutable|null $observedAt Observation date; defaults to now. Injected by tests only.
    * @return array Allow-listed `{current: {from, to}, compare, previous?: {from, to}}`, every bound Y-m-d,
    *               plus `default_days` when the window came from the default, or
-   *               `{current: {from: null, to: null}, compare: none, period_missing: true}`
+   *               `{current: {from: null, to: null}, compare: none, period_missing: true}`, or the
+   *               same bounds flagged `set_bounded` when the question bounds the set without time
    * @throws \InvalidArgumentException When the current window is reversed or contains unreadable dates
    */
   public static function resolve(array $periods, ?\DateTimeImmutable $observedAt = null): array
@@ -65,6 +70,10 @@ final class PeriodResolver
     $from = (string)($periods['current']['from'] ?? '');
     $to = (string)($periods['current']['to'] ?? '');
     $defaultDays = 0.0;
+
+    if (($from === '' || $to === '') && ($periods['set_bounded'] ?? false) === true) {
+      return ['current' => ['from' => null, 'to' => null], 'compare' => self::COMPARE_NONE, 'set_bounded' => true];
+    }
 
     if ($from === '' || $to === '') {
       $default = DefaultAnalysisWindow::window($observedAt);

@@ -49,7 +49,7 @@ class ModelManager
   private const NON_REASONING_GPT5_MODELS = ['gpt-5.4-mini'];
 
   /** Models the API enumerates as taking 'none' (and 'xhigh'), but NOT 'minimal'. */
-  private const REASONING_EFFORT_NONE_MODELS = ['gpt-5.4-mini', 'gpt-5.6-luna'];
+  private const REASONING_EFFORT_NONE_MODELS = ['gpt-5.4-mini', 'gpt-5.6-luna', 'gpt-6-luna'];
 
   /** Models the API enumerates as taking 'minimal', but NOT 'none'. */
   private const REASONING_EFFORT_MINIMAL_MODELS = ['gpt-5-mini', 'gpt-5'];
@@ -335,18 +335,20 @@ class ModelManager
    */
   public static function usesCompletionTokenBudget(string $model): bool
   {
-    return str_starts_with($model, 'gpt-4.1') || str_starts_with($model, 'gpt-5');
+    return str_starts_with($model, 'gpt-4.1') || str_starts_with($model, 'gpt-5')
+        || str_starts_with($model, 'gpt-6');
   }
 
   /**
    * Can this model reason before answering (whether or not it will on a given call)?
    *
    * @param string $model Model name
-   * @return bool True for the gpt-5 and o-series families
+   * @return bool True for the gpt-5, gpt-6 and o-series families
    */
   public static function isReasoningCapableModel(string $model): bool
   {
     return str_starts_with($model, 'gpt-5')
+        || str_starts_with($model, 'gpt-6')
         || str_starts_with($model, 'o1')
         || str_starts_with($model, 'o3')
         || str_starts_with($model, 'o4');
@@ -421,7 +423,9 @@ class ModelManager
       ? strtolower(trim((string)CLICSHOPPING_APP_CHATGPT_CH_VERBOSITY))
       : '';
 
-    if (!str_starts_with($model, 'gpt-5') || !in_array($configured, ['low', 'medium', 'high'], true)) {
+    $takesVerbosity = str_starts_with($model, 'gpt-5') || str_starts_with($model, 'gpt-6');
+
+    if (!$takesVerbosity || !in_array($configured, ['low', 'medium', 'high'], true)) {
       return null;
     }
 
