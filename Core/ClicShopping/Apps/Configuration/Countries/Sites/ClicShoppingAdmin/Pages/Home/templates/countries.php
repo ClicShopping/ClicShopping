@@ -75,6 +75,8 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
           class="text-center"><?php echo $CLICSHOPPING_Countries->getDef('table_heading_country_code2'); ?></th>
       <th data-field="code3" data-sortable="true"
           class="text-center"><?php echo $CLICSHOPPING_Countries->getDef('table_heading_country_code3'); ?></th>
+      <th data-field="country" data-sortable="true"
+          class="text-center"><?php echo $CLICSHOPPING_Countries->getDef('table_heading_country_currency_code'); ?></th>
       <th data-field="action" data-switchable="false"
           class="text-end"><?php echo $CLICSHOPPING_Countries->getDef('table_heading_action'); ?>&nbsp;
       </th>
@@ -87,7 +89,8 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
                                                                                      countries_iso_code_2,
                                                                                      countries_iso_code_3,
                                                                                      status,
-                                                                                     address_format_id
+                                                                                     address_format_id,
+                                                                                     country_currency_code
                                                         from :table_countries
                                                         order by countries_name
                                                         limit :page_set_offset, :page_set_max_results
@@ -119,6 +122,7 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
           </td>
           <td class="text-center" width="40"><?php echo $Qcountries->value('countries_iso_code_2'); ?></td>
           <td class="text-center" width="40"><?php echo $Qcountries->value('countries_iso_code_3'); ?></td>
+          <td><?php echo $Qcountries->value('country_currency_code'); ?></td>
           <td class="text-end">
             <div class="btn-group d-flex justify-content-end" role="group" aria-label="buttonGroup">
               <?php

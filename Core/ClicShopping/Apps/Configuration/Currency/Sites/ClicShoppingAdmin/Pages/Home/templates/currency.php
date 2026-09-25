@@ -15,6 +15,7 @@ use ClicShopping\OM\Registry;
 $CLICSHOPPING_Currency = Registry::get('Currency');
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 $CLICSHOPPING_Language = Registry::get('Language');
+$CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
 $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 ?>

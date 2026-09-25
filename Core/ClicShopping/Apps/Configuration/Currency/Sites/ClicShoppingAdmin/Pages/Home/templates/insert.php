@@ -11,6 +11,7 @@ use ClicShopping\OM\HTML;
 use ClicShopping\OM\ObjectInfo;
 use ClicShopping\OM\Registry;
 
+$CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 $CLICSHOPPING_Currency = Registry::get('Currency');
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 
@@ -53,10 +54,10 @@ echo HTML::form('currency', $CLICSHOPPING_Currency->link('Currency&Insert&page='
           <span
             class="col-md-4 pageHeading"><?php echo '&nbsp;' . $CLICSHOPPING_Currency->getDef('heading_title'); ?></span>
           <span class="col-md-7 text-end">
-<?php
-echo HTML::button($CLICSHOPPING_Currency->getDef('button_cancel'), null, $CLICSHOPPING_Currency->link('Currency&page=' . $page), 'warning') . ' ';
-echo HTML::button($CLICSHOPPING_Currency->getDef('button_insert'), null, null, 'success');
-?>
+            <?php
+            echo HTML::button($CLICSHOPPING_Currency->getDef('button_cancel'), null, $CLICSHOPPING_Currency->link('Currency&page=' . $page), 'warning') . ' ';
+            echo HTML::button($CLICSHOPPING_Currency->getDef('button_insert'), null, null, 'success');
+            ?>
           </span>
         </div>
       </div>

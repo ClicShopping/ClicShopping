@@ -30,13 +30,15 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $countries_iso_code_3 = HTML::sanitize($_POST['countries_iso_code_3']);
     $address_format_id = HTML::sanitize($_POST['address_format_id']);
     $countries_status = 1;
+    $country_currency_code = HTML::sanitize($_POST['country_currency_code']);
 
     $sql_array = [
       'countries_name' => $countries_name,
       'countries_iso_code_2' => $countries_iso_code_2,
       'countries_iso_code_3' => $countries_iso_code_3,
       'address_format_id' => (int)$address_format_id,
-      'status' => (int)$countries_status
+      'status' => (int)$countries_status,
+      'country_currency_code' => $country_currency_code
     ];
 
     $this->app->db->save('countries', $sql_array, ['countries_id' => (int)$countries_id]);

@@ -4,9 +4,12 @@ countries_iso_code_2 char(2) not_null comment(ISO 3166-1 alpha-2 country code - 
 countries_iso_code_3 char(3) not_null comment(ISO 3166-1 alpha-3 country code - three-letter code)
 address_format_id int not_null comment(FK to address_format table - defines how addresses are formatted for this country)
 status tinyint(1) default(1) comment(Country status - 0: inactive, 1: active for selection)
+country_currency_code varchar(256) default not_null comment (Country local currency code (EUR, CAS, USD ...))
+
 --
 primary countries_id
 idx_countries_name countries_name
+idx_countries_currency countries_currency
 ##
 engine innodb
 character_set utf8mb4

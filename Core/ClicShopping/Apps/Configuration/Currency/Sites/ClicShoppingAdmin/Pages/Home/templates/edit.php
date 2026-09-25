@@ -9,10 +9,15 @@
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\ObjectInfo;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Configuration\Countries\Classes\ClicShoppingAdmin\CountriesAdmin;
 
 $CLICSHOPPING_Currency = Registry::get('Currency');
 $CLICSHOPPING_Page = Registry::get('Site')->getPage();
 $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
+
+Registry::set('CountriesAdmin', new CountriesAdmin());
+$CLICSHOPPING_CountriesAdmin = Registry::get('CountriesAdmin');
+$array_country_currency_code_list = $CLICSHOPPING_CountriesAdmin->currenciesCodeList();
 
 $Qcurrency = $CLICSHOPPING_Currency->db->prepare('select currencies_id,
                                                           title,
@@ -47,10 +52,10 @@ echo HTML::form('Currency', $CLICSHOPPING_Currency->link('Currency&Update&page='
           <span
             class="col-md-7 pageHeading"><?php echo '&nbsp;' . $CLICSHOPPING_Currency->getDef('heading_title'); ?></span>
           <span class="col-md-4 text-end">
-<?php
-echo HTML::button($CLICSHOPPING_Currency->getDef('button_update'), null, null, 'success') . ' ';
-echo HTML::button($CLICSHOPPING_Currency->getDef('button_cancel'), null, $CLICSHOPPING_Currency->link('Currency&page=' . $page . '&cID=' . $cInfo->currencies_id), 'warning');
-?>
+            <?php
+            echo HTML::button($CLICSHOPPING_Currency->getDef('button_update'), null, null, 'success') . ' ';
+            echo HTML::button($CLICSHOPPING_Currency->getDef('button_cancel'), null, $CLICSHOPPING_Currency->link('Currency&page=' . $page . '&cID=' . $cInfo->currencies_id), 'warning');
+            ?>
           </span>
         </div>
       </div>
@@ -88,7 +93,7 @@ echo HTML::button($CLICSHOPPING_Currency->getDef('button_cancel'), null, $CLICSH
           <label for="<?php echo $CLICSHOPPING_Currency->getDef('text_info_currency_code'); ?>"
                  class="col-5 col-form-label"><?php echo $CLICSHOPPING_Currency->getDef('text_info_currency_code'); ?></label>
           <div class="col-md-5">
-            <?php echo HTML::inputField('code', $cInfo->code); ?>
+            <?php echo HTML::selectField('code',  $array_country_currency_code_list, $cInfo->code,'id="currency_code"', true  ); ?>
           </div>
         </div>
       </div>

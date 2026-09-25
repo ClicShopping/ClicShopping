@@ -30,14 +30,15 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $countries_iso_code_2 = HTML::sanitize($_POST['countries_iso_code_2']);
     $countries_iso_code_3 = HTML::sanitize($_POST['countries_iso_code_3']);
     $address_format_id = HTML::sanitize($_POST['address_format_id']);
-
+    $country_currency_code = HTML::sanitize($_POST['country_currency_code']);
 
     $this->app->db->save('countries', [
         'countries_name' => $countries_name,
         'countries_iso_code_2' => $countries_iso_code_2,
         'countries_iso_code_3' => $countries_iso_code_3,
         'address_format_id' => (int)$address_format_id,
-        'status' => 1
+        'status' => 1,
+        'country_currency_code' => $country_currency_code
       ]
     );
 

@@ -268,6 +268,10 @@ UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
 UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
   'Facturation annulée pour cette commande.'
   WHERE orders_status_invoice_id = 3 AND language_id = 2;  -- Annuler
+-- L'avoir est le SEUL montant de cette famille qui n'existe nulle part en base :
+-- il est négocié, il peut différer de la facture et il revient plus tard en remise
+-- (orders_total.class = 'CD'). Sans cette phrase, le modèle somme le total de la
+-- commande et rend un montant d'avoir faux avec assurance.
 UPDATE clic_orders_status_invoice SET orders_status_invoice_definition =
   'Credit note (avoir) issued: an amount negotiated between the merchant and the customer. It MAY DIFFER from the invoice total and is usually granted as a discount on a later order. That amount is NOT stored in the database - never derive it from the order total. Count credit notes, never sum an amount for them; if the amount is needed it can only come from the free-text comment of the order status history.'
   WHERE orders_status_invoice_id = 4 AND language_id = 1;  -- Have a bill
@@ -375,6 +379,20 @@ ALTER TABLE `clic_orders_total` ADD `total_rank` SMALLINT NOT NULL DEFAULT 0 COM
 -- omits total_rank is REJECTED and the total line is lost. On an install that already applied the
 -- version without a default:
 -- ALTER TABLE `clic_orders_total` MODIFY `total_rank` SMALLINT NOT NULL DEFAULT 0 COMMENT 'Fiscal rank this line was COMPUTED at - base 100 reduction 200 or 500 charge 300 or 510 tax 400 total 900 - 0 when unknown. Never the display order that is sort_order';
+
+======================
+-- Statut « Remboursement » (commande 5 et facture 5) + garde-fou sur l'avoir :
+-- l'autorité est la SECTION 3 plus haut, pas ce bas de fichier. Le brouillon qui
+-- se trouvait ici a été replié dedans pour ne pas laisser deux textes concurrents
+-- pour un même statut : c'est ainsi que les définitions se désynchronisent.
+--
+-- ⚠️ Le brouillon avait deux défauts que la base a hérités le 2026-08-18, et que
+-- rejouer la section 3 corrige :
+--   1. les littéraux étaient coupés sur deux lignes, donc un CR+LF a été stocké
+--      AU MILIEU de la définition. Le gabarit text_order_status_map_row rend une
+--      ligne par statut : ce saut casse la structure que l'intro promet au modèle.
+--   2. les accents avaient été retirés (« annulee », « rembourse ») ; ces textes
+--      s'affichent tels quels dans le back-office.
 
 =========================
 DELETE FROM `clic_configuration` WHERE `clic_configuration`.`configuration_group_id` = 25;
@@ -635,9 +653,11 @@ CREATE TABLE IF NOT EXISTS clic_rag_feedback_journal (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-##IP
-#english
+//IP
+//english
 INSERT INTO clic_configuration VALUES(null, 'Do you want to block outgoing calls to private networks ?', 'HTTP_BLOCK_PRIVATE_NETWORK', 'false', 'Refuses every outgoing HTTP call whose destination resolves to a loopback, link-local or private address (127.0.0.0/8, 10/8, 172.16/12, 192.168/16, 169.254/16, ::1, fc00::/7). Leave it on false when this shop calls its own internal services - a self-hosted AI model, an internal ERP - otherwise they become unreachable.', 1, 25, NULL, '2026-09-21 00:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
-#french
+//french
 INSERT INTO clic_configuration VALUES(null, 'Voulez-vous bloquer les appels sortants vers les réseaux privés ?', 'HTTP_BLOCK_PRIVATE_NETWORK', 'false', 'Refuse tout appel HTTP sortant dont la destination résout vers une adresse de boucle locale, de lien local ou privée (127.0.0.0/8, 10/8, 172.16/12, 192.168/16, 169.254/16, ::1, fc00::/7). Laissez false si cette boutique appelle ses propres services internes - un modèle IA auto-hébergé, un ERP interne - sinon ils deviennent injoignables.', 1, 25, NULL, '2026-09-21 00:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
 
+//Add currency
+  ALTER TABLE `clic_countries` ADD `country_currency_code` VARCHAR(256) NULL DEFAULT NOT NULL AFTER `status`, ADD INDEX `country_currency_code` (`Country local currency code (EUR, CAS, USD ...)`);

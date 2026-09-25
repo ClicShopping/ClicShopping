@@ -37,11 +37,11 @@ $address_formats_array = $CLICSHOPPING_Countries->db->get('address_format', 'add
           <span
             class="col-md-7 pageHeading"><?php echo '&nbsp;' . $CLICSHOPPING_Countries->getDef('heading_title'); ?></span>
           <span class="col-md-4 text-end">
-<?php
-echo HTML::form('status_countries', $CLICSHOPPING_Countries->link('Countries&Update&page=' . (int)$_GET['page'] . '&cID=' . $cInfo->countries_id));
-echo HTML::button($CLICSHOPPING_Countries->getDef('button_update'), null, null, 'success') . ' ';
-echo HTML::button($CLICSHOPPING_Countries->getDef('button_cancel'), null, $CLICSHOPPING_Countries->link('Countries'), 'warning');
-?>
+            <?php
+            echo HTML::form('status_countries', $CLICSHOPPING_Countries->link('Countries&Update&page=' . (int)$_GET['page'] . '&cID=' . $cInfo->countries_id));
+            echo HTML::button($CLICSHOPPING_Countries->getDef('button_update'), null, null, 'success') . ' ';
+            echo HTML::button($CLICSHOPPING_Countries->getDef('button_cancel'), null, $CLICSHOPPING_Countries->link('Countries'), 'warning');
+            ?>
           </span>
         </div>
       </div>
@@ -59,19 +59,20 @@ echo HTML::button($CLICSHOPPING_Countries->getDef('button_cancel'), null, $CLICS
         </div>
       </div>
     </div>
-    <div class="row">
+
+    <div class="row" id="country_name">
       <div class="col-md-5">
         <div class="form-group row">
           <label for="<?php echo $CLICSHOPPING_Countries->getDef('text_info_country_name'); ?>"
                  class="col-5 col-form-label"><?php echo $CLICSHOPPING_Countries->getDef('text_info_country_name'); ?></label>
           <div class="col-md-5">
-            <?php echo HTML::inputField('countries_name', $cInfo->countries_name); ?>
+            <?php echo HTML::inputField('countries_name', $cInfo->countries_name, 'required aria-required="true"'); ?>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="row">
+    <div class="row" id="text_info_country_code_2">
       <div class="col-md-5">
         <div class="form-group row">
           <label for="<?php echo $CLICSHOPPING_Countries->getDef('text_info_country_code_2'); ?>"
@@ -83,7 +84,7 @@ echo HTML::button($CLICSHOPPING_Countries->getDef('button_cancel'), null, $CLICS
       </div>
     </div>
 
-    <div class="row">
+    <div class="row" id="text_info_country_code_3">
       <div class="col-md-5">
         <div class="form-group row">
           <label for="<?php echo $CLICSHOPPING_Countries->getDef('text_info_country_code_3'); ?>"
@@ -95,12 +96,25 @@ echo HTML::button($CLICSHOPPING_Countries->getDef('button_cancel'), null, $CLICS
       </div>
     </div>
 
-    <div class="row">
+    <div class="row" id="country_currency_code">
+      <div class="col-md-5">
+        <div class="form-group row">
+          <label for="<?php echo $CLICSHOPPING_Countries->getDef('text_info_country_currency_code'); ?>"
+                 class="col-5 col-form-label"><?php echo $CLICSHOPPING_Countries->getDef('text_info_country_currency_code'); ?></label>
+          <div class="col-md-5">
+            <?php echo HTML::inputField('country_currency_code', $cInfo->country_currency_code, 'required aria-required="true"'); ?>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-2"></div>
+    <div class="row" id="text_info_address_format">
       <div class="col-md-5">
         <?php echo $CLICSHOPPING_Countries->getDef('text_info_address_format'); ?>
       </div>
     </div>
-    <div class="mt-1"></div>
+    <div class="mt-2"></div>
     <div class="row">
       <?php
       foreach ($address_formats_array as $value) {
@@ -124,10 +138,11 @@ echo HTML::button($CLICSHOPPING_Countries->getDef('button_cancel'), null, $CLICS
         </div>
         <?php
       }
-      ?>  </div>
+      ?>
+    </div>
     <div class="mt-1"></div>
     <div class="alert alert-info" role="alert">
-      <div><?php echo '<h4><i class="bi bi-question-circle" title="' . $CLICSHOPPING_Countries->getDef('title_help_image') . '"></i></h4> ' . $CLICSHOPPING_Countries->getDef('title_help_general') ?></div>
+      <div><?php echo '<h4><i class="bi bi-question-circle" title="' . $CLICSHOPPING_Countries->getDef('title_help_general') . '"></i></h4> ' . $CLICSHOPPING_Countries->getDef('title_help_general') ?></div>
       <div class="mt-1"></div>
       <div><?php echo $CLICSHOPPING_Countries->getDef('help_general'); ?></div>
     </div>

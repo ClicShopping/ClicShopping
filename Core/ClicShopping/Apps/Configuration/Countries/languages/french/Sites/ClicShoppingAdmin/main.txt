@@ -50,6 +50,7 @@ table_heading_country_code2 = Codes ISO 2
 table_heading_country_code3 = Codes ISO 3
 table_heading_action = Action
 table_heading_country_status = Statut
+table_heading_country_currency_code = Code devise
 
 text_info_edit_intro = Merci de faire les changements nécessaires
 text_info_country_name = Nom :
@@ -62,6 +63,7 @@ text_info_delete_info = Supprimer le pays
 text_info_heading_new_country = Nouveau pays
 text_info_heading_edit_country = Editer pays
 text_info_heading_delete_country = Supprimer pays
+text_info_country_currency_code = Code devises
 
 text_format = Format :
 
