@@ -202,6 +202,17 @@ class Ecommerce extends AbstractDomainApp
   }
 
   /**
+   * Dimensions of this domain carried at order grain (one value per order), so an order-level
+   * metric broken down by them is not fanned out by order lines.
+   *
+   * @return array<int, string>
+   */
+  public function getOrderSideDimensions(): array
+  {
+    return MetricCatalog::orderSideDimensions();
+  }
+
+  /**
    * Result enrichers applied to the analytics rows after execution, before interpretation.
    * Each one decides from the row shape whether it applies.
    *

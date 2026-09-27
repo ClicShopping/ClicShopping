@@ -252,7 +252,7 @@ class ParallelLLMExecutor
       // Parse the response using provider
       $parsedResponse = $this->provider->parseResponse($body);
 
-      Gpt::recordLlmTokens(\json_decode($body, true));
+      Gpt::recordLlmTokens(\json_decode($body, true), $this->provider->getModel());
 
       if ($this->debug) {
         $this->logger->logSecurityEvent(

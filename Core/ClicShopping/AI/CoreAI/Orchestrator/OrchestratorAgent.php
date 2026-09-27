@@ -639,8 +639,10 @@ class OrchestratorAgent implements AgentInterface
     $this->performanceTracker->startTracking(); // Phase 5: Use PerformanceTracker
     $this->collector->startTimer('process_validation');
 
-    // Scope the exact LLM-call-per-request count to this request (read in the finally below).
-    Gpt::resetLlmCallCount();
+    // Scope the LLM count to this request, unless an entry point already opened it (its pre-checks count too).
+    if (!Gpt::isLlmRequestOpen()) {
+      Gpt::resetLlmCallCount();
+    }
 
     $status = 'success';
 
@@ -823,12 +825,13 @@ class OrchestratorAgent implements AgentInterface
 
         // Build clarification message. User-facing labels come from ai_response_labels.txt via
         // getDef (already rendered in the interface language, so no downstream translation needed).
-        // Prefer the LLM-provided options (already in the query language); otherwise fall back to
-        // the generic product/person/other options.
+        // Prefer the LLM-provided options (already in the query language); the product/person
+        // fallback answers a name ambiguity only, never another category.
+        $clarificationOptions = [];
         if (isset($contextCheck['clarification_options']) && is_array($contextCheck['clarification_options'])
             && !empty($contextCheck['clarification_options'])) {
           $clarificationOptions = $contextCheck['clarification_options'];
-        } else {
+        } elseif (($contextCheck['detected_category'] ?? '') === 'ambiguous_product_name') {
           $clarificationOptions = [
             CLICSHOPPING::getDef('text_orchestrator_clarification_option_product', ['query' => $query]),
             CLICSHOPPING::getDef('text_orchestrator_clarification_option_person'),

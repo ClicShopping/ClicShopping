@@ -296,6 +296,7 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
       RequestValidator::configureTimeout($maxExecutionTime, $enableTimeout);
       $queryStartTime = microtime(true);
 
+      Gpt::openLlmRequest();
       $validation = RequestValidator::validateRequest($_POST);
       if (!$validation['valid']) {
         if (ob_get_length()) {

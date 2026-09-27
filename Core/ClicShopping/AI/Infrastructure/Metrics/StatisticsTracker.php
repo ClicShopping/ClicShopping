@@ -58,6 +58,9 @@ class StatisticsTracker
 
   // Observe-first quality verdict detail (stored in metadata.quality JSON)
   private array $qualityVerdict = [];
+
+  /** @var array<string, array{prompt:int,completion:int,reasoning:int}> tokens per model, '' = not reported (metadata.tokens_by_model) */
+  private array $tokensByModel = [];
   
   /**
    * Constructeur
@@ -161,6 +164,7 @@ class StatisticsTracker
   {
     $this->metrics['api_provider'] = $provider;
     $this->metrics['model_used'] = $model;
+    $this->calculateCost();
     return $this;
   }
   
@@ -296,12 +300,51 @@ class StatisticsTracker
   }
   
   /**
-   * Calculates API cost based on tokens and model
+   * Tokens of the request split per model, so every call is priced at its own model's rate.
+   *
+   * @param array<string, array{prompt:int,completion:int,reasoning:int}> $tokensByModel
+   * @return self
+   */
+  public function setTokensByModel(array $tokensByModel): self
+  {
+    $this->tokensByModel = $tokensByModel;
+    $this->calculateCost();
+    return $this;
+  }
+
+  /**
+   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
+   */
+  public function getTokensByModel(): array
+  {
+    return $this->tokensByModel;
+  }
+
+  /**
+   * Calculates API cost: per model when the split is known, else on model_used.
    * 
    * @return void
    */
   private function calculateCost(): void
   {
+    if ($this->tokensByModel !== []) {
+      $total = 0.0;
+
+      foreach ($this->tokensByModel as $model => $tokens) {
+        $model = (string)$model !== '' ? (string)$model : $this->metrics['model_used'];
+
+        if ($model === null) {
+          return;
+        }
+
+        // An uncatalogued model is logged by the calculator and left out, never priced at another rate.
+        $total += ApiCostCalculator::calculateCost($model, $tokens['prompt'], $tokens['completion']) ?? 0.0;
+      }
+
+      $this->metrics['api_cost_usd'] = round($total, 6);
+      return;
+    }
+
     if ($this->metrics['tokens_prompt'] === null || $this->metrics['tokens_completion'] === null || $this->metrics['model_used'] === null) {
       return;
     }
@@ -367,6 +410,10 @@ class StatisticsTracker
       // Add observe-first quality verdict if available
       if (!empty($this->qualityVerdict)) {
         $metadata['quality'] = $this->qualityVerdict;
+      }
+
+      if ($this->tokensByModel !== []) {
+        $metadata['tokens_by_model'] = $this->tokensByModel;
       }
 
       // Convert metadata to JSON (null if empty)

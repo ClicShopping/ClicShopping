@@ -856,8 +856,6 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
     string|null $interactionId = null
   ): array
   {
-    // Start timing for statistics
-    $startTime = microtime(true);
     $finalMinScore = null;
     $finalLimit = null;
     
@@ -948,22 +946,6 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
         self::logSecurityEvent("SemanticAgent::search() found " . count($formattedResults) . " results", 'info');
       }
 
-      // Calculate response time
-      $endTime = microtime(true);
-      $responseTime = (int)round(($endTime - $startTime) * 1000);
-
-      // Record statistics    
-      self::recordSearchStatistics(
-        $query,
-        $responseTime,
-        true,
-        count($formattedResults),
-        $languageId,
-        $interactionId,
-        $finalMinScore,
-        $finalLimit
-      );
-
       return [
         'success' => true,
         'results' => $formattedResults,
@@ -973,22 +955,6 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
 
     } catch (\Exception $e) {
       self::logApplicationError("Error in SemanticAgent::search(): " . $e->getMessage());
-
-      // Calculate response time even on error
-      $endTime = microtime(true);
-      $responseTime = (int)round(($endTime - $startTime) * 1000);
-
-      // Record statistics for failed search
-      self::recordSearchStatistics(
-        $query,
-        $responseTime,
-        false,
-        0,
-        $languageId,
-        $interactionId,
-        $finalMinScore,
-        $finalLimit
-      );
 
       return [
         'success' => false,
@@ -1026,84 +992,6 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
     }
     
     return ['min_score' => null, 'limit' => null, 'tables' => []];
-  }
-
-  /**
-   * Record search statistics to rag_statistics table
-   * 
-   * 
-   * @param string $query Search query
-   * @param int $responseTime Response time in milliseconds
-   * @param bool $success Whether the search was successful
-   * @param int $resultsCount Number of results found
-   * @param int|null $languageId Language ID
-   * @param string|null $interactionId Interaction ID
-   * @return void
-   */
-  private static function recordSearchStatistics(
-    string $query,
-    int $responseTime,
-    bool $success,
-    int $resultsCount,
-    ?int $languageId,
-    ?string $interactionId,
-    ?float $minScore,
-    ?int $limit
-  ): void
-  {
-    try {
-      // Get database connection
-      $db = Registry::get('Db');
-      $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-      
-      // Get user ID and session ID
-      $userId = 1; // Default user ID
-      $sessionId = session_id();
-      
-      // Get language ID if not provided
-      if ($languageId === null && Registry::exists('Language')) {
-        $languageId = Registry::get('Language')->getId();
-      }
-      
-      // Build metadata
-      $metadata = json_encode([
-        'source' => 'documents',
-        'query' => $query,
-        'results_count' => $resultsCount,
-        'min_score' => $minScore,
-        'limit' => $limit
-      ]);
-      
-      // Insert statistics
-      $sql = "INSERT INTO {$prefix}rag_statistics 
-              (query_type, success, response_time, response_time_ms, metadata, 
-               interaction_id, user_id, session_id, language_id, date_added, created_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-      
-      $stmt = $db->prepare($sql);
-      $stmt->execute([
-        'semantic',
-        $success ? 1 : 0,
-        $responseTime,
-        $responseTime,
-        $metadata,
-        $interactionId,
-        $userId,
-        $sessionId,
-        $languageId
-      ]);
-      
-      if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
-        self::logSecurityEvent(
-          "Statistics recorded: query_type=semantic, success={$success}, response_time={$responseTime}ms, results={$resultsCount}",
-          'info'
-        );
-      }
-      
-    } catch (\Exception $e) {
-      // Log error but don't throw - statistics recording should not break the search
-      error_log("SemanticAgent::recordSearchStatistics() error: " . $e->getMessage());
-    }
   }
 
   /**

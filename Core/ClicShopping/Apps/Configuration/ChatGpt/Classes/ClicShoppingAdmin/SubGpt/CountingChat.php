@@ -168,7 +168,7 @@ final class CountingChat implements ChatInterface
     $fresh = $response !== null && $response !== $this->chargedResponse;
     $this->chargedResponse = $response;
 
-    LlmCallCounter::recordTokens($fresh ? $response : null);
+    LlmCallCounter::recordTokens($fresh ? $response : null, property_exists($this->inner, 'model') ? $this->inner->model : null);
   }
 
   /**

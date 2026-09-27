@@ -63,6 +63,7 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
     // ============================================
     // 2. VALIDATE REQUEST
     // ============================================
+    Gpt::openLlmRequest();
     $validation = RequestValidator::validateRequest($_POST);
 
     if (!$validation['valid']) {

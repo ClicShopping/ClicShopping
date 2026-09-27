@@ -59,6 +59,7 @@ class StatisticsManager
     }
 
     $statsTracker->setTokens($prompt, $completion);
+    $statsTracker->setTokensByModel(Gpt::getLlmTokensByModel());
 
     error_log(sprintf(
       '📊 Tokens recorded: prompt=%d, completion=%d, total=%d',
@@ -283,6 +284,37 @@ class StatisticsManager
   }
   
   /**
+   * Attribute tokens, model, provider and cost to the tracker when its path did not.
+   * Idempotent; runs before BOTH writes, rag_interactions snapshots the cost first.
+   * model_used = the model that consumed most; the cost itself is priced per model.
+   *
+   * @param StatisticsTracker $statsTracker Statistics tracker instance
+   * @return void
+   */
+  private static function attribute(StatisticsTracker $statsTracker): void
+  {
+    if ($statsTracker->getMetric('tokens_total') === null) {
+      self::recordTokenUsage($statsTracker);
+    }
+
+    if ($statsTracker->getMetric('model_used') !== null) {
+      return;
+    }
+
+    $model = Gpt::defaultModel();
+    $most = -1;
+
+    foreach ($statsTracker->getTokensByModel() as $name => $tokens) {
+      if ((string)$name !== '' && $tokens['prompt'] + $tokens['completion'] > $most) {
+        $model = (string)$name;
+        $most = $tokens['prompt'] + $tokens['completion'];
+      }
+    }
+
+    $statsTracker->setApiInfo(ModelManager::getModelProviderMap()[$model] ?? 'unknown', $model);
+  }
+
+  /**
    * Save statistics to database
    *
    * @param StatisticsTracker $statsTracker Statistics tracker instance
@@ -296,6 +328,8 @@ class StatisticsManager
       return false;
     }
     
+    self::attribute($statsTracker);
+
     try {
       $statsSaved = $statsTracker->save();
       
@@ -338,6 +372,7 @@ class StatisticsManager
     StatisticsTracker $statsTracker,
     string $clientInteractionId
   ): array {
+    self::attribute($statsTracker);
     $statsSnapshot = $statsTracker->getAllMetrics();
     
     $tokensUsed = $aiResponse['usage']['total_tokens']

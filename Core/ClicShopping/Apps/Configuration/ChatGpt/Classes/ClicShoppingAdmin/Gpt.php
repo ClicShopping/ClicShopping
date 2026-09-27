@@ -394,6 +394,26 @@ class Gpt
   }
 
   /**
+   * Open the LLM count at a request entry point. @see LlmCallCounter::openRequest
+   *
+   * @return void
+   */
+  public static function openLlmRequest(): void
+  {
+    LlmCallCounter::openRequest();
+  }
+
+  /**
+   * @see LlmCallCounter::isRequestOpen
+   *
+   * @return bool
+   */
+  public static function isLlmRequestOpen(): bool
+  {
+    return LlmCallCounter::isRequestOpen();
+  }
+
+  /**
    * Number of real LLM round-trips made since the last reset, across BOTH the façade path
    * and the raw $chat->generateText() path (every chat object is wrapped at construction).
    * Unlike rag_statistics (one row per interaction), this is the exact per-request call count.
@@ -457,10 +477,21 @@ class Gpt
    * from its own JSON body. Unreadable usage is filed as an unmeasured call, never as a zero.
    *
    * @param mixed $usage Decoded response body, or null when the call brought none back.
+   * @param string|null $model Model the request was sent to
    */
-  public static function recordLlmTokens(mixed $usage): void
+  public static function recordLlmTokens(mixed $usage, ?string $model = null): void
   {
-    LlmCallCounter::recordTokens($usage);
+    LlmCallCounter::recordTokens($usage, $model);
+  }
+
+  /**
+   * Tokens per model of the current request. @see LlmCallCounter::tokensByModel
+   *
+   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
+   */
+  public static function getLlmTokensByModel(): array
+  {
+    return LlmCallCounter::tokensByModel();
   }
 
   /**

@@ -508,11 +508,11 @@ class HallucinationDetector
     $result['suggested_action'] = isset($result['suggested_action']) && in_array($result['suggested_action'], $validActions, true)
       ? $result['suggested_action']
       : 'allow';
-    // Deterministic net (no regex, LLM-agnostic): promote an in-context "allow" to
-    // ask_clarification when the LLM itself signalled the query cannot be resolved to one data request
+    // Deterministic net (no regex, LLM-agnostic): promote an in-context "allow" to ask_clarification
+    // on options or "unintelligible" only — "underspecified" + allow means the LLM found a safe default.
     if ($result['suggested_action'] === 'allow' && $result['is_out_of_context'] === false) {
       $hasClarificationOptions = !empty($result['clarification_options']) && is_array($result['clarification_options']);
-      $categoryNeedsClarification = in_array($result['detected_category'], ['underspecified', 'unintelligible'], true);
+      $categoryNeedsClarification = $result['detected_category'] === 'unintelligible';
 
       if ($hasClarificationOptions || $categoryNeedsClarification) {
         $result['suggested_action'] = 'ask_clarification';

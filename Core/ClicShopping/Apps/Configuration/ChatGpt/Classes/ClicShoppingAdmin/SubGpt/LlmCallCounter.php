@@ -107,6 +107,9 @@ final class LlmCallCounter
 
   private static int $count = 0;
 
+  /** True once an entry point opened the request: an inner reset must not drop its earlier calls. */
+  private static bool $requestOpen = false;
+
   /** @var array<string, int> round-trips per role, same scope as $count */
   private static array $byRole = [];
 
@@ -124,6 +127,9 @@ final class LlmCallCounter
 
   /** @var array<string, array{prompt:int,completion:int,reasoning:int}> tokens per CALL SITE */
   private static array $tokensBySite = [];
+
+  /** @var array<string, array{prompt:int,completion:int,reasoning:int}> tokens per MODEL ('' = not reported) */
+  private static array $tokensByModel = [];
 
   /**
    * @var array<string, int> round-trips whose provider reported NO usage, per call site. A
@@ -189,8 +195,9 @@ final class LlmCallCounter
    *
    * @param mixed $usage Provider response, its `usage` member, or a decoded JSON body.
    *                     Anything unreadable counts as a NAMED unmeasured call, never a zero.
+   * @param string|null $model Catalog key of the model that served the call, so each call is priced at its own rate.
    */
-  public static function recordTokens(mixed $usage): void
+  public static function recordTokens(mixed $usage, ?string $model = null): void
   {
     $site = self::deriveSite();
     self::captureLine('usage', self::unwrapUsage($usage));
@@ -206,6 +213,7 @@ final class LlmCallCounter
     foreach ($tokens as $kind => $n) {
       self::$tokensByRole[$role][$kind] = (self::$tokensByRole[$role][$kind] ?? 0) + $n;
       self::$tokensBySite[$site][$kind] = (self::$tokensBySite[$site][$kind] ?? 0) + $n;
+      self::$tokensByModel[$model ?? ''][$kind] = (self::$tokensByModel[$model ?? ''][$kind] ?? 0) + $n;
     }
   }
 
@@ -229,6 +237,16 @@ final class LlmCallCounter
   public static function tokensBySite(): array
   {
     return self::$tokensBySite;
+  }
+
+  /**
+   * Tokens per model since the last reset, same shape as {@see self::tokensByRole()}.
+   *
+   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
+   */
+  public static function tokensByModel(): array
+  {
+    return self::$tokensByModel;
   }
 
   /**
@@ -271,16 +289,37 @@ final class LlmCallCounter
     return self::$bySite;
   }
 
+
+  /**
+   * Scope the count to a whole web request, from its entry point: calls made before the
+   * orchestrator (security pre-check) are then kept.
+   */
+  public static function openRequest(): void
+  {
+    self::reset();
+    self::$requestOpen = true;
+  }
+
+  /**
+   * Whether an entry point already scoped the count.
+   */
+  public static function isRequestOpen(): bool
+  {
+    return self::$requestOpen;
+  }
+
   /**
    * Reset the counter to zero. Call once at the start of a request to scope the count to it.
    */
   public static function reset(): void
   {
+    self::$requestOpen = false;
     self::$count = 0;
     self::$byRole = [];
     self::$bySite = [];
     self::$tokensByRole = [];
     self::$tokensBySite = [];
+    self::$tokensByModel = [];
     self::$unmeasured = [];
   }
 
