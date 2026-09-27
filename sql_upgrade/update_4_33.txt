@@ -661,3 +661,6 @@ INSERT INTO clic_configuration VALUES(null, 'Voulez-vous bloquer les appels sort
 
 //Add currency
   ALTER TABLE `clic_countries` ADD `country_currency_code` VARCHAR(256) NULL DEFAULT NOT NULL AFTER `status`, ADD INDEX `country_currency_code` (`Country local currency code (EUR, CAS, USD ...)`);
+
+//SEC-PWD — admin password reset by single-use emailed link (only the SHA-256 of the token is stored)
+ALTER TABLE `clic_administrators` ADD `password_reset_key` CHAR(64) NULL DEFAULT NULL COMMENT 'SHA-256 hash of the emailed password reset token - never the token itself' AFTER `email_verification_expiry`, ADD `password_reset_date` DATETIME NULL DEFAULT NULL COMMENT 'When the password reset was requested - the link expires after it' AFTER `password_reset_key`;

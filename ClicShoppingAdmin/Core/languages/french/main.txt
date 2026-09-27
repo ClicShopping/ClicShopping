@@ -682,3 +682,5 @@ Nous effectuons une recherche Google Shopping à la place.
 
 text_rate_limiter_wait = Veuillez attendre {{wait}} secondes avant de relancer cette opération.
 error_data_encryption_missing = Sécurité : la clé data_encryption est absente de Core/ClicShopping/Conf/global.php. Les données clients ne peuvent plus être chiffrées tant qu'elle n'est pas ajoutée. Relancez l'installation SANS réinstaller la base pour régénérer le fichier, ou ajoutez la ligne à la main puis remettez les droits en lecture seule.
+text_browser_unsupported_title = Navigateur non pris en charge
+text_browser_unsupported = Ce navigateur est trop ancien pour utiliser l'administration en sécurité : il n'envoie pas l'en-tête de sécurité Sec-Fetch-Site. Veuillez le mettre à jour ou utiliser un navigateur récent (Chrome, Edge, Firefox, Safari).

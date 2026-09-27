@@ -10,7 +10,9 @@ namespace ClicShopping\Sites\Shop\Pages\Account\Actions\LogInAuth;
 
 use ClicShopping\Apps\Configuration\TemplateEmail\Classes\Shop\TemplateEmail;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Shop\EmailVerification;
 
 class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
@@ -81,14 +83,33 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       CLICSHOPPING::redirect(null, 'Info&Cookies');
     }
 
-    if (!isset($_SESSION['email_address']) || !isset($_SESSION['password'])) {
-      unset($_SESSION['email_address']);
-      unset($_SESSION['password']);
+    if (!isset($_SESSION['email_address'], $_SESSION['login_auth_customer_id'])) {
+      unset($_SESSION['email_address'], $_SESSION['login_auth_customer_id']);
       CLICSHOPPING::redirect('Account&LogIn');
     }
 
+// The second factor is proven here, on the very request that opens the session.
+    if (!isset($_POST['email_code'], $_POST['formid']) || !\is_string($_POST['formid']) || empty($_SESSION['sessiontoken']) || !hash_equals($_SESSION['sessiontoken'], $_POST['formid'])) {
+      $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_email_code_required'), 'error');
+      CLICSHOPPING::redirect(null, 'Account&LogInAuth');
+    }
+
+    // A few tries per proven password: beyond, the password must be entered again.
+    $_SESSION['email_code_attempts'] = ($_SESSION['email_code_attempts'] ?? 0) + 1;
+
+    if ($_SESSION['email_code_attempts'] > 5) {
+      unset($_SESSION['email_address'], $_SESSION['login_auth_customer_id'], $_SESSION['email_code_attempts'], $_SESSION['email_code']);
+      $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_email_code_invalid'), 'error');
+      CLICSHOPPING::redirect(null, 'Account&LogIn');
+    }
+
+    if (!EmailVerification::verifyCode($_SESSION['email_address'], HTML::sanitize($_POST['email_code']))) {
+      $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_email_code_invalid'), 'error');
+      CLICSHOPPING::redirect(null, 'Account&LogInAuth');
+    }
+
 // activate the login session or not
-    if (isset($_SESSION['email_address']) && isset($_SESSION['password'])) {
+    if (isset($_SESSION['email_address'], $_SESSION['login_auth_customer_id'])) {
       $array_sql =  ['customers_id'];
 
       $Qcheck = $this->db->get('customers', $array_sql, ['customers_email_address' => $_SESSION['email_address']], null, 1);
@@ -113,9 +134,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       if ($login_customer_id > 0) {
         $this->customer->setData($login_customer_id);
 	
-        if (isset($_SESSION['email_code'])) {
-          unset($_SESSION['email_code']);
-        }
+        unset($_SESSION['email_code'], $_SESSION['login_auth_customer_id'], $_SESSION['email_code_attempts']);
       }
 
       $Qupdate = $this->db->prepare('update :table_customers_info

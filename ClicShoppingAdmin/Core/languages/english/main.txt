@@ -614,3 +614,5 @@ We are performing a Google Shopping search instead.
 
 text_rate_limiter_wait = Please wait {{wait}} seconds before restarting this operation.
 error_data_encryption_missing = Security: the key data_encryption is missing from Core/ClicShopping/Conf/global.php. Customer data can no longer be encrypted until it is added. Run the installation again WITHOUT reinstalling the database to regenerate the file, or add the line manually then restore the read-only permission.
+text_browser_unsupported_title = Browser not supported
+text_browser_unsupported = This browser is too old to use the administration safely: it does not send the Sec-Fetch-Site security header. Please update it or use a recent browser (Chrome, Edge, Firefox, Safari).

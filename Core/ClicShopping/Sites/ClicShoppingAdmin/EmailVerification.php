@@ -82,7 +82,7 @@ public static function isEnabledForAdmin(string $username): bool
     $Qcheck->bindValue(':user_name', $username);
     $Qcheck->execute();
 
-    if ($Qcheck->fetch() !== false) {
+    if ($Qcheck->fetch() !== false && $Qcheck->valueInt('email_verification') === 1) {
       return true;
     }
 

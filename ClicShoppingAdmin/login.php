@@ -32,6 +32,9 @@
 
   $action = $_GET['action'] ?? '';
 
+  $reset_view = false;
+  $reset_expiry_minutes = 60;
+
 // Force logout if an active administrator session exists
   if (isset($_SESSION['admin'])) {
     $action = 'logoff';
@@ -82,6 +85,21 @@
 
             if ($Qadmin->fetch() !== false) {
               if (Hash::verify($password, $Qadmin->value('user_password'))) {
+                $CLICSHOPPING_ActionRecorder->_user_id = $Qadmin->valueInt('id');
+                $CLICSHOPPING_ActionRecorder->record();
+
+                // The second factor comes before the session: a password alone never opens it.
+                if (EmailVerification::isEnabledForAdmin($username)) {
+                  unset($_SESSION['email_code_attempts']);
+
+                  if (EmailVerification::sendVerificationCode($username)) {
+                    $_SESSION['username'] = $username;
+                    $_SESSION['email_verified'] = true;
+                  }
+
+                  CLICSHOPPING::redirect('login.php');
+                }
+
                 $_SESSION['admin'] = [
                   'id'       => $Qadmin->valueInt('id'),
                   'username' => $Qadmin->value('user_name'),
@@ -89,17 +107,7 @@
                   'status'   => $Qadmin->value('status'),
                 ];
 
-                $CLICSHOPPING_ActionRecorder->_user_id = $_SESSION['admin']['id'];
-                $CLICSHOPPING_ActionRecorder->record();
-
-                //****************************
-                // Check Double authtification
-                //****************************
-                if (EmailVerification::isEnabledForAdmin($username)) {
-                  $_SESSION['username'] = $username;
-                  $_SESSION['password'] = $password;
-                  CLICSHOPPING::redirect('login.php', 'action=emailVerify');
-                } elseif (isset($_SESSION['redirect_origin'])) {
+                if (isset($_SESSION['redirect_origin'])) {
                   $page       = $_SESSION['redirect_origin']['page'];
                   $get_string = http_build_query($_SESSION['redirect_origin']['get']);
 
@@ -135,8 +143,7 @@
       case 'logoff':
         $CLICSHOPPING_Hooks->call('Account', 'LogoutBefore');
 
-        unset($_SESSION['admin']);
-        unset($_SESSION['email_verified']);
+        unset($_SESSION['admin'], $_SESSION['email_verified'], $_SESSION['username'], $_SESSION['email_code_attempts']);
 
         if (isset($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']) && !empty($_SERVER['PHP_AUTH_PW'])) {
           $_SESSION['auth_ignore'] = true;
@@ -154,7 +161,7 @@
 
         $Qcheck = $CLICSHOPPING_Db->get('administrators', 'id', null, null, 1);
 
-        if (!$Qcheck->check()) {
+        if (!$Qcheck->check() && isset($_POST['username'], $_POST['password'], $_POST['name'], $_POST['first_name'])) {
           $username   = HTML::sanitize($_POST['username']);
           $password   = HTML::sanitize($_POST['password']);
           $name       = HTML::sanitize($_POST['name']);
@@ -178,101 +185,145 @@
         break;
 
       // ----------------------------------------------------
-      // SEND PASSWORD RESET
+      // SEND PASSWORD RESET LINK
       // ----------------------------------------------------
       case 'send_password':
-        $error = false;
         $CLICSHOPPING_Hooks->call('PreAction', 'SendPassword');
 
-        if ($error === false) {
+        if (isset($_POST['username'], $_POST['formid']) && \is_string($_POST['formid']) && !empty($_SESSION['sessiontoken']) && hash_equals($_SESSION['sessiontoken'], $_POST['formid'])) {
           $username = HTML::sanitize($_POST['username']);
 
-            $Qcheck = $CLICSHOPPING_Db->prepare('select id
-                                                 from :table_administrators
-                                                 where user_name = :user_name
-                                                 limit 1
-                                                ');
-            $Qcheck->bindValue(':user_name', $username);
-            $Qcheck->execute();
+          $Qadmin = $CLICSHOPPING_Db->get('administrators', 'id', ['user_name' => $username, 'status' => 1]);
 
-            if ($Qcheck->rowCount() == 1 && Is::EmailAddress($username)) {
-            $new_password = Hash::getRandomString((int)ENTRY_PASSWORD_MIN_LENGTH);
-            $crypted_password = Hash::encrypt($new_password);
+          if (Is::EmailAddress($username) && $Qadmin->fetch() !== false) {
+            Registry::set('ActionRecorderAdmin', new ActionRecorderAdmin('ar_reset_password', null, $username));
+            $CLICSHOPPING_ActionRecorder = Registry::get('ActionRecorderAdmin');
 
-            $Qupdate = $CLICSHOPPING_Db->prepare('update :table_administrators
-                                                   set user_password = :user_password
-                                                   where user_name = :user_name
-                                                   limit 1
-                                                ');
-            $Qupdate->bindValue(':user_password', $crypted_password);
-            $Qupdate->bindValue(':user_name', $username);
+            if ($CLICSHOPPING_ActionRecorder->canPerform()) {
+              $CLICSHOPPING_ActionRecorder->record();
 
-            $Qupdate->execute();
+              // Only the hash is stored: reading the table must not yield a usable link.
+              $reset_key = Hash::getRandomString(40);
 
-            $body_subject = CLICSHOPPING::getDef('email_password_reminder_subject', ['store_name' => STORE_NAME]);
+              $CLICSHOPPING_Db->save('administrators', [
+                'password_reset_key' => hash('sha256', $reset_key),
+                'password_reset_date' => 'now()'
+              ], ['id' => $Qadmin->valueInt('id')]);
 
-            $text_array = [
-              'store_name' => STORE_NAME,
-              'remote_address' => $_SERVER['REMOTE_ADDR'],
-              'new_password' => $new_password
-            ];
+              $reset_url = str_replace('&amp;', '&', CLICSHOPPING::link('login.php', 'action=reset_password&account=' . urlencode($username) . '&key=' . $reset_key));
 
-            $email_body = CLICSHOPPING::getDef('email_password_reminder_body', $text_array) . "\n";
-            $email_body .= TemplateEmailAdmin::getTemplateEmailSignature() . "\n";
-            $email_body .= TemplateEmailAdmin::getTemplateEmailTextFooter();
+              $text_array = [
+                'store_name' => STORE_NAME,
+                'remote_address' => HTTP::getIpAddress(),
+                'reset_url' => $reset_url,
+                'expiry_minutes' => $reset_expiry_minutes
+              ];
 
-            $to_addr = $username;
-            $from_name = STORE_OWNER;
-            $from_addr = STORE_OWNER_EMAIL_ADDRESS;
-            $to_name = NULL;
-            $subject = $body_subject;
+              $email_body = CLICSHOPPING::getDef('email_password_reminder_body', $text_array) . "\n";
+              $email_body .= TemplateEmailAdmin::getTemplateEmailSignature() . "\n";
+              $email_body .= TemplateEmailAdmin::getTemplateEmailTextFooter();
 
-            $CLICSHOPPING_Mail->addHtml($email_body);
-            $CLICSHOPPING_Mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
+              $subject = CLICSHOPPING::getDef('email_password_reminder_subject', ['store_name' => STORE_NAME]);
 
-            $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('success_password_sent'), 'success');
-          } else {
-            $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_no_email_address_found'), 'error, again 1 time before to block your IP address');
+              $CLICSHOPPING_Mail->addHtml($email_body);
+              $CLICSHOPPING_Mail->send($username, STORE_OWNER, STORE_OWNER_EMAIL_ADDRESS, null, $subject);
+            } else {
+              $CLICSHOPPING_ActionRecorder->record(false);
+            }
           }
 
+          // Same answer whether or not the account exists.
+          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('success_password_sent'), 'success');
           $CLICSHOPPING_Hooks->call('Login', 'SendPassword');
+        }
+
+        CLICSHOPPING::redirect('login.php');
+        break;
+
+      // ----------------------------------------------------
+      // CHOOSE A NEW PASSWORD FROM THE EMAILED LINK
+      // ----------------------------------------------------
+      case 'reset_password':
+        $reset_admin_id = 0;
+
+        if (isset($_GET['account'], $_GET['key']) && \is_string($_GET['account']) && \is_string($_GET['key']) && \strlen($_GET['key']) === 40) {
+          $Qreset = $CLICSHOPPING_Db->prepare('select id,
+                                                      password_reset_key
+                                               from :table_administrators
+                                               where user_name = :user_name
+                                               and status = 1
+                                               and password_reset_date >= date_sub(now(), interval :expiry_minutes minute)
+                                               limit 1
+                                              ');
+          $Qreset->bindValue(':user_name', HTML::sanitize($_GET['account']));
+          $Qreset->bindInt(':expiry_minutes', $reset_expiry_minutes);
+          $Qreset->execute();
+
+          if ($Qreset->fetch() !== false && hash_equals((string)$Qreset->value('password_reset_key'), hash('sha256', $_GET['key']))) {
+            $reset_admin_id = $Qreset->valueInt('id');
+          }
+        }
+
+        if ($reset_admin_id === 0) {
+          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_reset_link_invalid'), 'error');
           CLICSHOPPING::redirect('login.php');
         }
+
+        if (isset($_POST['password'], $_POST['confirmation'], $_POST['formid']) && \is_string($_POST['formid']) && !empty($_SESSION['sessiontoken']) && hash_equals($_SESSION['sessiontoken'], $_POST['formid'])) {
+          $password_new = HTML::sanitize($_POST['password']);
+
+          if (\strlen($password_new) < (int)ENTRY_PASSWORD_MIN_LENGTH) {
+            $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_password_too_short', ['min_length' => (int)ENTRY_PASSWORD_MIN_LENGTH]), 'error');
+          } elseif ($password_new !== HTML::sanitize($_POST['confirmation'])) {
+            $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_password_not_matching'), 'error');
+          } else {
+            $CLICSHOPPING_Db->save('administrators', [
+              'user_password' => Hash::encrypt($password_new),
+              'password_reset_key' => 'null',
+              'password_reset_date' => 'null',
+              'last_modified' => 'now()'
+            ], ['id' => $reset_admin_id]);
+
+            $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('success_password_reset'), 'success');
+            CLICSHOPPING::redirect('login.php');
+          }
+        }
+
+        $reset_view = true;
         break;
 
       // ----------------------------------------------------
       // TWO-FACTOR AUTHENTICATION: SEND VERIFICATION CODE
       // ----------------------------------------------------
       case 'emailVerify':
-        $error = false;
+        unset($_SESSION['username'], $_SESSION['email_verified'], $_SESSION['email_code_attempts']);
 
         if (isset($_POST['username'], $_POST['password'])) {
-          $_SESSION['username'] = HTML::sanitize($_POST['username']);
-          $_SESSION['password'] = HTML::sanitize($_POST['password']);
+          $username = HTML::sanitize($_POST['username']);
+          $password = HTML::sanitize($_POST['password']);
 
-          $username = $_SESSION['username'];
-          $password = $_SESSION['password'];
+          Registry::set('ActionRecorderAdmin', new ActionRecorderAdmin('ar_admin_login', null, $username));
+          $CLICSHOPPING_ActionRecorder = Registry::get('ActionRecorderAdmin');
 
-          $sql_array = [
-            'id',
-            'user_name',
-            'user_password',
-            'access',
-            'status'
-          ];
+          if (!$CLICSHOPPING_ActionRecorder->canPerform()) {
+            $minutes = \defined('MODULE_ACTION_RECORDER_ADMIN_LOGIN_MINUTES') ? (int)MODULE_ACTION_RECORDER_ADMIN_LOGIN_MINUTES : 5;
+            $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_action_recorder', ['module_action_recorder_admin_login_minutes' => $minutes]), 'error');
+            CLICSHOPPING::redirect('login.php');
+          }
 
-          $Qcheck = $CLICSHOPPING_Db->get('administrators', $sql_array, ['user_name' => $username, 'status' => 1]);
+          $Qcheck = $CLICSHOPPING_Db->get('administrators', ['id', 'user_name', 'user_password'], ['user_name' => $username, 'status' => 1]);
 
-          if (!empty($Qcheck->value('user_name'))) {
-            if (Hash::verify($password, $Qcheck->value('user_password'))) {
-              if (EmailVerification::sendVerificationCode($username)) {
-                $_SESSION['email_verified'] = true;
-              }
-            } else {
-              $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_invalid_administrator'), 'error');
-              CLICSHOPPING::redirect('login.php');
+          // The username is kept for the code step only once the password is proven.
+          if ($Qcheck->fetch() !== false && Hash::verify($password, $Qcheck->value('user_password'))) {
+            $CLICSHOPPING_ActionRecorder->_user_id = $Qcheck->valueInt('id');
+            $CLICSHOPPING_ActionRecorder->record();
+
+            if (EmailVerification::sendVerificationCode($username)) {
+              $_SESSION['username'] = $username;
+              $_SESSION['email_verified'] = true;
             }
           } else {
+            $CLICSHOPPING_ActionRecorder->record(false);
             $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_invalid_administrator'), 'error');
             CLICSHOPPING::redirect('login.php');
           }
@@ -288,7 +339,16 @@
       case 'email_code':
         $error = false;
 
-        if (isset($_POST['email_code_sent'])) {
+        if (isset($_POST['email_code_sent'], $_SESSION['username']) && ($_SESSION['email_verified'] ?? false) === true) {
+          // A few tries per proven password: beyond, the password must be entered again.
+          $_SESSION['email_code_attempts'] = ($_SESSION['email_code_attempts'] ?? 0) + 1;
+
+          if ($_SESSION['email_code_attempts'] > 5) {
+            unset($_SESSION['username'], $_SESSION['email_verified'], $_SESSION['email_code_attempts']);
+            $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_email_verification_failed'), 'error');
+            CLICSHOPPING::redirect('login.php');
+          }
+
           $email_code = HTML::sanitize($_POST['email_code_sent']);
           $username = HTML::sanitize($_SESSION['username']);
 
@@ -306,6 +366,8 @@
             $Qadmin = $CLICSHOPPING_Db->get('administrators', $sql_array, ['user_name' => $username, 'status' => 1]);
 
             if ($Qadmin->fetch() !== false) {
+              unset($_SESSION['username'], $_SESSION['email_verified'], $_SESSION['email_code_attempts']);
+
               $_SESSION['admin'] = [
                 'id' => $Qadmin->valueInt('id'),
                 'username' => $Qadmin->value('user_name'),
@@ -336,7 +398,7 @@
       // TWO-FACTOR AUTHENTICATION: RESEND VERIFICATION CODE
       // ----------------------------------------------------
       case 'resend_code':
-        if (isset($_SESSION['username'])) {
+        if (isset($_SESSION['username']) && ($_SESSION['email_verified'] ?? false) === true) {
           $username = HTML::sanitize($_SESSION['username']);
 
           $CLICSHOPPING_Db = Registry::get('Db');
@@ -476,9 +538,41 @@
   }
 
 // ============================================================
+// VIEW: NEW PASSWORD FROM THE EMAILED LINK
+// ============================================================
+  if ($reset_view === true) {
+    ?>
+    <?php echo HTML::form('reset_password', CLICSHOPPING::link('login.php', 'action=reset_password&account=' . urlencode($_GET['account']) . '&key=' . urlencode($_GET['key'])), 'post', '', ['tokenize' => true]); ?>
+    <div id="loginModal" tabindex="-1" role="document" aria-hidden="true" style="padding-top:10rem;">
+      <div class="modal-dialog" style="max-width: 32rem; width: 100%;">
+        <div class="modal-content" style="background-color: transparent; border: none; align-items: center; width: 100%;">
+          <div class="modal-header" style="width: 100%;">
+            <h2 style="color:#233C7A; text-align: center; width: 100%;">
+              <?php echo CLICSHOPPING::getDef('heading_title_reset_password'); ?>
+            </h2>
+          </div>
+          <div class="modal-body" style="width:100%; padding:3rem 1.5rem 1.5rem 1.5rem;">
+            <div class="input-group" style="width: 100%;">
+              <?php echo HTML::passwordField('password', '', 'placeholder="' . CLICSHOPPING::getDef('text_new_text_password') . '" required aria-required="true" autocomplete="new-password"'); ?>
+            </div>
+            <div class="mt-1"></div>
+            <div class="input-group" style="width: 100%;">
+              <?php echo HTML::passwordField('confirmation', '', 'placeholder="' . CLICSHOPPING::getDef('text_password_confirmation') . '" required aria-required="true" autocomplete="new-password"'); ?>
+            </div>
+          </div>
+          <div class="col-md-12 text-end" style="width: 100%;">
+            <?php echo HTML::button(CLICSHOPPING::getDef('button_submit'), null, null, 'primary'); ?>
+          </div>
+          <div class="py-3"></div>
+        </div>
+      </div>
+    </div>
+    </form>
+    <?php
+// ============================================================
 // VIEW: EMAIL VERIFICATION CODE MODAL
 // ============================================================
-  if (!empty($_SESSION['email_verified']) && $_SESSION['email_verified'] === true) {
+  } elseif (!empty($_SESSION['email_verified']) && $_SESSION['email_verified'] === true) {
     ?>
     <?php echo HTML::form('email_verification', CLICSHOPPING::link('login.php', 'action=email_code')); ?>
     <div id="loginModal" tabindex="-1" role="document" aria-hidden="true" style="padding-top:10rem;">
@@ -662,7 +756,7 @@
     <?php
   } else {
     ?>
-    <?php echo HTML::form('send_password', CLICSHOPPING::link('login.php', 'action=send_password')); ?>
+    <?php echo HTML::form('send_password', CLICSHOPPING::link('login.php', 'action=send_password'), 'post', '', ['tokenize' => true]); ?>
     <div id="loginModal" tabindex="-1" role="document" aria-hidden="true" style="padding-left:10px; padding-right:10px">
       <div class="modal-dialog" style="max-width: 32rem; width: 100%;">
         <div class="modal-content" style="background-color: transparent; border: none; align-items: center; width: 100%;">

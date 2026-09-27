@@ -9,8 +9,6 @@
 namespace ClicShopping\Sites\Shop\Pages\Account\Actions;
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Hash;
-use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Shop\EmailVerification;
 
@@ -30,14 +28,12 @@ class LogInAuth extends \ClicShopping\OM\Domains\PagesActionsAbstract
       CLICSHOPPING::redirect('Account&LogIn');
     }
 
-    if (!isset($_SESSION['email_address']) || !isset($_SESSION['password'])) {
-      unset($_SESSION['email_address']);
-      unset($_SESSION['password']);
+    if (!isset($_SESSION['email_address'], $_SESSION['login_auth_customer_id'])) {
+      unset($_SESSION['email_address'], $_SESSION['login_auth_customer_id']);
 
       CLICSHOPPING::redirect('Account&LogIn');
     } else {
       $email_address = $_SESSION['email_address'];
-      $password = $_SESSION['password'];
     }
 
     // redirect the customer to a friendly cookie-must-be-enabled page if cookies are disabled (or the session has not started)
@@ -71,7 +67,7 @@ class LogInAuth extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if ($Qcheck->fetch() === false) {
       $error = true;
     } else {
-      if (!Hash::verify($password, $Qcheck->value('customers_password'))) {
+      if ($Qcheck->valueInt('customers_id') !== (int)$_SESSION['login_auth_customer_id']) {
         $error = true;
       } else {
         $_SESSION['customer_id'] = $Qcheck->valueInt('customers_id');
@@ -79,36 +75,14 @@ class LogInAuth extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
     }
 
-    if ($error === true && $_SESSION['login_customer_id'] === false) {
+    if ($error === true) {
       $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_login_error'), 'error');
 
       CLICSHOPPING::redirect(null, 'Account&LogIn');
     }
 
-    // activate the login session or not
-    if (isset($_POST['action']) && $_POST['action'] == 'process') {
-      if (isset($_POST['email_code'])) {
-        $email_code = HTML::sanitize($_POST['email_code']);
-        $check = EmailVerification::verifyCode($email_address, $email_code);
-
-        if ($check === true) {
-          $array_sql = [
-            'customers_id',
-            'customers_password',
-          ];
-
-          $Qcheck = $CLICSHOPPING_Db->get('customers', $array_sql, ['customers_email_address' => $email_address], null, 1);
-
-          if ($Qcheck->fetch()) {
-            CLICSHOPPING::redirect(null, 'Account&LogInAuth&Process');
-          }
-        } else {
-          $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_email_code_invalid'), 'error');
-        }
-      } else {
-        $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_email_code_required'), 'error');
-        }
-    } elseif (isset($_GET['action']) && $_GET['action'] == 'resend') {
+    // The code itself is verified by LogInAuth/Process, on the request that opens the session.
+    if (isset($_GET['action']) && $_GET['action'] == 'resend') {
       if (EmailVerification::sendVerificationCode($email_address)) {
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('success_email_verification_code_sent'), 'success');
       } else {

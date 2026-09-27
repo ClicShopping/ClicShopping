@@ -10,8 +10,8 @@
 namespace ClicShopping\Apps\Customers\Customers\Sites\ClicShoppingAdmin\Pages\Home\Actions\Customers;
 
 use ClicShopping\Apps\Configuration\TemplateEmail\Classes\ClicShoppingAdmin\TemplateEmailAdmin;
-use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Customers\Customers\Classes\Shared\PasswordResetLink;
 
 class PasswordForgotten extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
@@ -29,7 +29,6 @@ class PasswordForgotten extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $QcheckCustomer = $CLICSHOPPING_Customer->db->prepare('select customers_firstname,
                                                                      customers_lastname,
-                                                                     customers_password,
                                                                      customers_id,
                                                                      customers_email_address
                                                                from :table_customers
@@ -39,21 +38,13 @@ class PasswordForgotten extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $QcheckCustomer->execute();
 
     if (!empty($QcheckCustomer->value('customers_email_address'))) {
-// Crypted password mods - create a new password, update the database and mail it to them
-      $newpass = Hash::getRandomString(max(16, (int)(\defined('ENTRY_PASSWORD_MIN_LENGTH') ? ENTRY_PASSWORD_MIN_LENGTH : 0)));
-      $crypted_password = Hash::encrypt($newpass);
+// The customer chooses the new password through a reset link: the current one stays valid until then.
+      $reset_url = PasswordResetLink::create($QcheckCustomer->valueInt('customers_id'), $QcheckCustomer->value('customers_email_address'));
 
-      $Qupdate = $CLICSHOPPING_Customer->db->prepare('update :table_customers
-                                                        set customers_password = :customers_password
-                                                        where customers_id = :customers_id
-                                                      ');
-      $Qupdate->bindValue(':customers_password', $crypted_password);
-      $Qupdate->bindInt(':customers_id', (int)$QcheckCustomer->valueInt('customers_id'));
-      $Qupdate->execute();
-
-      $text_password_body = $CLICSHOPPING_Customer->getDef('email_password_reminder_body', ['username' => $QcheckCustomer->value('customers_email_address'),
+      $text_password_body = $CLICSHOPPING_Customer->getDef('email_password_reminder_body', [
+          'username' => $QcheckCustomer->value('customers_email_address'),
           'store_name' => STORE_NAME,
-          'password' => $newpass,
+          'reset_url' => $reset_url,
           'store_name_address' => STORE_NAME_ADDRESS,
           'store_owner_email_address' => STORE_OWNER_EMAIL_ADDRESS
         ]

@@ -50,16 +50,6 @@ class LogIn extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $password = HTML::sanitize($_POST['password']);
 
 
-      // Vérifier si la vérification par email est activée pour ce client
-      if (defined('EMAIL_VERIFICATION_ENABLED_SHOP') && EMAIL_VERIFICATION_ENABLED_SHOP == 'True') {
-        if (EmailVerification::isEnabledForCustomer($email_address)) {
-          $_SESSION['email_address'] = $email_address;
-          $_SESSION['password'] = $password;
-
-          // Rediriger vers la vérification par email
-          CLICSHOPPING::redirect(null, 'Account&LogInAuth');
-        }
-      }
 
 // Check if email exists
       $array_sql = [
@@ -77,6 +67,13 @@ class LogIn extends \ClicShopping\OM\Domains\PagesActionsAbstract
       } else {
         if (!Hash::verify($password, $Qcheck->value('customers_password'))) {
           $error = true;
+        } elseif (defined('EMAIL_VERIFICATION_ENABLED_SHOP') && EMAIL_VERIFICATION_ENABLED_SHOP == 'True' && EmailVerification::isEnabledForCustomer($email_address)) {
+          // Second factor: only the proven account id is kept, never the password.
+          $_SESSION['email_address'] = $email_address;
+          $_SESSION['login_auth_customer_id'] = $Qcheck->valueInt('customers_id');
+          unset($_SESSION['email_code_attempts']);
+
+          CLICSHOPPING::redirect(null, 'Account&LogInAuth');
         } else {
           $_SESSION['login_customer_id'] = $Qcheck->valueInt('customers_id');
         }

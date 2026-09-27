@@ -20,6 +20,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Cookies;
 use ClicShopping\OM\Db;
 use ClicShopping\OM\Hooks;
+use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Language;
 use ClicShopping\OM\Registry;
@@ -48,6 +49,14 @@ class ClicShoppingAdmin extends \ClicShopping\OM\Domains\SitesAbstract
   protected function init()
   {
     global $login_request;
+
+    // A cross-site navigation never runs an admin action: SameSite=Lax still sends the cookie on a link.
+    // fetch/XHR (API, MCP) are not navigations and carry no Lax cookie cross-site: left untouched.
+    if (($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '') === 'cross-site' && ($_SERVER['HTTP_SEC_FETCH_MODE'] ?? '') === 'navigate'
+      && empty($login_request) && (($_SERVER['QUERY_STRING'] ?? '') !== '' || ($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET')) {
+      header('Location: ' . strtok($_SERVER['REQUEST_URI'] ?? '/', '?'), true, 303);
+      exit;
+    }
 
     $CLICSHOPPING_Cookies = new Cookies();
     Registry::set('Cookies', $CLICSHOPPING_Cookies);
@@ -181,6 +190,14 @@ class ClicShoppingAdmin extends \ClicShopping\OM\Domains\SitesAbstract
 
 // Take language session
     $CLICSHOPPING_Language->getLanguageCode();
+
+    // The cross-site gate reads Sec-Fetch-Site: a browser that does not send it cannot use the admin pages.
+    if (PHP_SAPI !== 'cli' && !isset($_SERVER['HTTP_SEC_FETCH_SITE']) && \in_array(CLICSHOPPING::getBaseNameIndex(), ['index.php', 'login.php'], true)) {
+      $CLICSHOPPING_Language->loadDefinitions('main');
+      http_response_code(400);
+      echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' . HTML::outputProtected(CLICSHOPPING::getDef('text_browser_unsupported_title')) . '</title></head><body><p>' . HTML::outputProtected(CLICSHOPPING::getDef('text_browser_unsupported')) . '</p></body></html>';
+      exit;
+    }
 
 // redirect to login page if administrator is not yet logged in
     if (!isset($_SESSION['admin'])) {

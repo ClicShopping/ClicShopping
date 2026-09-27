@@ -65,7 +65,7 @@ class ar_reset_password
    * @param string $user_name The name of the user attempting the action.
    * @return bool Returns true if the user can perform the action, otherwise false.
    */
-  public function canPerform($user_name)
+  public function canPerform($user_id, $user_name = null)
   {
     $CLICSHOPPING_Db = Registry::get('Db');
 

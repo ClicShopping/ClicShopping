@@ -11,6 +11,8 @@ last_modified datetime null comment(Timestamp of last account modification)
 email_verification tinyint(1) default(1) not_null comment(Email verification requirement - 0: not required, 1: required)
 email_verification_code varchar(32) NULL comment(Temporary code for email verification)
 email_verification_expiry datetime NULL comment(Expiration timestamp for verification code)
+password_reset_key char(64) NULL comment(SHA-256 hash of the emailed password reset token - never the token itself)
+password_reset_date datetime NULL comment(When the password reset was requested - the link expires after it)
 
 --
 primary id

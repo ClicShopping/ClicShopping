@@ -6,14 +6,13 @@ text_name = Nom de l'administrateur:
 text_firstname = Prénom de l'administrateur:
 text_create_first_administrator = Il n'y a aucun administrateur actuellement dans la base de données. Veuillez remplir les informations suivantes pour créer un Administrateur. (Une connexion manuelle est requise après cette étape)
 heading_title_sent_password = Récupération de mot de passe perdue
-text_sent_password = Si vous avez oublié votre mot de passe, veuillez insérer votre email ci-dessous afin d'obtenir un nouveau mot de passe.
+text_sent_password = Si vous avez oublié votre mot de passe, saisissez votre email ci-dessous : nous vous enverrons un lien pour en choisir un nouveau.
 text_no_email_address_found = Aucune adresse email ou pseudo n'a été trouvé
 
-email_password_reminder_subject = {{store_name}} (Panel d'administration) - Nouveau mot de passe
-email_password_reminder_body = Un nouveau mot de passe vous a été envoyé à partir de cette adresse IP : {{remote_address}}. <br /><br />
-Votre nouveau mode passe pour accéder au panneau d'administration de {{store_name}} est :{{new_password}}<br /><br />
+email_password_reminder_subject = {{store_name}} (Panel d'administration) - Réinitialisation du mot de passe
+email_password_reminder_body = Une réinitialisation du mot de passe a été demandée depuis l'adresse IP {{remote_address}}.<br /><br />Pour choisir un nouveau mot de passe du panneau d'administration de {{store_name}}, ouvrez ce lien dans les {{expiry_minutes}} minutes :<br /><a href="{{reset_url}}">{{reset_url}}</a><br /><br />Si vous n'êtes pas à l'origine de cette demande, ignorez cet email : votre mot de passe actuel reste valable.<br /><br />
 
-success_password_sent = Succès: un nouveau de passe a été envoyé à votre adresse email.
+success_password_sent = Si cette adresse correspond à un compte administrateur, un email contenant un lien de réinitialisation a été envoyé.
 button_submit = Envoyer
 text_new_text_password = Nouveau mot de passe
 text_administration_panel = Panneau d'administration
@@ -60,3 +59,10 @@ button_resend_code = Renvoyer le code
 success_email_verification_code_sent = Le code de vérification a été envoyé à votre adresse email.
 error_email_verification_failed = Erreur : La vérification a échoué. Veuillez réessayer.
 text_email_code_invalid = Code invalide. Veuillez réessayer.
+
+heading_title_reset_password = Choisir un nouveau mot de passe
+text_password_confirmation = Confirmer le nouveau mot de passe
+error_reset_link_invalid = Erreur : ce lien de réinitialisation est invalide ou a expiré. Veuillez en demander un nouveau.
+error_password_too_short = Erreur : le mot de passe doit contenir au moins {{min_length}} caractères.
+error_password_not_matching = Erreur : les deux mots de passe ne correspondent pas.
+success_password_reset = Succès : votre mot de passe a été modifié. Vous pouvez maintenant vous connecter.
