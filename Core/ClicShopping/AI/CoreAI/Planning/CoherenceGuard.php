@@ -87,13 +87,24 @@ class CoherenceGuard
     }
 
     /**
-     * Name of the percentage-margin column sitting at the impossible bound, or null.
+     * Name of the margin column that has no cost basis, or null: a percentage at the impossible
+     * bound, or every margin column NULL (the lines without a cost were left out of the sum).
      *
      * @param array $row One result row
      * @return string|null Offending column name
      */
     private static function marginWithoutCostBasis(array $row): ?string
     {
+        $marginColumns = array_filter(
+            array_keys($row),
+            static fn($col): bool => self::hasAny(strtolower((string)$col), self::MARGIN_TOKENS)
+        );
+
+        // A refund-only row keeps its amount and loses only its rate: it is not caught here.
+        if ($marginColumns !== [] && array_all($marginColumns, static fn($col): bool => $row[$col] === null)) {
+            return (string)reset($marginColumns);
+        }
+
         foreach ($row as $col => $val) {
             if (!is_numeric($val)) {
                 continue;

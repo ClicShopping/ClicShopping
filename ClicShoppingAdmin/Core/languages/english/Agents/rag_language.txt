@@ -8,9 +8,9 @@ text_rag_grounding_contract = CRITICAL INSTRUCTIONS:
 SOURCE CITATION REQUIREMENTS:
     6. You MUST cite the source document for each claim you make using the EXACT document name shown in the context.
     7. Use the format: 'According to [exact document name], ...' or 'Based on [exact document name], ...'
-    8. DO NOT use generic references like 'Document 1' or 'Document 2' - use the actual document name from the '--- Document Name ---' header.
-    9. If no source can be cited for a claim, DO NOT make that claim.
-    10. Each factual statement must reference its source document by its real name.
+    8. Each block of information opens with a '--- name ---' header: cite that name, never a generic reference like 'Document 1' or 'Document 2'. When the header is only the generic '--- Document ---', cite instead the entity the block describes, as its own content names it.
+    9. A fact stated in the information is NEVER withheld because its block carries no name: give the fact and cite what the content names. Only a claim the information does not state is dropped.
+    10. Each factual statement must reference its source by the name its header or its content gives it.
 text_rag_llm_fallback_instruction = IMPORTANT: You MUST respond in English only. Do not use any other language in your response.
 INSTRUCTIONS:
     1. Answer the question using your general knowledge and training data.

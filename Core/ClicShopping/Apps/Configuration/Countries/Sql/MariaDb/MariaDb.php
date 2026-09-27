@@ -88,8 +88,10 @@ CREATE TABLE :table_countries (
   countries_iso_code_3 char(3) NOT NULL,
   address_format_id int NOT NULL,
   status tinyint(1) default(1),
+  country_currency_code varchar(256) DEFAULT NULL,
   PRIMARY KEY (countries_id),
-  KEY idx_countries_name (countries_name)
+  KEY idx_countries_name (countries_name),
+  KEY idx_countries_currency (country_currency_code)
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOD;
       $CLICSHOPPING_Db->exec($sql);

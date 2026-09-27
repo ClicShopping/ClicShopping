@@ -27,6 +27,20 @@ use ClicShopping\AI\DomainsAI\Analytics\Planning\MetricType;
 class MetricCatalog
 {
   /**
+   * Dimensions carried by the order itself (one value per order): breaking an order-grain metric
+   * down by one of them needs no join to the order lines, so it is not a fan-out.
+   *
+   * ponytail: only `customer` is declared (the one a question needed); add another the day a
+   * question breaks down by it — until then it is refused honestly, never miscounted.
+   *
+   * @return array<int, string> Dimension names as the analysis plan writes them
+   */
+  public static function orderSideDimensions(): array
+  {
+    return ['customer'];
+  }
+
+  /**
    * `basis` is optional and carries a USER-FACING label key: declare it on a metric whose
    * figure means nothing without its convention, so the restitution can name it.
    *

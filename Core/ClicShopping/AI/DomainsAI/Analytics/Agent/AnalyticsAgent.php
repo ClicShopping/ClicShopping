@@ -983,7 +983,9 @@ class AnalyticsAgent implements AgentInterface
       return null;
     }
 
-    $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId);
+    $orderSideDimensions = method_exists($domainApp, 'getOrderSideDimensions') ? $domainApp->getOrderSideDimensions() : [];
+
+    $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId, $orderSideDimensions);
 
     return $this->analysisPlanner;
   }

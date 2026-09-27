@@ -48,6 +48,7 @@ Si la requête contient des conjonctions reliant DEUX QUESTIONS/DEMANDES DISTINC
 Si la requête emploie "et" / "puis" / "then" / des virgules pour relier des ATTRIBUTS ou des DÉTAILS d'une SEULE entité, classez avec le TYPE UNIQUE (pas hybrid) :
 {{single_entity_examples}}
 - RÈGLE : relier des attributs d'UNE entité = type unique, même avec "puis" / "then".
+- LIMITE DE CETTE EXCEPTION : une seconde demande qui RENVOIE au résultat de la première ("this one", "that item", "those", "them", "ce ...", "ces ...") n'est PAS un attribut d'une entité connue - l'entité n'est connue qu'une fois la première partie répondue. C'est une question distincte et dépendante -> "hybrid", même quand les deux parties sont analytics.
 🚨 LES ATTRIBUTS STRUCTURÉS DU CATALOGUE SONT TOUJOURS ANALYTICS (jamais semantic) : {{structured_attributes}}. En demander plusieurs sur un même produit = UNE SEULE requête analytics renvoyant plusieurs colonnes — PAS hybrid, PAS semantic. (Semantic = contenu documentaire en texte libre : descriptions, politiques, avis.)
 🚨 LES REQUÊTES MULTI-ENTITÉS RESTENT HYBRID :
 Si la requête porte sur PLUSIEURS ENTITÉS DISTINCTES (même de même type), classez en HYBRID :

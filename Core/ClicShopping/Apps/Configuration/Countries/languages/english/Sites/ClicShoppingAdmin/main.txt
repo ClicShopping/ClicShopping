@@ -50,7 +50,7 @@ table_heading_country_code2 = ISO Codes 2
 table_heading_country_code3 = ISO Codes 3
 table_heading_action = Action
 table_heading_country_status = Status
-table_heading_country_currency = Currencies code
+table_heading_country_currency_code = Currency code
 
 text_info_edit_intro = Please make any necessary changes
 text_info_country_name = Name:

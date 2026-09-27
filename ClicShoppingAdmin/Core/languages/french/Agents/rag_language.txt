@@ -8,9 +8,9 @@ text_rag_grounding_contract = INSTRUCTIONS CRITIQUES:
 EXIGENCES DE CITATION DES SOURCES:
     6. Vous DEVEZ citer le document source pour chaque affirmation que vous faites en utilisant le nom EXACT du document indiqué dans le contexte.
     7. Utilisez le format: 'Selon [nom exact du document], ...' ou 'D'après [nom exact du document], ...'
-    8. NE PAS utiliser de références génériques comme 'Document 1' ou 'Document 2' - utilisez le nom réel du document indiqué dans l'en-tête '--- Nom du Document ---'.
-    9. Si aucune source ne peut être citée pour une affirmation, NE FAITES PAS cette affirmation.
-    10. Chaque déclaration factuelle doit référencer son document source par son nom réel.
+    8. Chaque bloc d'information commence par un en-tête '--- nom ---' : citez ce nom, jamais une référence générique comme 'Document 1' ou 'Document 2'. Quand l'en-tête n'est que le générique '--- Document ---', citez à la place l'entité que le bloc décrit, telle que son propre contenu la nomme.
+    9. Un fait énoncé dans l'information n'est JAMAIS retenu parce que son bloc ne porte pas de nom : donnez le fait et citez ce que le contenu nomme. Seule une affirmation que l'information n'énonce pas est écartée.
+    10. Chaque déclaration factuelle doit référencer sa source par le nom que lui donne son en-tête ou son contenu.
 text_rag_llm_fallback_instruction = IMPORTANT: Vous DEVEZ répondre en français uniquement. N'utilisez aucune autre langue dans votre réponse.
 INSTRUCTIONS:
     1. Répondez à la question en utilisant vos connaissances générales et vos données d'entraînement.

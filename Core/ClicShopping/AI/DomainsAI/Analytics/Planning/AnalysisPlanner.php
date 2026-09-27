@@ -41,10 +41,11 @@ class AnalysisPlanner
   /**
    * @param array<string, array{grain: string, type: string, definition: string}> $catalog Domain metric catalogue
    * @param int $languageId Language ID, needed to resolve the prompt's dynamic placeholders
+   * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
    */
-  public function __construct(array $catalog, int $languageId)
+  public function __construct(array $catalog, int $languageId, array $orderSideDimensions = [])
   {
-    $this->validator = new AnalysisPlanValidator($catalog);
+    $this->validator = new AnalysisPlanValidator($catalog, $orderSideDimensions);
     $this->languageId = $languageId;
   }
 

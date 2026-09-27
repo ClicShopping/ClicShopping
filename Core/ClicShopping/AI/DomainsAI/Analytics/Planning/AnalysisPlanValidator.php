@@ -28,12 +28,20 @@ class AnalysisPlanValidator
   /** @var array<string, array{grain: string, type: string, definition: string}> */
   private array $catalog;
 
+  /** @var array<string, true> Dimensions the domain declares at order grain (one value per order) */
+  private array $orderSideDimensions = [];
+
   /**
    * @param array<string, array{grain: string, type: string, definition: string}> $catalog Domain metric catalogue
+   * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
    */
-  public function __construct(array $catalog)
+  public function __construct(array $catalog, array $orderSideDimensions = [])
   {
     $this->catalog = $catalog;
+
+    foreach ($orderSideDimensions as $dimension) {
+      $this->orderSideDimensions[strtolower(trim((string)$dimension))] = true;
+    }
   }
 
   /**
@@ -180,13 +188,12 @@ class AnalysisPlanValidator
    * A JOIN to reach a product dimension (category, product, supplier) turns one order into one
    * row per line, so an order-level value summed or averaged over it is weighted by lines-per-
    * order - a silently wrong figure. A dimension is order-side (safe) only when it is a declared
-   * `split`; every other dimension is a product breakdown. When the catalogue names a line-grain
+   * `split` or declared order-side; every other dimension is a product breakdown. When the catalogue names a line-grain
    * sibling the metric is swapped to it (revenue per category IS the sum of line revenues);
    * otherwise the value is not attributable to the dimension and is recorded unsatisfiable.
    *
-   * ponytail: order-side dimensions are read as the catalogue's splits; a future non-split
-   * order-side dimension would be over-flagged (an honest refusal, never a wrong number). Give
-   * dimensions their own declared grain then.
+   * Order-side dimensions are the catalogue's splits plus those the domain declares at order grain;
+   * an undeclared one is read as a product breakdown (an honest refusal, never a wrong number).
    *
    * @param array<int, array{name: string, grain: string, type: string}> $metrics Validated metrics
    * @param array<int, string> $dimensions Resolved dimensions
@@ -203,7 +210,8 @@ class AnalysisPlanValidator
       }
     }
 
-    $productDimensions = array_filter($dimensions, static fn($d): bool => !isset($splitDimensions[$d]));
+    $orderSide = $this->orderSideDimensions;
+    $productDimensions = array_filter($dimensions, static fn($d): bool => !isset($splitDimensions[$d]) && !isset($orderSide[strtolower(trim((string)$d))]));
 
     if ($productDimensions === []) {
       return $metrics;

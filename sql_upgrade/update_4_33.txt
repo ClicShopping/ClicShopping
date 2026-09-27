@@ -660,7 +660,8 @@ INSERT INTO clic_configuration VALUES(null, 'Do you want to block outgoing calls
 INSERT INTO clic_configuration VALUES(null, 'Voulez-vous bloquer les appels sortants vers les réseaux privés ?', 'HTTP_BLOCK_PRIVATE_NETWORK', 'false', 'Refuse tout appel HTTP sortant dont la destination résout vers une adresse de boucle locale, de lien local ou privée (127.0.0.0/8, 10/8, 172.16/12, 192.168/16, 169.254/16, ::1, fc00::/7). Laissez false si cette boutique appelle ses propres services internes - un modèle IA auto-hébergé, un ERP interne - sinon ils deviennent injoignables.', 1, 25, NULL, '2026-09-21 00:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
 
 //Add currency
-  ALTER TABLE `clic_countries` ADD `country_currency_code` VARCHAR(256) NULL DEFAULT NOT NULL AFTER `status`, ADD INDEX `country_currency_code` (`Country local currency code (EUR, CAS, USD ...)`);
+ALTER TABLE `clic_countries` ADD `country_currency_code` VARCHAR(256) NULL DEFAULT NULL COMMENT 'Country local currency code - ISO 4217, e.g. EUR, CAD, USD - null when unknown' AFTER `status`, ADD INDEX `idx_countries_currency` (`country_currency_code`);
+//Seed existing installs: unit_test/2026_09_27/geodb1_country_currency_update.sql (236 UPDATE from ICU, keeps values already set)
 
 //SEC-PWD — admin password reset by single-use emailed link (only the SHA-256 of the token is stored)
 ALTER TABLE `clic_administrators` ADD `password_reset_key` CHAR(64) NULL DEFAULT NULL COMMENT 'SHA-256 hash of the emailed password reset token - never the token itself' AFTER `email_verification_expiry`, ADD `password_reset_date` DATETIME NULL DEFAULT NULL COMMENT 'When the password reset was requested - the link expires after it' AFTER `password_reset_key`;

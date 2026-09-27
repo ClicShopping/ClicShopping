@@ -48,6 +48,7 @@ If the query contains conjunctions connecting TWO DISTINCT QUESTIONS/REQUESTS, c
 If the query uses "and" / "then" / "puis" / commas to connect ATTRIBUTES or DETAILS of a SINGLE entity, classify as the SINGLE TYPE (not hybrid):
 {{single_entity_examples}}
 - RULE: connecting attributes of ONE entity = single type, even with "then" / "puis".
+- LIMIT OF THIS EXCEPTION: a second request that REFERS BACK to the result of the first ("this one", "that item", "those", "them", "ce ...", "ces ...") is NOT an attribute of a known entity - the entity is only known once the first part is answered. It is a separate, dependent question -> "hybrid", even when both parts are analytics.
 🚨 STRUCTURED CATALOG ATTRIBUTES ARE ALWAYS ANALYTICS (never semantic): {{structured_attributes}}. Asking several of these about one product = a SINGLE analytics query returning multiple columns — NOT hybrid, NOT semantic. (Semantic = document/free-text content like descriptions, policies, reviews.)
 🚨 MULTI-ENTITY QUERIES STAY HYBRID:
 If the query requests MULTIPLE DISTINCT ENTITIES (even of the same type), classify as HYBRID:
