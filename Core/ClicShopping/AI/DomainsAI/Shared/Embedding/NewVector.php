@@ -30,6 +30,8 @@ use LLPhant\OllamaConfig;
 use LLPhant\OpenAIConfig;
 use LLPhant\VoyageAIConfig;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\CountingEmbeddingGenerator;
+use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\OutboundPolicy;
 
@@ -104,8 +106,20 @@ class NewVector
   {
     Gpt::getEnvironment();
 
-    $model = CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
+    $model = (string)CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
+    $generator = self::buildEmbeddingsModel($model);
 
+    return $generator === null ? null : new CountingEmbeddingGenerator($generator, $model);
+  }
+
+  /**
+   * Provider generator for the given embedding model, unwrapped.
+   *
+   * @param string $model Configured embedding model key
+   * @return EmbeddingGeneratorInterface|null
+   */
+  private static function buildEmbeddingsModel(string $model): ?EmbeddingGeneratorInterface
+  {
     if (!$model) {
       return null;
     }

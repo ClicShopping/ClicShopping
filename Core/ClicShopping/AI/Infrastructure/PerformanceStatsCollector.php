@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\Infrastructure;
 
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
+use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 use ClicShopping\OM\Registry;
 
 /**
@@ -55,6 +56,7 @@ class PerformanceStatsCollector
     private function getOverviewStats(int $days): array
     {
         try {
+            $attributed = StatisticsTracker::ATTRIBUTED_COST_ROW;
             $sql = "
                 SELECT 
                     COUNT(*) as total_queries,
@@ -62,7 +64,8 @@ class PerformanceStatsCollector
                     MIN(response_time_ms) as min_response_time,
                     MAX(response_time_ms) as max_response_time,
                     SUM(tokens_total) as total_tokens,
-                    SUM(api_cost_usd) as total_cost,
+                    SUM(CASE WHEN {$attributed} THEN api_cost_usd END) as total_cost,
+                    SUM(CASE WHEN {$attributed} THEN 1 ELSE 0 END) as cost_rows,
                     SUM(CASE WHEN error_occurred = 1 THEN 1 ELSE 0 END) as total_errors
                 FROM :table_rag_statistics
                 WHERE date_added >= DATE_SUB(NOW(), INTERVAL :days DAY)
@@ -78,6 +81,7 @@ class PerformanceStatsCollector
             
             $total_queries = $stmt->valueInt('total_queries');
             $total_cost = $stmt->valueDecimal('total_cost');
+            $cost_rows = $stmt->valueInt('cost_rows');
             
             return [
                 'total_queries' => $total_queries,
@@ -86,7 +90,8 @@ class PerformanceStatsCollector
                 'max_response_time' => round($stmt->valueDecimal('max_response_time'), 0),
                 'total_tokens' => $stmt->valueInt('total_tokens'),
                 'total_cost' => $total_cost,
-                'avg_cost_per_query' => $total_queries > 0 ? round($total_cost / $total_queries, 4) : 0,
+                'cost_rows' => $cost_rows,
+                'avg_cost_per_query' => $cost_rows > 0 ? round($total_cost / $cost_rows, 4) : 0,
                 'total_errors' => $stmt->valueInt('total_errors'),
                 'error_rate' => $total_queries > 0 ? round(($stmt->valueInt('total_errors') / $total_queries) * 100, 2) : 0
             ];
@@ -418,6 +423,7 @@ class PerformanceStatsCollector
             'max_response_time' => 0,
             'total_tokens' => 0,
             'total_cost' => 0,
+            'cost_rows' => 0,
             'avg_cost_per_query' => 0,
             'total_errors' => 0,
             'error_rate' => 0

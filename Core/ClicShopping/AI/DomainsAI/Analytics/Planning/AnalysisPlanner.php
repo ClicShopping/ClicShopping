@@ -209,7 +209,10 @@ class AnalysisPlanner
 
       $windows .= "\n" . $this->getDef('text_analysis_plan_time_grain', ['days' => (string)$days])
         . "\n" . $this->getDef('text_analysis_plan_time_grain_shape_' . $shape, ['days' => (string)$days])
-        . ($hasCompanions ? "\n" . $this->getDef('text_analysis_plan_time_grain_companions') : '');
+        . ($hasCompanions ? "\n" . $this->getDef('text_analysis_plan_time_grain_companions') : '')
+        . (!empty($plan['dimensions'])
+          ? "\n" . $this->getDef('text_analysis_plan_time_grain_split', ['dimensions' => implode(', ', $plan['dimensions'])])
+          : '');
     }
 
     $windows = ltrim($windows, "\n");

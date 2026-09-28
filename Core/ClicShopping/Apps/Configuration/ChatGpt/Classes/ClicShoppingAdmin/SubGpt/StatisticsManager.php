@@ -424,34 +424,49 @@ class StatisticsManager
   /**
    * The SQL the run actually executed, read where the response exposes it.
    *
-   * A compound run collapses to its first analytics sub-query: that is what the response itself
-   * carries, not a choice made here.
+   * A planned run carries its SQL only in `sub_queries`: every distinct statement is kept.
    *
    * @param array $aiResponse AI response from orchestrator
    * @return string|null Executed SQL, null when the path ran none
    */
   private static function extractSqlQuery(array $aiResponse): ?string
   {
-    $candidates = [
-      $aiResponse['sql_query'] ?? null,
-      $aiResponse['data']['sql_query'] ?? null,
-      $aiResponse['result']['sql_query'] ?? null,
-    ];
+    foreach ([$aiResponse, $aiResponse['data'] ?? null, $aiResponse['result'] ?? null] as $node) {
+      $sql = is_array($node) ? self::usableSql($node['sql_query'] ?? null) : null;
 
-    foreach ($candidates as $sql) {
-      if (!is_string($sql)) {
-        continue;
-      }
-
-      $sql = trim($sql);
-
-      // 'N/A' is the agent's own placeholder for "no SQL here" — store nothing rather than a word.
-      if ($sql !== '' && strtoupper($sql) !== 'N/A') {
+      if ($sql !== null) {
         return $sql;
       }
     }
 
-    return null;
+    $subQueries = $aiResponse['sub_queries'] ?? $aiResponse['data']['sub_queries'] ?? $aiResponse['result']['sub_queries'] ?? [];
+    $statements = [];
+
+    foreach (is_array($subQueries) ? $subQueries : [] as $subQuery) {
+      $sql = is_array($subQuery) ? self::usableSql($subQuery['sql_query'] ?? null) : null;
+
+      if ($sql !== null) {
+        $statements[$sql] = $sql;
+      }
+    }
+
+    return $statements === [] ? null : implode(";\n\n", $statements);
+  }
+
+  /**
+   * @param mixed $sql Candidate SQL
+   * @return string|null Trimmed SQL, null for a non-string, an empty string or 'N/A'
+   */
+  private static function usableSql(mixed $sql): ?string
+  {
+    if (!is_string($sql)) {
+      return null;
+    }
+
+    $sql = trim($sql);
+
+    // 'N/A' is the agent's own placeholder for "no SQL here" — store nothing rather than a word.
+    return $sql !== '' && strtoupper($sql) !== 'N/A' ? $sql : null;
   }
 
   /**

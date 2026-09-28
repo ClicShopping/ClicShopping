@@ -137,6 +137,9 @@ final class LlmCallCounter
    */
   private static array $unmeasured = [];
 
+  /** @var array<string, array{texts:int,chars:int}> embedding requests per MODEL; not LLM round-trips */
+  private static array $embeddings = [];
+
   /**
    * @var resource|null|false Capture sink of PROMPT-1: `false` = not looked up yet, `null` = off.
    * Opened only when CLICSHOPPING_LLM_CAPTURE names a file — a diagnostic, never a production log.
@@ -261,6 +264,25 @@ final class LlmCallCounter
   }
 
   /**
+   * File texts embedded under their model. Kept out of count(): an embedding is not a chat round-trip.
+   */
+  public static function recordEmbedding(string $model, int $texts, int $chars): void
+  {
+    self::$embeddings[$model]['texts'] = (self::$embeddings[$model]['texts'] ?? 0) + $texts;
+    self::$embeddings[$model]['chars'] = (self::$embeddings[$model]['chars'] ?? 0) + $chars;
+  }
+
+  /**
+   * Embedding volume per model since the last reset, in characters sent (no provider usage).
+   *
+   * @return array<string, array{texts:int,chars:int}>
+   */
+  public static function embeddings(): array
+  {
+    return self::$embeddings;
+  }
+
+  /**
    * Current number of LLM round-trips counted since the last reset.
    */
   public static function count(): int
@@ -321,6 +343,7 @@ final class LlmCallCounter
     self::$tokensBySite = [];
     self::$tokensByModel = [];
     self::$unmeasured = [];
+    self::$embeddings = [];
   }
 
   /**
@@ -409,7 +432,7 @@ final class LlmCallCounter
         continue;
       }
 
-      return $short . '::' . self::normalizeFunction((string)($frame['function'] ?? ''));
+      return $short . '::' . self::normalizeFunction($frame['function']);
     }
 
     return 'no-caller';

@@ -262,7 +262,7 @@ require __DIR__ . '/dashboard/_data.php';
                       $<?php echo number_format($tokenDashboardStats['cost_estimate'] ?? 0, 4) ?>
                     </div>
                     <div class="metric-label" style="font-size: 0.8rem;">
-                      <?php echo !empty($tokenDashboardStats['total_requests']) ? $tokenDashboardStats['total_requests'] . ' ' . $CLICSHOPPING_ChatGpt->getDef('metric_requests_count') : '0 ' . $CLICSHOPPING_ChatGpt->getDef('metric_requests_count') ?>
+                      <?php echo $CLICSHOPPING_ChatGpt->getDef('cost_coverage_line', ['rows' => (int)($tokenDashboardStats['cost_rows'] ?? 0), 'since' => $tokenDashboardStats['cost_since'] ?? '—']); ?>
                     </div>
                   </div>
                 </div>
@@ -539,10 +539,13 @@ require __DIR__ . '/dashboard/_data.php';
                             </td>
                           </tr>
                           <tr>
+                            <td colspan="2"><small class="text-muted"><?php echo $CLICSHOPPING_ChatGpt->getDef('cost_coverage_line', ['rows' => (int)($tokenDashboardStats['cost_rows'] ?? 0), 'since' => $tokenDashboardStats['cost_since'] ?? '—']); ?></small></td>
+                          </tr>
+                          <tr>
                             <td><strong><?php echo $CLICSHOPPING_ChatGpt->getDef('token_avg_cost_per_request'); ?>:</strong></td>
                             <td class="text-end">
-                              $<?php echo ($tokenDashboardStats['total_requests'] ?? 0) > 0 ?
-                                number_format(($tokenDashboardStats['total_cost'] ?? 0) / $tokenDashboardStats['total_requests'], 4) : '0.0000' ?>
+                              $<?php echo ($tokenDashboardStats['cost_rows'] ?? 0) > 0 ?
+                                number_format(($tokenDashboardStats['total_cost'] ?? 0) / $tokenDashboardStats['cost_rows'], 4) : '0.0000' ?>
                             </td>
                           </tr>
                           <tr>

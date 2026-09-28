@@ -13,6 +13,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
+use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Infrastructure\Monitoring\SubMonitoring\MetricsExporter;
 use ClicShopping\AI\Infrastructure\Monitoring\SubMonitoring\AlertManager;
@@ -609,10 +610,11 @@ class MonitoringAgent implements AgentInterface
       $rows = DoctrineOrm::select("SELECT COUNT(*) as total FROM {$prefix}rag_interactions");
       $this->platformMetrics['total_requests'] = (int)($rows[0]['total'] ?? 0);
 
+      $attributed = StatisticsTracker::ATTRIBUTED_COST_ROW;
       $rows = DoctrineOrm::select("
         SELECT COUNT(DISTINCT interaction_id) as errors,
                COUNT(*) as api_calls,
-               SUM(api_cost_usd) as cost,
+               SUM(CASE WHEN {$attributed} THEN api_cost_usd END) as cost,
                AVG(response_time_ms) as avg_ms
         FROM {$prefix}rag_statistics
       ");
@@ -631,6 +633,7 @@ class MonitoringAgent implements AgentInterface
         SELECT SUM(api_cost_usd) as cost
         FROM {$prefix}rag_statistics
         WHERE date_added >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+          AND {$attributed}
       ");
       $this->platformMetrics['api_cost_last_hour'] = (float)($rows[0]['cost'] ?? 0);
     } catch (\Exception $e) {

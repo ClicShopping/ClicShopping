@@ -51,7 +51,10 @@ class MetricCatalog
    * intent when an order-grain figure is broken down by a product dimension: revenue per category
    * IS the sum of line revenues, so the plan swaps to it rather than fanning the order total out.
    *
-   * @return array<string, array{grain: string, type: string, definition: string, basis?: string, split?: string, line_alternative?: string}>
+   * `companions` is optional and names the columns always selected WITH the metric, as its own
+   * prompt rule defines them: the binding plan lists them, so they are never read as an added metric.
+   *
+   * @return array<string, array{grain: string, type: string, definition: string, basis?: string, split?: string, line_alternative?: string, companions?: array<int, string>}>
    */
   public static function all(): array
   {
@@ -111,12 +114,14 @@ class MetricCatalog
         'type' => MetricType::AMOUNT,
         'definition' => 'text_metric_gross_margin_amount',
         'basis' => 'text_metric_basis_cost_current',
+        'companions' => ['revenue_ht', 'revenue_without_cost'],
       ],
       'gross_margin_percent' => [
         'grain' => 'product',
         'type' => MetricType::RATE,
         'definition' => 'text_metric_gross_margin_percent',
         'basis' => 'text_metric_basis_cost_current',
+        'companions' => ['revenue_ht', 'revenue_without_cost'],
       ],
       'avg_shipping_delay' => [
         'grain' => 'order',

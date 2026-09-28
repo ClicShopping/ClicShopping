@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Dashb
 
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\ModelManager;
+use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
@@ -118,6 +119,7 @@ class TokenChartDataProvider
        from :table_rag_statistics
        where date_added >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
          and api_cost_usd is not null
+         and ' . StatisticsTracker::ATTRIBUTED_COST_ROW . '
        group by month, model
        order by month asc'
     );

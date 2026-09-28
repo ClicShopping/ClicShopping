@@ -945,3 +945,5 @@ feedback_report_thin_population_body = La fenêtre porte {{total}} retours, en d
 feedback_report_thin_population_action = À faire avant tout le reste : lire les constats ci-dessous UN RETOUR À LA FOIS, jamais comme des taux — sur {{total}} retours, un pourcentage décrit deux ou trois lignes. Cet avertissement disparaît de lui-même au-delà de {{threshold}} retours sur la fenêtre.
 
 feedback_report_withheld = {{withheld}} constat(s) écarté(s) à ce volume. Ils reviendront d'eux-mêmes à partir de {{threshold}} retours sur la fenêtre — rien n'est perdu, le journal les a enregistrés.
+
+cost_coverage_line = Sur {{rows}} requête(s) tarifée(s) depuis le {{since}} — les lignes antérieures ne portent pas de modèle et ne sont pas tarifées. Non comptés : embeddings (~1 %) et appel différé après réponse (0–4 %).

@@ -19,6 +19,9 @@ use ClicShopping\OM\Registry;
  */
 class StatisticsTracker
 {
+  /** SQL predicate: a row whose cost was priced per model. Every cost aggregate filters on it and counts its rows. */
+  public const ATTRIBUTED_COST_ROW = "JSON_CONTAINS_PATH(metadata, 'one', '$.tokens_by_model')";
+
   private string $prefix;
   private $startTime;
   private $interactionId;

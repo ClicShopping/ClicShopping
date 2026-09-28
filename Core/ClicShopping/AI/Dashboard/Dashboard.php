@@ -14,6 +14,7 @@ use ClicShopping\AI\Infrastructure\Monitoring\MonitoringAgent;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Dashboard\DecompositionStatsProvider;
 use ClicShopping\AI\Infrastructure\Metrics\ColdCacheMetricsCollector;
+use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 
 /**
  * Dashboard Class
@@ -108,11 +109,13 @@ class Dashboard
       ");
       $avgResponseTime = ($avgTimeResult[0]['avg_time'] ?? 0) / 1000;
 
-      // Total tokens and cost
+      $attributed = StatisticsTracker::ATTRIBUTED_COST_ROW;
       $tokensResult = DoctrineOrm::select("
         SELECT 
           SUM(tokens_total) as total_tokens,
-          SUM(api_cost_usd) as total_cost
+          SUM(CASE WHEN {$attributed} THEN api_cost_usd END) as total_cost,
+          SUM(CASE WHEN {$attributed} THEN 1 ELSE 0 END) as cost_rows,
+          MIN(CASE WHEN {$attributed} THEN date_added END) as cost_since
         FROM {$prefix}rag_statistics
       ");
       $totalTokens = $tokensResult[0]['total_tokens'] ?? 0;
@@ -180,6 +183,8 @@ class Dashboard
           ],
           'total_api_calls' => $totalRequests,
           'total_api_cost' => $totalCost,
+          'total_api_cost_rows' => (int)($tokensResult[0]['cost_rows'] ?? 0),
+          'total_api_cost_since' => $tokensResult[0]['cost_since'] ?? null,
           'total_tokens' => $totalTokens
         ],
         'component_health' => $componentHealth,
@@ -198,7 +203,7 @@ class Dashboard
         $report['active_alerts'] = $monitoringReport['active_alerts'] ?? $report['active_alerts'];
 
         if (!empty($monitoringReport['system_metrics'])) {
-          $dbMetricKeys = ['total_requests', 'error_rate', 'total_errors', 'avg_response_time', 'total_api_calls', 'total_api_cost', 'total_tokens', 'memory_usage'];
+          $dbMetricKeys = ['total_requests', 'error_rate', 'total_errors', 'avg_response_time', 'total_api_calls', 'total_api_cost', 'total_api_cost_rows', 'total_api_cost_since', 'total_tokens', 'memory_usage'];
           foreach ($monitoringReport['system_metrics'] as $key => $value) {
             if (!in_array($key, $dbMetricKeys, true)) {
               $report['system_metrics'][$key] = $value;
@@ -506,12 +511,15 @@ class Dashboard
       // 🔧 MIGRATED TO DOCTRINEORM
       $prefix = CLICSHOPPING::getConfig('db_table_prefix');
       
+      $attributed = StatisticsTracker::ATTRIBUTED_COST_ROW;
       $tokensResults = DoctrineOrm::select("
         SELECT 
           SUM(tokens_prompt) as input_tokens,
           SUM(tokens_completion) as output_tokens,
           SUM(tokens_total) as total_tokens,
-          SUM(api_cost_usd) as total_cost,
+          SUM(CASE WHEN {$attributed} THEN api_cost_usd END) as total_cost,
+          SUM(CASE WHEN {$attributed} THEN 1 ELSE 0 END) as cost_rows,
+          MIN(CASE WHEN {$attributed} THEN date_added END) as cost_since,
           COUNT(*) as total_requests
         FROM {$prefix}rag_statistics
         WHERE date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -535,6 +543,8 @@ class Dashboard
         'total_tokens' => $totalTokens,
         'total_cost' => $totalCost,
         'cost_estimate' => $totalCost,
+        'cost_rows' => (int)($row['cost_rows'] ?? 0),
+        'cost_since' => $row['cost_since'] ?? null,
         'total_requests' => $totalRequests,
         'avg_tokens_per_request' => $avgTokensPerRequest,
         'daily_usage' => $this->getDailyTokenUsage($periodDays),
@@ -549,6 +559,8 @@ class Dashboard
         'total_tokens' => 0, 
         'total_cost' => 0, 
         'cost_estimate' => 0, 
+        'cost_rows' => 0,
+        'cost_since' => null,
         'total_requests' => 0, 
         'avg_tokens_per_request' => 0,
         'period' => $periodDays . ' derniers jours'
@@ -642,6 +654,8 @@ class Dashboard
   {
     $days = self::TREND_PERIOD_DAYS;
 
+    $attributed = StatisticsTracker::ATTRIBUTED_COST_ROW;
+
     try {
       $rows = DoctrineOrm::select("
         SELECT
@@ -649,14 +663,16 @@ class Dashboard
           SUM(CASE WHEN date_added >= DATE_SUB(NOW(), INTERVAL ? DAY) AND error_occurred = 1 THEN 1 ELSE 0 END) as current_errors,
           -- *_time_ms, not *_time: CURRENT_TIME is a reserved word in MariaDB.
           AVG(CASE WHEN date_added >= DATE_SUB(NOW(), INTERVAL ? DAY) THEN response_time_ms END) as current_time_ms,
-          SUM(CASE WHEN date_added >= DATE_SUB(NOW(), INTERVAL ? DAY) THEN api_cost_usd ELSE 0 END) as current_cost,
+          SUM(CASE WHEN date_added >= DATE_SUB(NOW(), INTERVAL ? DAY) AND {$attributed} THEN api_cost_usd ELSE 0 END) as current_cost,
+          SUM(CASE WHEN date_added >= DATE_SUB(NOW(), INTERVAL ? DAY) AND {$attributed} THEN 1 ELSE 0 END) as current_cost_rows,
           SUM(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) THEN 1 ELSE 0 END) as previous_rows,
           SUM(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) AND error_occurred = 1 THEN 1 ELSE 0 END) as previous_errors,
           AVG(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) THEN response_time_ms END) as previous_time_ms,
-          SUM(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) THEN api_cost_usd ELSE 0 END) as previous_cost
+          SUM(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) AND {$attributed} THEN api_cost_usd ELSE 0 END) as previous_cost,
+          SUM(CASE WHEN date_added < DATE_SUB(NOW(), INTERVAL ? DAY) AND {$attributed} THEN 1 ELSE 0 END) as previous_cost_rows
         FROM {$this->prefix}rag_statistics
         WHERE date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
-      ", [$days, $days, $days, $days, $days, $days, $days, $days, $days * 2]);
+      ", [$days, $days, $days, $days, $days, $days, $days, $days, $days, $days, $days * 2]);
     } catch (\Exception $e) {
       error_log('Warning: Could not calculate trends: ' . $e->getMessage());
 
@@ -672,7 +688,7 @@ class Dashboard
       return ['insufficient_data' => true];
     }
 
-    return [
+    $trends = [
       'error_rate' => $this->buildTrend(
         ((int)$row['previous_errors'] / $previousRows) * 100,
         ((int)$row['current_errors'] / $currentRows) * 100,
@@ -683,13 +699,19 @@ class Dashboard
         (float)($row['current_time_ms'] ?? 0) / 1000,
         's'
       ),
-      'api_cost' => $this->buildTrend(
+    ];
+
+    // A cost trend needs attributed rows on BOTH sides, or it compares against an unpriced past.
+    if ((int)($row['current_cost_rows'] ?? 0) > 0 && (int)($row['previous_cost_rows'] ?? 0) > 0) {
+      $trends['api_cost'] = $this->buildTrend(
         (float)($row['previous_cost'] ?? 0),
         (float)($row['current_cost'] ?? 0),
         '$',
         4
-      ),
-    ];
+      );
+    }
+
+    return $trends;
   }
 
   /**
@@ -953,6 +975,7 @@ class Dashboard
       // Get WebSearch queries from rag_interactions where intent_type = 'web_search'
       // Join with rag_statistics to get performance metrics
       // Note: rag_interactions doesn't have a 'success' column, so we determine success from rag_statistics
+      $attributedWs = str_replace('metadata', 's.metadata', StatisticsTracker::ATTRIBUTED_COST_ROW);
       $webSearchResults = DoctrineOrm::select("
         SELECT 
           COUNT(DISTINCT i.interaction_id) as total_queries,
@@ -962,7 +985,7 @@ class Dashboard
           AVG(s.confidence_score) as avg_confidence,
           AVG(s.response_quality) as avg_quality,
           SUM(s.tokens_total) as total_tokens,
-          SUM(s.api_cost_usd) as total_cost,
+          SUM(CASE WHEN {$attributedWs} THEN s.api_cost_usd END) as total_cost,
           SUM(CASE WHEN s.cache_hit = 1 THEN 1 ELSE 0 END) as cache_hits,
           SUM(CASE WHEN s.cache_hit = 0 THEN 1 ELSE 0 END) as cache_misses
         FROM {$prefix}rag_interactions i

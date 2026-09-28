@@ -1257,7 +1257,10 @@ include __DIR__ . '/dashboard/_data.php';
                     </tr>
                     <tr>
                       <td><strong><?php echo $CLICSHOPPING_ChatGpt->getDef('tab7_total_api_cost'); ?>:</strong></td>
-                      <td class="text-end">$<?php echo  round($healthReport['system_metrics']['total_api_cost'], 2); ?></td>
+                      <td class="text-end">$<?php echo  round($healthReport['system_metrics']['total_api_cost'], 4); ?></td>
+                    </tr>
+                    <tr>
+                      <td colspan="2"><small class="text-muted"><?php echo $CLICSHOPPING_ChatGpt->getDef('cost_coverage_line', ['rows' => (int)($healthReport['system_metrics']['total_api_cost_rows'] ?? 0), 'since' => $healthReport['system_metrics']['total_api_cost_since'] ?? '—']); ?></small></td>
                     </tr>
                     <tr>
                       <td><strong><?php echo $CLICSHOPPING_ChatGpt->getDef('tab7_php_version'); ?>:</strong></td>

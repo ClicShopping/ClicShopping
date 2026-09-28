@@ -937,3 +937,5 @@ feedback_report_thin_population_body = The window carries {{total}} reports, bel
 feedback_report_thin_population_action = Do this before anything else: read the findings below ONE REPORT AT A TIME, never as rates — on {{total}} reports a percentage describes two or three rows. This warning clears itself past {{threshold}} reports in the window.
 
 feedback_report_withheld = {{withheld}} finding(s) set aside at this volume. They come back on their own past {{threshold}} reports in the window — nothing is lost, the journal recorded them.
+
+cost_coverage_line = On {{rows}} priced request(s) since {{since}} — earlier rows carry no model and are left unpriced. Not counted: embeddings (~1%) and the deferred post-answer call (0–4%).

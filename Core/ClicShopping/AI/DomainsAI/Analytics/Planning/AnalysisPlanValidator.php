@@ -117,8 +117,8 @@ class AnalysisPlanValidator
     }
 
     $unsatisfiable = array_merge($unsatisfiable, $declared);
-    $dimensions = is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : [];
-    $dimensions = self::splitDimensions($metrics, $dimensions, $rankings);
+    $askedDimensions = is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : [];
+    $dimensions = self::splitDimensions($metrics, $askedDimensions, $rankings);
 
     // An order-grain metric broken down by a product dimension fans out (counted once per line):
     // swap to the catalogue's line-grain sibling, or record it unsatisfiable.
@@ -132,7 +132,8 @@ class AnalysisPlanValidator
     }
 
     $rankings = self::remapRankings($rankings, $renamed, array_column($metrics, 'name'));
-    $periods['time_grain'] = self::timeGrain($periods, $dimensions, $rankings);
+    // A split is not a breakdown the question asked: it crosses the dense axis, never cancels it.
+    $periods['time_grain'] = self::timeGrain($periods, $askedDimensions, $rankings);
 
     // Build the returned plan as an explicit allow-list: only these keys are trusted.
     $returnedPlan = [
