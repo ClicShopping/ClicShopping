@@ -96,9 +96,12 @@ class AnalyticsAgent implements AgentInterface
   private ?AnalysisPlanner $analysisPlanner = null;
   private ?array $analysisPlan = null;
   private array $analysisPlanReserve = [];
+  private bool $asksAction = false;
 
   /** Labels of the rows dropped for having no cost basis, named in the answer. */
   private array $withheldRows = [];
+  /** Percentage of the pane's revenue the withheld rows carried, null when unknown. */
+  private ?int $withheldShare = null;
   private AmbiguityHandler $ambiguityHandler;
   private AnalyticsErrorHandler $errorHandler;
   private AnalyticsObjectiveRunner $objectiveRunner;
@@ -559,7 +562,7 @@ class AnalyticsAgent implements AgentInterface
         $this->debugLog(" Empty results message: " . $interpretation);
       } else {
         // Generate new interpretation only if we have data
-        $interpretation = $this->resultInterpreter->interpretResults($question, $results['results'], $results['sql_query'] ?? '');
+        $interpretation = $this->resultInterpreter->interpretResults($question, $results['results'], $results['sql_query'] ?? '', asksAction: $this->asksAction);
         $this->debugLog(" Generated new interpretation");
 
         // Type-safe logging with TypeSafetyGuard
@@ -656,7 +659,7 @@ class AnalyticsAgent implements AgentInterface
             $regen = $this->executeQuery($question, $feedback);
 
             if (($regen['type'] ?? 'error') !== 'error' && !empty($regen['results'])) {
-              $regenInterp = $this->resultInterpreter->interpretResults($question, $regen['results'], $regen['sql_query'] ?? '');
+              $regenInterp = $this->resultInterpreter->interpretResults($question, $regen['results'], $regen['sql_query'] ?? '', asksAction: $this->asksAction);
 
               if (is_string($regenInterp) && $regenInterp !== '') {
                 $regenEval = LlmGuardrails::checkGuardrails($question, $regenInterp);
@@ -808,7 +811,9 @@ class AnalyticsAgent implements AgentInterface
     // previous one would silently key the SQL cache of this one.
     $this->analysisPlan = null;
     $this->analysisPlanReserve = [];
+    $this->asksAction = false;
     $this->withheldRows = [];
+    $this->withheldShare = null;
 
     try {
 
@@ -893,6 +898,7 @@ class AnalyticsAgent implements AgentInterface
 
         $planResult = $planner->plan($this->translateForGeneration($questionForGeneration), $widerRequest);
         $this->analysisPlan = $planResult['plan'];
+        $this->asksAction = $planResult['act'] ?? false;
 
         if ($this->analysisPlan === null) {
           if ($planResult['no_metric_proposed'] ?? false) {
@@ -1084,6 +1090,7 @@ class AnalyticsAgent implements AgentInterface
     }
 
     $this->withheldRows = $verdict['withheld'];
+    $this->withheldShare = $verdict['share'];
     $results['results'] = array_values($verdict['rows']);
     $results['count'] = count($results['results']);
 
@@ -1110,8 +1117,13 @@ class AnalyticsAgent implements AgentInterface
     }
 
     $labels = array_values(array_unique($this->withheldRows));
-    $key = 'text_coherence_rows_withheld_missing_cost';
-    $notice = CLICSHOPPING::getDef($key, ['labels' => implode(', ', $labels)]);
+    $key = $this->withheldShare !== null
+      ? 'text_coherence_rows_withheld_missing_cost_share'
+      : 'text_coherence_rows_withheld_missing_cost';
+    $notice = CLICSHOPPING::getDef($key, [
+      'labels' => implode(', ', $labels),
+      'share' => $this->withheldShare !== null ? (string)$this->withheldShare : '',
+    ]);
 
     if ($notice === '' || $notice === $key) {
       return;
@@ -1207,8 +1219,16 @@ class AnalyticsAgent implements AgentInterface
       return;
     }
 
+    // A plan dimension is a technical name: show its label, the raw name only when none exists.
+    $labels = array_map(static function (string $d): string {
+      $key = 'text_analysis_dimension_' . $d;
+      $label = CLICSHOPPING::getDef($key);
+
+      return $label === '' || $label === $key ? $d : $label;
+    }, $unrestricted);
+
     $notice = CLICSHOPPING::getDef('text_analysis_scope_unrestricted', [
-      'dimensions' => implode(', ', $unrestricted),
+      'dimensions' => implode(', ', $labels),
     ]);
 
     if ($notice === '' || $notice === 'text_analysis_scope_unrestricted') {

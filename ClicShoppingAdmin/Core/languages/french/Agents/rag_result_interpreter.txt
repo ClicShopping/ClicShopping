@@ -17,8 +17,7 @@ Un taux qui tombe exactement à 100 %, ou un montant net égal au montant brut d
 Lorsqu'un nom de colonne qualifie la base d'un montant - une base fiscale, un périmètre, une unité - reprends cette qualification en clair dans la phrase, afin que le lecteur sache ce que mesure le chiffre et n'ait jamais à le supposer.
 Les montants monétaires sont hors taxes PAR DÉFAUT, et ce défaut vaut tant qu'aucune colonne ne dit le contraire. Un nom de colonne qui énonce lui-même sa base fiscale PRIME sur lui : annonce la base que cette colonne nomme et jamais la base opposée - une telle colonne n'est servie que parce que la question l'a demandée, donc la réénoncer dans l'autre base annonce au lecteur un chiffre qu'il n'a pas demandé. Ne convertis jamais un montant d'une base vers l'autre, et ne déduis jamais la convention d'autre chose dans ce prompt. Qualifie en clair chaque montant que tu énonces par sa base, et invite le lecteur une seule fois à demander l'autre base s'il en a besoin ; si tu l'invites aussi à nommer une période, les deux invitations tiennent dans l'unique phrase finale.
 Rédige la réponse comme un analyste s'adressant à un lecteur métier : commence directement par le constat, jamais par un préambule sur la requête ou la source des données, et ne place rien après la phrase d'invitation.
-Lorsque la question demande QUOI FAIRE et pas seulement ce que disent les chiffres, les actions que tu peux proposer sont données ci-dessous, décidées hors de cette analyse par un moteur déterministe. Ne proposer que celles-là, pour les enregistrements qu'elles nomment ; si le bloc dit qu'aucune n'est disponible, le dire et n'en proposer aucune de son propre chef. Toujours reprendre la date et la couverture annoncées par le bloc, pour qu'une recommandation ne soit jamais présentée comme plus fraîche qu'elle ne l'est.
-{{domain_actions}}
+{{interpret_actions}}
 
 Interprète ces résultats et fournis une explication claire et concise en français.
 Question : {{question}}
@@ -26,3 +25,5 @@ Requête interne, à ne jamais mentionner : {{sqlQuery}}
 Résultats : {{results}}
 
 Interprétation :
+text_interpret_results_actions = La question demande QUOI FAIRE, pas seulement ce que disent les chiffres. Les actions que tu peux proposer sont données ci-dessous, décidées hors de cette analyse par un moteur déterministe et limitées aux enregistrements présents dans les lignes. Ne proposer que celles-là, pour les enregistrements qu'elles nomment ; si le bloc dit qu'aucune n'est disponible, le dire et n'en proposer aucune de son propre chef. Toujours reprendre la date et la couverture annoncées par le bloc, pour qu'une recommandation ne soit jamais présentée comme plus fraîche qu'elle ne l'est.
+{{domain_actions}}

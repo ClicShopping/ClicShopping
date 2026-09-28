@@ -26,6 +26,8 @@ class CoherenceGuard
     /** Column-name tokens that mark a percentage-expressed margin/profit metric. */
     private const MARGIN_TOKENS = ['margin', 'profit'];
     private const PERCENT_TOKENS = ['percent', 'pct', 'rate', 'ratio'];
+    /** A change between two figures: a margin that grows by 150% is not a margin rate of 150%. */
+    private const VARIATION_TOKENS = ['variation', 'change', 'growth', 'delta', 'diff', 'evolution', 'yoy', 'increase', 'decrease'];
 
     /** A transaction count: revenue > 0 implies at least one order, so this at 0 is contradictory. */
     private const ORDER_TOKENS = ['order', 'transaction', 'sale'];
@@ -58,17 +60,23 @@ class CoherenceGuard
      * inspectAnalyticsPane() withholds the pane, which is the right verdict then.
      *
      * @param array $rows Result rows of one analytics pane
-     * @return array{rows: array, withheld: array<int, string>, column: ?string} Kept rows, and the
-     *         label of each row dropped (empty when nothing was dropped)
+     * @return array{rows: array, withheld: array<int, string>, column: ?string, share: ?int} Kept
+     *         rows, the label of each row dropped (empty when nothing was dropped), and the percentage
+     *         of the pane's revenue those rows carry (null when no revenue column is returned)
      */
     public static function withholdMissingCostBasisRows(array $rows): array
     {
         $kept = [];
         $withheld = [];
         $column = null;
+        $revenueColumn = self::revenueColumn($rows);
+        $withheldRevenue = 0.0;
+        $totalRevenue = 0.0;
 
         foreach ($rows as $key => $row) {
             $offending = is_array($row) ? self::marginWithoutCostBasis($row) : null;
+            $revenue = $revenueColumn !== null && is_numeric($row[$revenueColumn] ?? null) ? (float)$row[$revenueColumn] : 0.0;
+            $totalRevenue += $revenue;
 
             if ($offending === null) {
                 $kept[$key] = $row;
@@ -77,13 +85,57 @@ class CoherenceGuard
 
             $column ??= $offending;
             $withheld[] = self::rowLabel($row);
+            $withheldRevenue += $revenue;
         }
 
         if ($withheld === [] || $kept === []) {
-            return ['rows' => $rows, 'withheld' => [], 'column' => null];
+            return ['rows' => $rows, 'withheld' => [], 'column' => null, 'share' => null];
         }
 
-        return ['rows' => $kept, 'withheld' => $withheld, 'column' => $column];
+        // The weight of what went is the fact a margin reader needs most: named rows alone hide it.
+        // Whole percent: no decimal separator to localise.
+        $share = $totalRevenue > 0.0 ? (int)round($withheldRevenue / $totalRevenue * 100) : null;
+
+        return ['rows' => $kept, 'withheld' => $withheld, 'column' => $column, 'share' => $share];
+    }
+
+    /**
+     * A margin expressed as a rate of sales - bounded by 100 - and not the variation of a margin.
+     *
+     * @param string $name Lower-cased column name
+     * @return bool
+     */
+    private static function isMarginRate(string $name): bool
+    {
+        return self::hasAny($name, self::MARGIN_TOKENS)
+            && self::hasAny($name, self::PERCENT_TOKENS)
+            && !self::hasAny($name, self::VARIATION_TOKENS);
+    }
+
+    /**
+     * The pane's revenue column, or null: a sales figure, never a margin, a cost or an uncovered part.
+     *
+     * @param array $rows Result rows
+     * @return string|null Column name
+     */
+    private static function revenueColumn(array $rows): ?string
+    {
+        $first = reset($rows);
+
+        if (!is_array($first)) {
+            return null;
+        }
+
+        foreach (array_keys($first) as $col) {
+            $name = strtolower((string)$col);
+
+            if (self::hasAny($name, ['revenue', 'sales', 'turnover'])
+                && !self::hasAny($name, [...self::MARGIN_TOKENS, 'cost', 'without', 'uncovered'])) {
+                return (string)$col;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -112,9 +164,7 @@ class CoherenceGuard
 
             $name = strtolower((string)$col);
 
-            if (self::hasAny($name, self::MARGIN_TOKENS)
-                && self::hasAny($name, self::PERCENT_TOKENS)
-                && (float)$val >= 100.0) {
+            if (self::isMarginRate($name) && (float)$val >= 100.0) {
                 return (string)$col;
             }
         }
@@ -144,6 +194,14 @@ class CoherenceGuard
                 if (count($parts) === self::LABEL_MAX_PARTS) {
                     break;
                 }
+            }
+        }
+
+        // A row keyed by an identifier alone (an order) is named by it; a figure never names a row.
+        foreach ($parts === [] && is_array($row) ? $row : [] as $col => $val) {
+            if (str_ends_with(strtolower((string)$col), 'id') && is_scalar($val) && (string)$val !== '') {
+                $parts[] = '#' . $val;
+                break;
             }
         }
 
@@ -181,9 +239,7 @@ class CoherenceGuard
 
                 $name = strtolower((string)$col);
 
-                if (self::hasAny($name, self::MARGIN_TOKENS)
-                    && self::hasAny($name, self::PERCENT_TOKENS)
-                    && (float)$val >= 100.0) {
+                if (self::isMarginRate($name) && (float)$val >= 100.0) {
                     return ['reason_key' => 'text_coherence_missing_cost_basis', 'column' => (string)$col];
                 }
             }

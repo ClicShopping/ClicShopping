@@ -34,9 +34,6 @@ class DomainActionsProvider implements PromptPlaceholderProviderInterface
 {
   public const TOKEN = '{{domain_actions}}';
 
-  // ponytail: renders the whole store (a dozen products here). Key it on the ids of the
-  // result rows if the analysed catalogue ever outgrows a prompt block.
-
   private mixed $language;
   private ?DashboardData $dashboardData;
   private bool $definitionsLoaded = false;
@@ -69,9 +66,10 @@ class DomainActionsProvider implements PromptPlaceholderProviderInterface
 
   /**
    * @param int $languageId Language of the analyses to read - labels are stored per language
+   * @param array|null $resultRows Rows the answer interprets; only their products keep their actions
    * @return string The action block, coverage included; the coverage alone when no action exists
    */
-  public function render(int $languageId): string
+  public function render(int $languageId, ?array $resultRows = null): string
   {
     $reader = $this->dashboardData ??= new DashboardData();
     $products = $reader->getRecommendedActions($languageId, EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_PROMPT_MAX_PRODUCTS'));
@@ -85,6 +83,15 @@ class DomainActionsProvider implements PromptPlaceholderProviderInterface
 
     if ($products === []) {
       return $this->getDef('text_domain_actions_empty') . "\n" . $coverage;
+    }
+
+    // ponytail: filters the store's first N products; query by the rows' ids once the analysed catalogue outgrows N.
+    if ($resultRows !== null) {
+      $products = self::productsInRows($products, $resultRows);
+
+      if ($products === []) {
+        return $this->getDef('text_domain_actions_none_in_rows') . "\n" . $coverage;
+      }
     }
 
     $rows = [];
@@ -102,6 +109,37 @@ class DomainActionsProvider implements PromptPlaceholderProviderInterface
     }
 
     return $this->getDef('text_domain_actions_intro') . "\n" . implode("\n", $rows) . "\n" . $coverage;
+  }
+
+  /**
+   * Keep the products the result rows carry, by id column or by a cell holding the product name.
+   * An action for a product absent from the rows reads as a finding about it.
+   *
+   * @param array $products Products with their actions, from the store
+   * @param array $rows Result rows
+   * @return array Products present in the rows
+   */
+  private static function productsInRows(array $products, array $rows): array
+  {
+    $ids = [];
+    $values = [];
+
+    foreach ($rows as $row) {
+      foreach ((array)$row as $column => $value) {
+        if (!\is_scalar($value)) {
+          continue;
+        }
+
+        if ($column === 'products_id' || $column === 'product_id') {
+          $ids[(string)$value] = true;
+        }
+
+        $values[trim((string)$value)] = true;
+      }
+    }
+
+    return array_values(array_filter($products, static fn(array $product): bool =>
+      isset($ids[(string)$product['product_id']]) || isset($values[trim((string)$product['product_name'])])));
   }
 
   /**

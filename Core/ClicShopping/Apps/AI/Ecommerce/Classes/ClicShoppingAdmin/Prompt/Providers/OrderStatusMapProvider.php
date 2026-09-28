@@ -72,7 +72,7 @@ class OrderStatusMapProvider implements PromptPlaceholderProviderInterface
    * @param int $languageId Language of the rows to read - the same one the generated SQL will filter on
    * @return string Rendered map, empty when no section could be read
    */
-  public function render(int $languageId): string
+  public function render(int $languageId, ?array $resultRows = null): string
   {
     $this->loadDefinitions();
 

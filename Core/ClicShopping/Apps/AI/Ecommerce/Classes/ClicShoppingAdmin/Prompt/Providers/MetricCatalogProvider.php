@@ -61,7 +61,7 @@ class MetricCatalogProvider implements PromptPlaceholderProviderInterface
    * @param int $languageId Language of the prompt being built
    * @return string One line per metric, empty when the catalogue is empty
    */
-  public function render(int $languageId): string
+  public function render(int $languageId, ?array $resultRows = null): string
   {
     $catalog = MetricCatalog::all();
 

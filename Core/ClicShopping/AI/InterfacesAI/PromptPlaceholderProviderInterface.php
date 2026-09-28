@@ -39,9 +39,11 @@ interface PromptPlaceholderProviderInterface
    * present in the assembled message — an unused provider must cost nothing.
    *
    * @param int $languageId Language the prompt is being built for
+   * @param array|null $resultRows Rows the prompt interprets, null when it interprets none: a provider that
+   *                               names records keeps only those present there
    * @return string Replacement text; an empty string removes the token
    */
-  public function render(int $languageId): string;
+  public function render(int $languageId, ?array $resultRows = null): string;
 
   /**
    * Tables whose CONTENT this provider renders into the prompt.

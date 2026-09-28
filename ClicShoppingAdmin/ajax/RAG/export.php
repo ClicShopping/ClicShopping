@@ -165,12 +165,12 @@ if (isset($_GET['export'])) {
         $csv = "Actor ID,Total Executions,Success Rate (%),Avg Execution Time (ms),Avg Quality Score,Performance Score\n";
         foreach ($metrics as $actorId => $data) {
           $csv .= sprintf(
-            "%s,%d,%.2f,%.2f,%.4f,%.4f\n",
+            "%s,%d,%.2f,%.2f,%s,%.4f\n",
             $actorId,
             $data['total_executions'],
             $data['success_rate'],
             $data['avg_execution_time_ms'],
-            $data['avg_quality_score'],
+            $data['avg_quality_score'] !== null ? sprintf('%.4f', $data['avg_quality_score']) : '',
             $data['performance_score']
           );
         }

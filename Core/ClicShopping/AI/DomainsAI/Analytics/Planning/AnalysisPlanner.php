@@ -36,10 +36,12 @@ class AnalysisPlanner
 
   private AnalysisPlanValidator $validator;
   private int $languageId;
+  /** @var array<string, array<int, string>> Companion columns per metric, as the catalogue declares them */
+  private array $companions = [];
   private bool $definitionsLoaded = false;
 
   /**
-   * @param array<string, array{grain: string, type: string, definition: string}> $catalog Domain metric catalogue
+   * @param array<string, array{grain: string, type: string, definition: string, companions?: array<int, string>}> $catalog Domain metric catalogue
    * @param int $languageId Language ID, needed to resolve the prompt's dynamic placeholders
    * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
    */
@@ -47,6 +49,12 @@ class AnalysisPlanner
   {
     $this->validator = new AnalysisPlanValidator($catalog, $orderSideDimensions);
     $this->languageId = $languageId;
+
+    foreach ($catalog as $name => $metric) {
+      if (!empty($metric['companions'])) {
+        $this->companions[$name] = $metric['companions'];
+      }
+    }
   }
 
   /**
@@ -55,7 +63,7 @@ class AnalysisPlanner
    * @param string $englishQuestion Question already normalised to English
    * @param string $widerRequest The whole request this question is one part of, already English.
    *                             Empty when the question stands alone.
-   * @return array{plan: array|null, unsatisfiable: array, errors: array<int, string>, no_metric_proposed: bool, raw: string}
+   * @return array{plan: array|null, unsatisfiable: array, errors: array<int, string>, no_metric_proposed: bool, act: bool, raw: string}
    */
   public function plan(string $englishQuestion, string $widerRequest = ''): array
   {
@@ -67,6 +75,7 @@ class AnalysisPlanner
         'unsatisfiable' => [],
         'errors' => ['the analysis plan prompt still carries an unresolved placeholder'],
         'no_metric_proposed' => false,
+        'act' => false,
         'raw' => '',
       ];
     }
@@ -117,7 +126,7 @@ class AnalysisPlanner
    * testable without an LLM call.
    *
    * @param string $raw Raw model answer
-   * @return array{plan: array|null, unsatisfiable: array, errors: array<int, string>, no_metric_proposed: bool}
+   * @return array{plan: array|null, unsatisfiable: array, errors: array<int, string>, no_metric_proposed: bool, act: bool}
    */
   public function parsePlan(string $raw): array
   {
@@ -129,10 +138,12 @@ class AnalysisPlanner
         'unsatisfiable' => [],
         'errors' => ['the plan answer is not JSON: ' . json_last_error_msg()],
         'no_metric_proposed' => false,
+        'act' => false,
       ];
     }
 
-    return $this->validator->validate($decoded);
+    // Read beside the plan, not inside it: a question asking what to do may aggregate no metric.
+    return $this->validator->validate($decoded) + ['act' => ($decoded['act'] ?? false) === true];
   }
 
   /**
@@ -150,8 +161,13 @@ class AnalysisPlanner
     $this->loadDefinitions();
 
     $metrics = [];
+    $hasCompanions = false;
 
     foreach ($plan['metrics'] as $metric) {
+      // Listed by the binding plan, or the generator drops them as an added metric.
+      $companions = $this->companions[$metric['name']] ?? [];
+      $hasCompanions = $hasCompanions || $companions !== [];
+
       $metrics[] = $this->getDef('text_analysis_plan_metric_line', [
         'name' => $metric['name'],
         'grain' => $metric['grain'],
@@ -161,7 +177,9 @@ class AnalysisPlanner
             ? 'text_analysis_plan_variation_points'
             : 'text_analysis_plan_variation_percent'
         ),
-      ]);
+      ]) . ($companions === [] ? '' : ' | ' . $this->getDef('text_analysis_plan_metric_companions', [
+        'companions' => implode(', ', $companions),
+      ]));
     }
 
     $windows = isset($plan['periods']['current']['from'], $plan['periods']['current']['to'])
@@ -190,7 +208,8 @@ class AnalysisPlanner
       $shape = $days <= self::DAILY_SHAPE_MAX_DAYS ? 'daily' : 'monthly';
 
       $windows .= "\n" . $this->getDef('text_analysis_plan_time_grain', ['days' => (string)$days])
-        . "\n" . $this->getDef('text_analysis_plan_time_grain_shape_' . $shape, ['days' => (string)$days]);
+        . "\n" . $this->getDef('text_analysis_plan_time_grain_shape_' . $shape, ['days' => (string)$days])
+        . ($hasCompanions ? "\n" . $this->getDef('text_analysis_plan_time_grain_companions') : '');
     }
 
     $windows = ltrim($windows, "\n");

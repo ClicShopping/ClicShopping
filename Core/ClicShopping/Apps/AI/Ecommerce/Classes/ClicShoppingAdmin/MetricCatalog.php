@@ -30,14 +30,14 @@ class MetricCatalog
    * Dimensions carried by the order itself (one value per order): breaking an order-grain metric
    * down by one of them needs no join to the order lines, so it is not a fan-out.
    *
-   * ponytail: only `customer` is declared (the one a question needed); add another the day a
+   * ponytail: only the dimensions a question needed are declared; add another the day a
    * question breaks down by it — until then it is refused honestly, never miscounted.
    *
    * @return array<int, string> Dimension names as the analysis plan writes them
    */
   public static function orderSideDimensions(): array
   {
-    return ['customer'];
+    return ['customer', 'order'];
   }
 
   /**

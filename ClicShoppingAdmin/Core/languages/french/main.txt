@@ -605,6 +605,10 @@ column_quarter_num = Trimestre
 column_period_month = Mois
 column_line_revenue = CA produits
 column_revenue_ht = Chiffre d'affaires
+column_gross_margin_amount = Marge brute
+column_gross_margin_percent = Taux de marge (%)
+column_gross_margin_pct = Taux de marge (%)
+column_revenue_without_cost = CA sans coût enregistré
 
 status_inactive = ❌ Inactif
 status_active = ✅ Actif

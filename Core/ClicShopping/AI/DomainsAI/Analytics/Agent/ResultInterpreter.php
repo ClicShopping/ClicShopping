@@ -73,9 +73,10 @@ class ResultInterpreter
    * @param array $results The results of the SQL query
    * @param string $sqlQuery Optional SQL query for empty result formatting
    * @param string $queryType Optional query type (analytics, semantic, hybrid)
+   * @param bool $asksAction The plan read the question as asking what to DO: only then are domain actions served
    * @return string|array Natural language interpretation or empty result array
    */
-  public function interpretResults(string $question, array $results, string $sqlQuery = '', string $queryType = 'analytics'): string|array
+  public function interpretResults(string $question, array $results, string $sqlQuery = '', string $queryType = 'analytics', bool $asksAction = false): string|array
   {
     // Check for empty results and delegate to EmptyResultFormatter
     if ($this->isEmptyResult($results)) {
@@ -144,7 +145,9 @@ class ResultInterpreter
     ];
 
     $skeleton = $this->language->getDef('text_interpret_results');
-    $skeleton = PromptPlaceholders::resolve($skeleton, (string)CLICSHOPPING::getConfig('db_table_prefix'), (int)$this->language->getId());
+    // Actions are served only when the plan says the question asks what to do; a prompt clause cannot gate them.
+    $skeleton = str_replace('{{interpret_actions}}', $asksAction ? $this->language->getDef('text_interpret_results_actions') : '', $skeleton);
+    $skeleton = PromptPlaceholders::resolve($skeleton, (string)CLICSHOPPING::getConfig('db_table_prefix'), (int)$this->language->getId(), $results);
     $prompt = Language::parseDefinition($skeleton, $array);
 
     // The interpretation prompt above is English (internal), but the restitution must be

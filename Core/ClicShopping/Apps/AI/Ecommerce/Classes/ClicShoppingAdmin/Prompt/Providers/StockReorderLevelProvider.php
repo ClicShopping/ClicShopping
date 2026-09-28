@@ -54,7 +54,7 @@ class StockReorderLevelProvider implements PromptPlaceholderProviderInterface
    * @param int $languageId Unused: the value is language-independent
    * @return string
    */
-  public function render(int $languageId): string
+  public function render(int $languageId, ?array $resultRows = null): string
   {
     return \defined('STOCK_REORDER_LEVEL') ? (string)(float)\constant('STOCK_REORDER_LEVEL') : '0';
   }

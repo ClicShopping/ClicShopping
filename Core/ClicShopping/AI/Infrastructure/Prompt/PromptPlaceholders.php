@@ -30,9 +30,10 @@ class PromptPlaceholders
    * @param string $message Assembled prompt, possibly carrying placeholders
    * @param string $tablePrefix Install DB table prefix (db_table_prefix)
    * @param int $languageId Language ID to inject
+   * @param array|null $resultRows Rows the prompt interprets, null when it interprets none
    * @return string Prompt ready to be sent to the LLM
    */
-  public static function resolve(string $message, string $tablePrefix, int $languageId): string
+  public static function resolve(string $message, string $tablePrefix, int $languageId, ?array $resultRows = null): string
   {
     $baseCurrency = \defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '';
 
@@ -42,7 +43,7 @@ class PromptPlaceholders
       $message
     );
 
-    return PromptPlaceholderRegistry::getInstance()->resolve($message, $languageId);
+    return PromptPlaceholderRegistry::getInstance()->resolve($message, $languageId, $resultRows);
   }
 
   /**

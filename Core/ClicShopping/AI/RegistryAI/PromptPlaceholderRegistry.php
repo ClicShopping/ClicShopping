@@ -123,9 +123,10 @@ class PromptPlaceholderRegistry
    *
    * @param string $message Assembled prompt
    * @param int $languageId Language the prompt is being built for
+   * @param array|null $resultRows Rows the prompt interprets, null when it interprets none
    * @return string Message with the dynamic tokens resolved
    */
-  public function resolve(string $message, int $languageId): string
+  public function resolve(string $message, int $languageId, ?array $resultRows = null): string
   {
     $this->bootstrapDomains();
 
@@ -135,7 +136,7 @@ class PromptPlaceholderRegistry
       }
 
       try {
-        $message = \str_replace($token, $provider->render($languageId), $message);
+        $message = \str_replace($token, $provider->render($languageId, $resultRows), $message);
       } catch (\Throwable $e) {
         error_log('[PromptPlaceholderRegistry] provider failed for ' . $token . ': ' . $e->getMessage());
       }

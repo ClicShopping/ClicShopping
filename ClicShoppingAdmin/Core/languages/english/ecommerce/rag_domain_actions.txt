@@ -5,3 +5,5 @@ text_domain_actions_row = - {{product}} (#{{id}}) | priority {{priority}} | {{la
 text_domain_actions_coverage = COVERAGE OF THAT LIST: {{analysed}} of {{catalogue}} active products carry an analysis, the most recent one dated {{last}}. State that date and that coverage in the answer whenever you use an action, so the reader knows how old the recommendation is.
 
 text_domain_actions_empty = NO ACTION LIST IS AVAILABLE for this shop. Say plainly that no recommended action can be served, and propose none of your own.
+
+text_domain_actions_none_in_rows = NONE OF THE RECORDS IN THE RESULT carries a recommended action. Say plainly that no recommended action can be served for them, and propose none of your own.
