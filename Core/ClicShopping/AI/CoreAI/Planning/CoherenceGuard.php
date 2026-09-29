@@ -43,6 +43,9 @@ class CoherenceGuard
 
     /** Dimension values kept in a dropped row's label: enough to name a cell, not to retype the row. */
     private const LABEL_MAX_PARTS = 2;
+
+    /** Label of a row with no dimension value: the caller renders it, the guard knows no wording. */
+    public const UNLABELLED_ROW = '';
     
     /**
      * Drop the rows whose margin has no cost basis, and NAME them.
@@ -205,7 +208,7 @@ class CoherenceGuard
             }
         }
 
-        return $parts === [] ? '?' : implode(' ', $parts);
+        return $parts === [] ? self::UNLABELLED_ROW : implode(' ', $parts);
     }
 
     /**

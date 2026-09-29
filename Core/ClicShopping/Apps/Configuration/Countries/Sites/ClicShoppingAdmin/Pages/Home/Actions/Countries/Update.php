@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Configuration\Countries\Sites\ClicShoppingAdmin\Pages\Home\Actions\Countries;
 
+use ClicShopping\Apps\Configuration\Countries\Classes\ClicShoppingAdmin\CountriesAdmin;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -30,7 +31,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $countries_iso_code_3 = HTML::sanitize($_POST['countries_iso_code_3']);
     $address_format_id = HTML::sanitize($_POST['address_format_id']);
     $countries_status = 1;
-    $country_currency_code = HTML::sanitize($_POST['country_currency_code']);
+    $country_currency_code = CountriesAdmin::normalizeCurrencyCode($_POST['country_currency_code'] ?? null);
 
     $sql_array = [
       'countries_name' => $countries_name,

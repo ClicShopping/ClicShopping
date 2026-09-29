@@ -64,7 +64,7 @@ class ResultFormatter
         $this->partsNotice($unreliable, 'text_unreliable_report_notice'),
       ]);
 
-      $notices[] = implode("\n\n", $answers);
+      $notices[] = $this->joinWithFooters($answers, $aggregated['text_footers'] ?? []);
 
       return implode("\n\n", $notices);
     }
@@ -77,6 +77,62 @@ class ResultFormatter
     }
 
     return implode("\n\n", array_filter($aggregated['empty_notices'] ?? []));
+  }
+
+  /**
+   * Split a pane's text from the footer notices its agent appended (period, scope, basis).
+   *
+   * Kept apart so joinWithFooters() can state a footer shared by every pane once, at the foot.
+   *
+   * @param mixed $text Pane text as produced by the agent
+   * @param array $result Step result carrying the notices it appended
+   * @return array{0: mixed, 1: list<string>} Text without its footers, and the footers in order
+   */
+  public function detachFooters(mixed $text, array $result): array
+  {
+    $footers = [];
+
+    foreach (['analysis_period_notice', 'analysis_scope_notice', 'metric_basis'] as $key) {
+      $notice = $result[$key] ?? '';
+
+      if (is_string($text) && is_string($notice) && $notice !== '' && str_contains($text, $notice)) {
+        $text = str_replace($notice, '', $text);
+        $footers[] = $notice;
+      }
+    }
+
+    if ($footers !== []) {
+      $text = trim((string)preg_replace("/\n{3,}/", "\n\n", $text));
+    }
+
+    return [$text, $footers];
+  }
+
+  /**
+   * Join the panes, stating once at the foot every footer notice they all share.
+   *
+   * A footer only some panes carry stays under its own pane: it qualifies those figures only.
+   *
+   * @param array $answers Pane texts, footers detached (detachFooters())
+   * @param array $footers Footer notices per pane, keyed like $answers
+   * @return string Joined panes followed by the shared footers
+   */
+  private function joinWithFooters(array $answers, array $footers): string
+  {
+    if ($answers === []) {
+      return '';
+    }
+
+    $perPane = array_map(static fn($key): array => $footers[$key] ?? [], array_keys($answers));
+    $shared = array_values(array_intersect(...$perPane));
+
+    $panes = [];
+
+    foreach ($answers as $key => $answer) {
+      $panes[] = implode("\n\n", [$answer, ...array_diff($footers[$key] ?? [], $shared)]);
+    }
+
+    return implode("\n\n", [...$panes, ...$shared]);
   }
 
   /**
@@ -618,6 +674,8 @@ class ResultFormatter
     // so a hybrid query like "price + last 3 orders" renders BOTH tables (§R maillon C).
     if ($hasAnalyticsStep) {
       $combined['analytics_components'] = [];
+      $interps = [];
+      $footers = [];
 
       foreach ($analyticsResults as $analytics) {
         $analyticsRows = $analytics['results'] ?? [];
@@ -659,15 +717,13 @@ class ResultFormatter
           ];
         }
 
-        // Concatenate each analytics interpretation into the text response
         $interp = $analytics['interpretation'] ?? ($analytics['text_response'] ?? '');
         if (!empty($interp)) {
-          if (!empty($combined['text_response'])) {
-            $combined['text_response'] .= "\n\n";
-          }
-          $combined['text_response'] .= $interp;
+          [$interps[], $footers[]] = $this->detachFooters($interp, $analytics);
         }
       }
+
+      $combined['text_response'] = $this->joinWithFooters($interps, $footers);
 
       // Backward compatibility: expose the first analytics as analytics_component (singular).
       // The loop above runs at least once ($hasAnalyticsStep), so offset 0 always exists.

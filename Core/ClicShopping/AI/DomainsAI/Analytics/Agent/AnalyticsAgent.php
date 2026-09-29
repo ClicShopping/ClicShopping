@@ -1116,7 +1116,12 @@ class AnalyticsAgent implements AgentInterface
       return;
     }
 
-    $labels = array_values(array_unique($this->withheldRows));
+    $labels = array_values(array_unique(array_map(
+      static fn(string $label): string => $label === CoherenceGuard::UNLABELLED_ROW
+        ? CLICSHOPPING::getDef('text_coherence_row_unlabelled')
+        : $label,
+      $this->withheldRows
+    )));
     $key = $this->withheldShare !== null
       ? 'text_coherence_rows_withheld_missing_cost_share'
       : 'text_coherence_rows_withheld_missing_cost';

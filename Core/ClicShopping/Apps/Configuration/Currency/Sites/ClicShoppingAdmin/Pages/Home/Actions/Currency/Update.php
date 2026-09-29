@@ -33,7 +33,27 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     if (!\is_null($currencies_id)) {
       $title = HTML::sanitize($_POST['title']);
-      $code = HTML::sanitize($_POST['code']);
+      $code = mb_strtoupper(HTML::sanitize($_POST['code']));
+
+      // A code is unique: Currencies indexes by code, a duplicate silently shadows the other row.
+      $Qduplicate = $this->app->db->prepare('select currencies_id
+                                             from :table_currencies
+                                             where code = :code
+                                             and currencies_id <> :currencies_id
+                                             limit 1
+                                            ');
+      $Qduplicate->bindValue(':code', $code);
+      $Qduplicate->bindInt(':currencies_id', (int)$currencies_id);
+      $Qduplicate->execute();
+
+      if ($Qduplicate->fetch() !== false) {
+        Registry::get('MessageStack')->add($this->app->getDef('error_currency_code_exists', ['code' => $code]), 'error');
+        $this->app->redirect('Currency&Edit&page=' . $page . '&cID=' . $currencies_id);
+      }
+
+      $Qprevious = $this->app->db->get('currencies', 'code', ['currencies_id' => (int)$currencies_id]);
+      $was_default = \defined('DEFAULT_CURRENCY') && $Qprevious->value('code') === DEFAULT_CURRENCY;
+
       $symbol_left = HTML::sanitize($_POST['symbol_left']);
       $symbol_right = HTML::sanitize($_POST['symbol_right']);
       $decimal_point = HTML::sanitize($_POST['decimal_point']);
@@ -44,7 +64,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $sql_data_array = [
         'title' => $title,
-        'code' => mb_strtoupper($code),
+        'code' => $code,
         'symbol_left' => $symbol_left,
         'symbol_right' => $symbol_right,
         'decimal_point' => $decimal_point,
@@ -57,13 +77,16 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
       $this->app->db->save('currencies', $sql_data_array, ['currencies_id' => (int)$currencies_id]);
 
-      if (isset($_POST['default'])) {
+      // Renaming the default currency must carry DEFAULT_CURRENCY along, or it points to no row.
+      if (isset($_POST['default']) || $was_default) {
         $this->app->db->save('configuration', [
           'configuration_value' => $code
         ], [
             'configuration_key' => 'DEFAULT_CURRENCY'
           ]
         );
+
+        Cache::clear('configuration');
       }
 
       Cache::clear('currencies');

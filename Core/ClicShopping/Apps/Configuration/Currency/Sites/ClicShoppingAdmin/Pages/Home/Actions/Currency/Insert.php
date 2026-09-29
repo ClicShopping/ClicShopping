@@ -27,7 +27,15 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
     $title = HTML::sanitize($_POST['title']);
-    $code = HTML::sanitize($_POST['code']);
+    $code = mb_strtoupper(HTML::sanitize($_POST['code']));
+
+    // A code is unique: Currencies indexes by code, a duplicate silently shadows the other row.
+    $Qduplicate = $this->app->db->get('currencies', 'currencies_id', ['code' => $code], null, 1);
+
+    if ($Qduplicate->fetch() !== false) {
+      Registry::get('MessageStack')->add($this->app->getDef('error_currency_code_exists', ['code' => $code]), 'error');
+      $this->app->redirect('Currency&Insert&page=' . $page);
+    }
     $symbol_left = HTML::sanitize($_POST['symbol_left']);
     $symbol_right = HTML::sanitize($_POST['symbol_right']);
     $decimal_point = HTML::sanitize($_POST['decimal_point']);
@@ -38,7 +46,7 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $sql_data_array = [
       'title' => $title,
-      'code' => mb_strtoupper($code),
+      'code' => $code,
       'symbol_left' => $symbol_left,
       'symbol_right' => $symbol_right,
       'decimal_point' => $decimal_point,
@@ -58,6 +66,8 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
           'configuration_key' => 'DEFAULT_CURRENCY'
         ]
       );
+
+      Cache::clear('configuration');
     }
 
     Cache::clear('currencies');

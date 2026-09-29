@@ -76,50 +76,9 @@ class PlanExecutor
     }
 
 
-    // Direct SerpApi verification (without Gpt dependency)
-    if ($this->debug) {
-      error_log("[INFO] PlanExecutor: Direct SerpApi verification...");
-    }
-
-    $serpApiKey = "";
-
-    // 1. Environment variable
-    $envKey = getenv('SERP_API_KEY');
-    if (!empty($envKey)) {
-      $serpApiKey = $envKey;
-      if ($this->debug) {
-        error_log("[INFO] PlanExecutor: Key found in environment variable");
-      }
-    }
-    // 2. ClicShopping constant
-    elseif (defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI')) {
-      $constKey = CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI;
-      if (!empty($constKey)) {
-        $serpApiKey = $constKey;
-        if ($this->debug) {
-          error_log("[INFO] PlanExecutor: Key found in constant");
-        }
-      }
-    }
-
-    if (!empty($serpApiKey)) {
-      if ($this->debug) {
-        error_log("[INFO] SERPAPI Key loaded: " . substr($serpApiKey, 0, 10) . "...");
-      }
-      // Set environment variable for WebSearchTool
-      putenv('SERP_API_KEY=' . $serpApiKey);
-      if ($this->debug) {
-        error_log("[INFO] PlanExecutor: putenv('SERP_API_KEY') set");
-      }
-
-      $hasValidKey = true;
-    } else {
-      if ($this->debug) {
-        error_log("[error] SERPAPI Key not loaded - no source found");
-      }
-      
-      $hasValidKey = false;
-    }
+    // Same source as the web search engines; never log any part of the key.
+    $hasValidKey = defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI')
+      && trim((string)CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI) !== '';
 
     if ($hasValidKey) {
       try {
@@ -141,10 +100,6 @@ class PlanExecutor
         }
       }
     } else {
-      if ($this->debug) {
-        error_log("[INFO] SerpApi not configured - Web search disabled");
-      }
-
       $this->webSearchFacade = null;
 
       if ($this->debug) {

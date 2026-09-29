@@ -102,7 +102,7 @@ $address_formats_array = $CLICSHOPPING_Countries->db->get('address_format', 'add
           <label for="<?php echo $CLICSHOPPING_Countries->getDef('text_info_country_currency_code'); ?>"
                  class="col-5 col-form-label"><?php echo $CLICSHOPPING_Countries->getDef('text_info_country_currency_code'); ?></label>
           <div class="col-md-5">
-            <?php echo HTML::inputField('country_currency_code', $cInfo->country_currency_code, 'required aria-required="true"'); ?>
+            <?php echo HTML::inputField('country_currency_code', $cInfo->country_currency_code, 'maxlength="3" pattern="[A-Za-z]{3}"'); ?>
           </div>
         </div>
       </div>

@@ -201,12 +201,8 @@ class HybridFormatter extends AbstractFormatter
         $output .= "<div class='analytics-interpretation mb-3'>" . nl2br(htmlspecialchars($analyticsInterpretation)) . "</div>";
       }
 
-      // SQL Query (always visible)
       if (!empty($analyticsComp['sql_query'])) {
-        $output .= "<div class='mb-3' style='background:#f8f9fa; border-left:3px solid #0d6efd; padding:15px; border-radius:4px;'>";
-        $output .= "<div style='font-weight:bold; margin-bottom:8px; color:#0d6efd;'>🔍 Requête SQL :</div>";
-        $output .= "<pre style='margin:0; font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; background:#fff; padding:10px; border-radius:3px; font-family:monospace;'>" . htmlspecialchars($this->formatSqlQuery($analyticsComp['sql_query'])) . "</pre>";
-        $output .= "</div>";
+        $output .= $this->renderSqlToggle($this->formatSqlQuery($analyticsComp['sql_query']));
       }
 
       
@@ -277,24 +273,8 @@ class HybridFormatter extends AbstractFormatter
         if ($subType === 'analytics' && isset($subQuery['results'])) {
           $output .= "<div class='mt-4'>";
 
-        $analyticsSub = $subQuery;
-        $collapseId = 'sqlQueryCollapse_' . uniqid();
-
-        if (!empty($analyticsSub['sql_query'])) {
-            $output .= "<div class='mb-3'>";
-            $output .= "<a href='#' class='btn btn-primary btn-sm' data-sql-toggle='{$collapseId}'>";
-            $output .= htmlspecialchars($this->language->getDef('toggle_sql_query'));
-            $output .= "</a>";
-
-            $output .= "<div id='{$collapseId}' style='display:none;' class='mt-2'>";
-            $output .= "<div class='card card-body'>";
-            $output .= "<div class='fw-bold mb-2 text-primary'>" . htmlspecialchars($this->language->getDef('sql_query_label')) . "</div>";
-            $output .= "<pre class='mb-0' style='font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; font-family:monospace;'>";
-            $output .= htmlspecialchars($this->formatSqlQuery($analyticsSub['sql_query']));
-            $output .= "</pre>";
-            $output .= "</div>";
-            $output .= "</div>";
-            $output .= "</div>";
+        if (!empty($subQuery['sql_query'])) {
+          $output .= $this->renderSqlToggle($this->formatSqlQuery($subQuery['sql_query']));
         }
 
           $output .= "<h5>" . htmlspecialchars($this->language->getDef('hybrid_analytics_results_title')) . "</h5>";

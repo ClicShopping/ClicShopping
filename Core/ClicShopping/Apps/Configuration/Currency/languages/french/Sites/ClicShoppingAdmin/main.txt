@@ -76,3 +76,4 @@ text_info_common_currency = Devises communes
 text_info_currency_choice = Choix de la devise
 
 error_remove_default_currency = Erreur : La devise par défaut ne peut être supprimée. Merci de choisir une autre devise par défaut et de réessayer.
+error_currency_code_exists = Erreur : le code {{code}} est déjà utilisé par une autre devise. Rien n'a été enregistré.

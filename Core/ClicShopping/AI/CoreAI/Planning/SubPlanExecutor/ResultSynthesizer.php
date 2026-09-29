@@ -504,7 +504,7 @@ class ResultSynthesizer
       }
 
       // Aggregate text responses (dedupe identical content)
-      $addTextResponse = function (mixed $text) use (&$aggregated, &$textResponseHashes): void {
+      $addTextResponse = function (mixed $text, array $footers = []) use (&$aggregated, &$textResponseHashes): void {
         if (is_array($text)) {
           $parts = [];
           array_walk_recursive($text, static function ($value) use (&$parts): void {
@@ -528,18 +528,19 @@ class ResultSynthesizer
         $textResponseHashes[$hash] = true;
 
         if ($this->isEmptyResultsNotice($normalized)) {
-          $aggregated['empty_notices'][] = $text;
+          $aggregated['empty_notices'][] = implode("\n\n", [$text, ...$footers]);
           return;
         }
 
         $aggregated['text_responses'][] = $text;
+        $aggregated['text_footers'][array_key_last($aggregated['text_responses'])] = $footers;
       };
 
       if (isset($result['text_response']) && !empty($result['text_response'])) {
-        $addTextResponse($result['text_response']);
+        $addTextResponse(...$this->formatter->detachFooters($result['text_response'], $result));
       } elseif (isset($result['interpretation']) && !empty($result['interpretation'])) {
         // Also collect 'interpretation' field for analytics results
-        $addTextResponse($result['interpretation']);
+        $addTextResponse(...$this->formatter->detachFooters($result['interpretation'], $result));
       } elseif (isset($result['result']['interpretation']) && !empty($result['result']['interpretation'])) {
         $addTextResponse($result['result']['interpretation']);
       }

@@ -255,13 +255,7 @@ class AnalyticsFormatter extends AbstractFormatter
 
   private function formatSqlQuery(string $sql): string
   {
-    $formatted = $this->prettySql($sql);
-    $escaped = htmlspecialchars($formatted, ENT_NOQUOTES | ENT_SUBSTITUTE, 'UTF-8');
-
-    return "<div class='col-md-12 row sql-query'>
-            <strong>" . $this->language->getDef('text_rag_analytics_sql_query') . "</strong>
-            <pre>{$escaped}</pre>
-          </div>";
+    return $this->renderSqlToggle($this->prettySql($sql));
   }
 
   private function formatDataTable(array $data): string

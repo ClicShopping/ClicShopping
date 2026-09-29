@@ -222,11 +222,8 @@ class ResultInterpreter
   }
 
   /**
-   * Sanitizes results for inclusion in a prompt
-   * Handles nested arrays, objects, and various data types
-   * Implements error handling and logging
-   * 
-   * 🔧 FIX 2026-01-11: Added decryption for GDPR-encrypted fields (customers_name, etc.)
+   * Prepares results for inclusion in a prompt: decrypts GDPR-encrypted cells, flattens arrays
+   * and objects. Values stay raw - escaping is a rendering concern (AI_SECURITY.md §3bis).
    *
    * @param array $results Results to sanitize
    * @return array Sanitized results
@@ -237,23 +234,18 @@ class ResultInterpreter
 
     foreach ($results as $rowKey => $row) {
       if (!\is_array($row)) {
-        // Simple encoding for scalar values - decrypt first
-        $decrypted = Hash::displayDecryptedDataText((string) $row);
-        $cleanedResults[$rowKey] = htmlspecialchars($decrypted, ENT_QUOTES, 'UTF-8');
+        $cleanedResults[$rowKey] = Hash::displayDecryptedDataText((string) $row);
         continue;
       }
 
       $cleanedRow = [];
       foreach ($row as $key => $value) {
-        // Clean each cell value
         if (\is_array($value)) {
           $cleanedRow[$key] = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         } elseif (\is_object($value)) {
           $cleanedRow[$key] = '[object]';
         } else {
-          // 🔧 FIX: Decrypt GDPR-encrypted fields before sending to LLM
-          $decrypted = Hash::displayDecryptedDataText((string) $value);
-          $cleanedRow[$key] = htmlspecialchars($decrypted, ENT_QUOTES, 'UTF-8');
+          $cleanedRow[$key] = Hash::displayDecryptedDataText((string) $value);
         }
       }
       $cleanedResults[$rowKey] = $cleanedRow;

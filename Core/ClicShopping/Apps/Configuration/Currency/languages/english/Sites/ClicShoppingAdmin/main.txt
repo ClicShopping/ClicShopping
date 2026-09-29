@@ -75,3 +75,4 @@ text_info_common_currency = Common currencies
 text_info_currency_choice = Currency choice
 
 error_remove_default_currency = Error: The default currency can not be removed. Please set another currency as default, and try again.
+error_currency_code_exists = Error: the code {{code}} is already used by another currency. Nothing was saved.

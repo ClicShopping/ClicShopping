@@ -13,7 +13,6 @@ text_rag_semantic_rejected = REJECTED
 
 text_rag_analytics_results_for = Results for:
 text_rag_analytics_interpretation = Interpretation:
-text_rag_analytics_sql_query = SQL Query:
 text_rag_analytics_data = Data:
 text_rag_analytics_note = Note:
 text_rag_analytics_detailed_data_available = Detailed data is available in the interpretation above.
@@ -29,7 +28,6 @@ text_rag_analytics_result_count = Number of results:
 text_rag_ambiguous_multiple_interpretations = Multiple Interpretations Detected
 text_rag_ambiguous_explanation = Your query could mean different things. Here are the results for each interpretation:
 text_rag_ambiguous_recommendation = Recommendation:
-text_rag_ambiguous_view_sql = View SQL Query
 text_rag_ambiguous_no_results = No results found
 text_rag_ambiguous_analytics_database = Analytics Database
 text_rag_ambiguous_interpretations = interpretations

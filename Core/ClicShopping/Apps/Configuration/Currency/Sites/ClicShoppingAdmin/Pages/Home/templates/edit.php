@@ -6,6 +6,7 @@
  * See LICENSE file.
  */
 
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\ObjectInfo;
 use ClicShopping\OM\Registry;
@@ -17,8 +18,6 @@ $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
 Registry::set('CountriesAdmin', new CountriesAdmin());
 $CLICSHOPPING_CountriesAdmin = Registry::get('CountriesAdmin');
-$array_country_currency_code_list = $CLICSHOPPING_CountriesAdmin->currenciesCodeList();
-
 $Qcurrency = $CLICSHOPPING_Currency->db->prepare('select currencies_id,
                                                           title,
                                                           code,
@@ -36,6 +35,7 @@ $Qcurrency->bindInt(':currencies_id', $_GET['cID']);
 $Qcurrency->execute();
 
 $cInfo = new ObjectInfo($Qcurrency->toArray());
+$array_country_currency_code_list = $CLICSHOPPING_CountriesAdmin->currenciesCodeList($cInfo->code);
 
 $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
@@ -209,3 +209,20 @@ echo HTML::form('Currency', $CLICSHOPPING_Currency->link('Currency&Update&page='
   </div>
 </div>
 </form>
+
+<script>
+  // Changing the code fills the display fields from the common currencies; unknown codes leave them untouched.
+  (function () {
+    var common = <?php echo json_encode(json_decode(file_get_contents(CLICSHOPPING::BASE_DIR . 'External/CommonCurrencies.json'), true) ?: [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+    var select = document.getElementById('currency_code');
+
+    select.addEventListener('change', function () {
+      var cs = common[select.value];
+      if (!cs) return;
+      var form = select.form;
+      ['title', 'symbol_left', 'symbol_right', 'decimal_point', 'thousands_point', 'decimal_places'].forEach(function (f) {
+        form.elements[f].value = cs[f];
+      });
+    });
+  })();
+</script>

@@ -9,6 +9,7 @@
 
 namespace ClicShopping\Apps\Configuration\Countries\Sites\ClicShoppingAdmin\Pages\Home\Actions\Countries;
 
+use ClicShopping\Apps\Configuration\Countries\Classes\ClicShoppingAdmin\CountriesAdmin;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -30,7 +31,7 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $countries_iso_code_2 = HTML::sanitize($_POST['countries_iso_code_2']);
     $countries_iso_code_3 = HTML::sanitize($_POST['countries_iso_code_3']);
     $address_format_id = HTML::sanitize($_POST['address_format_id']);
-    $country_currency_code = HTML::sanitize($_POST['country_currency_code']);
+    $country_currency_code = CountriesAdmin::normalizeCurrencyCode($_POST['country_currency_code'] ?? null);
 
     $this->app->db->save('countries', [
         'countries_name' => $countries_name,

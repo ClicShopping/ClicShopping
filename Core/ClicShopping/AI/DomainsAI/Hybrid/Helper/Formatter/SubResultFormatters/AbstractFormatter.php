@@ -54,6 +54,27 @@ abstract class AbstractFormatter
   abstract public function canHandle(array $results): bool;
 
   /**
+   * Render a generated SQL query behind the collapsed show/hide button.
+   *
+   * Every query shown in the chat goes through here: closed by default, opened on demand
+   * (chat_send.js initSqlToggles).
+   *
+   * @param string $sql Query, already formatted by the caller
+   * @return string HTML
+   */
+  protected function renderSqlToggle(string $sql): string
+  {
+    $id = 'sqlQueryCollapse_' . bin2hex(random_bytes(6));
+
+    return "<div class='mb-3'>"
+      . "<a href='#' class='btn btn-primary btn-sm' data-sql-toggle='{$id}'>" . htmlspecialchars($this->language->getDef('toggle_sql_query')) . "</a>"
+      . "<div id='{$id}' style='display:none;' class='mt-2'><div class='card card-body'>"
+      . "<div class='fw-bold mb-2 text-primary'>" . htmlspecialchars($this->language->getDef('sql_query_label')) . "</div>"
+      . "<pre class='mb-0' style='font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; font-family:monospace;'>" . htmlspecialchars($sql) . "</pre>"
+      . "</div></div></div>";
+  }
+
+  /**
    * Pretty format SQL query
    */
   protected function prettySql(string $sql): string

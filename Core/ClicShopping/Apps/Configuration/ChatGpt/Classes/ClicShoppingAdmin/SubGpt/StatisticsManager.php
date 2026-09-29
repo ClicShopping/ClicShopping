@@ -81,8 +81,7 @@ class StatisticsManager
   {
     $confidenceScore = (float)($aiResponse['metrics']['confidence_score'] ?? ($aiResponse['intent']['confidence'] ?? 0));
     $intentType = $aiResponse['intent']['type'] ?? 'semantic';
-    $hasUsefulData = isset($dataToFormat) && is_array($dataToFormat) 
-                  && (!empty($dataToFormat['results']) || !empty($dataToFormat['response']) || !empty($dataToFormat['interpretation']));
+    $hasUsefulData = (!empty($dataToFormat['results']) || !empty($dataToFormat['response']) || !empty($dataToFormat['interpretation']));
     $responseLen = strlen($formatted);
     
     $securityScore = isset($aiResponse['metrics']['security_score']) 
@@ -405,7 +404,7 @@ class StatisticsManager
       'request_type' => $resolvedIntentType,
       'confidence' => $aiResponse['intent']['confidence'] ?? 0,
       'response_quality' => $responseQualityValue,
-      'response_time' => $responseTime ?? 0,
+      'response_time' => $responseTime,
       'execution_time' => $aiResponse['execution_time'] ?? 0,
       'tokens_used' => $tokensUsed,
       'api_cost' => $apiCostValue,
@@ -424,7 +423,8 @@ class StatisticsManager
   /**
    * The SQL the run actually executed, read where the response exposes it.
    *
-   * A planned run carries its SQL only in `sub_queries`: every distinct statement is kept.
+   * A planned run carries its SQL only in `sub_queries`, a hybrid one in `analytics_components`:
+   * every distinct statement is kept.
    *
    * @param array $aiResponse AI response from orchestrator
    * @return string|null Executed SQL, null when the path ran none
@@ -439,14 +439,17 @@ class StatisticsManager
       }
     }
 
-    $subQueries = $aiResponse['sub_queries'] ?? $aiResponse['data']['sub_queries'] ?? $aiResponse['result']['sub_queries'] ?? [];
     $statements = [];
 
-    foreach (is_array($subQueries) ? $subQueries : [] as $subQuery) {
-      $sql = is_array($subQuery) ? self::usableSql($subQuery['sql_query'] ?? null) : null;
+    foreach (['sub_queries', 'analytics_components'] as $key) {
+      $parts = $aiResponse[$key] ?? $aiResponse['data'][$key] ?? $aiResponse['result'][$key] ?? [];
 
-      if ($sql !== null) {
-        $statements[$sql] = $sql;
+      foreach (is_array($parts) ? $parts : [] as $part) {
+        $sql = is_array($part) ? self::usableSql($part['sql_query'] ?? null) : null;
+
+        if ($sql !== null) {
+          $statements[$sql] = $sql;
+        }
       }
     }
 
