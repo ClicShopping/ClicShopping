@@ -747,6 +747,7 @@ class ResultFormatter
         'response' => $firstSemantic['response'] ?? '',
         'text_response' => $firstSemantic['text_response'] ?? '',
         'sources' => $firstSemantic['sources'] ?? [],
+        'source_attribution' => $firstSemantic['source_attribution'] ?? [],
         'audit_metadata' => $firstSemantic['audit_metadata'] ?? [],
       ];
 

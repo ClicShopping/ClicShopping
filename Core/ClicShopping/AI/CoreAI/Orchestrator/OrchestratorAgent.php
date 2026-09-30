@@ -589,14 +589,27 @@ class OrchestratorAgent implements AgentInterface
   /**
    * Restitution chokepoint: the AI pipeline runs in English; return the user-facing prose in the
    * interface language. Translates only 'text_response' (and the copies that mirror it), leaving
-   * data/sources/metadata untouched. No-op for the English interface.
+   * data/sources/metadata untouched. No-op for the English interface. A hybrid answer translates
+   * its semantic part alone: its analytics parts are generated in the interface language.
    *
    * @param array $result The assembled response
    * @return array The response with its prose translated to the interface language
    */
   private function applyRestitution(array $result): array
   {
-    if (isset($result['text_response']) && is_string($result['text_response']) && trim($result['text_response']) !== ''
+    // Hybrid: the analytics parts are already in the interface language; translate only the semantic part.
+    $semanticText = $result['semantic_component']['response'] ?? null;
+
+    if (is_string($semanticText) && trim($semanticText) !== '' && !empty($result['analytics_components'])
+      && is_string($result['text_response'] ?? null) && str_contains($result['text_response'], $semanticText)) {
+      $translated = SemanticAgent::translateToLanguage($semanticText, $this->languageId);
+      $result['text_response'] = str_replace($semanticText, $translated, $result['text_response']);
+      $result['semantic_component']['response'] = $translated;
+
+      if (($result['semantic_component']['text_response'] ?? null) === $semanticText) {
+        $result['semantic_component']['text_response'] = $translated;
+      }
+    } elseif (isset($result['text_response']) && is_string($result['text_response']) && trim($result['text_response']) !== ''
       && !preg_match('/<(?:div|table|script|canvas|h[1-6]|ul|ol|iframe)\b/i', $result['text_response'])) {
       $originalResponse = $result['text_response'];
       $result['text_response'] = SemanticAgent::translateToLanguage($originalResponse, $this->languageId);

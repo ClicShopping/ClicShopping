@@ -5,9 +5,8 @@
  * Orchestrates the semantic search fallback chain:
  * 1. Cache (optional, if enabled)
  * 2. Document Stores / RAG Knowledge Base (12+ vector stores) - PRIMARY SOURCE
- * 3. ConversationMemory (fallback for repeated queries)
- * 4. LLM Fallback (for general knowledge queries)
- * 5. Web Search Fallback (if enabled)
+ * 3. LLM Fallback (for general knowledge queries)
+ * 4. Web Search Fallback (if enabled)
  *
  * Copyright (c) 2008–2026 Loic Richard
  *
@@ -49,8 +48,6 @@ class SemanticSearchOrchestrator
   private int $languageId;
   private $language;
   private InsufficientInformationDetector $infoDetector;
-
-  private string $prefix;
   
   /**
    * Constructor
@@ -170,145 +167,11 @@ class SemanticSearchOrchestrator
         return $this->formatResult($documentResult, 'documents', $fallbackChain, $cacheStatus, $executionTime, $query);
       }
 
-      // Step 3: Search ConversationMemory (FALLBACK if RAG has no results)
-      $fallbackChain[] = 'conversation_memory';
-      if ($this->debug) {
-        $this->logger->logSecurityEvent("Step 3: Searching ConversationMemory (fallback)", 'info');
-      }
-
-      $conversationResult = $this->searchConversationMemory($query, $options);
-
-      // Check if the documents have meaningful content (not just empty "Response: \n")
-      $hasContent = false;
-      if ($conversationResult !== null && !empty($conversationResult['documents'])) {
-        // First, check if any document has actual content in the "Response:" section
-        foreach ($conversationResult['documents'] as $doc) {
-          $content = '';
-          if (is_object($doc) && isset($doc->content)) {
-            $content = $doc->content;
-          } elseif (is_array($doc) && isset($doc['content'])) {
-            $content = $doc['content'];
-          }
-
-          // Extract the response part after "Response: "
-          if (preg_match('/Response:\s*(.+)/s', $content, $matches)) {
-            $responseContent = trim($matches[1]);
-
-
-            // 🔧 FIX 2025-12-28: Use InsufficientInformationDetector helper
-            $isGenericResponse = $this->infoDetector->isInsufficientInformation($responseContent);
-
-            // Check if response has actual content (not empty, not generic)
-            if (!$isGenericResponse) {
-              $hasContent = true;
-
-              if ($this->debug) {
-                $logMessage = $this->language->getDef('text_log_conversation_memory_useful');
-                $logMessage = str_replace('{{length}}', strlen($responseContent), $logMessage);
-                $this->logger->logSecurityEvent($logMessage, 'info');
-              }
-              break;
-            } elseif ($isGenericResponse) {
-              if ($this->debug) {
-                $this->logger->logSecurityEvent(
-                  "Conversation memory document has generic LLM response - skipping",
-                  'info'
-                );
-              }
-            }
-          }
-        }
-
-        // If we found useful content, extract and use it directly
-        if ($hasContent) {
-          // Extract the response from the first document with useful content
-          $extractedResponse = '';
-          foreach ($conversationResult['documents'] as $doc) {
-            $content = '';
-            if (is_object($doc) && isset($doc->content)) {
-              $content = $doc->content;
-            } elseif (is_array($doc) && isset($doc['content'])) {
-              $content = $doc['content'];
-            }
-
-            // Extract the response part after "Response: "
-            if (preg_match('/Response:\s*(.+)/s', $content, $matches)) {
-              $responseContent = trim($matches[1]);
-
-              // Check if this is the useful response (not generic)
-              // 🔧 FIX 2025-12-28: Use InsufficientInformationDetector helper
-              $isGenericResponse = $this->infoDetector->isInsufficientInformation($responseContent);
-
-              if (!$isGenericResponse) {
-                $extractedResponse = $responseContent;
-
-                if ($this->debug) {
-                  $logMessage = $this->language->getDef('text_log_extracted_response');
-                  $logMessage = str_replace('{{length}}', strlen($extractedResponse), $logMessage);
-                  $this->logger->logSecurityEvent($logMessage, 'info');
-                }
-                break;
-              }
-            }
-          }
-
-          // Use the extracted response directly (don't regenerate)
-          if (!empty($extractedResponse)) {
-            $conversationResult['answer'] = $extractedResponse;
-            $conversationResult['response'] = $extractedResponse;
-            $conversationResult['text_response'] = $extractedResponse;
-
-            if ($this->debug) {
-              $this->logger->logSecurityEvent(
-                "Using extracted response from conversation memory directly",
-                'info'
-              );
-            }
-          } else {
-            // No useful response found, don't use conversation memory
-            $hasContent = false;
-
-            if ($this->debug) {
-              $this->logger->logSecurityEvent(
-                "Could not extract useful response from conversation memory",
-                'warning'
-              );
-            }
-          }
-        } else {
-          if ($this->debug) {
-            $this->logger->logSecurityEvent(
-              "Conversation memory documents have no actual content (empty or generic responses)",
-              'info'
-            );
-          }
-        }
-      }
-
-      if ($hasContent) {
-        $executionTime = microtime(true) - $startTime;
-        if ($this->debug) {
-          $this->logger->logSecurityEvent(
-            "Search completed - Source: conversation_memory, Results: " . count($conversationResult['documents']) . ", Time: {$executionTime}s",
-            'info'
-          );
-        }
-
-        return $this->formatResult($conversationResult, 'conversation_memory', $fallbackChain, $cacheStatus, $executionTime, $query);
-      } else {
-        if ($this->debug) {
-          $this->logger->logSecurityEvent(
-            "Conversation memory returned empty or no-content results - continuing to next fallback",
-            'info'
-          );
-        }
-      }
-
-      // Step 4: LLM Fallback
+      // Step 3: LLM Fallback
       if ($this->isLLMFallbackEnabled()) {
         $fallbackChain[] = 'llm';
         if ($this->debug) {
-          $this->logger->logSecurityEvent("Step 4: Falling back to LLM", 'info');
+          $this->logger->logSecurityEvent("Step 3: Falling back to LLM", 'info');
         }
 
         $llmResult = $this->fallbackToLLM($query, $context);
@@ -346,72 +209,6 @@ class SemanticSearchOrchestrator
   }
 
   /**
-   * Search conversation memory
-   *
-   * @param string $query Search query
-   * @param array $options Search options
-   * @return array|null Results or null if no matches
-   */
-  private function searchConversationMemory(string $query, array $options): ?array
-  {
-    try {
-      // Initialize RAG manager if needed
-      if ($this->ragManager === null) {
-        $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
-        $this->ragManager = new MultiDBRAGManager(null, [$this->prefix . 'rag_conversation_memory_embedding']);
-      }
-
-      $limit = $options['limit'] ?? 5;
-
-      // Conversation memory should only match VERY similar queries (0.85+), not loosely related ones
-      // This prevents "où est Paris" from matching "refund policy" (similarity 0.63)
-      // Conversation memory is a FALLBACK, not primary source - it should only match near-exact repeats
-      $configuredMinScore = TechnicalDefaults::float('CLICSHOPPING_APP_CHATGPT_RA_MEMORY_MIN_SCORE');
-      $minScore = isset($options['minScore']) ? (float)$options['minScore'] : $configuredMinScore;
-
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "Searching ConversationMemory - limit: {$limit}, minScore: {$minScore}",
-          'info'
-        );
-      }
-
-      // Search only conversation memory
-      $results = $this->ragManager->searchDocuments(
-        $query,
-        $limit,
-        $minScore,
-        $this->languageId,
-        null
-      );
-
-      if (!empty($results['documents'])) {
-        if ($this->debug) {
-          $this->logger->logSecurityEvent(
-            "ConversationMemory search found " . count($results['documents']) . " results",
-            'info'
-          );
-        }
-
-        return $results;
-      }
-
-      if ($this->debug) {
-        $this->logger->logSecurityEvent("ConversationMemory search: no results", 'info');
-      }
-
-      return null;
-    } catch (\Exception $e) {
-      $this->logger->logSecurityEvent(
-        "ConversationMemory search error: " . $e->getMessage(),
-        'error'
-      );
-
-      return null;
-    }
-  }
-
-  /**
    * Search all document vector stores
    *
    * @param string $query Search query
@@ -421,7 +218,7 @@ class SemanticSearchOrchestrator
   private function searchDocumentStores(string $query, array $options): ?array
   {
     try {
-      // Initialize RAG manager with all document stores (excluding conversation_memory)
+      // Initialize RAG manager with all document stores
       if ($this->ragManager === null) {
         // Let MultiDBRAGManager auto-detect all embedding tables
         $this->ragManager = new MultiDBRAGManager();
@@ -432,7 +229,7 @@ class SemanticSearchOrchestrator
       $configuredMinScore = TechnicalDefaults::float('CLICSHOPPING_APP_CHATGPT_RA_MIN_SIMILARITY_SCORE');
       $minScore = $options['minScore'] ?? $configuredMinScore;
 
-      // Get document store names (all except conversation_memory)
+      // Get document store names
       $documentStores = $this->ragManager->knownEmbeddingTable();
 
       if ($this->debug) {
@@ -642,9 +439,7 @@ class SemanticSearchOrchestrator
 
     // Ensure priority_table is set (use from result or default to source-based value)
     if (!isset($auditMetadata['priority_table'])) {
-      if ($source === 'conversation_memory') {
-        $auditMetadata['priority_table'] = CLICSHOPPING::getConfig('db_prefix') . '_rag_conversation_memory_embedding';
-      } elseif ($source === 'documents' && isset($result['audit_metadata']['priority_table'])) {
+      if ($source === 'documents' && isset($result['audit_metadata']['priority_table'])) {
         $auditMetadata['priority_table'] = $result['audit_metadata']['priority_table'];
       }
     }

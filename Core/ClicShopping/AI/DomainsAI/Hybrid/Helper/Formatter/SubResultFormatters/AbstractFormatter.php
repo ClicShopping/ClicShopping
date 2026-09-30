@@ -14,6 +14,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Language;
 use ClicShopping\AI\Helper\FuturePeriodMask;
+use ClicShopping\AI\Config\DomainConfig;
 
 /**
  * AbstractFormatter - Base class for all result formatters
@@ -72,6 +73,32 @@ abstract class AbstractFormatter
       . "<div class='fw-bold mb-2 text-primary'>" . htmlspecialchars($this->language->getDef('sql_query_label')) . "</div>"
       . "<pre class='mb-0' style='font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; font-family:monospace;'>" . htmlspecialchars($sql) . "</pre>"
       . "</div></div></div>";
+  }
+
+  /**
+   * The documents a semantic answer was built from, as the small italic line under it.
+   *
+   * @param array $attribution Semantic source attribution, carrying 'document_names'
+   * @return string HTML, empty when no document is named
+   */
+  protected function renderDocumentSources(array $attribution): string
+  {
+    $docNames = array_values(array_filter((array)($attribution['document_names'] ?? []), 'is_string'));
+
+    if ($docNames === []) {
+      return '';
+    }
+
+    DomainConfig::loadAgnosticLanguageFile('rag_formatters', null);
+    $names = array_map('htmlspecialchars', $docNames);
+    $last = array_pop($names);
+    $list = $names === [] ? $last : implode(', ', $names) . ' ' . $this->language->getDef('text_rag_semantic_and') . ' ' . $last;
+    $label = $this->language->getDef(count($docNames) > 1 ? 'text_rag_semantic_sources' : 'text_rag_semantic_source');
+
+    return "<div class='mt-3'></div>"
+      . "<div class='document-sources' style='font-size: 0.9em; color: #666; font-style: italic;'>"
+      . '<strong>' . $label . ' :</strong> ' . $list
+      . '</div>';
   }
 
   /**

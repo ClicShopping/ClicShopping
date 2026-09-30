@@ -242,8 +242,8 @@ class LongTermMemoryManager
       // Build the per-user / per-language metadata filter (null = no filter).
       $filter = $this->retriever->buildMetadataFilter($userId, $languageId);
 
-      // Fetch + rank candidate documents (initial search, fallback cascade, score-sort, limit).
-      $resultsArray = $this->retriever->fetchRanked($query, $limit, $filter, $userId, $languageId);
+      // Fetch + rank candidate documents (search, score-sort, limit).
+      $resultsArray = $this->retriever->fetchRanked($query, $limit, $filter);
 
       // Apply entity-specific filtering to prevent context pollution
       // This ensures "article 4" doesn't return "article 3" content

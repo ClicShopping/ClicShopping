@@ -11,6 +11,7 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
+use ClicShopping\AI\Rag\RagContextFormatter;
 
 /**
  * HybridFormatter - Formats hybrid query results
@@ -104,32 +105,30 @@ class HybridFormatter extends AbstractFormatter
       if (!empty($semanticText)) {
         $output .= "<div class='semantic-response'>" . nl2br(htmlspecialchars($semanticText)) . "</div>";
       }
+
+      $output .= $this->renderDocumentSources((array)($semanticComp['source_attribution'] ?? []));
       
-      // Display sources
-      if (isset($semanticComp['sources']) && is_array($semanticComp['sources']) && !empty($semanticComp['sources'])) {
+      // Display sources: counted per document, each document listing its extracts.
+      $documents = $this->groupSourcesByDocument($semanticComp['sources'] ?? []);
+
+      if ($documents !== []) {
         $output .= "<div class='mt-3'>";
         $output .= "<details>";
-        $output .= "<summary style='cursor: pointer; font-size: 0.9em; color: #666;'><strong>📖 " . htmlspecialchars($this->language->getDef('sources_label')) . " (" . count($semanticComp['sources']) . ")</strong></summary>";
+        $output .= "<summary style='cursor: pointer; font-size: 0.9em; color: #666;'><strong>📖 " . htmlspecialchars($this->language->getDef('sources_label')) . " (" . count($documents) . ")</strong></summary>";
         $output .= "<ul class='mt-2'>";
-        foreach ($semanticComp['sources'] as $source) {
-          if (is_array($source)) {
-            $sourceText = $source['content'] ?? $source['text'] ?? '';
-            $sourceType = $source['type'] ?? '';
-            if (!empty($sourceText)) {
-              $output .= "<li style='margin-bottom: 10px;'>";
-              if (!empty($sourceType)) {
-                $output .= "<span class='badge bg-secondary'>" . htmlspecialchars($sourceType) . "</span> ";
-              }
-              $output .= htmlspecialchars(substr($sourceText, 0, 200)) . (strlen($sourceText) > 200 ? '...' : '');
-              $output .= "</li>";
-            }
+        foreach ($documents as $name => $extracts) {
+          $output .= "<li style='margin-bottom: 10px;'><strong>" . htmlspecialchars($name) . "</strong>";
+          $output .= "<ul style='font-size: 0.9em;'>";
+          foreach ($extracts as $extract) {
+            $output .= "<li>" . htmlspecialchars(mb_substr($extract, 0, 200)) . (mb_strlen($extract) > 200 ? '...' : '') . "</li>";
           }
+          $output .= "</ul></li>";
         }
         $output .= "</ul>";
         $output .= "</details>";
         $output .= "</div>";
       }
-      
+
       $output .= "</div>";
     }
 
@@ -460,5 +459,29 @@ class HybridFormatter extends AbstractFormatter
     ];
 
     return $icons[$type] ?? '🤖';
+  }
+
+  /**
+   * Group retrieved extracts under the document they come from.
+   *
+   * @param mixed $sources Retrieved extracts, as Document objects or arrays
+   * @return array<string, list<string>> Document name => its non-empty extracts, in retrieval order
+   */
+  private function groupSourcesByDocument(mixed $sources): array
+  {
+    $names = new RagContextFormatter();
+    $documents = [];
+
+    foreach (is_array($sources) ? $sources : [] as $source) {
+      $content = is_object($source) ? ($source->content ?? '') : (is_array($source) ? ($source['content'] ?? $source['text'] ?? '') : '');
+
+      if (!is_string($content) || trim($content) === '') {
+        continue;
+      }
+
+      $documents[$names->extractDocumentName($source)][] = trim($content);
+    }
+
+    return $documents;
   }
 }

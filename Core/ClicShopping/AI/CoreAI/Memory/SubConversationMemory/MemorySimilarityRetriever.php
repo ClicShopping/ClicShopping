@@ -17,16 +17,14 @@ use ClicShopping\AI\Security\SecurityLogger;
  * Candidate retrieval + ranking for the long-term memory vector store. Extracted
  * verbatim from LongTermMemoryManager::searchSimilar (2026-06-23) to drain the
  * cyclo-69 (benchmark D2) hotspot: this is the MemoryRetrieval/MemoryRanking
- * concern (vector-store query with a permissive threshold, a graceful fallback
- * cascade when a per-user filter matches nothing — unfiltered → manual filter →
- * ultra-low threshold — then score-sort and slice to the requested limit).
+ * concern (vector-store query with a permissive threshold, then score-sort and
+ * slice to the requested limit).
  *
  * Entity-aware filtering (EntityMatcher) stays in LongTermMemoryManager around
  * this call: this class is purely "fetch the best N candidate documents".
  *
  * Responsibilities:
  * - Initial similarity search (permissive threshold) honouring an optional filter
- * - Fallback cascade when the filtered search returns nothing
  * - Rank candidates by score and limit to the requested count
  */
 class MemorySimilarityRetriever
@@ -111,15 +109,14 @@ class MemorySimilarityRetriever
    * @param string $query Query text
    * @param int $limit Maximum number of results
    * @param callable|null $filter Optional metadata filter passed to the vector store
-   * @param string|null $userId User id (used by the manual fallback filter)
-   * @param int|null $languageId Language id (used by the manual fallback filter)
    * @return array Ranked, limited candidate documents (entity filtering applied by caller)
    */
-  public function fetchRanked(string $query, int $limit, ?callable $filter, ?string $userId, ?int $languageId): array
+  public function fetchRanked(string $query, int $limit, ?callable $filter): array
   {
     // 🔧 FIX: Start with a very low threshold to get maximum results, then filter
     // Use much lower initial threshold to ensure we get results
     $initialThreshold = 0.1; // Very permissive
+    // An empty filtered result stays empty: never widen the search past the user's own rows.
     $results = $this->vectorStore->similaritySearch($query, $limit * 10, $initialThreshold, $filter);
 
     // Convert results to array if it's an iterable
@@ -130,61 +127,6 @@ class MemorySimilarityRetriever
         "Initial search with threshold {$initialThreshold}: found " . count($resultsArray) . " results",
         'info'
       );
-    }
-
-    // If no results with filter, try without filter to see if filter is blocking everything
-    if (empty($resultsArray) && $filter !== null) {
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "No per-user history matched the filter yet; checking unfiltered availability",
-          'info'
-        );
-      }
-
-      // Try without filter to see if there are ANY results
-      $resultsNoFilter = $this->vectorStore->similaritySearch($query, $limit * 10, $initialThreshold, null);
-      $resultsNoFilterArray = is_array($resultsNoFilter) ? $resultsNoFilter : iterator_to_array($resultsNoFilter);
-
-      if (!empty($resultsNoFilterArray)) {
-        if ($this->debug) {
-          $this->logger->logSecurityEvent(
-            "No matching per-user history yet for this user - using unfiltered fallback (" . count($resultsNoFilterArray) . " candidates available)",
-            'info'
-          );
-        }
-
-        // Apply manual filtering on unfiltered results (less strict)
-        $manuallyFiltered = [];
-        foreach ($resultsNoFilterArray as $doc) {
-          $docMeta = isset($doc->metadata) ? $doc->metadata : [];
-          $docUserId = (string)($docMeta['user_id'] ?? $docMeta['sourceName'] ?? '');
-          $docLangId = (int)($docMeta['language_id'] ?? 0);
-
-          $userIdMatch = $userId === null || $docUserId === (string)$userId || empty($docUserId);
-          $langIdMatch = $languageId === null || $docLangId === (int)$languageId;
-
-          if ($userIdMatch && $langIdMatch) {
-            $manuallyFiltered[] = $doc;
-            if (count($manuallyFiltered) >= $limit) break;
-          }
-        }
-
-        // Use manually filtered if we have results, otherwise use all unfiltered
-        $resultsArray = !empty($manuallyFiltered) ? $manuallyFiltered : array_slice($resultsNoFilterArray, 0, $limit);
-      } else {
-        // No results even without filter - try with even lower threshold
-        $ultraLowThreshold = 0.05;
-        $resultsUltra = $this->vectorStore->similaritySearch($query, $limit * 20, $ultraLowThreshold, null);
-        $resultsUltraArray = is_array($resultsUltra) ? $resultsUltra : iterator_to_array($resultsUltra);
-        $resultsArray = array_slice($resultsUltraArray, 0, $limit);
-
-        if ($this->debug) {
-          $this->logger->logSecurityEvent(
-            "Tried ultra-low threshold {$ultraLowThreshold}: found " . count($resultsArray) . " results",
-            'info'
-          );
-        }
-      }
     }
 
     // Filter by similarity score if we have many results

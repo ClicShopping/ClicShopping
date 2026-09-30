@@ -61,7 +61,7 @@ class RagContextFormatter
       // Priority documents get FULL content (no truncation)
       if ($isPriorityDoc($doc)) {
         $docContent = $doc->content; //  FULL CONTENT
-        $label = $documentName . " (Priority Source)";
+        $label = $documentName;
 
         if ($this->debug) {
           error_log("[INFO] Doc #{$i} PRIORITY ({$documentName}): " . strlen($docContent) . " chars (full content)");

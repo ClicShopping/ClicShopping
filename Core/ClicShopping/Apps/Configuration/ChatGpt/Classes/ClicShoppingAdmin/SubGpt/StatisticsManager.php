@@ -476,7 +476,8 @@ class StatisticsManager
    * The validation gate verdict on the delivered answer.
    *
    * `reason` is not stored: it is derivable from the pair — a null score under 'pass' is
-   * "no score available".
+   * "no score available". A planned run carries one verdict per part in `sub_queries` or
+   * `analytics_components`: the harshest one is kept, a weak part must never read as 'pass'.
    *
    * @param array $aiResponse AI response from orchestrator
    * @return array{action: string|null, score: float|null}
@@ -485,10 +486,41 @@ class StatisticsManager
   {
     $validation = $aiResponse['validation'] ?? $aiResponse['data']['validation'] ?? null;
 
-    if (!is_array($validation)) {
-      return ['action' => null, 'score' => null];
+    if (is_array($validation)) {
+      return self::normalizeVerdict($validation);
     }
 
+    $harshest = ['action' => null, 'score' => null];
+    $severity = ['pass' => 0, 'annotate' => 1, 'regenerate' => 2];
+
+    foreach (['sub_queries', 'analytics_components'] as $key) {
+      $parts = $aiResponse[$key] ?? $aiResponse['data'][$key] ?? $aiResponse['result'][$key] ?? [];
+
+      foreach (is_array($parts) ? $parts : [] as $part) {
+        $verdict = is_array($part) && is_array($part['validation'] ?? null) ? self::normalizeVerdict($part['validation']) : null;
+
+        if ($verdict === null || $verdict['action'] === null) {
+          continue;
+        }
+
+        $rank = $severity[$verdict['action']] ?? 1;
+        $best = $harshest['action'] === null ? -1 : ($severity[$harshest['action']] ?? 1);
+
+        if ($rank > $best || ($rank === $best && ($verdict['score'] ?? 1.0) < ($harshest['score'] ?? 1.0))) {
+          $harshest = $verdict;
+        }
+      }
+    }
+
+    return $harshest;
+  }
+
+  /**
+   * @param array $validation Raw gate verdict
+   * @return array{action: string|null, score: float|null}
+   */
+  private static function normalizeVerdict(array $validation): array
+  {
     $action = $validation['action'] ?? null;
     $score = $validation['score'] ?? null;
 

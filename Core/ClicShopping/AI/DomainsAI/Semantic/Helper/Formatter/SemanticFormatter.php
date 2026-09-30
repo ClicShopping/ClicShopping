@@ -97,25 +97,7 @@ class SemanticFormatter extends AbstractFormatter
               . Hash::displayDecryptedDataText($results['interpretation']) . "</div>";
     }
 
-    if (isset($results['source_attribution']['document_names']) && !empty($results['source_attribution']['document_names'])) {
-      $docNames = $results['source_attribution']['document_names'];
-      
-      $output .= "<div class='mt-3'></div>";
-      $output .= "<div class='document-sources' style='font-size: 0.9em; color: #666; font-style: italic;'>";
-      $output .= "<strong>" . (count($docNames) > 1 ? $this->language->getDef('text_rag_semantic_sources') : $this->language->getDef('text_rag_semantic_source')) . " :</strong> ";
-      
-      if (count($docNames) === 1) {
-        $output .= htmlspecialchars($docNames[0]);
-      } elseif (count($docNames) === 2) {
-        $output .= htmlspecialchars($docNames[0]) . " " . $this->language->getDef('text_rag_semantic_and') . " " . htmlspecialchars($docNames[1]);
-      } else {
-        // More than 2 documents: "doc1, doc2 et doc3"
-        $lastDoc = array_pop($docNames);
-        $output .= htmlspecialchars(implode(', ', $docNames)) . " " . $this->language->getDef('text_rag_semantic_and') . " " . htmlspecialchars($lastDoc);
-      }
-      
-      $output .= "</div>";
-    }
+    $output .= $this->renderDocumentSources((array)($results['source_attribution'] ?? []));
 
     $output .= "</div>";
 
