@@ -16,6 +16,8 @@ LLPhant now supports typed Jev classification with **Noul**, **Choice**, and
 the new **Score** rubric-based questions via ``JevClassifier``.
 Returned answers now also expose Jev usage metadata via ``inputTokens`` and
 ``outputTokens`` fields.
+The same Jev integration can now be used to detect malicious prompt injections
+in ``QuestionAnswering`` through ``ClassifierPromptInjectionQueryTransformer``.
 
 To use JevClassifier, set your API key:
 
@@ -29,6 +31,8 @@ key explicitly through ``new JevConfig(apiKey: '...')``.
 See the full Jev API reference: [https://docs.typesafe.ai/api](https://docs.typesafe.ai/api)
 and the LLPhant Jev guide in [docs/jev-classifier.rst](docs/jev-classifier.rst).
 
+
+## Similar projects
 
 We want to thank few amazing projects that we use here or inspired us:
 
