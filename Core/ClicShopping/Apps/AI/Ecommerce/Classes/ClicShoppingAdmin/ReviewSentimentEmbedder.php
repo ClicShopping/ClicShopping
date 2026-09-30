@@ -25,7 +25,7 @@ use ClicShopping\Sites\Common\HTMLOverrideCommon;
  * keys that stay in the AI/Ecommerce language files (the AI-prompt exception).
  *
  * NOTE — this is the MACRO analysis embedding, distinct from the per-review
- * `reviews_embedding` generated at review write time (Shop/ReviewsWrite/Process).
+ * `reviews_embedding` written when an admin approves or edits a review (Reviews/Update, Reviews/SetFlag).
  */
 class ReviewSentimentEmbedder
 {

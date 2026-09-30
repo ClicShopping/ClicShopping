@@ -495,6 +495,26 @@ class Gpt
   }
 
   /**
+   * Round-trips of the current request per model then role. @see LlmCallCounter::callsByModelRole
+   *
+   * @return array<string, array<string, array{calls:int,unmeasured:int,prompt:int,completion:int,reasoning:int}>>
+   */
+  public static function getLlmCallsByModelRole(): array
+  {
+    return LlmCallCounter::callsByModelRole();
+  }
+
+  /**
+   * Embedding volume of the current request per model. @see LlmCallCounter::embeddings
+   *
+   * @return array<string, array{texts:int,chars:int}>
+   */
+  public static function getLlmEmbeddings(): array
+  {
+    return LlmCallCounter::embeddings();
+  }
+
+  /**
    * Tokens of the current request per role (BENCH-3 (2a)): `completion` is the unit that says
    * whether a call carries more work than another, which the call COUNT cannot.
    *

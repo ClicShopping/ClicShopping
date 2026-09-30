@@ -50,37 +50,40 @@ class Update implements HooksInterface
   }
 
   /**
-   * Executes the necessary processes based on the provided GET and POST parameters related to category handling.
+   * Re-syncs the edited review's embedding (admin review edit form).
    *
-   * Checks if GPT functionality is enabled and processes category-related inputs to update database records
-   * such as descriptions, SEO data (title, description, keywords),
-   *
-   * @return bool Returns false if GPT functionality is disabled or not applicable; otherwise, performs the operations without returning a value.
+   * @return void
    */
   public function execute()
   {
-    $requiredConstants = [
-      'CLICSHOPPING_APP_ECOMMERCE_EC_STATUS',
-      'CLICSHOPPING_APP_CHATGPT_RA_OPENAI_EMBEDDING',
-      'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
-    ];
+    if (isset($_GET['Update'], $_GET['Reviews'], $_GET['rID'])) {
+      $this->sync((int)$_GET['rID']);
+    }
+  }
 
-    if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
-      return false;
+  /**
+   * Aligns the review's embedding with its moderation status: approved (status 1) is embedded,
+   * anything else is removed, so a pending review never reaches the RAG.
+   *
+   * @param int $rID The review ID.
+   * @return void
+   */
+  public function sync(int $rID): void
+  {
+    if (!self::isEnabled()) {
+      return;
     }
 
-    if (!Gpt::checkGptStatus()) {
-      return false;
+    $QreviewStatus = $this->app->db->prepare('select status from :table_reviews where reviews_id = :reviews_id');
+    $QreviewStatus->bindInt(':reviews_id', $rID);
+    $QreviewStatus->execute();
+
+    if ($QreviewStatus->valueInt('status') !== 1) {
+      $this->app->db->delete('reviews_embedding', ['entity_id' => (int)$rID]);
+      return;
     }
 
-    $embedding_enabled = \defined('CLICSHOPPING_APP_CHATGPT_RA_OPENAI_EMBEDDING') && CLICSHOPPING_APP_CHATGPT_RA_OPENAI_EMBEDDING == 'True' && \defined( 'CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA_STATUS == 'True';
-
-    if (isset($_GET['Update'], $_GET['Reviews'])) {
-      if (isset($_GET['rID'])) {
-        $rID = HTML::sanitize($_GET['rID']);
-        $CLICSHOPPING_ProductsAdmin = Registry::get('ProductsAdmin');
-        $CLICSHOPPING_Language = Registry::get('Language');
-        $language_id = $CLICSHOPPING_Language->getId();
+    $CLICSHOPPING_ProductsAdmin = Registry::get('ProductsAdmin');
 
         $Qcheck = $this->app->db->prepare('select id
                                            from :table_reviews_embedding
@@ -105,18 +108,17 @@ class Update implements HooksInterface
                                                     rd.languages_id,
                                                     rv.vote,
                                                     rv.sentiment
-                                              from :table_reviews r,
-                                                   :table_reviews_description rd,
-                                                   :table_reviews_vote rv
-                                              where r.reviews_id = rd.reviews_id
-                                              and r.reviews_id = :reviews_id
-                                              and r.reviews_id = rv.reviews_id
+                                              from :table_reviews r
+                                              join :table_reviews_description rd on rd.reviews_id = r.reviews_id
+                                              left join :table_reviews_vote rv on rv.reviews_id = r.reviews_id
+                                              where r.reviews_id = :reviews_id
+                                              and r.status = 1
                                               ');
         $Qreviews->bindInt(':reviews_id', $rID);
         $Qreviews->execute();
 
         $reviews_array = $Qreviews->fetchAll();
-        $reviews_id = $Qreviews->valueInt('reviews_id');
+        $reviews_id = $rID;
 
         foreach ($reviews_array as $item) {
       	  $language_code = $this->lang->getLanguageCodeById((int)$item['languages_id']);
@@ -126,25 +128,20 @@ class Update implements HooksInterface
           $reviews_text = $item['reviews_text'];
           $reviews_rating = $item['reviews_rating'];
           $date_added = $item['date_added'];
-          $status = $item['status'];
-
-          if ($status === 0) {
-            $status = $this->app->getDef('text_status_active');
-          } else {
-            $status = $this->app->getDef('text_status_inactive');
-          }
-
+          $taxonomy = '';
           $customers_tag = $item['customers_tag'];
           $vote = $item['vote'];
           $sentiment = $item['sentiment'];
 
+          $language_id = (int)$item['languages_id'];
           $products_name = $CLICSHOPPING_ProductsAdmin->getProductsName($products_id, $language_id);
+          // Only approved reviews reach this point (see the status gate above).
+          $status = $this->app->getDef('text_status_active', ['products_name' => $products_name]);
 
           //********************
           // add embedding
           //********************
 
-          if ($embedding_enabled) {
             $embedding_data = $this->app->getDef('text_reviews', ['products_name' => $products_name]) . "\n";
             $embedding_data .= $this->app->getDef('text_reviews_id', ['reviews_id' => $reviews_id]) . "\n";
 
@@ -241,8 +238,19 @@ class Update implements HooksInterface
             error_log("Reviews/Update: Embedding exception for review {$item['reviews_id']} - " . $e->getMessage());
           }
         }
-        }
-      }
-    }
+  }
+
+  /**
+   * @return bool True when the Ecommerce app, GPT and RAG embedding are all enabled.
+   */
+  private static function isEnabled(): bool
+  {
+    $requiredConstants = [
+      'CLICSHOPPING_APP_ECOMMERCE_EC_STATUS',
+      'CLICSHOPPING_APP_CHATGPT_RA_OPENAI_EMBEDDING',
+      'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
+    ];
+
+    return CLICSHOPPING::checkAppsIsActivated($requiredConstants) && Gpt::checkGptStatus();
   }
 }

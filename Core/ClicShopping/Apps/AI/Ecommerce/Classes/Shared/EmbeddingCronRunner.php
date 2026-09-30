@@ -848,12 +848,11 @@ class EmbeddingCronRunner
                                               rd.reviews_text,
                                               rv.vote,
                                               rv.sentiment
-                                        from :table_reviews r,
-                                             :table_reviews_description rd,
-                                             :table_reviews_vote rv
-                                        where r.reviews_id = rd.reviews_id
-                                        and r.reviews_id = rv.reviews_id
-                                        and rd.languages_id = :language_id
+                                        from :table_reviews r
+                                        join :table_reviews_description rd on rd.reviews_id = r.reviews_id
+                                        left join :table_reviews_vote rv on rv.reviews_id = r.reviews_id
+                                        where rd.languages_id = :language_id
+                                        and r.status = 1
                                       ');
 
     $Qcheck->bindInt(':language_id', $language_id);
@@ -868,19 +867,14 @@ class EmbeddingCronRunner
       $reviews_text = $item['reviews_text'];
       $reviews_rating = $item['reviews_rating'];
       $date_added = $item['date_added'];
-      $status = $item['status'];
-
-      if ($status === 0) {
-        $status = $this->app->getDef('text_status_active');
-      } else {
-        $status = $this->app->getDef('text_status_inactive');
-      }
 
       $customers_tag = $item['customers_tag'];
       $vote = $item['vote'];
       $sentiment = $item['sentiment'];
 
       $products_name = $CLICSHOPPING_ProductsAdmin->getProductsName($products_id, $language_id);
+      // Only approved reviews are selected: a pending one must never reach the RAG.
+      $status = $this->app->getDef('text_status_active', ['products_name' => $products_name]);
 
       // $status already carries its resolved label here, so a label change is caught too.
       if (!$this->shouldRebuild('reviews', (int)$item['reviews_id'], [

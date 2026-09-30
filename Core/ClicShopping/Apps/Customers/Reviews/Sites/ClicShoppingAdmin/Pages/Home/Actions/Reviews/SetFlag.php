@@ -23,6 +23,7 @@ class SetFlag extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     if ($id > 0) {
       ReviewsAdmin::getReviewsStatus($id, $flag);
+      Registry::get('Hooks')->call('Reviews', 'SetFlag');
     }
 
     $CLICSHOPPING_Reviews->redirect('Reviews&Reviews&page=' . $page . '&rID=' . $id);

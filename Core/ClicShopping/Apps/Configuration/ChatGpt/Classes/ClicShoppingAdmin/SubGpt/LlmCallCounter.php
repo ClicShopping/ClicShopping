@@ -100,6 +100,7 @@ final class LlmCallCounter
     // Rewriting the question into the pipeline's working form (English).
     'SemanticAgent::translateToEnglish' => 'normalization',
     'EnglishQueryNormalizer' => 'normalization',
+    'ContextRelationResolver::resolve' => 'normalization',
 
     // Choosing what context to feed the next step.
     'DocumentReranker::transformDocuments' => 'retrieval',
@@ -130,6 +131,12 @@ final class LlmCallCounter
 
   /** @var array<string, array{prompt:int,completion:int,reasoning:int}> tokens per MODEL ('' = not reported) */
   private static array $tokensByModel = [];
+
+  /**
+   * @var array<string, array<string, array{calls:int,unmeasured:int,prompt:int,completion:int,reasoning:int}>>
+   * round-trips per MODEL then ROLE, unmeasured ones included: which model saw which step.
+   */
+  private static array $callsByModelRole = [];
 
   /**
    * @var array<string, int> round-trips whose provider reported NO usage, per call site. A
@@ -205,19 +212,25 @@ final class LlmCallCounter
     $site = self::deriveSite();
     self::captureLine('usage', self::unwrapUsage($usage));
     $tokens = self::normalizeUsage($usage);
+    $role = self::roleOf($site);
+    $trace = self::$callsByModelRole[$model ?? ''][$role] ?? ['calls' => 0, 'unmeasured' => 0, 'prompt' => 0, 'completion' => 0, 'reasoning' => 0];
+    $trace['calls']++;
 
     if ($tokens === null) {
+      $trace['unmeasured']++;
+      self::$callsByModelRole[$model ?? ''][$role] = $trace;
       self::$unmeasured[$site] = (self::$unmeasured[$site] ?? 0) + 1;
       return;
     }
-
-    $role = self::roleOf($site);
 
     foreach ($tokens as $kind => $n) {
       self::$tokensByRole[$role][$kind] = (self::$tokensByRole[$role][$kind] ?? 0) + $n;
       self::$tokensBySite[$site][$kind] = (self::$tokensBySite[$site][$kind] ?? 0) + $n;
       self::$tokensByModel[$model ?? ''][$kind] = (self::$tokensByModel[$model ?? ''][$kind] ?? 0) + $n;
+      $trace[$kind] = ($trace[$kind] ?? 0) + $n;
     }
+
+    self::$callsByModelRole[$model ?? ''][$role] = $trace;
   }
 
   /**
@@ -250,6 +263,16 @@ final class LlmCallCounter
   public static function tokensByModel(): array
   {
     return self::$tokensByModel;
+  }
+
+  /**
+   * Round-trips per model then role since the last reset ('' = model not reported).
+   *
+   * @return array<string, array<string, array{calls:int,unmeasured:int,prompt:int,completion:int,reasoning:int}>>
+   */
+  public static function callsByModelRole(): array
+  {
+    return self::$callsByModelRole;
   }
 
   /**
@@ -342,6 +365,7 @@ final class LlmCallCounter
     self::$tokensByRole = [];
     self::$tokensBySite = [];
     self::$tokensByModel = [];
+    self::$callsByModelRole = [];
     self::$unmeasured = [];
     self::$embeddings = [];
   }

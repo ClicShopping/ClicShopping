@@ -1,4 +1,4 @@
-# AGENTS.md — ClicShopping AI v4.20+
+# AGENTS.md — ClicShopping AI v4.33+
 
 This repository contains **ClicShopping AI™** — a powerful, open-source e-commerce platform
 designed for B2B, B2C, and B2B-B2C businesses, enhanced with advanced Agentic and Generative AI capabilities.

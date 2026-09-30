@@ -64,6 +64,9 @@ class StatisticsTracker
 
   /** @var array<string, array{prompt:int,completion:int,reasoning:int}> tokens per model, '' = not reported (metadata.tokens_by_model) */
   private array $tokensByModel = [];
+
+  /** @var array{llm_calls?: list<array<string, int|string>>, embeddings?: list<array<string, int|string>>} metadata.llm_calls / metadata.embeddings */
+  private array $modelTrace = [];
   
   /**
    * Constructeur
@@ -324,6 +327,26 @@ class StatisticsTracker
   }
 
   /**
+   * Every model the request reached (provider, role, calls, tokens) and the embedding models.
+   *
+   * @param array{llm_calls?: list<array<string, int|string>>, embeddings?: list<array<string, int|string>>} $trace
+   * @return self
+   */
+  public function setModelTrace(array $trace): self
+  {
+    $this->modelTrace = array_filter($trace);
+    return $this;
+  }
+
+  /**
+   * @return array{llm_calls?: list<array<string, int|string>>, embeddings?: list<array<string, int|string>>}
+   */
+  public function getModelTrace(): array
+  {
+    return $this->modelTrace;
+  }
+
+  /**
    * Calculates API cost: per model when the split is known, else on model_used.
    * 
    * @return void
@@ -418,6 +441,8 @@ class StatisticsTracker
       if ($this->tokensByModel !== []) {
         $metadata['tokens_by_model'] = $this->tokensByModel;
       }
+
+      $metadata += $this->modelTrace;
 
       // Convert metadata to JSON (null if empty)
       $metadataJson = !empty($metadata) ? json_encode($metadata) : null;

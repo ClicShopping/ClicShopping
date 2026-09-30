@@ -8,8 +8,9 @@
 
 namespace ClicShopping\Apps\AI\Ecommerce\Module\Hooks\Shop\Reviews;
 
+use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Shop\GptShop;
-use ClicShopping\Apps\Customers\reviews\Classes\Shop\ReviewsClass;
+use ClicShopping\Apps\Customers\Reviews\Classes\Shop\ReviewsClass;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
@@ -18,6 +19,7 @@ class SaveEntry implements HooksInterface
 {
   protected mixed $productsCommon;
   protected mixed $reviewsShop;
+  protected mixed $app;
 
   /**
    * Constructor method initializes the required class properties by registering
@@ -31,6 +33,14 @@ class SaveEntry implements HooksInterface
     Registry::set('ReviewsClass', new ReviewsClass());
 
     $this->reviewsShop = Registry::get('ReviewsClass');
+
+    if (!Registry::exists('Ecommerce')) {
+      Registry::set('Ecommerce', new EcommerceApp());
+    }
+
+    $this->app = Registry::get('Ecommerce');
+    // The AI process runs in English; the tags are written in the shop language.
+    $this->app->loadDefinitions('Module/Hooks/Shop/Reviews/save_entry', 'en');
   }
 
   /**
@@ -140,7 +150,7 @@ class SaveEntry implements HooksInterface
     }
 
 
-    if (CLICSHOPPING_APP_REVIEWS_RV_SENTIMENT_TAG == 'False') {
+    if (!\defined('CLICSHOPPING_APP_REVIEWS_RV_SENTIMENT_TAG') || CLICSHOPPING_APP_REVIEWS_RV_SENTIMENT_TAG == 'False') {
       return false;
     }
 
@@ -152,17 +162,23 @@ class SaveEntry implements HooksInterface
 
     $language_name = $CLICSHOPPING_Language->getLanguagesName($CLICSHOPPING_Language->getId());
 
-    $question = 'Task: Sentiment Analysis for eCommerce product.
-- Provide the result in this Language: ' . $language_name . '
-- Format: Return ONLY a comma-separated list of maximum 6 tags.
-- Constraint 1: If the content is not related to an ecommerce review, return NONE.
-- Constraint 2: No introductory text, no explanations, no quotes.
-- Review to analyze: ' . $customer_review;
+    $question = $this->app->getDef('text_review_sentiment_tags', [
+      'products_name' => $this->productsCommon->getProductsName((int)HTML::sanitize($_GET['products_id'])),
+      'language_name' => $language_name,
+      'review_text' => $customer_review,
+    ]);
 
-    $tag = GptShop::getGptResponse($question, 15, 0.7);
+    $tag = GptShop::getGptResponse($question, 40, 0.7);
 
-    if (self::getReviewsId() !== false && !empty($tag)) {
+    // NONE means off-topic or an instruction, never a tag.
+    if (!is_string($tag) || strcasecmp(trim($tag), 'NONE') === 0) {
+      return false;
+    }
+
+    if (self::getReviewsId() !== false && trim($tag) !== '') {
       self::saveReviews(self::getReviewsId(), $tag);
     }
+
+    return true;
   }
 }

@@ -53,7 +53,7 @@ class DeleteAll implements HooksInterface
     if (isset($_POST['selected']) && is_array($_POST['selected']) && isset($_POST['DeleteAll'])) {
       foreach ($_POST['selected'] as $items) {
         if (isset($items)) {
-          $this->app->delete('page_manager_embedding', 'entity_id', $items);
+          $this->app->db->delete('page_manager_embedding', ['entity_id' => (int)$items]);
         }
       }
     }

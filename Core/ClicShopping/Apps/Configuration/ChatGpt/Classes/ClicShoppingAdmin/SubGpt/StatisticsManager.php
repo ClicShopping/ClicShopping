@@ -296,6 +296,10 @@ class StatisticsManager
       self::recordTokenUsage($statsTracker);
     }
 
+    if ($statsTracker->getModelTrace() === []) {
+      $statsTracker->setModelTrace(self::modelTrace());
+    }
+
     if ($statsTracker->getMetric('model_used') !== null) {
       return;
     }
@@ -311,6 +315,34 @@ class StatisticsManager
     }
 
     $statsTracker->setApiInfo(ModelManager::getModelProviderMap()[$model] ?? 'unknown', $model);
+  }
+
+  /**
+   * Every model the request reached, with its provider and role, then the embedding models:
+   * model_used keeps only the dominant one, this proves which provider saw which step.
+   *
+   * @return array{llm_calls: list<array<string, int|string>>, embeddings: list<array<string, int|string>>}
+   */
+  private static function modelTrace(): array
+  {
+    $providers = ModelManager::getModelProviderMap();
+    $calls = [];
+
+    foreach (Gpt::getLlmCallsByModelRole() as $model => $roles) {
+      $model = (string)$model;
+
+      foreach ($roles as $role => $trace) {
+        $calls[] = ['provider' => $providers[$model] ?? 'unknown', 'model' => $model !== '' ? $model : 'unknown', 'role' => (string)$role] + $trace;
+      }
+    }
+
+    $embeddings = [];
+
+    foreach (Gpt::getLlmEmbeddings() as $model => $volume) {
+      $embeddings[] = ['model' => (string)$model] + $volume;
+    }
+
+    return ['llm_calls' => $calls, 'embeddings' => $embeddings];
   }
 
   /**
