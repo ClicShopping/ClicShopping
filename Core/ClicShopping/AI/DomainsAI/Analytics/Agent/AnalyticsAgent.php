@@ -1064,16 +1064,14 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
-   * Remove the result lines whose margin percentage sits at the impossible bound, keeping the
-   * lines that do have a cost basis.
+   * Blank the margin of the result lines that have no cost basis; their other figures stay.
    *
-   * A catalogue is rarely priced in full, and one unpriced category used to withhold the whole
-   * breakdown - the true lines with it. The rejection unit is the row; what left is NAMED by
-   * announceWithheldRows(). Every line at the bound is left alone: CoherenceGuard then withholds
-   * the pane, which is the honest verdict when nothing is computable.
+   * The rejection unit is the margin cell, NAMED by announceWithheldRows(). Every line at the
+   * bound is left alone: CoherenceGuard then withholds the pane, the honest verdict when nothing
+   * is computable.
    *
    * @param array $results Result set of the executed query
-   * @return array The same set, minus the lines with no cost basis
+   * @return array The same set, the margins without a cost basis set to null
    */
   private function withholdRowsWithoutCostBasis(array $results): array
   {

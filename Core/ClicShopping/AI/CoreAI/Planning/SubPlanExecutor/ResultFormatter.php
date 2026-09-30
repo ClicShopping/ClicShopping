@@ -54,16 +54,7 @@ class ResultFormatter
     $failed = $aggregated['failed_panes'] ?? [];
 
     if (!empty($answers)) {
-      $clarification = array_filter($failed, static fn(array $p): bool => !empty($p['clarification_needed']));
-      $unreliable = array_filter($failed, static fn(array $p): bool => !empty($p['coherence_rejected']));
-      $notMeasured = array_filter($failed, static fn(array $p): bool => empty($p['coherence_rejected']) && empty($p['clarification_needed']));
-
-      $notices = array_filter([
-        $this->partsNotice($clarification, 'text_clarification_report_notice'),
-        $this->partsNotice($notMeasured, 'text_partial_report_notice'),
-        $this->partsNotice($unreliable, 'text_unreliable_report_notice'),
-      ]);
-
+      $notices = $this->failureNotices($failed);
       $notices[] = $this->joinWithFooters($answers, $aggregated['text_footers'] ?? []);
 
       return implode("\n\n", $notices);
@@ -77,6 +68,25 @@ class ResultFormatter
     }
 
     return implode("\n\n", array_filter($aggregated['empty_notices'] ?? []));
+  }
+
+  /**
+   * The top notices naming the panes that did not answer, by kind.
+   *
+   * @param array $failed Failed panes (ResultSynthesizer `failed_panes`)
+   * @return list<string> Non-empty notices, clarification first
+   */
+  private function failureNotices(array $failed): array
+  {
+    $clarification = array_filter($failed, static fn(array $p): bool => !empty($p['clarification_needed']));
+    $unreliable = array_filter($failed, static fn(array $p): bool => !empty($p['coherence_rejected']));
+    $notMeasured = array_filter($failed, static fn(array $p): bool => empty($p['coherence_rejected']) && empty($p['clarification_needed']));
+
+    return array_values(array_filter([
+      $this->partsNotice($clarification, 'text_clarification_report_notice'),
+      $this->partsNotice($notMeasured, 'text_partial_report_notice'),
+      $this->partsNotice($unreliable, 'text_unreliable_report_notice'),
+    ]));
   }
 
   /**
@@ -340,6 +350,13 @@ class ResultFormatter
       $aggregated['analytics_results'],
       $aggregated['semantic_results']
     );
+
+    // A pane that did not answer is named at the top here too, never dropped in silence.
+    $notices = $this->failureNotices($aggregated['failed_panes'] ?? []);
+
+    if ($notices !== []) {
+      $finalResult['text_response'] = implode("\n\n", [...$notices, $finalResult['text_response']]);
+    }
 
     // Add entity metadata if present
     if (!empty($entityMetadata['entity_id'])) {

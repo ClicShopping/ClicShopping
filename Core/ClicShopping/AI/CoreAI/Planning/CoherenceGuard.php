@@ -48,13 +48,12 @@ class CoherenceGuard
     public const UNLABELLED_ROW = '';
     
     /**
-     * Drop the rows whose margin has no cost basis, and NAME them.
+     * Blank the margin of the rows that have no cost basis, and NAME them.
      *
      * A breakdown mixes what the catalogue prices and what it does not: one category with no cost
-     * recorded puts a 100% line next to lines that are true. Withholding the pane for it withholds
-     * the true lines too, which is how a whole margin report becomes unanswerable on a catalogue
-     * that is merely incomplete. So the unit of rejection is the ROW — and a row removed in silence
-     * would be worse than the 100%: the caller says which ones went, and why.
+     * recorded puts a 100% line next to lines that are true. The unit of rejection is the margin
+     * CELL of that row: its revenue and other figures are measured and stay. The caller says
+     * which margins went, and why.
      *
      * Runs BEFORE the results are interpreted. Filtering them afterwards leaves the prose quoting
      * the very figure the guard just withheld.
@@ -63,13 +62,14 @@ class CoherenceGuard
      * inspectAnalyticsPane() withholds the pane, which is the right verdict then.
      *
      * @param array $rows Result rows of one analytics pane
-     * @return array{rows: array, withheld: array<int, string>, column: ?string, share: ?int} Kept
-     *         rows, the label of each row dropped (empty when nothing was dropped), and the percentage
-     *         of the pane's revenue those rows carry (null when no revenue column is returned)
+     * @return array{rows: array, withheld: array<int, string>, column: ?string, share: ?int} Rows
+     *         with the offending margins set to null, the label of each such row (empty when none),
+     *         and the percentage of the pane's revenue those rows carry (null when no revenue column)
      */
     public static function withholdMissingCostBasisRows(array $rows): array
     {
         $kept = [];
+        $blanked = [];
         $withheld = [];
         $column = null;
         $revenueColumn = self::revenueColumn($rows);
@@ -89,11 +89,15 @@ class CoherenceGuard
             $column ??= $offending;
             $withheld[] = self::rowLabel($row);
             $withheldRevenue += $revenue;
+            $blanked[$key] = array_map(static fn($val) => null, array_intersect_key($row, array_flip(self::marginColumns($row)))) + $row;
         }
 
         if ($withheld === [] || $kept === []) {
             return ['rows' => $rows, 'withheld' => [], 'column' => null, 'share' => null];
         }
+
+        // Row order is the query's: keep it, only the offending margins change.
+        $kept = array_replace($rows, $blanked);
 
         // The weight of what went is the fact a margin reader needs most: named rows alone hide it.
         // Whole percent: no decimal separator to localise.
@@ -150,10 +154,7 @@ class CoherenceGuard
      */
     private static function marginWithoutCostBasis(array $row): ?string
     {
-        $marginColumns = array_filter(
-            array_keys($row),
-            static fn($col): bool => self::hasAny(strtolower((string)$col), self::MARGIN_TOKENS)
-        );
+        $marginColumns = self::marginColumns($row);
 
         // A refund-only row keeps its amount and loses only its rate: it is not caught here.
         if ($marginColumns !== [] && array_all($marginColumns, static fn($col): bool => $row[$col] === null)) {
@@ -173,6 +174,20 @@ class CoherenceGuard
         }
 
         return null;
+    }
+
+    /**
+     * The row's margin columns: amount, rate and their variations, current and previous.
+     *
+     * @param array $row One result row
+     * @return array<int, int|string> Column names
+     */
+    private static function marginColumns(array $row): array
+    {
+        return array_values(array_filter(
+            array_keys($row),
+            static fn($col): bool => self::hasAny(strtolower((string)$col), self::MARGIN_TOKENS)
+        ));
     }
 
     /**
