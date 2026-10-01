@@ -55,3 +55,5 @@ llm_prompt_reasoning_similar_case = Case {{index}}:
 - Original Error: {{original_error}}
 - Correction Applied: {{correction_method}}
 - Similarity: {{similarity}}%
+text_weight_contract_error = Contrat du plan violé : la requête doit conserver les lignes qui comptent pour {{metrics}}. Lisez la colonne de poids {{column}} de sorte que les lignes de poids 1 restent incluses (ne les filtrez jamais, n'omettez jamais la colonne) ; gardez tout le reste de la requête inchangé.
+text_window_contract_error = Contrat du plan violé : la requête lit des dates hors des fenêtres comparées ({{dates}}). Utilisez exactement les fenêtres du plan {{windows}} (dates de fin incluses) ; gardez tout le reste de la requête inchangé.

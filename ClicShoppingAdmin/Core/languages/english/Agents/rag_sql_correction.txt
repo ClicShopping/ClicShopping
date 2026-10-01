@@ -55,3 +55,5 @@ llm_prompt_reasoning_similar_case = Case {{index}}:
 - Original Error: {{original_error}}
 - Correction Applied: {{correction_method}}
 - Similarity: {{similarity}}%
+text_weight_contract_error = Plan contract violated: the query must keep the rows that count for {{metrics}}. Read the weight column {{column}} so that rows of weight 1 stay included (never filter them out, never omit the column); keep every other part of the query unchanged.
+text_window_contract_error = Plan contract violated: the query reads dates outside the compared windows ({{dates}}). Use exactly the plan windows {{windows}} (end dates inclusive); keep every other part of the query unchanged.

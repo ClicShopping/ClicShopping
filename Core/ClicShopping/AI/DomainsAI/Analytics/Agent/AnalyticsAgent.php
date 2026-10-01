@@ -28,6 +28,8 @@ use ClicShopping\AI\CoreAI\Planning\CoherenceGuard;
 use ClicShopping\AI\DomainsAI\Analytics\Planning\AnalysisPlanner;
 use ClicShopping\AI\DomainsAI\Analytics\Planning\DefaultAnalysisWindow;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\CompareWindowFilter;
+use ClicShopping\AI\DomainsAI\Analytics\Validator\MetricWeightFilter;
+use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
@@ -1422,6 +1424,52 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
+   * Deterministic plan-vs-SQL contract: a `weighted_by` metric keeps its weight-1 rows, and a
+   * comparison reads no date outside its windows. Throws: before execution it routes to the
+   * correction path, after a correction it fails.
+   *
+   * @param string $sql SQL about to be executed, or the corrected one
+   * @return void
+   * @throws \Exception When the SQL breaches the plan
+   */
+  private function assertPlanContract(string $sql): void
+  {
+    $plan = $this->analysisPlan ?? [];
+    $domainApp = DomainRegistry::getInstance()->getActiveApp();
+    $catalog = ($domainApp !== null && method_exists($domainApp, 'getMetricCatalog')) ? $domainApp->getMetricCatalog() : [];
+    $weights = MetricWeightFilter::violations($sql, $plan['metrics'] ?? [], $catalog);
+    $dates = CompareWindowFilter::foreignDates($sql, $plan);
+
+    if ($weights === [] && $dates === []) {
+      return;
+    }
+
+    DomainConfig::loadAgnosticLanguageFile('rag_sql_correction');
+    $language = Registry::get('Language');
+    $messages = [];
+
+    if ($weights !== []) {
+      $messages[] = $language->getDef('text_weight_contract_error', [
+        'metrics' => implode(', ', array_keys($weights)),
+        'column' => implode(', ', array_unique($weights)),
+      ]);
+    }
+
+    if ($dates !== []) {
+      $messages[] = $language->getDef('text_window_contract_error', [
+        'dates' => implode(', ', $dates),
+        'windows' => ($plan['periods']['current']['from'] ?? '') . '..' . ($plan['periods']['current']['to'] ?? '')
+          . ', ' . ($plan['periods']['previous']['from'] ?? '') . '..' . ($plan['periods']['previous']['to'] ?? ''),
+      ]);
+    }
+
+    $message = implode(' ', $messages);
+    $this->debugLog("PLAN CONTRACT violated: " . $message, "VALIDATION");
+
+    throw new \Exception($message);
+  }
+
+  /**
    * STEP 3: execute each generated SQL query (with validation, intelligent correction on
    * failure, and result caching), interpret and assemble the analytics response. Extracted
    * verbatim from processAnalyticsQuery. Throws on unrecoverable execution failure.
@@ -1486,6 +1534,7 @@ class AnalyticsAgent implements AgentInterface
 
       try {
         $this->debugLog("  Executing query...");
+        $this->assertPlanContract($finalQuery);
         $executionResult = $this->queryExecutor->execute($finalQuery);
 
         if (!$executionResult['success']) {
@@ -1547,6 +1596,9 @@ class AnalyticsAgent implements AgentInterface
 
           // Use the corrected data as the main result (not append to array)
           $correctedData = $correctionResult['data'];
+
+          // A correction still in breach of the plan contract is refused, never served.
+          $this->assertPlanContract((string)($correctedData['executed_query'] ?? ''));
 
           // Extract entity info from corrected results
           $entityInfo = $this->queryExecutor->extractEntityIdFromResults($correctedData['results']);

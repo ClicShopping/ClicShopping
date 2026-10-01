@@ -54,7 +54,10 @@ class MetricCatalog
    * `companions` is optional and names the columns always selected WITH the metric, as its own
    * prompt rule defines them: the binding plan lists them, so they are never read as an added metric.
    *
-   * @return array<string, array{grain: string, type: string, definition: string, basis?: string, split?: string, line_alternative?: string, companions?: array<int, string>}>
+   * `weighted_by` is optional and names the column carrying the accounting weight of the row
+   * (orders_status.revenue_sign): the SQL must read it keeping weight 1, checked after generation.
+   *
+   * @return array<string, array{grain: string, type: string, definition: string, basis?: string, split?: string, line_alternative?: string, companions?: array<int, string>, weighted_by?: string}>
    */
   public static function all(): array
   {
@@ -65,6 +68,7 @@ class MetricCatalog
         'definition' => 'text_metric_revenue_ttc',
         'basis' => 'text_metric_basis_revenue_ttc',
         'split' => 'tax_convention',
+        'weighted_by' => 'revenue_sign',
       ],
       'revenue_ht' => [
         'grain' => 'order',
@@ -73,21 +77,25 @@ class MetricCatalog
         'basis' => 'text_metric_basis_revenue_ht',
         'split' => 'tax_convention',
         'line_alternative' => 'line_revenue',
+        'weighted_by' => 'revenue_sign',
       ],
       'line_revenue' => [
         'grain' => 'order_line',
         'type' => MetricType::AMOUNT,
         'definition' => 'text_metric_line_revenue',
+        'weighted_by' => 'revenue_sign',
       ],
       'average_cart' => [
         'grain' => 'order',
         'type' => MetricType::AMOUNT,
         'definition' => 'text_metric_average_cart',
+        'weighted_by' => 'revenue_sign',
       ],
       'quantity_sold' => [
         'grain' => 'order_line',
         'type' => MetricType::COUNT,
         'definition' => 'text_metric_quantity_sold',
+        'weighted_by' => 'revenue_sign',
       ],
       'orders_count' => [
         'grain' => 'order',
@@ -115,6 +123,7 @@ class MetricCatalog
         'definition' => 'text_metric_gross_margin_amount',
         'basis' => 'text_metric_basis_cost_current',
         'companions' => ['revenue_ht', 'revenue_without_cost'],
+        'weighted_by' => 'revenue_sign',
       ],
       'gross_margin_percent' => [
         'grain' => 'product',
@@ -122,6 +131,7 @@ class MetricCatalog
         'definition' => 'text_metric_gross_margin_percent',
         'basis' => 'text_metric_basis_cost_current',
         'companions' => ['revenue_ht', 'revenue_without_cost'],
+        'weighted_by' => 'revenue_sign',
       ],
       'avg_shipping_delay' => [
         'grain' => 'order',
