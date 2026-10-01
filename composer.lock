@@ -4145,16 +4145,16 @@
         },
         {
             "name": "theodo-group/llphant",
-            "version": "1.0.4",
+            "version": "1.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LLPhant/LLPhant.git",
-                "reference": "b352a6cfa150b450f6c776c6135476d6999bfea6"
+                "reference": "d8701f2a3fb8697b67a2d18c96869046d10b5e3c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/b352a6cfa150b450f6c776c6135476d6999bfea6",
-                "reference": "b352a6cfa150b450f6c776c6135476d6999bfea6",
+                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/d8701f2a3fb8697b67a2d18c96869046d10b5e3c",
+                "reference": "d8701f2a3fb8697b67a2d18c96869046d10b5e3c",
                 "shasum": ""
             },
             "require": {
@@ -4178,7 +4178,7 @@
                 "doctrine/orm": "^3",
                 "elasticsearch/elasticsearch": "^8.15",
                 "ext-mongodb": "*",
-                "hkulekci/qdrant": "^v0.5.7",
+                "hkulekci/qdrant": "^1.19",
                 "laravel/pint": "v1.15.3",
                 "mockery/mockery": "^1.6.12",
                 "mongodb/mongodb": "^2.1",
@@ -4235,9 +4235,9 @@
             ],
             "support": {
                 "issues": "https://github.com/LLPhant/LLPhant/issues",
-                "source": "https://github.com/LLPhant/LLPhant/tree/1.0.4"
+                "source": "https://github.com/LLPhant/LLPhant/tree/1.0.6"
             },
-            "time": "2026-09-30T15:36:05+00:00"
+            "time": "2026-10-01T12:39:21+00:00"
         },
         {
             "name": "yethee/tiktoken",

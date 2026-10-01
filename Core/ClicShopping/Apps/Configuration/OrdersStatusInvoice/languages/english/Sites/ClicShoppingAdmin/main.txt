@@ -39,7 +39,10 @@ icon_edit = Edit
 icon_delete = delete
 text_set_default = Default
 
-text_info_delete_info = Delete this status ?
+text_info_delete_info = Delete this status ?<br />
+Delete this status can have an impact ont AI analysis.<br />
+Are you sure to delete this status ?
+
 text_default = Default
 
 table_heading_invoice_status = Shipping status for create a PDF order / invoices

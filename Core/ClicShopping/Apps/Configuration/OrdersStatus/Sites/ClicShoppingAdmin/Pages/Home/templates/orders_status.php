@@ -96,11 +96,11 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
         <td class="text-end">
           <div class="btn-group d-flex justify-content-end" role="group" aria-label="buttonGroup">
             <?php
-            echo '<a href="' . $CLICSHOPPING_OrdersStatus->link('Edit&page=' . (int)$page . '&oID=' . $Qstatus->valueInt('orders_status_id')) . '"><h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_OrdersStatus->getDef('icon_edit') . '"></i></h4></a>';
-            echo '&nbsp;';
-            if ($Qstatus->valueInt('orders_status_id') > 5) {
-              echo '<a href="' . $CLICSHOPPING_OrdersStatus->link('Delete&page=' . (int)$page . '&oID=' . $Qstatus->valueInt('orders_status_id')) . '"><h4><i class="bi bi-trash2" title="' . $CLICSHOPPING_OrdersStatus->getDef('image_delete') . '"></i></h4></a>';
-            }
+              if ( $Qstatus->valueInt('orders_status_id') > 5 || DEBUG_MODE == 'True') {
+                echo '<a href="' . $CLICSHOPPING_OrdersStatus->link('Edit&page=' . (int)$page . '&oID=' . $Qstatus->valueInt('orders_status_id')) . '"><h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_OrdersStatus->getDef('icon_edit') . '"></i></h4></a>';
+                echo '&nbsp;';
+                echo '<a href="' . $CLICSHOPPING_OrdersStatus->link('Delete&page=' . (int)$page . '&oID=' . $Qstatus->valueInt('orders_status_id')) . '"><h4><i class="bi bi-trash2" title="' . $CLICSHOPPING_OrdersStatus->getDef('image_delete') . '"></i></h4></a>';
+              }
             ?>
           </div>
         </td>
