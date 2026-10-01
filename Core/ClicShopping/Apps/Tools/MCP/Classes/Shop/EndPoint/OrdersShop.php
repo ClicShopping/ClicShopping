@@ -8,7 +8,7 @@
 namespace ClicShopping\Apps\Tools\MCP\Classes\Shop\EndPoint;
 
 
-use ClicShopping\Apps\Orders\Orders\Classes\Common\EInvoiceService;
+use ClicShopping\Apps\Configuration\CompliancePolicyRules\Classes\ClicShoppingAdmin\EInvoiceService;
 use ClicShopping\Apps\Orders\Orders\Classes\Common\OrdersStatus;
 use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\Message;
 use ClicShopping\Apps\Tools\MCP\MCP;

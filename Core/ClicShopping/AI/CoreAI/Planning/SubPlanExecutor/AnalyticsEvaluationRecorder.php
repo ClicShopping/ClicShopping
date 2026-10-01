@@ -17,13 +17,6 @@ use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ConsensusBuilder;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Critics\AnalyticsCriticWrapper;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Critics\SqlQualityCriticWrapper;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\CriticDataCollector;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\LLMWeightingEngine;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\LLMPromptBuilder;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightNormalizer;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightAuditLogger;
-use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\WeightingEngine\WeightedConsensusBuilder;
-use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationStore;
 use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationTracker;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 use ClicShopping\AI\Config\AgentCriticsConfig;
@@ -194,17 +187,8 @@ class AnalyticsEvaluationRecorder
       $consensusBuilder = new ConsensusBuilder();
       $consensus = $consensusBuilder->buildConsensus([$evaluation, $secondEvaluation]);
 
+      // No LLM weighting here: both critics are shape rules, they score a right and a wrong SQL alike.
       $consensusScore = $consensus->getScore();
-      if (AgentSystemConfig::isAdaptiveWeightingEnabled()) {
-        $adaptiveScore = $this->recordAdaptiveWeightingConsensus(
-          $actionResult,
-          [$evaluation, $secondEvaluation],
-          [$critic, $secondCritic]
-        );
-        if ($adaptiveScore !== null) {
-          $consensusScore = $adaptiveScore;
-        }
-      }
 
       $this->storeCoordinationResult(
         $actionResult,
@@ -228,53 +212,6 @@ class AnalyticsEvaluationRecorder
           'warning'
         );
       }
-    }
-  }
-
-  private function recordAdaptiveWeightingConsensus(
-    ActionResult $actionResult,
-    array $evaluations,
-    array $critics
-  ): ?float {
-    try {
-      $criticRegistry = Registry::exists('CriticRegistry') ? Registry::get('CriticRegistry') : new CriticRegistry();
-
-      $criticDataCollector = new CriticDataCollector(
-        new ReputationStore(),
-        $criticRegistry
-      );
-
-      $weightingEngine = new LLMWeightingEngine(
-        $criticDataCollector,
-        new LLMPromptBuilder(),
-        new WeightNormalizer(),
-        new WeightAuditLogger()
-      );
-
-      $evaluationContext = [
-        'evaluation_id' => 'eval_' . $actionResult->getResultId(),
-        'output_type' => $actionResult->getOutputType(),
-        'priority' => 'medium',
-        'action_type' => 'analytics_query',
-        'required_domains' => ['analytics'],
-        'execution_metrics' => $actionResult->getExecutionMetrics(),
-        'special_requirements' => []
-      ];
-
-      $weightResult = $weightingEngine->calculateAdaptiveWeights($critics, $evaluationContext);
-
-      $weightedConsensusBuilder = new WeightedConsensusBuilder();
-      $consensusResult = $weightedConsensusBuilder->buildDynamicConsensus($evaluations, $weightResult);
-
-      return $consensusResult->getDynamicConsensus();
-    } catch (\Exception $e) {
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "AnalyticsExecutor: Adaptive weighting failed - " . $e->getMessage(),
-          'warning'
-        );
-      }
-      return null;
     }
   }
 

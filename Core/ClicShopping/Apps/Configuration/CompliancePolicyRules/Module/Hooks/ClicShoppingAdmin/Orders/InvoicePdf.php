@@ -14,7 +14,7 @@
 
   /**
    * Supplies the CompliancePolicyRules company block to the invoice footer.
-   * Self-guarded on the CPR status so a shop without it prints no block.
+   * Self-guarded on the CPR status (True only); the country is chosen by InvoiceFooterRenderer.
    */
   class InvoicePdf implements HooksInterface
   {
@@ -26,7 +26,7 @@
     public function renderFooter(array $params): void
     {
       if (!\defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_STATUS')
-        || trim(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_STATUS) === '') {
+        || CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_STATUS !== 'True') {
         return;
       }
 

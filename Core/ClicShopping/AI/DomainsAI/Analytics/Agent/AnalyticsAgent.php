@@ -27,6 +27,7 @@ use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
 use ClicShopping\AI\CoreAI\Planning\CoherenceGuard;
 use ClicShopping\AI\DomainsAI\Analytics\Planning\AnalysisPlanner;
 use ClicShopping\AI\DomainsAI\Analytics\Planning\DefaultAnalysisWindow;
+use ClicShopping\AI\DomainsAI\Analytics\Validator\CompareWindowFilter;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
@@ -1397,6 +1398,30 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
+   * A comparison plan reads two windows: a WHERE that keeps one of them zeroes the other side
+   * in silence. Widened when the range is readable, reported otherwise (0 LLM call).
+   *
+   * @param string $sql Executable SQL
+   * @return string The SQL, its WHERE widened to both windows when needed
+   */
+  private function admitBothCompareWindows(string $sql): string
+  {
+    $check = CompareWindowFilter::check($sql, $this->analysisPlan['periods'] ?? []);
+
+    if (!$check['flagged']) {
+      return $sql;
+    }
+
+    $this->debugLog("COMPARE WINDOW " . ($check['corrected'] ? 'widened' : 'NOT widened') . ": " . $check['reason'], "VALIDATION");
+
+    if (!$check['corrected']) {
+      $this->securityLogger->logSecurityEvent('Comparison SQL filters out a plan window: ' . $check['reason'], 'warning');
+    }
+
+    return $check['sql'];
+  }
+
+  /**
    * STEP 3: execute each generated SQL query (with validation, intelligent correction on
    * failure, and result caching), interpret and assemble the analytics response. Extracted
    * verbatim from processAnalyticsQuery. Throws on unrecoverable execution failure.
@@ -1455,6 +1480,7 @@ class AnalyticsAgent implements AgentInterface
       $finalQuery = $this->queryProcessor->fixDateFilters($finalQuery);
       // Schema-level guard: never GROUP BY a GDPR-encrypted column (shatters aggregation).
       $finalQuery = $this->queryProcessor->fixEncryptedGroupBy($finalQuery);
+      $finalQuery = $this->admitBothCompareWindows($finalQuery);
 
       $this->debugLog("  Final query to execute: " . substr($finalQuery, 0, 150) . "...");
 

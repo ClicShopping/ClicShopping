@@ -46,3 +46,4 @@ alert_module_uninstall_success = Le module a été désinstallé.
 alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
 
 table_heading_action = Action
+alert_country_conflict = Plusieurs modules pays sont actifs ({{countries}}). Une facture ne relève que d'une seule juridiction fiscale : passez le statut des autres modules pays à False. D'ici là, la facture garde son bloc pays précédent.

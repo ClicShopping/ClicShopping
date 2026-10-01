@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\Configuration\CompliancePolicyRules\Classes\ClicShop
 
 use ClicShopping\Apps\Orders\Orders\Orders as OrdersApp;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
 
@@ -225,7 +226,7 @@ class EInvoiceService
     $sandbox       = $this->isSandbox();
     $oauth_url     = $sandbox ? self::OAUTH_SANDBOX : self::OAUTH_PROD;
     $client_id     = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_ID')     ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_ID     : '';
-    $client_secret = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET') ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET : '';
+    $client_secret = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET') ? Hash::displayDecryptedDataText(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET) : '';
 
     if (empty($client_id) || empty($client_secret)) {
       $this->log('ERROR', '[ERROR EInvoiceService] CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_ID or CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_CLIENT_SECRET not configured.');
@@ -462,7 +463,7 @@ class EInvoiceService
   {
     $api_url  = $this->isSandbox() ? self::API_SANDBOX : self::API_PROD;
     $login    = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN')    ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN    : '';
-    $password = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD') ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD : '';
+    $password = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD') ? Hash::displayDecryptedDataText(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD) : '';
 
     if (empty($login) || empty($password)) {
       return ['success' => false, 'response' => [], 'error' => 'Chorus Pro technical account not configured.'];
@@ -532,7 +533,7 @@ class EInvoiceService
     }
 
     $login    = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN')    ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_LOGIN    : '';
-    $password = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD') ? CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD : '';
+    $password = defined('CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD') ? Hash::displayDecryptedDataText(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_CHORUS_PRO_TECHNICAL_PASSWORD) : '';
 
     $raw = HTTP::getResponse([
       'url'        => $this->isSandbox() ? self::STATUS_SANDBOX : self::STATUS_PROD,

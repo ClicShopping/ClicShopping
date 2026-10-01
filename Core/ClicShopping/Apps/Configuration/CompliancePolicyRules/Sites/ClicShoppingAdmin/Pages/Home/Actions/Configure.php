@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\Configuration\CompliancePolicyRules\Sites\ClicShoppi
 
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Configuration\CompliancePolicyRules\Classes\Shared\InvoiceFooterRenderer;
 
 class Configure extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
@@ -33,6 +34,13 @@ class Configure extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $default_module = $m;
         break;
       }
+    }
+
+    // One invoice, one fiscal jurisdiction: several active countries is a configuration error.
+    $conflict = InvoiceFooterRenderer::conflictingCountries();
+
+    if ($conflict !== []) {
+      Registry::get('MessageStack')->add($CLICSHOPPING_CompliancePolicyRules->getDef('alert_country_conflict', ['countries' => implode(', ', $conflict)]), 'warning', 'CompliancePolicyRules');
     }
 
     $this->page->data['current_module'] = (isset($_GET['module']) && \in_array($_GET['module'], $modules, true)) ? $_GET['module'] : $default_module;

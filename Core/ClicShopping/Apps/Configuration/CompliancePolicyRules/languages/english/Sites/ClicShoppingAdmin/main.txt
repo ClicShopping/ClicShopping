@@ -44,3 +44,4 @@ alert_module_uninstall_success = Module has been successfully uninstalled.
 alert_cfg_saved_success = Configuration parameters have been successfully saved.
 
 table_heading_action = Action
+alert_country_conflict = Several country modules are active ({{countries}}). An invoice can only follow one fiscal jurisdiction: set the status of the other country modules to False. Until then the invoice keeps its previous country block.

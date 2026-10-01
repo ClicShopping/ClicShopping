@@ -16,7 +16,7 @@ namespace ClicShopping\Apps\Orders\Orders\Classes\Common;
  * compare an order status to a business meaning must reference these
  * constants instead of hard-coding the integer.
  *
- * Companion to {@see EInvoiceService} which exposes the equivalent
+ * Companion to {@see \ClicShopping\Apps\Configuration\CompliancePolicyRules\Classes\ClicShoppingAdmin\EInvoiceService} which exposes the equivalent
  * invoice-status constants (table :table_orders_status_invoice).
  *
  * The ids are those of install/Db/clicshopping_en.sql; the row's

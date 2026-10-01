@@ -8,8 +8,10 @@
 
 namespace ClicShopping\Apps\Customers\Groups\Classes\ClicShoppingAdmin;
 
+use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTTP;
 use SoapClient;
+use SoapFault;
 /**
  * Get the prefix for Intracommunity VAT numbers for various countries.
  *
@@ -116,7 +118,7 @@ class VatNumber
   /**
    * Checks the availability of a web service by attempting to create a SOAP client.
    *
-   * @return mixed Returns the SOAP client if the web service is available, or true if it is unavailable.
+   * @return SoapClient|false The SOAP client, or false when the web service is unavailable.
    */
   public static function checkWebService(): SoapClient|false
   {
@@ -143,7 +145,7 @@ class VatNumber
    */
   public static function serviceCheckVat(?string $country_iso, string $tva_intracom): bool
   {
-    if (ACCOUNT_TVA_INTRACOM_PRO_VERIFICATION == 'false') {
+    if (!defined('ACCOUNT_TVA_INTRACOM_PRO_VERIFICATION') || ACCOUNT_TVA_INTRACOM_PRO_VERIFICATION == 'false') {
       return false;
     }
 
@@ -247,7 +249,7 @@ class VatNumber
       return false;
     }
 
-    $apiToken = CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_PAPPERS_API_TOKEN;
+    $apiToken = Hash::displayDecryptedDataText(CLICSHOPPING_APP_COMPLIANCE_POLICY_RULES_FRE_PAPPERS_API_TOKEN);
     $allowedHosts   = ['api.pappers.fr'];
 
     // Step 1 — SIREN provided: fetch company details directly (single API call)
