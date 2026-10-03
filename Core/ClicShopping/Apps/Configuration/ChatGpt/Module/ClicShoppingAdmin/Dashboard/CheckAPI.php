@@ -63,8 +63,8 @@ class CheckAPI extends AdminDashboardAbstract
       $apiKey = Gpt::getProviderApiKey('openai')['api_key'];
 
       // Mandatory under Regulation (EU) 2024/1689: the accountable deployer must be named.
-      $responsible = \defined('CLICSHOPPING_APP_CHATGPT_ASY_AI_ACT_RESPONSIBLE')
-        ? trim(CLICSHOPPING_APP_CHATGPT_ASY_AI_ACT_RESPONSIBLE)
+      $responsible = \defined('CLICSHOPPING_APP_CHATGPT_CH_AI_ACT_RESPONSIBLE')
+        ? trim(CLICSHOPPING_APP_CHATGPT_CH_AI_ACT_RESPONSIBLE)
         : '';
 
       if (empty($apiKey) || $responsible === '') {

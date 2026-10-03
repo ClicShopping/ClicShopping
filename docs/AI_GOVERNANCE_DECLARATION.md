@@ -22,7 +22,7 @@ moves away from the line cited here.
 |---|---|
 | System name | ClicShopping AI — AI-assisted e-commerce management platform |
 | Role under the AI Act | **Deployer**, not provider. The platform develops, trains and modifies no model; it is an interface to external or local providers (see `AI_ACT_COMPLIANCE.md` § *AI Provider*) |
-| Accountable person | Read from `CLICSHOPPING_APP_CHATGPT_ASY_AI_ACT_RESPONSIBLE`, declared per installation. **Not written into this document**, and never derived from `STORE_NAME` — the shop name is not the accountable deployer |
+| Accountable person | Read from `CLICSHOPPING_APP_CHATGPT_CH_AI_ACT_RESPONSIBLE`, declared per installation. **Not written into this document**, and never derived from `STORE_NAME` — the shop name is not the accountable deployer |
 | Purpose | AI-assisted content generation and analytical assistance for e-commerce management: product descriptions and enhancement, FAQ, SEO content, reports, product creation and administrative writing assistance (`AI_ACT_COMPLIANCE.md` § *Purpose*, § *Scope*) |
 | Deployment scope | Single-tenant installation, back-office administrators and, where the shop enables it, front-office visitors. Availability of each feature depends on the installed applications and configuration |
 | Risk level | **Not high-risk.** The intended purpose falls outside Annex III of Regulation (EU) 2024/1689 — no biometric identification, recruitment, education assessment, creditworthiness, law enforcement, migration, judicial support, nor access to essential services (`AI_ACT_COMPLIANCE.md` § *High-Risk AI Systems*). Extending the platform into such a use case brings additional obligations |

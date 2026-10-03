@@ -53,12 +53,10 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
     <thead class="dataTableHeadingRow">
     <tr>
       <th data-field="image" data-switchable="false" width="50"></th>
-      <th data-field="products_id" data-switchable="false"
+      <th data-field="products_id" data-sortable="true"
           width="50"><?php echo $CLICSHOPPING_Products->getDef('table_heading_products_id'); ?></th>
-      <th data-field="products"
-          data-sortable="true"><?php echo $CLICSHOPPING_Products->getDef('table_heading_products'); ?></th>
-      <th data-field="action" data-switchable="false"
-          class="text-center"><?php echo $CLICSHOPPING_Products->getDef('table_heading_action'); ?></th>
+      <th data-field="products" data-sortable="true"><?php echo $CLICSHOPPING_Products->getDef('table_heading_products'); ?></th>
+      <th data-field="action" data-switchable="false" class="text-center"><?php echo $CLICSHOPPING_Products->getDef('table_heading_action'); ?></th>
     </tr>
     </thead>
     <tbody>
@@ -91,14 +89,13 @@ $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page']
         ?>
         <tr>
           <td><?php echo $CLICSHOPPING_Image->getSmallImageAdmin($Qproducts->valueInt('products_id')); ?></td>
-          <td><?php echo $Qproducts->valueInt('products_id'); ?></td>
+          <td class="text-left"><?php echo $Qproducts->valueInt('products_id'); ?></td>
           <td><?php echo HTML::link(CLICSHOPPING::link(null, 'A&Catalog\Products&Edit&pID=' . $Qproducts->valueInt('products_id')), $Qproducts->value('products_name')); ?></td>
-          <td
-            class="text-end"><?php echo HTML::link($CLICSHOPPING_Products->link('Edit&pID=' . $Qproducts->valueInt('products_id')), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_Products->getDef('icon_edit') . '"></i></h4>'); ?></td>
+          <td class="text-end"><?php echo HTML::link($CLICSHOPPING_Products->link('Edit&pID=' . $Qproducts->valueInt('products_id')), '<h4><i class="bi bi-pencil" title="' . $CLICSHOPPING_Products->getDef('icon_edit') . '"></i></h4>'); ?></td>
         </tr>
         <?php
       }
-    } // end $listingTotalRow
+    }
     ?>
     </tbody>
   </table>

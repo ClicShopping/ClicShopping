@@ -9,7 +9,7 @@
  *
  */
 
-namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ASY\Params;
+namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\CH\Params;
 
 /**
  * Natural or legal person accountable for the AI system (EU AI Act, deployer obligations).

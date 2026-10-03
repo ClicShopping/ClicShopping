@@ -27,7 +27,7 @@ The system owner, its declared autonomy level and the authority of each agent ar
 Each installation must name the natural or legal person accountable for the AI system.
 
 That name is **configuration, never a hardcoded value and never the shop name**: it is held by
-`CLICSHOPPING_APP_CHATGPT_ASY_AI_ACT_RESPONSIBLE`, set in *ChatGpt / Configure / Agent System*
+`CLICSHOPPING_APP_CHATGPT_CH_AI_ACT_RESPONSIBLE`, set in *ChatGpt / Configure / ChatGpt*
 (`Module/ClicShoppingAdmin/Config/ASY/Params/ai_act_responsible.php`).
 
 It is **mandatory**. While it is empty, the back-office dashboard raises a blocking-red alert
