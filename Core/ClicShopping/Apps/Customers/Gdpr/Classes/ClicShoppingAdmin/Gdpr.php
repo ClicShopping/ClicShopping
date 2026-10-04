@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Customers\Gdpr\Classes\ClicShoppingAdmin;
 
+use ClicShopping\Apps\Customers\Customers\Classes\Shared\CustomerDataEraser;
 use ClicShopping\Apps\Tools\Cronjob\Classes\ClicShoppingAdmin\Cron;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
@@ -21,6 +22,7 @@ class Gdpr
   /**
    * Returns the customers whose last logon is older than the configured retention
    * period (CLICSHOPPING_APP_CUSTOMERS_GDPR_GD_DATE days), i.e. the ones to purge.
+   * A customer who never logged on is dated by the account creation.
    *
    * @return array The expired customers (id, email, last logon).
    */
@@ -38,7 +40,7 @@ class Gdpr
                                                    from :table_customers c,
                                                         :table_customers_info ci
                                                    where c.customers_id = ci.customers_info_id
-                                                   and ci.customers_info_date_of_last_logon <= :date
+                                                   and coalesce(ci.customers_info_date_of_last_logon, ci.customers_info_date_account_created) <= :date
                                                   ');
     $Qcustomers->bindValue(':date', $date);
     $Qcustomers->execute();
@@ -115,7 +117,7 @@ class Gdpr
     $cutoff = date('Y-m-d H:i:s', strtotime('-' . $retention_days . ' days'));
 
     $Qanonymize = $CLICSHOPPING_Gdpr->db->prepare("update :table_orders
-                                                      set customers_name = 'ANONYMIZED',
+                                                      set customers_name = :label,
                                                           customers_company = '',
                                                           customers_street_address = '',
                                                           customers_suburb = '',
@@ -125,7 +127,7 @@ class Gdpr
                                                           customers_country = '',
                                                           customers_telephone = '',
                                                           customers_email_address = '',
-                                                          delivery_name = 'ANONYMIZED',
+                                                          delivery_name = :label,
                                                           delivery_company = '',
                                                           delivery_street_address = '',
                                                           delivery_suburb = '',
@@ -133,7 +135,7 @@ class Gdpr
                                                           delivery_city = '',
                                                           delivery_state = '',
                                                           delivery_country = '',
-                                                          billing_name = 'ANONYMIZED',
+                                                          billing_name = :label,
                                                           billing_company = '',
                                                           billing_street_address = '',
                                                           billing_suburb = '',
@@ -142,87 +144,24 @@ class Gdpr
                                                           billing_state = '',
                                                           billing_country = ''
                                                       where date_purchased <= :cutoff
-                                                        and customers_name <> 'ANONYMIZED'
+                                                        and customers_name <> :label
                                                     ");
     $Qanonymize->bindValue(':cutoff', $cutoff);
+    $Qanonymize->bindValue(':label', CustomerDataEraser::anonymousName());
     $Qanonymize->execute();
 
     return $Qanonymize->rowCount();
   }
 
   /**
-   * Deletes all related data associated with a specific customer from several database tables.
+   * Erases a customer's personal data through the single erasure point.
    *
    * @param int $customers_id ID of the customer to delete data for.
+   * @param bool $delete_reviews True to delete the reviews; anonymised otherwise.
    * @return void
    */
-  public static function deleteCustomersData(int $customers_id): void
+  public static function deleteCustomersData(int $customers_id, bool $delete_reviews = false): void
   {
-    $CLICSHOPPING_Gdpr = Registry::get('Gdpr');
-
-    $Qreviews = $CLICSHOPPING_Gdpr->db->prepare('select reviews_id
-                                                       from :table_reviews
-                                                       where customers_id = :customers_id
-                                                       ');
-    $Qreviews->bindInt(':customers_id', $customers_id);
-    $Qreviews->execute();
-
-    while ($Qreviews->fetch()) {
-      $Qdelete = $CLICSHOPPING_Gdpr->db->prepare('delete
-                                                         from :table_reviews_description
-                                                         where reviews_id = :reviews_id
-                                                        ');
-      $Qdelete->bindInt(':reviews_id', $Qreviews->valueInt('reviews_id'));
-      $Qdelete->execute();
-    }
-
-    $Qdelete = $CLICSHOPPING_Gdpr->db->prepare('delete
-                                                      from :table_reviews
-                                                      where customers_id = :customers_id
-                                                    ');
-    $Qdelete->bindInt(':customers_id', $customers_id);
-    $Qdelete->execute();
-
-    $Qdelete = $CLICSHOPPING_Gdpr->db->prepare('delete
-                                                      from :table_address_book
-                                                      where customers_id = :customers_id
-                                                    ');
-    $Qdelete->bindInt(':customers_id', $customers_id);
-    $Qdelete->execute();
-
-    $Qdelete = $CLICSHOPPING_Gdpr->db->prepare('delete
-                                                        from :table_customers
-                                                        where customers_id = :customers_id
-                                                      ');
-    $Qdelete->bindInt(':customers_id', $customers_id);
-    $Qdelete->execute();
-
-    $Qdelete = $CLICSHOPPING_Gdpr->db->prepare('delete
-                                                          from :table_customers_info
-                                                          where customers_info_id = :customers_id
-                                                        ');
-    $Qdelete->bindInt(':customers_id', $customers_id);
-    $Qdelete->execute();
-
-    $Qdelete = $CLICSHOPPING_Gdpr->db->prepare('delete
-                                                          from :table_customers_basket
-                                                          where customers_id = :customers_id
-                                                        ');
-    $Qdelete->bindInt(':customers_id', $customers_id);
-    $Qdelete->execute();
-
-    $Qdelete = $CLICSHOPPING_Gdpr->db->prepare('delete
-                                                          from :table_customers_basket_attributes
-                                                          where customers_id = :customers_id
-                                                        ');
-    $Qdelete->bindInt(':customers_id', $customers_id);
-    $Qdelete->execute();
-
-    $Qdelete = $CLICSHOPPING_Gdpr->db->prepare('delete
-                                                        from :table_whos_online
-                                                        where customer_id = :customers_id
-                                                      ');
-    $Qdelete->bindInt(':customers_id', $customers_id);
-    $Qdelete->execute();
+    CustomerDataEraser::erase($customers_id, $delete_reviews);
   }
 }

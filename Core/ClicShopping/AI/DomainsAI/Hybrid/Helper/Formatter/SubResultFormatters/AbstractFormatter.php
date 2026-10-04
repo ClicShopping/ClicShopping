@@ -460,8 +460,27 @@ abstract class AbstractFormatter
       $value = Hash::displayDecryptedDataText($value);
     }
 
+    // A code with a declared label (value_{column}_{code}) is shown translated, never raw.
+    if (is_string($value) && preg_match('/^[a-z_]+$/', $value)) {
+      $valueKey = 'value_' . $columnName . '_' . $value;
+      $label = CLICSHOPPING::getDef($valueKey);
+
+      if ($label && $label !== $valueKey) {
+        return htmlspecialchars($label);
+      }
+    }
+
+    // Matched on whole name tokens: stockout_* or *_days must never fall into a quantity rule.
+    $tokens = explode('_', strtolower($columnName));
+
+    // A probability is a 0..1 share.
+    if (in_array('probability', $tokens, true) && is_numeric($value)) {
+      return number_format((float)$value * 100, 1, ',', ' ') . ' %';
+    }
+
     // Quantities (must be tested FIRST before prices)
-    if (preg_match('/(quantity|stock|sold|count|total_products|total_quantity|number|items)/i', $columnName)) {
+    if (array_intersect($tokens, ['quantity', 'stock', 'sold', 'count', 'number', 'items']) !== []
+        || in_array($columnName, ['total_products', 'total_quantity'], true)) {
       if (is_numeric($value)) {
         return number_format((int)$value, 0, ',', ' ');
       }
@@ -481,7 +500,11 @@ abstract class AbstractFormatter
       if (is_numeric($value) && $value > 1000000000) {
         return date('d/m/Y H:i', (int)$value);
       }
-      if (preg_match('/^\d{4}-\d{2}-\d{2}/', $value)) {
+      // A pure date carries no time: never print a fabricated 00:00.
+      if (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$value)) {
+        return date('d/m/Y', strtotime($value));
+      }
+      if (preg_match('/^\d{4}-\d{2}-\d{2}/', (string)$value)) {
         return date('d/m/Y H:i', strtotime($value));
       }
     }

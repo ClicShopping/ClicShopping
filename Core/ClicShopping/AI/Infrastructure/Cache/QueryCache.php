@@ -76,48 +76,27 @@ class QueryCache
 
   /**
    * Determine which cache backend to use
-   * Priority: Memcached > Redis > Database > File
-   * 
+   * Priority: memory backend (as RagCache resolves it) > Database > File
+   *
    * @return void
    */
   private function determineBackend(): void
   {
-    if (defined('USE_MEMCACHED') && USE_MEMCACHED === 'True') {
-      $this->backend = 'memcached';
+    if ((defined('USE_MEMCACHED') && USE_MEMCACHED === 'True') || (defined('USE_REDIS') && USE_REDIS === 'True')) {
       $this->ragCache = new RagCache(true);
-      
-      $stats = $this->ragCache->getStats();
-      if ($stats['backend'] === 'none') {
-        if ($this->debug) {
-          error_log("QueryCache: RagCache initialization failed, falling back to database");
-        }
-        $this->ragCache = null;
-        $this->backend = 'database';
-        $this->dbStorage = new CacheStorage($this->debug);
-      } else {
-        if ($this->debug) {
-          error_log("QueryCache: Using Memcached backend via RagCache");
-        }
-      }
-      return;
-    }
 
-    if (defined('USE_REDIS') && USE_REDIS === 'True') {
-      $this->backend = 'redis';
-      $this->ragCache = new RagCache(true);
-      
-      $stats = $this->ragCache->getStats();
-      if ($stats['backend'] === 'none') {
+      // The label is read from RagCache, which does the I/O: never guess it from the switches.
+      $this->backend = $this->ragCache->getStats()['backend'];
+
+      if ($this->backend === 'none') {
         if ($this->debug) {
           error_log("QueryCache: RagCache initialization failed, falling back to database");
         }
         $this->ragCache = null;
         $this->backend = 'database';
         $this->dbStorage = new CacheStorage($this->debug);
-      } else {
-        if ($this->debug) {
-          error_log("QueryCache: Using Redis backend via RagCache");
-        }
+      } elseif ($this->debug) {
+        error_log("QueryCache: Using {$this->backend} backend via RagCache");
       }
       return;
     }

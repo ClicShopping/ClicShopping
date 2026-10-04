@@ -23,8 +23,6 @@ class Configure extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $this->page->setFile('configure.php');
     $this->page->data['action'] = 'Configure';
 
-    $CLICSHOPPING_CompliancePolicyRules->loadDefinitions('ClicShoppingAdmin/configure');
-
     $modules = $CLICSHOPPING_CompliancePolicyRules->getConfigModules();
 
     $default_module = 'CPR';

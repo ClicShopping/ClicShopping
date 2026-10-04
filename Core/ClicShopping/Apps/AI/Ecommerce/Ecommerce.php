@@ -213,6 +213,26 @@ class Ecommerce extends AbstractDomainApp
   }
 
   /**
+   * Rows of this domain that no aggregated amount may read (column => values).
+   *
+   * @return array<string, array<int, string>>
+   */
+  public function getForbiddenAggregateSources(): array
+  {
+    return MetricCatalog::forbiddenAggregateSources();
+  }
+
+  /**
+   * Columns of this domain that select a population by value.
+   *
+   * @return array<int, string>
+   */
+  public function getPopulationPinColumns(): array
+  {
+    return MetricCatalog::populationPinColumns();
+  }
+
+  /**
    * Result enrichers applied to the analytics rows after execution, before interpretation.
    * Each one decides from the row shape whether it applies.
    *

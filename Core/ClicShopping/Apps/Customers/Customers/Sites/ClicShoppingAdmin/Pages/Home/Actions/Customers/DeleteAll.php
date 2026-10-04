@@ -9,6 +9,7 @@
 
 namespace ClicShopping\Apps\Customers\Customers\Sites\ClicShoppingAdmin\Pages\Home\Actions\Customers;
 
+use ClicShopping\Apps\Customers\Customers\Classes\Shared\CustomerDataEraser;
 use ClicShopping\OM\Registry;
 
 class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -22,13 +23,7 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     if (isset($_POST['selected'], $_GET['DeleteAll']) && \is_array($_POST['selected'])) {
       foreach ($_POST['selected'] as $id) {
-        $id = (int)$id;
-
-        $CLICSHOPPING_Customers->db->delete('address_book', ['customers_id' => $id]);
-        $CLICSHOPPING_Customers->db->delete('customers', ['customers_id' => $id]);
-        $CLICSHOPPING_Customers->db->delete('customers_info', ['customers_info_id' => $id]);
-        $CLICSHOPPING_Customers->db->delete('customers_basket', ['customers_id' => $id]);
-        $CLICSHOPPING_Customers->db->delete('customers_basket_attributes', ['customers_id' => $id]);
+        CustomerDataEraser::erase((int)$id, isset($_POST['delete_reviews']) && $_POST['delete_reviews'] == 'on');
       }
 
       $CLICSHOPPING_Hooks->call('Customers', 'DeleteCustomers');

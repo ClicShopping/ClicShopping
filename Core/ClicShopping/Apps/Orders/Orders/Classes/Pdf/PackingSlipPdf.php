@@ -8,6 +8,7 @@
 
 namespace ClicShopping\Apps\Orders\Orders\Classes\Pdf;
 
+use ClicShopping\Apps\Configuration\CompliancePolicyRules\Classes\ClicShoppingAdmin\EInvoiceService;
 use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
@@ -181,10 +182,10 @@ class PackingSlipPdf extends AbstractOrderPdf
 
   private function renderOrderNumberLine(int $oID, int $statusId, string $title, string $invoiceDate): void
   {
-    if ($statusId === 2) {
+    if ($statusId === EInvoiceService::STATUS_INVOICE) {
       $temp = str_replace('&nbsp;', ' ', 'No ' . $title . ' : ' . $this->invoiceNumber($invoiceDate, $oID));
       $this->Text(10, 113, $temp);
-    } elseif ($statusId === 3) {
+    } elseif ($statusId === EInvoiceService::STATUS_CANCEL) {
       $temp = str_replace('&nbsp;', ' ', $title . ': ');
       $this->Text(10, 113, $temp);
     } else {
@@ -195,7 +196,7 @@ class PackingSlipPdf extends AbstractOrderPdf
 
   private function renderOrderDateLine(int $statusId, string $title, string $datePurchased): void
   {
-    if ($statusId === 3) {
+    if ($statusId === EInvoiceService::STATUS_CANCEL) {
       return;
     }
     $temp = str_replace('&nbsp;', ' ', $this->def('print_order_date') . ' ' . $title . ' : ');

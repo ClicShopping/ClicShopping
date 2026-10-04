@@ -31,3 +31,9 @@ module_account_customers_gdpr_email_text_message = Nous vous confirmons que votr
 module_account_customers_gdpr_checkbox = Veuillez confirmer votre choix
 
 module_account_customers_gdpr_text_error_delete = Erreur durant le traitement. Veuillez vérifier que vous n'avez pas de commandes en cours de traitement. <br />Si l'erreur persite, veuillez nous contacter.
+
+module_account_customers_gdpr_delete_code_label = Numéro de confirmation reçu par e-mail :
+module_account_customers_gdpr_delete_code_sent = Un numéro de confirmation vient d'être envoyé à votre adresse e-mail. Saisissez-le dans la rubrique « Supprimer mon compte » dans les {{minutes}} minutes : votre compte n'est supprimé qu'à ce moment-là.
+module_account_customers_gdpr_delete_code_invalid = Le numéro de confirmation est erroné ou a expiré. Après {{attempts}} numéros erronés, demandez-en un nouveau.
+module_account_customers_gdpr_delete_code_email_subject = Confirmez la suppression de votre compte
+module_account_customers_gdpr_delete_code_email_message = Vous avez demandé la suppression de votre compte client. Votre numéro de confirmation est : <strong>{{code}}</strong><br /><br />Saisissez-le dans les {{minutes}} minutes, dans la rubrique « Supprimer mon compte » de cette page : {{link}}<br /><br />Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail : rien ne sera supprimé. Nous vous conseillons de changer votre mot de passe.

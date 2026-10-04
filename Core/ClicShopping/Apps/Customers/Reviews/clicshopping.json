@@ -30,9 +30,6 @@
       "ClicShoppingAdmin/TopDashboard": {
         "TopDashboard": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\DashboardTopReviews"
       },
-      "ClicShoppingAdmin/Customers": {
-        "DeleteCustomers": "Module\\Hooks\\ClicShoppingAdmin\\Customers\\DeleteCustomers"
-      },
       "ClicShoppingAdmin/Langues": {
         "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
         "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"

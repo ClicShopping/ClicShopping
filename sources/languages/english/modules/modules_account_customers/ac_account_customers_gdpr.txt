@@ -22,10 +22,16 @@ module_account_customers_gdpr_account_intro_delete = By confirming this action, 
 
 module_account_customers_gdpr_account_checkbox = Confirm you request to delete your account :
 
-module_account_customers_gdpr_email_text_subject = Account deleted;
+module_account_customers_gdpr_email_text_subject = Account deleted
 module_account_customers_gdpr_email_text_message = We confirm you that your request has been realised.<br /><br />We hope to see you soon.<br /><br />Regards, team
 
 module_account_customers_gdpr_checkbox = Please, confirm your choice
 
 module_account_customers_gdpr_text_error_delete = Error during treatment Please check that you have no orders being processed. <br /> If the error persists, please contact us.
 
+
+module_account_customers_gdpr_delete_code_label = Confirmation number received by e-mail :
+module_account_customers_gdpr_delete_code_sent = A confirmation number has been sent to your e-mail address. Type it in the "Delete my account" section within {{minutes}} minutes: your account is deleted only then.
+module_account_customers_gdpr_delete_code_invalid = The confirmation number is wrong or has expired. After {{attempts}} wrong numbers, ask for a new one.
+module_account_customers_gdpr_delete_code_email_subject = Confirm the deletion of your account
+module_account_customers_gdpr_delete_code_email_message = You asked to delete your customer account. Your confirmation number is: <strong>{{code}}</strong><br /><br />Type it within {{minutes}} minutes in the "Delete my account" section of this page: {{link}}<br /><br />If you did not ask for it, ignore this e-mail: nothing will be deleted. We advise you to change your password.

@@ -1,0 +1,3 @@
+box_entry_order_total_delivery = Average purchase by order (excl. tax and shipping, after discounts, delivered status)
+box_entry_basket = Average purchase by customer (excl. tax and shipping, after discounts, delivered status)
+box_entry_refunded = Refunded amount (excl. tax and shipping, after discounts, refund status)

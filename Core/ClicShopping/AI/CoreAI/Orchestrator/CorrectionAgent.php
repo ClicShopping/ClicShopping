@@ -114,7 +114,7 @@ class CorrectionAgent implements AgentInterface
    * 2. PatternLearner - Finds similar historical cases
    * 3. CorrectionStrategyManager - Selects and applies correction strategy
    * 4. CorrectionValidator - Validates the proposed correction
-   * 5. CorrectionMemory - Stores successful corrections for future learning
+   * 5. CorrectionMemory - deferred to confirmCorrection(), called after a successful execution
    * 6. LearningStatistics - Tracks correction metrics
    *
    * @param array $errorContext Error context containing error_message, failed_query, etc.
@@ -150,16 +150,8 @@ class CorrectionAgent implements AgentInterface
       $validation = $this->validator->validateCorrection($correction, $errorContext['failed_query'] ?? null);
 
       if ($validation['is_valid']) {
-        // Step 5: Store successful correction using CorrectionMemory component
-        $this->memory->memorizeSuccessfulCorrection(
-          $errorContext,
-          $correction,
-          $errorAnalysis
-        );
-
-        // Step 6: Update statistics
+        // Step 5: Update statistics. Memorization waits for confirmCorrection(): valid is not executed.
         $this->statistics->incrementSuccessfulCorrections();
-        $this->statistics->incrementLearnedPatterns();
 
         $result = [
           'success' => true,
@@ -170,6 +162,11 @@ class CorrectionAgent implements AgentInterface
           'similar_cases_found' => \count($similarCases),
           'execution_time' => microtime(true) - $startTime,
           'suggestions' => $correction['suggestions'] ?? [],
+          'pending_memory' => [
+            'error_context' => $errorContext,
+            'correction' => $correction,
+            'error_analysis' => $errorAnalysis,
+          ],
         ];
       } else {
         $this->statistics->incrementFailedCorrections();
@@ -200,6 +197,30 @@ class CorrectionAgent implements AgentInterface
         'suggestions' => $this->generateFallbackSuggestions($errorContext),
       ];
     }
+  }
+
+  /**
+   * Memorize a correction once its query has executed and returned rows
+   *
+   * attemptCorrection() only validates; the caller that runs the query confirms it here.
+   *
+   * @param array $correctionResult Result returned by attemptCorrection()
+   * @return void
+   */
+  public function confirmCorrection(array $correctionResult): void
+  {
+    $pending = $correctionResult['pending_memory'] ?? null;
+
+    if (!\is_array($pending)) {
+      return;
+    }
+
+    $this->memory->memorizeSuccessfulCorrection(
+      $pending['error_context'],
+      $pending['correction'],
+      $pending['error_analysis']
+    );
+    $this->statistics->incrementLearnedPatterns();
   }
 
   /**

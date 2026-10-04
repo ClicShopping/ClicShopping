@@ -22,10 +22,17 @@ final class MetricWeightFilter
    * @param string $sql Executable SQL
    * @param array $planMetrics Plan metrics (`[['name' => …], …]`)
    * @param array $catalog Domain metric catalogue (`name => ['weighted_by' => column, …]`)
+   * @param array<int, string> $pinColumns Domain columns that select a population by value
+   * @param bool $planFilters Whether the plan carries an explicit filter the question stated
    * @return array<string, string> Violations, metric name => weight column it fails to keep
    */
-  public static function violations(string $sql, array $planMetrics, array $catalog): array
+  public static function violations(string $sql, array $planMetrics, array $catalog, array $pinColumns = [], bool $planFilters = false): array
   {
+    // A population the question named and the SQL pins by value replaces the weight.
+    if ($planFilters && self::pinsPopulation($sql, $pinColumns)) {
+      return [];
+    }
+
     $violations = [];
     $parsed = null;
 
@@ -82,6 +89,24 @@ final class MetricWeightFilter
       }
 
       if ($reads && ($filters === [] || in_array(true, $filters, true))) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * True when a declared column is compared to a literal (= or IN), never to another column.
+   *
+   * @param string $sql Executable SQL
+   * @param array<int, string> $pinColumns Domain columns that select a population by value
+   * @return bool
+   */
+  private static function pinsPopulation(string $sql, array $pinColumns): bool
+  {
+    foreach ($pinColumns as $column) {
+      if (preg_match('/\b' . preg_quote($column, '/') . '\b\s*(=\s*(\'[^\']*\'|\d+)|IN\s*\()/i', $sql) === 1) {
         return true;
       }
     }

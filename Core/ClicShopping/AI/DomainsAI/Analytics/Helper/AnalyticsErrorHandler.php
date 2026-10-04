@@ -140,7 +140,8 @@ class AnalyticsErrorHandler
         ];
       }
 
-      // Success!
+      $this->correctionAgent->confirmCorrection($correctionResult);
+
       return [
         'success' => true,
         'data' => [

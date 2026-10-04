@@ -182,26 +182,8 @@ class PatternLearner
       }
     }
 
-    // Transformation 2: Column replacements
-    $origWords = explode(' ', $original);
-    $corrWords = explode(' ', $corrected);
-
-    $minCount = min(count($origWords), count($corrWords));
-    for ($i = 0; $i < $minCount; $i++) {
-      if (
-        $origWords[$i] !== $corrWords[$i] &&
-        preg_match('/^[a-z_]+$/i', $origWords[$i]) &&
-        preg_match('/^[a-z_]+$/i', $corrWords[$i])
-      ) {
-        $transformations[] = [
-          'type' => 'column_replacement',
-          'from' => $origWords[$i],
-          'to' => $corrWords[$i],
-        ];
-      }
-    }
-
-    // Transformation 3: DISTINCT addition
+    // Never diff two queries word by word: positions do not align across queries.
+    // Transformation 2: DISTINCT addition
     if (
       stripos($corrected, 'SELECT DISTINCT') !== false &&
       stripos($original, 'SELECT DISTINCT') === false
@@ -239,15 +221,6 @@ class PatternLearner
               1
             );
           }
-          break;
-
-        case 'column_replacement':
-          $corrected = preg_replace(
-            '/\b' . preg_quote($transformation['from'], '/') . '\b/i',
-            $transformation['to'],
-            $corrected,
-            1
-          );
           break;
 
         case 'add_distinct':

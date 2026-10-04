@@ -16,11 +16,6 @@
   "modules": {
     "AdminDashboard": {
       "WhosOnline": "Module\\ClicShoppingAdmin\\Dashboard\\WhosOnline"
-    },
-    "Hooks": {
-      "ClicShoppingAdmin/Customers": {
-        "DeleteCustomers": "Module\\Hooks\\ClicShoppingAdmin\\Customers\\DeleteCustomers"
-      }
     }
   },
   "routes": {

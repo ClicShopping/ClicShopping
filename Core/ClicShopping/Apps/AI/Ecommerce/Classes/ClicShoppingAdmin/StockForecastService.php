@@ -67,6 +67,8 @@ class StockForecastService
 
     // Days until the stock hits zero at the current mean daily rate; null when there is no demand.
     $daysUntilStockout = ($meanDaily > 0.0 && $currentStock > 0.0) ? ($currentStock / $meanDaily) : null;
+    // One whole-day figure feeds both the days and the date, so the two never disagree.
+    $wholeDays = $daysUntilStockout !== null ? (int)floor($daysUntilStockout) : null;
 
     $shippingDelayOutOfStock = (string)$Qproduct->value('products_shipping_delay_out_of_stock');
     if ($shippingDelayOutOfStock === '') {
@@ -91,11 +93,12 @@ class StockForecastService
       'safety_stock' => round($safetyStock, 2),
       'stockout_probability' => round($stockoutProbability, 4),
       'reorder_quantity' => round($reorderQty, 2),
-      'days_until_stockout' => $daysUntilStockout !== null ? round($daysUntilStockout, 1) : null,
-      'estimated_stockout_date' => $daysUntilStockout !== null ? date('Y-m-d', time() + (int)ceil($daysUntilStockout) * 86400) : null,
+      'days_until_stockout' => $wholeDays,
+      'estimated_stockout_date' => $wholeDays !== null ? date('Y-m-d', strtotime('+' . $wholeDays . ' days')) : null,
       'risk_status' => self::classifyStockStatus($currentStock, $alertStock, $daysUntilStockout, $leadTimeDays, $horizonDays),
       'risk_level' => self::classifyRiskLevel($stockoutProbability),
-      'order_velocity' => round($meanDaily, 2),
+      // 4 decimals: stock / velocity must give back the days shown, at 2 it drifts by weeks.
+      'order_velocity' => round($meanDaily, 4),
       'order_velocity_level' => self::classifyVelocity($meanDaily),
       // Commercial rules, not stock thresholds: presented separately (spec). Read under defined().
       'stock_check' => \defined('STOCK_CHECK') && \constant('STOCK_CHECK') == 'true',

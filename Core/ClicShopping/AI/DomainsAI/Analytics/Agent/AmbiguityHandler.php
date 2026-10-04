@@ -116,7 +116,7 @@ class AmbiguityHandler
           continue;
         }
         
-        // Same schema-level guards as the normal path (AnalyticsAgent::executeSqlQueries):
+        // Same schema-level guards as the normal path (AnalyticsSqlExecutor::executeSqlQueries):
         // an interpretation is a query like any other and must not skip them.
         $resolvedQuery = $this->queryProcessor->fixDateFilters($resolvedQuery);
         $resolvedQuery = $this->queryProcessor->fixEncryptedGroupBy($resolvedQuery);
@@ -259,7 +259,7 @@ class AmbiguityHandler
   /**
    * Reconverge a lone surviving interpretation onto the standard analytics result shape.
    *
-   * `analytics_results_ambiguous` is short-circuited by AnalyticsAgent::resolveEarlyResultReturn:
+   * `analytics_results_ambiguous` is short-circuited by AnalyticsResultStage::resolveEarlyResultReturn:
    * it skips the interpretation LLM and the entity extraction, leaving AnalyticsExecutor to guess
    * an answer from column names. When only one interpretation executed, that degradation buys
    * nothing — there is no second reading to arbitrate — so the result goes back through the

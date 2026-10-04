@@ -41,6 +41,28 @@ class MetricCatalog
   }
 
   /**
+   * Rows no total or average may read: the 'ST' subtotal carries tax on tax-inclusive orders
+   * and not on the others, so summing it mixes two conventions. Checked after generation.
+   *
+   * @return array<string, array<int, string>> Column => forbidden values
+   */
+  public static function forbiddenAggregateSources(): array
+  {
+    return ['class' => ['ST']];
+  }
+
+  /**
+   * Columns that select an order population by value: when the question names a status and the
+   * SQL pins it here, the accounting weight (`weighted_by`) no longer has to be read.
+   *
+   * @return array<int, string>
+   */
+  public static function populationPinColumns(): array
+  {
+    return ['orders_status', 'orders_status_name'];
+  }
+
+  /**
    * `basis` is optional and carries a USER-FACING label key: declare it on a metric whose
    * figure means nothing without its convention, so the restitution can name it.
    *
@@ -85,6 +107,14 @@ class MetricCatalog
         'definition' => 'text_metric_line_revenue',
         'weighted_by' => 'revenue_sign',
       ],
+      'revenue_per_customer' => [
+        'grain' => 'order',
+        'type' => MetricType::AMOUNT,
+        'definition' => 'text_metric_revenue_per_customer',
+        'basis' => 'text_metric_basis_revenue_per_customer',
+        'companions' => ['revenue_ht', 'customers_count'],
+        'weighted_by' => 'revenue_sign',
+      ],
       'average_cart' => [
         'grain' => 'order',
         'type' => MetricType::AMOUNT,
@@ -116,6 +146,13 @@ class MetricCatalog
         'grain' => 'order',
         'type' => MetricType::COUNT,
         'definition' => 'text_metric_refunded_orders',
+      ],
+      // The deduction leg alone: no weighted_by, its population carries weight -1 by definition.
+      'refunded_amount' => [
+        'grain' => 'order',
+        'type' => MetricType::AMOUNT,
+        'definition' => 'text_metric_refunded_amount',
+        'basis' => 'text_metric_basis_refunded_amount',
       ],
       'gross_margin_amount' => [
         'grain' => 'product',

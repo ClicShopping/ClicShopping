@@ -2,6 +2,9 @@ id int not_null auto_increment comment(Primary key - unique identifier for each 
 customers_id int(11) not_null comment(FK to customers table - customer identifier)
 no_ip_address tinyint(1) default(0) not_null comment(GDPR IP address tracking opt-out - 0: track IP, 1: do not track IP)
 date_added datetime null comment(Timestamp when GDPR preferences were set)
+delete_key char(64) null comment(SHA-256 of the account deletion confirmation number - NULL when no request is pending)
+delete_key_date datetime null comment(When the account deletion confirmation number was issued - valid 30 minutes)
+delete_key_attempts tinyint(1) default(0) not_null comment(Wrong confirmation numbers entered - the request is cancelled at 5)
 
 --
 primary id
@@ -9,4 +12,4 @@ primary id
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
-comment GDPR consent record of a customer: opt-out of IP address storage, with its date. Compliance data.
+comment GDPR record of a customer: opt-out of IP address storage, with its date, and the pending account deletion request (hashed confirmation number). Compliance data.

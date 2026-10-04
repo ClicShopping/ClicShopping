@@ -195,12 +195,12 @@ class ResultInterpreter
       return true;
     }
     
-    // Check if all values are null or zero (single row with no meaningful data)
+    // A single all-NULL row is an aggregate over no row; a zero is an answer, never emptiness.
     if (\count($results) === 1) {
       $firstRow = reset($results);
       if (\is_array($firstRow)) {
         foreach ($firstRow as $value) {
-          if ($value !== null && $value !== 0 && $value !== '0' && $value !== '') {
+          if ($value !== null && $value !== '') {
             return false;
           }
         }
