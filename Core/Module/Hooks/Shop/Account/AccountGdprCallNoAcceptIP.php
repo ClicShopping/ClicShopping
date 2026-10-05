@@ -47,6 +47,7 @@ class AccountGdprCallNoAcceptIP
                                               set no_ip_address = :no_ip_address,
                                               customers_id = :customers_id,
                                               date_added = now()
+                                              where customers_id = :customers_id
                                             ');
       $Qupdate->bindInt(':customers_id', $CLICSHOPPING_Customer->getID());
       $Qupdate->bindInt(':no_ip_address', $no_ip_address);

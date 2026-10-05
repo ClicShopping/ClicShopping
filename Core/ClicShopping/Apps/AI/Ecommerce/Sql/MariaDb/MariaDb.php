@@ -262,6 +262,7 @@ class MariaDb
     EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
+
     // Create embeddings table for order insights
     $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_rag_agent_order_insights_embedding"');
 

@@ -61,3 +61,5 @@ engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
 comment COMPLETED SALES - one row per order actually placed. This is the authoritative source for every sales metric (revenue, order count, average basket, seasonality, per-customer spend); the monetary amounts live in orders_total and the line items in orders_products. Do NOT use customers_basket, which is the live cart.
+ai_sensitive_contact = customers_email_address, customers_telephone, customers_cellular_phone, customers_street_address, customers_suburb, delivery_street_address, delivery_suburb, billing_street_address, billing_suburb, client_computer_ip
+ai_sensitive_identity = customers_name, delivery_name, billing_name

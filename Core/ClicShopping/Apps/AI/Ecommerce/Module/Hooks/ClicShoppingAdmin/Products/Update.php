@@ -144,7 +144,7 @@ class Update implements HooksInterface
             $products_status = $item['products_status'];
             $products_ordered = $item['products_ordered'];
             $products_quantity = $item['products_quantity']; //product stock
-            $products_stock_reorder_level = (int)STOCK_REORDER_LEVEL; //alert stock  fixfor all  products
+            $products_stock_reorder_level = \defined('STOCK_REORDER_LEVEL') ? (int)STOCK_REORDER_LEVEL : 0; // store-wide reorder level
             $products_quantity_alert = $item['products_quantity_alert']; // alert stock fix
             $manufacturer_name = HTML::sanitize($_POST['manufacturers_name']);
             $products_description = $item['products_description'];
@@ -212,7 +212,7 @@ class Update implements HooksInterface
               }
 
               if (!empty($products_stock_reorder_level)) {
-                $embedding_data .= $this->app->getDef('text_product_stock_reorder') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_stock_reorder_level) . "\n";
+                $embedding_data .= $this->app->getDef('text_product_stock_reorder') . ': ' . $products_stock_reorder_level . "\n";
               }
 
               if (!empty($products_quantity)) {

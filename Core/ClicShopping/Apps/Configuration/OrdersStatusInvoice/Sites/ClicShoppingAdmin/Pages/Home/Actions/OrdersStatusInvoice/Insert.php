@@ -30,7 +30,10 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $languages = $CLICSHOPPING_Language->getLanguages();
 
-    $orders_status_invoice_definition_array = HTML::sanitize($_POST['orders_status_invoice_definition'] ?? []);
+    // One value per language: sanitize each, never the array (HTML::sanitize() turns an array into '').
+    $orders_status_invoice_definition_array = array_map(HTML::sanitize(...), (array)($_POST['orders_status_invoice_definition'] ?? []));
+    $orders_status_invoice_name_array = array_map(HTML::sanitize(...), (array)($_POST['orders_status_invoice_name'] ?? []));
+    $orders_status_invoice_id = 0;
 
     // The column is NOT NULL DEFAULT '': only this guard makes the definition mandatory.
     if (Status::hasMissingDefinition($orders_status_invoice_definition_array)) {
@@ -39,15 +42,18 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
     }
 
     for ($i = 0, $n = \count($languages); $i < $n; $i++) {
-      $orders_status_invoice_name_array = HTML::sanitize($_POST['orders_status_invoice_name']);
       $language_id = $languages[$i]['id'];
 
-      $sql_data_array = ['orders_status_invoice_name' => HTML::sanitize($orders_status_invoice_name_array[$language_id]),
-        'orders_status_invoice_definition' => HTML::sanitize($orders_status_invoice_definition_array[$language_id])
+      $sql_data_array = [
+        'orders_status_invoice_name' => $orders_status_invoice_name_array[$language_id] ?? '',
+        'orders_status_invoice_definition' => $orders_status_invoice_definition_array[$language_id] ?? '',
       ];
 
-      $Qnext = $this->app->db->get('orders_status_invoice', 'max(orders_status_invoice_id) as orders_status_invoice_id');
-      $orders_status_invoice_id = $Qnext->valueInt('orders_status_invoice_id') + 1;
+      // ONE id for every language of the status: computed once, before the first row exists.
+      if ($orders_status_invoice_id === 0) {
+        $Qnext = $this->app->db->get('orders_status_invoice', 'max(orders_status_invoice_id) as orders_status_invoice_id');
+        $orders_status_invoice_id = $Qnext->valueInt('orders_status_invoice_id') + 1;
+      }
 
       $insert_sql_data = [
         'orders_status_invoice_id' => (int)$orders_status_invoice_id,

@@ -25,6 +25,22 @@ class MariaDb
     $CLICSHOPPING_Gdpr->loadDefinitions('Sites/ClicShoppingAdmin/install');
 
     self::installDbMenuAdministration();
+    self::installDbDeletionRequestColumns();
+  }
+
+  /**
+   * Adds the account deletion request columns to customers_gdpr (a fresh install gets them
+   * from Schema/MariaDb/customers_gdpr.txt). Idempotent.
+   *
+   * @return void
+   */
+  private static function installDbDeletionRequestColumns(): void
+  {
+    $Qalter = Registry::get('Gdpr')->db->prepare("alter table :table_customers_gdpr
+      add column if not exists delete_key char(64) null comment 'SHA-256 of the account deletion confirmation number - NULL when no request is pending',
+      add column if not exists delete_key_date datetime null comment 'When the account deletion confirmation number was issued - valid 30 minutes',
+      add column if not exists delete_key_attempts tinyint(1) not null default 0 comment 'Wrong confirmation numbers entered - the request is cancelled at 5'");
+    $Qalter->execute();
   }
 
   /**

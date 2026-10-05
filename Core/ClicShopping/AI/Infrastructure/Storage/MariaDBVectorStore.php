@@ -204,7 +204,7 @@ class MariaDBVectorStore extends VectorStoreBase
     $embedding = $this->embeddingGenerator->embedText($document->content);
     $this->validateEmbeddingFormat($embedding);
 
-    $metadata = isset($document->metadata) ? $document->metadata : [];
+    $metadata = $document->metadata;
 
     $preparedData = $this->prepareEmbeddingAndMetadata($document->content, $metadata, $embedding);
 
@@ -216,7 +216,7 @@ class MariaDBVectorStore extends VectorStoreBase
       'hash' => $document->hash ?? '',
     ];
 
-    if (!empty($metadata) && is_array($metadata)) {
+    if (!empty($metadata)) {
       $documentMetadata = array_merge($documentMetadata, $metadata);
     }
 
@@ -662,8 +662,7 @@ class MariaDBVectorStore extends VectorStoreBase
       $embedding = $this->embeddingGenerator->embedText($document->content);
       $this->validateEmbeddingFormat($embedding);
 
-      // Get metadata safely
-      $metadata = isset($document->metadata) ? $document->metadata : [];
+      $metadata = $document->metadata;
 
       // Prepare embedding and metadata
       $preparedData = $this->prepareEmbeddingAndMetadata($document->content, $metadata, $embedding);
@@ -677,7 +676,7 @@ class MariaDBVectorStore extends VectorStoreBase
         'hash' => $document->hash ?? '',
       ];
       
-      if (!empty($metadata) && is_array($metadata)) {
+      if (!empty($metadata)) {
         $documentMetadata = array_merge($documentMetadata, $metadata);
       }
       

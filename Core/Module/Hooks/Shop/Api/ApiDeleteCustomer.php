@@ -11,6 +11,7 @@ namespace ClicShopping\OM\Module\Hooks\Shop\Api;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Customers\Customers\Classes\Shared\CustomerDataEraser;
 use ClicShopping\Apps\Configuration\Api\Classes\Shop\ApiSecurity;
 
 class ApiDeleteCustomer
@@ -35,15 +36,7 @@ class ApiDeleteCustomer
     $Qcheck->execute();
 
     if ($Qcheck->fetch()) {
-      $sql_array = [
-        'customers_id' => (int)$id,
-      ];
-
-      $CLICSHOPPING_Db->delete('customers', $sql_array);
-      $CLICSHOPPING_Db->delete('address_book', $sql_array);
-      $CLICSHOPPING_Db->delete('customers_info', ['customers_info_id' => $id]);
-      $CLICSHOPPING_Db->delete('customers_basket', $sql_array);
-      $CLICSHOPPING_Db->delete('customers_basket_attributes', $sql_array);
+      CustomerDataEraser::erase((int)$id);
 
       $CLICSHOPPING_Hooks->call('Customers', 'DeleteCustomers');
     }

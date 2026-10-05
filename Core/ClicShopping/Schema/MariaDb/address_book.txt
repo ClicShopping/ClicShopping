@@ -25,3 +25,5 @@ engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
 comment Postal addresses of the customers, one or more rows per customer, including the company identifiers used for B2B.
+ai_sensitive_contact = entry_street_address, entry_suburb, entry_telephone
+ai_sensitive_identity = entry_firstname, entry_lastname

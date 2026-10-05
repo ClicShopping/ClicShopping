@@ -301,6 +301,7 @@ class AnalyticsAgent implements AgentInterface
       $this->debugLog("  has results: " . (isset($results['results']) ? 'YES (' . count($results['results']) . ' rows)' : 'NO'));
 
       $results = $this->sqlExecutor->validateAndReexecuteSqlDates($results, $question);
+      $results = $this->sqlExecutor->guardSensitiveOutput($results, $question, $this->userId);
 
       if (($results['type'] ?? 'unknown') === 'error') {
         $this->debugLog("ERROR in executeQuery: " . ($results['error'] ?? 'unknown'));
@@ -358,6 +359,7 @@ class AnalyticsAgent implements AgentInterface
         'results' => $results['results'],
         'cached' => $results['cached'] ?? false,  // 🆕 Propagate cached flag
         'derived_columns' => $results['derived_columns'] ?? [],
+        'sensitive_output' => $results['sensitive_output'] ?? null,
       ];
 
       // Add cache metadata if available

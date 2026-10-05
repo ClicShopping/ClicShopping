@@ -54,6 +54,7 @@ class ResultInterpreter
     $this->cache = $cache;
     $this->securityLogger = $securityLogger;
     $this->language = Registry::get('Language');
+    $this->language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
     $this->maxRowsForInterpretation = $maxRowsForInterpretation;
     $this->enablePromptCache = $enablePromptCache;
     $this->debug = $debug;
@@ -98,7 +99,7 @@ class ResultInterpreter
       return CLICSHOPPING::getDef('text_error_context_sql_number_request', $array);
     }
 
-    $cleanResults = $this->sanitizeResultsForPrompt($results);
+    $cleanResults = $this->labelSplitValues($this->sanitizeResultsForPrompt($results));
     $safeQuestion = InputValidator::validateParameter($question, 'string');
 
     if ($safeQuestion !== $question) {
@@ -228,6 +229,35 @@ class ResultInterpreter
    * @param array $results Results to sanitize
    * @return array Sanitized results
    */
+  /**
+   * Replace a split column's raw codes with the labels the result table shows.
+   *
+   * Same declaration as the table split: `text_table_split_reason_<col>` turns it on and
+   * `text_table_split_<col>_<value>` names each value, so the prose and the table agree.
+   *
+   * @param array $results Sanitized rows
+   * @return array Rows, split values labelled where a label is declared
+   */
+  private function labelSplitValues(array $results): array
+  {
+    foreach ($results as $rowKey => $row) {
+      if (!\is_array($row)) {
+        continue;
+      }
+
+      foreach ($row as $column => $value) {
+        $reason = 'text_table_split_reason_' . $column;
+        $label = 'text_table_split_' . $column . '_' . $value;
+
+        if ($this->language->getDef($reason) !== $reason && $this->language->getDef($label) !== $label) {
+          $results[$rowKey][$column] = $this->language->getDef($label);
+        }
+      }
+    }
+
+    return $results;
+  }
+
   public function sanitizeResultsForPrompt(array $results): array
   {
     $cleanedResults = [];

@@ -18,3 +18,6 @@ text_metric_gross_margin_percent = Gross margin as a RATE: gross_margin_amount d
 text_metric_avg_shipping_delay = Average delay between the order date and its shipping date.
 text_metric_discount_amount = Discount granted on orders: the 'CD' and 'DC' classes of orders_total, which the platform marks as deduction lines. Report it as its own figure: a discount is neither a revenue nor a margin, and it is never combined with one in a single arithmetic - do not subtract it from them and do not add it back.
 text_metric_shipping_billed = Shipping BILLED to the customer: the 'SH' class of orders_total. It is what the shop charged for shipping, never what shipping cost the shop, and it is distinct from products_handling, which already sits inside the margin cost basis.
+text_metric_dimension_intro = KNOWN DIMENSIONS. When the question breaks a metric down by one of these, write the dimension under this EXACT name - never a synonym, never a translation.
+text_metric_dimension_row = - {{name}} | {{definition}}
+text_metric_dimension_tax_convention = the tax basis an invoice was drawn up on: tax-excluded prices or tax-included prices (VAT scheme, tax convention, pricing basis)

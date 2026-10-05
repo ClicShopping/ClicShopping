@@ -12,7 +12,9 @@
 namespace ClicShopping\AI\Security;
 
 use ClicShopping\AI\Security\RateLimit;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
+use ClicShopping\AI\Infrastructure\Schema\SchemaEmbedder;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Config\TechnicalDefaults;
@@ -239,7 +241,88 @@ class DbSecurity
                 return false;
             }
         }
-        
+
         return true;
+    }
+
+    /** Keywords that write, change the schema or touch server files: never in a read. */
+    private const WRITE_KEYWORDS = [
+        'INSERT', 'UPDATE', 'DELETE', 'REPLACE', 'DROP', 'ALTER', 'CREATE', 'TRUNCATE', 'RENAME',
+        'GRANT', 'REVOKE', 'LOAD', 'LOAD_FILE', 'HANDLER', 'CALL', 'OUTFILE', 'DUMPFILE', 'LOCK', 'UNLOCK',
+    ];
+
+    /**
+     * A read is ONE statement opened by SELECT, WITH, SHOW, DESCRIBE or EXPLAIN, with no write
+     * keyword. Literals, quoted identifiers and comments are blanked first, so a word inside a
+     * string never trips it. Enforced by DoctrineOrm::select*(): generated SQL can never write.
+     *
+     * @param string $sql SQL about to be executed
+     * @return string|null Why it is refused, or null when it may run
+     */
+    public static function readOnlyViolation(string $sql): ?string
+    {
+        // A MariaDB executable comment /*! ... */ RUNS its content: refused, never blanked.
+        if (str_contains($sql, '/*!')) {
+            return 'executable comment';
+        }
+
+        $code = preg_replace([
+            "/'(?:[^'\\\\]|\\\\.|'')*'/s",
+            '/"(?:[^"\\\\]|\\\\.|"")*"/s',
+            '/`(?:[^`]|``)*`/s',
+            '/\/\*.*?\*\//s',
+            '/(--\s|#)[^\n]*/',
+        ], [' 0 ', ' 0 ', ' 0 ', ' ', ' '], $sql) ?? '';
+
+        $code = rtrim(trim($code), "; \t\n\r");
+
+        if (str_contains($code, ';')) {
+            return 'several statements';
+        }
+
+        if (preg_match('/^\(*\s*(SELECT|WITH|SHOW|DESCRIBE|DESC|EXPLAIN)\b/i', $code) !== 1) {
+            return 'not a read';
+        }
+
+        if (preg_match_all('/\b([A-Z_]+)\b(\s*\()?/i', $code, $tokens, PREG_SET_ORDER) > 0) {
+            foreach ($tokens as $token) {
+                $word = strtoupper($token[1]);
+
+                // REPLACE( is the string function; REPLACE INTO is a write.
+                if (in_array($word, self::WRITE_KEYWORDS, true) && !($word === 'REPLACE' && !empty($token[2]))) {
+                    return 'write keyword ' . $word;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * A table its schema declares `ai_execute = deny` (credentials, tokens, sessions) is never
+     * read. Only string literals are blanked: a quoted identifier, a comment still name the table.
+     *
+     * @param string $sql SQL about to be executed
+     * @return string|null Why it is refused, or null when it may run
+     */
+    public static function deniedTableViolation(string $sql): ?string
+    {
+        $denied = array_keys(SchemaEmbedder::declaredExecutionDenied());
+
+        if ($denied === []) {
+            return null;
+        }
+
+        $code = preg_replace("/'(?:[^'\\\\]|\\\\.|'')*'/s", ' 0 ', $sql) ?? '';
+        $code = str_replace(['`', '"'], '', $code);
+        $prefix = (string)CLICSHOPPING::getConfig('db_table_prefix');
+
+        foreach ($denied as $table) {
+            if (preg_match('/(?<![A-Za-z0-9_$])' . preg_quote($prefix . $table, '/') . '(?![A-Za-z0-9_$])/i', $code) === 1) {
+                return 'denied table ' . $prefix . $table;
+            }
+        }
+
+        return null;
     }
 }

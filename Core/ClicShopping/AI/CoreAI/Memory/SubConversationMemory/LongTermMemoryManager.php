@@ -177,12 +177,6 @@ class LongTermMemoryManager
       
       $metadata['sourcename'] = $document->sourceName; // Keep consistent
 
-      // Store metadata - PHP 8.4+ compatible
-      // LLPhant Document uses dynamic properties, suppress warning
-      if (!property_exists($document, 'metadata')) {
-        // Initialize as empty array if property doesn't exist
-        @$document->metadata = [];
-      }
       $document->metadata = $metadata;
       
       // 🔧 FIX: Log what we're about to store

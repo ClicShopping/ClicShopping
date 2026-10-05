@@ -876,14 +876,16 @@ class Db extends PDO
               $schema['property']['comment'] = implode(' ', $details);
               break;
 
-            // Declarative only, carries no DDL: read by SchemaEmbedder to keep a table out of the
-            // AI schema window. Written `ai_schema = exclude`, so the '=' is a separator.
-            case 'ai_schema':
-              if (!isset($schema['property']) || !is_array($schema['property'])) {
-                $schema['property'] = [];
-              }
+            // ai_* properties are declarative only, never DDL: read by Core/ClicShopping/AI/.
+            // Written `ai_schema = exclude`, so the '=' is a separator.
+            default:
+              if (str_starts_with($field_name, 'ai_')) {
+                if (!isset($schema['property']) || !is_array($schema['property'])) {
+                  $schema['property'] = [];
+                }
 
-              $schema['property']['ai_schema'] = trim(ltrim(trim(implode(' ', $details)), '='));
+                $schema['property'][$field_name] = trim(ltrim(trim(implode(' ', $details)), '='));
+              }
               break;
           }
 

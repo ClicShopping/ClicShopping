@@ -43,6 +43,8 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
  * says something OTHER than time already bounds the measured set - the last N of an entity, one
  * customer, one category. Such a measure has no window to choose, so none is applied and none is
  * asked for; applying one narrows a set the question had already closed.
+ * `all_time` says the question asks for the WHOLE history: no lower bound, the window ends today and
+ * is named as such - never the default span, which would contradict the question.
  *
  * @package ClicShopping\AI\DomainsAI\Analytics\Planning
  */
@@ -57,12 +59,13 @@ final class PeriodResolver
   private const COMPARABLE_DAYS_SHIFT = '-364 days';
 
   /**
-   * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_year_comparable_days|previous_period, set_bounded?: bool}`
+   * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_year_comparable_days|previous_period, set_bounded?: bool, all_time?: bool}`
    * @param \DateTimeImmutable|null $observedAt Observation date; defaults to now. Injected by tests only.
    * @return array Allow-listed `{current: {from, to}, compare, previous?: {from, to}}`, every bound Y-m-d,
    *               plus `default_days` when the window came from the default, or
    *               `{current: {from: null, to: null}, compare: none, period_missing: true}`, or the
-   *               same bounds flagged `set_bounded` when the question bounds the set without time
+   *               same bounds flagged `set_bounded` when the question bounds the set without time, or
+   *               `{current: {from: null, to}, compare: none, all_time: true}` for the whole history
    * @throws \InvalidArgumentException When the current window is reversed or contains unreadable dates
    */
   public static function resolve(array $periods, ?\DateTimeImmutable $observedAt = null): array
@@ -73,6 +76,16 @@ final class PeriodResolver
 
     if (($from === '' || $to === '') && ($periods['set_bounded'] ?? false) === true) {
       return ['current' => ['from' => null, 'to' => null], 'compare' => self::COMPARE_NONE, 'set_bounded' => true];
+    }
+
+    if ($from === '' && ($periods['all_time'] ?? false) === true) {
+      try {
+        $end = $to !== '' ? new \DateTimeImmutable($to) : ($observedAt ?? new \DateTimeImmutable());
+      } catch (\Throwable $e) {
+        throw new \InvalidArgumentException('The plan carries an unreadable period bound: ' . $e->getMessage());
+      }
+
+      return ['current' => ['from' => null, 'to' => $end->format('Y-m-d')], 'compare' => self::COMPARE_NONE, 'all_time' => true];
     }
 
     if ($from === '' || $to === '') {

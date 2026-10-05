@@ -9,7 +9,6 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI;
 
 use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
-use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\OM\Registry;
 
 /**
@@ -38,13 +37,11 @@ class EmbeddingService
   private const TABLE_NAME = 'products_cockpit_ai_embedding'; // Table name without prefix
   public const EMBEDDING_FORMAT_VERSION = '2.0';
   
-  private MultiDBRAGManager $ragManager;
   private bool $debug;
   private mixed $db;
 
   public function __construct()
   {
-    $this->ragManager = new MultiDBRAGManager();
     $this->debug = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG') && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True';
     $this->db = Registry::get('Db');
 
@@ -53,7 +50,7 @@ class EmbeddingService
   /**
    * Store embedding with metadata in clic_products_cockpit_ai_embedding  table
    *
-   * Generates content from metadata, creates embedding via MultiDBRAGManager,
+   * Generates content from metadata, creates embedding via NewVector,
    * and persists with full metadata JSON.
    *
    * Requirements 15.1-15.9:
@@ -280,14 +277,9 @@ class EmbeddingService
    */
   public function generateContent(array $metadata): string
   {
-    // Normalisation de l'accès aux données (gestion du niveau 'metadata')
     $src = isset($metadata['metadata']) ? $metadata['metadata'] : $metadata;
-
-    // Préparation des variables pour le template
-    $flags = $src['feature_flags'] ?? [];
-    $history = $src['history'] ?? [];
-    $scores = $src['scores'] ?? [];
-    $metrics = $src['commercial_metrics'] ?? [];
+    $src['entity_id'] ??= $metadata['entity_id'] ?? 0;
+    $src['product_name'] ??= $metadata['product_name'] ?? null;
 
     $template = <<<TEMPLATE
 Template v1.0 format (Requirement 17):
@@ -316,27 +308,8 @@ History and Trends:
 Active Recommendations: {actions_count}
 TEMPLATE;
 
-    // Data mapping for interpolation
-    $data = [
-      'id' => $src['entity_id'] ?? 0,
-      'name' => $src['product_name'] ?? 'Unknown',
-      'score_x' => number_format((float)($scores['score_x'] ?? 0), 2),
-      'score_y' => number_format((float)($scores['score_y'] ?? 0), 2),
-      'quadrant' => $scores['quadrant'] ?? 'N / A',
-      'views' => $metrics['views_30d'] ?? 0,
-      'orders' => $metrics['orders'] ?? 0,
-      'conversion' => $metrics['conversion_rate'] ?? 0,
-      'promo' => ($flags['promo_active'] ?? false) ? 'YES' : 'NO',
-      'featured' => ($flags['feature'] ?? false) ? 'YES' : 'NO',
-      'favorites' => ($flags['favorites'] ?? false) ? 'YES' : 'NO', // CRITICAL for stability
-      'analysis_num' => $history['analysis_number'] ?? 1,
-      'delta_x' => $history['delta_x'] ?? 0,
-      'delta_y' => $history['delta_y'] ?? 0,
-      'trend' => $history['trend'] ?? 'stable',
-      'actions_count'=> isset($src['actions']) ? count($src['actions']): 0
-    ];
-
-    return $this->interpolateTemplate($template, $data);
+    // interpolateTemplate() reads the NESTED metadata: never hand it a flattened map.
+    return $this->interpolateTemplate($template, $src);
   }
 
   /**
@@ -410,7 +383,7 @@ TEMPLATE;
       '{actions_count}' => $actionsCount,
     ];
 
-    return str_replace(array_keys($replacements), array_values($replacements), $template);
+    return strtr($template, array_map('strval', $replacements));
   }
 
   /**
@@ -558,24 +531,5 @@ TEMPLATE;
       if ($this->debug) error_log("[CockpitAI] getLatestEmbedding failed: " . $e->getMessage());
     }
     return [];
-  }
-
-  /**
-   * Get human-readable quadrant label
-   *
-   * @param string $quadrant Quadrant code (Q1, Q2, Q3, Q4, Q_intermediate)
-   * @return string Quadrant label
-   */
-  private function getQuadrantLabel(string $quadrant): string
-  {
-    $labels = [
-      'Q1' => 'Scaling',
-      'Q2' => 'Acquisition',
-      'Q3' => 'Rework/Kill',
-      'Q4' => 'Optimization',
-      'Q_intermediate' => 'Monitoring',
-    ];
-
-    return $labels[$quadrant] ?? 'Unknown';
   }
 }

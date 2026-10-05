@@ -15,3 +15,5 @@ engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
 comment LIVE AUDIENCE - one row per visitor currently browsing, refreshed on each click: entry time, last click, last page seen, referrer and user agent. Rows disappear when the session ends, so it answers only questions about the present moment.
+ai_sensitive_contact = ip_address
+ai_sensitive_identity = full_name

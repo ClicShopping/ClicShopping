@@ -41,3 +41,5 @@ engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
 comment Customer accounts with personal information, preferences, and access control
+ai_sensitive_contact = customers_email_address, customers_telephone, customers_cellular_phone, customers_dob, client_computer_ip
+ai_sensitive_identity = customers_firstname, customers_lastname

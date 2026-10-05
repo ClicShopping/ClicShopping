@@ -84,8 +84,7 @@ echo HTML::button($CLICSHOPPING_OrdersStatusInvoice->getDef('button_cancel'), nu
       </div>
       <?php
     }
-    if (DEFAULT_PRODUCTS_QUANTITY_UNIT_STATUS_ID != $oInfo->orders_status_invoice_id) {
-      ?>
+    ?>
     <div class="mt-1"></div>
     <div class="row">
       <div class="col-md-12">
@@ -119,7 +118,9 @@ echo HTML::button($CLICSHOPPING_OrdersStatusInvoice->getDef('button_cancel'), nu
       </div>
       <?php
     }
-    ?>
+
+    if (DEFAULT_ORDERS_STATUS_INVOICE_ID != $oInfo->orders_status_invoice_id) {
+      ?>
       <div class="row">
         <div class="col-md-5">
           <div class="form-group row">
@@ -134,7 +135,6 @@ echo HTML::button($CLICSHOPPING_OrdersStatusInvoice->getDef('button_cancel'), nu
                 class="text-slider"><?php echo $CLICSHOPPING_OrdersStatusInvoice->getDef('text_set_default'); ?></span>
             </ul>
           </div>
-          /div>
         </div>
       </div>
       <?php

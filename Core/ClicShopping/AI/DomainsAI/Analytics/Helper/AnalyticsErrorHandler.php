@@ -8,6 +8,7 @@
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Helper;
 
+use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
@@ -103,6 +104,13 @@ class AnalyticsErrorHandler
         'confidence' => $correctionResult['confidence'],
         'learned_from_history' => $correctionResult['learned_from_history'] ?? false,
       ];
+
+      // A correction is generated SQL: same read-only rule as DoctrineOrm::select*().
+      $violation = DbSecurity::readOnlyViolation($correctedQuery) ?? DbSecurity::deniedTableViolation($correctedQuery);
+
+      if ($violation !== null) {
+        throw new \RuntimeException('Corrected query refused, read-only (' . $violation . ')');
+      }
 
       // Attempt to execute corrected query
       $query = $this->db->prepare($correctedQuery);

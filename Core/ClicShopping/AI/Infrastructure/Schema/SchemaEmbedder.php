@@ -33,7 +33,7 @@ use ClicShopping\OM\Cache as OMCache;
 class SchemaEmbedder
 {
   private static bool $currencyChecked = false;
-  private static ?array $declaredOutOfRetrieval = null;
+  private static ?array $declaredProperties = null;
   private mixed $db;
   private bool $debug;
   private string $tablePrefix;
@@ -392,8 +392,60 @@ class SchemaEmbedder
    */
   public static function declaredOutOfRetrieval(): array
   {
-    if (self::$declaredOutOfRetrieval !== null) {
-      return self::$declaredOutOfRetrieval;
+    return array_map(
+      static fn(): bool => true,
+      array_filter(self::declaredTableProperties(), static fn(array $p): bool => ($p['ai_schema'] ?? '') === 'exclude')
+    );
+  }
+
+  /**
+   * Tables their own schema definition declares never executable by generated SQL
+   *
+   * A line `ai_execute = deny` in the `##` block: credentials, tokens, sessions. Distinct from
+   * `ai_schema = exclude`, which only means "no place in the window".
+   *
+   * @return array Unprefixed table names, as a lookup set
+   */
+  public static function declaredExecutionDenied(): array
+  {
+    return array_map(
+      static fn(): bool => true,
+      array_filter(self::declaredTableProperties(), static fn(array $p): bool => ($p['ai_execute'] ?? '') === 'deny')
+    );
+  }
+
+  /**
+   * Columns tables declare sensitive, by level: `ai_sensitive_contact` reaches or targets a person
+   * (e-mail, phone, street), `ai_sensitive_identity` identifies one without reaching them (name).
+   *
+   * @return array{contact: array<string, list<string>>, identity: array<string, list<string>>} Level => unprefixed table => columns
+   */
+  public static function declaredSensitiveColumns(): array
+  {
+    $sensitive = ['contact' => [], 'identity' => []];
+
+    foreach (self::declaredTableProperties() as $table => $properties) {
+      foreach (array_keys($sensitive) as $level) {
+        $columns = preg_split('/[\s,]+/', $properties['ai_sensitive_' . $level] ?? '', -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($columns !== []) {
+          $sensitive[$level][$table] = $columns;
+        }
+      }
+    }
+
+    return $sensitive;
+  }
+
+  /**
+   * The ai_* properties every schema definition file declares
+   *
+   * @return array<string, array<string, string>> Unprefixed table name => its ai_* properties
+   */
+  public static function declaredTableProperties(): array
+  {
+    if (self::$declaredProperties !== null) {
+      return self::$declaredProperties;
     }
 
     $declared = [];
@@ -406,12 +458,18 @@ class SchemaEmbedder
         continue;
       }
 
-      if (($schema['property']['ai_schema'] ?? '') === 'exclude') {
-        $declared[$schema['name']] = true;
+      $properties = array_filter(
+        $schema['property'] ?? [],
+        static fn(string $key): bool => str_starts_with($key, 'ai_'),
+        ARRAY_FILTER_USE_KEY
+      );
+
+      if ($properties !== []) {
+        $declared[$schema['name']] = $properties;
       }
     }
 
-    return self::$declaredOutOfRetrieval = $declared;
+    return self::$declaredProperties = $declared;
   }
 
   /**

@@ -1,2 +1,2 @@
 cfg_gdpr_date_title = Délais de suppression de compte
-cfg_gdpr_date_description = Choisissez un nombre de jours qui affichera les comptes à supprimer
+cfg_gdpr_date_description = Nombre de jours d'inactivité (depuis la dernière connexion, ou la création du compte si le client ne s'est jamais connecté) après lequel le cron RGPD efface le compte. Repère CNIL : 3 ans (1095 jours) après le dernier contact.

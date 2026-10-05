@@ -1,2 +1,2 @@
 cfg_gdpr_date_title = Date account deletion
-cfg_gdpr_date_description = Choose the date (in day) to display the account deletion
+cfg_gdpr_date_description = Number of days of inactivity (since the last logon, or the account creation when the customer never logged on) after which the GDPR cron erases the account. CNIL reference: 3 years (1095 days) after the last contact.

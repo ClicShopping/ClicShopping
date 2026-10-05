@@ -60,7 +60,7 @@ class ChunkReconstructor
         continue; // Skip invalid entries
       }
 
-      $metadata = $doc->metadata ?? [];
+      $metadata = $doc->metadata;
       $isChunked = $metadata['is_chunked'] ?? false;
       $score = $metadata['score'] ?? 0; // Assuming the score is stored in metadata upon retrieval
 

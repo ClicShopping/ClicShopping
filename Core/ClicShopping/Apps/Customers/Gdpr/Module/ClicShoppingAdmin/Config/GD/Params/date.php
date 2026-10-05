@@ -11,7 +11,7 @@ namespace ClicShopping\Apps\Customers\Gdpr\Module\ClicShoppingAdmin\Config\GD\Pa
 class date extends \ClicShopping\Apps\Customers\Gdpr\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
 
-  public $default = '180';
+  public $default = '1095';
   public int|null $sort_order = 20;
   public bool $app_configured = true;
 

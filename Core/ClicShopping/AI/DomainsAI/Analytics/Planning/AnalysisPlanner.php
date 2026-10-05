@@ -187,7 +187,9 @@ class AnalysisPlanner
           'from' => $plan['periods']['current']['from'],
           'to' => $plan['periods']['current']['to'],
         ])
-      : '';
+      : (($plan['periods']['all_time'] ?? false) === true
+        ? $this->getDef('text_analysis_plan_window_all_time', ['to' => (string)($plan['periods']['current']['to'] ?? '')])
+        : '');
 
     if (isset($plan['periods']['previous'])) {
       $windows .= "\n" . $this->getDef('text_analysis_plan_window_previous', [

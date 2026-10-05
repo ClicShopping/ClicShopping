@@ -138,7 +138,7 @@ class EmbeddingCronRunner
     if (isset($_GET['cronId'])) {
       $cron_id = HTML::sanitize($_GET['cronId']);
 
-      if ($cron_id !== null && !empty($cron_id) && is_numeric($cron_id)) {
+      if (!empty($cron_id) && is_numeric($cron_id)) {
         $cron_id = (int)$cron_id;
         Cronjob::updateCron($cron_id);
 
@@ -150,10 +150,7 @@ class EmbeddingCronRunner
       }
     } else {
       Cronjob::updateCron($cron_id_embedding);
-
-      if (isset($cron_id_embedding)) {
-        $this->updateAllEmbeddings();
-      }
+      $this->updateAllEmbeddings();
     }
 
     return null;
@@ -668,7 +665,7 @@ class EmbeddingCronRunner
       $products_status = $item['products_status'];
       $products_ordered = $item['products_ordered'];
       $products_quantity = $item['products_quantity']; //product stock
-      $products_stock_reorder_level = (int)STOCK_REORDER_LEVEL; // reorder level
+      $products_stock_reorder_level = \defined('STOCK_REORDER_LEVEL') ? (int)STOCK_REORDER_LEVEL : 0; // store-wide reorder level
       $products_quantity_alert = $item['products_quantity_alert']; // alert stock fix
       $products_description = $item['products_description'];
       $products_description_summary = $item['products_description_summary'];
@@ -754,7 +751,7 @@ class EmbeddingCronRunner
       }
 
       if (!empty($products_stock_reorder_level)) {
-        $embedding_data .= $this->app->getDef('text_product_stock_reorder') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_stock_reorder_level) . "\n";
+        $embedding_data .= $this->app->getDef('text_product_stock_reorder') . ': ' . $products_stock_reorder_level . "\n";
       }
 
       if (!empty($products_quantity)) {
@@ -801,6 +798,7 @@ class EmbeddingCronRunner
 
       // Prepare base metadata
       $baseMetadata = [
+        'product_name' => $products_name,
         'brand_name' => $manufacturer_name ?? '',
         'content' => $embedding_data,
         'type' => 'products',

@@ -406,7 +406,7 @@ class NewVector
           'sourceName' => $doc->sourceName ?? null,
           'sourceType' => $doc->sourceType ?? null,
           'chunkNumber' => $doc->chunkNumber ?? null,
-          'metadata' => $doc->metadata ?? null,
+          'metadata' => $doc->metadata,
           'id' => $doc->id ?? null,
         ];
       }

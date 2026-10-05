@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\AI\Ecommerce;
 
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\EntityConfig;
+use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\MetricCatalog;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\HybridPreFilter;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ProductHelper;
@@ -220,6 +221,21 @@ class Ecommerce extends AbstractDomainApp
   public function getForbiddenAggregateSources(): array
   {
     return MetricCatalog::forbiddenAggregateSources();
+  }
+
+  /**
+   * How much sensitive personal data one analytics answer may list, and when the cumulated
+   * volume served to one user escalates the trace.
+   *
+   * @return array{cap: int, escalation_rows: int, window_hours: int}
+   */
+  public function getSensitiveDataPolicy(): array
+  {
+    return [
+      'cap' => EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SENSITIVE_LIST_CAP'),
+      'escalation_rows' => EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SENSITIVE_ESCALATION_ROWS'),
+      'window_hours' => EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SENSITIVE_WINDOW_HOURS'),
+    ];
   }
 
   /**
