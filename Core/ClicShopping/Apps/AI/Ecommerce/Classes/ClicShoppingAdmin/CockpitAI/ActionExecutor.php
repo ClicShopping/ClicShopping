@@ -507,29 +507,24 @@
     private function updateAnalysisScore(int $productId, array &$productData): void
     {
       try {
-        // 1. Relire le metadata complet depuis la BD (source de vérité)
-        $Qmeta = $this->db->prepare('SELECT metadata
-                                     FROM :table_products_cockpit_ai_embedding 
-                                     WHERE entity_id = :entity_id
-                                     ORDER BY date_modified DESC
-                                     LIMIT 1
+        // 1. Latest analysis of each language: the rows are history, only the newest one is patched.
+        $Qmeta = $this->db->prepare('SELECT e.id,
+                                            e.metadata
+                                     FROM :table_products_cockpit_ai_embedding e
+                                     INNER JOIN (SELECT MAX(id) AS last_id
+                                                 FROM :table_products_cockpit_ai_embedding
+                                                 WHERE entity_id = :entity_id
+                                                 GROUP BY language_id
+                                                ) l ON l.last_id = e.id
                                      ');
         $Qmeta->bindInt(':entity_id', $productId);
         $Qmeta->execute();
 
-        if (!$Qmeta->fetch()) {
+        $rows = $Qmeta->fetchAll();
+
+        if (empty($rows)) {
           if ($this->debug) {
             error_log("[CockpitAI] updateAnalysisScore: no embedding found for product=$productId, skipping update");
-          }
-
-          return;
-        }
-
-        $storedMetadata = json_decode($Qmeta->value('metadata'), true);
-
-        if (!is_array($storedMetadata)) {
-          if ($this->debug) {
-            error_log("[CockpitAI] updateAnalysisScore: invalid metadata JSON for product=$productId");
           }
 
           return;
@@ -539,31 +534,44 @@
         // (ces flags ont été mis à jour par updateLocalFlags() durant la boucle)
         $localFlags = $productData['metadata']['feature_flags'] ?? [];
 
-        if (isset($localFlags['favorites'])) {
-          $storedMetadata['feature_flags']['favorites'] = (bool)$localFlags['favorites'];
-        }
-        if (isset($localFlags['feature'])) {
-          $storedMetadata['feature_flags']['feature'] = (bool)$localFlags['feature'];
-        }
-
         // promo_active : on relit depuis $productData (mis à jour par DataCollector au début du run)
         $promoActive = (bool)($productData['specials_active'] ?? $productData['promo_active'] ?? false);
-        $storedMetadata['feature_flags']['promo_active'] = $promoActive;
 
-        if ($this->debug) {
-          error_log("[CockpitAI] updateAnalysisScore: updating flags for product=$productId"
-            . " favorites=" . ($storedMetadata['feature_flags']['favorites'] ? 'true' : 'false')
-            . " feature=" . ($storedMetadata['feature_flags']['feature'] ? 'true' : 'false')
-            . " promo_active=" . ($promoActive ? 'true' : 'false'));
+        foreach ($rows as $row) {
+          $storedMetadata = json_decode($row['metadata'], true);
+
+          if (!is_array($storedMetadata)) {
+            if ($this->debug) {
+              error_log("[CockpitAI] updateAnalysisScore: invalid metadata JSON for product=$productId id={$row['id']}");
+            }
+
+            continue;
+          }
+
+          if (isset($localFlags['favorites'])) {
+            $storedMetadata['feature_flags']['favorites'] = (bool)$localFlags['favorites'];
+          }
+          if (isset($localFlags['feature'])) {
+            $storedMetadata['feature_flags']['feature'] = (bool)$localFlags['feature'];
+          }
+
+          $storedMetadata['feature_flags']['promo_active'] = $promoActive;
+
+          if ($this->debug) {
+            error_log("[CockpitAI] updateAnalysisScore: updating flags for product=$productId id={$row['id']}"
+              . " favorites=" . (!empty($storedMetadata['feature_flags']['favorites']) ? 'true' : 'false')
+              . " feature=" . (!empty($storedMetadata['feature_flags']['feature']) ? 'true' : 'false')
+              . " promo_active=" . ($promoActive ? 'true' : 'false'));
+          }
+
+          // 3. Keyed on id, never on entity_id: that would stamp this metadata onto every past analysis.
+          $this->db->save(':table_products_cockpit_ai_embedding', [
+            'metadata'      => json_encode($storedMetadata, JSON_UNESCAPED_UNICODE),
+            'date_modified' => 'now()'
+          ], [
+            'id' => (int)$row['id']
+          ]);
         }
-
-        // 3. Réécrire le metadata complet (scores + analyse LLM intacts)
-        $this->db->save(':table_products_cockpit_ai_embedding ', [
-          'metadata'      => json_encode($storedMetadata, JSON_UNESCAPED_UNICODE),
-          'date_modified' => 'now()'
-        ], [
-          'entity_id' => (int)$productId
-        ]);
 
       } catch (\Exception $e) {
         error_log("[CockpitAI] updateAnalysisScore error for product=$productId : " . $e->getMessage());

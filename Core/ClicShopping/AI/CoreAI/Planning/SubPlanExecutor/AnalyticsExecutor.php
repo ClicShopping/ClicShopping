@@ -12,6 +12,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
+use ClicShopping\AI\DomainsAI\Analytics\Helper\Formatter\AnalysisPlanAnnouncer;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\AnalyticsExecutorPatterns;
 use ClicShopping\AI\Infrastructure\Async\PostResponseDeferrer;
 use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationTurnReader;
@@ -482,11 +483,14 @@ class AnalyticsExecutor
             }
           }
 
+          $notice = AnalysisPlanAnnouncer::sensitiveOutputNotice($bestInterpretation['sensitive_output'] ?? null);
+
           // Convert to standard analytics_response format
           return [
             'type' => 'analytics_response',
             'question' => $rawResult['query'] ?? '',
-            'interpretation' => $interpretation,
+            'interpretation' => $notice === '' ? $interpretation : $notice . "\n\n" . $interpretation,
+            'sensitive_output' => $bestInterpretation['sensitive_output'] ?? null,
             'results' => $bestInterpretation['results'],
             'sql_query' => $bestInterpretation['sql_query'] ?? '',
             'original_sql_query' => $bestInterpretation['sql_query'] ?? '',

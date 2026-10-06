@@ -189,7 +189,8 @@ class ResultFormatter
    * Derive the attribution banner from the DISTINCT contributing sources, never the attribution
    * count: N analytics sub-queries all read the same "Analytics Database" — that is ONE source,
    * not "multiple sources". One distinct source → its own attribution; two or more → the combined
-   * banner listing the distinct sources.
+   * banner listing the distinct sources. Document names of EVERY sub-query are kept: the reader
+   * must see each document the answer comes from.
    *
    * @param array $attributions Source attributions collected across sub-queries
    * @return array A single attribution, or the combined banner
@@ -203,9 +204,20 @@ class ResultFormatter
     }
 
     $sourceTypes = array_values(array_unique(array_filter(array_column($attributions, 'source_type'))));
+    $documentNames = array_values(array_unique(array_filter(
+      array_merge(...array_map(static fn(array $a): array => (array)($a['document_names'] ?? []), $attributions)),
+      'is_string'
+    )));
 
     if (count($sourceTypes) <= 1) {
-      return $attributions[0];
+      $merged = $attributions[0];
+
+      if ($documentNames !== []) {
+        $merged['document_names'] = $documentNames;
+        $merged['document_count'] = array_sum(array_map(static fn(array $a): int => (int)($a['document_count'] ?? 0), $attributions));
+      }
+
+      return $merged;
     }
 
     $details = CLICSHOPPING::getDef('text_source_combined_multiple');
@@ -213,13 +225,14 @@ class ResultFormatter
       $details = 'Information combined from multiple sources';
     }
 
-    return [
+    return array_filter([
       'source_type' => 'Hybrid',
       'source_icon' => '🔀',
       'source_details' => $details,
       'sources' => $sourceTypes,
       'source_count' => count($sourceTypes),
-    ];
+      'document_names' => $documentNames,
+    ], static fn($v): bool => $v !== []);
   }
 
   /**
@@ -502,8 +515,8 @@ class ResultFormatter
     if (!empty($aggregated['semantic_results'])) {
       $firstSemantic = $aggregated['semantic_results'][0];
 
-
-      if (isset($firstSemantic['response']) && !empty($firstSemantic['response'])) {
+      // N retrievals: keep the joined answer, the first alone would drop the other documents.
+      if (count($aggregated['semantic_results']) === 1 && !empty($firstSemantic['response'])) {
         $finalResult['response'] = $firstSemantic['response'];
       }
 

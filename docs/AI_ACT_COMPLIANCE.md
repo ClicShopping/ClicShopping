@@ -28,7 +28,7 @@ Each installation must name the natural or legal person accountable for the AI s
 
 That name is **configuration, never a hardcoded value and never the shop name**: it is held by
 `CLICSHOPPING_APP_CHATGPT_CH_AI_ACT_RESPONSIBLE`, set in *ChatGpt / Configure / ChatGpt*
-(`Module/ClicShoppingAdmin/Config/ASY/Params/ai_act_responsible.php`).
+(`Module/ClicShoppingAdmin/Config/CH/Params/ai_act_responsible.php`).
 
 It is **mandatory**. While it is empty, the back-office dashboard raises a blocking-red alert
 (`Module/ClicShoppingAdmin/Dashboard/CheckAPI.php`), because an unnamed deployer cannot satisfy

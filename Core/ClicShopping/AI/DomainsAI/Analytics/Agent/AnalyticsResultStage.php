@@ -11,6 +11,7 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\CoreAI\Orchestrator\SubValidation\ValidationGate;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
+use ClicShopping\AI\DomainsAI\Analytics\Helper\Formatter\AnalysisPlanAnnouncer;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\Helper\TypeSafetyGuard;
 use ClicShopping\AI\InterfacesAI\AnalyticsResultEnricherInterface;
@@ -304,7 +305,9 @@ class AnalyticsResultStage
                   $issues = $regenEval['llm_evaluation']['detected_issues'] ?? [];
                   $decision = ValidationGate::decide($score, $issues);
 
-                  $response['interpretation'] = $regenInterp;
+                  $notice = AnalysisPlanAnnouncer::sensitiveOutputNotice($regen['sensitive_output'] ?? null);
+                  $response['interpretation'] = $notice === '' ? $regenInterp : $notice . "\n\n" . $regenInterp;
+                  $response['sensitive_output'] = $regen['sensitive_output'] ?? null;
                   $response['results'] = $regen['results'];
                   $response['count'] = $regen['count'] ?? count($regen['results']);
                   if ($includeSQL) {

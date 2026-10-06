@@ -98,10 +98,28 @@ class AnalysisPlanAnnouncer
    */
   private function announceSensitiveOutput(array &$response): void
   {
-    $output = $response['sensitive_output'] ?? null;
+    $notice = self::sensitiveOutputNotice($response['sensitive_output'] ?? null);
 
-    if (!is_array($output) || ($output['level'] ?? '') !== 'contact') {
+    if ($notice === '') {
       return;
+    }
+
+    $response['interpretation'] = trim($notice . "\n\n" . (string)($response['interpretation'] ?? ''));
+
+    $this->debugLog('SENSITIVE OUTPUT announced: ' . $notice, 'PLAN');
+  }
+
+  /**
+   * The sentence owed at the head of an answer listing personal contact data; '' when none is owed.
+   * Every path serving a `sensitive_output` verdict outside announce() states it through here.
+   *
+   * @param mixed $output The `sensitive_output` verdict of AnalyticsSqlExecutor::guardSensitiveOutput()
+   * @return string
+   */
+  public static function sensitiveOutputNotice(mixed $output): string
+  {
+    if (!is_array($output) || ($output['level'] ?? '') !== 'contact') {
+      return '';
     }
 
     $key = !empty($output['capped']) ? 'text_sensitive_output_capped' : 'text_sensitive_output_logged';
@@ -110,13 +128,7 @@ class AnalysisPlanAnnouncer
       'total' => (string)($output['total'] ?? ''),
     ]);
 
-    if ($notice === '' || $notice === $key) {
-      return;
-    }
-
-    $response['interpretation'] = trim($notice . "\n\n" . (string)($response['interpretation'] ?? ''));
-
-    $this->debugLog('SENSITIVE OUTPUT announced: ' . $notice, 'PLAN');
+    return $notice === $key ? '' : $notice;
   }
 
   /**

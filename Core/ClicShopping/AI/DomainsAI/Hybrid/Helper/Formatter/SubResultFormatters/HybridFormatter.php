@@ -108,21 +108,16 @@ class HybridFormatter extends AbstractFormatter
 
       $output .= $this->renderDocumentSources((array)($semanticComp['source_attribution'] ?? []));
       
-      // Display sources: counted per document, each document listing its extracts.
-      $documents = $this->groupSourcesByDocument($semanticComp['sources'] ?? []);
+      // Sources: document names only, extracts would repeat the rendered answer.
+      $documents = $this->listSourceDocuments($semanticComp['sources'] ?? []);
 
       if ($documents !== []) {
         $output .= "<div class='mt-3'>";
         $output .= "<details>";
         $output .= "<summary style='cursor: pointer; font-size: 0.9em; color: #666;'><strong>📖 " . htmlspecialchars($this->language->getDef('sources_label')) . " (" . count($documents) . ")</strong></summary>";
-        $output .= "<ul class='mt-2'>";
-        foreach ($documents as $name => $extracts) {
-          $output .= "<li style='margin-bottom: 10px;'><strong>" . htmlspecialchars($name) . "</strong>";
-          $output .= "<ul style='font-size: 0.9em;'>";
-          foreach ($extracts as $extract) {
-            $output .= "<li>" . htmlspecialchars(mb_substr($extract, 0, 200)) . (mb_strlen($extract) > 200 ? '...' : '') . "</li>";
-          }
-          $output .= "</ul></li>";
+        $output .= "<ul class='mt-2' style='font-size: 0.9em;'>";
+        foreach ($documents as $name) {
+          $output .= "<li>" . htmlspecialchars($name) . "</li>";
         }
         $output .= "</ul>";
         $output .= "</details>";
@@ -137,6 +132,8 @@ class HybridFormatter extends AbstractFormatter
       // Only show text_response if we don't have structured components
       $formattedResponse = Hash::displayDecryptedDataText($responseContent);
       $output .= "<div class='response'><strong>" . htmlspecialchars($this->language->getDef('response_label')) . "</strong><br>" . $formattedResponse . "</div>";
+      // No component carries the footer here: the reader must still see which documents answered.
+      $output .= $this->renderDocumentSources((array)($results['source_attribution'] ?? []));
     }
 
     // Render actual results from sub-queries, not just metadata
@@ -462,12 +459,12 @@ class HybridFormatter extends AbstractFormatter
   }
 
   /**
-   * Group retrieved extracts under the document they come from.
+   * Distinct names of the documents the retrieved extracts come from.
    *
    * @param mixed $sources Retrieved extracts, as Document objects or arrays
-   * @return array<string, list<string>> Document name => its non-empty extracts, in retrieval order
+   * @return list<string> Document names, in retrieval order; an empty extract names no document
    */
-  private function groupSourcesByDocument(mixed $sources): array
+  private function listSourceDocuments(mixed $sources): array
   {
     $names = new RagContextFormatter();
     $documents = [];
@@ -479,9 +476,9 @@ class HybridFormatter extends AbstractFormatter
         continue;
       }
 
-      $documents[$names->extractDocumentName($source)][] = trim($content);
+      $documents[$names->extractDocumentName($source)] = true;
     }
 
-    return $documents;
+    return array_map('strval', array_keys($documents));
   }
 }

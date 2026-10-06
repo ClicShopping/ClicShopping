@@ -215,7 +215,6 @@ class AnalyticsAgent implements AgentInterface
     $this->sqlExecutor = new AnalyticsSqlExecutor(
       $this->queryProcessor,
       $this->queryExecutor,
-      $this->queryCache,
       $this->errorHandler,
       $this->securityLogger,
       $this->debug
@@ -362,6 +361,8 @@ class AnalyticsAgent implements AgentInterface
         'sensitive_output' => $results['sensitive_output'] ?? null,
       ];
 
+      $response += self::ambiguityKeysOf($results);
+
       // Add cache metadata if available
       if (isset($results['cache_age'])) {
         $response['cache_age'] = $results['cache_age'];
@@ -387,7 +388,7 @@ class AnalyticsAgent implements AgentInterface
         $results,
         $response,
         $this->conversationMemory,
-        fn(string $q, array $feedback): array => ['results' => $this->executeQuery($q, $feedback), 'asks_action' => $this->asksAction]
+        fn(string $q, array $feedback): array => ['results' => $this->sqlExecutor->guardSensitiveOutput($this->executeQuery($q, $feedback), $q, $this->userId), 'asks_action' => $this->asksAction]
       );
 
       // 5. Extraire entity_id si présent
@@ -975,16 +976,11 @@ class AnalyticsAgent implements AgentInterface
         'entity_id' => $cacheResult['entity_id'] ?? null,
         'entity_type' => $cacheResult['entity_type'] ?? null,
         'interpretation' => $cacheResult['interpretation'] ?? null,  // 🆕 Return cached interpretation
-        'ambiguous' => $ambiguityAnalysis['is_ambiguous'],  // Add ambiguity metadata
-        'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
+        // A replayed answer settled the same ambiguity as the first one: same producer, same keys.
+        ...$this->ambiguityMetadata($ambiguityAnalysis),
         'cached' => true,
         'cache_age' => $cacheResult['cache_age'] ?? null
       ];
-
-      // A replayed answer settled the same ambiguity as the first one: it must say so too.
-      if (isset($ambiguityAnalysis['applied_interpretation'])) {
-        $response['applied_interpretation'] = $ambiguityAnalysis['applied_interpretation'];
-      }
 
       return $response;
     }
@@ -1019,6 +1015,17 @@ class AnalyticsAgent implements AgentInterface
     }
 
     return $metadata;
+  }
+
+  /**
+   * The ambiguity metadata carried by an execution result, for the rebuilt success response.
+   *
+   * @param array $results Execution result, already holding ambiguityMetadata()
+   * @return array<string, mixed> Only the ambiguity keys present in $results
+   */
+  private static function ambiguityKeysOf(array $results): array
+  {
+    return array_intersect_key($results, array_flip(['ambiguous', 'ambiguity_type', 'interpretations', 'applied_interpretation']));
   }
 
   /**

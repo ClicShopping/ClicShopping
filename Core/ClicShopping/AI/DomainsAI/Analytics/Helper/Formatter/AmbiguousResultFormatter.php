@@ -126,7 +126,12 @@ class AmbiguousResultFormatter extends AbstractFormatter
     $html .= '<h4>' . $number . '. ' . htmlspecialchars($interpretation['label']) . '</h4>';
     $html .= '</div>';
     $html .= '<div class="card-body">';
-    
+
+    $notice = AnalysisPlanAnnouncer::sensitiveOutputNotice($interpretation['sensitive_output'] ?? null);
+    if ($notice !== '') {
+      $html .= '<p class="alert alert-warning">' . htmlspecialchars($notice) . '</p>';
+    }
+
     // Description
     $html .= '<p class="interpretation-description text-muted">';
     $html .= htmlspecialchars($interpretation['description']);

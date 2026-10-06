@@ -15,7 +15,6 @@ use ClicShopping\AI\DomainsAI\Analytics\Validator\CompareWindowFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\MetricWeightFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\SensitiveOutputFilter;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
-use ClicShopping\AI\Infrastructure\Cache\QueryCache;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Infrastructure\Schema\SchemaEmbedder;
 use ClicShopping\AI\Security\InputValidator;
@@ -36,7 +35,6 @@ class AnalyticsSqlExecutor
   public function __construct(
     private SqlQueryProcessor $queryProcessor,
     private QueryExecutor $queryExecutor,
-    private QueryCache $queryCache,
     private AnalyticsErrorHandler $errorHandler,
     private SecurityLogger $securityLogger,
     private bool $debug = false
@@ -260,19 +258,7 @@ class AnalyticsSqlExecutor
           'entity_type' => $entityType,
           ...$ambiguityMetadata,
         ];
-
-        // 🆕 CACHE THE SUCCESSFUL RESULT
-        $this->debugLog("   Caching successful query result in QueryCache");
-        $this->queryCache->set(
-          $question,
-          $finalQuery,
-          $queryResults,
-          [
-            'entity_id' => $entityId,
-            'entity_type' => $entityType
-          ]
-        );
-
+        // No QueryCache write here: AnalyticsAgent caches after guardSensitiveOutput(), capped rows only.
       } catch (\Exception $e) {
         $this->debugLog("  QUERY EXECUTION FAILED: " . $e->getMessage());
         $this->debugLog("  Attempting intelligent correction...");
@@ -304,19 +290,7 @@ class AnalyticsSqlExecutor
             ...$ambiguityMetadata,
           ];
 
-          // 🆕 CACHE THE CORRECTED RESULT
           if (!empty($correctedData['results'])) {
-            $this->debugLog("  Caching corrected query result");
-            $this->queryCache->set(
-              $question,
-              $correctedData['executed_query'],
-              $correctedData['results'],
-              [
-                'entity_id' => $entityInfo['entity_id'],
-                'entity_type' => $entityInfo['entity_type']
-              ]
-            );
-
             $this->promoteCorrectedSqlToCache($correctedData['executed_query'], $sqlCacheKey);
           }
         } elseif (!empty($correctionResult['empty_after_correction'])) {
