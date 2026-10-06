@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '5759ce35013197f0db9e618d48cff0c804956e78',
+        'reference' => '635a0def76168a4266cbbe4687e59bb9ee00e479',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '5759ce35013197f0db9e618d48cff0c804956e78',
+            'reference' => '635a0def76168a4266cbbe4687e59bb9ee00e479',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -110,9 +110,9 @@
             'dev_requirement' => false,
         ),
         'doctrine/orm' => array(
-            'pretty_version' => '3.7.3',
-            'version' => '3.7.3.0',
-            'reference' => '2637802f3bb695a88f54af1a6f0c2e76a4b523fb',
+            'pretty_version' => '3.7.4',
+            'version' => '3.7.4.0',
+            'reference' => '84e21e325e3da22e46d7facbccdc9258f2332b1e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../doctrine/orm',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '69ddaead6caa68f4f6190e2ee732f103326e78ba',
+            'reference' => '08ce189d89be521a44e20b191a2418b299a44b2b',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(

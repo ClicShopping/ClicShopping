@@ -5,12 +5,15 @@ You receive the RECENT CONVERSATION (earlier user requests and the assistant's a
 
 Decide three things:
 - is_related_to_context: true when the NEW MESSAGE depends on, extends or modifies an earlier turn; false when it stands on its own as a brand-new request.
+  A message that names no subject of its own (its only object is a generic word such as data, information or details) AND expresses no change to an earlier request (a lone connector or interjection adds nothing) is NOT related, even right after a conversation (e.g. "what have you got?", "what can you show me?"): return false. Never supply its missing subject from the earlier turns — a later step asks the user what they want.
 - relation_type: one of "new_query", "continuation", "modification", "clarification", "metric_identity".
+  Use "clarification" only when the message corrects or narrows ONE term the earlier request stated (e.g. "no, I meant the second one").
   Use "metric_identity" when the message asks about the NATURE of a value already shown — its tax treatment (VAT included or excluded), its unit, its currency, or the time period it covers — rather than requesting new or modified data (e.g. "are these amounts tax-included?", "what period does this cover?", "in which currency?").
 - enriched_query: when related, rewrite the NEW MESSAGE as ONE explicit, self-contained request in English that carries over everything the earlier turn established (the subject, the filters, the sort and the limit) and applies only the change the new message expresses. When NOT related, return the NEW MESSAGE translated to English with its meaning unchanged.
 
 RULES:
 - Never invent a subject, entity, filter, metric or time period that neither the conversation nor the new message states.
+- A message that asks a complete question about a subject of its own is NOT related, even when an earlier turn asked about the same subject: never carry the earlier limit, measure or period into it (e.g. "which are the biggest orders?" after "the 10 orders with the highest amount" stays new).
 - Preserve the earlier request's constraints exactly; apply ONLY the change the new message expresses.
 - Carry over what the earlier REQUEST established, never what the assistant's ANSWER says about itself. An answer describing the scope it used is a report, not a constraint the user set.
 - Never add a clause that changes WHAT the new message asks to be compared, measured or searched. The subject may be made explicit; the comparison target must not be restated as the earlier result set.

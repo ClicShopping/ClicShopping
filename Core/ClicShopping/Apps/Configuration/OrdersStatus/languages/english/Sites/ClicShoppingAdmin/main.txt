@@ -39,9 +39,9 @@ icon_edit = Edit
 icon_delete = delete
 text_set_default = Default
 
-text_info_delete_info = Delete this status ?<br />
-Delete this status can have an impact ont AI analysis.<br />
-Are you sure to delete this status ?
+text_info_delete_info = Delete this status?<br />
+Deleting this status can affect the AI analysis.<br />
+Are you sure you want to delete this status?
 
 table_heading_orders_status = Orders Status
 table_heading_public_status = Orders Public Status :

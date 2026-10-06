@@ -5,12 +5,15 @@ Vous recevez la CONVERSATION RÉCENTE (les demandes antérieures de l'utilisateu
 
 Décidez trois choses :
 - is_related_to_context : true lorsque le NOUVEAU MESSAGE dépend d'un tour précédent, le prolonge ou le modifie ; false lorsqu'il se suffit à lui-même comme une toute nouvelle demande.
+  Un message qui ne nomme aucun sujet propre (son seul objet est un mot générique comme données, informations ou détails) ET n'exprime aucun changement à une demande précédente (un connecteur ou une interjection seuls n'ajoutent rien) n'est PAS lié, même juste après une conversation (ex. « qu'est-ce que tu as ? », « que peux-tu me montrer ? ») : renvoyez false. Ne complétez jamais son sujet manquant à partir des tours précédents — une étape ultérieure demande à l'utilisateur ce qu'il veut.
 - relation_type : l'une de "new_query", "continuation", "modification", "clarification", "metric_identity".
+  Utilisez "clarification" uniquement lorsque le message corrige ou restreint UN terme que la demande précédente a énoncé (ex. « non, je voulais dire le deuxième »).
   Utilisez "metric_identity" lorsque le message porte sur la NATURE d'une valeur déjà affichée — son traitement fiscal (taxe comprise ou non), son unité, sa devise, ou la période qu'elle couvre — plutôt qu'une demande de données nouvelles ou modifiées (ex. « ces montants sont-ils taxes comprises ? », « quelle période couvre ceci ? », « dans quelle devise ? »).
 - enriched_query : lorsqu'il est lié, réécrivez le NOUVEAU MESSAGE en UNE demande explicite et autonome en anglais qui reprend tout ce que le tour précédent a établi (le sujet, les filtres, le tri et la limite) et applique uniquement le changement que le nouveau message exprime. Lorsqu'il n'est PAS lié, renvoyez le NOUVEAU MESSAGE traduit en anglais sans en changer le sens.
 
 RULES:
 - N'inventez jamais un sujet, une entité, un filtre, une métrique ou une période que ni la conversation ni le nouveau message n'énoncent.
+- Un message qui pose une question complète sur un sujet qui lui est propre n'est PAS lié, même si un tour précédent portait sur le même sujet : n'y reportez jamais la limite, la mesure ou la période précédentes (ex. « quelles sont les plus grosses commandes ? » après « les 10 commandes au montant le plus élevé » reste nouveau).
 - Préservez exactement les contraintes de la demande précédente ; appliquez UNIQUEMENT le changement que le nouveau message exprime.
 - Reprenez ce que la DEMANDE précédente a établi, jamais ce que la RÉPONSE de l'assistant dit d'elle-même. Une réponse qui décrit la portée qu'elle a retenue est un compte rendu, pas une contrainte posée par l'utilisateur.
 - N'ajoutez jamais de clause qui change CE QUE le nouveau message demande de comparer, de mesurer ou de rechercher. Le sujet peut être explicité ; la cible de comparaison ne doit pas être reformulée comme l'ensemble de résultats précédent.

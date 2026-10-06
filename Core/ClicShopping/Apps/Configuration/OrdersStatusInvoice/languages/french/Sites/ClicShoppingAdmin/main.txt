@@ -38,9 +38,9 @@ icon_edit = Edit
 icon_delete = delete
 text_set_default = Default
 
-text_info_delete_info = Souhaitez-vous supprimer ce status ? <br />
+text_info_delete_info = Souhaitez-vous supprimer ce statut ?<br />
 La suppression de ce statut peut avoir un impact sur l'analyse effectuée par l'IA.<br />
-Etes-vous sur de supprimer ce statut ?
+Êtes-vous sûr de vouloir supprimer ce statut ?
 
 text_default = Défaut
 

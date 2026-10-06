@@ -38,9 +38,9 @@ icon_edit = Editer
 icon_delete = Supprimer
 text_set_default = Défaut
 
-text_info_delete_info = Supprimer ce statut ? <br />
+text_info_delete_info = Supprimer ce statut ?<br />
 La suppression de ce statut peut avoir un impact sur l'analyse effectuée par l'IA.<br />
-Etes-vous sur de supprimer ce statut ?
+Êtes-vous sûr de vouloir supprimer ce statut ?
 
 table_heading_orders_status = Statut des commandes
 table_heading_public_status = Statut Public
