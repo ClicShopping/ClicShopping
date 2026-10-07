@@ -224,6 +224,17 @@ class Ecommerce extends AbstractDomainApp
   }
 
   /**
+   * Key columns per metric grain (grain => columns), so the result is never broken down by a
+   * grain the plan did not ask for.
+   *
+   * @return array<string, array<int, string>>
+   */
+  public function getGrainKeys(): array
+  {
+    return MetricCatalog::grainKeys();
+  }
+
+  /**
    * How much sensitive personal data one analytics answer may list, and when the cumulated
    * volume served to one user escalates the trace.
    *

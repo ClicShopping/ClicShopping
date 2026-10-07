@@ -21,7 +21,7 @@ class DeleteAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
 
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-    if (!\is_null($_POST['selected']) && isset($_POST['selected']) && \is_array($_POST['selected'])) {
+    if (isset($_POST['selected']) && \is_array($_POST['selected'])) {
       foreach ($_POST['selected'] as $id) {
         if (in_array((int)$id, PageManagerApp::LOCKED_PAGES_ID, true)) {
           continue;

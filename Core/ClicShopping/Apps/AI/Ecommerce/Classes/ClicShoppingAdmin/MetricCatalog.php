@@ -41,6 +41,17 @@ class MetricCatalog
   }
 
   /**
+   * Key columns of a metric grain: a final GROUP BY on one of them breaks the result down by that
+   * grain, which only a plan dimension, ranking or filter may ask for. Checked after generation.
+   *
+   * @return array<string, array<int, string>> Grain => key columns
+   */
+  public static function grainKeys(): array
+  {
+    return ['product' => ['products_id', 'products_name']];
+  }
+
+  /**
    * Rows no total or average may read: the 'ST' subtotal carries tax on tax-inclusive orders
    * and not on the others, so summing it mixes two conventions. Checked after generation.
    *
@@ -159,7 +170,7 @@ class MetricCatalog
         'type' => MetricType::AMOUNT,
         'definition' => 'text_metric_gross_margin_amount',
         'basis' => 'text_metric_basis_cost_current',
-        'companions' => ['revenue_ht', 'revenue_without_cost'],
+        'companions' => ['revenue_ht', 'revenue_without_cost', 'gross_margin_percent'],
         'weighted_by' => 'revenue_sign',
       ],
       'gross_margin_percent' => [
@@ -167,7 +178,7 @@ class MetricCatalog
         'type' => MetricType::RATE,
         'definition' => 'text_metric_gross_margin_percent',
         'basis' => 'text_metric_basis_cost_current',
-        'companions' => ['revenue_ht', 'revenue_without_cost'],
+        'companions' => ['revenue_ht', 'revenue_without_cost', 'gross_margin_amount'],
         'weighted_by' => 'revenue_sign',
       ],
       'avg_shipping_delay' => [

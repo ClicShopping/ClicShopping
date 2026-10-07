@@ -23,7 +23,7 @@ class UpdateAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-    if (!\is_null($_POST['selected']) && isset($_POST['selected']) && \is_array($_POST['selected'])) {
+    if (isset($_POST['selected']) && \is_array($_POST['selected'])) {
       foreach ($_POST['selected'] as $id) {
         $Qupdate = $this->app->db->prepare('update :table_countries
                                                set status = 0

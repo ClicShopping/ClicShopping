@@ -105,3 +105,4 @@ Examples (translated to English):
 Contrast (these stay analytics):
 - "give me the price of the Samsung S25" → analytics (current internal price)
 - "list products under 500 EUR" → analytics
+- "evolution of our revenue over the past 5 years" / "how did the number of orders change month by month" → analytics (the evolution of a figure the shop itself records - margin, revenue, orders, units sold - is read from its own history, never from Google Trends; this rule covers the PRICE of a named product only)

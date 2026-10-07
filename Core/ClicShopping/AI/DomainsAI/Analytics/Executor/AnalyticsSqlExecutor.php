@@ -13,6 +13,7 @@ use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\AggregateSourceFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\CompareWindowFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\MetricWeightFilter;
+use ClicShopping\AI\DomainsAI\Analytics\Validator\PlanShapeFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\SensitiveOutputFilter;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
@@ -118,7 +119,14 @@ class AnalyticsSqlExecutor
       ($domainApp !== null && method_exists($domainApp, 'getForbiddenAggregateSources')) ? $domainApp->getForbiddenAggregateSources() : []
     );
 
-    if ($weights === [] && $dates === [] && $sources === []) {
+    $breakdowns = PlanShapeFilter::unplannedBreakdowns(
+      $sql,
+      $plan,
+      ($domainApp !== null && method_exists($domainApp, 'getGrainKeys')) ? $domainApp->getGrainKeys() : []
+    );
+    $companions = PlanShapeFilter::missingCompanions($sql, $plan, $catalog);
+
+    if ($weights === [] && $dates === [] && $sources === [] && $breakdowns === [] && $companions === []) {
       return;
     }
 
@@ -144,6 +152,19 @@ class AnalyticsSqlExecutor
     if ($sources !== []) {
       $messages[] = $language->getDef('text_aggregate_source_contract_error', [
         'sources' => implode(', ', $sources),
+      ]);
+    }
+
+    if ($breakdowns !== []) {
+      $messages[] = $language->getDef('text_breakdown_contract_error', [
+        'columns' => implode(', ', $breakdowns),
+        'dimensions' => implode(', ', $plan['dimensions'] ?? []) ?: '-',
+      ]);
+    }
+
+    if ($companions !== []) {
+      $messages[] = $language->getDef('text_companion_contract_error', [
+        'companions' => implode(', ', $companions),
       ]);
     }
 
