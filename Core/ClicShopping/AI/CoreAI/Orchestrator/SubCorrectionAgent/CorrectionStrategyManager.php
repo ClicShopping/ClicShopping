@@ -189,7 +189,8 @@ class CorrectionStrategyManager
     try {
       $prompt = $this->buildReasoningPrompt($errorContext, $errorAnalysis, $similarCases);
 
-      $response = Gpt::getGptResponse($prompt, 500);
+      // The answer restates the whole query: size the cap to it, or a long query comes back truncated.
+      $response = Gpt::getGptResponse($prompt, 500 + intdiv(strlen((string)($errorContext['failed_query'] ?? '')), 2));
 
       $parsed = $this->parseReasoningResponse($response);
 

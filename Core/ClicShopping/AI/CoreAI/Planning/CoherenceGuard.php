@@ -44,6 +44,9 @@ class CoherenceGuard
     /** Dimension values kept in a dropped row's label: enough to name a cell, not to retype the row. */
     private const LABEL_MAX_PARTS = 2;
 
+    /** Column-name tokens of a numeric period key, used to name a row that carries no text. */
+    private const PERIOD_TOKENS = ['year', 'quarter', 'month', 'week', 'day'];
+
     /** Label of a row with no dimension value: the caller renders it, the guard knows no wording. */
     public const UNLABELLED_ROW = '';
     
@@ -104,6 +107,40 @@ class CoherenceGuard
         $share = $totalRevenue > 0.0 ? (int)round($withheldRevenue / $totalRevenue * 100) : null;
 
         return ['rows' => $kept, 'withheld' => $withheld, 'column' => $column, 'share' => $share];
+    }
+
+    /**
+     * Blank the margin of the rows with NO net sale, and NAME them: sold then refunded, a row nets
+     * to 0 revenue and its 0 margin is not a weak margin, it is no margin at all.
+     *
+     * ponytail: exactly 0 only - a negative net (refunds over sales in the row) keeps its margin.
+     *
+     * @param array $rows Result rows of one analytics pane
+     * @return array{rows: array, withheld: array<int, string>} Rows with those margins set to null,
+     *         and the label of each such row (empty when none)
+     */
+    public static function withholdNoNetSaleRows(array $rows): array
+    {
+        $revenueColumn = self::revenueColumn($rows);
+        $withheld = [];
+
+        if ($revenueColumn === null) {
+            return ['rows' => $rows, 'withheld' => []];
+        }
+
+        foreach ($rows as $key => $row) {
+            $margins = is_array($row) ? self::marginColumns($row) : [];
+
+            if ($margins === [] || !is_numeric($row[$revenueColumn] ?? null) || abs((float)$row[$revenueColumn]) >= 0.005
+                || array_all($margins, static fn($col): bool => $row[$col] === null)) {
+                continue;
+            }
+
+            $withheld[] = self::rowLabel($row);
+            $rows[$key] = array_map(static fn($val) => null, array_intersect_key($row, array_flip($margins))) + $row;
+        }
+
+        return ['rows' => $rows, 'withheld' => $withheld];
     }
 
     /**
@@ -223,7 +260,18 @@ class CoherenceGuard
             }
         }
 
-        return $parts === [] ? self::UNLABELLED_ROW : implode(' ', $parts);
+        if ($parts !== []) {
+            return implode(' ', $parts);
+        }
+
+        // A row keyed by numeric period columns alone (year, month) is named by them: 2026-01.
+        foreach (is_array($row) ? $row : [] as $col => $val) {
+            if (is_numeric($val) && self::hasAny(strtolower((string)$col), self::PERIOD_TOKENS)) {
+                $parts[] = $parts === [] ? (string)$val : str_pad((string)$val, 2, '0', STR_PAD_LEFT);
+            }
+        }
+
+        return $parts === [] ? self::UNLABELLED_ROW : implode('-', $parts);
     }
 
     /**

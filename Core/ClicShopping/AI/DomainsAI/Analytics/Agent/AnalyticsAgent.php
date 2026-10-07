@@ -370,7 +370,7 @@ class AnalyticsAgent implements AgentInterface
 
       $this->persistAnalysisPlanContext($response, $isSubQuery);
 
-      $this->planAnnouncer->announce($response, $this->analysisPlan, $this->analysisPlanReserve, $withheld['withheld'], $withheld['share']);
+      $this->planAnnouncer->announce($response, $this->analysisPlan, $this->analysisPlanReserve, $withheld['withheld'], $withheld['share'], $withheld['no_sale']);
 
       if ($includeSQL) {
         $response['sql_query'] = $results['sql_query'] ?? 'N/A';

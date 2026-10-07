@@ -174,6 +174,7 @@ text_coherence_missing_cost_basis = the profit margin came out at 100% because n
 text_coherence_rows_withheld_missing_cost = Note: no margin is shown for {{labels}} - no purchase cost is recorded for the products they cover, so their margin would come out at 100%. Their margin is left blank rather than shown as a figure; their revenue is shown. The other margins are computed on a real cost basis.<br />
 text_coherence_rows_withheld_missing_cost_share = Note: no margin is shown for {{labels}}, which carry {{share}}% of the revenue below - no purchase cost is recorded for the products they cover, so their margin would come out at 100%. Their margin is left blank rather than shown as a figure; their revenue is shown. The other margins are computed on a real cost basis, so the margin covers only the remaining sales.<br />
 text_coherence_row_unlabelled = (not set)
+text_coherence_rows_withheld_no_net_sale = Note: no margin is shown for {{labels}} - their sales were cancelled out by refunds over the period, so there is no net sale to measure a margin on. This is not a low margin: it is no margin at all.<br />
 text_coherence_zero_count_with_activity = the order count came back at zero while there is recorded revenue, so the filter matched nothing
 text_coherence_grain_explosion = the order total was summed across a per-product join, which counts each order once per line, so the figure is inflated
 text_coherence_periods_mismatch = two periods of different lengths were compared as a rate of change, so the variation is not meaningful

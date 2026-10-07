@@ -33,12 +33,14 @@ class AnalysisPlanAnnouncer
    * @param array $unsatisfiable Plan elements that could not be honoured
    * @param array $withheldRows Labels of the rows withheld for a missing cost basis
    * @param int|null $withheldShare Revenue share they carried, null when unknown
+   * @param array $noSaleRows Labels of the rows whose margin was withheld for having no net sale
    * @return void
    */
-  public function announce(array &$response, ?array $plan, array $unsatisfiable, array $withheldRows, ?int $withheldShare): void
+  public function announce(array &$response, ?array $plan, array $unsatisfiable, array $withheldRows, ?int $withheldShare, array $noSaleRows = []): void
   {
     $this->announceAnalysisPlanReserve($response, $unsatisfiable);
     $this->announceWithheldRows($response, $withheldRows, $withheldShare);
+    $this->announceNoSaleRows($response, $noSaleRows);
     $this->announceSensitiveOutput($response);
     $this->announceAnalysisPeriod($response, $plan);
     $this->announceAnalysisScope($response, $plan);
@@ -139,21 +141,30 @@ class AnalysisPlanAnnouncer
    * is computable.
    *
    * @param array $results Result set of the executed query
-   * @return array{results: array, withheld: array, share: ?int} The same set, the margins without a
-   *         cost basis set to null; the withheld labels and their revenue share, to announce
+   * @return array{results: array, withheld: array, share: ?int, no_sale: array} The same set, the
+   *         margins without a cost basis or without a net sale set to null; the labels to announce
    */
   public function withholdRowsWithoutCostBasis(array $results): array
   {
     $rows = $results['results'] ?? null;
 
     if (!is_array($rows) || $rows === []) {
-      return ['results' => $results, 'withheld' => [], 'share' => null];
+      return ['results' => $results, 'withheld' => [], 'share' => null, 'no_sale' => []];
+    }
+
+    $noSale = CoherenceGuard::withholdNoNetSaleRows($rows);
+
+    if ($noSale['withheld'] !== []) {
+      $rows = $noSale['rows'];
+      $results['results'] = array_values($rows);
+      $this->debugLog('COHERENCE: ' . count($noSale['withheld']) . ' row(s) withheld for no net sale ('
+        . implode(', ', $noSale['withheld']) . ')', 'PLAN');
     }
 
     $verdict = CoherenceGuard::withholdMissingCostBasisRows($rows);
 
     if ($verdict['withheld'] === []) {
-      return ['results' => $results, 'withheld' => [], 'share' => null];
+      return ['results' => $results, 'withheld' => [], 'share' => null, 'no_sale' => $noSale['withheld']];
     }
 
     $results['results'] = array_values($verdict['rows']);
@@ -162,7 +173,39 @@ class AnalysisPlanAnnouncer
     $this->debugLog('COHERENCE: ' . count($verdict['withheld']) . ' row(s) withheld for a missing cost basis ('
       . implode(', ', $verdict['withheld']) . ')', 'PLAN');
 
-    return ['results' => $results, 'withheld' => $verdict['withheld'], 'share' => $verdict['share']];
+    return ['results' => $results, 'withheld' => $verdict['withheld'], 'share' => $verdict['share'], 'no_sale' => $noSale['withheld']];
+  }
+
+  /**
+   * Name, at the HEAD of the answer, the rows whose margin went for having no net sale: a reader
+   * who sees a blank margin unexplained reads it as missing data, not as a sale that was undone.
+   *
+   * @param array $response Response being assembled, mutated in place
+   * @param array $noSaleRows Labels of those rows
+   * @return void
+   */
+  private function announceNoSaleRows(array &$response, array $noSaleRows): void
+  {
+    if ($noSaleRows === []) {
+      return;
+    }
+
+    $labels = array_values(array_unique(array_map(
+      static fn(string $label): string => $label === CoherenceGuard::UNLABELLED_ROW
+        ? CLICSHOPPING::getDef('text_coherence_row_unlabelled')
+        : $label,
+      $noSaleRows
+    )));
+    $notice = CLICSHOPPING::getDef('text_coherence_rows_withheld_no_net_sale', ['labels' => implode(', ', $labels)]);
+
+    if ($notice === '' || $notice === 'text_coherence_rows_withheld_no_net_sale') {
+      return;
+    }
+
+    $response['coherence_no_sale_rows'] = $labels;
+    $response['interpretation'] = trim($notice . "\n\n" . (string)($response['interpretation'] ?? ''));
+
+    $this->debugLog('NO NET SALE ROWS announced: ' . $notice, 'PLAN');
   }
 
   /**

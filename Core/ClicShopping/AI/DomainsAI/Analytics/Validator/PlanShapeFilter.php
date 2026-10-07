@@ -18,10 +18,8 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Validator;
 final class PlanShapeFilter
 {
   /**
-   * Grain key columns the top-level GROUP BY reads while the plan asks for no such breakdown.
-   *
-   * ponytail: reads the top-level GROUP BY only — a final SELECT over a CTE already grouped by
-   * the grain, with no GROUP BY of its own, passes; check the final select list if that shows.
+   * Grain key columns the top-level GROUP BY reads, or the top-level select list returns as a bare
+   * column, while the plan asks for no such breakdown.
    *
    * @param string $sql Executable SQL
    * @param array $plan Validated analysis plan
@@ -36,11 +34,7 @@ final class PlanShapeFilter
     }
 
     $dimensions = strtolower(implode(' ', array_filter($plan['dimensions'] ?? [], 'is_string')));
-    $groupBy = self::topLevelGroupBy($sql);
-
-    if ($groupBy === '') {
-      return [];
-    }
+    [$groupBy, $selectList] = self::topLevelClauses($sql);
 
     $violations = [];
 
@@ -52,7 +46,10 @@ final class PlanShapeFilter
       }
 
       foreach ($grainKeys[$grain] ?? [] as $column) {
-        if (preg_match('/\b' . preg_quote($column, '/') . '\b/i', $groupBy) === 1) {
+        $c = preg_quote($column, '/');
+
+        if (preg_match('/\b' . $c . '\b/i', $groupBy) === 1
+          || preg_match('/(?:^|,)\s*(?:\w+\.)?' . $c . '\s*(?:AS\s+\w+\s*)?(?=,|$)/i', $selectList) === 1) {
           $violations[] = $column;
         }
       }
@@ -93,13 +90,20 @@ final class PlanShapeFilter
 
   /**
    * @param string $sql Executable SQL
-   * @return string Text of the top-level GROUP BY clauses, '' when none
+   * @return array{0: string, 1: string} Top-level GROUP BY text and select list text, '' when none
    */
-  private static function topLevelGroupBy(string $sql): string
+  private static function topLevelClauses(string $sql): array
   {
     $parsed = SqlSelectBlocks::parse($sql);
     $masked = $parsed['masked'];
     $out = '';
+    $selectList = '';
+
+    foreach ($parsed['specs'] as $spec) {
+      if ($spec['block'] === 0 && $spec['from'] !== null) {
+        $selectList .= ',' . substr($masked, $spec['select'] + 6, $spec['from'] - $spec['select'] - 6);
+      }
+    }
 
     preg_match_all('/\bGROUP\s+BY\b/i', $masked, $matches, PREG_OFFSET_CAPTURE);
 
@@ -112,6 +116,6 @@ final class PlanShapeFilter
       $out .= ' ' . (preg_split('/\b(ORDER\s+BY|HAVING|LIMIT|WINDOW|UNION)\b|\)/i', $rest)[0] ?? '');
     }
 
-    return $out;
+    return [$out, trim($selectList)];
   }
 }
