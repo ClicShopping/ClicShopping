@@ -1,10 +1,10 @@
-registry_id int(11) auto_increment not_null
-actor_id varchar(100) not_null
-action_type varchar(50) not_null
-confidence decimal(32) not_null
-domain varchar(50) default null
-registered_at timestamp NULL default(current_timestamp)
-updated_at timestamp NULL default(current_timestamp) ON UPDATE current_timestamp()
+registry_id int(11) auto_increment not_null comment(Primary key)
+actor_id varchar(100) not_null comment(Stable actor identity - the class ACTOR_ID constant, or the producer literal of a recorder such as analytics_agent)
+action_type varchar(50) not_null comment(Action type the actor can execute - key of its declared capabilities, or the action it executed)
+confidence decimal(3,2) not_null comment(Declared capability confidence, 0.00-1.00 - 0 when the actor executes without declaring it)
+domain varchar(50) default null comment(Domain the capability is specialised for - NULL when not declared)
+registered_at timestamp NULL default(current_timestamp) comment(First registration of this actor and action type)
+updated_at timestamp NULL default(current_timestamp) ON UPDATE current_timestamp() comment(Last registration or execution - the retention age of the row)
 --
 primary registry_id
 unique unique_actor_action actor_id action_type
@@ -13,3 +13,4 @@ idx_actor_registry_composite action_type confidence DESC domain
 engine innodb
 character_set utf8mb4
 collate utf8mb4_unicode_ci
+comment Actor-critic registry of actors: one row per actor and action type, written by ActorRegistry::registerActor() (declared capabilities) and recordExecution() (any producer that executes). Read by ActorCriticSelector and the actor-critic dashboards; purged by AiDataRetention on updated_at.

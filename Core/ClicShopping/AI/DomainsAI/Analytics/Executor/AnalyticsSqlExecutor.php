@@ -12,6 +12,7 @@ use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\AggregateSourceFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\CompareWindowFilter;
+use ClicShopping\AI\DomainsAI\Analytics\Validator\MetricExpressionFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\MetricWeightFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\PlanShapeFilter;
 use ClicShopping\AI\DomainsAI\Analytics\Validator\SensitiveOutputFilter;
@@ -92,9 +93,9 @@ class AnalyticsSqlExecutor
   }
 
   /**
-   * Deterministic plan-vs-SQL contract: a `weighted_by` metric keeps its weight-1 rows, and a
-   * comparison reads no date outside its windows. Throws: before execution it routes to the
-   * correction path, after a correction it fails.
+   * Deterministic plan-vs-SQL contract: a `weighted_by` metric keeps its weight-1 rows, a metric
+   * carries its declared expression, and a comparison reads no date outside its windows. Throws:
+   * before execution it routes to the correction path, after a correction it fails.
    *
    * @param string $sql SQL about to be executed, or the corrected one
    * @param array|null $plan Validated analysis plan, null when none
@@ -125,8 +126,14 @@ class AnalyticsSqlExecutor
       ($domainApp !== null && method_exists($domainApp, 'getGrainKeys')) ? $domainApp->getGrainKeys() : []
     );
     $companions = PlanShapeFilter::missingCompanions($sql, $plan, $catalog);
+    $expressions = MetricExpressionFilter::violations(
+      $sql,
+      $plan['metrics'] ?? [],
+      $catalog,
+      ($domainApp !== null && method_exists($domainApp, 'getMetricTerms')) ? $domainApp->getMetricTerms() : []
+    );
 
-    if ($weights === [] && $dates === [] && $sources === [] && $breakdowns === [] && $companions === []) {
+    if ($weights === [] && $dates === [] && $sources === [] && $breakdowns === [] && $companions === [] && $expressions === []) {
       return;
     }
 
@@ -165,6 +172,13 @@ class AnalyticsSqlExecutor
     if ($companions !== []) {
       $messages[] = $language->getDef('text_companion_contract_error', [
         'companions' => implode(', ', $companions),
+      ]);
+    }
+
+    foreach ($expressions as $metric => $formula) {
+      $messages[] = $language->getDef('text_expression_contract_error', [
+        'metric' => $metric,
+        'formula' => $formula,
       ]);
     }
 

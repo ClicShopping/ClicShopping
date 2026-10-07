@@ -755,6 +755,7 @@ class Db extends PDO
       throw new \InvalidArgumentException('Invalid table name in schema file: ' . $table . '. Only alphanumeric characters and underscores are allowed.');
     }
 
+    /** @var array<string, mixed> $schema */
     $schema = [
       'name' => $table
     ];
@@ -788,12 +789,13 @@ class Db extends PDO
           continue;
         }
 
-        $details = str_getcsv($row, ' ');
+        // explode, not str_getcsv: a double quote inside a comment must survive.
+        $details = explode(' ', $row);
 
         $field_name = array_shift($details);
 
         if ($is_index === true) {
-          $details = array_values(array_filter($details, fn($v) => $v !== null && $v !== ''));
+          $details = array_values(array_filter($details, fn($v) => $v !== ''));
 
           // Support "unique <index_name> <col> <col...>" while keeping legacy "unique <col> <col...>"
           if ($field_name === 'unique' && count($details) >= 2) {
@@ -803,6 +805,10 @@ class Db extends PDO
             // Support "fulltext <index_name> <col> <col...>"
             $index_name = array_shift($details);
             $schema['index']['fulltext:' . $index_name] = $details;
+          } elseif ($field_name === 'vector' && count($details) >= 2) {
+            // "vector <index_name> <col>" (MariaDB VECTOR index)
+            $index_name = array_shift($details);
+            $schema['index']['vector:' . $index_name] = $details;
           } else {
             $schema['index'][$field_name] = $details;
           }
@@ -906,8 +912,18 @@ class Db extends PDO
            $schema['col'][$field_name]['type'] = $field_type;
         }
 
-        // Parse default() - look for default(value) or default (value) pattern (with optional space)
+        // Both spellings are read (not_null / NOT NULL, default(x) / default x, on_update(x) / ON UPDATE x);
+        // the comment is set aside first so its prose is never rewritten.
         $details_string = implode(' ', $details);
+        $comment_part = '';
+        if (preg_match('/\s*comment\(.+\)$/', $details_string, $comment_match)) {
+          $comment_part = trim($comment_match[0]);
+          $details_string = substr($details_string, 0, -strlen($comment_match[0]));
+        }
+        $details_string = trim(self::normalizeColumnSyntax($details_string) . ' ' . $comment_part);
+        $details = array_values(array_filter(explode(' ', $details_string), fn($v) => $v !== ''));
+
+        // Parse default() - look for default(value) or default (value) pattern (with optional space)
         if (preg_match('/default\s*\(([^)]+)\)/i', $details_string, $type_default)) {
           $default_value = trim($type_default[1]);
           
@@ -976,6 +992,33 @@ class Db extends PDO
   }
 
   /**
+   * Rewrites the SQL spelling of a column's attributes into the schema-file one, so both are read.
+   *
+   * @param string $details Column attributes, without the type and without the comment.
+   * @return string
+   */
+  private static function normalizeColumnSyntax(string $details): string
+  {
+    $details = (string)preg_replace('/,(\s|$)/', '$1', $details);
+    $details = (string)preg_replace('/\bNOT\s+NULL\b/i', 'not_null', $details);
+    $details = (string)preg_replace('/\bON\s+UPDATE\s+(\w+)(?:\(\))?/i', 'on_update($1)', $details);
+    $details = (string)preg_replace('/\b(default|on_update)\s*\(\s*(\w+)\(\)\s*\)/i', '$1($2)', $details);
+    $details = (string)preg_replace("/\bdefault\s+('(?:[^']|'')*'|\"[^\"]*\"|[\w.+-]+)(?:\(\))?/i", 'default($1)', $details);
+    $details = (string)preg_replace('/\b(default|on_update)\(now\)/i', '$1(current_timestamp)', $details);
+
+    // A NOT NULL column cannot default to NULL: the contradictory default is dropped.
+    if (preg_match('/\bnot_null\b/i', $details)) {
+      $details = (string)preg_replace('/\s*\bdefault\(null\)/i', '', $details);
+    }
+
+    return (string)preg_replace_callback(
+      '/\b(?:not_null|unsigned|binary|auto_increment)\b/i',
+      fn($m) => strtolower($m[0]),
+      $details
+    );
+  }
+
+  /**
    * Generates an SQL "CREATE TABLE" statement from the provided schema definition.
    *
    * @param array $schema The table schema, including table name, columns, indexes, and other attributes.
@@ -1018,6 +1061,15 @@ class Db extends PDO
 
       if (isset($fields['unsigned']) && ($fields['unsigned'] === true)) {
         $row .= ' unsigned';
+      }
+
+      // Only these three are read from the leftover tokens; anything else there is not DDL.
+      $other = (string)($fields['other'] ?? '');
+      if (preg_match('/\bCHARACTER\s+SET\s+(\w+)/i', $other, $charset)) {
+        $row .= ' CHARACTER SET ' . $charset[1];
+      }
+      if (preg_match('/\bCOLLATE\s+(\w+)/i', $other, $collate)) {
+        $row .= ' COLLATE ' . $collate[1];
       }
 
       if (isset($fields['default'])) {
@@ -1072,6 +1124,10 @@ class Db extends PDO
         }
       }
 
+      if (preg_match('/\bCHECK\s*(\(.*\))/i', $other, $check)) {
+        $row .= ' CHECK ' . $check[1];
+      }
+
       $rows[] = $row;
     }
 
@@ -1090,6 +1146,8 @@ class Db extends PDO
           $index_name = substr($name, strlen('fulltext:'));
           // Escape index name for SQL injection protection
           $name = 'FULLTEXT KEY ' . self::prepareIdentifier($index_name);
+        } elseif (str_starts_with($name_normalized, 'vector:')) {
+          $name = 'VECTOR KEY ' . self::prepareIdentifier(substr($name, strlen('vector:')));
         } else {
           // Escape index name for SQL injection protection
           $name = 'KEY ' . self::prepareIdentifier($name);

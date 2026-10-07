@@ -488,6 +488,19 @@ class ActorRegistry
             'output_type' => $outputType
         ]);
 
+        // An actor that executes is listed; its declared confidence/domain are never overwritten.
+        $stmt = $this->db->prepare("
+            INSERT INTO {$this->prefix}rag_agent_actor_registry (
+                actor_id, action_type, confidence, domain, registered_at
+            ) VALUES (
+                :actor_id, :action_type, 0, NULL, NOW()
+            ) ON DUPLICATE KEY UPDATE updated_at = NOW()
+        ");
+        $stmt->execute([
+            'actor_id' => $actorId,
+            'action_type' => $actionType
+        ]);
+
         // Clear performance cache for this actor
         unset($this->performanceCache["performance_{$actorId}"]);
     }

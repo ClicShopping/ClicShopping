@@ -235,6 +235,16 @@ class Ecommerce extends AbstractDomainApp
   }
 
   /**
+   * Named row-level expressions the metric expressions of this domain read (term => expression).
+   *
+   * @return array<string, string>
+   */
+  public function getMetricTerms(): array
+  {
+    return MetricCatalog::terms();
+  }
+
+  /**
    * How much sensitive personal data one analytics answer may list, and when the cumulated
    * volume served to one user escalates the trace.
    *

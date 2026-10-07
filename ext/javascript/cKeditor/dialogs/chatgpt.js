@@ -76,6 +76,15 @@ CKEDITOR.dialog.add('chatgptDialog', function (editor) {
               conversationState += message + '\n';
             },
           },
+          {
+            // AI Act: shown in the dialog, never inserted into the edited content
+            type: 'html',
+            id: 'aiDisclaimer',
+            html: '<p class="text-muted small fst-italic"></p>',
+            onLoad: function () {
+              this.getElement().setText(disclaimerGpt);
+            },
+          },
         ],
       },
     ],

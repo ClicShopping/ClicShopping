@@ -7,7 +7,10 @@ selected_modes json not_null comment(Mode selected)
 date_created datetime not_null default CURRENT_TIMESTAMP comment(Date created)
 --
 primary id
-##
 idx_user_id user_id
 idx_intent intent
-idx_timestamp timestamp
+idx_timestamp date_created
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

@@ -626,6 +626,7 @@ column_gross_margin_amount = Marge brute
 column_gross_margin_percent = Taux de marge (%)
 column_gross_margin_pct = Taux de marge (%)
 column_revenue_without_cost = CA sans coût enregistré
+column_net_orders_count = Commandes nettes (remboursements déduits)
 
 status_inactive = ❌ Inactif
 status_active = ✅ Actif

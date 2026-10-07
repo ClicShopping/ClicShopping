@@ -4,7 +4,6 @@ model_technical_name varchar(100) not_null comment(Technical name for the LLPhan
 model_display_name varchar(150) not_null comment(Display name shown in administration - OpenAI GPT-4.1 mini)
 ai_model_description varchar(255) not_null comment(Capabilities description shown in admin and used as RAG schema context - max context, reasoning, local, chat only)
 ai_model_status tinyint(1) not_null default(0) comment(General activation status - 1 active, 0 inactive)
-ai_model_status_llm_recommended tinyint(1) not_null default(0) comment(Recommended LLM - 1 active, 0 inactive)
 ai_model_status_default tinyint(1) not_null default(0) comment(Default model flag - only one model may have this at 1)
 ai_model_status_fallback tinyint(1) not_null default(0) comment(Technical fallback model flag - only one model may have this at 1)
 ai_model_token_input_price decimal(15,4) not_null default(0) comment(Price per input token unit - real tariffs seeded in Phase 3)
@@ -14,6 +13,7 @@ ai_model_ai_capable tinyint(1) not_null default(1) comment(AI pipeline capabilit
 sort_order int(11) unsigned not_null default(0) comment(Display order in administration)
 created_at timestamp NULL default(current_timestamp) comment(Creation date)
 updated_at timestamp NULL default(current_timestamp) on_update(current_timestamp) comment(Last update date)
+ai_model_status_llm_recommended tinyint(1) not_null default(0) comment(Recommended LLM - 1 active, 0 inactive)
 
 --
 primary ai_model_name_id

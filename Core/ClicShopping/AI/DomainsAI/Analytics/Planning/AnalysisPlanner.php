@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
 
 use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\AI\DomainsAI\Analytics\Validator\MetricExpressionFilter;
 use ClicShopping\AI\Infrastructure\Prompt\PromptPlaceholders;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\CLICSHOPPING;
@@ -38,14 +39,19 @@ class AnalysisPlanner
   private int $languageId;
   /** @var array<string, array<int, string>> Companion columns per metric, as the catalogue declares them */
   private array $companions = [];
+  /** @var array<string, string> Declared formula per metric, as the catalogue and its terms give it */
+  private array $formulas = [];
+  /** @var array<int, string> Metrics that are a ratio of sums */
+  private array $ratios = [];
   private bool $definitionsLoaded = false;
 
   /**
    * @param array<string, array{grain: string, type: string, definition: string, companions?: array<int, string>}> $catalog Domain metric catalogue
    * @param int $languageId Language ID, needed to resolve the prompt's dynamic placeholders
    * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
+   * @param array<string, string> $terms Named row-level expressions the catalogue formulas read
    */
-  public function __construct(array $catalog, int $languageId, array $orderSideDimensions = [])
+  public function __construct(array $catalog, int $languageId, array $orderSideDimensions = [], array $terms = [])
   {
     $this->validator = new AnalysisPlanValidator($catalog, $orderSideDimensions);
     $this->languageId = $languageId;
@@ -53,6 +59,16 @@ class AnalysisPlanner
     foreach ($catalog as $name => $metric) {
       if (!empty($metric['companions'])) {
         $this->companions[$name] = $metric['companions'];
+      }
+
+      $formula = MetricExpressionFilter::describe($name, $catalog, $terms);
+
+      if ($formula !== '') {
+        $this->formulas[$name] = $formula;
+      }
+
+      if (($metric['aggregation'] ?? '') === MetricAggregation::RATIO_OF_SUMS) {
+        $this->ratios[] = $name;
       }
     }
   }
@@ -179,7 +195,9 @@ class AnalysisPlanner
         ),
       ]) . ($companions === [] ? '' : ' | ' . $this->getDef('text_analysis_plan_metric_companions', [
         'companions' => implode(', ', $companions),
-      ]));
+      ])) . (isset($this->formulas[$metric['name']]) ? ' | ' . $this->getDef('text_analysis_plan_metric_formula', [
+        'formula' => $this->formulas[$metric['name']],
+      ]) : '') . (in_array($metric['name'], $this->ratios, true) ? ' | ' . $this->getDef('text_analysis_plan_metric_ratio') : '');
     }
 
     $windows = isset($plan['periods']['current']['from'], $plan['periods']['current']['to'])

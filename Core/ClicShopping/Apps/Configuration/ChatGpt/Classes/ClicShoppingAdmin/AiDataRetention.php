@@ -60,6 +60,8 @@ class AiDataRetention
     'rag_agent_audit_log' => 'timestamp',
     'rag_agent_abstentions' => 'abstained_at',
     'rag_memory_retention_log' => 'timestamp_recorded',
+    // updated_at = last registration; a live actor re-registers on its next run.
+    'rag_agent_actor_registry' => 'updated_at',
   ];
 
   /**
@@ -71,7 +73,6 @@ class AiDataRetention
     'rag_agent_reputation' => 'accumulating state — deleting it is what REPUT-1 repaired',
     'rag_agent_reputation_history' => 'feeds the reputation calculation, not a log',
     'rag_agent_reputation_evaluation_outcomes' => 'same calculation input',
-    'rag_agent_actor_registry' => 'registry; its throwaway identities are REPUT-3, not retention',
     'rag_feedback_journal' => 'findings history — the trend over runs is the point, and it carries no user words',
   ];
 

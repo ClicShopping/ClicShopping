@@ -1,7 +1,7 @@
-log_id INT(11) unsigned not_null comment(Primary key - unique log entry identifier)
+log_id INT(11) unsigned not_null auto_increment comment(Primary key - unique log entry identifier)
 product_id INT(11) unsigned not_null comment(Foreign key - references clic_products.products_id)
-language_id INT(11) unsigned not_null comment(Language context for the action)
-action_type ENUM('featured','favorites','specials') not_null comment(Type of marketing action applied to the product)
+language_id INT(11) unsigned default null comment(Language context for the action - NULL when the action is not language-specific (refresh flag))
+action_type ENUM('featured','favorites','specials','system_update_flag') not_null comment(Type of action: marketing action applied to the product, or system_update_flag when an admin edit requests a fresh analysis)
 revocation_token VARCHAR(64) default null comment(Token used to cancel/revoke the action if needed)
 action_code VARCHAR(50) default null comment(Unique code identifying the specific action instance)
 action_subtype ENUM('insert','delete','update') not_null comment(Operation performed: insert=new action, delete=removed, update=modified)
@@ -15,7 +15,7 @@ score_x_at_trigger DECIMAL(5,2) default null comment(X-axis score (e.g. sales pe
 score_y_at_trigger DECIMAL(5,2) default null comment(Y-axis score (e.g. margin/visibility) at the moment the action was triggered)
 quadrant_at_trigger VARCHAR(20) default null comment(Matrix quadrant position of the product when action was triggered (e.g. Q1, Q2, star, dog))
 validation_reason VARCHAR(500) default null comment(Explanation of why the action was validated or skipped)
-input_scores LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null comment(JSON snapshot of all X/Y scores at decision time' CHECK (JSON_VALID(input_scores))
+input_scores LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(input_scores)) comment(JSON snapshot of all X/Y scores at decision time)
 cancel_token VARCHAR(64) default null comment(Token required to cancel a pending or executed action)
 cancel_token_expires DATETIME default null comment(Expiry date/time of the cancel_token - after this date cancellation is no longer possible)
 date_created DATETIME not_null comment(Timestamp when the log entry was created)
@@ -23,7 +23,7 @@ date_cancelled DATETIME default null comment(Timestamp when the action was cance
 score_y_after DECIMAL(5,2) default null comment(Y-axis score measured N days after the action - used to evaluate action effectiveness)
 feedback_collected_at DATETIME default null comment(Timestamp when post-action feedback/measurement was collected)
 conversion_velocity DECIMAL(8,4) default null comment(Speed of conversion change after the action (sales rate delta per day))
-trigger_strategy VARCHAR(50) default 'standard' comment(Strategy used to trigger the action: standard=default rules, or custom strategy name
+trigger_strategy VARCHAR(50) default 'standard' comment(Strategy used to trigger the action: standard=default rules, or custom strategy name)
 
 --
 primary log_id

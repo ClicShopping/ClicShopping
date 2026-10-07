@@ -7,7 +7,11 @@ date_added DATETIME DEFAULT CURRENT_TIMESTAMP comment(Creation timestamp)
 date_modified DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment(Last modification timestamp)
 --
 primary id
-##
 unique idx_product_language products_id language_id
 idx_products_id products_id
 idx_language_id language_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Product FAQ storage - separate from descriptions

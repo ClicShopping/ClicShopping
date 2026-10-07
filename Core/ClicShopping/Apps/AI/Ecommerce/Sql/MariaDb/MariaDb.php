@@ -94,171 +94,164 @@ class MariaDb
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
       CREATE TABLE IF NOT EXISTS :table_categories_embedding (
-        id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each category embedding',
-          content longtext DEFAULT NULL COMMENT 'Category content for embedding generation - description, metadata, etc.',
-          type text DEFAULT NULL COMMENT 'Type of content - description, metadata, full_text',
-          sourcetype text default 'manual' COMMENT 'Source type - manual, automated, imported',
-          sourcename text default 'manual' COMMENT 'Name of the source system or process',
-          embedding vector(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
-          chunknumber int default 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified datetime DEFAULT NULL COMMENT 'Last modification timestamp',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT COMMENT 'FK to categories table - category ID',
-          language_id INT COMMENT 'FK to languages table - language identifier',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - structure varies by type',
-          KEY idx_entity_id (entity_id),
-          KEY idx_language_id (language_id),
-          KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_created_at (created_at)
-      ) COMMENT='Vector embeddings for categories - enables semantic category search and recommendations';
-
-      CREATE VECTOR INDEX embedding_index ON :table_categories_embedding (embedding);
-
-       CREATE TABLE IF NOT EXISTS :table_products_embedding (
-          id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each product embedding',
-          content longtext DEFAULT NULL COMMENT 'Product content for embedding generation - name, description, specifications, etc.',
-          type text DEFAULT NULL COMMENT 'Type of content - description, specifications, reviews, full_text',
-          sourcetype text default 'manual' COMMENT 'Source type - manual, automated, imported',
-          sourcename text default 'manual' COMMENT 'Name of the source system or process',
-          embedding vector(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
-          chunknumber int default 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified datetime DEFAULT NULL COMMENT 'Last modification timestamp',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT COMMENT 'FK to products table - product ID',
-          language_id INT COMMENT 'FK to languages table - language identifier',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include price, category, manufacturer info',
-          KEY idx_entity_id (entity_id),
-          KEY idx_language_id (language_id),
-          KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_created_at (created_at)
-        ) COMMENT='Vector embeddings for products - enables semantic product search and recommendations';
-
-      CREATE VECTOR INDEX embedding_index ON :table_products_embedding (embedding);
-      
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded - original text from category',
+        `type` text DEFAULT NULL COMMENT 'Type of content - description, name, or metadata',
+        `sourcetype` text DEFAULT 'manual' COMMENT 'Source type - manual, auto, or import',
+        `sourcename` text DEFAULT 'manual' COMMENT 'Source name - identifies the origin of the content',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 3072 dimensions - OpenAI text-embedding-3-large format',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting large content - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this embedding',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK to categories table - references the category this embedding represents',
+        `language_id` int(11) NOT NULL COMMENT 'FK to languages table - language of the embedded content',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional metadata about the embedding - structure varies by type' CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_created_at` (`created_at`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_language_id` (`language_id`),
+        KEY `idx_entity_lang` (`entity_id`, `language_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+      CREATE TABLE IF NOT EXISTS :table_products_embedding (
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded - original text from product',
+        `type` text DEFAULT NULL COMMENT 'Type of content - description, name, attributes, or specifications',
+        `sourcetype` text DEFAULT 'manual' COMMENT 'Source type - manual, auto, or import',
+        `sourcename` text DEFAULT 'manual' COMMENT 'Source name - identifies the origin of the content',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 3072 dimensions - OpenAI text-embedding-3-large format',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting large content - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this embedding',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK to products table - references the product this embedding represents',
+        `language_id` int(11) NOT NULL COMMENT 'FK to languages table - language of the embedded content',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include price, category, manufacturer info' CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_created_at` (`created_at`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_language_id` (`language_id`),
+        KEY `idx_entity_lang` (`entity_id`, `language_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
       CREATE TABLE IF NOT EXISTS :table_manufacturers_embedding (
-          id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each manufacturer embedding',
-          content longtext DEFAULT NULL COMMENT 'Manufacturer content for embedding generation - name, description, history, etc.',
-          type TEXT DEFAULT NULL COMMENT 'Type of content - description, history, metadata, full_text',
-          sourcetype TEXT DEFAULT 'manual' COMMENT 'Source type - manual, automated, imported',
-          sourcename TEXT DEFAULT 'manual' COMMENT 'Name of the source system or process',
-          embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
-          chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT COMMENT 'FK to manufacturers table - manufacturer ID',
-          language_id INT COMMENT 'FK to languages table - language identifier',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include product count, supplier info',
-          KEY idx_entity_id (entity_id),
-          KEY idx_language_id (language_id),
-          KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_created_at (created_at)
-      ) COMMENT='Vector embeddings for manufacturers - enables semantic manufacturer search and brand discovery';
-
-      CREATE VECTOR INDEX embedding_index ON :table_manufacturers_embedding (embedding);
-
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded - original text from manufacturer',
+        `type` text DEFAULT NULL COMMENT 'Type of content - description, name, or info',
+        `sourcetype` text DEFAULT 'manual' COMMENT 'Source type - manual, auto, or import',
+        `sourcename` text DEFAULT 'manual' COMMENT 'Source name - identifies the origin of the content',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 3072 dimensions - OpenAI text-embedding-3-large format',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting large content - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this embedding',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK to manufacturers table - references the manufacturer this embedding represents',
+        `language_id` int(11) NOT NULL COMMENT 'FK to languages table - language of the embedded content',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include product count, supplier info' CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_created_at` (`created_at`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_language_id` (`language_id`),
+        KEY `idx_entity_lang` (`entity_id`, `language_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
       CREATE TABLE IF NOT EXISTS :table_suppliers_embedding (
-          id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each supplier embedding',
-          content longtext DEFAULT NULL COMMENT 'Supplier content for embedding generation - name, description, capabilities, etc.',
-          type TEXT DEFAULT NULL COMMENT 'Type of content - description, capabilities, metadata, full_text',
-          sourcetype TEXT DEFAULT 'manual' COMMENT 'Source type - manual, automated, imported',
-          sourcename TEXT DEFAULT 'manual' COMMENT 'Name of the source system or process',
-          embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
-          chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT COMMENT 'FK to suppliers table - supplier ID',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include product count, contact details',
-          KEY idx_entity_id (entity_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_created_at (created_at)
-      ) COMMENT='Vector embeddings for suppliers - enables semantic supplier search and sourcing recommendations';
-
-      CREATE VECTOR INDEX embedding_index ON :table_suppliers_embedding (embedding);
-
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded - original text from supplier',
+        `type` text DEFAULT NULL COMMENT 'Type of content - description, name, address, or contact info',
+        `sourcetype` text DEFAULT 'manual' COMMENT 'Source type - manual, auto, or import',
+        `sourcename` text DEFAULT 'manual' COMMENT 'Source name - identifies the origin of the content',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 3072 dimensions - OpenAI text-embedding-3-large format',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting large content - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this embedding',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK to suppliers table - references the supplier this embedding represents',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include product count, contact details' CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_created_at` (`created_at`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
       CREATE TABLE IF NOT EXISTS :table_reviews_embedding (
-          id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each review embedding',
-          content longtext DEFAULT NULL COMMENT 'Review content for embedding generation - review text, title, etc.',
-          type TEXT DEFAULT NULL COMMENT 'Type of content - review_text, summary, full_text',
-          sourcetype TEXT DEFAULT 'manual' COMMENT 'Source type - manual, automated, imported',
-          sourcename TEXT DEFAULT 'manual' COMMENT 'Name of the source system or process',
-          embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
-          chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT COMMENT 'FK to reviews table - review ID',
-          language_id INT COMMENT 'FK to languages table - language identifier',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include rating, product_id, customer_id',
-          KEY idx_entity_id (entity_id),
-          KEY idx_language_id (language_id),
-          KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_created_at (created_at)
-      ) COMMENT='Vector embeddings for product reviews - enables semantic review search and sentiment analysis';
-
-      CREATE VECTOR INDEX embedding_index ON :table_reviews_embedding (embedding);
-
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded - original review text',
+        `type` text DEFAULT NULL COMMENT 'Type of content - review_text, review_summary, or sentiment',
+        `sourcetype` text DEFAULT 'manual' COMMENT 'Source type - manual, auto, or import',
+        `sourcename` text DEFAULT 'manual' COMMENT 'Source name - identifies the origin of the content',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 3072 dimensions - OpenAI text-embedding-3-large format',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting large content - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this embedding',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK to reviews table - references the review this embedding represents',
+        `language_id` int(11) NOT NULL COMMENT 'FK to languages table - language of the embedded content',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include rating, product_id, customer_id' CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_created_at` (`created_at`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_language_id` (`language_id`),
+        KEY `idx_entity_lang` (`entity_id`, `language_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
       CREATE TABLE IF NOT EXISTS :table_reviews_sentiment_embedding (
-          id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each sentiment embedding',
-          content longtext DEFAULT NULL COMMENT 'Sentiment-analyzed review content with emotional context',
-          type TEXT DEFAULT NULL COMMENT 'Type of content - sentiment_analysis, emotional_context, full_text',
-          sourcetype TEXT DEFAULT 'manual' COMMENT 'Source type - manual, automated, ai_analyzed',
-          sourcename TEXT DEFAULT 'manual' COMMENT 'Name of the source system or AI model',
-          embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for sentiment-aware semantic search',
-          chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT COMMENT 'FK to reviews table - review ID',
-          language_id INT COMMENT 'FK to languages table - language identifier',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include sentiment_score, review_id, product_id',
-          KEY idx_entity_id (entity_id),
-          KEY idx_language_id (language_id),
-          KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_created_at (created_at)
-      ) COMMENT='Vector embeddings for review sentiment analysis - enables emotion-aware search and trend detection';
-
-      CREATE VECTOR INDEX embedding_index ON :table_reviews_sentiment_embedding (embedding);
-
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded - sentiment analysis text from review',
+        `type` text DEFAULT NULL COMMENT 'Type of content - sentiment_positive, sentiment_negative, or sentiment_neutral',
+        `sourcetype` text DEFAULT 'manual' COMMENT 'Source type - manual, auto, or import',
+        `sourcename` text DEFAULT 'manual' COMMENT 'Source name - identifies the origin of the content',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 3072 dimensions - OpenAI text-embedding-3-large format',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting large content - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this embedding',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK to reviews_sentiment table - references the sentiment analysis this embedding represents',
+        `language_id` int(11) NOT NULL COMMENT 'FK to languages table - language of the embedded content',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include sentiment_score, review_id, product_id' CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_created_at` (`created_at`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_language_id` (`language_id`),
+        KEY `idx_entity_lang` (`entity_id`, `language_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
       CREATE TABLE IF NOT EXISTS :table_return_orders_embedding (
-          id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each return order embedding',
-          content longtext DEFAULT NULL COMMENT 'Return order content for embedding generation - reason, description, notes, etc.',
-          type TEXT DEFAULT NULL COMMENT 'Type of content - return_reason, customer_notes, full_text',
-          sourcetype TEXT DEFAULT 'manual' COMMENT 'Source type - manual, automated, imported',
-          sourcename TEXT DEFAULT 'manual' COMMENT 'Name of the source system or process',
-          embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
-          chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT COMMENT 'FK to return_orders table - return order ID',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include order_status, total, customer_id',
-          KEY idx_entity_id (entity_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_created_at (created_at)
-      ) COMMENT='Vector embeddings for return orders - enables semantic return analysis and pattern detection';
-
-      CREATE VECTOR INDEX embedding_index ON :table_return_orders_embedding (embedding);
-
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded - return order details, reason, action',
+        `type` text DEFAULT NULL COMMENT 'Type of content - return_reason, return_action, or customer_notes',
+        `sourcetype` text DEFAULT 'manual' COMMENT 'Source type - manual, auto, or import',
+        `sourcename` text DEFAULT 'manual' COMMENT 'Source name - identifies the origin of the content',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 3072 dimensions - OpenAI text-embedding-3-large format',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting large content - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this embedding',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK to return_orders table - references the return order this embedding represents',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include return_status, order_id, product_id' CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_created_at` (`created_at`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
       CREATE TABLE IF NOT EXISTS :table_orders_embedding (
-          id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each order embedding',
-          content longtext DEFAULT NULL COMMENT 'Order content for embedding generation - items, notes, customer info, etc.',
-          type TEXT DEFAULT NULL COMMENT 'Type of content - order_details, customer_notes, full_text',
-          sourcetype TEXT DEFAULT 'manual' COMMENT 'Source type - manual, automated, imported',
-          sourcename TEXT DEFAULT 'manual' COMMENT 'Name of the source system or process',
-          embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
-          chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT COMMENT 'FK to orders table - order ID',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include order_status, total, customer_id',
-          KEY idx_entity_id (entity_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_created_at (created_at)
-      ) COMMENT='Vector embeddings for orders - enables semantic order search and pattern analysis';
-
-      CREATE VECTOR INDEX embedding_index ON :table_orders_embedding (embedding);
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded - order details, products, customer info',
+        `type` text DEFAULT NULL COMMENT 'Type of content - order_summary, products_list, or customer_notes',
+        `sourcetype` text DEFAULT 'manual' COMMENT 'Source type - manual, auto, or import',
+        `sourcename` text DEFAULT 'manual' COMMENT 'Source name - identifies the origin of the content',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 3072 dimensions - OpenAI text-embedding-3-large format',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting large content - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this embedding',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK to orders table - references the order this embedding represents',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include order_status, total, customer_id' CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_created_at` (`created_at`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
@@ -269,28 +262,28 @@ class MariaDb
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
         CREATE TABLE IF NOT EXISTS :table_rag_agent_order_insights_embedding (
-            id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each insight embedding',
-            content longtext DEFAULT NULL COMMENT 'Insight content for embedding generation - summary, recommendations, analysis',
-            type TEXT DEFAULT NULL COMMENT 'Type of content - summary, recommendations, full_insights',
-            sourcetype TEXT DEFAULT 'automated' COMMENT 'Source type - automated (from LLM), manual, imported',
-            sourcename TEXT DEFAULT 'insights_agent' COMMENT 'Name of the source system or process',
-            embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
-            chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-            date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-            entity_id INT COMMENT 'FK to rag_agent_order_insights table - insight ID',
-            metadata LONGTEXT COMMENT 'JSON metadata for the embedding',
-            language_id INT DEFAULT NULL COMMENT 'Language ID from languages table',
-            KEY idx_entity_id (entity_id),
-            KEY idx_language_id (language_id),
-            KEY idx_date_modified (date_modified),
-            KEY idx_created_at (created_at)
-        ) COMMENT='Vector embeddings for order insights - enables semantic insight search and pattern analysis across orders'
+          `id` bigint(20) unsigned NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each insight embedding',
+          `content` longtext DEFAULT NULL COMMENT 'Insight content for embedding generation - summary, recommendations, analysis',
+          `type` text DEFAULT NULL COMMENT 'Type of content - summary, recommendations, full_insights',
+          `sourcetype` text DEFAULT 'automated' COMMENT 'Source type - automated (from LLM), manual, imported',
+          `sourcename` text DEFAULT 'insights_agent' COMMENT 'Name of the source system or process',
+          `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
+          `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
+          `date_modified` datetime DEFAULT NULL COMMENT 'Last modification timestamp',
+          `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+          `entity_id` int(11) DEFAULT NULL COMMENT 'FK to rag_agent_order_insights table - insight ID',
+          `metadata` longtext DEFAULT NULL COMMENT 'JSON metadata for the embedding',
+          `language_id` int(11) DEFAULT NULL COMMENT 'Language ID from languages table',
+          PRIMARY KEY (`id`),
+          KEY `idx_entity_id` (`entity_id`),
+          KEY `idx_language_id` (`language_id`),
+          KEY `idx_date_modified` (`date_modified`),
+          KEY `idx_created_at` (`created_at`),
+          VECTOR KEY `embedding_index` (`embedding`)
+        ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci COMMENT='Vector embeddings for order insights - enables semantic insight search and pattern analysis across orders';
         EOD;
       $CLICSHOPPING_Db->exec($sql);
 
-      // Create vector index
-      $CLICSHOPPING_Db->exec('CREATE VECTOR INDEX embedding_index ON :table_rag_agent_order_insights_embedding (embedding)');
     }
 
     // Create products_seo_embedding table
@@ -298,27 +291,27 @@ class MariaDb
 
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
-    CREATE TABLE IF NOT EXISTS :table_products_seo_embedding (
-     id              INT(11)       NOT NULL AUTO_INCREMENT COMMENT 'Primary key - unique identifier for each SEO embedding chunk',
-     content         TEXT          COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Text content embedded - serialized SEO report data (title, meta, H1-H3, keywords, scores)',
-     type            TEXT          COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Type of SEO content: initial_report | optimized_report | audit_summary | suggestion',
-     sourcetype      TEXT          COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Trigger origin: manual | hook | cron',
-     sourcename      TEXT          COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Source identifier: SeoReport | AgentSeo | AgentAuditSeo | AgentSerp',
-     embedding       VECTOR(3072)  NOT NULL COMMENT 'Vector embedding 3072 dimensions - OpenAI text-embedding-3-large',
-     chunknumber     INT(11)       DEFAULT 128 COMMENT 'Chunk number for large reports - default 128 tokens per chunk',
-     date_modified   DATETIME      DEFAULT NULL COMMENT 'Timestamp of last modification',
-     created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-     entity_id       INT(11)       NOT NULL COMMENT 'FK - references the entity (category, product, cms page)',
-      entity_type     VARCHAR(50)   COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Entity type: category | product | cms',
-     language_id     INT(11)       NOT NULL COMMENT 'FK to languages table',
-     metadata        LONGTEXT      COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'JSON: url, page_type, seo_score_before, seo_score_after, status, report_raw, suggestions, audit_result, serp_data',
-      PRIMARY KEY (id),
-      KEY idx_entity_lang    (entity_id,language_id),
-      KEY idx_type           (type(50)),
-      KEY idx_sourcetype     (sourcetype(50)),
-      KEY idx_date_modified  (date_modified),
-      KEY idx_created_at     (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      CREATE TABLE IF NOT EXISTS :table_products_seo_embedding (
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each SEO embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content embedded - serialized SEO report data (title, meta, H1-H3, keywords, scores)',
+        `type` text DEFAULT NULL COMMENT 'Type of SEO content: initial_report | optimized_report | audit_summary | suggestion',
+        `sourcetype` text DEFAULT NULL COMMENT 'Trigger origin: manual | hook | cron',
+        `sourcename` text DEFAULT NULL COMMENT 'Source identifier: SeoReport | AgentSeo | AgentAuditSeo | AgentSerp',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding 3072 dimensions - OpenAI text-embedding-3-large',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for large reports - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK - references the entity (category, product, cms page)',
+        `entity_type` varchar(50) DEFAULT NULL COMMENT 'Entity type: category | product | cms',
+        `language_id` int(11) NOT NULL COMMENT 'FK to languages table',
+        `metadata` longtext DEFAULT NULL COMMENT 'JSON: url, page_type, seo_score_before, seo_score_after, status, report_raw, suggestions, audit_result, serp_data',
+        PRIMARY KEY (`id`),
+        KEY `idx_entity_lang` (`entity_id`, `language_id`),
+        KEY `idx_type` (`type`(50)),
+        KEY `idx_sourcetype` (`sourcetype`(50)),
+        KEY `idx_date_modified` (`date_modified`),
+        KEY `idx_created_at` (`created_at`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
@@ -328,27 +321,27 @@ class MariaDb
 
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
-    CREATE TABLE IF NOT EXISTS :table_categories_seo_embedding (
-      id              INT(11)       NOT NULL AUTO_INCREMENT COMMENT 'Primary key - unique identifier for each SEO embedding chunk',
-      content         TEXT          COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Text content embedded - serialized SEO report data (title, meta, H1-H3, keywords, scores)',
-      type            TEXT          COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Type of SEO content: initial_report | optimized_report | audit_summary | suggestion',
-      sourcetype      TEXT          COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Trigger origin: manual | hook | cron',
-      sourcename      TEXT          COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Source identifier: SeoReport | AgentSeo | AgentAuditSeo | AgentSerp',
-      embedding       VECTOR(3072)  NOT NULL COMMENT 'Vector embedding 3072 dimensions - OpenAI text-embedding-3-large',
-      chunknumber     INT(11)       DEFAULT 128 COMMENT 'Chunk number for large reports - default 128 tokens per chunk',
-      date_modified   DATETIME      DEFAULT NULL COMMENT 'Timestamp of last modification',
-      created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-      entity_id       INT(11)       NOT NULL COMMENT 'FK - references the entity (category, product, cms page)',
-        entity_type     VARCHAR(50)   COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Entity type: category | product | cms',
-      language_id     INT(11)       NOT NULL COMMENT 'FK to languages table',
-      metadata        LONGTEXT      COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'JSON: url, page_type, seo_score_before, seo_score_after, status, report_raw, suggestions, audit_result, serp_data',
-      PRIMARY KEY (id),
-      KEY idx_entity_lang    (entity_id, language_id),
-      KEY idx_type           (type(50)),
-      KEY idx_sourcetype     (sourcetype(50)),
-      KEY idx_date_modified  (date_modified),
-      KEY idx_created_at     (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      CREATE TABLE IF NOT EXISTS :table_categories_seo_embedding (
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each SEO embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content embedded - serialized SEO report data (title, meta, H1-H3, keywords, scores)',
+        `type` text DEFAULT NULL COMMENT 'Type of SEO content: initial_report | optimized_report | audit_summary | suggestion',
+        `sourcetype` text DEFAULT NULL COMMENT 'Trigger origin: manual | hook | cron',
+        `sourcename` text DEFAULT NULL COMMENT 'Source identifier: SeoReport | AgentSeo | AgentAuditSeo | AgentSerp',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding 3072 dimensions - OpenAI text-embedding-3-large',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for large reports - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK - references the entity (category, product, cms page)',
+        `entity_type` varchar(50) DEFAULT NULL COMMENT 'Entity type: category | product | cms',
+        `language_id` int(11) NOT NULL COMMENT 'FK to languages table',
+        `metadata` longtext DEFAULT NULL COMMENT 'JSON: url, page_type, seo_score_before, seo_score_after, status, report_raw, suggestions, audit_result, serp_data',
+        PRIMARY KEY (`id`),
+        KEY `idx_entity_lang` (`entity_id`, `language_id`),
+        KEY `idx_type` (`type`(50)),
+        KEY `idx_sourcetype` (`sourcetype`(50)),
+        KEY `idx_date_modified` (`date_modified`),
+        KEY `idx_created_at` (`created_at`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
@@ -358,30 +351,28 @@ class MariaDb
 
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
-        CREATE TABLE IF NOT EXISTS :table_products_cockpit_ai_embedding  (
-          id INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary key - unique identifier for each CockpitAI analysis embedding',
-          content TEXT COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Generated from metadata using normalized template v1.0',
-          type ENUM('score_product','score_commercial','analysis','action_plan','history') DEFAULT NULL COMMENT 'Type of analysis content',
-          sourcetype ENUM('manual','auto') DEFAULT NULL COMMENT 'Trigger origin: manual (merchant) | auto (MCP/hook - future)',
-          sourcename TEXT COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Source identifier: merchant username | system component',
-          chunknumber int(11) DEFAULT 128 COMMENT 'Chunk size for embedding generation',
-          embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding 3072 dimensions - OpenAI text-embedding-3-large',
-          date_modified DATETIME DEFAULT NULL COMMENT 'Timestamp of analysis generation',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT(11) NOT NULL COMMENT 'FK to products table - product ID',
-          entity_type varchar(50) DEFAULT NULL COMMENT 'Entity type (product, category, etc.)',
-          language_id INT(11) NOT NULL COMMENT 'FK to languages table - language identifier',
-          metadata LONGTEXT COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'JSON structure with versioned analysis details (scores, factors, actions, history)',
-          PRIMARY KEY (id),
-          KEY idx_entity_id (entity_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_entity_date (entity_id, date_modified),
-          KEY idx_created_at (created_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cockpit IA strategic product analysis embeddings - dual-axis scoring with RAG context'
+        CREATE TABLE IF NOT EXISTS :table_products_cockpit_ai_embedding (
+          `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each CockpitAI analysis embedding',
+          `content` text DEFAULT NULL COMMENT 'Generated from metadata using normalized template v1.0',
+          `type` enum('score_product','score_commercial','analysis','action_plan','history') DEFAULT NULL COMMENT 'Type of analysis content',
+          `sourcetype` enum('manual','auto') DEFAULT NULL COMMENT 'Trigger origin: manual (merchant) | auto (MCP/hook - future)',
+          `sourcename` text DEFAULT NULL COMMENT 'Source identifier: merchant username | system component',
+          `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk size for embedding generation',
+          `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding 3072 dimensions - OpenAI text-embedding-3-large',
+          `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of analysis generation',
+          `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+          `entity_id` int(11) NOT NULL COMMENT 'FK to products table - product ID',
+          `entity_type` varchar(50) DEFAULT NULL COMMENT 'Entity type (product, category, etc.)',
+          `language_id` int(11) NOT NULL COMMENT 'FK to languages table - language identifier',
+          `metadata` longtext DEFAULT NULL COMMENT 'JSON structure with versioned analysis details (scores, factors, actions, history)',
+          PRIMARY KEY (`id`),
+          KEY `idx_entity_id` (`entity_id`),
+          KEY `idx_date_modified` (`date_modified`),
+          KEY `idx_entity_date` (`entity_id`, `date_modified`),
+          KEY `idx_created_at` (`created_at`)
+        ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT='Cockpit IA strategic product analysis embeddings - dual-axis scoring with RAG context';
         EOD;
       $CLICSHOPPING_Db->exec($sql);
-
-      $CLICSHOPPING_Db->exec('CREATE VECTOR INDEX embedding_index ON :table_products_cockpit_ai_embedding  (embedding)');
     }
 
     // Create products_cockpit_ai_tracking_impressions_summary table view
@@ -417,29 +408,71 @@ class MariaDb
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
       CREATE TABLE IF NOT EXISTS :table_products_description_faq_embedding (
-          id INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary key - unique identifier for each embedding chunk',
-          content TEXT COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Text content that was embedded - for reference and debugging',
-          type TEXT COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Content type - always "faq" for this table',
-          sourcetype TEXT COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Source type - origin of content (e.g., "manual", "generated", "cron")',
-          sourcename TEXT COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Source name - specific source identifier (e.g., "seo_generator", "cron_job", "manual_edit")',
-          embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding - 3072 dimensions for OpenAI text-embedding-3-large or VoyageAI',
-          chunknumber INT(11) DEFAULT 128 COMMENT 'Chunk size in tokens - default 128 tokens per chunk',
-          date_modified DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last modification timestamp - automatically updated',
-          entity_id INT(11) NOT NULL COMMENT 'Reference to products_id - links to products table',
-          language_id INT(11) NOT NULL COMMENT 'Reference to languages_id - links to languages table',
-          metadata LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'JSON metadata - product info, tags, source details (e.g., {"product_id":123,"type":"faq","tags":["shipping","returns"],"source":"seo_generator"})' CHECK (json_valid(metadata)),
-          taxonomy LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Structured taxonomy metadata - generated by SemanticAgent::createTaxonomy() - separate from embedding content' CHECK (json_valid(taxonomy)),
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - automatically set on insert',
-          PRIMARY KEY (id),
-          KEY idx_id (id) COMMENT 'Fast lookup by primary key',
-          KEY idx_entity_id (entity_id) COMMENT 'Fast lookup by product ID for product-based queries',
-          KEY idx_language_id (language_id) COMMENT 'Fast lookup by language ID for language-based queries'
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-            
-      CREATE VECTOR INDEX embedding_index ON :table_products_description_faq_embedding (embedding);
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded',
+        `type` text DEFAULT NULL COMMENT 'Content type - always "faq"',
+        `sourcetype` text DEFAULT NULL COMMENT 'Source type',
+        `sourcename` text DEFAULT NULL COMMENT 'Source name',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding - 3072 dimensions',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk size in tokens',
+        `date_modified` datetime DEFAULT current_timestamp ON UPDATE current_timestamp COMMENT 'Last modification timestamp',
+        `entity_id` int(11) NOT NULL COMMENT 'Reference to products_id',
+        `language_id` int(11) NOT NULL COMMENT 'Reference to languages_id',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'JSON metadata' CHECK (json_valid(`metadata`)),
+        `taxonomy` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Structured taxonomy metadata' CHECK (json_valid(`taxonomy`)),
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp',
+        PRIMARY KEY (`id`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_language_id` (`language_id`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
     EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
+
+  //--------------------------------------
+  // CockpitAI action log (canonical form: Schema/MariaDb/products_cockpit_ai_action_log.txt)
+  //--------------------------------------
+    $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_products_cockpit_ai_action_log"');
+
+    if ($Qcheck->fetch() === false) {
+      $sql = <<<EOD
+        CREATE TABLE IF NOT EXISTS :table_products_cockpit_ai_action_log (
+          `log_id` INT(11) unsigned NOT NULL auto_increment COMMENT 'Primary key - unique log entry identifier',
+          `product_id` INT(11) unsigned NOT NULL COMMENT 'Foreign key - references clic_products.products_id',
+          `language_id` INT(11) unsigned DEFAULT null COMMENT 'Language context for the action - NULL when the action is not language-specific (refresh flag)',
+          `action_type` ENUM('featured','favorites','specials','system_update_flag') NOT NULL COMMENT 'Type of action: marketing action applied to the product, or system_update_flag when an admin edit requests a fresh analysis',
+          `revocation_token` VARCHAR(64) DEFAULT null COMMENT 'Token used to cancel/revoke the action if needed',
+          `action_code` VARCHAR(50) DEFAULT null COMMENT 'Unique code identifying the specific action instance',
+          `action_subtype` ENUM('insert','delete','update') NOT NULL COMMENT 'Operation performed: insert=new action, delete=removed, update=modified',
+          `special_price` DECIMAL(15,4) DEFAULT null COMMENT 'Promotional price applied to the product (used when action_type=specials)',
+          `margin_rate_applied` DECIMAL(5,2) DEFAULT null COMMENT 'Margin rate (%) used to calculate the special price',
+          `promotion_step` TINYINT(3) unsigned DEFAULT null COMMENT 'Step number in a multi-stage promotion sequence',
+          `status` ENUM('executed','skipped','pending_admin','no_action','failed') DEFAULT 'no_action' COMMENT 'Execution status: executed=done, skipped=conditions not met, pending_admin=awaiting approval, no_action=nothing done, failed=error',
+          `triggered_by` VARCHAR(50) DEFAULT 'auto' COMMENT 'Who triggered the action: auto=system, or user identifier',
+          `user_id` INT(11) unsigned DEFAULT null COMMENT 'Foreign key - admin user who manually triggered the action (NULL if auto)',
+          `score_x_at_trigger` DECIMAL(5,2) DEFAULT null COMMENT 'X-axis score (e.g. sales performance) at the moment the action was triggered',
+          `score_y_at_trigger` DECIMAL(5,2) DEFAULT null COMMENT 'Y-axis score (e.g. margin/visibility) at the moment the action was triggered',
+          `quadrant_at_trigger` VARCHAR(20) DEFAULT null COMMENT 'Matrix quadrant position of the product when action was triggered (e.g. Q1, Q2, star, dog)',
+          `validation_reason` VARCHAR(500) DEFAULT null COMMENT 'Explanation of why the action was validated or skipped',
+          `input_scores` LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT null COMMENT 'JSON snapshot of all X/Y scores at decision time' CHECK (json_valid(input_scores)),
+          `cancel_token` VARCHAR(64) DEFAULT null COMMENT 'Token required to cancel a pending or executed action',
+          `cancel_token_expires` DATETIME DEFAULT null COMMENT 'Expiry date/time of the cancel_token - after this date cancellation is no longer possible',
+          `date_created` DATETIME NOT NULL COMMENT 'Timestamp when the log entry was created',
+          `date_cancelled` DATETIME DEFAULT null COMMENT 'Timestamp when the action was cancelled (NULL if not cancelled)',
+          `score_y_after` DECIMAL(5,2) DEFAULT null COMMENT 'Y-axis score measured N days after the action - used to evaluate action effectiveness',
+          `feedback_collected_at` DATETIME DEFAULT null COMMENT 'Timestamp when post-action feedback/measurement was collected',
+          `conversion_velocity` DECIMAL(8,4) DEFAULT null COMMENT 'Speed of conversion change after the action (sales rate delta per day)',
+          `trigger_strategy` VARCHAR(50) DEFAULT 'standard' COMMENT 'Strategy used to trigger the action: standard=default rules, or custom strategy name',
+          PRIMARY KEY (`log_id`),
+          KEY `idx_cockpit_ia_action_products` (`product_id`),
+          KEY `idx_revocation_token` (`revocation_token`),
+          KEY `idx_action_type_status` (`action_type`, `status`)
+        ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+      EOD;
+      $CLICSHOPPING_Db->exec($sql);
+    }
   }
+  
 }

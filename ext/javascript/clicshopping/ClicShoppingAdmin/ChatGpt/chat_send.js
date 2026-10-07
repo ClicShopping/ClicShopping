@@ -428,6 +428,12 @@ document.addEventListener("DOMContentLoaded", function() {
           messageDiv.appendChild(metricsDiv);
         }
 
+        // AI Act: every AI answer carries the verification notice, whatever the mode
+        const disclaimerDiv = document.createElement("div");
+        disclaimerDiv.className = "message-ai-disclaimer text-muted small fst-italic mt-1";
+        disclaimerDiv.textContent = t('ai_disclaimer');
+        messageDiv.appendChild(disclaimerDiv);
+
         chatOutput.appendChild(messageDiv);
 
         // Scroll vers le bas

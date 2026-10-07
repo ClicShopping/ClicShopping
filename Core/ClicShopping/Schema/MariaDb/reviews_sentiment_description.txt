@@ -1,7 +1,7 @@
 id int not_null comment(FK to reviews_sentiment table - sentiment analysis identifier)
 language_id int not_null comment(FK to languages table - language for this translation)
 description text not_null comment(Translated description or summary of the sentiment analysis)
-critic text null comment (Agent critic result)
+critic text null comment(Agent critic result)
 critic_verdict varchar(30) null comment(reliable | partial | unreliable | ...)
 analysis_json text null comment(Structured LLM sentiment output - themes, quotes, strengths, issues, summary)
 

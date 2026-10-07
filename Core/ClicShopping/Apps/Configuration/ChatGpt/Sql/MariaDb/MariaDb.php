@@ -9,7 +9,6 @@
 namespace ClicShopping\Apps\Configuration\ChatGpt\Sql\MariaDb;
 
 use ClicShopping\OM\Cache;
-use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
 class MariaDb
@@ -97,26 +96,26 @@ class MariaDb
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
       CREATE TABLE IF NOT EXISTS :table_pages_manager_embedding (
-          id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each page embedding',
-          content longtext DEFAULT NULL COMMENT 'Page content for embedding generation - title, body, metadata, etc.',
-          type TEXT DEFAULT NULL COMMENT 'Type of content - page_content, metadata, full_text',
-          sourcetype TEXT DEFAULT 'manual' COMMENT 'Source type - manual, automated, imported',
-          sourcename TEXT DEFAULT 'manual' COMMENT 'Name of the source system or process',
-          embedding VECTOR(3072) NOT NULL COMMENT 'Vector embedding (3072 dimensions) for semantic search',
-          chunknumber INT DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified DATETIME DEFAULT NULL COMMENT 'Last modification timestamp',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-          entity_id INT COMMENT 'FK to pages_manager table - page ID',
-          language_id INT COMMENT 'FK to languages table - language identifier',
-          metadata longtext DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include page_type, status, url',
-          KEY idx_entity_id (entity_id),
-          KEY idx_language_id (language_id),
-          KEY idx_entity_lang (entity_id, language_id),
-          KEY idx_date_modified (date_modified),
-          KEY idx_created_at (created_at)
-      ) COMMENT='Vector embeddings for CMS pages - enables semantic page search and content discovery';
-
-      CREATE VECTOR INDEX embedding_index ON :table_pages_manager_embedding (embedding);
+        `id` int(11) NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each embedding chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content that was embedded - page content, title, description',
+        `type` text DEFAULT NULL COMMENT 'Type of content - page_content, title, meta_description, or keywords',
+        `sourcetype` text DEFAULT 'manual' COMMENT 'Source type - manual, auto, or import',
+        `sourcename` text DEFAULT 'manual' COMMENT 'Source name - identifies the origin of the content',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 3072 dimensions - OpenAI text-embedding-3-large format',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting large content - default 128 tokens per chunk',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this embedding',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) NOT NULL COMMENT 'FK to pages_manager table - references the page this embedding represents',
+        `language_id` int(11) NOT NULL COMMENT 'FK to languages table - language of the embedded content',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional metadata about the embedding - may include page_type, status, url' CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_created_at` (`created_at`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_language_id` (`language_id`),
+        KEY `idx_entity_lang` (`entity_id`, `language_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
     EOD;
       $CLICSHOPPING_Db->exec($sql);
@@ -130,32 +129,32 @@ class MariaDb
 
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
-     CREATE TABLE :table_rag_correction_patterns_embedding (
-        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary key - auto-incremented unique identifier',
-        content text DEFAULT NULL COMMENT 'Correction pattern content for embedding generation',
-        type text DEFAULT NULL COMMENT 'Type of correction pattern',
-        sourcetype text DEFAULT NULL COMMENT 'Source type of the correction pattern',
-        sourcename text DEFAULT NULL COMMENT 'Name of the source system or module',
-        embedding vector(3072) NOT NULL COMMENT 'Embedding vector for semantic search',
-        metadata JSON NOT NULL DEFAULT '{}' COMMENT 'Additional metadata in JSON format',
-        chunknumber int(11) DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-        date_modified datetime DEFAULT NULL COMMENT 'Last modification timestamp',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-        entity_id int(11) NULL DEFAULT 0 COMMENT 'Entity ID (0 = no specific entity, NULL = unknown)',
-        entity_type VARCHAR(50) NULL COMMENT 'Type of entity (product, category, page, etc.)',
-        language_id int(11) NOT NULL COMMENT 'Language identifier for the correction pattern',
-        PRIMARY KEY (id),
-        UNIQUE KEY id (id),
-        VECTOR INDEX embedding_index (embedding),
-        KEY idx_entity_id (entity_id),
-        KEY idx_language_id (language_id),
-        KEY idx_user_id (metadata(100)),
-        KEY idx_entity (entity_id, entity_type),
-        KEY idx_entity_language (entity_id, language_id),
-        KEY idx_entity_type_language (entity_type, language_id, entity_id),
-        KEY idx_date_modified (date_modified),
-        KEY idx_created_at (created_at)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      CREATE TABLE IF NOT EXISTS :table_rag_correction_patterns_embedding (
+        `id` bigint(20) unsigned NOT NULL auto_increment COMMENT 'Primary key - auto-incremented unique identifier',
+        `content` text DEFAULT NULL COMMENT 'Correction pattern content for embedding generation',
+        `type` text DEFAULT NULL COMMENT 'Type of correction pattern',
+        `sourcetype` text DEFAULT NULL COMMENT 'Source type of the correction pattern',
+        `sourcename` text DEFAULT NULL COMMENT 'Name of the source system or module',
+        `embedding` vector(3072) NOT NULL COMMENT 'Embedding vector for semantic search',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '{}' NOT NULL COMMENT 'Additional metadata in JSON format' CHECK (json_valid(`metadata`)),
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Last modification timestamp',
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `entity_id` int(11) DEFAULT 0 COMMENT 'Entity ID (0 = no specific entity, NULL = unknown)',
+        `entity_type` varchar(50) DEFAULT NULL COMMENT 'Type of entity (product, category, page, etc.)',
+        `language_id` int(11) NOT NULL COMMENT 'Language identifier for the correction pattern',
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `id` (`id`),
+        KEY `idx_entity_id` (`entity_id`),
+        KEY `idx_language_id` (`language_id`),
+        KEY `idx_user_id` (`metadata`(100)),
+        KEY `idx_entity` (`entity_id`, `entity_type`),
+        KEY `idx_entity_language` (`entity_id`, `language_id`),
+        KEY `idx_entity_type_language` (`entity_type`, `language_id`, `entity_id`),
+        KEY `idx_date_modified` (`date_modified`),
+        KEY `idx_created_at` (`created_at`),
+        VECTOR KEY `embedding` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
      EOD;
 
       $CLICSHOPPING_Db->exec($sql);
@@ -166,36 +165,36 @@ class MariaDb
 
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
-        CREATE TABLE :table_rag_conversation_memory_embedding (
-          id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary key - auto-incremented unique identifier',
-          content text DEFAULT NULL COMMENT 'Conversation content for embedding generation',
-          type text DEFAULT NULL COMMENT 'Type of content (conversation, message, etc.)',
-          sourcetype text DEFAULT NULL COMMENT 'Source type of the conversation',
-          sourcename text DEFAULT NULL COMMENT 'Name of the source system or module',
-          embedding vector(3072) NOT NULL COMMENT 'Embedding vector (NULL if not yet generated)',
-          user_message TEXT COMMENT 'User message from conversation',
-          assistant_response TEXT COMMENT 'Assistant response from conversation',
-          chunknumber int(11) DEFAULT 128 COMMENT 'Chunk size used for embedding generation',
-          date_modified datetime DEFAULT NULL COMMENT 'Last modification timestamp',
-          entity_id int(11) NULL DEFAULT NULL COMMENT 'Entity ID (nullable for general conversations)',
-          entity_type VARCHAR(50) NULL DEFAULT NULL COMMENT 'Entity type (nullable for general conversations)',
-          language_id int(11) NOT NULL COMMENT 'Language identifier for the conversation',
-          user_id VARCHAR(255) DEFAULT NULL COMMENT 'User ID for fast filtering',
-          interaction_id VARCHAR(255) DEFAULT NULL COMMENT 'Interaction ID to prevent duplicates',
-          metadata JSON NOT NULL DEFAULT '{}' COMMENT 'Additional metadata in JSON format',
-          created_at timestamp NULL DEFAULT current_timestamp() COMMENT 'Creation timestamp',
-          PRIMARY KEY (id),
-          UNIQUE KEY id (id),
-          VECTOR INDEX embedding_index (embedding),
-          KEY idx_user_id (user_id),
-          KEY idx_interaction_id (interaction_id),
-          KEY idx_language_id (language_id),
-          KEY idx_user_lang_date (user_id, language_id, date_modified),
-          KEY idx_date_modified (date_modified),
-          KEY idx_entity (entity_id, entity_type),
-          KEY idx_interaction_user (interaction_id, user_id),
-          KEY idx_created_at (created_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      CREATE TABLE IF NOT EXISTS :table_rag_conversation_memory_embedding (
+        `id` bigint(20) unsigned NOT NULL auto_increment COMMENT 'Primary key - unique identifier for each conversation memory chunk',
+        `content` text DEFAULT NULL COMMENT 'Text content of the conversation - user queries and system responses',
+        `type` text DEFAULT NULL COMMENT 'Type of memory - user_query, system_response, or context',
+        `sourcetype` text DEFAULT NULL COMMENT 'Source type - chat, api, or system',
+        `sourcename` text DEFAULT NULL COMMENT 'Source name - identifies the conversation session or user',
+        `embedding` vector(3072) NOT NULL COMMENT 'Vector embedding with 1536 dimensions - OpenAI text-embedding-ada-002 format for semantic search',
+        `user_message` text DEFAULT NULL COMMENT 'User message from conversation',
+        `assistant_response` text DEFAULT NULL COMMENT 'Assistant response from conversation',
+        `chunknumber` int(11) DEFAULT 128 COMMENT 'Chunk number for splitting long conversations - sequential numbering',
+        `date_modified` datetime DEFAULT NULL COMMENT 'Timestamp of last modification to this memory entry',
+        `entity_id` int(11) DEFAULT NULL COMMENT 'FK to conversation or user identifier - references the conversation session',
+        `entity_type` varchar(50) DEFAULT NULL COMMENT 'Entity type (nullable for general conversations)',
+        `language_id` int(11) NOT NULL COMMENT 'FK to languages table - language of the conversation content',
+        `user_id` varchar(255) DEFAULT NULL COMMENT 'User ID for fast filtering',
+        `interaction_id` varchar(255) DEFAULT NULL COMMENT 'Interaction ID to prevent duplicates',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '{}' NOT NULL COMMENT 'Additional metadata in JSON format' CHECK (json_valid(`metadata`)),
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp',
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `id` (`id`),
+        KEY `idx_user_id` (`user_id`),
+        KEY `idx_interaction_id` (`interaction_id`),
+        KEY `idx_language_id` (`language_id`),
+        KEY `idx_user_lang_date` (`user_id`, `language_id`, `date_modified`),
+        KEY `idx_date_modified` (`date_modified`),
+        KEY `idx_entity` (`entity_id`, `entity_type`),
+        KEY `idx_interaction_user` (`interaction_id`, `user_id`),
+        KEY `idx_created_at` (`created_at`),
+        VECTOR KEY `embedding` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
@@ -204,8 +203,8 @@ class MariaDb
 
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
-      CREATE TABLE :table_rag_web_cache_embedding (
-        `id` int(11) NOT NULL,
+      CREATE TABLE IF NOT EXISTS :table_rag_web_cache_embedding (
+        `id` int(11) NOT NULL auto_increment,
         `content` longtext NOT NULL COMMENT 'Contenu complet (query + synthèse + sources)',
         `type` varchar(50) DEFAULT 'web_search_cache' COMMENT 'Type de document',
         `sourcetype` varchar(50) DEFAULT 'web_search' COMMENT 'Source du document',
@@ -219,28 +218,23 @@ class MariaDb
         `entity_id` int(11) DEFAULT NULL COMMENT 'ID de la requête source (optionnel)',
         `language_id` int(11) DEFAULT 1 COMMENT 'ID de la langue',
         `chunknumber` int(11) DEFAULT 128 COMMENT 'Taille du chunk utilisé',
-        `entity_type` VARCHAR(50) DEFAULT NULL COMMENT 'Type of entity (web_search)',
-        `date_modified` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp - immutable, auto-set on insert',
-        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`metadata`))
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-      ALTER TABLE :table_rag_web_cache_embedding
-        ADD PRIMARY KEY (`id`),
-        ADD KEY `idx_type` (`type`),
-        ADD KEY `idx_sourcetype` (`sourcetype`),
-        ADD KEY `idx_quality_score` (`quality_score`),
-        ADD KEY `idx_usage_count` (`usage_count`),
-        ADD KEY `idx_last_used` (`last_used`),
-        ADD KEY `idx_quality_usage` (`quality_score`,`usage_count`),
-        ADD KEY `idx_quality_usage_last` (`quality_score`, `usage_count`, `last_used`),
-        ADD KEY `idx_search_engine_quality` (`search_engine`, `quality_score`),
-        ADD KEY `idx_language_quality` (`language_id`, `quality_score`),
-        ADD KEY `idx_created_at` (`created_at`);
-
-      ALTER TABLE :table_rag_web_cache_embedding MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-      
-      CREATE VECTOR INDEX embedding_index ON :table_rag_web_cache_embedding (embedding);
+        `entity_type` varchar(50) DEFAULT NULL COMMENT 'Type of entity (web_search)',
+        `date_modified` datetime DEFAULT current_timestamp ON UPDATE current_timestamp,
+        `created_at` timestamp DEFAULT current_timestamp COMMENT 'Creation timestamp - immutable, auto-set on insert',
+        `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`metadata`)),
+        PRIMARY KEY (`id`),
+        KEY `idx_type` (`type`),
+        KEY `idx_sourcetype` (`sourcetype`),
+        KEY `idx_quality_score` (`quality_score`),
+        KEY `idx_usage_count` (`usage_count`),
+        KEY `idx_last_used` (`last_used`),
+        KEY `idx_quality_usage` (`quality_score`, `usage_count`),
+        KEY `idx_quality_usage_last` (`quality_score`, `usage_count`, `last_used`),
+        KEY `idx_search_engine_quality` (`search_engine`, `quality_score`),
+        KEY `idx_language_quality` (`language_id`, `quality_score`),
+        KEY `idx_created_at` (`created_at`),
+        VECTOR KEY `embedding_index` (`embedding`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
       EOD;
 
       $CLICSHOPPING_Db->exec($sql);
@@ -255,244 +249,108 @@ class MariaDb
     if ($Qcheck->fetch() === false) {
       $sql = <<<EOD
       CREATE TABLE IF NOT EXISTS :table_rag_schema_embedding (
-        id SERIAL PRIMARY KEY COMMENT 'Primary key - unique identifier for each schema embedding',
-        table_name VARCHAR(255) NOT NULL UNIQUE COMMENT 'Database table name - unique identifier for the schema',
-        schema_text TEXT NOT NULL COMMENT 'Complete schema definition including columns, types, and comments',
-        embedding_vector VECTOR(3072) NOT NULL COMMENT 'Vector embedding of the schema for semantic search',
-        token_count INT DEFAULT 0 COMMENT 'Number of tokens in the schema text',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'When the schema embedding was created',
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last time the schema embedding was updated',
-        KEY idx_table_name (table_name),
-        KEY idx_updated_at (updated_at)
-      ) COMMENT='Vector embeddings of database schemas for semantic schema discovery and natural language to SQL';
-      
-      CREATE VECTOR INDEX embedding_index ON :table_rag_schema_embedding (embedding_vector);
+        `id` int(11) NOT NULL auto_increment COMMENT 'Unique identifier for schema embedding',
+        `table_name` varchar(255) NOT NULL COMMENT 'Database table name (e.g., clic_products)',
+        `schema_text` text NOT NULL COMMENT 'Schema description including column names, types, and comments',
+        `embedding_vector` vector(3072) NOT NULL COMMENT 'Vector embedding of schema text for similarity search',
+        `token_count` int(11) DEFAULT 0 COMMENT 'Estimated token count of schema text',
+        `created_at` datetime DEFAULT current_timestamp COMMENT 'Timestamp when embedding was created',
+        `updated_at` datetime DEFAULT current_timestamp ON UPDATE current_timestamp COMMENT 'Timestamp when embedding was last updated',
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `table_name` (`table_name`),
+        KEY `idx_table_name` (`table_name`),
+        KEY `idx_updated_at` (`updated_at`),
+        VECTOR KEY `embedding_index` (`embedding_vector`)
+      ) ENGINE innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT='Stores database schema embeddings with column comments for LLM-powered query generation';
     EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
   }
 
-  /**
-   * Add taxonomy and metadata columns to embedding tables
-   *
-   * This method adds the required JSON columns for taxonomy and metadata separation
-   * to all specified embedding tables. It ensures that embeddings contain only pure
-   * content while taxonomy and metadata are stored separately.
-   *
-   * @param array $tables List of table names to update (without prefix)
-   * @return array Results of schema updates with status for each table
-   */
-  public static function addTaxonomyColumns(array $tables = []): array
-  {
-    $CLICSHOPPING_Db = Registry::get('Db');
-    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-    $results = [];
+  
+  
+  
+/*
+  
+//--------------------------------------
+// Chatbot rate limit
+//--------------------------------------
 
-    // Default to all known embedding tables if none specified
-    if (empty($tables)) {
-      $tables = [
-        'categories_embedding',
-        'products_embedding',
-        'orders_embedding',
-        'manufacturers_embedding',
-        'suppliers_embedding',
-        'pages_manager_embedding',
-        'return_orders_embedding',
-        'reviews_embedding',
-        'reviews_sentiment_embedding'
-      ];
+    $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_rag_rate_limit"');
+
+    if ($Qcheck->fetch() === false) {
+      $sql = <<<EOD
+      CREATE TABLE IF NOT EXISTS :table_rag_rate_limit (
+        id INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary key - one row per accepted question',
+        identifier VARCHAR(255) NOT NULL COMMENT 'Caller key, stored in clear so an excess stays attributable: admin:<id>, mcp:<id>, system:<job>',
+        timestamp INT(11) NOT NULL COMMENT 'Unix timestamp of the accepted question - drives the sliding window',
+        ip VARCHAR(45) DEFAULT NULL COMMENT 'IP address of the caller - IPv4 or IPv6 format',
+        PRIMARY KEY (id),
+        KEY idx_identifier_timestamp (identifier, timestamp),
+        KEY idx_timestamp (timestamp)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      COMMENT='Sliding window rate limit of the AI chatbot, keyed by channel and user';
+    EOD;
+      $CLICSHOPPING_Db->exec($sql);
     }
+    
+//IMPORTANT ; not implemented
 
-    foreach ($tables as $table) {
-      $fullTableName = $prefix . $table;
-      $tableResult = [
-        'table' => $fullTableName,
-        'taxonomy_added' => false,
-        'metadata_added' => false,
-        'errors' => []
-      ];
+    // Check if rag_security_config table exists
+    $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_rag_security_config"');
 
-      try {
-        // Check if table exists
-        $checkTable = $CLICSHOPPING_Db->query("SHOW TABLES LIKE '{$fullTableName}'");
-        if ($checkTable->fetch() === false) {
-          $tableResult['errors'][] = "Table does not exist";
-          $results[] = $tableResult;
-          continue;
-        }
+    if ($Qcheck->fetch() === false) {
+      $sql = <<<EOD
+      CREATE TABLE IF NOT EXISTS :table_rag_security_config (
+        `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+        `config_key` VARCHAR(100) NOT NULL UNIQUE COMMENT 'Configuration key (e.g., threat_threshold, llm_timeout)',
+        `config_value` TEXT NOT NULL COMMENT 'Configuration value (JSON for complex values)',
+        `config_type` ENUM('string', 'integer', 'float', 'boolean', 'json') NOT NULL DEFAULT 'string' COMMENT 'Data type of the value',
+        `description` TEXT DEFAULT NULL COMMENT 'Description of the configuration',
+        `category` VARCHAR(50) DEFAULT 'general' COMMENT 'Configuration category: thresholds, timeouts, features, alerting',
+        `is_active` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1 if configuration is active',
+        `min_value` DECIMAL(10,4) DEFAULT NULL COMMENT 'Minimum allowed value (for numeric types)',
+        `max_value` DECIMAL(10,4) DEFAULT NULL COMMENT 'Maximum allowed value (for numeric types)',
+        `allowed_values` JSON DEFAULT NULL COMMENT 'List of allowed values (for enum-like configs)',
+        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+        `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+        `updated_by` VARCHAR(255) DEFAULT NULL COMMENT 'User who last updated the config',
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `idx_config_key` (`config_key`),
+        KEY `idx_category` (`category`),
+        KEY `idx_is_active` (`is_active`),
+        KEY `idx_updated_at` (`updated_at`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      COMMENT='Security configuration for RAG system';
+EOD;
+      $CLICSHOPPING_Db->exec($sql);
 
-        // Add taxonomy column if it doesn't exist
-        try {
-          $CLICSHOPPING_Db->exec("
-            ALTER TABLE {$fullTableName} 
-            ADD COLUMN IF NOT EXISTS taxonomy JSON DEFAULT NULL 
-            COMMENT 'Structured taxonomy metadata (separate from embedding content)'
-          ");
-          $tableResult['taxonomy_added'] = true;
-        } catch (\Exception $e) {
-          $tableResult['errors'][] = "Taxonomy column: " . $e->getMessage();
-        }
-
-        // Add metadata column if it doesn't exist
-        try {
-          $CLICSHOPPING_Db->exec("
-            ALTER TABLE {$fullTableName} 
-            ADD COLUMN IF NOT EXISTS metadata JSON DEFAULT NULL 
-            COMMENT 'Document metadata for filtering and display'
-          ");
-          $tableResult['metadata_added'] = true;
-        } catch (\Exception $e) {
-          $tableResult['errors'][] = "Metadata column: " . $e->getMessage();
-        }
-
-        $tableResult['success'] = empty($tableResult['errors']);
-
-      } catch (\Exception $e) {
-        $tableResult['errors'][] = "General error: " . $e->getMessage();
-        $tableResult['success'] = false;
-      }
-
-      $results[] = $tableResult;
-    }
-
-    return $results;
-  }
-
-  /**
-   * Create indexes for JSON metadata queries
-   *
-   * Creates functional indexes on JSON fields to enable efficient filtering
-   * by metadata fields like document_type, entity_type, etc.
-   *
-   * @param string $tableName Table name (without prefix) to create indexes on
-   * @return bool Success status
-   */
-  public static function createMetadataIndexes(string $tableName): bool
-  {
-    $CLICSHOPPING_Db = Registry::get('Db');
-    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-    $fullTableName = $prefix . $tableName;
-
-    try {
-      // Check if table exists
-      $checkTable = $CLICSHOPPING_Db->query("SHOW TABLES LIKE '{$fullTableName}'");
-      if ($checkTable->fetch() === false) {
-        error_log("Table {$fullTableName} does not exist");
-        return false;
-      }
-
-      // Create index on metadata->>'$.document_type' for efficient filtering
-      // Using generated column approach for MariaDB compatibility
-      try {
-        $CLICSHOPPING_Db->exec("
-          ALTER TABLE {$fullTableName} 
-          ADD INDEX IF NOT EXISTS idx_metadata_document_type 
-          ((CAST(JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.document_type')) AS CHAR(50))))
-        ");
-      } catch (\Exception $e) {
-        error_log("Index creation for document_type failed: " . $e->getMessage());
-        // Continue with other indexes even if this one fails
-      }
-
-      // Create index on metadata->>'$.entity_type' for efficient filtering
-      try {
-        $CLICSHOPPING_Db->exec("
-          ALTER TABLE {$fullTableName} 
-          ADD INDEX IF NOT EXISTS idx_metadata_entity_type 
-          ((CAST(JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.entity_type')) AS CHAR(50))))
-        ");
-      } catch (\Exception $e) {
-        error_log("Index creation for entity_type failed: " . $e->getMessage());
-      }
-
-      return true;
-
-    } catch (\Exception $e) {
-      error_log("Error creating metadata indexes for {$fullTableName}: " . $e->getMessage());
-      return false;
+      // Insert default configuration values
+      $sql = <<<EOD
+      INSERT INTO :table_rag_security_config (`config_key`, `config_value`, `config_type`, `description`, `category`, `min_value`, `max_value`) VALUES
+        ('threat_threshold', '0.7', 'float', 'Threat score threshold for blocking (0.0-1.0)', 'thresholds', 0.0, 1.0),
+        ('high_confidence_threshold', '0.9', 'float', 'High confidence threshold (0.0-1.0)', 'thresholds', 0.0, 1.0),
+        ('false_positive_threshold', '0.3', 'float', 'Threshold below which to flag as potential false positive', 'thresholds', 0.0, 1.0),
+        ('llm_timeout_ms', '5000', 'integer', 'LLM security analysis timeout in milliseconds', 'timeouts', 1000, 30000),
+        ('pattern_timeout_ms', '100', 'integer', 'Pattern detection timeout in milliseconds', 'timeouts', 10, 1000),
+        ('total_security_timeout_ms', '6000', 'integer', 'Total security check timeout in milliseconds', 'timeouts', 1000, 30000),
+        ('use_llm_primary_security', 'true', 'boolean', 'Use LLM as primary security method', 'features', NULL, NULL),
+        ('use_pattern_fallback', 'false', 'boolean', 'Use pattern-based detection as fallback', 'features', NULL, NULL),
+        ('enable_response_validation', 'true', 'boolean', 'Enable response validation layer', 'features', NULL, NULL),
+        ('log_all_queries', 'false', 'boolean', 'Log all queries (not just threats)', 'features', NULL, NULL),
+        ('log_blocked_only', 'true', 'boolean', 'Log only blocked queries', 'features', NULL, NULL),
+        ('log_retention_days', '90', 'integer', 'Number of days to retain security logs', 'retention', 1, 365),
+        ('auto_archive_enabled', 'true', 'boolean', 'Enable automatic archiving of old logs', 'retention', NULL, NULL),
+        ('email_alerts_enabled', 'false', 'boolean', 'Enable email alerts for security events', 'alerting', NULL, NULL),
+        ('alert_email', '', 'string', 'Email address for security alerts', 'alerting', NULL, NULL),
+        ('alert_threshold_per_hour', '10', 'integer', 'Number of threats per hour to trigger alert', 'alerting', 1, 1000),
+        ('alert_on_critical_only', 'true', 'boolean', 'Only send alerts for critical severity events', 'alerting', NULL, NULL)
+      ON DUPLICATE KEY UPDATE 
+        `config_value` = VALUES(`config_value`),
+        `updated_at` = CURRENT_TIMESTAMP;
+EOD;
+      $CLICSHOPPING_Db->exec($sql);
     }
   }
-
-  /**
-   * Validate schema changes
-   *
-   * Verifies that the taxonomy and metadata columns were added successfully
-   * and that indexes were created properly.
-   *
-   * @param string $tableName Table name (without prefix) to validate
-   * @return array Validation results with detailed status
-   */
-  public static function validateSchema(string $tableName): array
-  {
-    $CLICSHOPPING_Db = Registry::get('Db');
-    $prefix = CLICSHOPPING::getConfig('db_table_prefix');
-    $fullTableName = $prefix . $tableName;
-
-    $validation = [
-      'table' => $fullTableName,
-      'exists' => false,
-      'has_taxonomy_column' => false,
-      'has_metadata_column' => false,
-      'has_content_column' => false,
-      'has_embedding_column' => false,
-      'indexes' => [],
-      'record_count' => 0,
-      'errors' => []
-    ];
-
-    try {
-      // Check if table exists
-      $checkTable = $CLICSHOPPING_Db->query("SHOW TABLES LIKE '{$fullTableName}'");
-      if ($checkTable->fetch() === false) {
-        $validation['errors'][] = "Table does not exist";
-        return $validation;
-      }
-      $validation['exists'] = true;
-
-      // Check columns
-      $columns = $CLICSHOPPING_Db->query("SHOW COLUMNS FROM {$fullTableName}");
-      while ($column = $columns->fetch()) {
-        $columnName = $column['Field'];
-
-        if ($columnName === 'taxonomy') {
-          $validation['has_taxonomy_column'] = true;
-          $validation['taxonomy_type'] = $column['Type'];
-        }
-        if ($columnName === 'metadata') {
-          $validation['has_metadata_column'] = true;
-          $validation['metadata_type'] = $column['Type'];
-        }
-        if ($columnName === 'content') {
-          $validation['has_content_column'] = true;
-        }
-        if ($columnName === 'embedding') {
-          $validation['has_embedding_column'] = true;
-        }
-      }
-
-      // Check indexes
-      $indexes = $CLICSHOPPING_Db->query("SHOW INDEX FROM {$fullTableName}");
-      while ($index = $indexes->fetch()) {
-        $validation['indexes'][] = $index['Key_name'];
-      }
-
-      // Get record count
-      $countResult = $CLICSHOPPING_Db->query("SELECT COUNT(*) as cnt FROM {$fullTableName}");
-      $countRow = $countResult->fetch();
-      $validation['record_count'] = (int)($countRow['cnt'] ?? 0);
-
-      // Overall validation status (table existence already guaranteed by the early return above)
-      $validation['valid'] =
-        $validation['has_taxonomy_column'] &&
-        $validation['has_metadata_column'] &&
-        $validation['has_content_column'] &&
-        $validation['has_embedding_column'];
-
-    } catch (\Exception $e) {
-      $validation['errors'][] = $e->getMessage();
-      $validation['valid'] = false;
-    }
-
-    return $validation;
-  }
+  */
 }

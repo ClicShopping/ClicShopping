@@ -560,6 +560,7 @@ column_gross_margin_amount = Gross margin
 column_gross_margin_percent = Margin rate (%)
 column_gross_margin_pct = Margin rate (%)
 column_revenue_without_cost = Revenue without recorded cost
+column_net_orders_count = Net orders (refunds deducted)
 status_inactive = ❌ Inactive
 status_active = ✅ Active
 status_pending = ⏳ Pending

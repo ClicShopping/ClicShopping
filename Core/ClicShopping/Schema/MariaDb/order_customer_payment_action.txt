@@ -3,7 +3,7 @@ type_apps_payment varchar(64) not_null comment(Payment app discriminator (Stripe
 payment_intent_id varchar(255) comment(Provider transaction reference - Stripe PaymentIntent id, PayPal order id... Null until the provider returns one)
 orders_id int comment(FK to orders - order created from this buffer once payment confirmed. Null while pending)
 customers_id int not_null comment(FK to customers - logged-in customer who initiated the payment)
-status varchar(20) not_null comment(Buffer lifecycle - pending: awaiting payment confirmation, completed: order created)
+status varchar(20) not_null default('pending') comment(Buffer lifecycle - pending: awaiting payment confirmation, completed: order created)
 sendto int comment(FK to address_book - shipping address reference, PII stays encrypted in address_book)
 billto int comment(FK to address_book - billing address reference, PII stays encrypted in address_book)
 cart_snapshot longtext comment(JSON snapshot to rebuild the order if the sync flow was interrupted - cart, shipping, payment, totals)
