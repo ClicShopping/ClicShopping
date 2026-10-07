@@ -130,9 +130,12 @@ class UIGenerator
       $resetContextUrl = $httpServer . $httpPath . 'ajax/RAG/reset_context.php' . $lang;
       $maxLength = 1000;
 
+      Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+
       $i18n = [
         'loading_analyzing' => CLICSHOPPING::getDef('text_chat_loading_analyzing'),
         'loading_request' => CLICSHOPPING::getDef('text_chat_loading_request'),
+        'ai_disclaimer' => CLICSHOPPING::getDef('text_chat_ai_disclaimer'),
         'validation_empty' => CLICSHOPPING::getDef('text_chat_validation_empty'),
         'validation_too_long' => CLICSHOPPING::getDef('text_chat_validation_too_long', ['maxLength' => $maxLength]),
         'error_prefix' => CLICSHOPPING::getDef('text_chat_error_prefix'),
@@ -223,6 +226,8 @@ class UIGenerator
    */
   public static function gptCkeditorParameters(): string|bool
   {
+    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+
     // The browser talks to ClicShopping, never to a provider: the model, its provider, the API
     // key and the wire format are all resolved server-side by the Gpt facade. Nothing here is
     // OpenAI-specific, so switching the catalogued model to another provider needs no edit.
@@ -233,6 +238,7 @@ class UIGenerator
     $script = '<script>
  let apiGptUrl = "' . $url . '";
  let titleGpt = "' . CLICSHOPPING::getDef('text_chat_title') . '";
+ let disclaimerGpt = ' . json_encode(CLICSHOPPING::getDef('text_chat_ai_disclaimer'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . ';
 </script>';
 
     $script .= '<script>

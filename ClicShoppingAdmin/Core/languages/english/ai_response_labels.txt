@@ -277,3 +277,4 @@ text_clarification_suggestion_help = Get help
 text_hybrid_query_processing_error = An error occurred while processing your hybrid query.
 text_sensitive_output_capped = Note: this answer lists personal contact data. Only the first {{served}} of {{total}} results are shown, and this access is logged. For a bulk use, go through the export features of the administration, which carry their own access rights.<br />
 text_sensitive_output_logged = Note: this answer contains personal contact data; this access is logged.<br />
+text_chat_ai_disclaimer = Please always verify the AI's answers: it can make mistakes.

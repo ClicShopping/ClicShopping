@@ -5453,17 +5453,17 @@
         },
         {
             "name": "theodo-group/llphant",
-            "version": "1.0.6",
-            "version_normalized": "1.0.6.0",
+            "version": "1.0.7",
+            "version_normalized": "1.0.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LLPhant/LLPhant.git",
-                "reference": "d8701f2a3fb8697b67a2d18c96869046d10b5e3c"
+                "reference": "5e0f3f39620ee9fcc0826f3385ecaf829c9a371c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/d8701f2a3fb8697b67a2d18c96869046d10b5e3c",
-                "reference": "d8701f2a3fb8697b67a2d18c96869046d10b5e3c",
+                "url": "https://api.github.com/repos/LLPhant/LLPhant/zipball/5e0f3f39620ee9fcc0826f3385ecaf829c9a371c",
+                "reference": "5e0f3f39620ee9fcc0826f3385ecaf829c9a371c",
                 "shasum": ""
             },
             "require": {
@@ -5514,7 +5514,7 @@
                 "probots-io/pinecone-php": "This is required for the PineconeVectorStore. Use scotteuser/pinecone-php for <= PHP 8.2",
                 "symfony/cache": "This is one of the possible types of psr/cache needed by doctrine/orm"
             },
-            "time": "2026-10-01T12:39:21+00:00",
+            "time": "2026-10-06T20:25:54+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -5546,7 +5546,7 @@
             ],
             "support": {
                 "issues": "https://github.com/LLPhant/LLPhant/issues",
-                "source": "https://github.com/LLPhant/LLPhant/tree/1.0.6"
+                "source": "https://github.com/LLPhant/LLPhant/tree/1.0.7"
             },
             "install-path": "../theodo-group/llphant"
         },

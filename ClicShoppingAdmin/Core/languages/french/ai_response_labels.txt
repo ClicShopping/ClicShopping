@@ -277,3 +277,4 @@ text_clarification_suggestion_help = Obtenir de l'aide
 text_hybrid_query_processing_error = Une erreur est survenue lors du traitement de votre requête hybride.
 text_sensitive_output_capped = À noter : cette réponse liste des coordonnées personnelles. Seuls les {{served}} premiers résultats sur {{total}} sont affichés, et cet accès est journalisé. Pour un usage en masse, passez par les fonctions d'export de l'administration, qui ont leurs propres droits d'accès.<br />
 text_sensitive_output_logged = À noter : cette réponse contient des coordonnées personnelles ; cet accès est journalisé.<br />
+text_chat_ai_disclaimer = Veuillez toujours vérifier les réponses de l'IA : elle peut faire des erreurs.

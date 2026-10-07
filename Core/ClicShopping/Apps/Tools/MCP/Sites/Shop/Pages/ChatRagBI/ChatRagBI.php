@@ -42,6 +42,7 @@ use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\McpPermissions;
 use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\McpSecurity;
 use ClicShopping\Apps\Tools\MCP\Classes\Shop\Security\Message;
 use ClicShopping\Apps\Tools\MCP\MCP;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
 use ClicShopping\OM\Registry;
@@ -111,6 +112,7 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
   {
     $this->db = Registry::get('Db');
     $this->lang = Registry::get('Language');
+    $this->lang->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
 
     // Set JSON content type
     header('Content-Type: application/json');
@@ -450,6 +452,7 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
             'type' => $queryType,
             'source' => 'clicshopping-ragbi',
             'confidence' => $confidence,
+            'ai_disclaimer' => CLICSHOPPING::getDef('text_chat_ai_disclaimer'),
             'metadata' => [
               'query_type' => $queryType,
               'language' => $languageId,
@@ -508,6 +511,7 @@ class ChatRagBI extends \ClicShopping\OM\Domains\PagesAbstract
           'type' => $response['response_type'] ?? ($response['type'] ?? 'semantic'),
           'source' => 'clicshopping-ragbi',
           'confidence' => $response['confidence'] ?? 0,
+          'ai_disclaimer' => CLICSHOPPING::getDef('text_chat_ai_disclaimer'),
           'metadata' => [
             'query_type' => $response['response_type'] ?? ($response['type'] ?? 'semantic'),
             'language' => $languageId,
