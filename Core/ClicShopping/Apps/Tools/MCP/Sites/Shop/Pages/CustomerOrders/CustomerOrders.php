@@ -34,7 +34,7 @@ use ClicShopping\OM\Registry;
  * CustomersProducts): credentials (username + key) or X-MCP-TOKEN, then McpPermissions
  * gates each action against the customer_orders context.
  */
-class customerOrders extends \ClicShopping\OM\Domains\PagesAbstract
+class CustomerOrders extends \ClicShopping\OM\Domains\PagesAbstract
 {
   public mixed $db;
   public mixed $app;
