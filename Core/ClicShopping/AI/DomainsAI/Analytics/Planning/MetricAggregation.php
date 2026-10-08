@@ -15,6 +15,8 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
  *
  * The closed set of ways a metric rolls up across a grain: only an ADDITIVE metric may be summed
  * from finer rows; a ratio of sums is recomputed from its summed parts, never summed or averaged.
+ * A series statistic reads its base metric once per calendar period of the window, every period
+ * counted, and owes a minimum number of periods before it is computed.
  * Agnostic by construction, like MetricType.
  *
  * @package ClicShopping\AI\DomainsAI\Analytics\Planning
@@ -25,13 +27,14 @@ final class MetricAggregation
   public const RATIO_OF_SUMS = 'ratio_of_sums';
   public const AVERAGE = 'average';
   public const DISTINCT_COUNT = 'distinct_count';
+  public const SERIES_STATISTIC = 'series_statistic';
 
   /**
    * @return array<int, string> Every valid aggregation
    */
   public static function all(): array
   {
-    return [self::ADDITIVE, self::RATIO_OF_SUMS, self::AVERAGE, self::DISTINCT_COUNT];
+    return [self::ADDITIVE, self::RATIO_OF_SUMS, self::AVERAGE, self::DISTINCT_COUNT, self::SERIES_STATISTIC];
   }
 
   /**

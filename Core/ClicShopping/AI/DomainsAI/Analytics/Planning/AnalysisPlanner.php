@@ -196,8 +196,12 @@ class AnalysisPlanner
       ]) . ($companions === [] ? '' : ' | ' . $this->getDef('text_analysis_plan_metric_companions', [
         'companions' => implode(', ', $companions),
       ])) . (isset($this->formulas[$metric['name']]) ? ' | ' . $this->getDef(
-        in_array($metric['name'], $this->ratios, true) ? 'text_analysis_plan_metric_ratio_formula' : 'text_analysis_plan_metric_formula',
-        ['formula' => $this->formulas[$metric['name']]]
+        match (true) {
+          isset($metric['series_unit']) => 'text_analysis_plan_metric_series_formula',
+          in_array($metric['name'], $this->ratios, true) => 'text_analysis_plan_metric_ratio_formula',
+          default => 'text_analysis_plan_metric_formula',
+        },
+        ['formula' => $this->formulas[$metric['name']], 'unit' => (string)($metric['series_unit'] ?? '')]
       ) : '');
     }
 

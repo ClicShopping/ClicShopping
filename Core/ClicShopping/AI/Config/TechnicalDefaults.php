@@ -50,6 +50,10 @@ class TechnicalDefaults
     // and the period is asked for instead; the answer always names the window it used.
     'CLICSHOPPING_APP_CHATGPT_RA_DEFAULT_ANALYSIS_DAYS' => 30,
 
+    // Periods a series statistic (standard deviation, seasonal coefficient) needs; below it the
+    // statistic is withheld and the user is told how many periods the window holds.
+    'CLICSHOPPING_APP_CHATGPT_RA_STATS_MIN_PERIODS' => 12,
+
     // How many past turns feed the contextual reference resolver ("its price", "this product")
     'CLICSHOPPING_APP_CHATGPT_RA_REFERENCE_HISTORY_TURNS' => 5,
 

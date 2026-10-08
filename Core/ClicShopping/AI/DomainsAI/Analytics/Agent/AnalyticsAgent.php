@@ -759,16 +759,17 @@ class AnalyticsAgent implements AgentInterface
    */
   private function analysisPlanRefusal(string $question, array $planResult, array $ambiguityAnalysis): array
   {
+    $sample = AnalysisPlanAnnouncer::insufficientSampleNotice($planResult['unsatisfiable']);
     $elements = array_values(array_filter(array_map(
-      static fn(array $entry): string => (string)($entry['label'] ?? '') !== ''
-        ? (string)$entry['label']
-        : (string)($entry['element'] ?? ''),
+      static fn(array $entry): string => ($entry['kind'] ?? '') === 'insufficient_sample'
+        ? ''
+        : ((string)($entry['label'] ?? '') !== '' ? (string)$entry['label'] : (string)($entry['element'] ?? '')),
       $planResult['unsatisfiable']
     )));
 
-    $message = $elements === []
-      ? CLICSHOPPING::getDef('text_analysis_plan_refused')
-      : CLICSHOPPING::getDef('text_analysis_plan_refused_details', ['elements' => implode(', ', $elements)]);
+    $message = $elements !== []
+      ? trim($sample . "\n\n" . CLICSHOPPING::getDef('text_analysis_plan_refused_details', ['elements' => implode(', ', $elements)]))
+      : ($sample !== '' ? $sample : CLICSHOPPING::getDef('text_analysis_plan_refused'));
 
     return [
       'type' => 'error',

@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
 
+use ClicShopping\AI\Config\TechnicalDefaults;
+
 /**
  * AnalysisPlanValidator
  *
@@ -124,9 +126,10 @@ class AnalysisPlanValidator
     // swap to the catalogue's line-grain sibling, or record it unsatisfiable.
     $renamed = [];
     $metrics = $this->resolveGrainConflicts($metrics, $dimensions, $unsatisfiable, $renamed);
+    $metrics = $this->applySeriesSample($metrics, $periods, $askedDimensions, $unsatisfiable);
 
     if ($metrics === []) {
-      // Everything proposed was an order-grain figure the dimension cannot carry: a named refusal.
+      // Everything proposed was withheld (grain conflict, series too short): a named refusal.
       return ['plan' => null, 'unsatisfiable' => $unsatisfiable, 'errors' => $errors,
               'no_metric_proposed' => false];
     }
@@ -317,6 +320,110 @@ class AnalysisPlanValidator
   }
 
   /**
+   * A series statistic is read once per calendar period of the window - the unit the plan named on
+   * the metric, else the finest calendar dimension, else the month: stamp it, and withhold the statistic when the window holds fewer periods than the configured
+   * minimum - a dispersion over three points informs nothing.
+   *
+   * @param array $metrics Validated metrics
+   * @param array $periods Resolved periods
+   * @param array $dimensions Dimensions the model asked for
+   * @param array $unsatisfiable Collected removals, by reference
+   * @return array Metrics kept, series statistics carrying `series_unit`
+   */
+  private function applySeriesSample(array $metrics, array $periods, array $dimensions, array &$unsatisfiable): array
+  {
+    $required = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_STATS_MIN_PERIODS');
+    $kept = [];
+
+    foreach ($metrics as $metric) {
+      if (!$this->isSeriesStatistic($metric['name'])) {
+        $kept[] = $metric;
+
+        continue;
+      }
+
+      $unit = $metric['series_unit'] ?? self::seriesUnit($dimensions);
+      $count = self::countPeriods($periods, $unit);
+
+      // ponytail: an all-time window has no lower bound to count before execution; it is not checked.
+      if ($count !== null && $count < $required) {
+        $unsatisfiable[] = [
+          'element' => 'metric:' . $metric['name'],
+          'label' => $metric['name'],
+          'reason' => "the window holds {$count} {$unit} periods, a series statistic needs {$required}",
+          'kind' => 'insufficient_sample',
+          'periods' => $count,
+          'required' => $required,
+          'unit' => $unit,
+        ];
+
+        continue;
+      }
+
+      $metric['series_unit'] = $unit;
+      $kept[] = $metric;
+    }
+
+    return $kept;
+  }
+
+  /**
+   * @param string $name Catalogue metric name
+   * @return bool True when the metric is a statistic over a series of calendar periods
+   */
+  private function isSeriesStatistic(string $name): bool
+  {
+    return ($this->catalog[$name]['aggregation'] ?? '') === MetricAggregation::SERIES_STATISTIC;
+  }
+
+  /**
+   * @param array $dimensions Dimensions the model asked for
+   * @return string The finest calendar unit they name, `month` when they name none
+   */
+  private static function seriesUnit(array $dimensions): string
+  {
+    foreach (array_reverse(PeriodResolver::CALENDAR_UNITS) as $unit) {
+      foreach ($dimensions as $dimension) {
+        if (is_string($dimension) && str_contains(strtolower($dimension), $unit)) {
+          return $unit;
+        }
+      }
+    }
+
+    return 'month';
+  }
+
+  /**
+   * Calendar periods the current window touches, a partial period at either end counted.
+   *
+   * @param array $periods Resolved periods
+   * @param string $unit Calendar unit
+   * @return int|null Null when the window has no lower or upper bound
+   */
+  private static function countPeriods(array $periods, string $unit): ?int
+  {
+    $from = $periods['current']['from'] ?? null;
+    $to = $periods['current']['to'] ?? null;
+
+    if (!is_string($from) || !is_string($to)) {
+      return null;
+    }
+
+    $f = new \DateTimeImmutable($from);
+    $t = new \DateTimeImmutable($to);
+    $monday = static fn(\DateTimeImmutable $d): \DateTimeImmutable => $d->modify('-' . ((int)$d->format('N') - 1) . ' days');
+
+    return match ($unit) {
+      'year' => (int)$t->format('Y') - (int)$f->format('Y') + 1,
+      'quarter' => ((int)$t->format('Y') * 4 + intdiv((int)$t->format('n') - 1, 3))
+        - ((int)$f->format('Y') * 4 + intdiv((int)$f->format('n') - 1, 3)) + 1,
+      'month' => ((int)$t->format('Y') * 12 + (int)$t->format('n')) - ((int)$f->format('Y') * 12 + (int)$f->format('n')) + 1,
+      'week' => intdiv((int)$monday($f)->diff($monday($t))->days, 7) + 1,
+      default => (int)$f->diff($t)->days + 1,
+    };
+  }
+
+  /**
    * Read what the model itself declared out of catalogue.
    *
    * The validator can only name what was proposed then rejected; the plan prompt asks the
@@ -409,6 +516,13 @@ class AnalysisPlanValidator
       // Same rule for the dimension that breaks the metric down.
       if (is_string($this->catalog[$name]['split'] ?? null) && $this->catalog[$name]['split'] !== '') {
         $entry['split'] = $this->catalog[$name]['split'];
+      }
+
+      // The period a series statistic reads, as the question names it: not a dimension, a one-figure
+      // statistic keeps one row.
+      $unit = is_array($metric) && is_string($metric['series_unit'] ?? null) ? strtolower(trim($metric['series_unit'])) : '';
+      if ($this->isSeriesStatistic($name) && in_array($unit, PeriodResolver::CALENDAR_UNITS, true)) {
+        $entry['series_unit'] = $unit;
       }
 
       $kept[] = $entry;

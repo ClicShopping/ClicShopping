@@ -17,7 +17,7 @@ use ClicShopping\AI\DomainsAI\Analytics\Planning\MetricAggregation;
  * catalogue entry declares its formula must find that formula in the SQL, compared without table
  * qualifiers, case or whitespace. A base expression reads columns or declared TERMS (named
  * row-level expressions, each owing its definition somewhere in the SQL); a derived one names
- * other metrics and holds when they hold, its own arithmetic unchecked. Presence only: the weight and the window have their own
+ * other metrics and holds when they hold and its SQL functions are called, its arithmetic unchecked. Presence only: the weight and the window have their own
  * contracts. Model-independent; reports, never rewrites.
  */
 final class MetricExpressionFilter
@@ -130,9 +130,17 @@ final class MetricExpressionFilter
     $usedTerms = array_values(array_filter($identifiers, static fn(string $i): bool => isset($terms[$i])));
     $metrics = array_values(array_filter($identifiers, static fn(string $i): bool => !isset($terms[$i]) && isset($catalog[$i]) && $i !== $name));
 
-    // Derived: its metric parts are checked; its arithmetic and the terms it names (guards,
-    // rounding, scaling, a weighted denominator) are free.
+    // Derived: its metric parts and the SQL functions it names (STDDEV_SAMP, AVG) are checked;
+    // its arithmetic and the terms it names (guards, rounding, scaling, a weighted denominator) are free.
     if ($metrics !== []) {
+      preg_match_all('/\b([a-z_][a-z0-9_]*)\s*\(/', strtolower($expression), $calls);
+
+      foreach (array_unique($calls[1]) as $function) {
+        if (!self::contains($sql, $function . '(')) {
+          return false;
+        }
+      }
+
       foreach ($metrics as $metric) {
         if (!self::holds($metric, $sql, $catalog, $terms, $seen)) {
           return false;

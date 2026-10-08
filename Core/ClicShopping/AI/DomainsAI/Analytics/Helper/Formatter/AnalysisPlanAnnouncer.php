@@ -68,20 +68,23 @@ class AnalysisPlanAnnouncer
     }
 
     // Name the measure as the question named it; an entry with no label has nothing sayable.
+    // A statistic withheld for too few periods IS measurable: it gets its own notice.
     $labels = array_values(array_unique(array_filter(
-      array_column($unsatisfiable, 'label'),
+      array_column(array_filter($unsatisfiable, static fn(array $e): bool => ($e['kind'] ?? '') !== 'insufficient_sample'), 'label'),
       static fn($label): bool => is_string($label) && $label !== ''
     )));
 
     $response['analysis_plan_unsatisfiable'] = $unsatisfiable;
 
-    if ($labels === []) {
-      return;
+    $reserve = $labels === [] ? '' : CLICSHOPPING::getDef('text_analysis_plan_reserve', ['elements' => implode(', ', $labels)]);
+
+    if ($reserve === 'text_analysis_plan_reserve') {
+      $reserve = '';
     }
 
-    $reserve = CLICSHOPPING::getDef('text_analysis_plan_reserve', ['elements' => implode(', ', $labels)]);
+    $reserve = trim(self::insufficientSampleNotice($unsatisfiable) . "\n\n" . $reserve);
 
-    if ($reserve === '' || $reserve === 'text_analysis_plan_reserve') {
+    if ($reserve === '') {
       return;
     }
 
@@ -89,6 +92,32 @@ class AnalysisPlanAnnouncer
     $response['interpretation'] = trim($reserve . "\n\n" . (string)($response['interpretation'] ?? ''));
 
     $this->debugLog("PLAN RESERVE announced: " . $reserve, "PLAN");
+  }
+
+  /**
+   * The notice of each series statistic withheld because the window holds too few periods.
+   *
+   * @param array $unsatisfiable Plan elements that could not be honoured
+   * @return string '' when no statistic was withheld for that reason
+   */
+  public static function insufficientSampleNotice(array $unsatisfiable): string
+  {
+    $notices = [];
+
+    foreach ($unsatisfiable as $entry) {
+      if (($entry['kind'] ?? '') !== 'insufficient_sample') {
+        continue;
+      }
+
+      $notices[] = CLICSHOPPING::getDef('text_analysis_plan_insufficient_sample', [
+        'metric' => (string)($entry['label'] ?? ''),
+        'periods' => (string)(int)($entry['periods'] ?? 0),
+        'required' => (string)(int)($entry['required'] ?? 0),
+        'unit' => CLICSHOPPING::getDef('text_analysis_series_unit_' . (string)($entry['unit'] ?? 'month')),
+      ]);
+    }
+
+    return implode("\n", $notices);
   }
 
   /**

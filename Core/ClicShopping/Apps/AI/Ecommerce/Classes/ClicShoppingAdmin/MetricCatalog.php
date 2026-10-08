@@ -201,6 +201,23 @@ class MetricCatalog
         'expression' => 'orders_id',
         'definition' => 'text_metric_refunded_orders',
       ],
+      // Series statistics: revenue_ht read once per calendar period of the window, every period counted.
+      'revenue_stddev' => [
+        'grain' => 'order',
+        'type' => MetricType::AMOUNT,
+        'aggregation' => MetricAggregation::SERIES_STATISTIC,
+        'expression' => 'STDDEV_SAMP(revenue_ht)',
+        'definition' => 'text_metric_revenue_stddev',
+        'weighted_by' => 'revenue_sign',
+      ],
+      'seasonal_coefficient' => [
+        'grain' => 'order',
+        'type' => MetricType::RATE,
+        'aggregation' => MetricAggregation::SERIES_STATISTIC,
+        'expression' => 'revenue_ht / AVG(revenue_ht)',
+        'definition' => 'text_metric_seasonal_coefficient',
+        'weighted_by' => 'revenue_sign',
+      ],
       // The deduction leg alone: no weighted_by, its population carries weight -1 by definition.
       'refunded_amount' => [
         'grain' => 'order',
