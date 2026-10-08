@@ -79,7 +79,8 @@ final class PlanShapeFilter
       $entry = $catalog[(string)($metric['name'] ?? '')] ?? [];
 
       foreach ($entry['companions'] ?? [] as $companion) {
-        if (($catalog[$companion]['grain'] ?? null) === ($entry['grain'] ?? '') && preg_match('/\bAS\s+`?' . preg_quote($companion, '/') . '\b/i', $sql) !== 1) {
+        // A window prefix (current_, previous_) still names the companion; a suffix names another column.
+        if (($catalog[$companion]['grain'] ?? null) === ($entry['grain'] ?? '') && preg_match('/\bAS\s+`?(?:\w+_)?' . preg_quote($companion, '/') . '\b/i', $sql) !== 1) {
           $missing[] = $companion;
         }
       }
