@@ -42,6 +42,8 @@ class MetricCatalog
       'line_revenue' => 'final_price * products_quantity',
       // NULLIF keeps an uncosted line out of the margin instead of reading it as 100%.
       'line_cost' => '(NULLIF(products_cost, 0) + products_handling) * products_quantity',
+      // A rate over sales reads only the lines its margin covers.
+      'costed_line_revenue' => 'CASE WHEN line_cost IS NOT NULL THEN line_revenue END',
     ];
   }
 
@@ -222,7 +224,7 @@ class MetricCatalog
         'grain' => 'product',
         'type' => MetricType::RATE,
         'aggregation' => MetricAggregation::RATIO_OF_SUMS,
-        'expression' => 'gross_margin_amount / line_revenue * 100',
+        'expression' => 'gross_margin_amount / costed_line_revenue * 100',
         'definition' => 'text_metric_gross_margin_percent',
         'basis' => 'text_metric_basis_cost_current',
         'companions' => ['line_revenue', 'revenue_without_cost', 'gross_margin_amount'],

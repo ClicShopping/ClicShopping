@@ -17,7 +17,7 @@ use ClicShopping\AI\DomainsAI\Analytics\Planning\MetricAggregation;
  * catalogue entry declares its formula must find that formula in the SQL, compared without table
  * qualifiers, case or whitespace. A base expression reads columns or declared TERMS (named
  * row-level expressions, each owing its definition somewhere in the SQL); a derived one names
- * other metrics and holds when they hold. Presence only: the weight and the window have their own
+ * other metrics and holds when they hold, its own arithmetic unchecked. Presence only: the weight and the window have their own
  * contracts. Model-independent; reports, never rewrites.
  */
 final class MetricExpressionFilter
@@ -46,7 +46,8 @@ final class MetricExpressionFilter
   }
 
   /**
-   * The formula as the prompt and the correction message show it, with the terms it reads.
+   * The formula as the prompt and the correction message show it, followed by every metric and
+   * term it reads, transitively.
    *
    * @param string $name Metric name
    * @param array $catalog Domain metric catalogue
@@ -62,10 +63,15 @@ final class MetricExpressionFilter
     }
 
     $used = [];
+    $pending = self::identifiers($expression);
 
-    foreach (self::identifiers($expression) as $identifier) {
-      if (isset($terms[$identifier])) {
-        $used[] = $identifier . ' = ' . $terms[$identifier];
+    while (($identifier = array_shift($pending)) !== null) {
+      $definition = $terms[$identifier]
+        ?? ($identifier !== $name && ($catalog[$identifier]['expression'] ?? '') !== '' ? self::formula($identifier, $catalog) : null);
+
+      if ($definition !== null && !isset($used[$identifier])) {
+        $used[$identifier] = $identifier . ' = ' . $definition;
+        $pending = array_merge($pending, self::identifiers($definition));
       }
     }
 
@@ -124,7 +130,8 @@ final class MetricExpressionFilter
     $usedTerms = array_values(array_filter($identifiers, static fn(string $i): bool => isset($terms[$i])));
     $metrics = array_values(array_filter($identifiers, static fn(string $i): bool => !isset($terms[$i]) && isset($catalog[$i]) && $i !== $name));
 
-    // Derived: its parts are checked, its arithmetic (guards, rounding, scaling) is free.
+    // Derived: its metric parts are checked; its arithmetic and the terms it names (guards,
+    // rounding, scaling, a weighted denominator) are free.
     if ($metrics !== []) {
       foreach ($metrics as $metric) {
         if (!self::holds($metric, $sql, $catalog, $terms, $seen)) {
@@ -132,10 +139,16 @@ final class MetricExpressionFilter
         }
       }
 
-      return self::termsDefined($usedTerms, $sql, $terms);
+      return true;
     }
 
     $needle = self::normalize(self::formula($name, $catalog));
+
+    // A population count is naturally conditional: COUNT(DISTINCT CASE WHEN … THEN key END).
+    if (($catalog[$name]['aggregation'] ?? '') === MetricAggregation::DISTINCT_COUNT
+      && preg_match('/count\(distinct case when .+?(?<![a-z0-9_])then ' . preg_quote(self::normalize($expression), '/') . ' end\)/', $sql) === 1) {
+      return true;
+    }
 
     if (self::contains($sql, $needle) && self::termsDefined($usedTerms, $sql, $terms)) {
       return true;

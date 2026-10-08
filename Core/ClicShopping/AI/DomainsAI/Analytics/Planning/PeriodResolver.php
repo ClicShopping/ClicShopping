@@ -55,8 +55,31 @@ final class PeriodResolver
   public const COMPARE_PREVIOUS_PERIOD = 'previous_period';
   public const COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS = 'previous_year_comparable_days';
 
+  /** Calendar units: a breakdown by one of them cuts the event dates, never the lines of an order. */
+  public const CALENDAR_UNITS = ['year', 'quarter', 'month', 'week', 'day'];
+
   /** 52 weeks: the shift that keeps the day of week, hence the count of business days. */
   private const COMPARABLE_DAYS_SHIFT = '-364 days';
+
+  /**
+   * A dimension named after a calendar unit (month, quarter, months, weekday, period_month…) is
+   * carried by the event date: one value per order, so it fans nothing out.
+   *
+   * @param string $dimension Dimension as the plan writes it
+   * @return bool True when the dimension is a calendar breakdown
+   */
+  public static function isCalendarDimension(string $dimension): bool
+  {
+    $d = strtolower($dimension);
+
+    foreach (self::CALENDAR_UNITS as $unit) {
+      if (str_contains($d, $unit)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   /**
    * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_year_comparable_days|previous_period, set_bounded?: bool, all_time?: bool}`

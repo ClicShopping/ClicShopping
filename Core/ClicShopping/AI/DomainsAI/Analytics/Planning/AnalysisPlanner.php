@@ -195,9 +195,10 @@ class AnalysisPlanner
         ),
       ]) . ($companions === [] ? '' : ' | ' . $this->getDef('text_analysis_plan_metric_companions', [
         'companions' => implode(', ', $companions),
-      ])) . (isset($this->formulas[$metric['name']]) ? ' | ' . $this->getDef('text_analysis_plan_metric_formula', [
-        'formula' => $this->formulas[$metric['name']],
-      ]) : '') . (in_array($metric['name'], $this->ratios, true) ? ' | ' . $this->getDef('text_analysis_plan_metric_ratio') : '');
+      ])) . (isset($this->formulas[$metric['name']]) ? ' | ' . $this->getDef(
+        in_array($metric['name'], $this->ratios, true) ? 'text_analysis_plan_metric_ratio_formula' : 'text_analysis_plan_metric_formula',
+        ['formula' => $this->formulas[$metric['name']]]
+      ) : '');
     }
 
     $windows = isset($plan['periods']['current']['from'], $plan['periods']['current']['to'])

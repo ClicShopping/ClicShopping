@@ -193,8 +193,9 @@ class AnalysisPlanValidator
    * sibling the metric is swapped to it (revenue per category IS the sum of line revenues);
    * otherwise the value is not attributable to the dimension and is recorded unsatisfiable.
    *
-   * Order-side dimensions are the catalogue's splits plus those the domain declares at order grain;
-   * an undeclared one is read as a product breakdown (an honest refusal, never a wrong number).
+   * Order-side dimensions are the catalogue's splits, those the domain declares at order grain and
+   * every calendar unit (the event date); an undeclared one is read as a product breakdown (an
+   * honest refusal, never a wrong number).
    *
    * @param array<int, array{name: string, grain: string, type: string}> $metrics Validated metrics
    * @param array<int, string> $dimensions Resolved dimensions
@@ -212,7 +213,9 @@ class AnalysisPlanValidator
     }
 
     $orderSide = $this->orderSideDimensions;
-    $productDimensions = array_filter($dimensions, static fn($d): bool => !isset($splitDimensions[$d]) && !isset($orderSide[strtolower(trim((string)$d))]));
+    $productDimensions = array_filter($dimensions, static fn($d): bool => !isset($splitDimensions[$d])
+      && !isset($orderSide[strtolower(trim((string)$d))])
+      && !PeriodResolver::isCalendarDimension((string)$d));
 
     if ($productDimensions === []) {
       return $metrics;
