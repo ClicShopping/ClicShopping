@@ -10,14 +10,9 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\Hooks\ClicShoppingAdmin
 
 use ClicShopping\OM\Interfaces\HooksInterface;
 use ClicShopping\OM\Registry;
-use ClicShopping\OM\HTML;
 
+use ClicShopping\Apps\Communication\PageManager\PageManager as PageManagerApp;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt as ChatGptApp;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-
-use ClicShopping\Apps\Catalog\Manufacturers\Classes\ClicShoppingAdmin\ManufacturerAdmin;
-use ClicShopping\Apps\Configuration\Api\Sites\Shop\Pages\Manufacturers\Manufacturers;
-use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
 
 class DeleteAll implements HooksInterface
 {
@@ -50,10 +45,11 @@ class DeleteAll implements HooksInterface
    */
   public function execute()
   {
-    if (isset($_POST['selected']) && is_array($_POST['selected']) && isset($_POST['DeleteAll'])) {
+    // DeleteAll rides the action URL; a locked page is never deleted, so its embedding stays.
+    if (isset($_POST['selected']) && is_array($_POST['selected']) && isset($_GET['DeleteAll'])) {
       foreach ($_POST['selected'] as $items) {
-        if (isset($items)) {
-          $this->app->db->delete('page_manager_embedding', ['entity_id' => (int)$items]);
+        if (isset($items) && !in_array((int)$items, PageManagerApp::LOCKED_PAGES_ID, true)) {
+          $this->app->db->delete('pages_manager_embedding', ['entity_id' => (int)$items]);
         }
       }
     }
