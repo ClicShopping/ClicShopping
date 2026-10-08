@@ -87,6 +87,11 @@ ClicShopping AI provides content suggestions and does not guarantee:
 
 The final decision remains under the responsibility of the user.
 
+The system also hands back to the user on its own: an ambiguous question returns as a clarification
+with options, and a question it cannot answer reliably is declared as such — naming what could not
+be measured — rather than answered with a figure it cannot vouch for. That channel is narrow by
+design today and widens with the development objectives in progress.
+
 ---
 
 # Transparency

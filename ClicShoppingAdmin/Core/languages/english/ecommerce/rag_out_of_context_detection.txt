@@ -6,6 +6,7 @@ text_ooc_allowed_context = E-commerce business context includes (ALLOWED):
 - Analytics (statistics, reports, metrics, KPIs, trends)
 - Business operations (suppliers, manufacturers, categories, shipping)
 - Documentation (policies, terms, conditions, guides)
+- Customer service the store's own help pages answer (access to the customer's account on THIS store, login and password, delivery, returns, refunds, after-sales) - an account at another service is not this store
 - Marketing (campaigns, promotions, advertising, SEO, social media)
 - Innovation (new products, market trends, competitive analysis)
 - Prospection (lead generation, customer acquisition, market research)

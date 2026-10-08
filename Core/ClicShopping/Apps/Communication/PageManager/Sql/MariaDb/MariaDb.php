@@ -134,29 +134,5 @@ EOD;
 EOD;
       $CLICSHOPPING_Db->exec($sql);
     }
-    
-    $Qcheck = $CLICSHOPPING_Db->query('show tables like ":table_page_manager_embedding"');
-
-    if ($Qcheck->fetch() === false) {
-      $sql = <<<EOD
-
-CREATE TABLE IF NOT EXISTS :table_pages_manager_embedding (
-    id SERIAL PRIMARY KEY,
-    content TEXT DEFAULT NULL,
-    type TEXT DEFAULT NULL,
-    sourcetype TEXT DEFAULT 'manual',
-    sourcename TEXT DEFAULT 'manual',
-    embedding VECTOR(3072) NOT NULL,
-    chunknumber INT DEFAULT 128,
-    date_modified DATETIME DEFAULT NULL,
-    entity_id INT,
-    language_id INT 
-);
-
-CREATE VECTOR INDEX embedding_index ON :table_page_manager_embedding (embedding);
-EOD;
-       
-      $CLICSHOPPING_Db->exec($sql);
-    }
   }
 }
