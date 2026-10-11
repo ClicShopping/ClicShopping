@@ -23,3 +23,5 @@ text_metric_shipping_billed = Shipping BILLED to the customer: the 'SH' class of
 text_metric_dimension_intro = KNOWN DIMENSIONS. When the question breaks a metric down by one of these, write the dimension under this EXACT name - never a synonym, never a translation.
 text_metric_dimension_row = - {{name}} | {{definition}}
 text_metric_dimension_tax_convention = the tax basis an invoice was drawn up on: tax-excluded prices or tax-included prices (VAT scheme, tax convention, pricing basis)
+text_metric_dimension_category = a TOP-LEVEL category of the catalogue tree: each value gathers its own products AND those of every sub-category below it. A breakdown "by category" means this.
+text_metric_dimension_subcategory = every category of the tree, at every level, named by its full path from the top level (Top > Sub > Sub-sub): each value counts only the products filed directly in it. A breakdown "by sub-category", or "by category and sub-category", means this.

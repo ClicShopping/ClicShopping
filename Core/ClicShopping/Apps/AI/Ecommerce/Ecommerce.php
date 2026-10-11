@@ -214,6 +214,17 @@ class Ecommerce extends AbstractDomainApp
   }
 
   /**
+   * Dimensions read under another one once the plan filters them on a value: a named category
+   * is its sub-tree, read by path, not a top-level row.
+   *
+   * @return array<string, string> Dimension => its reading under such a filter
+   */
+  public function getFilteredDimensionReadings(): array
+  {
+    return MetricCatalog::filteredDimensionReadings();
+  }
+
+  /**
    * Rows of this domain that no aggregated amount may read (column => values).
    *
    * @return array<string, array<int, string>>
@@ -232,6 +243,26 @@ class Ecommerce extends AbstractDomainApp
   public function getGrainKeys(): array
   {
     return MetricCatalog::grainKeys();
+  }
+
+  /**
+   * Columns every analytics result table opens with, in this order, when present.
+   *
+   * @return array<int, string>
+   */
+  public function getLeadColumns(): array
+  {
+    return MetricCatalog::leadColumns();
+  }
+
+  /**
+   * Label keys shown in place of an empty value of a dimension column (column => key).
+   *
+   * @return array<string, string>
+   */
+  public function getNoneLabels(): array
+  {
+    return MetricCatalog::noneLabels();
   }
 
   /**

@@ -50,10 +50,11 @@ class AnalysisPlanner
    * @param int $languageId Language ID, needed to resolve the prompt's dynamic placeholders
    * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
    * @param array<string, string> $terms Named row-level expressions the catalogue formulas read
+   * @param array<string, string> $filteredDimensionReadings Dimension => its reading under a filter on one of its values
    */
-  public function __construct(array $catalog, int $languageId, array $orderSideDimensions = [], array $terms = [])
+  public function __construct(array $catalog, int $languageId, array $orderSideDimensions = [], array $terms = [], array $filteredDimensionReadings = [])
   {
-    $this->validator = new AnalysisPlanValidator($catalog, $orderSideDimensions);
+    $this->validator = new AnalysisPlanValidator($catalog, $orderSideDimensions, $filteredDimensionReadings);
     $this->languageId = $languageId;
 
     foreach ($catalog as $name => $metric) {

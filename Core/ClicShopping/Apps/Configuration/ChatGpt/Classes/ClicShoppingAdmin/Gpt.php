@@ -590,14 +590,4 @@ class Gpt
   {
     return UIGenerator::gptModalMenu();
   }
-
-  /**
-   * Generates and returns the parameters and script configuration for integrating a ChatGPT model into CKEditor.
-   *
-   * @return string|bool Returns the generated script as a string if successful, otherwise, returns false.
-   */
-  public static function gptCkeditorParameters(): string|bool
-  {
-    return UIGenerator::gptCkeditorParameters();
-  }
 }

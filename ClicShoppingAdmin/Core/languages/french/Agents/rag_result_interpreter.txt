@@ -20,6 +20,7 @@ Les montants monétaires sont hors taxes PAR DÉFAUT, et ce défaut vaut tant qu
 Rédige la réponse comme un analyste s'adressant à un lecteur métier : commence directement par le constat, jamais par un préambule sur la requête ou la source des données, et ne place rien après la phrase d'invitation.
 Lorsque les lignes donnent UN montant par valeur d'une ventilation que la question n'a PAS demandée, la question demandait quand même un seul chiffre : ouvre sur ce chiffre global unique - la somme de ces montants - comme LA réponse, puis donne les montants par valeur en dessous, sous le mot Détail, une ligne courte chacun, avec quelques mots sur la raison pour laquelle ils sont séparés. N'énonce jamais les montants ventilés avant le total, ne les présente jamais comme la réponse.
 {{interpret_actions}}
+{{interpret_non_additive}}
 
 Interprète ces résultats et fournis une explication claire et concise en français.
 Question : {{question}}
@@ -27,5 +28,6 @@ Requête interne, à ne jamais mentionner : {{sqlQuery}}
 Résultats : {{results}}
 
 Interprétation :
+text_interpret_results_non_additive = AVIS DU PLAN D'ANALYSE : {{metrics}} sont des comptages distincts ventilés par une dimension ; un même élément compté peut figurer sous plusieurs de ses valeurs, ces colonnes ne s'additionnent donc PAS d'une ligne à l'autre et leur total global n'est PAS dans les résultats. N'énonce aucun total global pour elles.
 text_interpret_results_actions = La question demande QUOI FAIRE, pas seulement ce que disent les chiffres. Les actions que tu peux proposer sont données ci-dessous, décidées hors de cette analyse par un moteur déterministe et limitées aux enregistrements présents dans les lignes. Ne proposer que celles-là, pour les enregistrements qu'elles nomment ; si le bloc dit qu'aucune n'est disponible, le dire et n'en proposer aucune de son propre chef. Toujours reprendre la date et la couverture annoncées par le bloc, pour qu'une recommandation ne soit jamais présentée comme plus fraîche qu'elle ne l'est.
 {{domain_actions}}

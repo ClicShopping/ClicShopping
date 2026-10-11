@@ -81,7 +81,7 @@ class MetricCatalogProvider implements PromptPlaceholderProviderInterface
     }
 
     // A split dimension is matched by its exact name: unnamed here, the model invents a synonym.
-    $splits = array_unique(array_filter(array_column($catalog, 'split'), 'is_string'));
+    $splits = array_unique([...array_filter(array_column($catalog, 'split'), 'is_string'), ...MetricCatalog::namedDimensions()]);
     $dimensionRows = [];
 
     foreach ($splits as $split) {

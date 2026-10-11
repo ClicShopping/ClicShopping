@@ -92,7 +92,8 @@ class CoherenceGuard
             $column ??= $offending;
             $withheld[] = self::rowLabel($row);
             $withheldRevenue += $revenue;
-            $blanked[$key] = array_map(static fn($val) => null, array_intersect_key($row, array_flip(self::marginColumns($row)))) + $row;
+            // array_replace, never +: the union would move the blanked columns to the front of the table.
+            $blanked[$key] = array_replace($row, array_map(static fn($val) => null, array_intersect_key($row, array_flip(self::marginColumns($row)))));
         }
 
         if ($withheld === [] || $kept === []) {
@@ -137,7 +138,7 @@ class CoherenceGuard
             }
 
             $withheld[] = self::rowLabel($row);
-            $rows[$key] = array_map(static fn($val) => null, array_intersect_key($row, array_flip($margins))) + $row;
+            $rows[$key] = array_replace($row, array_map(static fn($val) => null, array_intersect_key($row, array_flip($margins))));
         }
 
         return ['rows' => $rows, 'withheld' => $withheld];
@@ -260,8 +261,9 @@ class CoherenceGuard
             }
         }
 
+        // A separator, never a space: "Bar Wine cooler" reads as one name, "Bar / Wine cooler" as two.
         if ($parts !== []) {
-            return implode(' ', $parts);
+            return implode(' / ', $parts);
         }
 
         // A row keyed by numeric period columns alone (year, month) is named by them: 2026-01.

@@ -218,47 +218,4 @@ class UIGenerator
 
     return $output . $menu . $script;
   }
-
-  /**
-   * Generates and returns the parameters and script configuration for integrating a ChatGPT model into CKEditor.
-   *
-   * @return string|bool Returns the generated script as a string if successful, otherwise, returns false.
-   */
-  public static function gptCkeditorParameters(): string|bool
-  {
-    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
-
-    // The browser talks to ClicShopping, never to a provider: the model, its provider, the API
-    // key and the wire format are all resolved server-side by the Gpt facade. Nothing here is
-    // OpenAI-specific, so switching the catalogued model to another provider needs no edit.
-    $url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin')
-         . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin')
-         . 'ajax/ChatGpt/chatGptCkeditor.php';
-
-    $script = '<script>
- let apiGptUrl = "' . $url . '";
- let titleGpt = "' . CLICSHOPPING::getDef('text_chat_title') . '";
- let disclaimerGpt = ' . json_encode(CLICSHOPPING::getDef('text_chat_ai_disclaimer'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . ';
-</script>';
-
-    $script .= '<script>
- function callChatGpt(prompt, callback) {
-   fetch(apiGptUrl, {
-     method: "POST",
-     headers: {
-       "Content-Type": "application/json"
-     },
-     body: JSON.stringify({message: prompt})
-   })
-   .then(response => response.json())
-   .then(data => callback(data))
-   .catch(error => console.error("Erreur GPT :", error));
- }
-</script>';
-
-    $script .= '<!--start wysiwig preloader--><style>.blur {filter: blur(1px);opacity: 0.4;}</style><!--end wysiwzg preloader-->';
-    $script .= '<script src="' . CLICSHOPPING::link('Shop/ext/javascript/cKeditor/dialogs/chatgpt.js') . '"></script>';
-
-    return $script;
-  }
 }

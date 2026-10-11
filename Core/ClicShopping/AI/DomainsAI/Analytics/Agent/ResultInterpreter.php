@@ -75,9 +75,10 @@ class ResultInterpreter
    * @param string $sqlQuery Optional SQL query for empty result formatting
    * @param string $queryType Optional query type (analytics, semantic, hybrid)
    * @param bool $asksAction The plan read the question as asking what to DO: only then are domain actions served
+   * @param array<int, string> $nonAdditive Plan metrics whose rows never add up across the breakdown
    * @return string|array Natural language interpretation or empty result array
    */
-  public function interpretResults(string $question, array $results, string $sqlQuery = '', string $queryType = 'analytics', bool $asksAction = false): string|array
+  public function interpretResults(string $question, array $results, string $sqlQuery = '', string $queryType = 'analytics', bool $asksAction = false, array $nonAdditive = []): string|array
   {
     // Check for empty results and delegate to EmptyResultFormatter
     if ($this->isEmptyResult($results)) {
@@ -110,7 +111,7 @@ class ResultInterpreter
       $question = $safeQuestion;
     }
 
-    $interpretCacheKey = "interpret_" . $this->cache->generateCacheKey($question . json_encode($cleanResults) . md5($sqlQuery));
+    $interpretCacheKey = "interpret_" . $this->cache->generateCacheKey($question . json_encode($cleanResults) . md5($sqlQuery) . implode(',', $nonAdditive));
 
     // Check the cache with expiration logic
     if ($this->enablePromptCache && isset($this->promptCache[$interpretCacheKey])) {
@@ -148,6 +149,8 @@ class ResultInterpreter
     $skeleton = $this->language->getDef('text_interpret_results');
     // Actions are served only when the plan says the question asks what to do; a prompt clause cannot gate them.
     $skeleton = str_replace('{{interpret_actions}}', $asksAction ? $this->language->getDef('text_interpret_results_actions') : '', $skeleton);
+    // A plan fact, not a prose rule: a general "never sum" clause left the sums in place.
+    $skeleton = str_replace('{{interpret_non_additive}}', $nonAdditive === [] ? '' : $this->language->getDef('text_interpret_results_non_additive', ['metrics' => implode(', ', $nonAdditive)]), $skeleton);
     $skeleton = PromptPlaceholders::resolve($skeleton, (string)CLICSHOPPING::getConfig('db_table_prefix'), (int)$this->language->getId(), $results);
     $prompt = Language::parseDefinition($skeleton, $array);
 

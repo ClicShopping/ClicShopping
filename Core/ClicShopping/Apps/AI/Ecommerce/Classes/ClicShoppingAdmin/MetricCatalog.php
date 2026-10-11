@@ -62,6 +62,27 @@ class MetricCatalog
   }
 
   /**
+   * Dimensions the planner must write under their exact name, each defined by
+   * `text_metric_dimension_<name>`: the category tree has two levels of reading.
+   *
+   * @return array<int, string> Dimension names as the analysis plan writes them
+   */
+  public static function namedDimensions(): array
+  {
+    return ['category', 'subcategory'];
+  }
+
+  /**
+   * A category named by the question is its whole sub-tree: the plan reads it as subcategory.
+   *
+   * @return array<string, string> Dimension => its reading under a filter on one of its values
+   */
+  public static function filteredDimensionReadings(): array
+  {
+    return ['category' => 'subcategory'];
+  }
+
+  /**
    * Key columns of a metric grain: a final GROUP BY on one of them breaks the result down by that
    * grain, which only a plan dimension, ranking or filter may ask for. Checked after generation.
    *
@@ -70,6 +91,28 @@ class MetricCatalog
   public static function grainKeys(): array
   {
     return ['product' => ['products_id', 'products_name']];
+  }
+
+  /**
+   * Columns every result table opens with, in this order, when the rows carry them: the category
+   * (top-level, path or name), then the product id and name. The figures follow.
+   *
+   * @return array<int, string>
+   */
+  public static function leadColumns(): array
+  {
+    return ['root_name', 'categories_name', 'category_name', 'category_path', 'products_id', 'products_name'];
+  }
+
+  /**
+   * USER-FACING label key shown in place of an empty value of these columns: a product filed in
+   * no category is grouped under NULL, which the table and the notices would show blank.
+   *
+   * @return array<string, string> Column => label key (ai_response_labels)
+   */
+  public static function noneLabels(): array
+  {
+    return array_fill_keys(['root_name', 'categories_name', 'category_name', 'category_path'], 'text_dimension_none_category');
   }
 
   /**
@@ -111,11 +154,17 @@ class MetricCatalog
    * `weighted_by` is optional and names the column carrying the accounting weight of the row
    * (orders_status.revenue_sign): the SQL must read it keeping weight 1, checked after generation.
    *
+   * `population_weight` is optional, with `weighted_by`: the weight of the ONE population the metric
+   * counts (cancelled 0, refunded -1). The SQL may skip the column but never filter that weight out.
+   *
+   * `aliases` is optional and lists the column names the generation rules fix for the metric
+   * (quantity_sold is total_sold): the plan contract accepts them for the metric's own name.
+   *
    * `expression` is optional: the formula over columns or terms() (base), or over other metric
    * names (derived), checked after generation. Absent where no presence check can tell the metric
    * from its neighbour (revenue_ttc reads the same 'TO' rows as revenue_ht).
    *
-   * @return array<string, array{grain: string, type: string, aggregation: string, definition: string, expression?: string, basis?: string, split?: string, line_alternative?: string, companions?: array<int, string>, weighted_by?: string}>
+   * @return array<string, array{grain: string, type: string, aggregation: string, definition: string, expression?: string, basis?: string, split?: string, line_alternative?: string, companions?: array<int, string>, weighted_by?: string, population_weight?: int, aliases?: array<int, string>}>
    */
   public static function all(): array
   {
@@ -164,6 +213,7 @@ class MetricCatalog
         'aggregation' => MetricAggregation::AVERAGE,
         'definition' => 'text_metric_average_cart',
         'weighted_by' => 'revenue_sign',
+        'aliases' => ['average_cart_ttc', 'average_cart_ht'],
       ],
       'quantity_sold' => [
         'grain' => 'order_line',
@@ -172,6 +222,7 @@ class MetricCatalog
         'expression' => 'products_quantity',
         'definition' => 'text_metric_quantity_sold',
         'weighted_by' => 'revenue_sign',
+        'aliases' => ['total_sold', 'sold'],
       ],
       'orders_count' => [
         'grain' => 'order',
@@ -186,6 +237,8 @@ class MetricCatalog
         'aggregation' => MetricAggregation::DISTINCT_COUNT,
         'expression' => 'orders_id',
         'definition' => 'text_metric_delivered_orders',
+        'weighted_by' => 'revenue_sign',
+        'population_weight' => 1,
       ],
       'cancelled_orders' => [
         'grain' => 'order',
@@ -193,6 +246,8 @@ class MetricCatalog
         'aggregation' => MetricAggregation::DISTINCT_COUNT,
         'expression' => 'orders_id',
         'definition' => 'text_metric_cancelled_orders',
+        'weighted_by' => 'revenue_sign',
+        'population_weight' => 0,
       ],
       'refunded_orders' => [
         'grain' => 'order',
@@ -200,6 +255,8 @@ class MetricCatalog
         'aggregation' => MetricAggregation::DISTINCT_COUNT,
         'expression' => 'orders_id',
         'definition' => 'text_metric_refunded_orders',
+        'weighted_by' => 'revenue_sign',
+        'population_weight' => -1,
       ],
       // Series statistics: revenue_ht read once per calendar period of the window, every period counted.
       'revenue_stddev' => [

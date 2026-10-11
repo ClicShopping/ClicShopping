@@ -324,7 +324,7 @@ class AnalyticsAgent implements AgentInterface
       // 3. Interpret the results
       $this->debugLog("\n--- STEP 3: Interpret results ---");
 
-      $interpretation = $this->resultStage->determineInterpretation($question, $results, $this->asksAction);
+      $interpretation = $this->resultStage->determineInterpretation($question, $results, $this->asksAction, $this->nonAdditiveMetrics());
 
       // 3.5. 🆕 Update cache with interpretation
       if (!empty($results['sql_query']) && !($results['cached'] ?? false)) {
@@ -388,7 +388,7 @@ class AnalyticsAgent implements AgentInterface
         $results,
         $response,
         $this->conversationMemory,
-        fn(string $q, array $feedback): array => ['results' => $this->sqlExecutor->guardSensitiveOutput($this->executeQuery($q, $feedback), $q, $this->userId), 'asks_action' => $this->asksAction]
+        fn(string $q, array $feedback): array => ['results' => $this->sqlExecutor->guardSensitiveOutput($this->executeQuery($q, $feedback), $q, $this->userId), 'asks_action' => $this->asksAction, 'non_additive' => $this->nonAdditiveMetrics()]
       );
 
       // 5. Extraire entity_id si présent
@@ -712,7 +712,9 @@ class AnalyticsAgent implements AgentInterface
 
     $terms = method_exists($domainApp, 'getMetricTerms') ? $domainApp->getMetricTerms() : [];
 
-    $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId, $orderSideDimensions, $terms);
+    $readings = method_exists($domainApp, 'getFilteredDimensionReadings') ? $domainApp->getFilteredDimensionReadings() : [];
+
+    $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId, $orderSideDimensions, $terms, $readings);
 
     return $this->analysisPlanner;
   }
@@ -1267,5 +1269,16 @@ class AnalyticsAgent implements AgentInterface
 
     // Learn from feedback (future enhancement)
     // Could adjust query generation strategies based on feedback patterns
+  }
+
+  /**
+   * @return array<int, string> Plan metrics whose rows never add up across the breakdown (validator mark)
+   */
+  private function nonAdditiveMetrics(): array
+  {
+    return array_values(array_map(
+      static fn(array $m): string => (string)$m['name'],
+      array_filter($this->analysisPlan['metrics'] ?? [], static fn($m): bool => is_array($m) && ($m['non_additive'] ?? false) === true)
+    ));
   }
 }

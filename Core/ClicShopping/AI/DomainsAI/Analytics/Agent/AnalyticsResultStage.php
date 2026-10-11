@@ -35,6 +35,49 @@ class AnalyticsResultStage
   }
 
   /**
+   * Put the columns the active domain declares as leading (getLeadColumns()) first, in its order;
+   * every other column keeps the SQL's order. An empty value of a column the domain names in
+   * getNoneLabels() shows that label. Deterministic: the table never depends on the model.
+   *
+   * @param array $results Executed query results
+   * @return array Results with reordered rows
+   */
+  public function orderLeadColumns(array $results): array
+  {
+    $domainApp = DomainRegistry::getInstance()->getActiveApp();
+
+    if (empty($results['results']) || !\is_array($results['results'])
+      || $domainApp === null || !method_exists($domainApp, 'getLeadColumns')) {
+      return $results;
+    }
+
+    $lead = $domainApp->getLeadColumns();
+    $none = [];
+
+    // An empty dimension value is a group of its own (filed nowhere): named, never shown blank.
+    foreach (method_exists($domainApp, 'getNoneLabels') ? $domainApp->getNoneLabels() : [] as $column => $key) {
+      $label = CLICSHOPPING::getDef($key);
+      if ($label !== '' && $label !== $key) {
+        $none[$column] = $label;
+      }
+    }
+
+    foreach ($results['results'] as $i => $row) {
+      if (\is_array($row)) {
+        foreach (array_intersect_key($none, $row) as $column => $label) {
+          if ($row[$column] === null || $row[$column] === '') {
+            $row[$column] = $label;
+          }
+        }
+
+        $results['results'][$i] = array_merge(array_intersect_key(array_flip($lead), $row), $row);
+      }
+    }
+
+    return $results;
+  }
+
+  /**
    * STEP 2.5: hand the executed rows to the active domain's result enrichers.
    *
    * Skipped when the interpretation is already cached: the answer text is built, enriching
@@ -45,6 +88,8 @@ class AnalyticsResultStage
    */
   public function enrichResultRows(array $results): array
   {
+    $results = $this->orderLeadColumns($results);
+
     if (empty($results['results']) || !\is_array($results['results'])) {
       return $results;
     }
@@ -163,9 +208,10 @@ class AnalyticsResultStage
    * @param string $question Original business question
    * @param array $results Executed query results
    * @param bool $asksAction The plan read the question as asking what to DO
+   * @param array<int, string> $nonAdditive Plan metrics whose rows never add up across the breakdown
    * @return mixed Interpretation (normally a string; may be array on upstream quirks)
    */
-  public function determineInterpretation(string $question, array $results, bool $asksAction): mixed
+  public function determineInterpretation(string $question, array $results, bool $asksAction, array $nonAdditive = []): mixed
   {
     // 🆕 Check if interpretation is already in cache
     if (isset($results['interpretation']) && !empty($results['interpretation'])) {
@@ -189,7 +235,7 @@ class AnalyticsResultStage
         $interpretation = CLICSHOPPING::getDef('text_empty_aggregate_window');
       } else {
         // Generate new interpretation only if we have data
-        $interpretation = $this->resultInterpreter->interpretResults($question, $results['results'], $results['sql_query'] ?? '', asksAction: $asksAction);
+        $interpretation = $this->resultInterpreter->interpretResults($question, $results['results'], $results['sql_query'] ?? '', asksAction: $asksAction, nonAdditive: $nonAdditive);
         $this->debugLog(" Generated new interpretation");
 
         // Type-safe logging with TypeSafetyGuard
@@ -256,8 +302,8 @@ class AnalyticsResultStage
    * @param array $results Query results, mutated by reference on regeneration
    * @param array $response Built response, mutated by reference
    * @param mixed $conversationMemory Conversation memory of the request, null when none
-   * @param \Closure $regenerate fn(string $question, array $feedback): array{results: array, asks_action: bool} —
-   *        re-runs the agent; `asks_action` is read AFTER the run, from the regenerated plan
+   * @param \Closure $regenerate fn(string $question, array $feedback): array{results: array, asks_action: bool, non_additive?: array} —
+   *        re-runs the agent; `asks_action` and `non_additive` are read AFTER the run, from the regenerated plan
    * @return void
    */
   public function applyValidationGate(string $question, bool $includeSQL, mixed $interpretation, array &$results, array &$response, mixed $conversationMemory, \Closure $regenerate): void
@@ -287,10 +333,10 @@ class AnalyticsResultStage
               'interaction_id' => 'validation_gate_' . uniqid(),
             ]];
 
-            ['results' => $regen, 'asks_action' => $regenAsksAction] = $regenerate($question, $feedback);
+            ['results' => $regen, 'asks_action' => $regenAsksAction, 'non_additive' => $regenNonAdditive] = $regenerate($question, $feedback) + ['non_additive' => []];
 
             if (($regen['type'] ?? 'error') !== 'error' && !empty($regen['results'])) {
-              $regenInterp = $this->resultInterpreter->interpretResults($question, $regen['results'], $regen['sql_query'] ?? '', asksAction: $regenAsksAction);
+              $regenInterp = $this->resultInterpreter->interpretResults($question, $regen['results'], $regen['sql_query'] ?? '', asksAction: $regenAsksAction, nonAdditive: $regenNonAdditive);
 
               if (is_string($regenInterp) && $regenInterp !== '') {
                 $regenEval = LlmGuardrails::checkGuardrails($question, $regenInterp);

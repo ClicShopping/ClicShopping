@@ -27,22 +27,30 @@ use ClicShopping\AI\Config\TechnicalDefaults;
  */
 class AnalysisPlanValidator
 {
-  /** @var array<string, array{grain: string, type: string, definition: string}> */
+  /** @var array<string, array{grain: string, type: string, definition: string, aggregation?: string, split?: string, line_alternative?: string}> */
   private array $catalog;
 
   /** @var array<string, true> Dimensions the domain declares at order grain (one value per order) */
   private array $orderSideDimensions = [];
 
+  /** @var array<string, string> Dimension => the dimension it is read under once filtered on a value */
+  private array $filteredDimensionReadings = [];
+
   /**
-   * @param array<string, array{grain: string, type: string, definition: string}> $catalog Domain metric catalogue
+   * @param array<string, array{grain: string, type: string, definition: string, aggregation?: string, split?: string, line_alternative?: string}> $catalog Domain metric catalogue
    * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
+   * @param array<string, string> $filteredDimensionReadings Dimension => its reading under a filter on one of its values
    */
-  public function __construct(array $catalog, array $orderSideDimensions = [])
+  public function __construct(array $catalog, array $orderSideDimensions = [], array $filteredDimensionReadings = [])
   {
     $this->catalog = $catalog;
 
     foreach ($orderSideDimensions as $dimension) {
       $this->orderSideDimensions[strtolower(trim((string)$dimension))] = true;
+    }
+
+    foreach ($filteredDimensionReadings as $from => $to) {
+      $this->filteredDimensionReadings[strtolower(trim((string)$from))] = strtolower(trim((string)$to));
     }
   }
 
@@ -120,6 +128,8 @@ class AnalysisPlanValidator
 
     $unsatisfiable = array_merge($unsatisfiable, $declared);
     $askedDimensions = is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : [];
+    $filters = is_array($plan['filters'] ?? null) ? $plan['filters'] : [];
+    [$askedDimensions, $filters, $rankings] = $this->readFilteredDimensions($askedDimensions, $filters, $rankings);
     $dimensions = self::splitDimensions($metrics, $askedDimensions, $rankings);
 
     // An order-grain metric broken down by a product dimension fans out (counted once per line):
@@ -144,7 +154,7 @@ class AnalysisPlanValidator
       'metrics' => $metrics,
       'dimensions' => $dimensions,
       'rankings' => $rankings,
-      'filters' => is_array($plan['filters'] ?? null) ? $plan['filters'] : [],
+      'filters' => $filters,
       'complexity' => is_numeric($plan['complexity'] ?? null) ? (int)$plan['complexity'] : 1,
       'unsatisfiable' => $unsatisfiable,
     ];
@@ -153,6 +163,40 @@ class AnalysisPlanValidator
             'no_metric_proposed' => false];
   }
 
+
+  /**
+   * Read a dimension filtered on one value under the dimension the domain declares for that case.
+   *
+   * A hierarchical dimension filtered on a member means that member's sub-tree: read under the
+   * plain dimension, its rows would be named after a top-level ancestor, not after the member.
+   *
+   * @param array $dimensions Dimensions the model asked for
+   * @param array $filters Filters the model asked for
+   * @param array $rankings Validated rankings
+   * @return array{0: array, 1: array, 2: array} Dimensions, filters and rankings, rewritten where declared
+   */
+  private function readFilteredDimensions(array $dimensions, array $filters, array $rankings): array
+  {
+    foreach ($this->filteredDimensionReadings as $from => $to) {
+      $value = $filters[$from] ?? null;
+
+      if (!is_scalar($value) || (string)$value === '') {
+        continue;
+      }
+
+      unset($filters[$from]);
+      $filters[$to] = $value;
+      $dimensions = array_values(array_unique(array_map(static fn($d) => $d === $from ? $to : $d, $dimensions)));
+
+      foreach ($rankings as $i => $ranking) {
+        if (($ranking['partition_by'] ?? null) === $from) {
+          $rankings[$i]['partition_by'] = $to;
+        }
+      }
+    }
+
+    return [$dimensions, $filters, $rankings];
+  }
 
   /**
    * Break a bare total down by the dimension the domain declared on its metric.
@@ -193,8 +237,9 @@ class AnalysisPlanValidator
    * row per line, so an order-level value summed or averaged over it is weighted by lines-per-
    * order - a silently wrong figure. A dimension is order-side (safe) only when it is a declared
    * `split` or declared order-side; every other dimension is a product breakdown. When the catalogue names a line-grain
-   * sibling the metric is swapped to it (revenue per category IS the sum of line revenues);
-   * otherwise the value is not attributable to the dimension and is recorded unsatisfiable.
+   * sibling the metric is swapped to it (revenue per category IS the sum of line revenues); a
+   * distinct count is kept; otherwise the value is not attributable to the dimension and is
+   * recorded unsatisfiable.
    *
    * Order-side dimensions are the catalogue's splits, those the domain declares at order grain and
    * every calendar unit (the event date); an undeclared one is read as a product breakdown (an
@@ -228,7 +273,17 @@ class AnalysisPlanValidator
     $seen = [];
 
     foreach ($metrics as $metric) {
-      if (($metric['grain'] ?? '') !== 'order') {
+      $distinct = ($this->catalog[$metric['name']]['aggregation'] ?? '') === MetricAggregation::DISTINCT_COUNT;
+
+      // A distinct count counts each order once per dimension value: lines never multiply it, but
+      // an order under several values counts in each, so its rows never add up to a total.
+      $orderGrain = ($metric['grain'] ?? '') === 'order';
+
+      if (!$orderGrain || $distinct) {
+        if ($orderGrain) {
+          $metric['non_additive'] = true;
+        }
+
         $name = $metric['name'];
         if (!isset($seen[$name])) { $seen[$name] = true; $resolved[] = $metric; }
 

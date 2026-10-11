@@ -28,20 +28,21 @@ final class PlanShapeFilter
    */
   public static function unplannedBreakdowns(string $sql, array $plan, array $grainKeys): array
   {
-    // A ranking or a filter legitimately returns the grain's own rows.
-    if ($grainKeys === [] || !empty($plan['rankings']) || !empty($plan['filters'])) {
+    // A ranking returns the grain's own rows; a filter does only when it names that grain.
+    if ($grainKeys === [] || !empty($plan['rankings'])) {
       return [];
     }
 
     $dimensions = strtolower(implode(' ', array_filter($plan['dimensions'] ?? [], 'is_string')));
+    $filterKeys = strtolower(implode(' ', array_map('strval', array_keys(is_array($plan['filters'] ?? null) ? $plan['filters'] : []))));
     [$groupBy, $selectList] = self::topLevelClauses($sql);
 
     $violations = [];
 
     foreach ($plan['metrics'] ?? [] as $metric) {
-      $grain = (string)($metric['grain'] ?? '');
+      $grain = strtolower((string)($metric['grain'] ?? ''));
 
-      if ($grain === '' || str_contains($dimensions, strtolower($grain))) {
+      if ($grain === '' || str_contains($dimensions, $grain) || str_contains($filterKeys, $grain)) {
         continue;
       }
 
@@ -87,6 +88,53 @@ final class PlanShapeFilter
     }
 
     return array_values(array_unique($missing));
+  }
+
+  /**
+   * Plan metrics that no column of the SQL is aliased to, under their name or an alias the
+   * catalogue declares (`aliases`): a metric merged into another or dropped is reported, never served.
+   * A dense day axis renames its columns, so it is skipped.
+   *
+   * @param string $sql Executable SQL
+   * @param array $plan Validated analysis plan
+   * @param array $catalog Domain metric catalogue (`name => ['aliases' => […], …]`)
+   * @return array<int, string> Violations, the missing metric names
+   */
+  public static function missingMetrics(string $sql, array $plan, array $catalog): array
+  {
+    if (($plan['periods']['time_grain'] ?? 'window') === 'day') {
+      return [];
+    }
+
+    $missing = [];
+
+    foreach ($plan['metrics'] ?? [] as $metric) {
+      $name = (string)($metric['name'] ?? '');
+
+      if ($name === '') {
+        continue;
+      }
+
+      $names = implode('|', array_map(static fn(string $n): string => preg_quote($n, '/'), [$name, ...($catalog[$name]['aliases'] ?? [])]));
+
+      if (preg_match(self::metricAliasPattern($names), $sql) !== 1) {
+        $missing[] = $name;
+      }
+    }
+
+    return array_values(array_unique($missing));
+  }
+
+  /**
+   * A window prefix or suffix (current, previous) still names the metric; any other affix names
+   * another column (cancelled_or_refunded_orders is neither metric).
+   *
+   * @param string $names Alternation of quoted metric names
+   * @return string
+   */
+  public static function metricAliasPattern(string $names): string
+  {
+    return '/\bAS\s+[`"]?(?:(?:current|previous)(?:_year|_period)?_)?(?:' . $names . ')(?:_current|_previous)?\b/i';
   }
 
   /**
