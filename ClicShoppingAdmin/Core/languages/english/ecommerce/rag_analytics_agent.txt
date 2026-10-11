@@ -67,26 +67,23 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    
    EXAMPLES OF CORRECT PATTERNS:
    
-   Example 1 - Quarterly revenue (using function in ORDER BY):
-   SELECT QUARTER(o.date_purchased) AS quarter, SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS revenue
-   FROM {{table_prefix}}orders o
-   JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id
-   WHERE YEAR(o.date_purchased) = 2025 AND ot.class IN ('TO','TX','SH')
-   GROUP BY QUARTER(o.date_purchased)
-   ORDER BY QUARTER(o.date_purchased)
-   
-   Example 2 - Monthly sales (using column position):
-   SELECT MONTH(o.date_purchased), COUNT(*) AS order_count
-   FROM {{table_prefix}}orders o
-   WHERE YEAR(o.date_purchased) = 2025
-   GROUP BY MONTH(o.date_purchased)
+   Example 1 - Products added per quarter (using function in ORDER BY):
+   SELECT QUARTER(p.products_date_added) AS quarter, COUNT(*) AS products_added
+   FROM {{table_prefix}}products p
+   WHERE p.products_date_added >= '2025-01-01' AND p.products_date_added < '2026-01-01'
+   GROUP BY QUARTER(p.products_date_added)
+   ORDER BY QUARTER(p.products_date_added)
+
+   Example 2 - Products added per month (using column position):
+   SELECT MONTH(p.products_date_added), COUNT(*) AS products_added
+   FROM {{table_prefix}}products p
+   WHERE p.products_date_added >= '2025-01-01' AND p.products_date_added < '2026-01-01'
+   GROUP BY MONTH(p.products_date_added)
    ORDER BY 1
-   
-   Example 3 - Yearly trends (using alias):
-   SELECT YEAR(o.date_purchased) AS year_value, SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS total_revenue
-   FROM {{table_prefix}}orders o
-   JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id
-   WHERE ot.class IN ('TO','TX','SH')
+
+   Example 3 - Products added per year (using alias):
+   SELECT YEAR(p.products_date_added) AS year_value, COUNT(*) AS products_added
+   FROM {{table_prefix}}products p
    GROUP BY year_value
    ORDER BY year_value
    
@@ -108,7 +105,7 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
    PRODUCTS TABLE:
    - "quantity" / "stock" / "inventory" → products_quantity
    - "stock alert" / "alert threshold" / "reorder point" → products_quantity_alert
-   - "price" / "cost" → products_price (catalog price)
+   - "price" → products_price (catalog price); "cost" / "purchase price" → products_cost (what the shop pays, see COLUMN ALIASING)
    - "model" / "reference" / "ref" → products_model
    - "sku" → products_sku
    - "ean" / "barcode" → products_ean
@@ -248,14 +245,14 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
      → Use {{table_prefix}}products_viewed table (special tracking table)
    
    - "profit margin" / "margin calculation"
-     → Calculate: (products_price - (products_cost + products_handling)) / products_price * 100
-       (the cost basis is products_cost plus products_handling)
+     → over SALES (a period, orders, products sold): gross_margin_amount and gross_margin_percent in the rule 8 form, over the sold lines
+     → of the CATALOGUE only (no sale and no period, e.g. "margin of each product at its list price"): (products_price - (products_cost + products_handling)) / products_price * 100
    
    LEVEL 4 - FRENCH-ENGLISH BUSINESS TERMS:
    
    Translate these French terms to their database equivalents:
    - "arrivage" / "nouveaux arrivages" → new arrivals (use products_date_added recent OR products_date_available future)
-   - "profit margin" / "gross margin" → profit margin (calculate from price and cost)
+   - "profit margin" / "gross margin" → gross margin (the LEVEL 3 entry above decides between sales and catalogue)
    - "hors stock" / "rupture de stock" → out of stock (products_quantity = 0)
    - "en stock" / "disponible" → in stock (products_quantity > 0)
    - "produits vus" / "consultations" → viewed products (use {{table_prefix}}products_viewed table)
@@ -276,45 +273,22 @@ Add a WHERE on the id ONLY when the question itself contains a concrete id value
 
 13. TEMPORAL COMPARISONS: When comparing metrics between periods (e.g., "may vs february", "this year vs the same period last year"):
     - Use CASE WHEN with SUM() to create separate columns, one per window, labelled current_ / previous_
-    - Example: SUM(CASE WHEN MONTH(date) = 5 THEN value ELSE 0 END) AS may_revenue
+    - Example: SUM(CASE WHEN date >= '2026-05-01' AND date < '2026-06-01' THEN value ELSE 0 END) AS may_revenue
     - PAIRED WINDOWS (MANDATORY): the two windows MUST cover the SAME number of days. Build the previous one by shifting the current one back with INTERVAL 1 YEAR (or INTERVAL 1 MONTH). Comparing a partial current period with a whole previous one makes every variation wrong, and wrong in the direction that reassures.
-    - Include YEAR filter to avoid mixing data from different years
+    - Each CASE spells BOTH bounds of its own window, as an explicit date range
     - Return results in single row with multiple columns
     - VARIATION DEPENDS ON THE TYPE OF METRIC: an AMOUNT, a COUNT or a DURATION varies in percent — (current - previous) / previous * 100. A RATE (margin %, conversion %, cancellation %) varies in PERCENTAGE POINTS — current_rate - previous_rate. A margin going from 70% to 72.73% is +2.73 percentage points, never "+3.9%": dividing one rate by another is a category error, and it is undetectable once printed in a table.
 
-14. DYNAMIC TIME EXPRESSIONS: Convert to SQL using NOW() - INTERVAL X DAY
-    
-    CRITICAL RULE - YEAR BOUNDARY HANDLING:
-    When using INTERVAL with QUARTER() or MONTH(), ALWAYS apply the same INTERVAL to YEAR().
-    This prevents bugs when crossing year boundaries (e.g., Q1 2026 looking for Q4 2025).
-    
-    - "Last 30 days" → WHERE o.date_purchased >= NOW() - INTERVAL 30 DAY
-    - "Last week" → WHERE o.date_purchased >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
-    - "This week" / "of this week" → WHERE YEARWEEK(o.date_purchased, 1) = YEARWEEK(CURDATE(), 1)
-    
-    - "Last month" → WHERE MONTH(o.date_purchased) = MONTH(CURDATE() - INTERVAL 1 MONTH)
-                     AND YEAR(o.date_purchased) = YEAR(CURDATE() - INTERVAL 1 MONTH)
-    
-    - "Last quarter" → WHERE QUARTER(o.date_purchased) = QUARTER(CURDATE() - INTERVAL 1 QUARTER)
-                       AND YEAR(o.date_purchased) = YEAR(CURDATE() - INTERVAL 1 QUARTER)
-    
-    - "This month" → WHERE MONTH(o.date_purchased) = MONTH(CURDATE())
-                     AND YEAR(o.date_purchased) = YEAR(CURDATE())
-    
-    - "This quarter" → WHERE QUARTER(o.date_purchased) = QUARTER(CURDATE())
-                       AND YEAR(o.date_purchased) = YEAR(CURDATE())
-    
-    - "Current year" / "This year" → WHERE YEAR(o.date_purchased) = YEAR(CURDATE())
-    
-    EXAMPLE - Year Boundary Case:
-    Query: "orders from last quarter" (asked in January 2026, which is Q1)
-    ✅ CORRECT: WHERE QUARTER(date) = QUARTER(CURDATE() - INTERVAL 1 QUARTER) 
-                AND YEAR(date) = YEAR(CURDATE() - INTERVAL 1 QUARTER)
-                → Looks for Q4 2025 (correct!)
-    
-    ❌ WRONG: WHERE QUARTER(date) = QUARTER(CURDATE() - INTERVAL 1 QUARTER)
-              AND YEAR(date) = YEAR(CURDATE())
-              → Looks for Q4 2026 (doesn't exist yet!)
+14. DYNAMIC TIME EXPRESSIONS: a period FILTER is ALWAYS an explicit range on the raw date column - never YEAR(), MONTH() or QUARTER() in a WHERE. Take the bounds from the ANALYSIS PLAN, else from the CURRENT DATE CONTEXT block. A range built from the first day of a period crosses the year boundary by construction.
+
+    - "Last 30 days" → WHERE o.date_purchased >= CURDATE() - INTERVAL 30 DAY
+    - "This week" → WHERE o.date_purchased >= CURDATE() - INTERVAL WEEKDAY(CURDATE()) DAY AND o.date_purchased < CURDATE() + INTERVAL 1 DAY
+    - "Last month" → WHERE o.date_purchased >= DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH, '%Y-%m-01') AND o.date_purchased < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+    - "This month" → WHERE o.date_purchased >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND o.date_purchased < CURDATE() + INTERVAL 1 DAY
+    - "Last quarter" → WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL (QUARTER(CURDATE()) - 2) * 3 MONTH AND o.date_purchased < MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL (QUARTER(CURDATE()) - 1) * 3 MONTH (asked in January 2026, this is October 1 to December 31, 2025)
+    - "This year" → WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()), 1) AND o.date_purchased < CURDATE() + INTERVAL 1 DAY
+
+    YEAR(), MONTH() and QUARTER() belong to the GROUP BY of a per-period breakdown only (MULTI-PERIOD TEMPORAL QUERIES).
 
 15. Ensure query correctness and prevent SQL injections
 16. Alert user if inconsistencies detected (duplicates, incorrect sums, missing data)
@@ -376,9 +350,9 @@ SIMPLE COUNT QUERIES (No Filters):
 COUNT QUERIES WITH FILTERS:
 - 'how many active products' → SELECT COUNT(*) AS total FROM {{table_prefix}}products WHERE products_status = 1
 
-- 'how many customers this month' → SELECT COUNT(*) AS total FROM {{table_prefix}}customers c JOIN {{table_prefix}}customers_info ci ON c.customers_id = ci.customers_info_id WHERE MONTH(ci.customers_info_date_account_created) = MONTH(CURDATE()) AND YEAR(ci.customers_info_date_account_created) = YEAR(CURDATE())
+- 'how many customers this month' → SELECT COUNT(*) AS total FROM {{table_prefix}}customers c JOIN {{table_prefix}}customers_info ci ON c.customers_id = ci.customers_info_id WHERE ci.customers_info_date_account_created >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND ci.customers_info_date_account_created < CURDATE() + INTERVAL 1 DAY
 
-- 'number of orders this month' → SELECT COUNT(*) AS total FROM {{table_prefix}}orders WHERE MONTH(date_purchased) = MONTH(CURDATE()) AND YEAR(date_purchased) = YEAR(CURDATE())
+- 'number of orders this month' → SELECT COUNT(*) AS total FROM {{table_prefix}}orders WHERE date_purchased >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND date_purchased < CURDATE() + INTERVAL 1 DAY
 
 - 'how many products in stock' → SELECT COUNT(*) AS total FROM {{table_prefix}}products WHERE products_quantity > 0
 
@@ -432,7 +406,7 @@ STATUS QUERIES (Most Common):
 - 'pending order' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}}
 - 'pending orders' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}}
 - 'products with status off' → SELECT p.products_id, pd.products_name, p.products_status FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE p.products_status = 0 AND pd.language_id = {{language_id}}
-- 'pending orders this year' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}} AND YEAR(o.date_purchased) = YEAR(CURDATE())
+- 'pending orders this year' → SELECT o.orders_id, o.customers_name, o.date_purchased, os.orders_status_name FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON o.orders_status = os.orders_status_id WHERE o.orders_status = 1 AND os.language_id = {{language_id}} AND o.date_purchased >= MAKEDATE(YEAR(CURDATE()), 1)
 - 'orders this week' → SELECT o.orders_id, o.customers_name, o.date_purchased FROM {{table_prefix}}orders o WHERE YEARWEEK(o.date_purchased, 1) = YEARWEEK(CURDATE(), 1)
 
 AGGREGATION QUERIES:
@@ -686,7 +660,7 @@ This returns ALL products at the minimum price, not just one!
 CORRECT Examples:
 "How many active products" → SELECT COUNT(DISTINCT p.products_id) AS total FROM {{table_prefix}}products p WHERE p.products_status = 1
 "Average price of active products in stock" → SELECT AVG(p.products_price) AS prix_moyen FROM {{table_prefix}}products p WHERE p.products_status = 1 AND p.products_quantity > 0
-"Total revenue" → SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) AS total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id WHERE ot.class IN ('TO','TX','SH')
+"Total stock of active products" → SELECT SUM(p.products_quantity) AS total_stock FROM {{table_prefix}}products p WHERE p.products_status = 1
 
 EXCEPTION - Aggregations with GROUP BY:
 If you use GROUP BY, you CAN include the grouped columns:
@@ -854,16 +828,12 @@ text_response_format = RESPONSE FORMAT RULES:
 
 multi_token_rules = MULTI-TOKEN ENTITY HANDLING:
 
-1. Product names with multiple words: Use LIKE with wildcards
-   Example: "Duralex Picardie" → WHERE products_name LIKE '%Duralex%Picardie%'
+1. Names in several words - product, category, manufacturer: one LIKE per word, chained with AND, in any order (rule 9)
+   Example: "Duralex Picardie" → WHERE products_name LIKE '%Duralex%' AND products_name LIKE '%Picardie%'
 
-2. Category names with spaces: Match full phrase
-   Example: "Kitchen Accessories" → WHERE categories_name LIKE '%Kitchen Accessories%'
+2. A category the question names is matched on a whole segment of its path through the CATEGORY TREE, never by LIKE '%name%' on categories_name
 
-3. Manufacturer names: Use exact match when possible
-   Example: "Le Creuset" → WHERE manufacturers_name = 'Le Creuset'
-
-4. Compound queries: Break into logical components
+3. Compound queries: Break into logical components
    Example: "Duralex products in Kitchen category" → Join products + categories with both filters
 
 

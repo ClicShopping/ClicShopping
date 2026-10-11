@@ -73,7 +73,15 @@ if ($CLICSHOPPING_MessageStack->exists('main')) {
     </div>
     <div class="form-group row">
       <label class="col-5 col-form-label"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_context_window'); ?></label>
-      <div class="col-md-5"><?php echo HTML::inputField('ai_model_context_window', $m['ai_model_context_window'] ?? '0', 'placeholder=' . $CLICSHOPPING_ChatGpt->getDef('text_info_context')); ?></div>
+      <div class="col-md-5"><?php echo HTML::inputField('ai_model_context_window', $m['ai_model_context_window'] ?? '0', 'placeholder="' . $CLICSHOPPING_ChatGpt->getDef('text_info_context') . '"'); ?></div>
+    </div>
+    <div class="form-group row">
+      <label class="col-5 col-form-label"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_reasoning_efforts'); ?></label>
+      <div class="col-md-5"><?php echo HTML::inputField('ai_model_reasoning_efforts', $m['ai_model_reasoning_efforts'] ?? '', 'placeholder="' . $CLICSHOPPING_ChatGpt->getDef('text_info_reasoning_efforts') . '"'); ?></div>
+    </div>
+    <div class="form-group row">
+      <label class="col-5 col-form-label"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_reasons_by_default'); ?></label>
+      <div class="col-md-5"><?php echo HTML::selectField('ai_model_reasons_by_default', [['id' => '', 'text' => $CLICSHOPPING_ChatGpt->getDef('text_reasons_unmeasured')], ['id' => '1', 'text' => $CLICSHOPPING_ChatGpt->getDef('text_yes')], ['id' => '0', 'text' => $CLICSHOPPING_ChatGpt->getDef('text_no')]], isset($m['ai_model_reasons_by_default']) ? (string)$m['ai_model_reasons_by_default'] : ''); ?></div>
     </div>
     <div class="form-group row">
       <label class="col-5 col-form-label"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_cost_input'); ?></label>

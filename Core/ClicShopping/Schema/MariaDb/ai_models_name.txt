@@ -14,6 +14,8 @@ sort_order int(11) unsigned not_null default(0) comment(Display order in adminis
 created_at timestamp NULL default(current_timestamp) comment(Creation date)
 updated_at timestamp NULL default(current_timestamp) on_update(current_timestamp) comment(Last update date)
 ai_model_status_llm_recommended tinyint(1) not_null default(0) comment(Recommended LLM - 1 active, 0 inactive)
+ai_model_reasoning_efforts varchar(100) comment(Reasoning efforts the model accepts, comma-separated as the provider enumerates them - none,low,medium,high,xhigh - empty when it takes none, NULL when unmeasured)
+ai_model_reasons_by_default tinyint(1) comment(Does the model reason when no effort is sent - 1 yes, 0 no, NULL when unmeasured)
 
 --
 primary ai_model_name_id

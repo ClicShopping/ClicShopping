@@ -30,6 +30,10 @@ text_cost_output = Prix token sortie
 text_api_key = Clé API (fournisseur)
 text_organisation = Organisation / Workspace ID
 text_info_context = Privilégier un contexte minimum de 64k pour l'analyse de données complexes.
+text_reasoning_efforts = Efforts de raisonnement acceptés
+text_info_reasoning_efforts = Tels que le fournisseur les liste, ex. none,low,medium,high,xhigh - vide = non mesuré
+text_reasons_by_default = Raisonne sans effort envoyé
+text_reasons_unmeasured = Non mesuré
 text_info_ai_capable = Les modèles légers/locaux sont réservés au chat et interdits pour l'analyse structurée.
 text_help_note = Les modèles de raisonnement à grand contexte donnent l'analyse la plus fiable.<br>
 Les tarifs d'utilisation des modéles peuvent varier. Veuillez les mettre à jour.<br>

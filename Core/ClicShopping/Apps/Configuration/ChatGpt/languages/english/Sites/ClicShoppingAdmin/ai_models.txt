@@ -30,6 +30,10 @@ text_cost_output = Output token price
 text_api_key = API key (provider)
 text_organisation = Organisation / Workspace ID
 text_info_context = Prefer a minimum context of 64k for complex data analysis.
+text_reasoning_efforts = Reasoning efforts accepted
+text_info_reasoning_efforts = As the provider lists them, e.g. none,low,medium,high,xhigh - empty = not measured
+text_reasons_by_default = Reasons when no effort is sent
+text_reasons_unmeasured = Not measured
 text_info_ai_capable = Light/local models are chat-only and must not be used for structured analysis.
 text_help_note = Reasoning models with a large context give the most reliable analytics.<br>
 Usage rates for the models may vary. Please update them.<br>
