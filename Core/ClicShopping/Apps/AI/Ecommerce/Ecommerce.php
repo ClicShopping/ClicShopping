@@ -10,6 +10,7 @@ namespace ClicShopping\Apps\AI\Ecommerce;
 
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\EntityConfig;
 use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\EventAxis;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\MetricCatalog;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\HybridPreFilter;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ProductHelper;
@@ -200,6 +201,16 @@ class Ecommerce extends AbstractDomainApp
   public function getMetricCatalog(): array
   {
     return MetricCatalog::all();
+  }
+
+  /**
+   * Signed event axis of this domain and its projections, compiled by PlanSqlCompiler.
+   *
+   * @return array{axis: array, projections: array}
+   */
+  public function getEventAxis(): array
+  {
+    return ['axis' => EventAxis::axis(), 'projections' => EventAxis::projections()];
   }
 
   /**

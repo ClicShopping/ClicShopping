@@ -263,23 +263,23 @@ class PromptBuilder
    */
   private function buildSystemMessageAnalytics(): string
   {
-    // Load language definitions from ClicShoppingAdmin/Core/languages/main.txt
-    // This loads the AnalyticsAgent prompt definitions in English
+    // Agnostic SQL rules (Agents/), then the domain layer that fills their {{domain_*}} slots.
+    DomainConfig::loadAgnosticLanguageFile('rag_sql_generation');
     DomainConfig::loadLanguageFile('rag_analytics_agent');
 
     // Get all prompt components
     $baseSystemMessage = $this->language->getDef('text_system_message');
     $orderCalculation = $this->language->getDef('text_order_calculation');
     $queryExamples = $this->language->getDef('text_query_examples');
-    $sqlGenerationRules = $this->language->getDef('text_sql_generation_rules');
-    $aggregationRules = $this->language->getDef('text_aggregation_rules');  // 🚨 CRITICAL: Load aggregation rules
-    $orderGrainRules = $this->language->getDef('text_order_grain_rules');
-    $sqlFormatInstructions = $this->language->getDef('text_sql_format_instructions');
-    $text_multi_query_warning = $this->language->getDef('text_multi_query_warning');
-    $securityGuidelines = $this->language->getDef('text_security_guidelines');
+    $sqlGenerationRules = $this->sqlRulesSection('text_sql_rules_generation');
+    $aggregationRules = $this->sqlRulesSection('text_sql_rules_aggregation');
+    $orderGrainRules = $this->sqlRulesSection('text_sql_rules_grain');
+    $sqlFormatInstructions = $this->sqlRulesSection('text_sql_rules_format');
+    $text_multi_query_warning = $this->sqlRulesSection('text_sql_rules_multi_query_warning');
+    $securityGuidelines = $this->sqlRulesSection('text_sql_rules_security');
     $entityMetadataGuidelines = $this->language->getDef('text_entity_metadata_guidelines');
     $multiTokenRules = $this->language->getDef('multi_token_rules');
-    $responseFormat = $this->language->getDef('text_response_format');
+    $responseFormat = $this->sqlRulesSection('text_sql_rules_response_format');
     $text_rag_system_analytics_rules = $this->language->getDef('text_rag_system_analytics_rules');
 
     // TASK 1.1: Add current date context for relative date queries
@@ -357,6 +357,25 @@ class PromptBuilder
     return $finalMessage;
   }
   
+  /**
+   * Agnostic SQL rule section with the domain's text injected at each {{domain_x}} slot
+   *
+   * Plain replacement, never getDef() vars: those strip the braces of every other token
+   * ({{table_prefix}}, {{language_id}}) that PromptPlaceholders still has to resolve.
+   *
+   * @param string $key Key of an Agents/rag_sql_generation section
+   * @return string Section text; a slot the domain does not define resolves to ''
+   */
+  private function sqlRulesSection(string $key): string
+  {
+    return (string)preg_replace_callback('/\{\{domain_([a-z0-9_]+)\}\}/', function (array $m): string {
+      $domainKey = 'text_sql_domain_' . $m[1];
+      $value = $this->language->getDef($domainKey);
+
+      return $value === $domainKey ? '' : $value;
+    }, $this->language->getDef($key));
+  }
+
   /**
    * Build current date context for analytics queries
    *

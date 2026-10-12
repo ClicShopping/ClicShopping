@@ -120,6 +120,9 @@ class TechnicalDefaults
     'CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS' => 'True',
     'CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_LLM_PROVIDER' => null,
     'CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_DEBUG' => null,
+
+    // Analytics SQL built from the validated plan (PlanSqlCompiler); 'False' sends every plan to the model.
+    'CLICSHOPPING_APP_CHATGPT_RA_PLAN_COMPILER_STATUS' => 'True',
   ];
 
   /**

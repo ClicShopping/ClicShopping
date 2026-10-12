@@ -1,299 +1,6 @@
 text_system_message = You are an e-commerce expert assistant specialized in data analysis.
 
 
-text_sql_generation_rules = SQL GENERATION RULES:
-
-COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
-- Catalog / list price comes from {{table_prefix}}products.products_price → you MUST alias it: SELECT p.products_price AS catalog_price
-- Transaction / sale price comes from {{table_prefix}}orders_products.products_price → you MUST alias it: SELECT op.products_price AS transaction_price
-- Purchase / cost / buying price comes from {{table_prefix}}products.products_cost → you MUST alias it: SELECT p.products_cost AS purchase_price. It is what the shop PAYS, catalog_price is what it SELLS at: never report one for the other.
-- Units sold / quantity sold is SUM of {{table_prefix}}orders_products.products_quantity → you MUST alias it: SUM(op.products_quantity) AS total_sold. Units carry the ACCOUNTING WEIGHT of the order status like revenue: with no window, keep only the orders that count as a sale (os.revenue_sign = 1 - a refunded order nets to zero); over a window, build it in the canonical shape of the ORDER STATUS FILTERING section, SUM(ev.sign * ev.products_quantity), so a refund is deducted at its date. Never sum raw order lines.
-- NEVER output a bare products_price or invent ad-hoc alias names. These fixed aliases (catalog_price, transaction_price, total_sold) are REQUIRED so downstream synthesis and the front-office receive stable, predictable column names on single-product lookups, lists, aggregations and hybrid queries.
-
-🚫 EXCLUDED COLUMNS — NEVER reference these in any SQL, even though they appear in the schema (unused / not connected). Maintain this list here:
-- `erp_invoice` : ERP-integration flag — NO ERP is connected, so it is ALWAYS 0 (filtering on it returns zero rows). For "invoiced" orders use `orders_status_invoice = 2` instead; NEVER use `erp_invoice`.
-
-COLUMN LOCATIONS (verified against the live schema — use the real column of the actual table):
-- {{table_prefix}}orders stores the buyer name in the single column customers_name (full name). The firstname/lastname split exists on {{table_prefix}}customers.
-- {{table_prefix}}specials expiry column is expires_date. It also has scheduled_date (future activation date, NULL = active immediately).
-- SCHEDULING WINDOW ({{table_prefix}}specials, {{table_prefix}}products_featured, {{table_prefix}}products_favorites): scheduled_date and expires_date are nullable datetimes and every comparison MUST carry an explicit operator — `scheduled_date <= NOW()` for "already started", `expires_date >= NOW()` for "not yet over". Writing a column next to NOW() with NO operator (e.g. `s.scheduled_date NOW()`) is a syntax error. status = 1 alone already answers "current"; add the window only when the question is explicitly about scheduling, and always guard the NULL: (s.scheduled_date IS NULL OR s.scheduled_date <= NOW()).
-- TOP N PER GROUP (best-selling / least-selling products per category, per supplier, per month): a window function is allowed ONLY in the SELECT list and in ORDER BY. Writing ROW_NUMBER() OVER (...) inside HAVING or WHERE is error 4015 and the whole query is lost. Rank in an inner query, filter in the outer one: SELECT * FROM (SELECT cd.categories_name, pd.products_name, SUM(op.products_quantity) AS sold, ROW_NUMBER() OVER (PARTITION BY cd.categories_id ORDER BY SUM(op.products_quantity) DESC) AS rank_best, ROW_NUMBER() OVER (PARTITION BY cd.categories_id ORDER BY SUM(op.products_quantity) ASC) AS rank_worst FROM ... GROUP BY cd.categories_id, cd.categories_name, p.products_id, pd.products_name) ranked WHERE ranked.rank_best <= 3 OR ranked.rank_worst <= 3. An aggregate alias (sold) is not readable from the same query's HAVING either — repeat the aggregate or rank it in the inner query. Both rankings (best and worst) are computed in the SAME inner query, under ONE period filter: never bound the worst side on a second, different date range. A mismatched pair such as date_purchased >= '2026-01-01' AND date_purchased <= '2025-08-12' is empty by construction, every product then sums to 0, and the ranking of the least-sold products is nothing but insertion order presented as a result.
-- LIMIT INSIDE A SUBQUERY: MariaDB rejects LIMIT in an IN / ALL / ANY / SOME subquery - error 1235, the whole query is lost. To restrict to the last N rows of a set, wrap that subquery in a derived table: WHERE o.orders_id IN (SELECT x.orders_id FROM (SELECT orders_id FROM {{table_prefix}}orders ORDER BY date_purchased DESC LIMIT 5) x), or JOIN the derived table directly. A LIMIT in a FROM subquery is always fine.
-- The manufacturer name is {{table_prefix}}manufacturers.manufacturers_name; the supplier name is {{table_prefix}}suppliers.suppliers_name.
-- {{table_prefix}}orders_products carries no supplier or manufacturer id: JOIN {{table_prefix}}products via products_id, then read {{table_prefix}}products.suppliers_id / {{table_prefix}}products.manufacturers_id.
-- {{table_prefix}}return_orders references the product via product_id (singular) and also stores product_name denormalised; its customer columns use the singular prefix (customer_firstname, customer_lastname).
-
-1. Always use full table prefixes (e.g., {{table_prefix}}products not products)
-2. Add appropriate joins for related tables
-3. Filter by language_id when relevant
-4. Optimize for performance
-5. Add appropriate ORDER BY clauses
-6. Limit results to reasonable number if necessary (LIMIT)
-
-🚨 RULE — NAMED FILTER WITH NO VALUE → LIST, NEVER INVENT OR PLACEHOLDER 🚨
-When the question NAMES a filter column ("based on customer ID", "by product id", "for an order id") but gives NO concrete value:
-- NEVER invent a value, and NEVER reuse an id from the conversation context that the question did not explicitly ask for.
-- NEVER emit a bind placeholder (?, :id, %s, or <id>): the SQL is executed verbatim, an unbound placeholder is a syntax error.
-- Instead LIST: select the requested columns for ALL rows, ordered by that id ascending, with a reasonable LIMIT (default 100).
-✅ CORRECT (no id given): SELECT customers_id, CONCAT(customers_firstname, ' ', customers_lastname) AS customers_name, customers_email_address, customers_telephone FROM {{table_prefix}}customers ORDER BY customers_id ASC LIMIT 100
-❌ WRONG (unbound placeholder): SELECT ... FROM {{table_prefix}}customers WHERE customers_id = ?
-❌ WRONG (invented / context-borrowed id): SELECT ... FROM {{table_prefix}}customers WHERE customers_id = 103
-Add a WHERE on the id ONLY when the question itself contains a concrete id value (e.g. "customer 42").
-
-6.1. ORDER BY SYNTAX RULES (CRITICAL - PREVENTS COLUMN REFERENCE ERRORS):
-
-   When using aggregate functions (YEAR, QUARTER, MONTH, etc.) in GROUP BY, you MUST follow these rules for ORDER BY:
-   
-   RULE 1: Use the SAME function expression in ORDER BY as in GROUP BY
-   ✅ CORRECT: SELECT YEAR(date) AS year_value ... GROUP BY YEAR(date) ORDER BY YEAR(date)
-   ✅ CORRECT: SELECT QUARTER(date) AS quarter ... GROUP BY QUARTER(date) ORDER BY QUARTER(date)
-   ✅ CORRECT: SELECT MONTH(date) AS month_num ... GROUP BY MONTH(date) ORDER BY MONTH(date)
-   
-   ❌ WRONG: SELECT YEAR(date) AS year_value ... GROUP BY YEAR(date) ORDER BY year
-   ❌ WRONG: SELECT QUARTER(date) AS quarter ... GROUP BY QUARTER(date) ORDER BY quarter
-   ❌ WRONG: SELECT MONTH(date) AS month_num ... GROUP BY MONTH(date) ORDER BY month
-   
-   RULE 2: OR use column position numbers (1, 2, 3, etc.)
-   ✅ CORRECT: SELECT YEAR(date), SUM(value) ... GROUP BY YEAR(date) ORDER BY 1
-   ✅ CORRECT: SELECT QUARTER(date), COUNT(*) ... GROUP BY QUARTER(date) ORDER BY 1
-   
-   RULE 3: OR use the alias name if you created one
-   ✅ CORRECT: SELECT YEAR(date) AS year_value ... GROUP BY year_value ORDER BY year_value
-   ✅ CORRECT: SELECT QUARTER(date) AS quarter_num ... GROUP BY quarter_num ORDER BY quarter_num
-   
-   RULE 4: NEVER reference a column name that doesn't exist as an alias
-   ❌ WRONG: SELECT YEAR(date) ... ORDER BY year (column 'year' doesn't exist!)
-   ❌ WRONG: SELECT QUARTER(date) ... ORDER BY quarter (column 'quarter' doesn't exist!)
-   
-   EXAMPLES OF CORRECT PATTERNS:
-   
-   Example 1 - Products added per quarter (using function in ORDER BY):
-   SELECT QUARTER(p.products_date_added) AS quarter, COUNT(*) AS products_added
-   FROM {{table_prefix}}products p
-   WHERE p.products_date_added >= '2025-01-01' AND p.products_date_added < '2026-01-01'
-   GROUP BY QUARTER(p.products_date_added)
-   ORDER BY QUARTER(p.products_date_added)
-
-   Example 2 - Products added per month (using column position):
-   SELECT MONTH(p.products_date_added), COUNT(*) AS products_added
-   FROM {{table_prefix}}products p
-   WHERE p.products_date_added >= '2025-01-01' AND p.products_date_added < '2026-01-01'
-   GROUP BY MONTH(p.products_date_added)
-   ORDER BY 1
-
-   Example 3 - Products added per year (using alias):
-   SELECT YEAR(p.products_date_added) AS year_value, COUNT(*) AS products_added
-   FROM {{table_prefix}}products p
-   GROUP BY year_value
-   ORDER BY year_value
-   
-   REMEMBER: The ORDER BY clause must reference either:
-   1. The exact function expression from SELECT/GROUP BY
-   2. A column position number (1, 2, 3...)
-   3. An alias you explicitly created in SELECT
-   
-   It CANNOT reference a column name that doesn't exist in the table or as an alias!
-
-7. TEXT FIELD SEARCHES: Use LIKE with wildcards (%)
-   - A name search and the language of the ANSWER are two different things. Search the name in a subquery over ALL languages, and keep the language filter on the JOIN that renders the name: JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%ProductName%')
-   - Multiple words: Use AND inside that subquery: WHERE products_name LIKE '%Word1%' AND products_name LIKE '%Word2%'
-   - Alternative spelling: Use OR inside that subquery: WHERE products_name LIKE '%Josef%' OR products_name LIKE '%Joseph%'
-
-8. FIELD MAPPING (CRITICAL - Common Query Terms to Database Columns):
-   When user asks for these terms, map to correct database columns:
-   
-   PRODUCTS TABLE:
-   - "quantity" / "stock" / "inventory" → products_quantity
-   - "stock alert" / "alert threshold" / "reorder point" → products_quantity_alert
-   - "price" → products_price (catalog price); "cost" / "purchase price" → products_cost (what the shop pays, see COLUMN ALIASING)
-   - "model" / "reference" / "ref" → products_model
-   - "sku" → products_sku
-   - "ean" / "barcode" → products_ean
-   - "name" / "title" → products_name (in products_description table)
-   - "weight" → products_weight
-   - "status" / "active" → products_status
-   
-   ORDERS TABLE:
-   - "quantity ordered" / "quantity sold" → products_quantity (in orders_products table)
-   - "transaction price" / "sale price" → products_price (in orders_products table)
-   - "order total" / "revenue" / "turnover" → MERCHANDISE, excluding tax AND shipping (the default): SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) with ot.class IN ('TO','TX','SH'); INCLUDING tax (invoiced, shipping included): SUM(ot.value) with ot.class = 'TO'. NEVER class='ST'.
-   - the ACCOUNTING WEIGHT of the order status applies to every one of these sums - revenue, margin, average cart, units sold. It is the column {{table_prefix}}orders_status.revenue_sign, never a status id and never a status name: 1 the order counts as a sale, 0 it never became one and is dropped, -1 the sale was undone and must be DEDUCTED at the date of the status change, never merely excluded. Join it as `JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}}` and build the sum with the CANONICAL SHAPE of the ORDER STATUS FILTERING section - a UNION ALL over an event date. Writing a status id in a filter is always wrong. That dating is for AMOUNTS summed over a window. A COUNT of orders counts each order ONCE, on its purchase date, and reads its CURRENT weight: orders_count never subtracts its refunds, and when the question defines the orders by when they were PLACED ('orders placed in 2025', 'of last year's orders') the refunded or cancelled ones among them are counted over that same purchase window - an order placed in 2025 and refunded in 2026 is a refunded 2025 order.
-   - HISTORY DOES NOT DEPEND ON THE CATALOGUE. A product that was ordered can be DELETED from the catalogue later, and its revenue MUST still be counted: the order line records the sale, the catalogue only holds the current offer. So NEVER reach the CATALOGUE with an INNER JOIN to compute an amount - that means {{table_prefix}}products, {{table_prefix}}products_description AND the whole category chain {{table_prefix}}products_to_categories, {{table_prefix}}categories, {{table_prefix}}categories_description: a deleted product carries no category row either, so one INNER JOIN anywhere in that chain throws it out through the back door - a deleted product then vanishes with its whole history, the total shrinks, and there is no warning, no error and no zero row to notice. Use LEFT JOIN and name the product with COALESCE(pd.products_name, op.products_name): {{table_prefix}}orders_products.products_name carries the label FROZEN at order time, which survives deletion, renaming and translation. Always close the description join on AND pd.language_id = {{language_id}} - without it a product carrying two labels comes back twice and its amount is counted twice. Group a product breakdown on op.products_id, NEVER on a name: the frozen label is written in the language the BUYER was browsing, so one product ordered in two languages carries two labels and a GROUP BY on the name splits it into two rows that each look like a separate product.
-   - the ANALYSIS PLAN names the basis when it carries a revenue metric: revenue_ht = EXCLUDING tax (the 'TO' minus 'TX' form), revenue_ttc = INCLUDING tax (the 'TO' form). Use the form of the metric the plan named, alias the column with that exact name, and never substitute the other basis.
-   - the ANALYSIS PLAN names the cost basis when it carries a margin metric: gross_margin_amount = SUM(op.final_price * op.products_quantity) - SUM((p.products_cost + p.products_handling) * op.products_quantity) over the sold lines, gross_margin_percent = that amount / SUM(op.final_price * op.products_quantity) * 100. The cost basis is products_cost PLUS products_handling, joined from {{table_prefix}}products. NEVER emit a margin without subtracting the cost basis (revenue aliased as a margin reads as 100% and is false), and when the plan names the metric use THIS form, never the catalogue-price form, and alias the column with the exact metric name. "Over the sold lines" is the ACCOUNTING WEIGHT and not a figure of speech: build this form INSIDE the canonical shape of the ORDER STATUS FILTERING section, exactly like a revenue sum - join {{table_prefix}}orders_status, drop what never became a sale, and DEDUCT an undone sale at the date of its status change. A margin summed over raw order lines counts cancelled and refunded orders as profit. A line whose product carries NO cost - products_cost NULL or 0 - has no margin and is LEFT OUT of it: write its cost (NULLIF(p.products_cost, 0) + p.products_handling) * op.products_quantity so it stays NULL, sum the margin denominator over the costed lines only - SUM(CASE WHEN ev.line_cost IS NOT NULL THEN ev.sign * ev.line_revenue END) - and in a breakdown KEEP a group without any costed line, never filter it out: its margins come back NULL and the answer names it; a revenue column in the same query still sums EVERY line. NEVER COALESCE the cost to 0: the gap would read as a 100% margin. gross_margin_percent is a rate over SALES: when the costed net revenue of a row is zero or negative - a period that only holds a refund - the rate is NULL, never a positive figure next to a negative amount, so wrap its denominator as NULLIF(GREATEST(..., 0), 0).
-   - BOTH MARGIN FIGURES TRAVEL TOGETHER: a query selecting gross_margin_amount ALSO selects gross_margin_percent, and the reverse, at the same level and with the forms above - the amount without its rate, or the rate without its amount, is half an answer. When the result carries a variation, each keeps its own: in percent for the amount, in percentage points for the rate.
-   - A RANKING ON A MARGIN (the best or worst margins, top or bottom N by gross_margin_amount or gross_margin_percent) ranks only the rows that carry a net sale: add HAVING SUM(ev.sign * ev.line_revenue) <> 0 before the ORDER BY. A row whose sales were all refunded has no margin, not a low one, and ranking it fills one of the N places with nothing to act on.
-   - MANDATORY COMPANIONS OF ANY MARGIN: whatever the question, its wording, its language, its period, its comparison or its breakdown, a query selecting gross_margin_amount or gross_margin_percent ALSO selects, at the same level, line_revenue over EVERY line = ROUND(SUM(ev.sign * ev.line_revenue), 2), never wrapped in a CASE on the cost - the costed-lines sum is the rate denominator only, never a column: aliased line_revenue it hides the uncovered revenue under a name that promises all of it - and revenue_without_cost = ROUND(SUM(CASE WHEN ev.line_cost IS NULL THEN ev.sign * ev.line_revenue END), 2) - the revenue the margin does not cover, never a count of lines. NEVER drop the lines without cost in the WHERE clause (no ev.line_cost IS NOT NULL): the margin already skips them, and the revenue they carry must stay measurable. These two columns are part of the margin, not an extra metric: the ANALYSIS PLAN never forbids them. Everywhere else they are computed per row, in the same GROUP BY as the margin they accompany: never in a separate CTE joined onto the rows, which would repeat the window's total on every row under a name that promises that row's revenue. ONLY on a DENSE DAY AXIS (the plan's time grain is DAY) are they NOT carried through the days: there, compute them once per window, over the whole window, in their own small CTE, and CROSS JOIN that single row onto the final rows.
-   - the ANALYSIS PLAN names the form when it carries one of these: discount_amount = SUM(ot.value) with ot.class IN ('CD','DC'), shipping_billed = SUM(ot.value) with ot.class = 'SH'. Both are order-grain sums; alias the column with the exact metric name. NEVER fold discount_amount into a revenue or a margin metric - return it as its own column, never subtracted from them and never added back.
-   - the ANALYSIS PLAN may name the dimension tax_convention: it is the column orders_prices_include_tax of the orders table. GROUP BY it and select it RAW (0 or 1, never a label, never renamed) aliased tax_convention, next to the metric. It separates invoices drawn up on tax-EXCLUDED prices (0) from tax-INCLUDED ones (1); the metric itself keeps the form the plan named.
-   - "customer discount" (with the 'customer'/'client' qualifier) → orders_total WHERE class='CD' (value = amount, title = label)
-   - "coupon" / "coupons granted" / "coupons used" → orders_total WHERE class='DC' (value = amount, title = label)
-   - bare "discount(s)" / "discounts granted" / "discounts and coupons" (NO 'customer'/'client' qualifier) → orders_total WHERE class IN ('CD','DC'). This is the DEFAULT for any unqualified discount question: coupons ARE discounts, so include them unless the user explicitly restricts to customer discounts.
-   - ALWAYS expose the discount TYPE: include `ot.class` (CD = customer discount, DC = coupon) and `ot.title` in the SELECT so each row states which kind of discount it is.
-   **CRITICAL**: For revenue/turnover, NEVER use class='ST' - it mixes tax conventions across orders and overstates the figure. Use 'TO' alone for the INVOICED tax-inclusive amount (shipping included), or 'TO' minus 'TX' minus 'SH' for the MERCHANDISE amount, which is the default.
-   **CRITICAL**: Discounts/coupons granted on orders are orders_total lines (class 'CD'/'DC', amount = ot.value, label = ot.title). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price); that is NOT the discount. {{table_prefix}}specials is unrelated (product promo prices).
-   **CRITICAL**: the customer discount is ORDER-LEVEL (one orders_total CD line per order, applied to the whole order), NOT per product. To list the PRODUCTS of discounted orders ("products that received a discount"), JOIN {{table_prefix}}orders_products (and {{table_prefix}}products_description) to the SAME order that has the class='CD' line.
-
-   EXAMPLES:
-   - "price and quantity" → SELECT p.products_id, p.products_price, p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd...
-   - "stock level" → SELECT p.products_id, p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd...
-   - "stock alert" → SELECT p.products_id, p.products_quantity_alert, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd...
-   - "inventory count" → SELECT SUM(p.products_quantity) FROM {{table_prefix}}products p
-   - "low stock" / "low in stock" / "soon out of stock" / "products to restock" / "to replenish" / "products in acquisition" / "stock bas" / "bientôt en rupture" / "à réapprovisionner" / "en acquisition" → a CURRENT-stock question: a date in the question never turns it into a sales ranking and adds no date filter; the effective reorder threshold is products_quantity_alert when > 0, else the shop-wide {{stock_reorder_level}} (0 means no threshold, so exclude): SELECT p.products_id, p.products_quantity, p.products_quantity_alert, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE ((p.products_quantity_alert > 0 AND p.products_quantity <= p.products_quantity_alert) OR (p.products_quantity_alert = 0 AND {{stock_reorder_level}} > 0 AND p.products_quantity <= {{stock_reorder_level}}))
-   - "out of stock" / "rupture" → SELECT p.products_id, p.products_quantity, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE p.products_quantity = 0
-   - "out of stock OR low stock" / "en rupture ou en stock bas" → same effective threshold (per-product alert, else the shop-wide {{stock_reorder_level}}): WHERE ((p.products_quantity_alert > 0 AND p.products_quantity <= p.products_quantity_alert) OR (p.products_quantity_alert = 0 AND {{stock_reorder_level}} > 0 AND p.products_quantity <= {{stock_reorder_level}})). This is a CURRENT-stock question: do NOT add a date filter even if the question says "this month". NEVER return empty SQL for a stock question — products_quantity / products_quantity_alert always exist.
-
-9. MULTI-TOKEN SEARCH (CRITICAL):
-   When searching for products with MULTIPLE WORDS, generate separate LIKE conditions for EACH word using AND.
-   Word order DOES NOT MATTER, all parts must be included.
-   
-   CORRECT: "iPhone 17 Pro" → WHERE pd.products_name LIKE '%iPhone%' AND pd.products_name LIKE '%17%' AND pd.products_name LIKE '%Pro%'
-   WRONG: "iPhone 17 Pro" → WHERE pd.products_name LIKE '%iPhone 17 Pro%'  // Too restrictive
-   WRONG: "What is the price of Wine Cooler Blink?" → WHERE pd.products_name LIKE '%What%' AND pd.products_name LIKE '%price%' AND pd.products_name LIKE '%Wine%' AND pd.products_name LIKE '%Cooler%'  // The words of the QUESTION are not tokens
-   Tokenise the NAME ONLY, never the sentence that asks for it: in ANY language, interrogative and metric words are never LIKE conditions. One parasite token empties the result, because they are chained with AND.
-
-10. AVOID AMBIGUITY: Always prefix columns with table alias
-   - Use p.products_id instead of products_id
-   - Use p.products_price instead of products_price
-
-11. ALWAYS INCLUDE IDENTIFICATION FIELDS (CRITICAL - ABSOLUTE RULE):
-   When querying products, you MUST ALWAYS include identification fields for context.
-   This is NON-NEGOTIABLE - users need to know WHICH product the data belongs to.
-   
-   REQUIRED FIELDS FOR PRODUCT QUERIES:
-   - products_id (p.products_id) - MANDATORY
-   - products_name (pd.products_name from products_description table) - MANDATORY
-   - Any requested data field (price, quantity, etc.)
-   
-   REQUIRED JOIN FOR PRODUCT NAMES:
-   - ALWAYS JOIN with {{table_prefix}}products_description: 
-     JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
-   - ALWAYS filter by language_id: WHERE pd.language_id = {{language_id}}
-   
-   ❌ WRONG APPROACH - Using MAX/MIN without product identification:
-   "most expensive product" → SELECT MAX(p.products_price) FROM {{table_prefix}}products p
-   Problem: Returns only the price, user doesn't know which product!
-   
-   ✅ CORRECT APPROACH - Select the complete product record:
-   "most expensive product" → 
-   SELECT pd.products_name, p.products_price, p.products_id
-   FROM {{table_prefix}}products p
-   JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
-   WHERE pd.language_id = {{language_id}}
-     AND p.products_price = (SELECT MAX(products_price) FROM {{table_prefix}}products WHERE products_status = 1)
-   
-   MORE EXAMPLES:
-   - "stock level" → SELECT p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}}
-   - "price" → SELECT p.products_price, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}}
-   - "cheapest product" → SELECT pd.products_name, p.products_price, p.products_id FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} AND p.products_price = (SELECT MIN(products_price) FROM {{table_prefix}}products WHERE products_status = 1)
-   - "product with most stock" → SELECT pd.products_name, p.products_quantity, p.products_id FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} AND p.products_quantity = (SELECT MAX(products_quantity) FROM {{table_prefix}}products WHERE products_status = 1)
-   
-   REMEMBER: Users cannot identify products by ID or price alone - they need the NAME!
-
-12. TABLE RELATIONSHIPS & JOIN PATTERNS (CRITICAL - PROGRESSIVE APPROACH):
-
-   LEVEL 1 - UNDERSTANDING RELATIONSHIPS:
-   The database uses foreign keys to link tables. Identify relationships by looking for columns with matching names:
-   
-   PRIMARY RELATIONSHIPS:
-   - products_id: Links {{table_prefix}}products → {{table_prefix}}products_description, {{table_prefix}}orders_products, {{table_prefix}}reviews, {{table_prefix}}products_notifications, {{table_prefix}}specials, {{table_prefix}}products_viewed
-   - customers_id: Links {{table_prefix}}customers → {{table_prefix}}orders, {{table_prefix}}reviews, {{table_prefix}}products_notifications
-   - orders_id: Links {{table_prefix}}orders → {{table_prefix}}orders_products, {{table_prefix}}orders_total
-   - categories_id: Links {{table_prefix}}categories → {{table_prefix}}categories_description, {{table_prefix}}products_to_categories
-   - manufacturers_id: Links {{table_prefix}}manufacturers → {{table_prefix}}manufacturers_info, {{table_prefix}}products
-   - suppliers_id: Links {{table_prefix}}suppliers → {{table_prefix}}suppliers_info, {{table_prefix}}manufacturers
-   
-   LEVEL 2 - COMMON RELATIONSHIP PATTERNS:
-   
-   A. ONE-TO-MANY (Most common):
-      - One product → Many descriptions (multilingual)
-      - One product → Many orders (via orders_products)
-      - One customer → Many orders
-      - One order → Many products (via orders_products)
-      
-      JOIN Strategy: Use INNER JOIN or LEFT JOIN depending on whether you want only matched records or all records
-   
-   B. MANY-TO-MANY (Requires linking table):
-      - Products ↔ Orders: Use {{table_prefix}}orders_products as linking table
-      - Products ↔ Categories: Use {{table_prefix}}products_to_categories as linking table
-      
-      JOIN Strategy: JOIN through the linking table (2 JOINs required)
-   
-   C. FINDING MISSING RELATIONSHIPS (Advanced):
-      - "Products never purchased" → LEFT JOIN with orders_products WHERE orders_products.products_id IS NULL
-      - "Customers with no orders" → LEFT JOIN with orders WHERE orders.customers_id IS NULL
-      
-      JOIN Strategy: Use LEFT JOIN + IS NULL check to find records with no matches
-   
-   LEVEL 3 - BUSINESS LOGIC PATTERNS:
-   
-   When you see these query types, apply the corresponding JOIN pattern:
-   
-   - "best selling" / "most sold" / "top products"
-     → JOIN with {{table_prefix}}orders_products, use SUM(products_quantity), GROUP BY products_id
-   
-   - "customer reviews" / "product feedback" / "ratings"
-     → JOIN with {{table_prefix}}reviews table
-   
-   - "never purchased" / "unpurchased" / "no sales"
-     → LEFT JOIN with {{table_prefix}}orders_products WHERE products_id IS NULL
-   
-   - "product notifications" / "stock alerts" / "customer alerts"
-     → JOIN with {{table_prefix}}products_notifications and {{table_prefix}}customers
-   
-   - "viewed products" / "most viewed" / "product views"
-     → Use {{table_prefix}}products_viewed table (special tracking table)
-   
-   - "profit margin" / "margin calculation"
-     → over SALES (a period, orders, products sold): gross_margin_amount and gross_margin_percent in the rule 8 form, over the sold lines
-     → of the CATALOGUE only (no sale and no period, e.g. "margin of each product at its list price"): (products_price - (products_cost + products_handling)) / products_price * 100
-   
-   LEVEL 4 - FRENCH-ENGLISH BUSINESS TERMS:
-   
-   Translate these French terms to their database equivalents:
-   - "arrivage" / "nouveaux arrivages" → new arrivals (use products_date_added recent OR products_date_available future)
-   - "profit margin" / "gross margin" → gross margin (the LEVEL 3 entry above decides between sales and catalogue)
-   - "hors stock" / "rupture de stock" → out of stock (products_quantity = 0)
-   - "en stock" / "disponible" → in stock (products_quantity > 0)
-   - "produits vus" / "consultations" → viewed products (use {{table_prefix}}products_viewed table)
-   - "meilleurs produits" / "produits les plus vendus" → best selling (JOIN with orders_products, SUM quantity)
-   - "unpurchased products" / "never ordered products" → unpurchased products (LEFT JOIN orders_products WHERE NULL)
-   - "avis clients" / "commentaires" → customer reviews (use {{table_prefix}}reviews table)
-   - "surveillance" / "notifications" → product notifications (use {{table_prefix}}products_notifications table)
-   
-   KEY RULES FOR GENERATING JOINS:
-   1. Always use table aliases (p, pd, op, r, c, etc.) for clarity
-   2. Include language_id filter when joining description tables (products_description, categories_description, etc.)
-   3. Use LEFT JOIN when you want to include records with no matches (e.g., unpurchased products)
-   4. Use INNER JOIN (or just JOIN) when you only want records with matches
-   5. Always include entity ID and name columns for identification
-   6. For aggregations with JOINs, include all non-aggregated columns in GROUP BY
-   7. Let the database schema guide you - look for matching column names to identify relationships
-   8. When in doubt, check the schema comments for relationship hints
-
-13. TEMPORAL COMPARISONS: When comparing metrics between periods (e.g., "may vs february", "this year vs the same period last year"):
-    - Use CASE WHEN with SUM() to create separate columns, one per window, labelled current_ / previous_
-    - Example: SUM(CASE WHEN date >= '2026-05-01' AND date < '2026-06-01' THEN value ELSE 0 END) AS may_revenue
-    - PAIRED WINDOWS (MANDATORY): the two windows MUST cover the SAME number of days. Build the previous one by shifting the current one back with INTERVAL 1 YEAR (or INTERVAL 1 MONTH). Comparing a partial current period with a whole previous one makes every variation wrong, and wrong in the direction that reassures.
-    - Each CASE spells BOTH bounds of its own window, as an explicit date range
-    - Return results in single row with multiple columns
-    - VARIATION DEPENDS ON THE TYPE OF METRIC: an AMOUNT, a COUNT or a DURATION varies in percent — (current - previous) / previous * 100. A RATE (margin %, conversion %, cancellation %) varies in PERCENTAGE POINTS — current_rate - previous_rate. A margin going from 70% to 72.73% is +2.73 percentage points, never "+3.9%": dividing one rate by another is a category error, and it is undetectable once printed in a table.
-
-14. DYNAMIC TIME EXPRESSIONS: a period FILTER is ALWAYS an explicit range on the raw date column - never YEAR(), MONTH() or QUARTER() in a WHERE. Take the bounds from the ANALYSIS PLAN, else from the CURRENT DATE CONTEXT block. A range built from the first day of a period crosses the year boundary by construction.
-
-    - "Last 30 days" → WHERE o.date_purchased >= CURDATE() - INTERVAL 30 DAY
-    - "This week" → WHERE o.date_purchased >= CURDATE() - INTERVAL WEEKDAY(CURDATE()) DAY AND o.date_purchased < CURDATE() + INTERVAL 1 DAY
-    - "Last month" → WHERE o.date_purchased >= DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH, '%Y-%m-01') AND o.date_purchased < DATE_FORMAT(CURDATE(), '%Y-%m-01')
-    - "This month" → WHERE o.date_purchased >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND o.date_purchased < CURDATE() + INTERVAL 1 DAY
-    - "Last quarter" → WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL (QUARTER(CURDATE()) - 2) * 3 MONTH AND o.date_purchased < MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL (QUARTER(CURDATE()) - 1) * 3 MONTH (asked in January 2026, this is October 1 to December 31, 2025)
-    - "This year" → WHERE o.date_purchased >= MAKEDATE(YEAR(CURDATE()), 1) AND o.date_purchased < CURDATE() + INTERVAL 1 DAY
-
-    YEAR(), MONTH() and QUARTER() belong to the GROUP BY of a per-period breakdown only (MULTI-PERIOD TEMPORAL QUERIES).
-
-15. Ensure query correctness and prevent SQL injections
-16. Alert user if inconsistencies detected (duplicates, incorrect sums, missing data)
-
-
 text_query_examples = COMMON QUERY EXAMPLES:
 
 CRITICAL PATTERN - SIMPLE "LIST ALL" QUERIES:
@@ -411,18 +118,18 @@ STATUS QUERIES (Most Common):
 
 AGGREGATION QUERIES:
 - 'number of products per category' → SELECT cd.categories_name, COUNT(p.products_id) AS product_count FROM {{table_prefix}}products p JOIN {{table_prefix}}products_to_categories ptc ON p.products_id = ptc.products_id JOIN {{table_prefix}}categories_description cd ON ptc.categories_id = cd.categories_id WHERE cd.language_id = {{language_id}} GROUP BY cd.categories_name ORDER BY product_count DESC
-- 'revenue by product this year' / 'revenue by product and category' / any plan whose DIMENSION is a product or a category → SELECT ev.products_id, MAX(ev.products_name) AS products_name, MAX(ev.categories_name) AS categories_name, SUM(ev.sign * ev.amount) AS line_revenue FROM (SELECT o.date_purchased AS event_date, 1 AS sign, op.products_id, COALESCE(pd.products_name, op.products_name) AS products_name, (SELECT MIN(cd.categories_name) FROM {{table_prefix}}products_to_categories ptc JOIN {{table_prefix}}categories_description cd ON cd.categories_id = ptc.categories_id AND cd.language_id = {{language_id}} WHERE ptc.products_id = op.products_id) AS categories_name, op.final_price * op.products_quantity AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} LEFT JOIN {{table_prefix}}products_description pd ON pd.products_id = op.products_id AND pd.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status) AS event_date, -1 AS sign, op.products_id, COALESCE(pd.products_name, op.products_name), (SELECT MIN(cd.categories_name) FROM {{table_prefix}}products_to_categories ptc JOIN {{table_prefix}}categories_description cd ON cd.categories_id = ptc.categories_id AND cd.language_id = {{language_id}} WHERE ptc.products_id = op.products_id), op.final_price * op.products_quantity FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} LEFT JOIN {{table_prefix}}products_description pd ON pd.products_id = op.products_id AND pd.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < CURDATE() + INTERVAL 1 DAY GROUP BY ev.products_id ORDER BY line_revenue DESC
+- 'revenue by product this year' / 'revenue by product and category' / any plan whose DIMENSION is a product or a category → SELECT ev.products_id, MAX(ev.products_name) AS products_name, MAX(ev.categories_name) AS categories_name, SUM(ev.sign * ev.amount) AS line_revenue FROM ({{event_axis_line_category}}) ev WHERE ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < CURDATE() + INTERVAL 1 DAY GROUP BY ev.products_id ORDER BY line_revenue DESC
 The window above is an EXAMPLE of a window, never the window: take the bounds from the plan. What is fixed here is the SHAPE - the event axis with its UNION ALL deduction leg, the catalogue name reached by LEFT JOIN, the category read by a SCALAR SUBQUERY because a product sits in SEVERAL categories and a join there would count its revenue once per category, and the grouping on ev.products_id ALONE - outside the event axis only ev exists: op, o, os and pd live inside it, so the outer SELECT reads ev.* and nothing else - and that shape holds for any dimension and any period.
 - CATEGORY TREE - categories nest (parent_id, 0 at the top level): a product's DIRECT filing puts a parent category next to its own sub-categories as if they were peers, and the parent's row then reads as their total. So whenever the plan's dimensions or filters name category or subcategory, never read the category from the direct filing: prefix the query with WITH RECURSIVE category_tree AS (SELECT c.categories_id, cd.categories_name AS root_name, CAST(cd.categories_name AS CHAR(1000)) AS category_path FROM {{table_prefix}}categories c JOIN {{table_prefix}}categories_description cd ON cd.categories_id = c.categories_id AND cd.language_id = {{language_id}} WHERE c.parent_id = 0 UNION ALL SELECT c.categories_id, t.root_name, CONCAT(t.category_path, ' > ', cd.categories_name) FROM {{table_prefix}}categories c JOIN category_tree t ON c.parent_id = t.categories_id JOIN {{table_prefix}}categories_description cd ON cd.categories_id = c.categories_id AND cd.language_id = {{language_id}}) and, in BOTH legs of the event axis, read the category through it, still by a scalar subquery. Dimension category: (SELECT MIN(t.root_name) FROM {{table_prefix}}products_to_categories ptc JOIN category_tree t ON t.categories_id = ptc.categories_id WHERE ptc.products_id = op.products_id) AS categories_name - one row per top-level category, its sub-categories included. Dimension subcategory: the same subquery on MIN(t.category_path) AS category_path - one row per category, named by its full path. A filter naming a category keeps its WHOLE sub-tree, in BOTH legs: AND EXISTS (SELECT 1 FROM {{table_prefix}}products_to_categories ptc JOIN category_tree t ON t.categories_id = ptc.categories_id WHERE ptc.products_id = op.products_id AND CONCAT(' > ', t.category_path, ' > ') LIKE '% > Bar > %'), with the category name as the question spells it in place of Bar. A plan filter on subcategory names ONE category (Bar): that is its WHOLE sub-tree - and so is a category the question names when the plan carries no such filter: keep it with the EXISTS filter above, matched on a whole path segment exactly as written there, and read its rows by MIN(t.category_path) AS category_path. Never compare root_name or categories_name to that name, and never use LIKE '%name%': a name contained in another one (bar in a longer name) would bring that other category's whole tree. A question that names NO category reads dimension category by root_name ALWAYS - a stock, status or price condition changes nothing to it. Dimensions category AND subcategory together: one row per path, carrying its top-level category in a second column, GROUP BY both - no subtotal row, and no total joined onto the rows.
-- 'top sold products' / 'best selling products' → SELECT ev.products_id, MAX(ev.products_name) AS products_name, SUM(ev.sign * ev.products_quantity) AS total_sold FROM (SELECT o.date_purchased AS event_date, 1 AS sign, op.products_id, COALESCE(pd.products_name, op.products_name) AS products_name, op.products_quantity FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} LEFT JOIN {{table_prefix}}products_description pd ON pd.products_id = op.products_id AND pd.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status) AS event_date, -1 AS sign, op.products_id, COALESCE(pd.products_name, op.products_name), op.products_quantity FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} LEFT JOIN {{table_prefix}}products_description pd ON pd.products_id = op.products_id AND pd.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < CURDATE() + INTERVAL 1 DAY GROUP BY ev.products_id ORDER BY total_sold DESC LIMIT 10
-- 'orders of each product' / 'number of orders per product' → SELECT ev.products_id, MAX(ev.products_name) AS products_name, COUNT(DISTINCT CASE WHEN ev.sign = 1 THEN ev.orders_id END) - COUNT(DISTINCT CASE WHEN ev.sign = -1 THEN ev.orders_id END) AS order_count, SUM(ev.sign * ev.products_quantity) AS total_sold FROM (SELECT o.date_purchased AS event_date, 1 AS sign, op.products_id, COALESCE(pd.products_name, op.products_name) AS products_name, op.orders_id, op.products_quantity FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} LEFT JOIN {{table_prefix}}products_description pd ON pd.products_id = op.products_id AND pd.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status) AS event_date, -1 AS sign, op.products_id, COALESCE(pd.products_name, op.products_name), op.orders_id, op.products_quantity FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} LEFT JOIN {{table_prefix}}products_description pd ON pd.products_id = op.products_id AND pd.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < CURDATE() + INTERVAL 1 DAY GROUP BY ev.products_id ORDER BY order_count DESC LIMIT 100
+- 'top sold products' / 'best selling products' → SELECT ev.products_id, MAX(ev.products_name) AS products_name, SUM(ev.sign * ev.products_quantity) AS total_sold FROM ({{event_axis_line_quantity}}) ev WHERE ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < CURDATE() + INTERVAL 1 DAY GROUP BY ev.products_id ORDER BY total_sold DESC LIMIT 10
+- 'orders of each product' / 'number of orders per product' → SELECT ev.products_id, MAX(ev.products_name) AS products_name, COUNT(DISTINCT CASE WHEN ev.sign = 1 THEN ev.orders_id END) - COUNT(DISTINCT CASE WHEN ev.sign = -1 THEN ev.orders_id END) AS order_count, SUM(ev.sign * ev.products_quantity) AS total_sold FROM ({{event_axis_line_orders}}) ev WHERE ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < CURDATE() + INTERVAL 1 DAY GROUP BY ev.products_id ORDER BY order_count DESC LIMIT 100
 - 'delivered, cancelled and refunded orders per category' / plan metrics delivered_orders, cancelled_orders, refunded_orders → WITH RECURSIVE category_tree AS (the CATEGORY TREE prefix) SELECT (SELECT MIN(t.root_name) FROM {{table_prefix}}products_to_categories ptc JOIN category_tree t ON t.categories_id = ptc.categories_id WHERE ptc.products_id = op.products_id) AS categories_name, COUNT(DISTINCT CASE WHEN o.orders_status = <id of the delivered state> THEN o.orders_id END) AS delivered_orders, COUNT(DISTINCT CASE WHEN o.orders_status = <id of the cancelled state> THEN o.orders_id END) AS cancelled_orders, COUNT(DISTINCT CASE WHEN o.orders_status = <id of the refunded state> THEN o.orders_id END) AS refunded_orders FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id WHERE o.date_purchased >= '2026-01-01' AND o.date_purchased < '2027-01-01' GROUP BY categories_name (the ids are those the ORDER STATUS SEMANTICS block gives. A status COUNT reads each order's CURRENT status on its PURCHASE date: no event axis, no revenue_sign, no status-history date - the accounting weight belongs to sums of amounts. ONE query for all the status counts. An order is counted once in every category it has a line in, and the category is read by the scalar subquery, NEVER by a JOIN on the category tables: a JOIN drops the lines of a product filed nowhere, which belong to the NULL category row. The subquery reads the product of each LINE (op.products_id), never a MIN over all the lines of an order: that files an order holding several categories under only one of them)
 (op.products_name is the name COPIED onto the order line: it differs from one order to the next, so grouping on it splits ONE product into several rows. Inside the event axis project COALESCE(pd.products_name, op.products_name) AS products_name; outside it group on ev.products_id ALONE and read MAX(ev.products_name).)
-- 'revenue this month' → SELECT SUM(ev.sign * ev.amount) AS total_revenue FROM (SELECT o.date_purchased AS event_date, 1 AS sign, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND ev.event_date < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH
-- 'average cart' / 'average order value' / 'average basket in 2026' → SELECT SUM(ev.sign * ev.amount) AS total_ttc, SUM(ev.sign) AS net_orders_count, ROUND(SUM(ev.sign * ev.amount) / NULLIF(SUM(ev.sign), 0), 2) AS average_cart_ttc FROM (SELECT o.date_purchased AS event_date, 1 AS sign, (SELECT ot.value FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class = 'TO') AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, (SELECT ot.value FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class = 'TO') FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= '2026-01-01' AND ev.event_date < '2027-01-01' (the average cart is the average of class 'TO', tax and shipping included - never of 'ST'. The accounting weight applies to the DENOMINATOR too: SUM(ev.sign) nets a refunded order out of the order count exactly as its amount is deducted from the numerator)
+- 'revenue this month' → SELECT SUM(ev.sign * ev.amount) AS total_revenue FROM ({{event_axis_order_amount}}) ev WHERE ev.event_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND ev.event_date < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH
+- 'average cart' / 'average order value' / 'average basket in 2026' → SELECT SUM(ev.sign * ev.amount) AS total_ttc, SUM(ev.sign) AS net_orders_count, ROUND(SUM(ev.sign * ev.amount) / NULLIF(SUM(ev.sign), 0), 2) AS average_cart_ttc FROM ({{event_axis_order_amount_ttc}}) ev WHERE ev.event_date >= '2026-01-01' AND ev.event_date < '2027-01-01' (the average cart is the average of class 'TO', tax and shipping included - never of 'ST'. The accounting weight applies to the DENOMINATOR too: SUM(ev.sign) nets a refunded order out of the order count exactly as its amount is deducted from the numerator)
 - 'amount refunded' / 'refunded amount in 2026' / 'how much was refunded' / plan metric refunded_amount → SELECT ROUND(SUM(ev.amount), 2) AS refunded_amount FROM (SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status) AS event_date, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= '2026-01-01' AND ev.event_date < '2027-01-01' - the deduction leg ALONE, as a positive amount, dated on the day the order ENTERED the refunded status: never add the sale leg, which nets a refunded order to 0 and answers revenue instead.
-- 'average purchase per customer' / 'revenue per customer' / 'average spend per customer in 2026' / plan metric revenue_per_customer → SELECT ROUND(SUM(ev.sign * ev.amount), 2) AS revenue_ht, COUNT(DISTINCT CASE WHEN ev.sign = 1 THEN ev.customers_id END) AS customers_count, ROUND(SUM(ev.sign * ev.amount) / NULLIF(COUNT(DISTINCT CASE WHEN ev.sign = 1 THEN ev.customers_id END), 0), 2) AS revenue_per_customer FROM (SELECT o.customers_id, o.date_purchased AS event_date, 1 AS sign, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT o.customers_id, (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= '2026-01-01' AND ev.event_date < '2027-01-01' - ONE figure: merchandise revenue divided by the number of DISTINCT customers who bought in the window, with revenue_ht and customers_count selected beside it. It is not the average cart, and it is not broken down by customer unless the plan names customer as a dimension.
-- 'gross margin in 2026' / 'margin by period' / 'what is my margin' → SELECT ROUND(SUM(ev.sign * ev.line_revenue), 2) AS line_revenue, ROUND(SUM(ev.sign * ev.line_cost), 2) AS cost_ht, ROUND(SUM(ev.sign * (ev.line_revenue - ev.line_cost)), 2) AS gross_margin_amount, ROUND(SUM(ev.sign * (ev.line_revenue - ev.line_cost)) / NULLIF(GREATEST(SUM(CASE WHEN ev.line_cost IS NOT NULL THEN ev.sign * ev.line_revenue END), 0), 0) * 100, 2) AS gross_margin_pct, ROUND(SUM(CASE WHEN ev.line_cost IS NULL THEN ev.sign * ev.line_revenue END), 2) AS revenue_without_cost FROM (SELECT o.date_purchased AS event_date, 1 AS sign, op.final_price * op.products_quantity AS line_revenue, (NULLIF(p.products_cost, 0) + p.products_handling) * op.products_quantity AS line_cost FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} LEFT JOIN {{table_prefix}}products p ON p.products_id = op.products_id WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, op.final_price * op.products_quantity, (NULLIF(p.products_cost, 0) + p.products_handling) * op.products_quantity FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} LEFT JOIN {{table_prefix}}products p ON p.products_id = op.products_id WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= '2026-01-01' AND ev.event_date < '2027-01-01' (the cost basis is products_cost + products_handling, read from the CURRENT catalogue: it has no history, so a product deleted or re-priced since carries NO cost and its lines are left out of the margin. revenue_without_cost is the revenue they carry - ALWAYS state it in the answer with its share of line_revenue, it is how much of the sales the margin does not cover)
+- 'average purchase per customer' / 'revenue per customer' / 'average spend per customer in 2026' / plan metric revenue_per_customer → SELECT ROUND(SUM(ev.sign * ev.amount), 2) AS revenue_ht, COUNT(DISTINCT CASE WHEN ev.sign = 1 THEN ev.customers_id END) AS customers_count, ROUND(SUM(ev.sign * ev.amount) / NULLIF(COUNT(DISTINCT CASE WHEN ev.sign = 1 THEN ev.customers_id END), 0), 2) AS revenue_per_customer FROM ({{event_axis_order_customer}}) ev WHERE ev.event_date >= '2026-01-01' AND ev.event_date < '2027-01-01' - ONE figure: merchandise revenue divided by the number of DISTINCT customers who bought in the window, with revenue_ht and customers_count selected beside it. It is not the average cart, and it is not broken down by customer unless the plan names customer as a dimension.
+- 'gross margin in 2026' / 'margin by period' / 'what is my margin' → SELECT ROUND(SUM(ev.sign * ev.line_revenue), 2) AS line_revenue, ROUND(SUM(ev.sign * ev.line_cost), 2) AS cost_ht, ROUND(SUM(ev.sign * (ev.line_revenue - ev.line_cost)), 2) AS gross_margin_amount, ROUND(SUM(ev.sign * (ev.line_revenue - ev.line_cost)) / NULLIF(GREATEST(SUM(CASE WHEN ev.line_cost IS NOT NULL THEN ev.sign * ev.line_revenue END), 0), 0) * 100, 2) AS gross_margin_pct, ROUND(SUM(CASE WHEN ev.line_cost IS NULL THEN ev.sign * ev.line_revenue END), 2) AS revenue_without_cost FROM ({{event_axis_line_cost}}) ev WHERE ev.event_date >= '2026-01-01' AND ev.event_date < '2027-01-01' (the cost basis is products_cost + products_handling, read from the CURRENT catalogue: it has no history, so a product deleted or re-priced since carries NO cost and its lines are left out of the margin. revenue_without_cost is the revenue they carry - ALWAYS state it in the answer with its share of line_revenue, it is how much of the sales the margin does not cover)
 - 'discounts granted to customers' → SELECT o.customers_id, MAX(o.customers_name) AS customers_name, ot.orders_id, ot.title, ot.value AS discount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 GROUP BY o.customers_id, ot.orders_id, ot.title, ot.value ORDER BY o.customers_id
 - 'total customer discounts granted' → SELECT SUM(ot.value) AS total_discount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 AND ot.class = 'CD'
 - 'products ordered that received a discount' → SELECT o.orders_id, pd.products_name, op.products_quantity, ot.value AS discount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON o.orders_id = ot.orders_id AND ot.class = 'CD' JOIN {{table_prefix}}orders_products op ON o.orders_id = op.orders_id JOIN {{table_prefix}}products_description pd ON op.products_id = pd.products_id AND pd.language_id = {{language_id}} JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 ORDER BY o.orders_id
@@ -445,7 +152,7 @@ PRODUCT QUERIES:
 - 'model and price of product [ProductName]' → SELECT p.products_model, p.products_price AS catalog_price, 'excluding tax' AS price_basis, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_status = 1 AND p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%[ProductName]%')
 
 COMPARISON QUERIES:
-- 'compare revenue may vs february' → SELECT SUM(CASE WHEN ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL 4 MONTH AND ev.event_date < MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL 5 MONTH THEN ev.sign * ev.amount ELSE 0 END) AS may_revenue, SUM(CASE WHEN ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL 1 MONTH AND ev.event_date < MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL 2 MONTH THEN ev.sign * ev.amount ELSE 0 END) AS february_revenue FROM (SELECT o.date_purchased AS event_date, 1 AS sign, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev
+- 'compare revenue may vs february' → SELECT SUM(CASE WHEN ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL 4 MONTH AND ev.event_date < MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL 5 MONTH THEN ev.sign * ev.amount ELSE 0 END) AS may_revenue, SUM(CASE WHEN ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL 1 MONTH AND ev.event_date < MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL 2 MONTH THEN ev.sign * ev.amount ELSE 0 END) AS february_revenue FROM ({{event_axis_order_amount}}) ev
 
 
 
@@ -463,245 +170,21 @@ Pick the GROUP BY expression by granularity (keep it in SELECT aliased, and ORDE
 YEAR/QUARTER/MONTH are allowed HERE, as the GROUP BY expression. They remain FORBIDDEN as the period FILTER: the window is always an explicit range.
 Use the aggregate that matches the wording: AVG for "average", SUM for "total"/"turnover"/"revenue", COUNT for "how many".
 
-- 'average turnover in 2025 and 2026' → SELECT YEAR(ev.event_date) AS period, SUM(ev.sign * ev.amount) AS total_revenue, SUM(ev.sign) AS net_orders_count, SUM(ev.sign * ev.amount) / NULLIF(SUM(ev.sign), 0) AS average_turnover FROM (SELECT o.date_purchased AS event_date, 1 AS sign, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= '2025-01-01' AND ev.event_date < '2027-01-01' GROUP BY YEAR(ev.event_date) ORDER BY period
-- 'total revenue per quarter in 2025' → SELECT QUARTER(ev.event_date) AS period, SUM(ev.sign * ev.amount) AS total_revenue FROM (SELECT o.date_purchased AS event_date, 1 AS sign, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= '2025-01-01' AND ev.event_date < '2026-01-01' GROUP BY QUARTER(ev.event_date) ORDER BY period
-- 'revenue by month this year' → SELECT DATE_FORMAT(ev.event_date, '%Y-%m') AS period, SUM(ev.sign * ev.amount) AS total_revenue FROM (SELECT o.date_purchased AS event_date, 1 AS sign, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < MAKEDATE(YEAR(CURDATE()) + 1, 1) GROUP BY period ORDER BY period (a sale of January refunded in March shows + in 2026-01 and - in 2026-03: that is the point of the event date)
-- 'revenue by tax convention in 2026' / any plan that names a DIMENSION → SELECT ev.tax_convention, SUM(ev.sign * ev.amount) AS revenue_ht FROM (SELECT o.date_purchased AS event_date, 1 AS sign, o.orders_prices_include_tax AS tax_convention, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, o.orders_prices_include_tax, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev WHERE ev.event_date >= '2026-01-01' AND ev.event_date < '2027-01-01' GROUP BY ev.tax_convention ORDER BY ev.tax_convention (a dimension named by the plan is selected in BOTH legs of the UNION ALL - it never justifies dropping the event form)
+- 'average turnover in 2025 and 2026' → SELECT YEAR(ev.event_date) AS period, SUM(ev.sign * ev.amount) AS total_revenue, SUM(ev.sign) AS net_orders_count, SUM(ev.sign * ev.amount) / NULLIF(SUM(ev.sign), 0) AS average_turnover FROM ({{event_axis_order_amount}}) ev WHERE ev.event_date >= '2025-01-01' AND ev.event_date < '2027-01-01' GROUP BY YEAR(ev.event_date) ORDER BY period
+- 'total revenue per quarter in 2025' → SELECT QUARTER(ev.event_date) AS period, SUM(ev.sign * ev.amount) AS total_revenue FROM ({{event_axis_order_amount}}) ev WHERE ev.event_date >= '2025-01-01' AND ev.event_date < '2026-01-01' GROUP BY QUARTER(ev.event_date) ORDER BY period
+- 'revenue by month this year' → SELECT DATE_FORMAT(ev.event_date, '%Y-%m') AS period, SUM(ev.sign * ev.amount) AS total_revenue FROM ({{event_axis_order_amount}}) ev WHERE ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < MAKEDATE(YEAR(CURDATE()) + 1, 1) GROUP BY period ORDER BY period (a sale of January refunded in March shows + in 2026-01 and - in 2026-03: that is the point of the event date)
+- 'revenue by tax convention in 2026' / any plan that names a DIMENSION → SELECT ev.tax_convention, SUM(ev.sign * ev.amount) AS revenue_ht FROM ({{event_axis_order_tax_convention}}) ev WHERE ev.event_date >= '2026-01-01' AND ev.event_date < '2027-01-01' GROUP BY ev.tax_convention ORDER BY ev.tax_convention (a dimension named by the plan is selected in BOTH legs of the UNION ALL - it never justifies dropping the event form)
 - 'orders per day last week' → SELECT DATE(o.date_purchased) AS period, COUNT(*) AS total_orders FROM {{table_prefix}}orders o WHERE o.date_purchased >= CURDATE() - INTERVAL 7 DAY GROUP BY DATE(o.date_purchased) ORDER BY period
 
 YEAR-OVER-YEAR COMPARISON (relative years like "this year" vs "last year"):
 "This year" is a PARTIAL current period: it stops today. A whole previous year is therefore NOT comparable with it. Compare two windows of the SAME length — build the previous one by shifting the current one back with INTERVAL 1 YEAR — and return them as two labelled columns with CASE WHEN (rule 13). Each column spells BOTH of its own bounds — never rely on the outer WHERE to close a window, a half-open CASE silently returns 0. Do NOT put both years in one range and GROUP BY YEAR: that puts a full previous year face to face with a partial current one, and every variation is then wrong in the direction that reassures. An amount or a count varies in percent, a rate varies in percentage points.
-- 'compare revenue this year and last year' / 'revenue this year vs last year' → SELECT SUM(CASE WHEN ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < CURDATE() + INTERVAL 1 DAY THEN ev.sign * ev.amount ELSE 0 END) AS current_revenue, SUM(CASE WHEN ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) - INTERVAL 1 YEAR AND ev.event_date < CURDATE() + INTERVAL 1 DAY - INTERVAL 1 YEAR THEN ev.sign * ev.amount ELSE 0 END) AS previous_revenue FROM (SELECT o.date_purchased AS event_date, 1 AS sign, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1) ev
+- 'compare revenue this year and last year' / 'revenue this year vs last year' → SELECT SUM(CASE WHEN ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) AND ev.event_date < CURDATE() + INTERVAL 1 DAY THEN ev.sign * ev.amount ELSE 0 END) AS current_revenue, SUM(CASE WHEN ev.event_date >= MAKEDATE(YEAR(CURDATE()), 1) - INTERVAL 1 YEAR AND ev.event_date < CURDATE() + INTERVAL 1 DAY - INTERVAL 1 YEAR THEN ev.sign * ev.amount ELSE 0 END) AS previous_revenue FROM ({{event_axis_order_amount}}) ev
 - 'compare the number of orders this year and last year' → SELECT COUNT(CASE WHEN date_purchased >= MAKEDATE(YEAR(CURDATE()), 1) AND date_purchased < CURDATE() + INTERVAL 1 DAY THEN 1 END) AS current_orders, COUNT(CASE WHEN date_purchased >= MAKEDATE(YEAR(CURDATE()), 1) - INTERVAL 1 YEAR AND date_purchased < CURDATE() + INTERVAL 1 DAY - INTERVAL 1 YEAR THEN 1 END) AS previous_orders FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 AND date_purchased >= MAKEDATE(YEAR(CURDATE()), 1) - INTERVAL 1 YEAR AND date_purchased < CURDATE() + INTERVAL 1 DAY
-- 'compare sales year by year, by quarter' / 'comparaison annuelle par trimestre' → WITH ev AS (SELECT o.date_purchased AS event_date, 1 AS sign, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) AS amount FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign <> 0 UNION ALL SELECT (SELECT MIN(h.date_added) FROM {{table_prefix}}orders_status_history h WHERE h.orders_id = o.orders_id AND h.orders_status_id = o.orders_status), -1, (SELECT SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) FROM {{table_prefix}}orders_total ot WHERE ot.orders_id = o.orders_id AND ot.class IN ('TO','TX','SH')) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}} WHERE os.revenue_sign = -1), q AS (SELECT YEAR(ev.event_date) AS period_year, QUARTER(ev.event_date) AS period_quarter, SUM(ev.sign * ev.amount) AS revenue FROM ev GROUP BY YEAR(ev.event_date), QUARTER(ev.event_date)) SELECT c.period_year, c.period_quarter, c.revenue, p.revenue AS same_quarter_last_year, ROUND((c.revenue - p.revenue) / NULLIF(p.revenue, 0) * 100, 2) AS variation_percent FROM q c LEFT JOIN q p ON p.period_year = c.period_year - 1 AND p.period_quarter = c.period_quarter ORDER BY c.period_year, c.period_quarter
+- 'compare sales year by year, by quarter' / 'comparaison annuelle par trimestre' → WITH ev AS ({{event_axis_order_amount}}), q AS (SELECT YEAR(ev.event_date) AS period_year, QUARTER(ev.event_date) AS period_quarter, SUM(ev.sign * ev.amount) AS revenue FROM ev GROUP BY YEAR(ev.event_date), QUARTER(ev.event_date)) SELECT c.period_year, c.period_quarter, c.revenue, p.revenue AS same_quarter_last_year, ROUND((c.revenue - p.revenue) / NULLIF(p.revenue, 0) * 100, 2) AS variation_percent FROM q c LEFT JOIN q p ON p.period_year = c.period_year - 1 AND p.period_quarter = c.period_quarter ORDER BY c.period_year, c.period_quarter
 NEVER pair the two years by RANK with a LAG over the ordered rows: that assumes four rows per year, and a GROUP BY only returns the quarters that HAVE sales - one empty quarter shifts every comparison onto the wrong one. Pair them by the CALENDAR KEY, by joining the aggregate to itself on year - 1 and the same quarter.
 The quarter in progress is itself partial: its variation_percent is not final and must be presented as such, never as a closed result.
 Whenever the result carries SEVERAL SUCCESSIVE PERIODS, return the variation as its OWN COLUMN beside the measure - never leave it to be read off the rows. Name that column variation_percent for an amount or a count, and variation_points for a rate, which varies in PERCENTAGE POINTS and never in percent. Pair the two periods by their CALENDAR KEY: year - 1 and the same period for a year-over-year reading, the immediately preceding period for a step-by-step one. The first period has no predecessor: its variation is NULL, never 0.
 When the comparison is made PERIOD BY PERIOD inside ONE window - revenue by quarter over 3 years, by month over 2 years - the previous-period aggregate covers the SAME window as the current one: NEVER shift it back by a year. The calendar-key join does the pairing on its own, and each period finds its own N-1 inside that window. Shifting it asks for a span the window never covered, the subquery returns no row, and EVERY variation comes back NULL - a column that promises a figure and carries none. The PAIRED WINDOWS convention above governs a comparison of TWO WHOLE WINDOWS, never a per-period breakdown.
-
-text_sql_format_instructions = SQL FORMAT RULES:
-1. ONLY respond with the SQL query, no explanatory text before or after
-2. Always use template variable {{language_id}} where language filter is required
-3. If multiple queries needed, separate with semicolons
-4. Ensure each query is syntactically correct and complete
-5. Use only column names that exist in the database schema
-6. NO markdown formatting, NO ```sql tags, NO comments, NO explanations
-
-
-CRITICAL SQL GENERATION RULES:
-  - Never use a field that is not explicitly defined as a column in the schema.
-  - If a requested field is not found in schema columns but exists inside a JSON field (e.g. metadata),
-    you MUST extract it using JSON_EXTRACT with the correct path.
-  - Forbidden: inventing columns not present in schema.
-  - If unsure, fallback to JSON fields before generating SQL.
-  - Always use JSON_UNQUOTE(JSON_EXTRACT(...)) for scalar values.
-  - Example:
-    metadata.seo_score_after → JSON_UNQUOTE(JSON_EXTRACT(psseo.metadata, '$.seo_score_after'))
-
-EXAMPLE (JSON FIELD EXTRACTION):
-
-❌ WRONG: "list products with SEO score"
-You generate:
-SELECT p.products_id, pd.products_name, s.seo_score_after
-FROM {{table_prefix}}products p
-JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
-JOIN {{table_prefix}}products_seo_embedding s ON p.products_id = s.entity_id
-ORDER BY s.seo_score_after DESC
-
-Problem:
-  - seo_score_after is NOT a column
-  - It exists inside JSON field "metadata"
-  - Query will fail or return incorrect results
-
-✅ CORRECT: "list products with SEO score"
-You must generate absolutly like this using JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS seo_score:
-SELECT DISTINCT p.products_id,
-      pd.products_name,
-      JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS seo_score
- FROM {{table_prefix}}products p
- JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
- JOIN {{table_prefix}}products_seo_embedding s ON p.products_id = s.entity_id AND s.entity_type = 'product'
- WHERE pd.language_id = {{language_id}}
- AND JSON_EXTRACT(s.metadata, '$.seo_score_after') IS NOT NULL
- AND JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) != 'null'
- ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS UNSIGNED) DESC
- LIMIT 100
-
-IMPORTANT Key rules demonstrated:
-  - NEVER use non-existent columns
-  - ALWAYS extract values from JSON fields using JSON_EXTRACT
-  - ALWAYS use JSON_UNQUOTE for scalar values
-  - ALWAYS use correct JSON path (metadata → $.seo_score_after)
-
-ADDITIONAL SEO SCORE EXAMPLES - BOTH BEFORE AND AFTER:
-The following fields ALL exist inside JSON metadata, NEVER as real columns:
-  - seo_score_before → JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_before'))
-  - seo_score_after  → JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after'))
-  - seo_score        → JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after'))
-  - seo_score (generic, no before/after specified) → use $.seo_score_after by default
-     If the question context suggests "before optimization", use $.seo_score_before instead
-     Examples:
-       "what is the SEO score?" → $.seo_score_after (current score)
-       "what was the SEO score before?" → $.seo_score_before (initial score)
-       "before/after comparison" → select BOTH fields
-
-❌ WRONG (FORBIDDEN - will always fail):
-SELECT DISTINCT seos.seo_score_before FROM {{table_prefix}}products_seo_embedding seos
-SELECT DISTINCT s.seo_score_after FROM {{table_prefix}}products_seo_embedding s
-SELECT DISTINCT seos.seo_score FROM {{table_prefix}}products_seo_embedding seos
-
-SAFE CAST RULE FOR JSON NUMERIC VALUES (MANDATORY):
-When using JSON_EXTRACT on any numeric JSON field (seo_score, price, quantity, etc.),
-you MUST ALWAYS add these two safety filters in WHERE clause:
-
-  AND JSON_EXTRACT(table.metadata, '$.field') IS NOT NULL
-  AND JSON_UNQUOTE(JSON_EXTRACT(table.metadata, '$.field')) != 'null'
-
-AND always use CAST in ORDER BY:
-  ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(table.metadata, '$.field')) AS UNSIGNED) DESC
-
-WITHOUT these filters:
-  - NULL values pollute the results
-  - ORDER BY cannot sort correctly
-  - MySQL warning #1292 is triggered
-
-❌ WRONG (will trigger MySQL warning #1292):
-  AND CAST(JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS UNSIGNED) > 20
-
-✅ CORRECT (safe CAST with null protection):
-  AND JSON_EXTRACT(s.metadata, '$.seo_score_after') IS NOT NULL
-  AND JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) != 'null'
-  AND CAST(JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS UNSIGNED) > 20
-
-This applies to ALL JSON numeric fields without exception.
-
-
-✅ CORRECT example for "products with initial SEO score":
-SELECT DISTINCT
-    p.products_id,
-    pd.products_name,
-    JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_before')) AS seo_score_before,
-    JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS seo_score_after
-FROM {{table_prefix}}products p
-JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
-JOIN {{table_prefix}}products_seo_embedding s ON p.products_id = s.entity_id AND s.entity_type = 'product'
-WHERE pd.language_id = {{language_id}}
-AND JSON_EXTRACT(s.metadata, '$.seo_score_after') IS NOT NULL
-AND JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) != 'null'
-ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_before')) AS UNSIGNED) DESC
-LIMIT 100
-
-VALIDATION STEP (MANDATORY - EXECUTE BEFORE EVERY OUTPUT):
-STEP 1: Scan every column reference in SELECT and WHERE.
-STEP 2: For each reference involving "seo_score", "metadata", or any SEO field:
-  → Is it written as table.column_name ? → STOP. This is WRONG. Rewrite using JSON_EXTRACT.
-  → Is it written as JSON_UNQUOTE(JSON_EXTRACT(table.metadata, '$.field')) ? → CORRECT.
-STEP 3: Check for LIKE '%value%' on metadata fields → FORBIDDEN. Use JSON_EXTRACT comparisons.
-STEP 4: If any violation found → REWRITE the entire query from scratch before output.
-STEP 5: Only output the query after passing all 4 checks.
-
-
-MULTI-QUERY DETECTION
-When user asks multiple questions connected with AND/THEN, system AUTOMATICALLY splits and executes separately.
-
-YOU MUST:
-- Generate ONE SQL query per sub-question
-- Each query must be INDEPENDENT and COMPLETE
-- Each query must be VALID on its own
-- DO NOT combine multiple questions into one SQL query
-
-EXAMPLE:
-❌ WRONG: "stock of iPhone 17 AND stock of Samsung"
-   You generate: SELECT ... WHERE products_name LIKE '%iPhone 17%' OR products_name LIKE '%Samsung%'
-   Problem: Returns BOTH products in ONE result
-
-✅ CORRECT: "stock of iPhone 17 AND stock of Samsung"
-   System splits into: ["Get stock of iPhone 17", "Get stock of Samsung"]
-   You generate TWO queries:
-   Query 1: SELECT ... WHERE pd.products_name LIKE '%iPhone%' AND pd.products_name LIKE '%17%' ...
-   Query 2: SELECT ... WHERE pd.products_name LIKE '%Samsung%' ...
-
-EXCEPTION - TEMPORAL COMPARISONS (DO NOT SPLIT):
-When user asks to COMPARE periods (vs, versus, compared to), generate ONE query with CASE WHEN.
-
-
-
-
-
-
-text_aggregation_rules = ABSOLUTE RULE - GLOBAL AGGREGATIONS
-ABSOLUTE PROHIBITION: NEVER include products_id, orders_id, or any other column with AVG, SUM, COUNT without GROUP BY
-
-FORBIDDEN: SELECT AVG(p.products_price) AS prix_moyen, p.products_id FROM {{table_prefix}}products p WHERE p.products_status = 1
-MANDATORY: SELECT AVG(p.products_price) AS prix_moyen FROM {{table_prefix}}products p WHERE p.products_status = 1
-
-RULES for global aggregations (without GROUP BY):
-1. NEVER add LIMIT 1 (aggregation already returns ONE row)
-2. DO NOT include non-aggregated columns
-3. No products_id, orders_id, etc. (makes no sense in global aggregation)
-4. CRITICAL - "en stock" / "in stock": ALWAYS add AND products_quantity > 0
-
-🚨 CRITICAL EXCEPTION - MIN/MAX for Finding Specific Products:
-When user asks for "cheapest product", "most expensive product", "product with most stock", etc.,
-they want to see the ACTUAL PRODUCTS, not just the aggregated value.
-
-❌ WRONG: SELECT MIN(p.products_price) AS min_price FROM {{table_prefix}}products p
-   Problem: Returns only the price value, user doesn't know which product!
-
-✅ CORRECT: Use subquery to find ALL products at MIN/MAX value:
-   SELECT pd.products_name, p.products_price, p.products_id
-   FROM {{table_prefix}}products p
-   JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
-   WHERE pd.language_id = {{language_id}}
-     AND p.products_price = (SELECT MIN(products_price) FROM {{table_prefix}}products WHERE products_status = 1)
-
-This returns ALL products at the minimum price, not just one!
-
-CORRECT Examples:
-"How many active products" → SELECT COUNT(DISTINCT p.products_id) AS total FROM {{table_prefix}}products p WHERE p.products_status = 1
-"Average price of active products in stock" → SELECT AVG(p.products_price) AS prix_moyen FROM {{table_prefix}}products p WHERE p.products_status = 1 AND p.products_quantity > 0
-"Total stock of active products" → SELECT SUM(p.products_quantity) AS total_stock FROM {{table_prefix}}products p WHERE p.products_status = 1
-
-EXCEPTION - Aggregations with GROUP BY:
-If you use GROUP BY, you CAN include the grouped columns:
-SELECT p.products_id, pd.products_name, SUM(op.products_quantity) AS total FROM {{table_prefix}}orders_products op ... GROUP BY p.products_id, pd.products_name ORDER BY total DESC LIMIT 10
-
-SIMPLE RULE:
-- Global aggregation (no GROUP BY) = ONE single column (the aggregation function), no LIMIT, no ID
-- MIN/MAX for finding products = Use subquery with WHERE column = (SELECT MIN/MAX...)
-- When user says "en stock" or "in stock" = ALWAYS add "AND products_quantity > 0"
-
-
-text_order_grain_rules = ORDER GRAIN - ORDER-LEVEL METRICS OVER A PRODUCT JOIN
-
-A JOIN to {{table_prefix}}orders_products or {{table_prefix}}products_to_categories turns one order into ONE ROW PER PRODUCT LINE. Every order-level value on those rows - a {{table_prefix}}orders_total amount, a date of {{table_prefix}}orders - is REPEATED once per line.
-
-The trap is not a missing GROUP BY, it is SUM over a repeated value. Inside a GROUP BY o.orders_id that also joins {{table_prefix}}orders_products, SUM(ot.value) multiplies the order total by the number of lines. Take a repeated order-level value with MAX - one value per order - or keep the product join out of the aggregate and restrict the population with EXISTS.
-
-FORBIDDEN: SELECT AVG(t.order_total) FROM (SELECT o.orders_id, SUM(ot.value) AS order_total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id AND ot.class = 'TO' GROUP BY o.orders_id) t
-MANDATORY: SELECT AVG(t.order_total) FROM (SELECT o.orders_id, MAX(ot.value) AS order_total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id AND ot.class = 'TO' GROUP BY o.orders_id) t
-ALSO CORRECT: SELECT SUM(ot.value) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id AND ot.class = 'TO' WHERE EXISTS (SELECT 1 FROM {{table_prefix}}orders_products op WHERE op.orders_id = o.orders_id)
-
-This applies to ORDER-level values only. A product-level metric - quantity sold, number of order lines, revenue of a product line - is aggregated over {{table_prefix}}orders_products as usual and must NOT be pre-aggregated to order grain.
-
-WHICH orders_total CLASS NAMES WHICH QUANTITY: 'ST' is the products sub-total, 'SH' the shipping, 'TO' the grand total actually paid by the customer. The AVERAGE CART is the average of 'TO', never of 'ST'. Product revenue is NOT built on 'ST' either: 'ST' is written in the tax convention of EACH order, so summing it adds tax-inclusive amounts to tax-exclusive ones. Order revenue comes from 'TO' as stated in the class map above; the revenue of a PRODUCT line comes from {{table_prefix}}orders_products, never from orders_total. Never sum two different classes together, and never assume a class exists on every order.
-SHARE OF ONE CLASS IN THE TOTAL - shipping weight, discount weight, fee weight: NAME the denominator, because the two revenues differ by the whole tax AND the shipping, and the same ratio moves by a fifth on a 20 percent shop. Revenue INCLUDING tax = SUM(ot.value) with ot.class = 'TO' (invoiced, shipping included). MERCHANDISE revenue = SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) with ot.class IN ('TO','TX','SH'). A SHIPPING-weight ratio takes the INVOICED total as denominator: shipping is not part of the merchandise revenue. Say in the answer which one the ratio uses.
-NEVER inner-join the class you are measuring: an order carrying no 'SH' row then vanishes from the DENOMINATOR as well, and the ratio comes out overstated. Aggregate both sides in one pass, with conditional sums over a single join on orders_total.
-FORBIDDEN: SELECT SUM(sh.value) / SUM(tot.value) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total sh ON sh.orders_id = o.orders_id AND sh.class = 'SH' JOIN {{table_prefix}}orders_total tot ON tot.orders_id = o.orders_id AND tot.class = 'TO'
-MANDATORY: SELECT ROUND(SUM(CASE WHEN ot.class = 'SH' THEN ot.value ELSE 0 END) / NULLIF(SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE 0 END), 0) * 100, 2) AS shipping_share_pct FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id
-SHIPPING IS THE FIRM PRICE CHARGED: 'SH' is the shipping amount actually billed, and it is the ONLY shipping reference. It ALREADY contains packaging and handling - the box weight and the padding inflate the weight sent to the carrier rate table, and the result collapses into this single value. NEVER split 'SH' into transport versus packaging, and never rebuild it from product weights or from shipping configuration constants: that decomposition is stored nowhere, and a shipping module may compute it its own way.
-
-
-text_security_guidelines = SECURITY GUIDELINES:
-1. Never generate queries that modify database structure (CREATE, ALTER, DROP)
-2. Never generate queries that delete data without explicit WHERE clauses
-3. Always use parameterized queries when user input is involved
-4. Avoid using INFORMATION_SCHEMA or accessing system tables
-5. Do not include sensitive data in query comments
-6. Limit result sets to prevent excessive data exposure
-7. Validate all table and column names against the schema
-8. All data must be in lower case
-
 
 text_entity_metadata_guidelines = ENTITY METADATA HANDLING:
 1. entity_type (ALWAYS determined):
@@ -814,18 +297,6 @@ TEMPORAL AGGREGATIONS:
 AMBIGUOUS QUERIES:
 When query is ambiguous about order status (e.g., "revenue by category"), use rule 1 of ORDER STATUS FILTERING - the revenue_sign join, never a status id - and explain in analysis
 
-text_multi_query_warning = ⚠️ WARNING: Multiple SQL queries detected in response
-
-This query contains multiple sub-queries or statements. Ensure each query is properly separated and valid.
-
-text_response_format = RESPONSE FORMAT RULES:
-
-1. SQL QUERIES: Return ONLY the SQL query, no explanatory text
-2. EXPLANATIONS: When requested, provide clear, concise explanations
-3. ERRORS: If query cannot be generated, explain why and ask for clarification
-4. RESULTS: Present data in clear, readable format
-5. CITATIONS: Always cite data sources when providing information
-
 multi_token_rules = MULTI-TOKEN ENTITY HANDLING:
 
 1. Names in several words - product, category, manufacturer: one LIKE per word, chained with AND, in any order (rule 9)
@@ -847,3 +318,297 @@ Example: the product means {{entityName}}
 ----------------------------
 
 text_schema_join_map = JOIN MAP - how the tables in this analysis connect, with the join key and cardinality. Follow a 1-N edge and every value on the 1 side is REPEATED once per row on the N side: aggregate an entity's own value at its own grain, and use the key below for every join.
+
+text_sql_domain_column_rules = COLUMN ALIASING (MANDATORY - fixed aliases, apply to EVERY query):
+- Catalog / list price comes from {{table_prefix}}products.products_price → you MUST alias it: SELECT p.products_price AS catalog_price
+- Transaction / sale price comes from {{table_prefix}}orders_products.products_price → you MUST alias it: SELECT op.products_price AS transaction_price
+- Purchase / cost / buying price comes from {{table_prefix}}products.products_cost → you MUST alias it: SELECT p.products_cost AS purchase_price. It is what the shop PAYS, catalog_price is what it SELLS at: never report one for the other.
+- Units sold / quantity sold is SUM of {{table_prefix}}orders_products.products_quantity → you MUST alias it: SUM(op.products_quantity) AS total_sold. Units carry the ACCOUNTING WEIGHT of the order status like revenue: with no window, keep only the orders that count as a sale (os.revenue_sign = 1 - a refunded order nets to zero); over a window, build it in the canonical shape of the ORDER STATUS FILTERING section, SUM(ev.sign * ev.products_quantity), so a refund is deducted at its date. Never sum raw order lines.
+- NEVER output a bare products_price or invent ad-hoc alias names. These fixed aliases (catalog_price, transaction_price, total_sold) are REQUIRED so downstream synthesis and the front-office receive stable, predictable column names on single-product lookups, lists, aggregations and hybrid queries.
+🚫 EXCLUDED COLUMNS — NEVER reference these in any SQL, even though they appear in the schema (unused / not connected). Maintain this list here:
+- `erp_invoice` : ERP-integration flag — NO ERP is connected, so it is ALWAYS 0 (filtering on it returns zero rows). For "invoiced" orders use `orders_status_invoice = 2` instead; NEVER use `erp_invoice`.
+COLUMN LOCATIONS (verified against the live schema — use the real column of the actual table):
+- {{table_prefix}}orders stores the buyer name in the single column customers_name (full name). The firstname/lastname split exists on {{table_prefix}}customers.
+- {{table_prefix}}specials expiry column is expires_date. It also has scheduled_date (future activation date, NULL = active immediately).
+- SCHEDULING WINDOW ({{table_prefix}}specials, {{table_prefix}}products_featured, {{table_prefix}}products_favorites): scheduled_date and expires_date are nullable datetimes and every comparison MUST carry an explicit operator — `scheduled_date <= NOW()` for "already started", `expires_date >= NOW()` for "not yet over". Writing a column next to NOW() with NO operator (e.g. `s.scheduled_date NOW()`) is a syntax error. status = 1 alone already answers "current"; add the window only when the question is explicitly about scheduling, and always guard the NULL: (s.scheduled_date IS NULL OR s.scheduled_date <= NOW()).
+
+text_sql_domain_top_n_example = SELECT * FROM (SELECT cd.categories_name, pd.products_name, SUM(op.products_quantity) AS sold, ROW_NUMBER() OVER (PARTITION BY cd.categories_id ORDER BY SUM(op.products_quantity) DESC) AS rank_best, ROW_NUMBER() OVER (PARTITION BY cd.categories_id ORDER BY SUM(op.products_quantity) ASC) AS rank_worst FROM ... GROUP BY cd.categories_id, cd.categories_name, p.products_id, pd.products_name) ranked WHERE ranked.rank_best <= 3 OR ranked.rank_worst <= 3
+
+text_sql_domain_limit_subquery_example = WHERE o.orders_id IN (SELECT x.orders_id FROM (SELECT orders_id FROM {{table_prefix}}orders ORDER BY date_purchased DESC LIMIT 5) x)
+
+text_sql_domain_column_locations = - The manufacturer name is {{table_prefix}}manufacturers.manufacturers_name; the supplier name is {{table_prefix}}suppliers.suppliers_name.
+- {{table_prefix}}orders_products carries no supplier or manufacturer id: JOIN {{table_prefix}}products via products_id, then read {{table_prefix}}products.suppliers_id / {{table_prefix}}products.manufacturers_id.
+- {{table_prefix}}return_orders references the product via product_id (singular) and also stores product_name denormalised; its customer columns use the singular prefix (customer_firstname, customer_lastname).
+
+text_sql_domain_named_filter_examples = ✅ CORRECT (no id given): SELECT customers_id, CONCAT(customers_firstname, ' ', customers_lastname) AS customers_name, customers_email_address, customers_telephone FROM {{table_prefix}}customers ORDER BY customers_id ASC LIMIT 100
+❌ WRONG (unbound placeholder): SELECT ... FROM {{table_prefix}}customers WHERE customers_id = ?
+❌ WRONG (invented / context-borrowed id): SELECT ... FROM {{table_prefix}}customers WHERE customers_id = 103
+
+text_sql_domain_named_filter_value = customer 42
+
+text_sql_domain_order_by_examples = Example 1 - Products added per quarter (using function in ORDER BY):
+SELECT QUARTER(p.products_date_added) AS quarter, COUNT(*) AS products_added
+FROM {{table_prefix}}products p
+WHERE p.products_date_added >= '2025-01-01' AND p.products_date_added < '2026-01-01'
+GROUP BY QUARTER(p.products_date_added)
+ORDER BY QUARTER(p.products_date_added)
+Example 2 - Products added per month (using column position):
+SELECT MONTH(p.products_date_added), COUNT(*) AS products_added
+FROM {{table_prefix}}products p
+WHERE p.products_date_added >= '2025-01-01' AND p.products_date_added < '2026-01-01'
+GROUP BY MONTH(p.products_date_added)
+ORDER BY 1
+Example 3 - Products added per year (using alias):
+SELECT YEAR(p.products_date_added) AS year_value, COUNT(*) AS products_added
+FROM {{table_prefix}}products p
+GROUP BY year_value
+ORDER BY year_value
+
+text_sql_domain_name_search_example = JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id AND pd.language_id = {{language_id}} WHERE p.products_id IN (SELECT products_id FROM {{table_prefix}}products_description WHERE products_name LIKE '%ProductName%')
+
+text_sql_domain_name_column = products_name
+
+text_sql_domain_field_mapping = 8. FIELD MAPPING (CRITICAL - Common Query Terms to Database Columns):
+When user asks for these terms, map to correct database columns:
+PRODUCTS TABLE:
+- "quantity" / "stock" / "inventory" → products_quantity
+- "stock alert" / "alert threshold" / "reorder point" → products_quantity_alert
+- "price" → products_price (catalog price); "cost" / "purchase price" → products_cost (what the shop pays, see COLUMN ALIASING)
+- "model" / "reference" / "ref" → products_model
+- "sku" → products_sku
+- "ean" / "barcode" → products_ean
+- "name" / "title" → products_name (in products_description table)
+- "weight" → products_weight
+- "status" / "active" → products_status
+ORDERS TABLE:
+- "quantity ordered" / "quantity sold" → products_quantity (in orders_products table)
+- "transaction price" / "sale price" → products_price (in orders_products table)
+- "order total" / "revenue" / "turnover" → MERCHANDISE, excluding tax AND shipping (the default): SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) with ot.class IN ('TO','TX','SH'); INCLUDING tax (invoiced, shipping included): SUM(ot.value) with ot.class = 'TO'. NEVER class='ST'.
+- the ACCOUNTING WEIGHT of the order status applies to every one of these sums - revenue, margin, average cart, units sold. It is the column {{table_prefix}}orders_status.revenue_sign, never a status id and never a status name: 1 the order counts as a sale, 0 it never became one and is dropped, -1 the sale was undone and must be DEDUCTED at the date of the status change, never merely excluded. Join it as `JOIN {{table_prefix}}orders_status os ON os.orders_status_id = o.orders_status AND os.language_id = {{language_id}}` and build the sum with the CANONICAL SHAPE of the ORDER STATUS FILTERING section - a UNION ALL over an event date. Writing a status id in a filter is always wrong. That dating is for AMOUNTS summed over a window. A COUNT of orders counts each order ONCE, on its purchase date, and reads its CURRENT weight: orders_count never subtracts its refunds, and when the question defines the orders by when they were PLACED ('orders placed in 2025', 'of last year's orders') the refunded or cancelled ones among them are counted over that same purchase window - an order placed in 2025 and refunded in 2026 is a refunded 2025 order.
+- HISTORY DOES NOT DEPEND ON THE CATALOGUE. A product that was ordered can be DELETED from the catalogue later, and its revenue MUST still be counted: the order line records the sale, the catalogue only holds the current offer. So NEVER reach the CATALOGUE with an INNER JOIN to compute an amount - that means {{table_prefix}}products, {{table_prefix}}products_description AND the whole category chain {{table_prefix}}products_to_categories, {{table_prefix}}categories, {{table_prefix}}categories_description: a deleted product carries no category row either, so one INNER JOIN anywhere in that chain throws it out through the back door - a deleted product then vanishes with its whole history, the total shrinks, and there is no warning, no error and no zero row to notice. Use LEFT JOIN and name the product with COALESCE(pd.products_name, op.products_name): {{table_prefix}}orders_products.products_name carries the label FROZEN at order time, which survives deletion, renaming and translation. Always close the description join on AND pd.language_id = {{language_id}} - without it a product carrying two labels comes back twice and its amount is counted twice. Group a product breakdown on op.products_id, NEVER on a name: the frozen label is written in the language the BUYER was browsing, so one product ordered in two languages carries two labels and a GROUP BY on the name splits it into two rows that each look like a separate product.
+- the ANALYSIS PLAN names the basis when it carries a revenue metric: revenue_ht = EXCLUDING tax (the 'TO' minus 'TX' form), revenue_ttc = INCLUDING tax (the 'TO' form). Use the form of the metric the plan named, alias the column with that exact name, and never substitute the other basis.
+- the ANALYSIS PLAN names the cost basis when it carries a margin metric: gross_margin_amount = SUM(op.final_price * op.products_quantity) - SUM((p.products_cost + p.products_handling) * op.products_quantity) over the sold lines, gross_margin_percent = that amount / SUM(op.final_price * op.products_quantity) * 100. The cost basis is products_cost PLUS products_handling, joined from {{table_prefix}}products. NEVER emit a margin without subtracting the cost basis (revenue aliased as a margin reads as 100% and is false), and when the plan names the metric use THIS form, never the catalogue-price form, and alias the column with the exact metric name. "Over the sold lines" is the ACCOUNTING WEIGHT and not a figure of speech: build this form INSIDE the canonical shape of the ORDER STATUS FILTERING section, exactly like a revenue sum - join {{table_prefix}}orders_status, drop what never became a sale, and DEDUCT an undone sale at the date of its status change. A margin summed over raw order lines counts cancelled and refunded orders as profit. A line whose product carries NO cost - products_cost NULL or 0 - has no margin and is LEFT OUT of it: write its cost (NULLIF(p.products_cost, 0) + p.products_handling) * op.products_quantity so it stays NULL, sum the margin denominator over the costed lines only - SUM(CASE WHEN ev.line_cost IS NOT NULL THEN ev.sign * ev.line_revenue END) - and in a breakdown KEEP a group without any costed line, never filter it out: its margins come back NULL and the answer names it; a revenue column in the same query still sums EVERY line. NEVER COALESCE the cost to 0: the gap would read as a 100% margin. gross_margin_percent is a rate over SALES: when the costed net revenue of a row is zero or negative - a period that only holds a refund - the rate is NULL, never a positive figure next to a negative amount, so wrap its denominator as NULLIF(GREATEST(..., 0), 0).
+- BOTH MARGIN FIGURES TRAVEL TOGETHER: a query selecting gross_margin_amount ALSO selects gross_margin_percent, and the reverse, at the same level and with the forms above - the amount without its rate, or the rate without its amount, is half an answer. When the result carries a variation, each keeps its own: in percent for the amount, in percentage points for the rate.
+- A RANKING ON A MARGIN (the best or worst margins, top or bottom N by gross_margin_amount or gross_margin_percent) ranks only the rows that carry a net sale: add HAVING SUM(ev.sign * ev.line_revenue) <> 0 before the ORDER BY. A row whose sales were all refunded has no margin, not a low one, and ranking it fills one of the N places with nothing to act on.
+- MANDATORY COMPANIONS OF ANY MARGIN: whatever the question, its wording, its language, its period, its comparison or its breakdown, a query selecting gross_margin_amount or gross_margin_percent ALSO selects, at the same level, line_revenue over EVERY line = ROUND(SUM(ev.sign * ev.line_revenue), 2), never wrapped in a CASE on the cost - the costed-lines sum is the rate denominator only, never a column: aliased line_revenue it hides the uncovered revenue under a name that promises all of it - and revenue_without_cost = ROUND(SUM(CASE WHEN ev.line_cost IS NULL THEN ev.sign * ev.line_revenue END), 2) - the revenue the margin does not cover, never a count of lines. NEVER drop the lines without cost in the WHERE clause (no ev.line_cost IS NOT NULL): the margin already skips them, and the revenue they carry must stay measurable. These two columns are part of the margin, not an extra metric: the ANALYSIS PLAN never forbids them. Everywhere else they are computed per row, in the same GROUP BY as the margin they accompany: never in a separate CTE joined onto the rows, which would repeat the window's total on every row under a name that promises that row's revenue. ONLY on a DENSE DAY AXIS (the plan's time grain is DAY) are they NOT carried through the days: there, compute them once per window, over the whole window, in their own small CTE, and CROSS JOIN that single row onto the final rows.
+- the ANALYSIS PLAN names the form when it carries one of these: discount_amount = SUM(ot.value) with ot.class IN ('CD','DC'), shipping_billed = SUM(ot.value) with ot.class = 'SH'. Both are order-grain sums; alias the column with the exact metric name. NEVER fold discount_amount into a revenue or a margin metric - return it as its own column, never subtracted from them and never added back.
+- the ANALYSIS PLAN may name the dimension tax_convention: it is the column orders_prices_include_tax of the orders table. GROUP BY it and select it RAW (0 or 1, never a label, never renamed) aliased tax_convention, next to the metric. It separates invoices drawn up on tax-EXCLUDED prices (0) from tax-INCLUDED ones (1); the metric itself keeps the form the plan named.
+- "customer discount" (with the 'customer'/'client' qualifier) → orders_total WHERE class='CD' (value = amount, title = label)
+- "coupon" / "coupons granted" / "coupons used" → orders_total WHERE class='DC' (value = amount, title = label)
+- bare "discount(s)" / "discounts granted" / "discounts and coupons" (NO 'customer'/'client' qualifier) → orders_total WHERE class IN ('CD','DC'). This is the DEFAULT for any unqualified discount question: coupons ARE discounts, so include them unless the user explicitly restricts to customer discounts.
+- ALWAYS expose the discount TYPE: include `ot.class` (CD = customer discount, DC = coupon) and `ot.title` in the SELECT so each row states which kind of discount it is.
+**CRITICAL**: For revenue/turnover, NEVER use class='ST' - it mixes tax conventions across orders and overstates the figure. Use 'TO' alone for the INVOICED tax-inclusive amount (shipping included), or 'TO' minus 'TX' minus 'SH' for the MERCHANDISE amount, which is the default.
+**CRITICAL**: Discounts/coupons granted on orders are orders_total lines (class 'CD'/'DC', amount = ot.value, label = ot.title). NEVER compute a discount from a product-price difference (op.products_price vs p.products_price); that is NOT the discount. {{table_prefix}}specials is unrelated (product promo prices).
+**CRITICAL**: the customer discount is ORDER-LEVEL (one orders_total CD line per order, applied to the whole order), NOT per product. To list the PRODUCTS of discounted orders ("products that received a discount"), JOIN {{table_prefix}}orders_products (and {{table_prefix}}products_description) to the SAME order that has the class='CD' line.
+EXAMPLES:
+- "price and quantity" → SELECT p.products_id, p.products_price, p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd...
+- "stock level" → SELECT p.products_id, p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd...
+- "stock alert" → SELECT p.products_id, p.products_quantity_alert, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd...
+- "inventory count" → SELECT SUM(p.products_quantity) FROM {{table_prefix}}products p
+- "low stock" / "low in stock" / "soon out of stock" / "products to restock" / "to replenish" / "products in acquisition" / "stock bas" / "bientôt en rupture" / "à réapprovisionner" / "en acquisition" → a CURRENT-stock question: a date in the question never turns it into a sales ranking and adds no date filter; the effective reorder threshold is products_quantity_alert when > 0, else the shop-wide {{stock_reorder_level}} (0 means no threshold, so exclude): SELECT p.products_id, p.products_quantity, p.products_quantity_alert, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE ((p.products_quantity_alert > 0 AND p.products_quantity <= p.products_quantity_alert) OR (p.products_quantity_alert = 0 AND {{stock_reorder_level}} > 0 AND p.products_quantity <= {{stock_reorder_level}}))
+- "out of stock" / "rupture" → SELECT p.products_id, p.products_quantity, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE p.products_quantity = 0
+- "out of stock OR low stock" / "en rupture ou en stock bas" → same effective threshold (per-product alert, else the shop-wide {{stock_reorder_level}}): WHERE ((p.products_quantity_alert > 0 AND p.products_quantity <= p.products_quantity_alert) OR (p.products_quantity_alert = 0 AND {{stock_reorder_level}} > 0 AND p.products_quantity <= {{stock_reorder_level}})). This is a CURRENT-stock question: do NOT add a date filter even if the question says "this month". NEVER return empty SQL for a stock question — products_quantity / products_quantity_alert always exist.
+
+text_sql_domain_multi_token_examples = CORRECT: "iPhone 17 Pro" → WHERE pd.products_name LIKE '%iPhone%' AND pd.products_name LIKE '%17%' AND pd.products_name LIKE '%Pro%'
+WRONG: "iPhone 17 Pro" → WHERE pd.products_name LIKE '%iPhone 17 Pro%'  // Too restrictive
+WRONG: "What is the price of Wine Cooler Blink?" → WHERE pd.products_name LIKE '%What%' AND pd.products_name LIKE '%price%' AND pd.products_name LIKE '%Wine%' AND pd.products_name LIKE '%Cooler%'  // The words of the QUESTION are not tokens
+
+text_sql_domain_alias_examples = - Use p.products_id instead of products_id
+- Use p.products_price instead of products_price
+
+text_sql_domain_identification_rules = REQUIRED FIELDS FOR PRODUCT QUERIES:
+- products_id (p.products_id) - MANDATORY
+- products_name (pd.products_name from products_description table) - MANDATORY
+- Any requested data field (price, quantity, etc.)
+REQUIRED JOIN FOR PRODUCT NAMES:
+- ALWAYS JOIN with {{table_prefix}}products_description:
+JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
+- ALWAYS filter by language_id: WHERE pd.language_id = {{language_id}}
+❌ WRONG APPROACH - Using MAX/MIN without product identification:
+"most expensive product" → SELECT MAX(p.products_price) FROM {{table_prefix}}products p
+Problem: Returns only the price, user doesn't know which product!
+✅ CORRECT APPROACH - Select the complete product record:
+"most expensive product" →
+SELECT pd.products_name, p.products_price, p.products_id
+FROM {{table_prefix}}products p
+JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
+WHERE pd.language_id = {{language_id}}
+AND p.products_price = (SELECT MAX(products_price) FROM {{table_prefix}}products WHERE products_status = 1)
+MORE EXAMPLES:
+- "stock level" → SELECT p.products_quantity, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}}
+- "price" → SELECT p.products_price, p.products_id, pd.products_name FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}}
+- "cheapest product" → SELECT pd.products_name, p.products_price, p.products_id FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} AND p.products_price = (SELECT MIN(products_price) FROM {{table_prefix}}products WHERE products_status = 1)
+- "product with most stock" → SELECT pd.products_name, p.products_quantity, p.products_id FROM {{table_prefix}}products p JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id WHERE pd.language_id = {{language_id}} AND p.products_quantity = (SELECT MAX(products_quantity) FROM {{table_prefix}}products WHERE products_status = 1)
+
+text_sql_domain_relationships = LEVEL 1 - UNDERSTANDING RELATIONSHIPS:
+The database uses foreign keys to link tables. Identify relationships by looking for columns with matching names:
+PRIMARY RELATIONSHIPS:
+- products_id: Links {{table_prefix}}products → {{table_prefix}}products_description, {{table_prefix}}orders_products, {{table_prefix}}reviews, {{table_prefix}}products_notifications, {{table_prefix}}specials, {{table_prefix}}products_viewed
+- customers_id: Links {{table_prefix}}customers → {{table_prefix}}orders, {{table_prefix}}reviews, {{table_prefix}}products_notifications
+- orders_id: Links {{table_prefix}}orders → {{table_prefix}}orders_products, {{table_prefix}}orders_total
+- categories_id: Links {{table_prefix}}categories → {{table_prefix}}categories_description, {{table_prefix}}products_to_categories
+- manufacturers_id: Links {{table_prefix}}manufacturers → {{table_prefix}}manufacturers_info, {{table_prefix}}products
+- suppliers_id: Links {{table_prefix}}suppliers → {{table_prefix}}suppliers_info, {{table_prefix}}manufacturers
+
+text_sql_domain_one_to_many_examples = - One product → Many descriptions (multilingual)
+- One product → Many orders (via orders_products)
+- One customer → Many orders
+- One order → Many products (via orders_products)
+
+text_sql_domain_many_to_many_examples = - Products ↔ Orders: Use {{table_prefix}}orders_products as linking table
+- Products ↔ Categories: Use {{table_prefix}}products_to_categories as linking table
+
+text_sql_domain_missing_relationship_examples = - "Products never purchased" → LEFT JOIN with orders_products WHERE orders_products.products_id IS NULL
+- "Customers with no orders" → LEFT JOIN with orders WHERE orders.customers_id IS NULL
+
+text_sql_domain_business_patterns = LEVEL 3 - BUSINESS LOGIC PATTERNS:
+When you see these query types, apply the corresponding JOIN pattern:
+- "best selling" / "most sold" / "top products"
+→ JOIN with {{table_prefix}}orders_products, use SUM(products_quantity), GROUP BY products_id
+- "customer reviews" / "product feedback" / "ratings"
+→ JOIN with {{table_prefix}}reviews table
+- "never purchased" / "unpurchased" / "no sales"
+→ LEFT JOIN with {{table_prefix}}orders_products WHERE products_id IS NULL
+- "product notifications" / "stock alerts" / "customer alerts"
+→ JOIN with {{table_prefix}}products_notifications and {{table_prefix}}customers
+- "viewed products" / "most viewed" / "product views"
+→ Use {{table_prefix}}products_viewed table (special tracking table)
+- "profit margin" / "margin calculation"
+→ over SALES (a period, orders, products sold): gross_margin_amount and gross_margin_percent in the rule 8 form, over the sold lines
+→ of the CATALOGUE only (no sale and no period, e.g. "margin of each product at its list price"): (products_price - (products_cost + products_handling)) / products_price * 100
+LEVEL 4 - FRENCH-ENGLISH BUSINESS TERMS:
+Translate these French terms to their database equivalents:
+- "arrivage" / "nouveaux arrivages" → new arrivals (use products_date_added recent OR products_date_available future)
+- "profit margin" / "gross margin" → gross margin (the LEVEL 3 entry above decides between sales and catalogue)
+- "hors stock" / "rupture de stock" → out of stock (products_quantity = 0)
+- "en stock" / "disponible" → in stock (products_quantity > 0)
+- "produits vus" / "consultations" → viewed products (use {{table_prefix}}products_viewed table)
+- "meilleurs produits" / "produits les plus vendus" → best selling (JOIN with orders_products, SUM quantity)
+- "unpurchased products" / "never ordered products" → unpurchased products (LEFT JOIN orders_products WHERE NULL)
+- "avis clients" / "commentaires" → customer reviews (use {{table_prefix}}reviews table)
+- "surveillance" / "notifications" → product notifications (use {{table_prefix}}products_notifications table)
+
+text_sql_domain_description_tables = products_description, categories_description, etc.
+
+text_sql_domain_unmatched_example = unpurchased products
+
+text_sql_domain_date_column = o.date_purchased
+
+text_sql_domain_json_field_example = - Example:
+metadata.seo_score_after → JSON_UNQUOTE(JSON_EXTRACT(psseo.metadata, '$.seo_score_after'))
+
+text_sql_domain_json_examples = EXAMPLE (JSON FIELD EXTRACTION):
+❌ WRONG: "list products with SEO score"
+You generate:
+SELECT p.products_id, pd.products_name, s.seo_score_after
+FROM {{table_prefix}}products p
+JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
+JOIN {{table_prefix}}products_seo_embedding s ON p.products_id = s.entity_id
+ORDER BY s.seo_score_after DESC
+Problem:
+- seo_score_after is NOT a column
+- It exists inside JSON field "metadata"
+- Query will fail or return incorrect results
+✅ CORRECT: "list products with SEO score"
+You must generate absolutly like this using JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS seo_score:
+SELECT DISTINCT p.products_id,
+pd.products_name,
+JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS seo_score
+FROM {{table_prefix}}products p
+JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
+JOIN {{table_prefix}}products_seo_embedding s ON p.products_id = s.entity_id AND s.entity_type = 'product'
+WHERE pd.language_id = {{language_id}}
+AND JSON_EXTRACT(s.metadata, '$.seo_score_after') IS NOT NULL
+AND JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) != 'null'
+ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS UNSIGNED) DESC
+LIMIT 100
+IMPORTANT Key rules demonstrated:
+- NEVER use non-existent columns
+- ALWAYS extract values from JSON fields using JSON_EXTRACT
+- ALWAYS use JSON_UNQUOTE for scalar values
+- ALWAYS use correct JSON path (metadata → $.seo_score_after)
+ADDITIONAL SEO SCORE EXAMPLES - BOTH BEFORE AND AFTER:
+The following fields ALL exist inside JSON metadata, NEVER as real columns:
+- seo_score_before → JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_before'))
+- seo_score_after  → JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after'))
+- seo_score        → JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after'))
+- seo_score (generic, no before/after specified) → use $.seo_score_after by default
+If the question context suggests "before optimization", use $.seo_score_before instead
+Examples:
+"what is the SEO score?" → $.seo_score_after (current score)
+"what was the SEO score before?" → $.seo_score_before (initial score)
+"before/after comparison" → select BOTH fields
+❌ WRONG (FORBIDDEN - will always fail):
+SELECT DISTINCT seos.seo_score_before FROM {{table_prefix}}products_seo_embedding seos
+SELECT DISTINCT s.seo_score_after FROM {{table_prefix}}products_seo_embedding s
+SELECT DISTINCT seos.seo_score FROM {{table_prefix}}products_seo_embedding seos
+
+text_sql_domain_json_cast_examples = ❌ WRONG (will trigger MySQL warning #1292):
+AND CAST(JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS UNSIGNED) > 20
+✅ CORRECT (safe CAST with null protection):
+AND JSON_EXTRACT(s.metadata, '$.seo_score_after') IS NOT NULL
+AND JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) != 'null'
+AND CAST(JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS UNSIGNED) > 20
+
+text_sql_domain_json_examples_more = ✅ CORRECT example for "products with initial SEO score":
+SELECT DISTINCT
+p.products_id,
+pd.products_name,
+JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_before')) AS seo_score_before,
+JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) AS seo_score_after
+FROM {{table_prefix}}products p
+JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
+JOIN {{table_prefix}}products_seo_embedding s ON p.products_id = s.entity_id AND s.entity_type = 'product'
+WHERE pd.language_id = {{language_id}}
+AND JSON_EXTRACT(s.metadata, '$.seo_score_after') IS NOT NULL
+AND JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_after')) != 'null'
+ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(s.metadata, '$.seo_score_before')) AS UNSIGNED) DESC
+LIMIT 100
+
+text_sql_domain_json_fields = "seo_score", "metadata", or any SEO field
+
+text_sql_domain_multi_query_example = EXAMPLE:
+❌ WRONG: "stock of iPhone 17 AND stock of Samsung"
+You generate: SELECT ... WHERE products_name LIKE '%iPhone 17%' OR products_name LIKE '%Samsung%'
+Problem: Returns BOTH products in ONE result
+✅ CORRECT: "stock of iPhone 17 AND stock of Samsung"
+System splits into: ["Get stock of iPhone 17", "Get stock of Samsung"]
+You generate TWO queries:
+Query 1: SELECT ... WHERE pd.products_name LIKE '%iPhone%' AND pd.products_name LIKE '%17%' ...
+Query 2: SELECT ... WHERE pd.products_name LIKE '%Samsung%' ...
+
+text_sql_domain_aggregation_examples = FORBIDDEN: SELECT AVG(p.products_price) AS prix_moyen, p.products_id FROM {{table_prefix}}products p WHERE p.products_status = 1
+MANDATORY: SELECT AVG(p.products_price) AS prix_moyen FROM {{table_prefix}}products p WHERE p.products_status = 1
+
+text_sql_domain_aggregation_rules = 4. CRITICAL - "en stock" / "in stock": ALWAYS add AND products_quantity > 0
+
+text_sql_domain_min_max_phrases = "cheapest product", "most expensive product", "product with most stock", etc.
+
+text_sql_domain_min_max_example = ❌ WRONG: SELECT MIN(p.products_price) AS min_price FROM {{table_prefix}}products p
+Problem: Returns only the price value, user doesn't know which product!
+✅ CORRECT: Use subquery to find ALL products at MIN/MAX value:
+SELECT pd.products_name, p.products_price, p.products_id
+FROM {{table_prefix}}products p
+JOIN {{table_prefix}}products_description pd ON p.products_id = pd.products_id
+WHERE pd.language_id = {{language_id}}
+AND p.products_price = (SELECT MIN(products_price) FROM {{table_prefix}}products WHERE products_status = 1)
+
+text_sql_domain_aggregation_correct_examples = "How many active products" → SELECT COUNT(DISTINCT p.products_id) AS total FROM {{table_prefix}}products p WHERE p.products_status = 1
+"Average price of active products in stock" → SELECT AVG(p.products_price) AS prix_moyen FROM {{table_prefix}}products p WHERE p.products_status = 1 AND p.products_quantity > 0
+"Total stock of active products" → SELECT SUM(p.products_quantity) AS total_stock FROM {{table_prefix}}products p WHERE p.products_status = 1
+
+text_sql_domain_group_by_example = SELECT p.products_id, pd.products_name, SUM(op.products_quantity) AS total FROM {{table_prefix}}orders_products op ... GROUP BY p.products_id, pd.products_name ORDER BY total DESC LIMIT 10
+
+text_sql_domain_aggregation_simple_rule = - When user says "en stock" or "in stock" = ALWAYS add "AND products_quantity > 0"
+
+text_sql_domain_grain_tables = A JOIN to {{table_prefix}}orders_products or {{table_prefix}}products_to_categories turns one order into ONE ROW PER PRODUCT LINE. Every order-level value on those rows - a {{table_prefix}}orders_total amount, a date of {{table_prefix}}orders - is REPEATED once per line.
+
+text_sql_domain_grain_examples = FORBIDDEN: SELECT AVG(t.order_total) FROM (SELECT o.orders_id, SUM(ot.value) AS order_total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id AND ot.class = 'TO' GROUP BY o.orders_id) t
+MANDATORY: SELECT AVG(t.order_total) FROM (SELECT o.orders_id, MAX(ot.value) AS order_total FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_products op ON op.orders_id = o.orders_id JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id AND ot.class = 'TO' GROUP BY o.orders_id) t
+ALSO CORRECT: SELECT SUM(ot.value) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id AND ot.class = 'TO' WHERE EXISTS (SELECT 1 FROM {{table_prefix}}orders_products op WHERE op.orders_id = o.orders_id)
+
+text_sql_domain_grain_classes = WHICH orders_total CLASS NAMES WHICH QUANTITY: 'ST' is the products sub-total, 'SH' the shipping, 'TO' the grand total actually paid by the customer. The AVERAGE CART is the average of 'TO', never of 'ST'. Product revenue is NOT built on 'ST' either: 'ST' is written in the tax convention of EACH order, so summing it adds tax-inclusive amounts to tax-exclusive ones. Order revenue comes from 'TO' as stated in the class map above; the revenue of a PRODUCT line comes from {{table_prefix}}orders_products, never from orders_total. Never sum two different classes together, and never assume a class exists on every order.
+SHARE OF ONE CLASS IN THE TOTAL - shipping weight, discount weight, fee weight: NAME the denominator, because the two revenues differ by the whole tax AND the shipping, and the same ratio moves by a fifth on a 20 percent shop. Revenue INCLUDING tax = SUM(ot.value) with ot.class = 'TO' (invoiced, shipping included). MERCHANDISE revenue = SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE -ot.value END) with ot.class IN ('TO','TX','SH'). A SHIPPING-weight ratio takes the INVOICED total as denominator: shipping is not part of the merchandise revenue. Say in the answer which one the ratio uses.
+FORBIDDEN: SELECT SUM(sh.value) / SUM(tot.value) FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total sh ON sh.orders_id = o.orders_id AND sh.class = 'SH' JOIN {{table_prefix}}orders_total tot ON tot.orders_id = o.orders_id AND tot.class = 'TO'
+MANDATORY: SELECT ROUND(SUM(CASE WHEN ot.class = 'SH' THEN ot.value ELSE 0 END) / NULLIF(SUM(CASE WHEN ot.class = 'TO' THEN ot.value ELSE 0 END), 0) * 100, 2) AS shipping_share_pct FROM {{table_prefix}}orders o JOIN {{table_prefix}}orders_total ot ON ot.orders_id = o.orders_id
+SHIPPING IS THE FIRM PRICE CHARGED: 'SH' is the shipping amount actually billed, and it is the ONLY shipping reference. It ALREADY contains packaging and handling - the box weight and the padding inflate the weight sent to the carrier rate table, and the result collapses into this single value. NEVER split 'SH' into transport versus packaging, and never rebuild it from product weights or from shipping configuration constants: that decomposition is stored nowhere, and a shipping module may compute it its own way.

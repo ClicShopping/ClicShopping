@@ -11,7 +11,9 @@ declare(strict_types=1);
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Registration;
 
 use ClicShopping\AI\RegistryAI\PromptPlaceholderRegistry;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\EventAxis;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Providers\DomainActionsProvider;
+use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Providers\EventAxisProvider;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Providers\MetricCatalogProvider;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Providers\OrderStatusMapProvider;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Prompt\Providers\StockReorderLevelProvider;
@@ -38,5 +40,9 @@ final class PromptPlaceholderRegistration
     $registry->register(new MetricCatalogProvider());
     $registry->register(new DomainActionsProvider());
     $registry->register(new StockReorderLevelProvider());
+
+    foreach (array_keys(EventAxis::projections()) as $projection) {
+      $registry->register(new EventAxisProvider($projection));
+    }
   }
 }

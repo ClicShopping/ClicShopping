@@ -1,0 +1,200 @@
+text_sql_rules_generation = RÈGLES DE GÉNÉRATION SQL :
+{{domain_column_rules}}
+- TOP N PAR GROUPE (les N premiers / derniers éléments de chaque groupe - par groupe, par propriétaire, par période) : une fonction de fenêtrage n'est autorisée QUE dans la liste du SELECT et dans ORDER BY. Écrire ROW_NUMBER() OVER (...) dans un HAVING ou un WHERE est l'erreur 4015 et toute la requête est perdue. Classez dans une requête interne, filtrez dans l'externe : {{domain_top_n_example}}. Un alias d'agrégat n'est pas non plus lisible depuis le HAVING de la même requête — répétez l'agrégat ou classez-le dans la requête interne. Les deux classements (meilleurs et pires) sont calculés dans la MÊME requête interne, sous UN SEUL filtre de période : ne bornez jamais le côté "pires" sur une seconde plage de dates différente. Une paire incohérente comme date >= '2026-01-01' AND date <= '2025-08-12' est vide par construction, chaque élément totalise alors 0, et le classement des derniers éléments n'est rien d'autre que l'ordre d'insertion présenté comme un résultat.
+- LIMIT DANS UNE SOUS-REQUÊTE : MariaDB refuse LIMIT dans une sous-requête IN / ALL / ANY / SOME - erreur 1235, toute la requête est perdue. Pour se restreindre aux N dernières lignes d'un ensemble, enveloppez cette sous-requête dans une table dérivée : {{domain_limit_subquery_example}}, ou joignez directement la table dérivée. Un LIMIT dans une sous-requête du FROM est toujours accepté.
+{{domain_column_locations}}
+1. Utilisez toujours les préfixes de table complets ({{table_prefix}} suivi du nom de la table, jamais le nom seul)
+2. Ajoutez les jointures appropriées vers les tables liées
+3. Filtrez par language_id lorsque c'est pertinent
+4. Optimisez pour la performance
+5. Ajoutez les clauses ORDER BY appropriées
+6. Limitez les résultats à un nombre raisonnable si nécessaire (LIMIT)
+🚨 RÈGLE — FILTRE NOMMÉ SANS VALEUR → LISTER, NE JAMAIS INVENTER NI METTRE UN PARAMÈTRE 🚨
+Quand la question NOMME une colonne de filtre ("d'après l'identifiant", "par id", "pour un id donné") mais ne donne AUCUNE valeur concrète :
+- N'inventez JAMAIS de valeur, et ne réutilisez JAMAIS un identifiant du contexte de conversation que la question n'a pas explicitement demandé.
+- N'émettez JAMAIS de paramètre lié (?, :id, %s ou <id>) : le SQL est exécuté tel quel, un paramètre non lié est une erreur de syntaxe.
+- LISTEZ plutôt : sélectionnez les colonnes demandées pour TOUTES les lignes, triées par cet identifiant croissant, avec un LIMIT raisonnable (100 par défaut).
+{{domain_named_filter_examples}}
+N'ajoutez un WHERE sur l'identifiant QUE lorsque la question elle-même contient une valeur d'identifiant concrète (par exemple "{{domain_named_filter_value}}").
+6.1. RÈGLES DE SYNTAXE ORDER BY (CRITIQUE - ÉVITE LES ERREURS DE RÉFÉRENCE DE COLONNE) :
+Lorsque vous employez des fonctions d'agrégation (YEAR, QUARTER, MONTH, etc.) dans un GROUP BY, vous DEVEZ suivre ces règles pour l'ORDER BY :
+RÈGLE 1 : employez la MÊME expression de fonction dans ORDER BY que dans GROUP BY
+✅ CORRECT : SELECT YEAR(date) AS year_value ... GROUP BY YEAR(date) ORDER BY YEAR(date)
+✅ CORRECT : SELECT QUARTER(date) AS quarter ... GROUP BY QUARTER(date) ORDER BY QUARTER(date)
+✅ CORRECT : SELECT MONTH(date) AS month_num ... GROUP BY MONTH(date) ORDER BY MONTH(date)
+❌ FAUX : SELECT YEAR(date) AS year_value ... GROUP BY YEAR(date) ORDER BY year
+❌ FAUX : SELECT QUARTER(date) AS quarter ... GROUP BY QUARTER(date) ORDER BY quarter
+❌ FAUX : SELECT MONTH(date) AS month_num ... GROUP BY MONTH(date) ORDER BY month
+RÈGLE 2 : OU employez les numéros de position de colonne (1, 2, 3, etc.)
+✅ CORRECT : SELECT YEAR(date), SUM(value) ... GROUP BY YEAR(date) ORDER BY 1
+✅ CORRECT : SELECT QUARTER(date), COUNT(*) ... GROUP BY QUARTER(date) ORDER BY 1
+RÈGLE 3 : OU employez le nom d'alias si vous en avez créé un
+✅ CORRECT : SELECT YEAR(date) AS year_value ... GROUP BY year_value ORDER BY year_value
+✅ CORRECT : SELECT QUARTER(date) AS quarter_num ... GROUP BY quarter_num ORDER BY quarter_num
+RÈGLE 4 : ne référencez JAMAIS un nom de colonne qui n'existe pas comme alias
+❌ FAUX : SELECT YEAR(date) ... ORDER BY year (la colonne 'year' n'existe pas !)
+❌ FAUX : SELECT QUARTER(date) ... ORDER BY quarter (la colonne 'quarter' n'existe pas !)
+EXEMPLES DE MOTIFS CORRECTS :
+{{domain_order_by_examples}}
+RAPPEL : la clause ORDER BY doit référencer soit :
+1. L'expression de fonction exacte du SELECT/GROUP BY
+2. Un numéro de position de colonne (1, 2, 3...)
+3. Un alias que vous avez explicitement créé dans le SELECT
+Elle NE PEUT PAS référencer un nom de colonne qui n'existe ni dans la table ni comme alias !
+7. RECHERCHES SUR CHAMPS TEXTE : employez LIKE avec des jokers (%)
+- Une recherche par nom et la langue de la RÉPONSE sont deux choses différentes. Cherchez le nom dans une sous-requête portant sur TOUTES les langues, et gardez le filtre de langue sur la jointure qui restitue le nom : {{domain_name_search_example}}
+- Plusieurs mots : employez AND dans cette sous-requête : WHERE {{domain_name_column}} LIKE '%Word1%' AND {{domain_name_column}} LIKE '%Word2%'
+- Orthographe alternative : employez OR dans cette sous-requête : WHERE {{domain_name_column}} LIKE '%Josef%' OR {{domain_name_column}} LIKE '%Joseph%'
+{{domain_field_mapping}}
+9. RECHERCHE MULTI-TOKENS (CRITIQUE) :
+Lorsque vous cherchez un nom composé de PLUSIEURS MOTS, générez des conditions LIKE distinctes pour CHAQUE mot, reliées par AND.
+L'ordre des mots N'A PAS D'IMPORTANCE, toutes les parties doivent être présentes.
+{{domain_multi_token_examples}}
+Ne découpez QUE le NOM, jamais la phrase qui le demande : dans TOUTE langue, les mots interrogatifs et les mots de mesure ne sont jamais des conditions LIKE. Un seul token parasite vide le résultat, puisqu'ils sont chaînés par AND.
+10. ÉVITEZ L'AMBIGUÏTÉ : préfixez toujours les colonnes par l'alias de table
+{{domain_alias_examples}}
+11. INCLUEZ TOUJOURS LES CHAMPS D'IDENTIFICATION (CRITIQUE - RÈGLE ABSOLUE) :
+Lorsque vous interrogez une entité que l'utilisateur peut nommer, vous DEVEZ TOUJOURS inclure les champs d'identification pour le contexte.
+C'est NON NÉGOCIABLE - les utilisateurs ont besoin de savoir À QUEL enregistrement la donnée appartient.
+{{domain_identification_rules}}
+RAPPEL : les utilisateurs ne peuvent pas identifier un enregistrement par son seul ID ou une seule valeur - il leur faut le NOM !
+12. RELATIONS ENTRE TABLES & MOTIFS DE JOINTURE (CRITIQUE - APPROCHE PROGRESSIVE) :
+{{domain_relationships}}
+NIVEAU 2 - MOTIFS DE RELATION COURANTS :
+A. UN-À-PLUSIEURS (le plus courant) :
+{{domain_one_to_many_examples}}
+Stratégie de JOIN : employez INNER JOIN ou LEFT JOIN selon que vous voulez uniquement les enregistrements appariés ou tous les enregistrements
+B. PLUSIEURS-À-PLUSIEURS (nécessite une table de liaison) :
+{{domain_many_to_many_examples}}
+Stratégie de JOIN : joignez à travers la table de liaison (2 JOIN nécessaires)
+C. TROUVER LES RELATIONS MANQUANTES (avancé) :
+{{domain_missing_relationship_examples}}
+Stratégie de JOIN : employez LEFT JOIN + test IS NULL pour trouver les enregistrements sans correspondance
+{{domain_business_patterns}}
+RÈGLES CLÉS POUR GÉNÉRER LES JOINTURES :
+1. Employez toujours des alias de table (p, pd, op, r, c, etc.) pour la clarté
+2. Incluez le filtre language_id lorsque vous joignez des tables de description ({{domain_description_tables}})
+3. Employez LEFT JOIN quand vous voulez inclure les enregistrements sans correspondance (par exemple {{domain_unmatched_example}})
+4. Employez INNER JOIN (ou simplement JOIN) quand vous ne voulez que les enregistrements appariés
+5. Incluez toujours les colonnes d'identifiant et de nom de l'entité pour l'identification
+6. Pour les agrégations avec JOIN, incluez toutes les colonnes non agrégées dans le GROUP BY
+7. Laissez le schéma de la base vous guider - cherchez les noms de colonnes concordants pour identifier les relations
+8. En cas de doute, consultez les commentaires du schéma pour des indices de relation
+13. COMPARAISONS TEMPORELLES : lorsque vous comparez des mesures entre périodes (par exemple "mai vs février", "cette année vs la même période l'an dernier") :
+- Employez CASE WHEN avec SUM() pour créer des colonnes distinctes, une par fenêtre, étiquetées current_ / previous_
+- Exemple : SUM(CASE WHEN date >= '2026-05-01' AND date < '2026-06-01' THEN value ELSE 0 END) AS may_value
+- FENÊTRES APPARIÉES (OBLIGATOIRE) : les deux fenêtres DOIVENT couvrir le MÊME nombre de jours. Construisez la précédente en décalant la courante en arrière avec INTERVAL 1 YEAR (ou INTERVAL 1 MONTH). Comparer une période courante partielle à une période précédente entière rend toute variation fausse, et fausse dans le sens qui rassure.
+- Chaque CASE écrit LES DEUX bornes de sa propre fenêtre, en intervalle de dates explicite
+- Renvoyez les résultats sur une seule ligne, avec plusieurs colonnes
+- LA VARIATION DÉPEND DU TYPE DE MESURE : un MONTANT, un COMPTE ou une DURÉE varient en pourcentage — (courant - précédent) / précédent * 100. Un TAUX (un pourcentage, une part, un taux de conversion) varie en POINTS DE POURCENTAGE — taux_courant - taux_précédent. Un taux passant de 70 % à 72,73 % gagne +2,73 points de pourcentage, jamais "+3,9 %" : diviser un taux par un autre est une erreur de catégorie, et elle est indétectable une fois imprimée dans un tableau.
+14. EXPRESSIONS TEMPORELLES DYNAMIQUES : un FILTRE de période est TOUJOURS un intervalle explicite sur la colonne de date brute - jamais YEAR(), MONTH() ou QUARTER() dans un WHERE. Prenez les bornes dans le PLAN D'ANALYSE, sinon dans le bloc CURRENT DATE CONTEXT. Un intervalle construit depuis le premier jour d'une période franchit le changement d'année par construction.
+- "30 derniers jours" → WHERE {{domain_date_column}} >= CURDATE() - INTERVAL 30 DAY
+- "Cette semaine" → WHERE {{domain_date_column}} >= CURDATE() - INTERVAL WEEKDAY(CURDATE()) DAY AND {{domain_date_column}} < CURDATE() + INTERVAL 1 DAY
+- "Le mois dernier" → WHERE {{domain_date_column}} >= DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH, '%Y-%m-01') AND {{domain_date_column}} < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+- "Ce mois-ci" → WHERE {{domain_date_column}} >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND {{domain_date_column}} < CURDATE() + INTERVAL 1 DAY
+- "Le trimestre dernier" → WHERE {{domain_date_column}} >= MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL (QUARTER(CURDATE()) - 2) * 3 MONTH AND {{domain_date_column}} < MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL (QUARTER(CURDATE()) - 1) * 3 MONTH (posée en janvier 2026, c'est du 1er octobre au 31 décembre 2025)
+- "Cette année" → WHERE {{domain_date_column}} >= MAKEDATE(YEAR(CURDATE()), 1) AND {{domain_date_column}} < CURDATE() + INTERVAL 1 DAY
+YEAR(), MONTH() et QUARTER() ne servent qu'au GROUP BY d'une ventilation par période (REQUÊTES TEMPORELLES MULTI-PÉRIODES).
+15. Assurez la justesse de la requête et prévenez les injections SQL
+16. Alertez l'utilisateur si des incohérences sont détectées (doublons, sommes incorrectes, données manquantes)
+
+text_sql_rules_format = RÈGLES DE FORMAT SQL :
+1. Ne répondez QU'avec la requête SQL, sans texte explicatif avant ni après
+2. Employez toujours la variable de gabarit {{language_id}} là où un filtre de langue est requis
+3. Si plusieurs requêtes sont nécessaires, séparez-les par des points-virgules
+4. Assurez-vous que chaque requête est syntaxiquement correcte et complète
+5. N'employez que des noms de colonnes existant dans le schéma de la base
+6. AUCUN formatage markdown, AUCUNE balise ```sql, AUCUN commentaire, AUCUNE explication
+RÈGLES CRITIQUES DE GÉNÉRATION SQL :
+- N'employez jamais un champ qui n'est pas explicitement défini comme colonne dans le schéma.
+- Si un champ demandé ne figure pas parmi les colonnes du schéma mais existe dans un champ JSON (par exemple metadata),
+vous DEVEZ l'extraire avec JSON_EXTRACT en employant le bon chemin.
+- Interdit : inventer des colonnes absentes du schéma.
+- En cas de doute, repliez-vous sur les champs JSON avant de générer le SQL.
+- Employez toujours JSON_UNQUOTE(JSON_EXTRACT(...)) pour les valeurs scalaires.
+{{domain_json_field_example}}
+{{domain_json_examples}}
+RÈGLE DE CAST SÛR POUR LES VALEURS NUMÉRIQUES JSON (OBLIGATOIRE) :
+Lorsque vous employez JSON_EXTRACT sur un champ JSON numérique (un score, un prix, une quantité, etc.),
+vous DEVEZ TOUJOURS ajouter ces deux filtres de sécurité dans la clause WHERE :
+AND JSON_EXTRACT(table.metadata, '$.field') IS NOT NULL
+AND JSON_UNQUOTE(JSON_EXTRACT(table.metadata, '$.field')) != 'null'
+ET employez toujours CAST dans ORDER BY :
+ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(table.metadata, '$.field')) AS UNSIGNED) DESC
+SANS ces filtres :
+- Les valeurs NULL polluent les résultats
+- ORDER BY ne peut pas trier correctement
+- L'avertissement MySQL #1292 est déclenché
+{{domain_json_cast_examples}}
+Cela s'applique à TOUS les champs JSON numériques, sans exception.
+{{domain_json_examples_more}}
+ÉTAPE DE VALIDATION (OBLIGATOIRE - À EXÉCUTER AVANT CHAQUE SORTIE) :
+ÉTAPE 1 : parcourez chaque référence de colonne du SELECT et du WHERE.
+ÉTAPE 2 : pour chaque référence impliquant {{domain_json_fields}} :
+→ Est-elle écrite sous la forme table.nom_de_colonne ? → STOP. C'est FAUX. Réécrivez-la avec JSON_EXTRACT.
+→ Est-elle écrite sous la forme JSON_UNQUOTE(JSON_EXTRACT(table.metadata, '$.field')) ? → CORRECT.
+ÉTAPE 3 : recherchez les LIKE '%valeur%' sur des champs metadata → INTERDIT. Employez des comparaisons JSON_EXTRACT.
+ÉTAPE 4 : si une violation est trouvée → RÉÉCRIVEZ toute la requête depuis le début avant de la produire.
+ÉTAPE 5 : ne produisez la requête qu'après avoir passé les 4 contrôles.
+DÉTECTION MULTI-REQUÊTES
+Quand l'utilisateur pose plusieurs questions reliées par ET/PUIS, le système les découpe et les exécute séparément AUTOMATIQUEMENT.
+VOUS DEVEZ :
+- Générer UNE requête SQL par sous-question
+- Chaque requête doit être INDÉPENDANTE et COMPLÈTE
+- Chaque requête doit être VALIDE seule
+- NE combinez PAS plusieurs questions dans une seule requête SQL
+{{domain_multi_query_example}}
+EXCEPTION - COMPARAISONS TEMPORELLES (NE PAS DÉCOUPER) :
+Quand l'utilisateur demande de COMPARER des périodes (vs, versus, par rapport à), générez UNE seule requête avec CASE WHEN.
+
+text_sql_rules_aggregation = RÈGLE ABSOLUE - AGRÉGATIONS GLOBALES
+INTERDICTION ABSOLUE : n'incluez JAMAIS un identifiant ou toute autre colonne avec AVG, SUM, COUNT sans GROUP BY
+{{domain_aggregation_examples}}
+RÈGLES pour les agrégations globales (sans GROUP BY) :
+1. N'ajoutez JAMAIS de LIMIT 1 (une agrégation renvoie déjà UNE ligne)
+2. N'incluez PAS de colonnes non agrégées
+3. Pas de colonne d'identifiant (cela n'a aucun sens dans une agrégation globale)
+{{domain_aggregation_rules}}
+🚨 EXCEPTION CRITIQUE - MIN/MAX pour trouver des enregistrements précis :
+Quand l'utilisateur demande {{domain_min_max_phrases}},
+il veut voir les ENREGISTREMENTS RÉELS, pas seulement la valeur agrégée.
+{{domain_min_max_example}}
+Cela renvoie TOUS les enregistrements à la valeur extrême, pas un seul !
+Exemples CORRECTS :
+{{domain_aggregation_correct_examples}}
+EXCEPTION - agrégations avec GROUP BY :
+Si vous employez un GROUP BY, vous POUVEZ inclure les colonnes groupées :
+{{domain_group_by_example}}
+RÈGLE SIMPLE :
+- Agrégation globale (sans GROUP BY) = UNE seule colonne (la fonction d'agrégation), pas de LIMIT, pas d'ID
+- MIN/MAX pour trouver des enregistrements = employez une sous-requête avec WHERE colonne = (SELECT MIN/MAX...)
+{{domain_aggregation_simple_rule}}
+
+text_sql_rules_grain = GRAIN - VALEURS AU NIVEAU EN-TÊTE AU-DESSUS D'UNE JOINTURE DE LIGNES
+Une jointure d'une table d'en-tête vers l'une de ses tables de lignes, ou à travers une liaison plusieurs-à-plusieurs, transforme un en-tête en UNE LIGNE PAR LIGNE. Toute valeur du niveau en-tête présente sur ces lignes - un montant, une date - est RÉPÉTÉE une fois par ligne.
+{{domain_grain_tables}}
+Le piège n'est pas un GROUP BY manquant, c'est une SUM sur une valeur répétée. À l'intérieur d'un GROUP BY sur l'identifiant de l'en-tête qui joint aussi une table de lignes, une SUM sur une valeur d'en-tête la multiplie par le nombre de lignes. Prenez une valeur répétée du niveau en-tête avec MAX - une valeur par en-tête - ou gardez la jointure de lignes hors de l'agrégat et restreignez la population avec EXISTS.
+{{domain_grain_examples}}
+Cela ne vaut que pour les valeurs au niveau EN-TÊTE. Une mesure au niveau ligne - une quantité, un nombre de lignes, le montant d'une ligne - s'agrège sur la table de lignes comme d'habitude et ne doit PAS être pré-agrégée au grain de l'en-tête.
+PART D'UNE COMPOSANTE DANS UN TOTAL : ne faites JAMAIS un INNER JOIN sur la composante que vous mesurez : un en-tête sans ligne de cette composante disparaît alors aussi du DÉNOMINATEUR, et le ratio ressort surestimé. Agrégez les deux côtés en une seule passe, avec des sommes conditionnelles sur une jointure unique.
+{{domain_grain_classes}}
+
+text_sql_rules_security = CONSIGNES DE SÉCURITÉ :
+1. Ne générez jamais de requêtes modifiant la structure de la base (CREATE, ALTER, DROP)
+2. Ne générez jamais de requêtes supprimant des données sans clause WHERE explicite
+3. Employez toujours des requêtes paramétrées lorsqu'une saisie utilisateur est en jeu
+4. Évitez d'employer INFORMATION_SCHEMA ou d'accéder aux tables système
+5. N'incluez pas de données sensibles dans les commentaires de requête
+6. Limitez les jeux de résultats pour éviter une exposition excessive de données
+7. Validez tous les noms de tables et de colonnes contre le schéma
+8. Toutes les données doivent être en minuscules
+
+text_sql_rules_multi_query_warning = ⚠️ AVERTISSEMENT : plusieurs requêtes SQL détectées dans la réponse
+Cette requête contient plusieurs sous-requêtes ou instructions. Assurez-vous que chaque requête est correctement séparée et valide.
+
+text_sql_rules_response_format = RÈGLES DE FORMAT DE RÉPONSE :
+1. REQUÊTES SQL : ne renvoyez QUE la requête SQL, sans texte explicatif
+2. EXPLICATIONS : lorsqu'elles sont demandées, fournissez des explications claires et concises
+3. ERREURS : si la requête ne peut pas être générée, expliquez pourquoi et demandez une clarification
+4. RÉSULTATS : présentez les données dans un format clair et lisible
+5. CITATIONS : citez toujours les sources de données lorsque vous fournissez une information

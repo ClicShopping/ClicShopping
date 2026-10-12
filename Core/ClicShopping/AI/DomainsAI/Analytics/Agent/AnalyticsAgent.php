@@ -13,6 +13,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Config\AutonomousConfig;
+use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\AI\CoreAI\Orchestrator\CorrectionAgent;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
@@ -25,6 +26,7 @@ use ClicShopping\AI\DomainsAI\Analytics\Helper\Formatter\AnalysisPlanAnnouncer;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
 use ClicShopping\AI\DomainsAI\Analytics\Planning\AnalysisPlanner;
 use ClicShopping\AI\DomainsAI\Analytics\Planning\DefaultAnalysisWindow;
+use ClicShopping\AI\DomainsAI\Analytics\Planning\PlanSqlCompiler;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
@@ -32,6 +34,7 @@ use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFreshnessValidator;
 use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
+use ClicShopping\AI\Infrastructure\Prompt\PromptPlaceholders;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
@@ -661,7 +664,7 @@ class AnalyticsAgent implements AgentInterface
 
       $this->debugLog("--- STEP 2: Generate SQL from question ---", "SQL");
 
-      $sqlQueries = $this->generateSqlQueries($questionForGeneration, $feedbackContext);
+      $sqlQueries = $this->compiledSqlQueries() ?? $this->generateSqlQueries($questionForGeneration, $feedbackContext);
 
       $this->debugLog("--- STEP 3: Execute SQL queries ---", "EXECUTION");
       return $this->sqlExecutor->executeSqlQueries($sqlQueries, $question, $this->ambiguityMetadata($ambiguityAnalysis), $this->analysisPlan, $this->sqlCacheKey);
@@ -679,6 +682,33 @@ class AnalyticsAgent implements AgentInterface
         ...$this->ambiguityMetadata($ambiguityAnalysis),
       ];
     }
+  }
+
+  /**
+   * SQL compiled from the validated plan, or null when the plan stays with the model: no plan,
+   * compiler switched off, or a plan outside the compiled slices. Never written to the SQL cache.
+   *
+   * @return array<int, string>|null One executable query, placeholders resolved
+   */
+  private function compiledSqlQueries(): ?array
+  {
+    $domainApp = DomainRegistry::getInstance()->getActiveApp();
+
+    if ($this->analysisPlan === null || TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_PLAN_COMPILER_STATUS') != 'True'
+      || $domainApp === null || !method_exists($domainApp, 'getEventAxis')) {
+      return null;
+    }
+
+    $sql = PlanSqlCompiler::compile($this->analysisPlan, $domainApp->getMetricCatalog(), $domainApp->getEventAxis());
+
+    if ($sql === null) {
+      return null;
+    }
+
+    $this->sqlCacheKey = null;
+    $this->debugLog("SQL COMPILED from the plan - no generation call", "SQL");
+
+    return [PromptPlaceholders::resolve($sql, (string)CLICSHOPPING::getConfig('db_table_prefix'), $this->languageId)];
   }
 
   /**

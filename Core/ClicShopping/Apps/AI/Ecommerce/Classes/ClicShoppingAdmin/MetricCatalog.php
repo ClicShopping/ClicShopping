@@ -18,7 +18,8 @@ use ClicShopping\AI\DomainsAI\Analytics\Planning\MetricType;
  *
  * The identity card of every metric this domain can plan: its GRAIN, its TYPE, how it rolls up
  * (AGGREGATION) and, where one formula defines it, its EXPRESSION — checked in the generated SQL.
- * The query shape around it (status weight, events, windows) stays in rag_analytics_agent.txt.
+ * The signed event axis is declared by EventAxis; the rest of the query shape (windows) stays in
+ * rag_analytics_agent.txt.
  *
  * Identity is a platform guarantee, not a merchant preference: a margin percentage IS a
  * rate. Shop CONVENTIONS (the cost basis of the margin) live in configuration instead.
@@ -160,11 +161,14 @@ class MetricCatalog
    * `aliases` is optional and lists the column names the generation rules fix for the metric
    * (quantity_sold is total_sold): the plan contract accepts them for the metric's own name.
    *
+   * `axis` is optional and binds an ADDITIVE metric to the signed event axis: EventAxis projection =>
+   * the column it sums, in order of preference. A bound metric is compiled by PlanSqlCompiler.
+   *
    * `expression` is optional: the formula over columns or terms() (base), or over other metric
    * names (derived), checked after generation. Absent where no presence check can tell the metric
    * from its neighbour (revenue_ttc reads the same 'TO' rows as revenue_ht).
    *
-   * @return array<string, array{grain: string, type: string, aggregation: string, definition: string, expression?: string, basis?: string, split?: string, line_alternative?: string, companions?: array<int, string>, weighted_by?: string, population_weight?: int, aliases?: array<int, string>}>
+   * @return array<string, array{grain: string, type: string, aggregation: string, definition: string, expression?: string, basis?: string, split?: string, line_alternative?: string, companions?: array<int, string>, weighted_by?: string, population_weight?: int, aliases?: array<int, string>, axis?: array<string, string>}>
    */
   public static function all(): array
   {
@@ -173,6 +177,7 @@ class MetricCatalog
         'grain' => 'order',
         'type' => MetricType::AMOUNT,
         'aggregation' => MetricAggregation::ADDITIVE,
+        'axis' => ['order_amount_ttc' => 'amount', 'order_tax_convention_ttc' => 'amount'],
         'definition' => 'text_metric_revenue_ttc',
         'basis' => 'text_metric_basis_revenue_ttc',
         'split' => 'tax_convention',
@@ -182,6 +187,7 @@ class MetricCatalog
         'grain' => 'order',
         'type' => MetricType::AMOUNT,
         'aggregation' => MetricAggregation::ADDITIVE,
+        'axis' => ['order_amount' => 'amount', 'order_tax_convention' => 'amount', 'order_customer' => 'amount'],
         'expression' => self::MERCHANDISE_AMOUNT,
         'definition' => 'text_metric_revenue_ht',
         'basis' => 'text_metric_basis_revenue_ht',
@@ -193,6 +199,7 @@ class MetricCatalog
         'grain' => 'order_line',
         'type' => MetricType::AMOUNT,
         'aggregation' => MetricAggregation::ADDITIVE,
+        'axis' => ['line_cost' => 'line_revenue', 'line_category' => 'amount'],
         'expression' => 'final_price * products_quantity',
         'definition' => 'text_metric_line_revenue',
         'weighted_by' => 'revenue_sign',
@@ -219,6 +226,7 @@ class MetricCatalog
         'grain' => 'order_line',
         'type' => MetricType::COUNT,
         'aggregation' => MetricAggregation::ADDITIVE,
+        'axis' => ['line_quantity' => 'products_quantity', 'line_orders' => 'products_quantity'],
         'expression' => 'products_quantity',
         'definition' => 'text_metric_quantity_sold',
         'weighted_by' => 'revenue_sign',

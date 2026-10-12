@@ -37,13 +37,14 @@ class PromptPlaceholders
   {
     $baseCurrency = \defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '';
 
-    $message = str_replace(
+    // Dynamic tokens first: what a provider renders may itself carry the static ones.
+    $message = PromptPlaceholderRegistry::getInstance()->resolve($message, $languageId, $resultRows);
+
+    return str_replace(
       [self::TABLE_PREFIX, self::LANGUAGE_ID, self::BASE_CURRENCY],
       [$tablePrefix, (string)$languageId, $baseCurrency],
       $message
     );
-
-    return PromptPlaceholderRegistry::getInstance()->resolve($message, $languageId, $resultRows);
   }
 
   /**

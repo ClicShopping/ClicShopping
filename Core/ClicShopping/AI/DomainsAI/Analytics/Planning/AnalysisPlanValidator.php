@@ -127,7 +127,7 @@ class AnalysisPlanValidator
     }
 
     $unsatisfiable = array_merge($unsatisfiable, $declared);
-    $askedDimensions = is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : [];
+    $askedDimensions = $this->promoteSeriesUnit($rawMetrics, is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : []);
     $filters = is_array($plan['filters'] ?? null) ? $plan['filters'] : [];
     [$askedDimensions, $filters, $rankings] = $this->readFilteredDimensions($askedDimensions, $filters, $rankings);
     $dimensions = self::splitDimensions($metrics, $askedDimensions, $rankings);
@@ -420,6 +420,36 @@ class AnalysisPlanValidator
     }
 
     return $kept;
+  }
+
+  /**
+   * A calendar unit set on a metric that is NOT a series statistic is a per-period breakdown:
+   * it becomes the dimension, unless one is already asked.
+   *
+   * @param array $rawMetrics Metrics as the model proposed them
+   * @param array $dimensions Dimensions the model asked for
+   * @return array Dimensions, with the unit appended when it was only carried by a metric
+   */
+  private function promoteSeriesUnit(array $rawMetrics, array $dimensions): array
+  {
+    foreach ($rawMetrics as $metric) {
+      $name = is_array($metric) && is_string($metric['name'] ?? null) ? $metric['name'] : '';
+      $unit = is_array($metric) && is_string($metric['series_unit'] ?? null) ? strtolower(trim($metric['series_unit'])) : '';
+
+      if (!isset($this->catalog[$name]) || $this->isSeriesStatistic($name) || !in_array($unit, PeriodResolver::CALENDAR_UNITS, true)) {
+        continue;
+      }
+
+      foreach ($dimensions as $dimension) {
+        if (is_string($dimension) && PeriodResolver::isCalendarDimension($dimension)) {
+          return $dimensions;
+        }
+      }
+
+      $dimensions[] = $unit;
+    }
+
+    return $dimensions;
   }
 
   /**
