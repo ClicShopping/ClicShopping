@@ -13,14 +13,14 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Confi
 
 /**
  * How many days of the measurement corpus are kept — the questions users asked, the answers and
- * the executed SQL. Zero, the default, keeps it for ever.
+ * the executed SQL. 90 by default; zero keeps it for ever.
  *
  * @package ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ASY\Params
  * @since 4.33.0
  */
 class data_retention_corpus_days extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = '0';
+  public $default = '90';
   public int|null $sort_order = 52;
   public bool $app_configured = true;
 

@@ -446,7 +446,7 @@ class Hash
     $parts = explode('::', $decodedData, 2);
 
     if (count($parts) !== 2) {
-      throw new Exception('Données de chiffrement invalides');
+      throw new Exception('Invalid encryption data');
     }
 
     [$encrypted, $iv] = $parts;

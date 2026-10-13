@@ -695,11 +695,12 @@ class AnalyticsAgent implements AgentInterface
     $domainApp = DomainRegistry::getInstance()->getActiveApp();
 
     if ($this->analysisPlan === null || TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_PLAN_COMPILER_STATUS') != 'True'
-      || $domainApp === null || !method_exists($domainApp, 'getEventAxis')) {
+      || $domainApp === null || !method_exists($domainApp, 'getEventAxis') || !method_exists($domainApp, 'getMetricCatalog')) {
       return null;
     }
 
-    $sql = PlanSqlCompiler::compile($this->analysisPlan, $domainApp->getMetricCatalog(), $domainApp->getEventAxis());
+    $sql = PlanSqlCompiler::compile($this->analysisPlan, $domainApp->getMetricCatalog(), $domainApp->getEventAxis(),
+      method_exists($domainApp, 'getGrainKeys') ? $domainApp->getGrainKeys() : []);
 
     if ($sql === null) {
       return null;
@@ -744,7 +745,9 @@ class AnalyticsAgent implements AgentInterface
 
     $readings = method_exists($domainApp, 'getFilteredDimensionReadings') ? $domainApp->getFilteredDimensionReadings() : [];
 
-    $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId, $orderSideDimensions, $terms, $readings);
+    $factGrain = method_exists($domainApp, 'getEventAxis') ? (string)($domainApp->getEventAxis()['axis']['fact']['grain'] ?? '') : '';
+
+    $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId, $orderSideDimensions, $terms, $readings, $factGrain);
 
     return $this->analysisPlanner;
   }

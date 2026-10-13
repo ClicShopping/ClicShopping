@@ -27,8 +27,8 @@ use ClicShopping\AI\Infrastructure\Prompt\PromptPlaceholders;
 final class EventAxisSql
 {
   /**
-   * @param array{fact: array{table: string, alias: string, key: string, date: string, state: string}, lines: array{table: string, alias: string, key: string}, weight: array{table: string, alias: string, key: string, column: string, language_scoped: bool}, history: array{table: string, alias: string, key: string, state: string, date: string}} $axis
-   * @param array{grain: string, columns: array<string, string>, joins?: array<int, string>} $projection Columns are alias => expression; `order_line` joins the line table
+   * @param array{fact: array{grain: string, table: string, alias: string, key: string, date: string, state: string}, lines: array{grain: string, table: string, alias: string, key: string, item?: string}, weight: array{table: string, alias: string, key: string, column: string, language_scoped: bool}, history: array{table: string, alias: string, key: string, state: string, date: string}} $axis
+   * @param array{grain: string, columns: array<string, string>, joins?: array<int, string>, conditions?: array<int, string>} $projection Columns are alias => expression; a projection at the lines' grain joins the line table; conditions restrict BOTH legs
    * @return string Both legs joined by UNION ALL, same projection in each
    */
   public static function render(array $axis, array $projection): string
@@ -38,7 +38,7 @@ final class EventAxisSql
 
     $from = "FROM {$prefix}{$f['table']} {$f['alias']}";
 
-    if ($projection['grain'] === 'order_line') {
+    if ($projection['grain'] === $l['grain']) {
       $from .= " JOIN {$prefix}{$l['table']} {$l['alias']} ON {$l['alias']}.{$l['key']} = {$f['alias']}.{$f['key']}";
     }
 
@@ -61,10 +61,11 @@ final class EventAxisSql
     $deductedOn = "(SELECT MIN({$h['alias']}.{$h['date']}) FROM {$prefix}{$h['table']} {$h['alias']}"
       . " WHERE {$h['alias']}.{$h['key']} = {$f['alias']}.{$f['key']} AND {$h['alias']}.{$h['state']} = {$f['alias']}.{$f['state']})";
     $weight = "{$w['alias']}.{$w['column']}";
+    $restrict = implode('', array_map(static fn(string $c): string => " AND {$c}", $projection['conditions'] ?? []));
 
     return 'SELECT ' . implode(', ', ["{$f['alias']}.{$f['date']} AS event_date", '1 AS sign', ...$kept])
-      . " {$from} WHERE {$weight} <> 0"
+      . " {$from} WHERE {$weight} <> 0{$restrict}"
       . ' UNION ALL SELECT ' . implode(', ', [$deductedOn, '-1', ...$deducted])
-      . " {$from} WHERE {$weight} = -1";
+      . " {$from} WHERE {$weight} = -1{$restrict}";
   }
 }

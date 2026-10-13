@@ -29,17 +29,11 @@ class CoherenceGuard
     /** A change between two figures: a margin that grows by 150% is not a margin rate of 150%. */
     private const VARIATION_TOKENS = ['variation', 'change', 'growth', 'delta', 'diff', 'evolution', 'yoy', 'increase', 'decrease'];
 
-    /** A transaction count: revenue > 0 implies at least one order, so this at 0 is contradictory. */
-    private const ORDER_TOKENS = ['order', 'transaction', 'sale'];
+    /** A count of the domain's facts (its axis fact grain): money > 0 with it at 0 is contradictory. */
     private const COUNT_TOKENS = ['count', 'nb', 'number', 'qty', 'quantity', 'units'];
 
     /** Monetary metric tokens. */
     private const MONEY_TOKENS = ['revenue', 'amount', 'total', 'sales', 'turnover', 'value', 'sum'];
-
-    /** Joining this explodes rows per line item; SUM over an order-level total then double-counts. */
-    private const EXPLODING_JOIN = 'orders_products';
-    /** Its `.value` is one row per order-total class — order-level, so MAX is right after the join. */
-    private const ORDER_LEVEL_TOTAL = 'orders_total';
 
     /** Dimension values kept in a dropped row's label: enough to name a cell, not to retype the row. */
     private const LABEL_MAX_PARTS = 2;
@@ -281,9 +275,11 @@ class CoherenceGuard
      * ['reason_key' => string, 'column' => ?string] naming the failed check.
      *
      * @param array $pane One analytics_response step result (carries 'results' rows).
+     * @param array $axis The active domain's event axis (getEventAxis()['axis']); without it the
+     *        fact-count and grain checks stay silent.
      * @return array|null Rejection verdict, or null if the figure passes.
      */
-    public static function inspectAnalyticsPane(array $pane): ?array
+    public static function inspectAnalyticsPane(array $pane, array $axis = []): ?array
     {
         $rows = $pane['results'] ?? [];
 
@@ -313,6 +309,7 @@ class CoherenceGuard
             }
         }
 
+        $factTokens = array_values(array_filter([(string)($axis['fact']['grain'] ?? ''), (string)($axis['fact']['table'] ?? '')]));
         $derived = [];
 
         foreach ((array)($pane['derived_columns'] ?? []) as $col) {
@@ -339,7 +336,7 @@ class CoherenceGuard
                     continue;
                 }
 
-                if (self::hasAny($name, self::ORDER_TOKENS) && self::hasAny($name, self::COUNT_TOKENS) && $f === 0.0) {
+                if ($factTokens !== [] && self::hasAny($name, $factTokens) && self::hasAny($name, self::COUNT_TOKENS) && $f === 0.0) {
                     $zeroOrderCount = true;
                 }
 
@@ -354,7 +351,7 @@ class CoherenceGuard
         }
 
         // Plan-side checks read the generated SQL and the analysis plan, when carried by the pane.
-        $grain = self::inspectGrain((string)($pane['sql_query'] ?? ''));
+        $grain = self::inspectGrain((string)($pane['sql_query'] ?? ''), $axis);
         if ($grain !== null) {
             return $grain;
         }
@@ -371,29 +368,33 @@ class CoherenceGuard
     }
 
     /**
-     * #1 Grain — a SUM over an order-level total inside a join that explodes rows per line item
-     * (SQL-1). One row per order-total class is repeated once per product, so SUM double-counts
-     * where MAX is right. Fires only on `SUM(<orders_total alias>.value)`; anything else is missed.
+     * #1 Grain — a SUM over a fact-level total inside a join on the fact's lines (SQL-1): the total
+     * repeats once per line, so SUM double-counts where MAX is right. Both tables are declared by
+     * the axis (`lines.table`, `fact_totals`); fires only on `SUM(<total alias>.<column>)`.
      */
-    private static function inspectGrain(string $sql): ?array
+    private static function inspectGrain(string $sql, array $axis): ?array
     {
-        if ($sql === '') {
-            return null;
-        }
-
+        $lines = strtolower((string)($axis['lines']['table'] ?? ''));
         $s = strtolower($sql);
 
-        if (!str_contains($s, self::EXPLODING_JOIN) || !str_contains($s, self::ORDER_LEVEL_TOTAL)) {
+        if ($s === '' || $lines === '' || !str_contains($s, $lines)) {
             return null;
         }
 
-        // Bind the alias of orders_total (prefix-agnostic), then look for SUM(<alias>.value).
-        if (!preg_match('/orders_total\s+(?:as\s+)?([a-z0-9_]+)/', $s, $m)) {
-            return null;
-        }
+        foreach ((array)($axis['fact_totals'] ?? []) as $total) {
+            $table = strtolower((string)($total['table'] ?? ''));
+            $column = strtolower((string)($total['column'] ?? ''));
 
-        if (preg_match('/sum\s*\(\s*' . preg_quote($m[1], '/') . '\.value\b/', $s)) {
-            return ['reason_key' => 'text_coherence_grain_explosion', 'column' => null];
+            // Bind the table's alias (prefix-agnostic); an unaliased table is read by its own name.
+            if ($table === '' || $column === '' || !preg_match('/' . preg_quote($table, '/') . '\s+(?:as\s+)?([a-z0-9_]+)/', $s, $m)) {
+                continue;
+            }
+
+            $ref = '(?:' . preg_quote($m[1], '/') . '|[a-z0-9_]*' . preg_quote($table, '/') . ')';
+
+            if (preg_match('/sum\s*\(\s*' . $ref . '\.' . preg_quote($column, '/') . '\b/', $s)) {
+                return ['reason_key' => 'text_coherence_grain_explosion', 'column' => null];
+            }
         }
 
         return null;

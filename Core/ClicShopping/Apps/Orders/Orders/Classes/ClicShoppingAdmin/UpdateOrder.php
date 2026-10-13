@@ -16,6 +16,7 @@ use ClicShopping\OM\OrderTotalSequence;
 use ClicShopping\OM\Interfaces\OrderTotalAdminRecalculable;
 
 use ClicShopping\Sites\Shop\Tax;
+use ClicShopping\Apps\Orders\Orders\Classes\Common\OrderLineCost;
 
 class UpdateOrder
 {
@@ -170,6 +171,7 @@ class UpdateOrder
       'products_tax'      => $tax_rate,
       'products_quantity' => $qty,
       'final_price'       => $unit_price,
+      'products_unit_cost' => OrderLineCost::unitCost($products_id),
     ]);
 
     static::recalculateOrderTotal($order_id);

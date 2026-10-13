@@ -12,6 +12,7 @@ use AllowDynamicProperties;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Orders\Orders\Classes\Shop\Order;
 use ClicShopping\OM\SimpleLogger;
+use ClicShopping\Apps\Orders\Orders\Classes\Common\OrderLineCost;
 
 /**
  * Class GptOrderManager
@@ -599,7 +600,8 @@ class GptOrderManager
         'products_price' => (float)$item['price'],
         'final_price' => (float)$item['unit_price'],
         'products_tax' => $this->calculateTax($item),
-        'products_quantity' => (int)$item['quantity']
+        'products_quantity' => (int)$item['quantity'],
+        'products_unit_cost' => OrderLineCost::unitCost((int)$item['id'])
       ];
 
       $this->db->save('orders_products', $sql_data_array);

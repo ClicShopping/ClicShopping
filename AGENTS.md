@@ -71,6 +71,10 @@ BEFORE DELIVERY:
 2. Documentation Sync: if the change alters structure, behavior, file/class locations,
    routes or constants described in any .md, UPDATE those .md to match reality
    (see "Documentation Synchronization" below). Outdated docs = bug.
+3. No latent error: every defect seen — measured, read in code, or a red test
+   "already red at HEAD" — is either FIXED in this delivery or opened as a `[ ]`
+   item in BACKLOG.md (file:line, cause, fix lead, "done when", effort/Cx).
+   Mentioned in a report without an item = lost.
 ```
 
 ---

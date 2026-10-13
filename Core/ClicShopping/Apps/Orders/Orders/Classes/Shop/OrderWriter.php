@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\Orders\Orders\Classes\Shop;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\Apps\Orders\Orders\Classes\Common\OrderLineCost;
 
 use function count;
 use function defined;
@@ -202,7 +203,8 @@ class OrderWriter
         'products_price' => (float)$products[$i]['price'],
         'final_price' => (float)$products[$i]['final_price'],
         'products_tax' => (float)$products[$i]['tax'],
-        'products_quantity' => (int)$products[$i]['qty']
+        'products_quantity' => (int)$products[$i]['qty'],
+        'products_unit_cost' => OrderLineCost::unitCost((int)$CLICSHOPPING_Prod::getProductID($products[$i]['id']))
       ];
 
       $this->db->save('orders_products', $sql_data_array);

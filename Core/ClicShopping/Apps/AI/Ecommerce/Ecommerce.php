@@ -210,7 +210,7 @@ class Ecommerce extends AbstractDomainApp
    */
   public function getEventAxis(): array
   {
-    return ['axis' => EventAxis::axis(), 'projections' => EventAxis::projections()];
+    return ['axis' => EventAxis::axis(), 'projections' => EventAxis::projections(), 'hierarchy' => EventAxis::hierarchy()];
   }
 
   /**

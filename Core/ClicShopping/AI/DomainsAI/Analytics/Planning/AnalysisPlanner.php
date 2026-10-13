@@ -51,10 +51,11 @@ class AnalysisPlanner
    * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
    * @param array<string, string> $terms Named row-level expressions the catalogue formulas read
    * @param array<string, string> $filteredDimensionReadings Dimension => its reading under a filter on one of its values
+   * @param string $factGrain Grain of the domain's dated fact (event axis), '' when none is declared
    */
-  public function __construct(array $catalog, int $languageId, array $orderSideDimensions = [], array $terms = [], array $filteredDimensionReadings = [])
+  public function __construct(array $catalog, int $languageId, array $orderSideDimensions = [], array $terms = [], array $filteredDimensionReadings = [], string $factGrain = '')
   {
-    $this->validator = new AnalysisPlanValidator($catalog, $orderSideDimensions, $filteredDimensionReadings);
+    $this->validator = new AnalysisPlanValidator($catalog, $orderSideDimensions, $filteredDimensionReadings, $factGrain);
     $this->languageId = $languageId;
 
     foreach ($catalog as $name => $metric) {

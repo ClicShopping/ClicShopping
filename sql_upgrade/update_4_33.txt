@@ -610,7 +610,7 @@ SELECT m.id, 'Informations Redis', 2 FROM clic_administrator_menu m
 // Cronjob
 INSERT INTO clic_cron (code, description, cycle, action, status, date_added)
 SELECT 'ai_data_retention',
-       'Delete AI agent journals older than the configured retention window. The measurement corpus has its own window (CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_CORPUS_DAYS, 0 = kept for ever)',
+       'Delete AI agent journals older than the configured retention window. The measurement corpus and the objective queue have their own windows (CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_CORPUS_DAYS, ..._OBJECTIVES_DAYS, 90 by default, 0 = kept for ever)',
        'day',
        'AiDataRetention',
        0,
@@ -665,3 +665,7 @@ ALTER TABLE `clic_countries` ADD `country_currency_code` VARCHAR(256) NULL DEFAU
 
 //SEC-PWD — admin password reset by single-use emailed link (only the SHA-256 of the token is stored)
 ALTER TABLE `clic_administrators` ADD `password_reset_key` CHAR(64) NULL DEFAULT NULL COMMENT 'SHA-256 hash of the emailed password reset token - never the token itself' AFTER `email_verification_expiry`, ADD `password_reset_date` DATETIME NULL DEFAULT NULL COMMENT 'When the password reset was requested - the link expires after it' AFTER `password_reset_key`;
+
+//ANALYTIC-COSTHIST1 — cost basis frozen on the order line (margins no longer recomputed at today's cost)
+ALTER TABLE `clic_orders_products` ADD COLUMN IF NOT EXISTS `products_unit_cost` DECIMAL(15,4) NULL DEFAULT NULL COMMENT 'Cost basis per unit at time of order - products_cost plus products_handling, frozen when the line is written; NULL when the product had no cost or the line predates this column' AFTER `products_quantity`;
+//Existing lines stay NULL: their margin falls back to the current catalogue cost (never backfilled - that would invent history)

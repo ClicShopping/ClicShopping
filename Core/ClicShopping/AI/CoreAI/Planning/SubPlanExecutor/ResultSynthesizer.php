@@ -13,6 +13,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\CoreAI\Planning\ExecutionPlan;
 use ClicShopping\AI\CoreAI\Planning\CoherenceGuard;
+use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ResultValidator;
 
 /**
@@ -448,7 +449,7 @@ class ResultSynthesizer
       // rendered as if reliable. It travels as a failed pane so the existing top-notice + audit
       // path handles it; the detailed reason is journaled (governance role).
       if ($type === 'analytics' || $type === 'analytics_response') {
-        $verdict = CoherenceGuard::inspectAnalyticsPane($result);
+        $verdict = CoherenceGuard::inspectAnalyticsPane($result, $this->eventAxis());
 
         if ($verdict !== null) {
           $reason = CLICSHOPPING::getDef($verdict['reason_key']);
@@ -979,5 +980,17 @@ class ResultSynthesizer
   public function getValidationMetrics(): array
   {
     return $this->validator->getValidationMetrics();
+  }
+
+  /**
+   * The active domain's event axis, or [] when none is declared (the axis checks then stay silent).
+   *
+   * @return array
+   */
+  private function eventAxis(): array
+  {
+    $domainApp = DomainRegistry::getInstance()->getActiveApp();
+
+    return $domainApp !== null && method_exists($domainApp, 'getEventAxis') ? (array)($domainApp->getEventAxis()['axis'] ?? []) : [];
   }
 }

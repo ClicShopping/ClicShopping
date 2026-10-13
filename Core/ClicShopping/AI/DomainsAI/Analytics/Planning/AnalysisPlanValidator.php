@@ -36,14 +36,19 @@ class AnalysisPlanValidator
   /** @var array<string, string> Dimension => the dimension it is read under once filtered on a value */
   private array $filteredDimensionReadings = [];
 
+  /** Grain of the domain's dated fact (its event axis): a metric there fans out over a line dimension */
+  private string $factGrain;
+
   /**
    * @param array<string, array{grain: string, type: string, definition: string, aggregation?: string, split?: string, line_alternative?: string}> $catalog Domain metric catalogue
    * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
    * @param array<string, string> $filteredDimensionReadings Dimension => its reading under a filter on one of its values
+   * @param string $factGrain Grain of the domain's dated fact; '' when none is declared (no fan-out check)
    */
-  public function __construct(array $catalog, array $orderSideDimensions = [], array $filteredDimensionReadings = [])
+  public function __construct(array $catalog, array $orderSideDimensions = [], array $filteredDimensionReadings = [], string $factGrain = '')
   {
     $this->catalog = $catalog;
+    $this->factGrain = $factGrain;
 
     foreach ($orderSideDimensions as $dimension) {
       $this->orderSideDimensions[strtolower(trim((string)$dimension))] = true;
@@ -130,12 +135,14 @@ class AnalysisPlanValidator
     $askedDimensions = $this->promoteSeriesUnit($rawMetrics, is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : []);
     $filters = is_array($plan['filters'] ?? null) ? $plan['filters'] : [];
     [$askedDimensions, $filters, $rankings] = $this->readFilteredDimensions($askedDimensions, $filters, $rankings);
-    $dimensions = self::splitDimensions($metrics, $askedDimensions, $rankings);
 
-    // An order-grain metric broken down by a product dimension fans out (counted once per line):
-    // swap to the catalogue's line-grain sibling, or record it unsatisfiable.
+    // An order-grain metric broken down by a product dimension fans out (counted once per line), and
+    // restricted to a hierarchy member it would sum whole orders: swap to the line-grain sibling, or
+    // record it unsatisfiable. Before the split: the split belongs to the metric that remains.
+    $hierarchyFilters = array_intersect(array_keys($filters), [...array_keys($this->filteredDimensionReadings), ...array_values($this->filteredDimensionReadings)]);
     $renamed = [];
-    $metrics = $this->resolveGrainConflicts($metrics, $dimensions, $unsatisfiable, $renamed);
+    $metrics = $this->resolveGrainConflicts($metrics, [...$askedDimensions, ...$hierarchyFilters], $unsatisfiable, $renamed);
+    $dimensions = self::splitDimensions($metrics, $askedDimensions, $rankings);
     $metrics = $this->applySeriesSample($metrics, $periods, $askedDimensions, $unsatisfiable);
 
     if ($metrics === []) {
@@ -277,7 +284,7 @@ class AnalysisPlanValidator
 
       // A distinct count counts each order once per dimension value: lines never multiply it, but
       // an order under several values counts in each, so its rows never add up to a total.
-      $orderGrain = ($metric['grain'] ?? '') === 'order';
+      $orderGrain = $this->factGrain !== '' && ($metric['grain'] ?? '') === $this->factGrain;
 
       if (!$orderGrain || $distinct) {
         if ($orderGrain) {
@@ -316,7 +323,7 @@ class AnalysisPlanValidator
       $unsatisfiable[] = [
         'element' => 'metric:' . $metric['name'],
         'label' => $metric['name'],
-        'reason' => 'an order-level metric cannot be broken down by a product dimension without counting each order once per line',
+        'reason' => 'a fact-grain metric cannot be broken down by a line dimension without counting each fact once per line',
         'kind' => 'grain_conflict',
       ];
     }

@@ -18,9 +18,6 @@ use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
  * Extracted from AnalyticsAgent (god-class decomposition): stateless query characterisation
  * helpers that carry no agent state. Bodies moved verbatim, behaviour preserved.
  *
- * Lives in the DomainsAI\Analytics layer (not agnostic Core) because the complexity heuristic
- * references domain entities by name.
- *
  * @package ClicShopping\AI\DomainsAI\Analytics\Agent
  * @since 2026-06-11
  */
@@ -55,18 +52,6 @@ class AnalyticsQueryHeuristics
     // Increase for comparison queries
     if (preg_match('/\b(compare|versus|vs|difference|between)\b/i', $question)) {
       $complexity += 0.15;
-    }
-
-    // Increase for complex joins (multiple entities)
-    $entityCount = 0;
-    $entities = ['product', 'order', 'customer', 'category', 'manufacturer', 'supplier'];
-    foreach ($entities as $entity) {
-      if (preg_match('/\b' . $entity . 's?\b/i', $question)) {
-        $entityCount++;
-      }
-    }
-    if ($entityCount > 2) {
-      $complexity += 0.1;
     }
 
     return min(1.0, $complexity);

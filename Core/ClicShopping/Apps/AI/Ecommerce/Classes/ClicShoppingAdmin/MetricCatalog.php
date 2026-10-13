@@ -41,8 +41,9 @@ class MetricCatalog
   {
     return [
       'line_revenue' => 'final_price * products_quantity',
-      // NULLIF keeps an uncosted line out of the margin instead of reading it as 100%.
-      'line_cost' => '(NULLIF(products_cost, 0) + products_handling) * products_quantity',
+      // Cost frozen at sale first, today's catalogue cost only for older lines; NULLIF keeps an
+      // uncosted line out of the margin instead of reading it as 100%.
+      'line_cost' => 'COALESCE(products_unit_cost, NULLIF(products_cost, 0) + products_handling) * products_quantity',
       // A rate over sales reads only the lines its margin covers.
       'costed_line_revenue' => 'CASE WHEN line_cost IS NOT NULL THEN line_revenue END',
     ];
@@ -161,14 +162,15 @@ class MetricCatalog
    * `aliases` is optional and lists the column names the generation rules fix for the metric
    * (quantity_sold is total_sold): the plan contract accepts them for the metric's own name.
    *
-   * `axis` is optional and binds an ADDITIVE metric to the signed event axis: EventAxis projection =>
-   * the column it sums, in order of preference. A bound metric is compiled by PlanSqlCompiler.
+   * `axis` is optional and binds an ADDITIVE metric or a RATIO_OF_SUMS to the signed event axis:
+   * EventAxis projection => what it sums (an expression over the projection's columns and measures,
+   * or {numerator, denominator, scale?}), in order of preference. Compiled by PlanSqlCompiler.
    *
    * `expression` is optional: the formula over columns or terms() (base), or over other metric
    * names (derived), checked after generation. Absent where no presence check can tell the metric
    * from its neighbour (revenue_ttc reads the same 'TO' rows as revenue_ht).
    *
-   * @return array<string, array{grain: string, type: string, aggregation: string, definition: string, expression?: string, basis?: string, split?: string, line_alternative?: string, companions?: array<int, string>, weighted_by?: string, population_weight?: int, aliases?: array<int, string>, axis?: array<string, string>}>
+   * @return array<string, array{grain: string, type: string, aggregation: string, definition: string, expression?: string, basis?: string, split?: string, line_alternative?: string, companions?: array<int, string>, weighted_by?: string, population_weight?: int, aliases?: array<int, string>, axis?: array<string, string|array{numerator: string, denominator: string, scale?: int}>}>
    */
   public static function all(): array
   {
@@ -199,7 +201,7 @@ class MetricCatalog
         'grain' => 'order_line',
         'type' => MetricType::AMOUNT,
         'aggregation' => MetricAggregation::ADDITIVE,
-        'axis' => ['line_cost' => 'line_revenue', 'line_category' => 'amount'],
+        'axis' => ['line_cost' => 'line_revenue', 'line_category' => 'amount', 'line_product_cost' => 'line_revenue'],
         'expression' => 'final_price * products_quantity',
         'definition' => 'text_metric_line_revenue',
         'weighted_by' => 'revenue_sign',
@@ -296,6 +298,7 @@ class MetricCatalog
         'grain' => 'product',
         'type' => MetricType::AMOUNT,
         'aggregation' => MetricAggregation::ADDITIVE,
+        'axis' => ['line_cost' => 'line_revenue - line_cost', 'line_product_cost' => 'line_revenue - line_cost'],
         'expression' => 'line_revenue - line_cost',
         'definition' => 'text_metric_gross_margin_amount',
         'basis' => 'text_metric_basis_cost_current',
@@ -306,6 +309,10 @@ class MetricCatalog
         'grain' => 'product',
         'type' => MetricType::RATE,
         'aggregation' => MetricAggregation::RATIO_OF_SUMS,
+        'axis' => [
+          'line_cost' => ['numerator' => 'line_revenue - line_cost', 'denominator' => 'costed_line_revenue', 'scale' => 100],
+          'line_product_cost' => ['numerator' => 'line_revenue - line_cost', 'denominator' => 'costed_line_revenue', 'scale' => 100],
+        ],
         'expression' => 'gross_margin_amount / costed_line_revenue * 100',
         'definition' => 'text_metric_gross_margin_percent',
         'basis' => 'text_metric_basis_cost_current',
