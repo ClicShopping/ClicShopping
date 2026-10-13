@@ -18,8 +18,10 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
  * metrics and ratios of sums of the signed event axis, with their companions, broken down by calendar units, columns of one axis projection,
  * a grain entity (key + name) and the levels of the domain hierarchy, optionally restricted to one
  * named node's sub-tree, over the window PeriodResolver computed. Successive calendar periods are
- * read on a dense axis, each plan metric carrying its variation against the period before. Any other
- * plan returns null and the caller falls back on the model.
+ * read on a dense axis, each plan metric carrying its variation against the period before. A
+ * comparison reads both PeriodResolver windows in one pass, per member: `{metric}_current`,
+ * `{metric}_previous`, then `{metric}_variation`. Any other plan returns null and the caller falls
+ * back on the model.
  *
  * A metric is compilable when its catalogue entry declares `axis`: projection => what it sums, in
  * order of preference - an expression over the projection's columns and `measures`, or for a ratio
@@ -54,8 +56,10 @@ final class PlanSqlCompiler
     $hierarchy = $eventAxis['hierarchy'] ?? null;
     $levels = $hierarchy['dimensions'] ?? [];
 
+    $compared = ($periods['compare'] ?? PeriodResolver::COMPARE_NONE) !== PeriodResolver::COMPARE_NONE;
+
     if ($metrics === [] || !empty($plan['rankings']) || !empty($plan['unsatisfiable'])
-      || ($periods['compare'] ?? PeriodResolver::COMPARE_NONE) !== PeriodResolver::COMPARE_NONE
+      || ($compared && (empty($periods['current']['from']) || empty($periods['previous']['from']) || empty($periods['previous']['to'])))
       || ($periods['time_grain'] ?? 'window') !== 'window'
       || !empty($periods['set_bounded']) || !empty($periods['period_missing'])
       || empty($periods['current']['to'])) {
@@ -84,6 +88,11 @@ final class PlanSqlCompiler
       }
     }
 
+    // ponytail: periods inside two compared windows need aligned axes; that shape stays with the model.
+    if ($compared && $calendar !== []) {
+      return null;
+    }
+
     $filters = is_array($plan['filters'] ?? null) ? $plan['filters'] : [];
 
     // ponytail: only the hierarchy filter compiles; any other one stays with the model (PLAN-COMPILER-FILTERS1).
@@ -100,10 +109,37 @@ final class PlanSqlCompiler
     }
 
     $body = $eventAxis['projections'][$projection];
-    $figures = self::figures($metrics, $catalog, $projection, $body);
+    $where = [];
 
-    if ($figures === null) {
-      return null;
+    if ($compared) {
+      $within = [];
+
+      foreach (['current', 'previous'] as $window) {
+        $within[$window] = "ev.event_date >= '" . self::date((string)$periods[$window]['from']) . "' AND ev.event_date < '" . self::date((string)$periods[$window]['to'], '+1 day') . "'";
+        $read[$window] = self::figures($metrics, $catalog, $projection, $body, $within[$window]);
+
+        if ($read[$window] === null) {
+          return null;
+        }
+      }
+
+      $figures = [];
+
+      foreach (array_keys($read['current']) as $name) {
+        foreach ($within as $window => $condition) {
+          // Only a window without any row counts 0: a NULL it computed (rate, unknown cost) stays NULL.
+          $figures["{$name}_{$window}"] = ($catalog[$name]['type'] ?? '') === MetricType::RATE
+            ? $read[$window][$name] : "IF(MAX({$condition}) = 1, {$read[$window][$name]}, 0)";
+        }
+      }
+
+      $where[] = '((' . implode(') OR (', $within) . '))';
+    } else {
+      $figures = self::figures($metrics, $catalog, $projection, $body);
+
+      if ($figures === null) {
+        return null;
+      }
     }
     $select = [];
     $groupBy = [];
@@ -157,13 +193,13 @@ final class PlanSqlCompiler
       $select[] = $figure . ' AS ' . $name;
     }
 
-    $where = [];
-
-    if (!empty($periods['current']['from'])) {
+    if (!$compared && !empty($periods['current']['from'])) {
       $where[] = "ev.event_date >= '" . self::date($periods['current']['from']) . "'";
     }
 
-    $where[] = "ev.event_date < '" . self::date($periods['current']['to'], '+1 day') . "'";
+    if (!$compared) {
+      $where[] = "ev.event_date < '" . self::date($periods['current']['to'], '+1 day') . "'";
+    }
 
     $sql = 'SELECT ' . implode(', ', $select)
       . ' FROM (' . EventAxisSql::render($eventAxis['axis'], $body) . ') ev'
@@ -171,7 +207,23 @@ final class PlanSqlCompiler
       . ($groupBy !== [] ? ' GROUP BY ' . implode(', ', $groupBy) : '');
 
     // Periods read in order; members of a category or a product by the first measure, largest first.
-    $orderBy = $treeUsed || $entities !== [] ? [...$calendar, (string)$metrics[0]['name'] . ' DESC'] : $groupBy;
+    $orderBy = $treeUsed || $entities !== [] ? [...$calendar, (string)$metrics[0]['name'] . ($compared ? '_current' : '') . ' DESC'] : $groupBy;
+
+    if ($compared) {
+      $variations = [];
+
+      foreach (array_unique(array_map(static fn(array $m): string => (string)$m['name'], $metrics)) as $name) {
+        [$now, $before] = ["c.{$name}_current", "c.{$name}_previous"];
+        $variations[] = (MetricType::variesInPoints((string)($catalog[$name]['type'] ?? ''))
+          ? "ROUND({$now} - {$before}, 2)"
+          : "ROUND(({$now} - {$before}) / NULLIF({$before}, 0) * 100, 2)") . " AS {$name}_variation";
+      }
+
+      return ($treeUsed ? HierarchySql::cte($hierarchy) . ' ' : '')
+        . 'SELECT ' . implode(', ', array_map(static fn(string $c): string => 'c.' . $c, [...$members, ...array_keys($figures)]))
+        . ', ' . implode(', ', $variations) . ' FROM (' . $sql . ') c'
+        . ($orderBy !== [] ? ' ORDER BY ' . implode(', ', array_map(static fn(string $o): string => str_replace('ev.', 'c.', $o), $orderBy)) : '');
+    }
 
     if ($calendar !== []) {
       $names = array_unique(array_map(static fn(array $m): string => (string)$m['name'], $metrics));
@@ -305,9 +357,10 @@ final class PlanSqlCompiler
    * @param array $catalog Domain metric catalogue
    * @param string $projection Chosen projection name
    * @param array $body Its declaration (columns, measures)
+   * @param string $within Optional row condition: only the rows of one compared window are summed
    * @return array<string, string>|null
    */
-  private static function figures(array $metrics, array $catalog, string $projection, array $body): ?array
+  private static function figures(array $metrics, array $catalog, string $projection, array $body, string $within = ''): ?array
   {
     $names = array_map(static fn(array $m): string => (string)$m['name'], $metrics);
 
@@ -322,7 +375,7 @@ final class PlanSqlCompiler
 
       if ($bound === null && isset($body['measures'][$name])) {
         // ponytail: a measure is rounded as an amount; declare its type the day a count is one.
-        $figures[$name] = 'ROUND(' . self::sum($name, $body) . ', 2)';
+        $figures[$name] = 'ROUND(' . self::sum($name, $body, $within) . ', 2)';
         continue;
       }
 
@@ -332,13 +385,13 @@ final class PlanSqlCompiler
 
       if (is_array($bound)) {
         // A rate over a base that nets to zero or below is undefined, not infinite.
-        $ratio = self::sum((string)$bound['numerator'], $body) . ' / NULLIF(GREATEST(' . self::sum((string)$bound['denominator'], $body) . ', 0), 0)'
+        $ratio = self::sum((string)$bound['numerator'], $body, $within) . ' / NULLIF(GREATEST(' . self::sum((string)$bound['denominator'], $body, $within) . ', 0), 0)'
           . (isset($bound['scale']) ? ' * ' . (int)$bound['scale'] : '');
         $figures[$name] = "ROUND({$ratio}, 2)";
         continue;
       }
 
-      $sum = self::sum((string)$bound, $body);
+      $sum = self::sum((string)$bound, $body, $within);
       $figures[$name] = ($catalog[$name]['type'] ?? '') === MetricType::AMOUNT ? "ROUND({$sum}, 2)" : $sum;
     }
 
@@ -351,9 +404,10 @@ final class PlanSqlCompiler
    *
    * @param string $expression Column, measure or expression over them
    * @param array $body Projection declaration
+   * @param string $within Optional row condition, summed through a CASE
    * @return string
    */
-  private static function sum(string $expression, array $body): string
+  private static function sum(string $expression, array $body, string $within = ''): string
   {
     $expression = (string)($body['measures'][$expression] ?? $expression);
 
@@ -364,7 +418,9 @@ final class PlanSqlCompiler
     $columns = implode('|', array_map(static fn($c): string => preg_quote((string)$c, '/'), array_keys($body['columns'])));
     $expression = (string)preg_replace('/(?<![\w.])(' . $columns . ')\b/', 'ev.$1', $expression);
 
-    return preg_match('/^ev\.\w+$/', $expression) === 1 ? "SUM(ev.sign * {$expression})" : "SUM(ev.sign * ({$expression}))";
+    $term = preg_match('/^ev\.\w+$/', $expression) === 1 ? "ev.sign * {$expression}" : "ev.sign * ({$expression})";
+
+    return $within === '' ? "SUM({$term})" : "SUM(CASE WHEN {$within} THEN {$term} END)";
   }
 
   /**
