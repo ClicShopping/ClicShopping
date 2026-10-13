@@ -17,8 +17,9 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
  * model write it: the plan keeps the intent, the shape becomes deterministic. Compiles additive
  * metrics and ratios of sums of the signed event axis, with their companions, broken down by calendar units, columns of one axis projection,
  * a grain entity (key + name) and the levels of the domain hierarchy, optionally restricted to one
- * named node's sub-tree, over the window PeriodResolver computed. Any other plan returns null and
- * the caller falls back on the model.
+ * named node's sub-tree, over the window PeriodResolver computed. Successive calendar periods are
+ * read on a dense axis, each plan metric carrying its variation against the period before. Any other
+ * plan returns null and the caller falls back on the model.
  *
  * A metric is compilable when its catalogue entry declares `axis`: projection => what it sums, in
  * order of preference - an expression over the projection's columns and `measures`, or for a ratio
@@ -62,6 +63,7 @@ final class PlanSqlCompiler
     }
 
     $calendar = [];
+    $members = [];
     $columns = [];
     $entities = [];
     $asked = [];
@@ -123,6 +125,7 @@ final class PlanSqlCompiler
           $body['columns'][$alias] = HierarchySql::member($hierarchy, $level, $item);
           $select[] = 'ev.' . $alias;
           $groupBy[] = 'ev.' . $alias;
+          $members[] = $alias;
         }
       }
 
@@ -141,11 +144,13 @@ final class PlanSqlCompiler
       $select[] = 'ev.' . $key;
       $select[] = "MAX(ev.{$name}) AS {$name}";
       $groupBy[] = 'ev.' . $key;
+      $members = [...$members, $key, $name];
     }
 
     foreach ($columns as $column) {
       $select[] = 'ev.' . $column;
       $groupBy[] = 'ev.' . $column;
+      $members[] = $column;
     }
 
     foreach ($figures as $name => $figure) {
@@ -160,18 +165,99 @@ final class PlanSqlCompiler
 
     $where[] = "ev.event_date < '" . self::date($periods['current']['to'], '+1 day') . "'";
 
-    $sql = ($treeUsed ? HierarchySql::cte($hierarchy) . ' ' : '')
-      . 'SELECT ' . implode(', ', $select)
+    $sql = 'SELECT ' . implode(', ', $select)
       . ' FROM (' . EventAxisSql::render($eventAxis['axis'], $body) . ') ev'
-      . ' WHERE ' . implode(' AND ', $where);
+      . ' WHERE ' . implode(' AND ', $where)
+      . ($groupBy !== [] ? ' GROUP BY ' . implode(', ', $groupBy) : '');
 
-    if ($groupBy !== []) {
-      // Periods read in order; members of a category or a product by the first measure, largest first.
-      $orderBy = $treeUsed || $entities !== [] ? [...$calendar, (string)$metrics[0]['name'] . ' DESC'] : $groupBy;
-      $sql .= ' GROUP BY ' . implode(', ', $groupBy) . ' ORDER BY ' . implode(', ', $orderBy);
+    // Periods read in order; members of a category or a product by the first measure, largest first.
+    $orderBy = $treeUsed || $entities !== [] ? [...$calendar, (string)$metrics[0]['name'] . ' DESC'] : $groupBy;
+
+    if ($calendar !== []) {
+      $names = array_unique(array_map(static fn(array $m): string => (string)$m['name'], $metrics));
+      $successive = self::successive($sql, $calendar, $members, $figures, $names, $catalog, $periods['current'], $orderBy);
+
+      return $successive === null ? null : ($treeUsed ? HierarchySql::cte($hierarchy) . ', ' : 'WITH ') . $successive;
     }
 
-    return $sql;
+    return ($treeUsed ? HierarchySql::cte($hierarchy) . ' ' : '') . $sql
+      . ($groupBy !== [] ? ' ORDER BY ' . implode(', ', $orderBy) : '');
+  }
+
+  /**
+   * Successive calendar periods on a dense axis: every period of the window is a row, an empty one
+   * at 0, and each plan metric carries its variation against the period just before (NULL first).
+   * Crossed with members, a member keeps its active periods and the one right after each: the fall to
+   * 0 shows once, and the result stays within twice the grouped rows.
+   *
+   * @param string $aggregate The grouped query, without ORDER BY
+   * @param array<int, string> $calendar Calendar units, plan order
+   * @param array<int, string> $members Non-calendar output columns
+   * @param array<string, string> $figures Compiled figures, name => aggregate
+   * @param array<int, string> $planned Plan metric names: the ones that carry a variation
+   * @param array $catalog Domain metric catalogue
+   * @param array $window Current window {from, to}
+   * @param array<int, string> $orderBy Order of the grouped query
+   * @return string|null CTE list and final SELECT, to follow WITH; null without a first day
+   */
+  private static function successive(string $aggregate, array $calendar, array $members, array $figures, array $planned, array $catalog, array $window, array $orderBy): ?string
+  {
+    // ponytail: an all-time window has no first day to start the axis from; it stays with the model.
+    if (empty($window['from'])) {
+      return null;
+    }
+
+    $start = self::date((string)$window['from']);
+    $days = (int)(new \DateTimeImmutable($start))->diff(new \DateTimeImmutable(self::date((string)$window['to'])))->days;
+    $units = array_map(static fn(string $u): string => self::CALENDAR_EXPRESSIONS[$u] . ' AS ' . $u, $calendar);
+
+    $ctes = ["agg AS ({$aggregate})",
+      'cal AS (SELECT DISTINCT ' . implode(', ', $units) . " FROM (SELECT DATE_ADD('{$start}', INTERVAL seq DAY) AS event_date FROM seq_0_to_{$days}) ev)"];
+    $from = 'cal s';
+    $on = array_map(static fn(string $u): string => "a.{$u} = s.{$u}", $calendar);
+    $select = array_map(static fn(string $u): string => 's.' . $u, $calendar);
+
+    if ($members !== []) {
+      $ctes[] = 'mem AS (SELECT DISTINCT ' . implode(', ', $members) . ' FROM agg)';
+      $from .= ' CROSS JOIN mem m';
+
+      foreach ($members as $member) {
+        // A member filed nowhere is NULL: matched null-safe.
+        $on[] = "a.{$member} <=> m.{$member}";
+        $select[] = 'm.' . $member;
+      }
+    }
+
+    $over = ' OVER (' . ($members !== [] ? 'PARTITION BY m.' . implode(', m.', $members) . ' ' : '')
+      . 'ORDER BY s.' . implode(', s.', $calendar) . ')';
+
+    foreach ($figures as $name => $figure) {
+      // Only an absent period counts 0: a NULL the period computed (rate, unknown cost) stays NULL.
+      $rate = ($catalog[$name]['type'] ?? '') === MetricType::RATE;
+      $value = $rate ? "a.{$name}" : "IF(a.{$calendar[0]} IS NULL, 0, a.{$name})";
+      $select[] = "{$value} AS {$name}";
+
+      if (in_array($name, $planned, true)) {
+        $previous = "LAG({$value}){$over}";
+        $select[] = (MetricType::variesInPoints((string)($catalog[$name]['type'] ?? ''))
+          ? "ROUND({$value} - {$previous}, 2)"
+          : "ROUND(({$value} - {$previous}) / NULLIF({$previous}, 0) * 100, 2)") . " AS {$name}_variation";
+      }
+    }
+
+    $join = " FROM {$from} LEFT JOIN agg a ON " . implode(' AND ', $on);
+    $order = ' ORDER BY ' . implode(', ', array_map(static fn(string $o): string => str_replace('ev.', '', $o), $orderBy));
+
+    if ($members === []) {
+      return implode(', ', $ctes) . ' SELECT ' . implode(', ', $select) . $join . $order;
+    }
+
+    // Filtered outside the grid: a WHERE beside LAG would run before it.
+    $seen = "a.{$calendar[0]} IS NOT NULL";
+    $output = array_map(static fn(string $column): string => (string)preg_replace('/^.* AS |^[sm]\./', '', $column), $select);
+    $ctes[] = 'grid AS (SELECT ' . implode(', ', $select) . ", {$seen} AS seen, LAG({$seen}){$over} AS seen_before{$join})";
+
+    return implode(', ', $ctes) . ' SELECT ' . implode(', ', $output) . ' FROM grid WHERE seen OR seen_before' . $order;
   }
 
   /**

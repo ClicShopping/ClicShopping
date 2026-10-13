@@ -10,6 +10,7 @@ namespace ClicShopping\AI\CoreAI\Planning\SubPlanExecutor;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Hash;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\ActionResult;
@@ -318,8 +319,9 @@ class AnalyticsEvaluationRecorder
 
     try {
       $goalStatement = 'Optimize analytics query performance';
+      // The user's question is personal data: stored encrypted, read with Hash::displayDecryptedDataText().
       $successCriteria = [
-        'query' => $query,
+        'query' => Hash::encryptDatatext($query),
         'max_execution_time_ms' => 1000
       ];
       $priority = $executionTimeMs >= 5000 ? 'high' : 'medium';
